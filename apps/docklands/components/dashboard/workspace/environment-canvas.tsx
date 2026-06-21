@@ -44,6 +44,7 @@ import {
 } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
+import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { AddApplication } from "@/components/dashboard/project/add-application";
@@ -231,7 +232,12 @@ export const EnvironmentCanvas = ({
 	const [searchQuery, setSearchQuery] = useState("");
 	const [commandOpen, setCommandOpen] = useState(false);
 	const [drawerTab, setDrawerTab] = useState<
-		"overview" | "variables" | "deployments" | "previews" | "connections"
+		| "overview"
+		| "variables"
+		| "deployments"
+		| "domains"
+		| "previews"
+		| "connections"
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
 	const dragState = useRef<DragState | null>(null);
@@ -345,6 +351,11 @@ export const EnvironmentCanvas = ({
 		permissions?.deployment.read
 			? [{ value: "deployments", label: "Deployments" }]
 			: []),
+		...(selectedServiceModel &&
+		deploymentServiceTypes.has(selectedServiceModel.type) &&
+		permissions?.domain.read
+			? [{ value: "domains", label: "Domains" }]
+			: []),
 		...(selectedServiceModel?.type === "application"
 			? [{ value: "previews", label: "Previews" }]
 			: []),
@@ -390,7 +401,20 @@ export const EnvironmentCanvas = ({
 		) {
 			setDrawerTab("overview");
 		}
-	}, [drawerTab, permissions?.deployment.read, selectedServiceModel]);
+		if (
+			drawerTab === "domains" &&
+			(!selectedServiceModel ||
+				!deploymentServiceTypes.has(selectedServiceModel.type) ||
+				!permissions?.domain.read)
+		) {
+			setDrawerTab("overview");
+		}
+	}, [
+		drawerTab,
+		permissions?.deployment.read,
+		permissions?.domain.read,
+		selectedServiceModel,
+	]);
 
 	const filteredServices = useMemo(() => {
 		const query = searchQuery.trim().toLowerCase();
@@ -1342,6 +1366,15 @@ export const EnvironmentCanvas = ({
 							(selectedServiceModel.type === "application" ||
 								selectedServiceModel.type === "compose") && (
 								<ShowDeployments
+									id={selectedServiceModel.id}
+									type={selectedServiceModel.type}
+								/>
+							)}
+
+						{drawerTab === "domains" &&
+							(selectedServiceModel.type === "application" ||
+								selectedServiceModel.type === "compose") && (
+								<ShowDomains
 									id={selectedServiceModel.id}
 									type={selectedServiceModel.type}
 								/>
