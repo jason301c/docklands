@@ -1,17 +1,11 @@
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
 interface Props {
@@ -37,7 +31,7 @@ export const ComposeActions = ({ composeId }: Props) => {
 		api.compose.stop.useMutation();
 	return (
 		<div className="flex flex-row gap-4 w-full flex-wrap ">
-			<TooltipProvider delayDuration={0} disableHoverableContent={false}>
+			<TooltipProvider delay={0}>
 				{canDeploy && (
 					<DialogAction
 						title="Deploy Compose"
@@ -60,25 +54,20 @@ export const ComposeActions = ({ composeId }: Props) => {
 						}}
 					>
 						<Button
-							variant="default"
-							isLoading={data?.composeStatus === "running"}
+							variant="primary"
+							loading={data?.composeStatus === "running"}
 							className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 						>
-							<Tooltip>
-								<TooltipTrigger asChild>
+							<Tooltip content={<>
+										<p>
+											Downloads the source code and performs a complete build
+										</p>
+									</>} className="z-[60]"  asChild>
 									<div className="flex items-center">
 										<Rocket className="size-4 mr-1" />
 										Deploy
 									</div>
-								</TooltipTrigger>
-								<TooltipPrimitive.Portal>
-									<TooltipContent sideOffset={5} className="z-[60]">
-										<p>
-											Downloads the source code and performs a complete build
-										</p>
-									</TooltipContent>
-								</TooltipPrimitive.Portal>
-							</Tooltip>
+								</Tooltip>
 						</Button>
 					</DialogAction>
 				)}
@@ -102,22 +91,17 @@ export const ComposeActions = ({ composeId }: Props) => {
 					>
 						<Button
 							variant="secondary"
-							isLoading={data?.composeStatus === "running"}
+							loading={data?.composeStatus === "running"}
 							className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 						>
-							<Tooltip>
-								<TooltipTrigger asChild>
+							<Tooltip content={<>
+										<p>Reload the compose without rebuilding it</p>
+									</>} className="z-[60]"  asChild>
 									<div className="flex items-center">
 										<RefreshCcw className="size-4 mr-1" />
 										Reload
 									</div>
-								</TooltipTrigger>
-								<TooltipPrimitive.Portal>
-									<TooltipContent sideOffset={5} className="z-[60]">
-										<p>Reload the compose without rebuilding it</p>
-									</TooltipContent>
-								</TooltipPrimitive.Portal>
-							</Tooltip>
+								</Tooltip>
 						</Button>
 					</DialogAction>
 				)}
@@ -143,24 +127,19 @@ export const ComposeActions = ({ composeId }: Props) => {
 						>
 							<Button
 								variant="secondary"
-								isLoading={isStarting}
+								loading={isStarting}
 								className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 							>
-								<Tooltip>
-									<TooltipTrigger asChild>
+								<Tooltip content={<>
+											<p>
+												Start the compose (requires a previous successful build)
+											</p>
+										</>} className="z-[60]"  asChild>
 										<div className="flex items-center">
 											<CheckCircle2 className="size-4 mr-1" />
 											Start
 										</div>
-									</TooltipTrigger>
-									<TooltipPrimitive.Portal>
-										<TooltipContent sideOffset={5} className="z-[60]">
-											<p>
-												Start the compose (requires a previous successful build)
-											</p>
-										</TooltipContent>
-									</TooltipPrimitive.Portal>
-								</Tooltip>
+									</Tooltip>
 							</Button>
 						</DialogAction>
 					) : (
@@ -182,22 +161,17 @@ export const ComposeActions = ({ composeId }: Props) => {
 						>
 							<Button
 								variant="destructive"
-								isLoading={isStopping}
+								loading={isStopping}
 								className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 							>
-								<Tooltip>
-									<TooltipTrigger asChild>
+								<Tooltip content={<>
+											<p>Stop the currently running compose</p>
+										</>} className="z-[60]"  asChild>
 										<div className="flex items-center">
 											<Ban className="size-4 mr-1" />
 											Stop
 										</div>
-									</TooltipTrigger>
-									<TooltipPrimitive.Portal>
-										<TooltipContent sideOffset={5} className="z-[60]">
-											<p>Stop the currently running compose</p>
-										</TooltipContent>
-									</TooltipPrimitive.Portal>
-								</Tooltip>
+									</Tooltip>
 							</Button>
 						</DialogAction>
 					))}

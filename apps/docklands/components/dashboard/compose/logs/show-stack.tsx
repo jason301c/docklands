@@ -3,25 +3,12 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { badgeStateColor } from "@/components/dashboard/application/logs/show";
-import { Badge } from "@/components/ui/badge";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+
 export const DockerLogs = dynamic(
 	() =>
 		import("@/components/dashboard/docker/logs/docker-logs-id").then(
@@ -81,15 +68,15 @@ export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
 		option === "native" ? containers?.length : services?.length;
 
 	return (
-		<Card className="bg-background">
-			<CardHeader>
-				<CardTitle className="text-xl">Logs</CardTitle>
-				<CardDescription>
+		<LayerCard className="bg-background">
+			<div>
+				<h3 className="text-xl">Logs</h3>
+				<p>
 					Watch the logs of the application in real time
-				</CardDescription>
-			</CardHeader>
+				</p>
+			</div>
 
-			<CardContent className="flex flex-col gap-4">
+			<div className="flex flex-col gap-4">
 				<div className="flex flex-row justify-between items-center gap-2">
 					<Label>Select a container to view logs</Label>
 					<div className="flex flex-row gap-2 items-center">
@@ -104,23 +91,21 @@ export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
 						/>
 					</div>
 				</div>
-				<Select onValueChange={setContainerId} value={containerId}>
-					<SelectTrigger>
+				<Select aria-label="Select option" onValueChange={(value) => value !== null && setContainerId(value as never)} value={containerId}>
+					<>
 						{isLoading ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
 								<span>Loading...</span>
 								<Loader2 className="animate-spin size-4" />
 							</div>
-						) : (
-							<SelectValue placeholder="Select a container" />
-						)}
-					</SelectTrigger>
-					<SelectContent>
-						<SelectGroup>
+						) : null}
+					</>
+					<>
+						<Select.Group>
 							{option === "native" ? (
 								<div>
 									{containers?.map((container) => (
-										<SelectItem
+										<Select.Option
 											key={container.containerId}
 											value={container.containerId}
 										>
@@ -129,13 +114,13 @@ export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
 												{container.state}
 											</Badge>
 											{container.status ? ` ${container.status}` : ""}
-										</SelectItem>
+										</Select.Option>
 									))}
 								</div>
 							) : (
 								<>
 									{services?.map((container) => (
-										<SelectItem
+										<Select.Option
 											key={container.containerId}
 											value={container.containerId}
 										>
@@ -147,14 +132,14 @@ export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
 											{container.currentState
 												? ` ${container.currentState}`
 												: ""}
-										</SelectItem>
+										</Select.Option>
 									))}
 								</>
 							)}
 
-							<SelectLabel>Containers ({containersLength})</SelectLabel>
-						</SelectGroup>
-					</SelectContent>
+							<Select.GroupLabel>Containers ({containersLength})</Select.GroupLabel>
+						</Select.Group>
+					</>
 				</Select>
 				{option === "swarm" &&
 					services?.find((c) => c.containerId === containerId)?.error && (
@@ -168,7 +153,7 @@ export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
 					containerId={containerId || "select-a-container"}
 					runType={option}
 				/>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

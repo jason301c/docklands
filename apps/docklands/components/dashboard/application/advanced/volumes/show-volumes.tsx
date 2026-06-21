@@ -1,16 +1,10 @@
 import { Package, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import type { ServiceType } from "../show-resources";
 import { AddVolumes } from "./add-volumes";
 import { UpdateVolume } from "./update-volume";
@@ -49,14 +43,14 @@ export const ShowVolumes = ({ id, type }: Props) => {
 		api.mounts.remove.useMutation();
 
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row justify-between flex-wrap gap-4">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row justify-between flex-wrap gap-4">
 				<div>
-					<CardTitle className="text-xl">Volumes</CardTitle>
-					<CardDescription>
+					<h3 className="text-xl">Volumes</h3>
+					<p>
 						If you want to persist data in this service use the following config
 						to setup the volumes
-					</CardDescription>
+					</p>
 				</div>
 
 				{canCreate && data && data?.mounts.length > 0 && (
@@ -64,8 +58,8 @@ export const ShowVolumes = ({ id, type }: Props) => {
 						Add Volume
 					</AddVolumes>
 				)}
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				{data?.mounts.length === 0 ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
 						<Package className="size-8 text-muted-foreground" />
@@ -167,11 +161,11 @@ export const ShowVolumes = ({ id, type }: Props) => {
 															});
 													}}
 												>
-													<Button
+													<Button aria-label="Action"
 														variant="ghost"
-														size="icon"
+														shape="square"
 														className="group hover:bg-red-500/10"
-														isLoading={isRemoving}
+														loading={isRemoving}
 													>
 														<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 													</Button>
@@ -184,7 +178,7 @@ export const ShowVolumes = ({ id, type }: Props) => {
 						</div>
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

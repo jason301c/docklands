@@ -2,20 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -24,18 +16,12 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Separator } from "@/components/shared/separator";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 const AddRedirectSchema = z.object({
 	regex: z.string().min(1, "Regex required"),
@@ -165,42 +151,46 @@ export const HandleRedirect = ({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onDialogToggle}>
-			<DialogTrigger asChild>
-				{redirectId ? (
-					<Button
+		<Dialog.Root open={isOpen} onOpenChange={onDialogToggle}>
+			<Dialog.Trigger render={redirectId ? (
+					<Button aria-label="Action"
 						variant="ghost"
-						size="icon"
+						shape="square"
 						className="group hover:bg-blue-500/10 "
 					>
 						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
 					</Button>
 				) : (
 					<Button>{children}</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Redirects</DialogTitle>
-					<DialogDescription>
+				) as never} />
+			<Dialog className="sm:max-w-lg">
+				<div>
+					<Dialog.Title>Redirects</Dialog.Title>
+					<Dialog.Description>
 						Redirects are used to redirect requests to another url.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<div className="md:col-span-2">
 					<Label>Presets</Label>
-					<Select onValueChange={onPresetSelect} value={presetSelected}>
-						<SelectTrigger>
-							<SelectValue placeholder="No preset selected" />
-						</SelectTrigger>
-						<SelectContent>
+					<Select
+						aria-label="Select option"
+						onValueChange={(value) =>
+							value !== null && onPresetSelect(value)
+						}
+						value={presetSelected}
+					>
+						<>
+							
+						</>
+						<>
 							{redirectPresets.map((preset) => (
-								<SelectItem key={preset.label} value={preset.id}>
+								<Select.Option key={preset.label} value={preset.id}>
 									{preset.label}
-								</SelectItem>
+								</Select.Option>
 							))}
-						</SelectContent>
+						</>
 					</Select>
 				</div>
 
@@ -266,17 +256,17 @@ export const HandleRedirect = ({
 						</div>
 					</form>
 
-					<DialogFooter>
+					<div>
 						<Button
-							isLoading={isPending}
+							loading={isPending}
 							form="hook-form-add-redirect"
 							type="submit"
 						>
 							{redirectId ? "Update" : "Create"}
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

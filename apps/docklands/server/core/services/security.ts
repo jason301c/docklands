@@ -8,6 +8,7 @@ import {
 	removeSecurityMiddleware,
 } from "@/server/core/utils/traefik/security";
 import { findApplicationById } from "./application";
+
 export type Security = typeof security.$inferSelect;
 
 export const findSecurityById = async (securityId: string) => {

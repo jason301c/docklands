@@ -2,14 +2,8 @@ import { Loader2, LockKeyhole, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { StatusRow } from "./gpu-support";
 
 interface Props {
@@ -27,24 +21,24 @@ export const SecurityAudit = ({ serverId }: Props) => {
 		);
 
 	return (
-		<CardContent className="p-0">
+		<div className="p-0">
 			<div className="flex flex-col gap-4">
-				<Card className="bg-background">
-					<CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 						<div className="flex flex-row gap-2 justify-between w-full  max-sm:flex-col">
 							<div className="flex flex-col gap-1">
 								<div className="flex items-center gap-2">
 									<LockKeyhole className="size-5" />
-									<CardTitle className="text-xl">
+									<h3 className="text-xl">
 										Setup Security Suggestions
-									</CardTitle>
+									</h3>
 								</div>
-								<CardDescription>
+								<p>
 									Check the security suggestions
-								</CardDescription>
+								</p>
 							</div>
 							<Button
-								isLoading={isRefreshing}
+								loading={isRefreshing}
 								onClick={async () => {
 									setIsRefreshing(true);
 									await refetch();
@@ -62,9 +56,9 @@ export const SecurityAudit = ({ serverId }: Props) => {
 								</AlertBlock>
 							)}
 						</div>
-					</CardHeader>
+					</div>
 
-					<CardContent className="flex flex-col gap-4">
+					<div className="flex flex-col gap-4">
 						<AlertBlock type="info" className="w-full">
 							Ubuntu/Debian OS support is currently supported (Experimental)
 						</AlertBlock>
@@ -218,9 +212,9 @@ export const SecurityAudit = ({ serverId }: Props) => {
 								</div>
 							</div>
 						)}
-					</CardContent>
-				</Card>
+					</div>
+				</LayerCard>
 			</div>
-		</CardContent>
+		</div>
 	);
 };

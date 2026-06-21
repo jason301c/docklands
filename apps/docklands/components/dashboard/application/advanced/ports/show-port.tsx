@@ -1,16 +1,10 @@
 import { Rss, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { HandlePorts } from "./handle-ports";
 
 interface Props {
@@ -29,20 +23,20 @@ export const ShowPorts = ({ applicationId }: Props) => {
 		api.port.delete.useMutation();
 
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row justify-between flex-wrap gap-4">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row justify-between flex-wrap gap-4">
 				<div>
-					<CardTitle className="text-xl">Ports</CardTitle>
-					<CardDescription>
+					<h3 className="text-xl">Ports</h3>
+					<p>
 						the ports allows you to expose your application to the internet
-					</CardDescription>
+					</p>
 				</div>
 
 				{data && data?.ports.length > 0 && (
 					<HandlePorts applicationId={applicationId}>Add Port</HandlePorts>
 				)}
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				{data?.ports.length === 0 ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
 						<Rss className="size-8 text-muted-foreground" />
@@ -109,11 +103,11 @@ export const ShowPorts = ({ applicationId }: Props) => {
 														});
 												}}
 											>
-												<Button
+												<Button aria-label="Action"
 													variant="ghost"
-													size="icon"
+													shape="square"
 													className="group hover:bg-red-500/10 "
-													isLoading={isRemoving}
+													loading={isRemoving}
 												>
 													<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 												</Button>
@@ -125,7 +119,7 @@ export const ShowPorts = ({ applicationId }: Props) => {
 						</div>
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

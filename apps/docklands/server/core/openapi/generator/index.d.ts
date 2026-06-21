@@ -1,6 +1,7 @@
 import { ZodOpenApiObject, ZodOpenApiPathsObject } from 'zod-openapi';
 import { ZodSchema } from 'zod';
 import { OpenApiMeta, type OpenAPIObject, OpenApiRouter, type SecuritySchemeObject } from '../types';
+
 export interface GenerateOpenApiDocumentOptions<TMeta = Record<string, unknown>> {
     title: string;
     description?: string;

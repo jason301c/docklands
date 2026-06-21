@@ -8,7 +8,7 @@ import NextTopLoader from "nextjs-toploader";
 import type { ComponentType, ReactNode } from "react";
 import { TRPCReactProvider } from "@/client/providers/trpc-provider";
 import { SearchCommand } from "@/components/dashboard/search-command";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/components/shared/toast";
 
 const ThemeProvider = NextThemesProvider as ComponentType<
 	ThemeProviderProps & { children?: ReactNode }
@@ -24,7 +24,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
 				disableTransitionOnChange
 			>
 				<NextTopLoader color="hsl(var(--sidebar-ring))" />
-				<Toaster richColors />
+				<Toaster />
 				<SearchCommand />
 				{children}
 			</ThemeProvider>

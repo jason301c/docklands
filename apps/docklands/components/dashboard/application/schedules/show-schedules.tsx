@@ -7,24 +7,13 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { HandleSchedules } from "./handle-schedules";
 
@@ -73,23 +62,23 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 	};
 
 	return (
-		<Card className="border px-6 shadow-none bg-transparent h-full min-h-[50vh]">
-			<CardHeader className="px-0">
+		<LayerCard className="border px-6 shadow-none bg-transparent h-full min-h-[50vh]">
+			<div className="px-0">
 				<div className="flex justify-between items-center gap-y-2 flex-wrap">
 					<div className="flex flex-col gap-2">
-						<CardTitle className="text-xl font-bold flex items-center gap-2">
+						<h3 className="text-xl font-bold flex items-center gap-2">
 							Scheduled Tasks
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Schedule tasks to run automatically at specified intervals.
-						</CardDescription>
+						</p>
 					</div>
 					{schedules && schedules.length > 0 && (
 						<HandleSchedules id={id} scheduleType={scheduleType} />
 					)}
 				</div>
-			</CardHeader>
-			<CardContent className="px-0">
+			</div>
+			<div className="px-0">
 				{isLoadingSchedules ? (
 					<div className="flex gap-4 w-full items-center justify-center text-center mx-auto min-h-[45vh]">
 						<Loader2 className="size-4 text-muted-foreground/70 transition-colors animate-spin self-center" />
@@ -119,7 +108,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 													{schedule.name}
 												</h3>
 												<Badge
-													variant={schedule.enabled ? "default" : "secondary"}
+													variant={schedule.enabled ? "secondary" : "secondary"}
 													className="text-[10px] px-1 py-0"
 												>
 													{schedule.enabled ? "Enabled" : "Disabled"}
@@ -168,17 +157,16 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 											type="schedule"
 											serverId={serverId || undefined}
 										>
-											<Button variant="ghost" size="icon">
+											<Button aria-label="Action" variant="ghost" shape="square">
 												<ClipboardList className="size-4 transition-colors" />
 											</Button>
 										</ShowDeploymentsModal>
-										<TooltipProvider delayDuration={0}>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<Button
+										<TooltipProvider delay={0}>
+											<Tooltip content={<>Run Manual Schedule</>}  asChild>
+													<Button aria-label="Action"
 														type="button"
 														variant="ghost"
-														size="icon"
+														shape="square"
 														disabled={runningSchedules.has(schedule.scheduleId)}
 														onClick={() =>
 															handleRunManually(schedule.scheduleId)
@@ -190,9 +178,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 															<Play className="size-4 transition-colors" />
 														)}
 													</Button>
-												</TooltipTrigger>
-												<TooltipContent>Run Manual Schedule</TooltipContent>
-											</Tooltip>
+												</Tooltip>
 										</TooltipProvider>
 										<HandleSchedules
 											scheduleId={schedule.scheduleId}
@@ -219,9 +205,9 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 													});
 											}}
 										>
-											<Button
+											<Button aria-label="Action"
 												variant="ghost"
-												size="icon"
+												shape="square"
 												className="group hover:bg-red-500/10"
 												disabled={isDeleting}
 											>
@@ -245,7 +231,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 						<HandleSchedules id={id} scheduleType={scheduleType} />
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

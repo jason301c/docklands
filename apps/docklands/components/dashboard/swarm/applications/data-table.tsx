@@ -1,6 +1,5 @@
 "use client";
 
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import {
 	type ColumnDef,
 	type ColumnFiltersState,
@@ -15,21 +14,10 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDown } from "lucide-react";
 import React from "react";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Table } from "@cloudflare/kumo/components/table";
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -73,7 +61,7 @@ export function DataTable<TData, TValue>({
 
 	return (
 		<div className="mt-6 grid gap-4 pb-20 w-full">
-			<div className="flex flex-col gap-4  </div>w-full overflow-auto">
+			<div className="flex flex-col gap-4 w-full overflow-auto">
 				<div className="flex items-center gap-2 max-sm:flex-wrap">
 					<Input
 						placeholder="Filter by name..."
@@ -84,18 +72,20 @@ export function DataTable<TData, TValue>({
 						className="md:max-w-sm"
 					/>
 					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="outline" className="sm:ml-auto max-sm:w-full">
+						<DropdownMenu.Trigger
+							render={
+								<Button variant="outline" className="sm:ml-auto max-sm:w-full">
 								Columns <ChevronDown className="ml-2 h-4 w-4" />
 							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
+							}
+						/>
+						<DropdownMenu.Content align="end">
 							{table
 								.getAllColumns()
 								.filter((column) => column.getCanHide())
 								.map((column) => {
 									return (
-										<DropdownMenuCheckboxItem
+										<DropdownMenu.CheckboxItem
 											key={column.id}
 											className="capitalize"
 											checked={column.getIsVisible()}
@@ -104,51 +94,51 @@ export function DataTable<TData, TValue>({
 											}
 										>
 											{column.id}
-										</DropdownMenuCheckboxItem>
+										</DropdownMenu.CheckboxItem>
 									);
 								})}
-						</DropdownMenuContent>
+						</DropdownMenu.Content>
 					</DropdownMenu>
 				</div>
 				<Table>
-					<TableHeader>
+					<Table.Header>
 						{table.getHeaderGroups().map((headerGroup) => (
-							<TableRow key={headerGroup.id}>
+							<Table.Row key={headerGroup.id}>
 								{headerGroup.headers.map((header) => {
 									return (
-										<TableHead key={header.id}>
+										<Table.Head key={header.id}>
 											{header.isPlaceholder
 												? null
 												: flexRender(
 														header.column.columnDef.header,
 														header.getContext(),
 													)}
-										</TableHead>
+										</Table.Head>
 									);
 								})}
-							</TableRow>
+							</Table.Row>
 						))}
-					</TableHeader>
-					<TableBody>
+					</Table.Header>
+					<Table.Body>
 						{table?.getRowModel()?.rows?.length ? (
 							table.getRowModel().rows.map((row) => (
-								<TableRow
+								<Table.Row
 									key={row.id}
 									data-state={row.getIsSelected() && "selected"}
 								>
 									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id}>
+										<Table.Cell key={cell.id}>
 											{flexRender(
 												cell.column.columnDef.cell,
 												cell.getContext(),
 											)}
-										</TableCell>
+										</Table.Cell>
 									))}
-								</TableRow>
+								</Table.Row>
 							))
 						) : (
-							<TableRow>
-								<TableCell
+							<Table.Row>
+								<Table.Cell
 									colSpan={columns.length}
 									className="h-24 text-center"
 								>
@@ -162,10 +152,10 @@ export function DataTable<TData, TValue>({
                   ) : (
                     <>No results.</>
                   )} */}
-								</TableCell>
-							</TableRow>
+								</Table.Cell>
+							</Table.Row>
 						)}
-					</TableBody>
+					</Table.Body>
 				</Table>
 
 				{data && data?.length > 0 && (

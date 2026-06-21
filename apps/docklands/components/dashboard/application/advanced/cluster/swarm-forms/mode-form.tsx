@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -11,15 +11,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 
 interface ModeFormProps {
 	id: string;
@@ -157,16 +151,16 @@ export const ModeForm = ({ id, type }: ModeFormProps) => {
 							<FormDescription>
 								Choose between replicated or global service mode
 							</FormDescription>
-							<Select onValueChange={field.onChange} value={field.value}>
+							<Select aria-label="Select option" onValueChange={field.onChange} value={field.value}>
 								<FormControl>
-									<SelectTrigger>
-										<SelectValue placeholder="Select mode type" />
-									</SelectTrigger>
+									<>
+										
+									</>
 								</FormControl>
-								<SelectContent>
-									<SelectItem value="Replicated">Replicated</SelectItem>
-									<SelectItem value="Global">Global</SelectItem>
-								</SelectContent>
+								<>
+									<Select.Option value="Replicated">Replicated</Select.Option>
+									<Select.Option value="Global">Global</Select.Option>
+								</>
 							</Select>
 							<FormMessage />
 						</FormItem>
@@ -203,7 +197,7 @@ export const ModeForm = ({ id, type }: ModeFormProps) => {
 					>
 						Clear
 					</Button>
-					<Button type="submit" isLoading={isLoading}>
+					<Button type="submit" loading={isLoading}>
 						Save Mode
 					</Button>
 				</div>

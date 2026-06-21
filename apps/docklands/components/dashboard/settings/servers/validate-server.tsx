@@ -2,14 +2,8 @@ import { Loader2, PcCase, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { StatusRow } from "./gpu-support";
 
 interface Props {
@@ -34,22 +28,22 @@ export const ValidateServer = ({ serverId }: Props) => {
 	const isBuildServer = server?.serverType === "build";
 	const _utils = api.useUtils();
 	return (
-		<CardContent className="p-0">
+		<div className="p-0">
 			<div className="flex flex-col gap-4">
-				<Card className="bg-background">
-					<CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 						<div className="flex flex-row gap-2 justify-between w-full  max-sm:flex-col">
 							<div className="flex flex-col gap-1">
 								<div className="flex items-center gap-2">
 									<PcCase className="size-5" />
-									<CardTitle className="text-xl">Setup Validation</CardTitle>
+									<h3 className="text-xl">Setup Validation</h3>
 								</div>
-								<CardDescription>
+								<p>
 									Check if your server is ready for deployment
-								</CardDescription>
+								</p>
 							</div>
 							<Button
-								isLoading={isRefreshing}
+								loading={isRefreshing}
 								onClick={async () => {
 									setIsRefreshing(true);
 									await refetch();
@@ -67,9 +61,9 @@ export const ValidateServer = ({ serverId }: Props) => {
 								</AlertBlock>
 							)}
 						</div>
-					</CardHeader>
+					</div>
 
-					<CardContent className="flex flex-col gap-4">
+					<div className="flex flex-col gap-4">
 						{isPending ? (
 							<div className="flex items-center justify-center text-muted-foreground py-4">
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -190,9 +184,9 @@ export const ValidateServer = ({ serverId }: Props) => {
 								</div>
 							</div>
 						)}
-					</CardContent>
-				</Card>
+					</div>
+				</LayerCard>
 			</div>
-		</CardContent>
+		</div>
 	);
 };

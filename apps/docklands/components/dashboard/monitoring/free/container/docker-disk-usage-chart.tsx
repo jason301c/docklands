@@ -2,7 +2,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { useMemo } from "react";
 import { Cell, Label, Pie, PieChart } from "recharts";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	type ChartConfig,
 	ChartContainer,
@@ -10,7 +10,7 @@ import {
 	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/shared/chart";
 
 const TYPE_TO_KEY: Record<string, string> = {
 	Images: "images",
@@ -98,9 +98,9 @@ export const DockerDiskUsageChart = () => {
 				<span className="text-sm text-muted-foreground">
 					Total: {formatSize(totalBytes)}
 				</span>
-				<Button
+				<Button aria-label="Action"
 					variant="ghost"
-					size="icon"
+					shape="square"
 					className="h-7 w-7"
 					onClick={() => refetch()}
 					disabled={isRefetching}

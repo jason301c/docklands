@@ -1,10 +1,10 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -13,14 +13,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Select } from "@cloudflare/kumo/components/select";
 
 export const endpointSpecFormSchema = z.object({
 	Mode: z.string().optional(),
@@ -126,16 +120,16 @@ export const EndpointSpecForm = ({ id, type }: EndpointSpecFormProps) => {
 						<FormItem>
 							<FormLabel>Mode</FormLabel>
 							<FormDescription>Endpoint mode (vip or dnsrr)</FormDescription>
-							<Select onValueChange={field.onChange} value={field.value}>
+							<Select aria-label="Select option" onValueChange={field.onChange} value={field.value}>
 								<FormControl>
-									<SelectTrigger>
-										<SelectValue placeholder="Select endpoint mode" />
-									</SelectTrigger>
+									<>
+										
+									</>
 								</FormControl>
-								<SelectContent>
-									<SelectItem value="vip">VIP (Virtual IP)</SelectItem>
-									<SelectItem value="dnsrr">DNS Round Robin</SelectItem>
-								</SelectContent>
+								<>
+									<Select.Option value="vip">VIP (Virtual IP)</Select.Option>
+									<Select.Option value="dnsrr">DNS Round Robin</Select.Option>
+								</>
 							</Select>
 							<FormMessage />
 						</FormItem>
@@ -154,7 +148,7 @@ export const EndpointSpecForm = ({ id, type }: EndpointSpecFormProps) => {
 					>
 						Clear
 					</Button>
-					<Button type="submit" isLoading={isLoading}>
+					<Button type="submit" loading={isLoading}>
 						Save Endpoint Spec
 					</Button>
 				</div>

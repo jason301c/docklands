@@ -2,7 +2,7 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { AlertTriangle, Database, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import {
@@ -13,16 +13,9 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -30,27 +23,15 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Radio } from "@cloudflare/kumo/primitives/radio";
+import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Textarea } from "@cloudflare/kumo/components/input";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 
@@ -362,20 +343,20 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 	};
 
 	return (
-		<Dialog open={visible} onOpenChange={setVisible}>
-			<DialogTrigger className="w-full">
-				<DropdownMenuItem
+		<Dialog.Root open={visible} onOpenChange={setVisible}>
+			<Dialog.Trigger className="w-full">
+				<DropdownMenu.Item
 					className="w-full cursor-pointer space-x-3"
 					onSelect={(e) => e.preventDefault()}
 				>
 					<Database className="size-4 text-muted-foreground" />
 					<span>Database</span>
-				</DropdownMenuItem>
-			</DialogTrigger>
-			<DialogContent className="md:max-h-[90vh]  sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>Databases</DialogTitle>
-				</DialogHeader>
+				</DropdownMenu.Item>
+			</Dialog.Trigger>
+			<Dialog className="md:max-h-[90vh]  sm:max-w-2xl">
+				<div>
+					<Dialog.Title>Databases</Dialog.Title>
+				</div>
 
 				<Form {...form}>
 					<form
@@ -405,7 +386,7 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 												>
 													<FormControl className="w-full">
 														<div>
-															<RadioGroupItem
+															<Radio.Root
 																value={key}
 																id={key}
 																className="peer sr-only"
@@ -470,48 +451,42 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Select a Server</FormLabel>
-												<Select
+												<Select aria-label="Select option"
 													onValueChange={field.onChange}
 													defaultValue={
 														field.value ||
 														(showLocalOption ? "docklands" : undefined)
 													}
 												>
-													<SelectTrigger>
-														<SelectValue
-															placeholder={
-																showLocalOption
-																	? "Docklands"
-																	: "Select a Server"
-															}
-														/>
-													</SelectTrigger>
-													<SelectContent>
-														<SelectGroup>
+													<>
+														
+													</>
+													<>
+														<Select.Group>
 															{showLocalOption && (
-																<SelectItem value="docklands">
+																<Select.Option value="docklands">
 																	<span className="flex items-center gap-2 justify-between w-full">
 																		<span>Docklands</span>
 																		<span className="text-muted-foreground text-xs self-center">
 																			Default
 																		</span>
 																	</span>
-																</SelectItem>
+																</Select.Option>
 															)}
 															{servers?.map((server) => (
-																<SelectItem
+																<Select.Option
 																	key={server.serverId}
 																	value={server.serverId}
 																>
 																	{server.name}
-																</SelectItem>
+																</Select.Option>
 															))}
-															<SelectLabel>
+															<Select.GroupLabel>
 																Servers (
 																{servers?.length + (showLocalOption ? 1 : 0)})
-															</SelectLabel>
-														</SelectGroup>
-													</SelectContent>
+															</Select.GroupLabel>
+														</Select.Group>
+													</>
 												</Select>
 												<FormMessage />
 											</FormItem>
@@ -525,18 +500,15 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 										<FormItem>
 											<FormLabel className="flex items-center gap-2">
 												App Name
-												<TooltipProvider delayDuration={0}>
-													<Tooltip>
-														<TooltipTrigger asChild>
-															<HelpCircle className="size-4 text-muted-foreground" />
-														</TooltipTrigger>
-														<TooltipContent side="right">
+												<TooltipProvider delay={0}>
+													<Tooltip content={<>
 															<p>
 																This will be the name of the Docker Swarm
 																service
 															</p>
-														</TooltipContent>
-													</Tooltip>
+														</>} side="right"  asChild>
+															<HelpCircle className="size-4 text-muted-foreground" />
+														</Tooltip>
 												</TooltipProvider>
 											</FormLabel>
 											<FormControl>
@@ -592,22 +564,22 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Sqld Node</FormLabel>
-												<Select
+												<Select aria-label="Select option"
 													onValueChange={field.onChange}
 													defaultValue={field.value || "primary"}
 												>
-													<SelectTrigger>
-														<SelectValue placeholder={"primary"} />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectGroup>
+													<>
+														
+													</>
+													<>
+														<Select.Group>
 															{["primary", "replica"].map((node) => (
-																<SelectItem key={node} value={node}>
+																<Select.Option key={node} value={node}>
 																	{node.charAt(0).toUpperCase() + node.slice(1)}
-																</SelectItem>
+																</Select.Option>
 															))}
-														</SelectGroup>
-													</SelectContent>
+														</Select.Group>
+													</>
 												</Select>
 												<FormMessage />
 											</FormItem>
@@ -643,7 +615,7 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 												<FormItem>
 													<FormLabel>Enable Namespaces</FormLabel>
 													<FormControl>
-														<Select
+														<Select aria-label="Select option"
 															onValueChange={(value) =>
 																field.onChange(Boolean(value))
 															}
@@ -651,19 +623,19 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 																field.value ? String(field.value) : "false"
 															}
 														>
-															<SelectTrigger>
-																<SelectValue placeholder={"false"} />
-															</SelectTrigger>
-															<SelectContent>
-																<SelectGroup>
+															<>
+																
+															</>
+															<>
+																<Select.Group>
 																	{["false", "true"].map((node) => (
-																		<SelectItem key={node} value={node}>
+																		<Select.Option key={node} value={node}>
 																			{node.charAt(0).toUpperCase() +
 																				node.slice(1)}
-																		</SelectItem>
+																		</Select.Option>
 																	))}
-																</SelectGroup>
-															</SelectContent>
+																</Select.Group>
+															</>
 														</Select>
 													</FormControl>
 
@@ -709,7 +681,6 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 													type="password"
 													placeholder="******************"
 													autoComplete="one-time-code"
-													enablePasswordGenerator={true}
 													{...field}
 												/>
 											</FormControl>
@@ -729,7 +700,6 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 													<Input
 														type="password"
 														placeholder="******************"
-														enablePasswordGenerator={true}
 														{...field}
 													/>
 												</FormControl>
@@ -788,17 +758,17 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 						</div>
 					</form>
 
-					<DialogFooter>
+					<div>
 						<Button
-							isLoading={form.formState.isSubmitting}
+							loading={form.formState.isSubmitting}
 							form="hook-form"
 							type="submit"
 						>
 							Create
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

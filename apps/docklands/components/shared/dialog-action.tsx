@@ -1,14 +1,5 @@
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 
 interface Props {
 	title?: string | React.ReactNode;
@@ -16,7 +7,7 @@ interface Props {
 	onClick: () => void;
 	children?: React.ReactNode;
 	disabled?: boolean;
-	type?: "default" | "destructive";
+	type?: "default" | "secondary" | "destructive";
 }
 
 export const DialogAction = ({
@@ -27,29 +18,35 @@ export const DialogAction = ({
 	disabled,
 	type,
 }: Props) => {
+	const confirmVariant = type === "default" ? "secondary" : (type ?? "destructive");
+
 	return (
-		<AlertDialog>
-			<AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>
+		<Dialog.Root role="alertdialog">
+			<Dialog.Trigger render={children as never} />
+			<Dialog>
+				<div>
+					<Dialog.Title>
 						{title ?? "Are you absolutely sure?"}
-					</AlertDialogTitle>
-					<AlertDialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						{description ?? "This action cannot be undone."}
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction
-						disabled={disabled}
-						onClick={onClick}
-						variant={type ?? "destructive"}
-					>
-						Confirm
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
+					</Dialog.Description>
+				</div>
+				<div>
+					<Dialog.Close render={<Button variant="secondary">Cancel</Button>} />
+					<Dialog.Close
+						render={
+							<Button
+								disabled={disabled}
+								onClick={onClick}
+								variant={confirmVariant}
+							>
+								Confirm
+							</Button>
+						}
+					/>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

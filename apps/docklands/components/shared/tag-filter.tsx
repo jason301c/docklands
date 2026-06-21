@@ -1,23 +1,9 @@
-import { Tags } from "lucide-react";
-import * as React from "react";
+import { Check, Tags } from "lucide-react";
 import { HandleTag } from "@/components/dashboard/settings/tags/handle-tag";
 import { TagBadge } from "@/components/shared/tag-badge";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
 import { cn } from "@/shared/utils";
 
 export interface Tag {
@@ -39,89 +25,72 @@ export function TagFilter({
 	onTagsChange,
 	className,
 }: TagFilterProps) {
-	const [open, setOpen] = React.useState(false);
-
-	const handleTagToggle = (tagId: string) => {
-		if (selectedTags.includes(tagId)) {
-			onTagsChange(selectedTags.filter((id) => id !== tagId));
-		} else {
-			onTagsChange([...selectedTags, tagId]);
-		}
-	};
-
-	const handleClearAll = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		onTagsChange([]);
-	};
+	const selectedTagObjects = tags.filter((tag) => selectedTags.includes(tag.id));
 
 	return (
 		<div className={cn("flex items-center gap-2", className)}>
-			<Popover open={open} onOpenChange={setOpen}>
-				<PopoverTrigger asChild>
-					<Button
-						variant="outline"
-						size="sm"
-						className={cn("gap-2", selectedTags.length > 0 && "border-primary")}
-					>
-						<Tags className="h-4 w-4" />
-						<span>Tags</span>
-						{selectedTags.length > 0 && (
-							<Badge variant="secondary" className="ml-1 px-1 py-0">
-								{selectedTags.length}
-							</Badge>
-						)}
-					</Button>
-				</PopoverTrigger>
-				<PopoverContent className="w-64 p-0" align="start">
-					<Command>
-						<div className="flex items-center border-b px-3">
-							<CommandInput
-								placeholder="Search tags..."
-								className="h-9 focus-visible:ring-0"
-							/>
-							{selectedTags.length > 0 && (
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={handleClearAll}
-									className="h-8 px-2 text-xs"
-								>
-									Clear
-								</Button>
-							)}
+			<Combobox
+				multiple
+				items={tags}
+				value={selectedTagObjects}
+				itemToStringValue={(tag: Tag) => tag.name}
+				onValueChange={(value) => {
+					onTagsChange((value as Tag[]).map((tag) => tag.id));
+				}}
+			>
+				<Combobox.TriggerMultipleWithInput
+					placeholder="Tags"
+					value={selectedTagObjects}
+					renderItem={(tag: Tag) => (
+						<Combobox.Chip removeLabel={`Remove ${tag.name}`}>
+							<TagBadge name={tag.name} color={tag.color} />
+						</Combobox.Chip>
+					)}
+					className={cn(selectedTags.length > 0 && "border-primary")}
+				/>
+				<Combobox.Content align="start" className="w-64">
+					{selectedTags.length > 0 && (
+						<div className="flex items-center justify-between border-b px-3 py-2">
+							<div className="flex items-center gap-2 text-sm">
+								<Tags className="h-4 w-4" />
+								<Badge variant="secondary" className="px-1 py-0">
+									{selectedTags.length}
+								</Badge>
+							</div>
+							<button
+								type="button"
+								onClick={() => onTagsChange([])}
+								className="text-xs text-muted-foreground hover:text-foreground"
+							>
+								Clear
+							</button>
 						</div>
-						<CommandList>
-							<CommandEmpty>
-								<div className="flex flex-col items-center gap-2 py-1">
-									<span className="text-sm text-muted-foreground">
-										No tags found.
-									</span>
-									<HandleTag />
-								</div>
-							</CommandEmpty>
-							<CommandGroup>
-								{tags.map((tag) => {
-									const isSelected = selectedTags.includes(tag.id);
-									return (
-										<CommandItem
-											key={tag.id}
-											onSelect={() => handleTagToggle(tag.id)}
-											className="cursor-pointer"
-										>
-											<Checkbox
-												checked={isSelected}
-												className="mr-2"
-												onCheckedChange={() => handleTagToggle(tag.id)}
-											/>
-											<TagBadge name={tag.name} color={tag.color} />
-										</CommandItem>
-									);
-								})}
-							</CommandGroup>
-						</CommandList>
-					</Command>
-				</PopoverContent>
-			</Popover>
+					)}
+					<Combobox.List>
+						{(tag: Tag) => {
+							const isSelected = selectedTags.includes(tag.id);
+							return (
+								<Combobox.Item key={tag.id} value={tag}>
+									<Checkbox checked={isSelected} className="mr-2" />
+									<TagBadge name={tag.name} color={tag.color} />
+									<Check
+										className={cn(
+											"ml-auto h-4 w-4",
+											isSelected ? "opacity-100" : "opacity-0",
+										)}
+									/>
+								</Combobox.Item>
+							);
+						}}
+					</Combobox.List>
+					<Combobox.Empty>
+						<div className="flex flex-col items-center gap-2 py-1">
+							<span className="text-sm text-muted-foreground">No tags found.</span>
+							<HandleTag />
+						</div>
+					</Combobox.Empty>
+				</Combobox.Content>
+			</Combobox>
 		</div>
 	);
 }

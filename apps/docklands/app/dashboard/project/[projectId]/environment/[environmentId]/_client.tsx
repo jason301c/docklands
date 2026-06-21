@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { AddApplication } from "@/components/dashboard/project/add-application";
 import { AddCompose } from "@/components/dashboard/project/add-compose";
@@ -45,60 +44,28 @@ import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-} from "@/components/ui/command";
-import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuLabel,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { toast } from "@/components/shared/toast";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@cloudflare/kumo/components/popover";
+import { Select } from "@cloudflare/kumo/components/select";
+import { ContextMenu } from "@cloudflare/kumo/primitives/context-menu";
 import { cn } from "@/shared/utils";
+
+const Command = Combobox;
+const CommandInput = Combobox.TriggerInput;
+const CommandList = Combobox.List;
+const CommandGroup = Combobox.Group;
+const CommandItem = Combobox.Item;
+const CommandEmpty = Combobox.Empty;
 
 export type Services = {
 	serverId?: string | null;
@@ -1016,11 +983,11 @@ const EnvironmentPage = (props: {
 		<div>
 			<AdvanceBreadcrumb />
 			<div className="w-full">
-				<Card className="h-full bg-sidebar p-2.5 rounded-xl">
+				<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl">
 					<div className="rounded-xl bg-background shadow-md">
 						<div className="flex justify-between gap-4 w-full items-center flex-wrap p-6">
-							<CardHeader className="p-0">
-								<CardTitle className="text-xl flex flex-row gap-2 items-center">
+							<div className="p-0">
+								<h3 className="text-xl flex flex-row gap-2 items-center">
 									<FolderInput className="size-6 text-muted-foreground self-center" />
 									{currentEnvironment.project.name}
 									<AdvancedEnvironmentSelector
@@ -1028,15 +995,15 @@ const EnvironmentPage = (props: {
 										currentEnvironmentId={environmentId}
 									/>
 									<EnvironmentVariables environmentId={environmentId}>
-										<Button variant="ghost" size="icon">
+										<Button aria-label="Action" variant="ghost" shape="square">
 											<SquareTerminal className="size-5 text-muted-foreground cursor-pointer" />
 										</Button>
 									</EnvironmentVariables>
-								</CardTitle>
-								<CardDescription>
+								</h3>
+								<p>
 									{currentEnvironment.description || "No description provided"}
-								</CardDescription>
-							</CardHeader>
+								</p>
+							</div>
 							<div className="flex flex-row gap-4 flex-wrap justify-between items-center">
 								<div className="flex flex-row gap-4 flex-wrap">
 									<ProjectEnvironment projectId={projectId}>
@@ -1044,20 +1011,22 @@ const EnvironmentPage = (props: {
 									</ProjectEnvironment>
 									{permissions?.service.create && (
 										<DropdownMenu>
-											<DropdownMenuTrigger asChild>
+											<DropdownMenu.Trigger render={(
+
 												<Button>
 													<PlusIcon className="h-4 w-4" />
 													Create Service
 												</Button>
-											</DropdownMenuTrigger>
-											<DropdownMenuContent
+											
+)} />
+											<DropdownMenu.Content
 												className="w-[200px] space-y-2"
 												align="end"
 											>
-												<DropdownMenuLabel className="text-sm font-normal">
+												<DropdownMenu.Label className="text-sm font-normal">
 													Actions
-												</DropdownMenuLabel>
-												<DropdownMenuSeparator />
+												</DropdownMenu.Label>
+												<DropdownMenu.Separator />
 												<AddApplication
 													projectName={projectData?.name}
 													environmentId={environmentId}
@@ -1075,13 +1044,13 @@ const EnvironmentPage = (props: {
 													projectName={projectData?.name}
 													environmentId={environmentId}
 												/>
-											</DropdownMenuContent>
+											</DropdownMenu.Content>
 										</DropdownMenu>
 									)}
 								</div>
 							</div>
 						</div>
-						<CardContent className="space-y-2 py-8 border-t gap-4 flex flex-col min-h-[60vh]">
+						<div className="space-y-2 py-8 border-t gap-4 flex flex-col min-h-[60vh]">
 							<>
 								<div className="flex flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
 									<div className="flex items-center gap-4">
@@ -1107,18 +1076,20 @@ const EnvironmentPage = (props: {
 											open={isDropdownOpen}
 											onOpenChange={setIsDropdownOpen}
 										>
-											<DropdownMenuTrigger asChild>
+											<DropdownMenu.Trigger render={(
+
 												<Button
 													variant="outline"
 													disabled={selectedServices.length === 0}
-													isLoading={isBulkActionLoading}
+													loading={isBulkActionLoading}
 												>
 													Bulk Actions
 												</Button>
-											</DropdownMenuTrigger>
-											<DropdownMenuContent align="end">
-												<DropdownMenuLabel>Actions</DropdownMenuLabel>
-												<DropdownMenuSeparator />
+											
+)} />
+											<DropdownMenu.Content align="end">
+												<DropdownMenu.Label>Actions</DropdownMenu.Label>
+												<DropdownMenu.Separator />
 												<DialogAction
 													title="Start Services"
 													description={`Are you sure you want to start ${selectedServices.length} services?`}
@@ -1212,11 +1183,12 @@ const EnvironmentPage = (props: {
 													</>
 												)}
 
-												<Dialog
+												<Dialog.Root
 													open={isMoveDialogOpen}
 													onOpenChange={setIsMoveDialogOpen}
 												>
-													<DialogTrigger asChild>
+													<Dialog.Trigger render={(
+
 														<Button
 															variant="ghost"
 															className="w-full justify-start"
@@ -1224,15 +1196,16 @@ const EnvironmentPage = (props: {
 															<FolderInput className="mr-2 h-4 w-4" />
 															Move
 														</Button>
-													</DialogTrigger>
-													<DialogContent>
-														<DialogHeader>
-															<DialogTitle>Move Services</DialogTitle>
-															<DialogDescription>
+													
+)} />
+													<Dialog>
+														<div>
+															<Dialog.Title>Move Services</Dialog.Title>
+															<Dialog.Description>
 																Select the target project and environment to
 																move {selectedServices.length} services
-															</DialogDescription>
-														</DialogHeader>
+															</Dialog.Description>
+														</div>
 														<div className="flex flex-col gap-4">
 															{allProjects?.length === 0 ? (
 																<div className="flex flex-col items-center justify-center gap-2 py-4">
@@ -1252,26 +1225,27 @@ const EnvironmentPage = (props: {
 																		>
 																			Target Project
 																		</label>
-																		<Select
+																		<Select aria-label="Select option"
 																			value={selectedTargetProject}
 																			onValueChange={(value) => {
+																				if (value === null) return;
 																				setSelectedTargetProject(value);
 																				setSelectedTargetEnvironment(""); // Reset environment when project changes
 																			}}
 																		>
-																			<SelectTrigger>
-																				<SelectValue placeholder="Select target project" />
-																			</SelectTrigger>
-																			<SelectContent>
+																			<>
+																				
+																			</>
+																			<>
 																				{allProjects?.map((project) => (
-																					<SelectItem
+																					<Select.Option
 																						key={project.projectId}
 																						value={project.projectId}
 																					>
 																						{project.name}
-																					</SelectItem>
+																					</Select.Option>
 																				))}
-																			</SelectContent>
+																			</>
 																		</Select>
 																	</div>
 
@@ -1284,16 +1258,17 @@ const EnvironmentPage = (props: {
 																			>
 																				Target Environment
 																			</label>
-																			<Select
+																			<Select aria-label="Select option"
 																				value={selectedTargetEnvironment}
-																				onValueChange={
-																					setSelectedTargetEnvironment
+																				onValueChange={(value) =>
+																					value !== null &&
+																					setSelectedTargetEnvironment(value)
 																				}
 																			>
-																				<SelectTrigger>
-																					<SelectValue placeholder="Select target environment" />
-																				</SelectTrigger>
-																				<SelectContent>
+																				<>
+																					
+																				</>
+																				<>
 																					{selectedProjectEnvironments
 																						?.filter(
 																							(env) =>
@@ -1301,21 +1276,21 @@ const EnvironmentPage = (props: {
 																								environmentId,
 																						)
 																						.map((env) => (
-																							<SelectItem
+																							<Select.Option
 																								key={env.environmentId}
 																								value={env.environmentId}
 																							>
 																								{env.name}
-																							</SelectItem>
+																							</Select.Option>
 																						))}
-																				</SelectContent>
+																				</>
 																			</Select>
 																		</div>
 																	)}
 																</>
 															)}
 														</div>
-														<DialogFooter>
+														<div>
 															<Button
 																variant="outline"
 																onClick={() => {
@@ -1328,7 +1303,7 @@ const EnvironmentPage = (props: {
 															</Button>
 															<Button
 																onClick={handleBulkMove}
-																isLoading={isBulkActionLoading}
+																loading={isBulkActionLoading}
 																disabled={
 																	allProjects?.length === 0 ||
 																	!selectedTargetProject ||
@@ -1337,25 +1312,25 @@ const EnvironmentPage = (props: {
 															>
 																Move Services
 															</Button>
-														</DialogFooter>
-													</DialogContent>
-												</Dialog>
+														</div>
+													</Dialog>
+												</Dialog.Root>
 
 												{/* Bulk Delete Dialog */}
-												<Dialog
+												<Dialog.Root
 													open={isBulkDeleteDialogOpen}
 													onOpenChange={setIsBulkDeleteDialogOpen}
 												>
-													<DialogContent>
-														<DialogHeader>
-															<DialogTitle>Delete Services</DialogTitle>
-															<DialogDescription>
+													<Dialog>
+														<div>
+															<Dialog.Title>Delete Services</Dialog.Title>
+															<Dialog.Description>
 																Are you sure you want to delete{" "}
 																{selectedServices.length} service
 																{selectedServices.length !== 1 ? "s" : ""}? This
 																action cannot be undone.
-															</DialogDescription>
-														</DialogHeader>
+															</Dialog.Description>
+														</div>
 
 														<div className="space-y-4">
 															{/* Show services to be deleted */}
@@ -1396,7 +1371,6 @@ const EnvironmentPage = (props: {
 																	<div className="space-y-2">
 																		<div className="flex items-center space-x-2">
 																			<Checkbox
-																				id="deleteVolumes"
 																				checked={deleteVolumes}
 																				onCheckedChange={(checked) =>
 																					setDeleteVolumes(checked === true)
@@ -1422,7 +1396,7 @@ const EnvironmentPage = (props: {
 															})()}
 														</div>
 
-														<DialogFooter>
+														<div>
 															<Button
 																variant="outline"
 																onClick={() => {
@@ -1443,10 +1417,10 @@ const EnvironmentPage = (props: {
 															>
 																Delete Services
 															</Button>
-														</DialogFooter>
-													</DialogContent>
-												</Dialog>
-											</DropdownMenuContent>
+														</div>
+													</Dialog>
+												</Dialog.Root>
+											</DropdownMenu.Content>
 										</DropdownMenu>
 									</div>
 
@@ -1460,25 +1434,25 @@ const EnvironmentPage = (props: {
 											/>
 											<Search className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
 										</div>
-										<Select value={sortBy} onValueChange={setSortBy}>
-											<SelectTrigger className="lg:w-[280px]">
-												<SelectValue placeholder="Sort by..." />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="lastDeploy-desc">
+										<Select aria-label="Select option" value={sortBy} onValueChange={(value) => value !== null && setSortBy(value as never)}>
+											<>
+												
+											</>
+											<>
+												<Select.Option value="lastDeploy-desc">
 													Recently deployed
-												</SelectItem>
-												<SelectItem value="createdAt-desc">
+												</Select.Option>
+												<Select.Option value="createdAt-desc">
 													Newest first
-												</SelectItem>
-												<SelectItem value="createdAt-asc">
+												</Select.Option>
+												<Select.Option value="createdAt-asc">
 													Oldest first
-												</SelectItem>
-												<SelectItem value="name-asc">Name (A-Z)</SelectItem>
-												<SelectItem value="name-desc">Name (Z-A)</SelectItem>
-												<SelectItem value="type-asc">Type (A-Z)</SelectItem>
-												<SelectItem value="type-desc">Type (Z-A)</SelectItem>
-											</SelectContent>
+												</Select.Option>
+												<Select.Option value="name-asc">Name (A-Z)</Select.Option>
+												<Select.Option value="name-desc">Name (Z-A)</Select.Option>
+												<Select.Option value="type-asc">Type (A-Z)</Select.Option>
+												<Select.Option value="type-desc">Type (Z-A)</Select.Option>
+											</>
 										</Select>
 										<Popover open={openCombobox} onOpenChange={setOpenCombobox}>
 											<PopoverTrigger asChild>
@@ -1494,7 +1468,7 @@ const EnvironmentPage = (props: {
 												</Button>
 											</PopoverTrigger>
 											<PopoverContent className="w-[200px] p-0">
-												<Command>
+												<Command items={[]}>
 													<CommandInput placeholder="Search type..." />
 													<CommandEmpty>No type found.</CommandEmpty>
 													<CommandGroup>
@@ -1544,25 +1518,25 @@ const EnvironmentPage = (props: {
 										</Popover>
 										{(availableServers.length > 0 ||
 											hasServicesWithoutServer) && (
-											<Select
+											<Select aria-label="Select option"
 												value={selectedServerId || "all"}
-												onValueChange={setSelectedServerId}
+												onValueChange={(value) => value !== null && setSelectedServerId(value as never)}
 											>
-												<SelectTrigger className="lg:w-[200px]">
-													<SelectValue placeholder="Filter by server..." />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="all">All servers</SelectItem>
+												<>
+													
+												</>
+												<>
+													<Select.Option value="all">All servers</Select.Option>
 													{hasServicesWithoutServer && (
-														<SelectItem value="docklands-server">
+														<Select.Option value="docklands-server">
 															<div className="flex items-center gap-2">
 																<ServerIcon className="size-4" />
 																<span>Docklands server</span>
 															</div>
-														</SelectItem>
+														</Select.Option>
 													)}
 													{availableServers.map((server) => (
-														<SelectItem
+														<Select.Option
 															key={server.serverId}
 															value={server.serverId}
 														>
@@ -1570,9 +1544,9 @@ const EnvironmentPage = (props: {
 																<ServerIcon className="size-4" />
 																<span>{server.serverName}</span>
 															</div>
-														</SelectItem>
+														</Select.Option>
 													))}
-												</SelectContent>
+												</>
 											</Select>
 										)}
 									</div>
@@ -1600,13 +1574,13 @@ const EnvironmentPage = (props: {
 										<div className="flex w-full flex-col gap-4">
 											<div className="gap-5 pb-10 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
 												{filteredServices?.map((service) => (
-													<ContextMenu key={service.id}>
-														<ContextMenuTrigger asChild>
+													<ContextMenu.Root key={service.id}>
+														<ContextMenu.Trigger>
 															<Link
 																href={`/dashboard/project/${projectId}/environment/${environmentId}/services/${service.type}/${service.id}`}
 																className="block h-full"
 															>
-																<Card className="flex flex-col h-full group relative cursor-pointer bg-transparent transition-colors hover:bg-border">
+																<LayerCard className="flex flex-col h-full group relative cursor-pointer bg-transparent transition-colors hover:bg-border">
 																	{service.serverId && (
 																		<div className="absolute -left-1 -top-2">
 																			<ServerIcon className="size-4 text-muted-foreground" />
@@ -1637,8 +1611,8 @@ const EnvironmentPage = (props: {
 																		</div>
 																	</div>
 
-																	<CardHeader>
-																		<CardTitle className="flex items-center justify-between">
+																	<div>
+																		<h3 className="flex items-center justify-between">
 																			<div className="flex flex-row items-center gap-2 justify-between w-full">
 																				<div className="flex flex-col gap-2">
 																					<span className="text-base flex items-center gap-2 font-medium leading-none flex-wrap">
@@ -1686,9 +1660,9 @@ const EnvironmentPage = (props: {
 																					)}
 																				</span>
 																			</div>
-																		</CardTitle>
-																	</CardHeader>
-																	<CardFooter className="mt-auto">
+																		</h3>
+																	</div>
+																	<div className="mt-auto">
 																		<div className="space-y-1 text-sm w-full">
 																			{service.serverName && (
 																				<div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
@@ -1702,80 +1676,84 @@ const EnvironmentPage = (props: {
 																				Created
 																			</DateTooltip>
 																		</div>
-																	</CardFooter>
-																</Card>
+																	</div>
+																</LayerCard>
 															</Link>
-														</ContextMenuTrigger>
+														</ContextMenu.Trigger>
 														{service.type !== "libsql" && (
-															<ContextMenuContent className="w-48">
-																<ContextMenuLabel className="truncate">
-																	{service.name}
-																</ContextMenuLabel>
-																<ContextMenuSeparator />
-																<ContextMenuItem
-																	className="flex items-center gap-2"
-																	onClick={() =>
-																		handleServiceAction(service, "start")
-																	}
-																>
-																	<Play className="size-4" />
-																	Start
-																</ContextMenuItem>
-																<ContextMenuItem
-																	className="flex items-center gap-2"
-																	onClick={() =>
-																		handleServiceAction(service, "deploy")
-																	}
-																>
-																	<RefreshCw className="size-4" />
-																	Deploy
-																</ContextMenuItem>
-																<ContextMenuItem
-																	className="flex items-center gap-2 text-orange-500 focus:text-orange-500"
-																	onClick={() =>
-																		handleServiceAction(service, "stop")
-																	}
-																>
-																	<Ban className="size-4" />
-																	Stop
-																</ContextMenuItem>
-																<ContextMenuSeparator />
-																<ContextMenuItem
-																	className="flex items-center gap-2 text-red-500 focus:text-red-500"
-																	onClick={() => setServiceToDelete(service)}
-																>
-																	<Trash2 className="size-4" />
-																	Delete
-																</ContextMenuItem>
-															</ContextMenuContent>
+															<ContextMenu.Portal>
+																<ContextMenu.Positioner sideOffset={4}>
+																	<ContextMenu.Popup className="z-50 w-48 rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+																		<ContextMenu.GroupLabel className="truncate px-2 py-1.5 text-sm font-semibold">
+																			{service.name}
+																		</ContextMenu.GroupLabel>
+																		<ContextMenu.Separator className="-mx-1 my-1 h-px bg-muted" />
+																		<ContextMenu.Item
+																			className="flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+																			onClick={() =>
+																				handleServiceAction(service, "start")
+																			}
+																		>
+																			<Play className="size-4" />
+																			Start
+																		</ContextMenu.Item>
+																		<ContextMenu.Item
+																			className="flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+																			onClick={() =>
+																				handleServiceAction(service, "deploy")
+																			}
+																		>
+																			<RefreshCw className="size-4" />
+																			Deploy
+																		</ContextMenu.Item>
+																		<ContextMenu.Item
+																			className="flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-orange-500 outline-none hover:bg-accent hover:text-orange-500"
+																			onClick={() =>
+																				handleServiceAction(service, "stop")
+																			}
+																		>
+																			<Ban className="size-4" />
+																			Stop
+																		</ContextMenu.Item>
+																		<ContextMenu.Separator className="-mx-1 my-1 h-px bg-muted" />
+																		<ContextMenu.Item
+																			className="flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm text-red-500 outline-none hover:bg-accent hover:text-red-500"
+																			onClick={() => setServiceToDelete(service)}
+																		>
+																			<Trash2 className="size-4" />
+																			Delete
+																		</ContextMenu.Item>
+																	</ContextMenu.Popup>
+																</ContextMenu.Positioner>
+															</ContextMenu.Portal>
 														)}
-													</ContextMenu>
+													</ContextMenu.Root>
 												))}
 											</div>
 										</div>
 									)}
 								</div>
 							</>
-						</CardContent>
+						</div>
 					</div>
-				</Card>
+				</LayerCard>
 			</div>
 
 			{/* Single Service Delete Dialog */}
-			<Dialog
+			<Dialog.Root
 				open={!!serviceToDelete}
 				onOpenChange={(open) => !open && setServiceToDelete(null)}
 			>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Delete Service</DialogTitle>
-						<DialogDescription>
+				<Dialog>
+					<div>
+						<Dialog.Title>Delete Service</Dialog.Title>
+						<Dialog.Description>
 							Are you sure you want to delete{" "}
 							<span className="font-semibold">{serviceToDelete?.name}</span>?
 							This action cannot be undone.
-						</DialogDescription>
-					</DialogHeader>
-					<DialogFooter>
+						</Dialog.Description>
+					</div>
+					<div>
 						<Button variant="outline" onClick={() => setServiceToDelete(null)}>
 							Cancel
 						</Button>
@@ -1789,9 +1767,9 @@ const EnvironmentPage = (props: {
 						>
 							Delete
 						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+					</div>
+				</Dialog>
+			</Dialog.Root>
 		</div>
 	);
 };

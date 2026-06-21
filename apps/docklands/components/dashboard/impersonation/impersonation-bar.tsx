@@ -17,33 +17,28 @@ import {
 	XIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
 import { Logo } from "@/components/shared/logo";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/shared/avatar";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@cloudflare/kumo/components/popover";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
+
+const Command = Combobox;
+const CommandInput = Combobox.TriggerInput;
+const CommandList = Combobox.List;
+const CommandGroup = Combobox.Group;
+const CommandItem = Combobox.Item;
+const CommandEmpty = Combobox.Empty;
 
 type User = typeof authClient.$Infer.Session.user;
 
@@ -145,11 +140,12 @@ export const ImpersonationBar = () => {
 	return (
 		<TooltipProvider>
 			<>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Button
+				<Tooltip content={<>
+						{isImpersonating ? "Impersonation Controls" : "User Impersonation"}
+					</>}  asChild>
+						<Button aria-label="Action"
 							variant="outline"
-							size="icon"
+							shape="square"
 							className={cn(
 								"fixed bottom-4 right-4 z-50 rounded-full shadow-lg",
 								isImpersonating &&
@@ -165,11 +161,7 @@ export const ImpersonationBar = () => {
 								)}
 							/>
 						</Button>
-					</TooltipTrigger>
-					<TooltipContent>
-						{isImpersonating ? "Impersonation Controls" : "User Impersonation"}
-					</TooltipContent>
-				</Tooltip>
+					</Tooltip>
 
 				<div
 					className={cn(
@@ -211,10 +203,11 @@ export const ImpersonationBar = () => {
 										</Button>
 									</PopoverTrigger>
 									<PopoverContent className="w-[300px] p-0" align="start">
-										<Command>
+										<Command items={[]}>
 											<CommandInput
 												placeholder="Search users by email or name..."
-												onValueChange={(search: string) => {
+												onChange={(event) => {
+													const search = event.target.value;
 													fetchUsers(search);
 												}}
 												className="h-9"
@@ -227,7 +220,7 @@ export const ImpersonationBar = () => {
 												<>
 													<CommandEmpty>No users found.</CommandEmpty>
 													<CommandList>
-														<CommandGroup heading="All Users">
+														<CommandGroup aria-label="All Users">
 															{users.map((user) => (
 																<CommandItem
 																	key={user.id}
@@ -269,7 +262,7 @@ export const ImpersonationBar = () => {
 								<Button
 									onClick={handleImpersonate}
 									disabled={!selectedUser}
-									variant="default"
+									variant="primary"
 									className="gap-2"
 								>
 									<Shield className="h-4 w-4" />
@@ -316,9 +309,9 @@ export const ImpersonationBar = () => {
 												<Key className="h-3 w-3" />
 												<span className="flex items-center gap-1">
 													ID: {data?.user?.id?.slice(0, 8)}
-													<Button
+													<Button aria-label="Action"
 														variant="ghost"
-														size="icon"
+														shape="square"
 														className="h-4 w-4 hover:bg-muted/50"
 														onClick={() => {
 															if (data?.id) {
@@ -335,9 +328,9 @@ export const ImpersonationBar = () => {
 												<Building2 className="h-3 w-3" />
 												<span className="flex items-center gap-1">
 													Org: {data?.organizationId?.slice(0, 8)}
-													<Button
+													<Button aria-label="Action"
 														variant="ghost"
-														size="icon"
+														shape="square"
 														className="h-4 w-4 hover:bg-muted/50"
 														onClick={() => {
 															if (data?.organizationId) {
@@ -365,8 +358,9 @@ export const ImpersonationBar = () => {
 													{format(new Date(data.createdAt), "MMM d, yyyy")}
 												</span>
 											)}
-											<Tooltip>
-												<TooltipTrigger asChild>
+											<Tooltip content={<>
+													Two-Factor Authentication Status
+												</>}  asChild>
 													<span className="flex items-center gap-1 cursor-default">
 														<Fingerprint
 															className={cn(
@@ -390,11 +384,7 @@ export const ImpersonationBar = () => {
 																: "Disabled"}
 														</Badge>
 													</span>
-												</TooltipTrigger>
-												<TooltipContent>
-													Two-Factor Authentication Status
-												</TooltipContent>
-											</Tooltip>
+												</Tooltip>
 										</div>
 									</div>
 								</div>

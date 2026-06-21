@@ -1,6 +1,7 @@
 import { ZodObject, ZodRawShape, ZodType, z } from 'zod';
 import type { $ZodType, $ZodTypes } from 'zod/v4/core';
 import type { $ZodTypeDef } from 'zod/v4/core/schemas';
+
 export declare const instanceofZodType: (type: any) => type is $ZodTypes;
 export declare const instanceofZodTypeKind: <Z extends $ZodTypeDef["type"]>(type: $ZodType, zodTypeKind: Z) => type is $ZodTypes;
 export declare const instanceofZodTypeOptional: (type: $ZodType) => type is z.ZodOptional<$ZodTypes>;

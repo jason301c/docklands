@@ -1,8 +1,8 @@
 import { Box, Cpu, Database, HardDrive, Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Separator } from "@/components/shared/separator";
 import { ShowNodeApplications } from "../applications/show-applications";
 import { ShowNodeConfig } from "./show-node-config";
 
@@ -29,28 +29,28 @@ export function NodeCard({ node, serverId }: Props) {
 
 	if (isPending) {
 		return (
-			<Card className="w-full bg-background">
-				<CardHeader>
-					<CardTitle className="flex items-center justify-between text-lg">
+			<LayerCard className="w-full bg-background">
+				<div>
+					<h3 className="flex items-center justify-between text-lg">
 						<span className="flex items-center gap-2">{node.Hostname}</span>
 						<Badge variant="green">{node.ManagerStatus || "Worker"}</Badge>
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+					</h3>
+				</div>
+				<div>
 					<div className="flex items-center justify-center">
 						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
 					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 		);
 	}
 
 	return (
-		<Card className="w-full bg-background">
-			<CardHeader>
-				<CardTitle className="text-lg">Node Status</CardTitle>
-			</CardHeader>
-			<CardContent>
+		<LayerCard className="w-full bg-background">
+			<div>
+				<h3 className="text-lg">Node Status</h3>
+			</div>
+			<div>
 				<div className="space-y-6">
 					<div className="flex flex-wrap gap-y-2 items-center justify-between">
 						<div className="flex items-center space-x-4 p-2 rounded-xl border">
@@ -115,7 +115,7 @@ export function NodeCard({ node, serverId }: Props) {
 						<ShowNodeApplications serverId={serverId} />
 					</div>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 }

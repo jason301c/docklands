@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react";
 import "@xterm/xterm/css/xterm.css";
 import { AttachAddon } from "@xterm/addon-attach";
 import { useTheme } from "next-themes";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 
 interface Props {
 	id: string;
@@ -18,7 +18,7 @@ export const DockerTerminal: React.FC<Props> = ({
 	serverId,
 }) => {
 	const termRef = useRef(null);
-	const [activeWay, setActiveWay] = React.useState<string | undefined>("bash");
+	const [activeWay, setActiveWay] = React.useState("bash");
 	const { resolvedTheme } = useTheme();
 	useEffect(() => {
 		const container = document.getElementById(id);
@@ -59,12 +59,14 @@ export const DockerTerminal: React.FC<Props> = ({
 				<span>
 					Select way to connect to <b>{containerId}</b>
 				</span>
-				<Tabs value={activeWay} onValueChange={setActiveWay}>
-					<TabsList>
-						<TabsTrigger value="bash">Bash</TabsTrigger>
-						<TabsTrigger value="sh">/bin/sh</TabsTrigger>
-					</TabsList>
-				</Tabs>
+				<Tabs
+					value={activeWay}
+					onValueChange={(value) => value !== null && setActiveWay(value as never)}
+					tabs={[
+						{ value: "bash", label: "Bash" },
+						{ value: "sh", label: "/bin/sh" },
+					]}
+				/>
 			</div>
 			<div className="w-full h-full rounded-lg p-2 bg-transparent border">
 				<div id={id} ref={termRef} />

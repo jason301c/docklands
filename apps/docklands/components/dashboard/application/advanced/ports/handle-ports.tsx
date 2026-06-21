@@ -2,20 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -23,15 +15,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 
 const AddPortSchema = z.object({
 	publishedPort: z.number().int().min(1).max(65535),
@@ -111,27 +97,25 @@ export const HandlePorts = ({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				{portId ? (
-					<Button
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={portId ? (
+					<Button aria-label="Action"
 						variant="ghost"
-						size="icon"
+						shape="square"
 						className="group hover:bg-blue-500/10 "
 					>
 						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
 					</Button>
 				) : (
 					<Button>{children}</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Ports</DialogTitle>
-					<DialogDescription>
+				) as never} />
+			<Dialog className="sm:max-w-lg">
+				<div>
+					<Dialog.Title>Ports</Dialog.Title>
+					<Dialog.Description>
 						Ports are used to expose your application to the internet.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -177,19 +161,19 @@ export const HandlePorts = ({
 									return (
 										<FormItem className="md:col-span-2">
 											<FormLabel>Published Port Mode</FormLabel>
-											<Select
+											<Select aria-label="Select option"
 												onValueChange={field.onChange}
 												value={field.value}
 											>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Select a publish mode for the port" />
-													</SelectTrigger>
+													<>
+														
+													</>
 												</FormControl>
-												<SelectContent>
-													<SelectItem value={"ingress"}>Ingress</SelectItem>
-													<SelectItem value={"host"}>Host</SelectItem>
-												</SelectContent>
+												<>
+													<Select.Option value={"ingress"}>Ingress</Select.Option>
+													<Select.Option value={"host"}>Host</Select.Option>
+												</>
 											</Select>
 											<FormMessage />
 										</FormItem>
@@ -232,19 +216,19 @@ export const HandlePorts = ({
 									return (
 										<FormItem className="md:col-span-2">
 											<FormLabel>Protocol</FormLabel>
-											<Select
+											<Select aria-label="Select option"
 												onValueChange={field.onChange}
 												value={field.value}
 											>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Select a protocol" />
-													</SelectTrigger>
+													<>
+														
+													</>
 												</FormControl>
-												<SelectContent>
-													<SelectItem value={"tcp"}>TCP</SelectItem>
-													<SelectItem value={"udp"}>UDP</SelectItem>
-												</SelectContent>
+												<>
+													<Select.Option value={"tcp"}>TCP</Select.Option>
+													<Select.Option value={"udp"}>UDP</Select.Option>
+												</>
 											</Select>
 											<FormMessage />
 										</FormItem>
@@ -264,17 +248,17 @@ export const HandlePorts = ({
 						</AlertBlock>
 					)}
 
-					<DialogFooter>
+					<div>
 						<Button
-							isLoading={isPending}
+							loading={isPending}
 							form="hook-form-add-port"
 							type="submit"
 						>
 							{portId ? "Update" : "Create"}
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

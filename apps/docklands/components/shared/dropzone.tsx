@@ -1,7 +1,6 @@
 import { FolderIcon } from "lucide-react";
 import React, { type ChangeEvent, useRef } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { cn } from "@/shared/utils";
 
 interface DropzoneProps
@@ -43,14 +42,14 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
 			}
 		};
 		return (
-			<Card
+			<LayerCard
 				ref={ref}
 				className={cn(
 					"border-2 border-dashed bg-muted/20 hover:cursor-pointer hover:border-muted-foreground/50 ",
 					classNameWrapper,
 				)}
 			>
-				<CardContent
+				<div
 					className="flex flex-col items-center justify-center space-y-2 px-2 py-4 text-xs h-96"
 					onDragOver={handleDragOver}
 					onDrop={handleDrop}
@@ -61,7 +60,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
 						<span className="font-medium text-xl text-center">
 							{dropMessage}
 						</span>
-						<Input
+						<input
 							{...props}
 							value={undefined}
 							ref={inputRef}
@@ -73,8 +72,8 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
 							}}
 						/>
 					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 		);
 	},
 );

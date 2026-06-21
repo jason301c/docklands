@@ -1,19 +1,9 @@
 import { AlertTriangle, DatabaseIcon } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 
 interface Props {
 	id: string;
@@ -54,14 +44,14 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 	};
 
 	return (
-		<Card className="bg-background border-destructive/50">
-			<CardHeader>
-				<CardTitle className="text-xl flex items-center gap-2">
+		<LayerCard className="bg-background border-destructive/50">
+			<div>
+				<h3 className="text-xl flex items-center gap-2">
 					<AlertTriangle className="h-5 w-5 text-destructive" />
 					Danger Zone
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
+				</h3>
+			</div>
+			<div>
 				<div className="flex flex-col gap-4">
 					<div className="flex flex-col gap-2">
 						<h3 className="text-base font-semibold">Rebuild Database</h3>
@@ -70,24 +60,26 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 							state. All data, tables, and configurations will be removed.
 						</p>
 					</div>
-					<AlertDialog>
-						<AlertDialogTrigger asChild>
+					<Dialog.Root role="alertdialog">
+						<Dialog.Trigger render={(
+
 							<Button
-								isLoading={isPending}
+								loading={isPending}
 								variant="outline"
 								className="w-full border-destructive/50 hover:bg-destructive/10 hover:text-destructive text-destructive"
 							>
 								<DatabaseIcon className="mr-2 h-4 w-4" />
 								Rebuild Database
 							</Button>
-						</AlertDialogTrigger>
-						<AlertDialogContent>
-							<AlertDialogHeader>
-								<AlertDialogTitle className="flex items-center gap-2">
+						
+)} />
+						<Dialog>
+							<div>
+								<Dialog.Title className="flex items-center gap-2">
 									<AlertTriangle className="h-5 w-5 text-destructive" />
 									Are you absolutely sure?
-								</AlertDialogTitle>
-								<AlertDialogDescription className="space-y-2">
+								</Dialog.Title>
+								<Dialog.Description className="space-y-2">
 									<p>This action will:</p>
 									<ul className="list-disc list-inside space-y-1">
 										<li>Stop the current database service</li>
@@ -98,24 +90,23 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 									<p className="font-medium text-destructive mt-4">
 										This action cannot be undone.
 									</p>
-								</AlertDialogDescription>
-							</AlertDialogHeader>
-							<AlertDialogFooter>
-								<AlertDialogCancel>Cancel</AlertDialogCancel>
-								<AlertDialogAction
-									onClick={handleRebuild}
-									className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-									asChild
-								>
-									<Button isLoading={isPending} type="submit">
+								</Dialog.Description>
+							</div>
+							<div>
+								<Dialog.Close>Cancel</Dialog.Close>
+								<Dialog.Close onClick={handleRebuild}
+									className="bg-destructive text-destructive-foreground hover:bg-destructive/90" render={(
+
+									<Button loading={isPending} type="submit">
 										Yes, rebuild database
 									</Button>
-								</AlertDialogAction>
-							</AlertDialogFooter>
-						</AlertDialogContent>
-					</AlertDialog>
+								
+)} />
+							</div>
+						</Dialog>
+					</Dialog.Root>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

@@ -11,21 +11,15 @@ import {
 	Trash2,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { ShowRollbackSettings } from "../rollbacks/show-rollback-settings";
 import { CancelQueues } from "./cancel-queues";
 import { ClearDeployments } from "./clear-deployments";
@@ -147,13 +141,13 @@ export const ShowDeployments = ({
 	}, []);
 
 	return (
-		<Card className="bg-background border-none">
-			<CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+		<LayerCard className="bg-background border-none">
+			<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 				<div className="flex flex-col gap-2">
-					<CardTitle className="text-xl">Deployments</CardTitle>
-					<CardDescription>
+					<h3 className="text-xl">Deployments</h3>
+					<p>
 						See the last 10 deployments for this {type}
-					</CardDescription>
+					</p>
 				</div>
 				<div className="flex flex-row items-center flex-wrap gap-2">
 					{(type === "application" || type === "compose") && (
@@ -173,8 +167,8 @@ export const ShowDeployments = ({
 						</ShowRollbackSettings>
 					)}
 				</div>
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				{stuckDeployment && (type === "application" || type === "compose") && (
 					<AlertBlock
 						type="warning"
@@ -194,7 +188,7 @@ export const ShowDeployments = ({
 								variant="destructive"
 								size="sm"
 								className="w-fit"
-								isLoading={
+								loading={
 									type === "application" ? isCancellingApp : isCancellingCompose
 								}
 								onClick={async () => {
@@ -378,7 +372,7 @@ export const ShowDeployments = ({
 													<Button
 														variant="destructive"
 														size="sm"
-														isLoading={isKillingProcess}
+														loading={isKillingProcess}
 														className="w-full sm:w-auto"
 													>
 														Kill Process
@@ -413,7 +407,7 @@ export const ShowDeployments = ({
 													<Button
 														variant="destructive"
 														size="sm"
-														isLoading={isRemovingDeployment}
+														loading={isRemovingDeployment}
 													>
 														Delete
 														<Trash2 className="size-4" />
@@ -457,7 +451,7 @@ export const ShowDeployments = ({
 														<Button
 															variant="secondary"
 															size="sm"
-															isLoading={isRollingBack}
+															loading={isRollingBack}
 															className="w-full sm:w-auto"
 														>
 															<RefreshCcw className="size-4 text-primary group-hover:text-red-500" />
@@ -479,7 +473,7 @@ export const ShowDeployments = ({
 					logPath={activeLog?.logPath || ""}
 					errorMessage={activeLog?.errorMessage || ""}
 				/>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

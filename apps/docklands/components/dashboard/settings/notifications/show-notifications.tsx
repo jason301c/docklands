@@ -1,5 +1,5 @@
 import { Bell, Loader2, Mail, PenBoxIcon, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import {
 	DiscordIcon,
@@ -13,14 +13,8 @@ import {
 	TelegramIcon,
 } from "@/components/icons/notification-icons";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { HandleNotifications } from "./handle-notifications";
 
 export const ShowNotifications = () => {
@@ -31,19 +25,19 @@ export const ShowNotifications = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
+			<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
+					<div className="">
+						<h3 className="text-xl flex flex-row gap-2">
 							<Bell className="size-6 text-muted-foreground self-center" />
 							Notifications
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Add your providers to receive notifications, like Discord, Slack,
 							Telegram, Teams, Email, Resend, Lark.
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-2 py-8 border-t">
+						</p>
+					</div>
+					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
 								<span>Loading...</span>
@@ -159,11 +153,11 @@ export const ShowNotifications = () => {
 																			});
 																	}}
 																>
-																	<Button
+																	<Button aria-label="Action"
 																		variant="ghost"
-																		size="icon"
+																		shape="square"
 																		className="group hover:bg-red-500/10 "
-																		isLoading={isRemoving}
+																		loading={isRemoving}
 																	>
 																		<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 																	</Button>
@@ -184,9 +178,9 @@ export const ShowNotifications = () => {
 								)}
 							</>
 						)}
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

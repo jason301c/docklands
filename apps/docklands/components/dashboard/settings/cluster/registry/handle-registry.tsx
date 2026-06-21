@@ -2,19 +2,11 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { AlertTriangle, PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -23,17 +15,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 
 const AddRegistrySchema = z.object({
 	registryName: z.string().min(1, {
@@ -208,12 +192,11 @@ export const HandleRegistry = ({ registryId }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				{registryId ? (
-					<Button
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={registryId ? (
+					<Button aria-label="Action"
 						variant="ghost"
-						size="icon"
+						shape="square"
 						className="group hover:bg-blue-500/10 "
 					>
 						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
@@ -223,15 +206,14 @@ export const HandleRegistry = ({ registryId }: Props) => {
 						<PlusIcon className="h-4 w-4" />
 						Add Registry
 					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>Add a external registry</DialogTitle>
-					<DialogDescription>
+				) as never} />
+			<Dialog className="sm:max-w-2xl">
+				<div>
+					<Dialog.Title>Add a external registry</Dialog.Title>
+					<Dialog.Description>
 						Fill the next fields to add a external registry.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{(isError || testRegistryIsError || testRegistryByIdIsError) && (
 					<div className="flex flex-row gap-4 rounded-lg bg-red-50 p-2 dark:bg-red-950">
 						<AlertTriangle className="text-red-600 dark:text-red-400" />
@@ -399,44 +381,44 @@ export const HandleRegistry = ({ registryId }: Props) => {
 											)}
 										</FormDescription>
 										<FormControl>
-											<Select
+											<Select aria-label="Select option"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>
-												<SelectTrigger className="w-full">
-													<SelectValue placeholder="Select a server" />
-												</SelectTrigger>
-												<SelectContent>
+												<>
+													
+												</>
+												<>
 													{deployServers && deployServers.length > 0 && (
-														<SelectGroup>
-															<SelectLabel>Deploy Servers</SelectLabel>
+														<Select.Group>
+															<Select.GroupLabel>Deploy Servers</Select.GroupLabel>
 															{deployServers.map((server) => (
-																<SelectItem
+																<Select.Option
 																	key={server.serverId}
 																	value={server.serverId}
 																>
 																	{server.name}
-																</SelectItem>
+																</Select.Option>
 															))}
-														</SelectGroup>
+														</Select.Group>
 													)}
 													{buildServers && buildServers.length > 0 && (
-														<SelectGroup>
-															<SelectLabel>Build Servers</SelectLabel>
+														<Select.Group>
+															<Select.GroupLabel>Build Servers</Select.GroupLabel>
 															{buildServers.map((server) => (
-																<SelectItem
+																<Select.Option
 																	key={server.serverId}
 																	value={server.serverId}
 																>
 																	{server.name}
-																</SelectItem>
+																</Select.Option>
 															))}
-														</SelectGroup>
+														</Select.Group>
 													)}
-													<SelectGroup>
-														<SelectItem value={"none"}>None</SelectItem>
-													</SelectGroup>
-												</SelectContent>
+													<Select.Group>
+														<Select.Option value={"none"}>None</Select.Option>
+													</Select.Group>
+												</>
 											</Select>
 										</FormControl>
 
@@ -446,12 +428,12 @@ export const HandleRegistry = ({ registryId }: Props) => {
 							/>
 						</div>
 
-						<DialogFooter className="flex flex-col w-full sm:justify-between gap-4 flex-wrap sm:flex-col col-span-2">
+						<div className="flex flex-col w-full sm:justify-between gap-4 flex-wrap sm:flex-col col-span-2">
 							<div className="flex flex-row gap-2 justify-between">
 								<Button
 									type="button"
 									variant={"secondary"}
-									isLoading={isPending || isPendingById}
+									loading={isPending || isPendingById}
 									onClick={async () => {
 										// When editing with empty password, use the existing password from DB
 										if (registryId && (!password || password.length === 0)) {
@@ -525,14 +507,14 @@ export const HandleRegistry = ({ registryId }: Props) => {
 								>
 									Test Registry
 								</Button>
-								<Button isLoading={form.formState.isSubmitting} type="submit">
+								<Button loading={form.formState.isSubmitting} type="submit">
 									{registryId ? "Update" : "Create"}
 								</Button>
 							</div>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

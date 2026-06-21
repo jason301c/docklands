@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/shared/utils";
 
 interface TagBadgeProps {
@@ -10,16 +9,19 @@ interface TagBadgeProps {
 
 export function TagBadge({ name, color, className, children }: TagBadgeProps) {
 	return (
-		<Badge
+		<span
 			style={{
 				backgroundColor: color ? `${color}33` : undefined,
 				color: color || undefined,
 				borderColor: color ? `${color}66` : undefined,
 			}}
-			className={cn("border", className)}
+			className={cn(
+				"inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium",
+				className,
+			)}
 		>
 			{name}
 			{children}
-		</Badge>
+		</span>
 	);
 }

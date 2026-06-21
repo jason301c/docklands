@@ -2,21 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { HelpCircle, Plus, Settings2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -25,23 +17,12 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input, NumberInput } from "@/components/ui/input";
-import { Secrets } from "@/components/ui/secrets";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Secrets } from "@/components/shared/secrets";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 const schema = z
 	.object({
@@ -154,22 +135,24 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 	};
 	return (
 		<div>
-			<Dialog open={isOpen} onOpenChange={setIsOpen}>
-				<DialogTrigger asChild>
+			<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+				<Dialog.Trigger render={(
+
 					<Button variant="outline">
 						<Settings2 className="size-4" />
 						Configure
 					</Button>
-				</DialogTrigger>
-				<DialogContent className="sm:max-w-5xl w-full">
-					<DialogHeader>
-						<DialogTitle>Preview Deployment Settings</DialogTitle>
-						<DialogDescription>
+				
+)} />
+				<Dialog className="sm:max-w-5xl w-full">
+					<div>
+						<Dialog.Title>Preview Deployment Settings</Dialog.Title>
+						<Dialog.Description>
 							Adjust the settings for preview deployments of this application,
 							including environment variables, build options, and deployment
 							rules.
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 					<div className="grid gap-4">
 						{isTraefikMeDomain && (
 							<AlertBlock type="info">
@@ -218,7 +201,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 											<FormItem>
 												<FormLabel>Port</FormLabel>
 												<FormControl>
-													<NumberInput placeholder="3000" {...field} />
+													<Input type="number" placeholder="3000" {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -232,19 +215,16 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 												<div className="flex items-center gap-2">
 													<FormLabel>Preview Labels</FormLabel>
 													<TooltipProvider>
-														<Tooltip>
-															<TooltipTrigger asChild>
-																<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
-															</TooltipTrigger>
-															<TooltipContent>
+														<Tooltip content={<>
 																<p>
 																	Add a labels that will trigger a preview
 																	deployment for a pull request. If no labels
 																	are specified, all pull requests will trigger
 																	a preview deployment.
 																</p>
-															</TooltipContent>
-														</Tooltip>
+															</>}  asChild>
+																<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+															</Tooltip>
 													</TooltipProvider>
 												</div>
 												<div className="flex flex-wrap gap-2 mb-2">
@@ -286,10 +266,10 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 															}}
 														/>
 													</FormControl>
-													<Button
+													<Button aria-label="Action"
 														type="button"
 														variant="outline"
-														size="icon"
+														shape="square"
 														onClick={() => {
 															const input = document.querySelector(
 																'input[placeholder*="Enter a label"]',
@@ -315,7 +295,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 											<FormItem>
 												<FormLabel>Preview Limit</FormLabel>
 												<FormControl>
-													<NumberInput placeholder="3000" {...field} />
+													<Input type="number" placeholder="3000" {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -349,23 +329,23 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel>Certificate Provider</FormLabel>
-													<Select
+													<Select aria-label="Select option"
 														onValueChange={field.onChange}
 														defaultValue={field.value || ""}
 													>
 														<FormControl>
-															<SelectTrigger>
-																<SelectValue placeholder="Select a certificate provider" />
-															</SelectTrigger>
+															<>
+																
+															</>
 														</FormControl>
 
-														<SelectContent>
-															<SelectItem value="none">None</SelectItem>
-															<SelectItem value={"letsencrypt"}>
+														<>
+															<Select.Option value="none">None</Select.Option>
+															<Select.Option value={"letsencrypt"}>
 																Let's Encrypt
-															</SelectItem>
-															<SelectItem value={"custom"}>Custom</SelectItem>
-														</SelectContent>
+															</Select.Option>
+															<Select.Option value={"custom"}>Custom</Select.Option>
+														</>
 													</Select>
 													<FormMessage />
 												</FormItem>
@@ -525,7 +505,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 							</form>
 						</Form>
 					</div>
-					<DialogFooter>
+					<div>
 						<Button
 							variant="secondary"
 							onClick={() => {
@@ -535,15 +515,15 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 							Cancel
 						</Button>
 						<Button
-							isLoading={isPending}
+							loading={isPending}
 							form="hook-form-delete-application"
 							type="submit"
 						>
 							Save
 						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+					</div>
+				</Dialog>
+			</Dialog.Root>
 			{/* */}
 		</div>
 	);

@@ -1,5 +1,6 @@
 import { ZodOpenApiPathsObject } from 'zod-openapi';
 import { OpenApiMeta, OpenApiRouter } from '../types';
+
 export declare enum HttpMethods {
     GET = "get",
     POST = "post",

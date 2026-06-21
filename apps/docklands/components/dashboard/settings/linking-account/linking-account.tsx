@@ -1,17 +1,12 @@
 "use client";
 
+
 import { Link2, Loader2, Unlink } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { authClient } from "@/client/auth/client";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 
 const LINKING_CALLBACK_URL = "/dashboard/settings/profile";
 
@@ -110,22 +105,22 @@ export function LinkingAccount() {
 	const canUnlink = accounts.length > 1;
 
 	return (
-		<Card className="h-full bg-sidebar p-2.5 rounded-xl max-w-6xl mx-auto w-full">
+		<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl max-w-6xl mx-auto w-full">
 			<div className="rounded-xl bg-background shadow-md">
-				<CardHeader>
+				<div>
 					<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
 						<div>
-							<CardTitle className="text-xl flex flex-row gap-2">
+							<h3 className="text-xl flex flex-row gap-2">
 								<Link2 className="size-6 text-muted-foreground self-center" />
 								Linking account
-							</CardTitle>
-							<CardDescription>
+							</h3>
+							<p>
 								Link your Google or GitHub account to sign in with them.
-							</CardDescription>
+							</p>
 						</div>
 					</div>
-				</CardHeader>
-				<CardContent className="space-y-6 py-8 border-t">
+				</div>
+				<div className="space-y-6 py-8 border-t">
 					{/* Linked accounts */}
 					<div className="space-y-2">
 						<p className="text-sm font-medium">Linked accounts</p>
@@ -157,7 +152,7 @@ export function LinkingAccount() {
 													handleUnlink(acc.providerId, acc.accountId)
 												}
 												disabled={unlinkingProviderId === acc.providerId}
-												isLoading={unlinkingProviderId === acc.providerId}
+												loading={unlinkingProviderId === acc.providerId}
 											>
 												{unlinkingProviderId === acc.providerId ? (
 													<Loader2 className="size-4 animate-spin" />
@@ -187,7 +182,7 @@ export function LinkingAccount() {
 								className="min-w-[180px]"
 								onClick={() => handleLinkSocial("google")}
 								disabled={!!linkingProvider}
-								isLoading={linkingProvider === "google"}
+								loading={linkingProvider === "google"}
 							>
 								{linkingProvider === "google" ? (
 									<Loader2 className="mr-2 size-4 animate-spin" />
@@ -221,7 +216,7 @@ export function LinkingAccount() {
 								className="min-w-[180px]"
 								onClick={() => handleLinkSocial("github")}
 								disabled={!!linkingProvider}
-								isLoading={linkingProvider === "github"}
+								loading={linkingProvider === "github"}
 							>
 								{linkingProvider === "github" ? (
 									<Loader2 className="mr-2 size-4 animate-spin" />
@@ -238,8 +233,8 @@ export function LinkingAccount() {
 							</Button>
 						)}
 					</div>
-				</CardContent>
+				</div>
 			</div>
-		</Card>
+		</LayerCard>
 	);
 }

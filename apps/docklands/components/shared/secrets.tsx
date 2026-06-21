@@ -2,19 +2,14 @@ import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { type CSSProperties, type ReactNode, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { CodeEditor } from "@/components/shared/code-editor";
-import {
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	FormControl,
 	FormField,
 	FormItem,
 	FormMessage,
-} from "@/components/ui/form";
-import { Toggle } from "@/components/ui/toggle";
+} from "@/components/shared/form";
+import { Toggle } from "@/components/shared/toggle";
 
 interface Props {
 	name: string;
@@ -29,10 +24,10 @@ export const Secrets = (props: Props) => {
 
 	return (
 		<>
-			<CardHeader className="flex flex-row w-full items-center justify-between px-0">
+			<div className="flex flex-row w-full items-center justify-between px-0">
 				<div>
-					<CardTitle className="text-xl">{props.title}</CardTitle>
-					<CardDescription>{props.description}</CardDescription>
+					<h3 className="text-xl">{props.title}</h3>
+					<p>{props.description}</p>
 				</div>
 
 				<Toggle
@@ -46,8 +41,8 @@ export const Secrets = (props: Props) => {
 						<EyeIcon className="h-4 w-4 text-muted-foreground" />
 					)}
 				</Toggle>
-			</CardHeader>
-			<CardContent className="w-full space-y-4 p-0">
+			</div>
+			<div className="w-full space-y-4 p-0">
 				<FormField
 					control={form.control}
 					name={props.name}
@@ -73,7 +68,7 @@ export const Secrets = (props: Props) => {
 						</FormItem>
 					)}
 				/>
-			</CardContent>
+			</div>
 		</>
 	);
 };

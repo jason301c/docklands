@@ -1,20 +1,23 @@
 "use client";
 
+
+
+
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
 import { SignInWithGithub } from "@/components/auth/sign-in-with-github";
 import { SignInWithGoogle } from "@/components/auth/sign-in-with-google";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Logo } from "@/components/shared/logo";
-import { Button } from "@/components/ui/button";
-import { CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -22,8 +25,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const registerSchema = z
 	.object({
@@ -121,16 +124,16 @@ const Register = ({ isCloud }: Props) => {
 		<div className="">
 			<div className="flex  w-full items-center justify-center ">
 				<div className="flex flex-col items-center gap-4 w-full">
-					<CardTitle className="text-2xl font-bold flex  items-center gap-2">
+					<h3 className="text-2xl font-bold flex  items-center gap-2">
 						<Link href="/" className="flex flex-row items-center gap-2">
 							<Logo className="size-12" />
 						</Link>
 						{isCloud ? "Sign Up" : "Setup the server"}
-					</CardTitle>
-					<CardDescription>
+					</h3>
+					<p>
 						Enter your email and password to{" "}
 						{isCloud ? "create an account" : "setup the server"}
-					</CardDescription>
+					</p>
 					<div className="mx-auto w-full max-w-lg bg-transparent">
 						{isError && (
 							<div className="my-2 flex flex-row items-center gap-2 rounded-lg bg-red-50 p-2 dark:bg-red-950">
@@ -148,7 +151,7 @@ const Register = ({ isCloud }: Props) => {
 								</span>
 							</AlertBlock>
 						)}
-						<CardContent className="p-0">
+						<div className="p-0">
 							{isCloud && (
 								<div className="flex flex-col">
 									<SignInWithGithub />
@@ -246,7 +249,7 @@ const Register = ({ isCloud }: Props) => {
 
 										<Button
 											type="submit"
-											isLoading={form.formState.isSubmitting}
+											loading={form.formState.isSubmitting}
 											className="w-full"
 										>
 											Register
@@ -275,7 +278,7 @@ const Register = ({ isCloud }: Props) => {
 									</Link>
 								</div>
 							</div>
-						</CardContent>
+						</div>
 					</div>
 				</div>
 			</div>

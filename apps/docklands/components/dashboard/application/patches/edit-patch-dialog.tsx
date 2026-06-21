@@ -1,19 +1,10 @@
 import { Loader2, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 
 interface Props {
 	patchId: string;
@@ -57,19 +48,21 @@ export const EditPatchDialog = ({
 	};
 
 	return (
-		<Dialog>
-			<DialogTrigger asChild>
-				<Button variant="ghost" size="icon" title="Edit patch">
+		<Dialog.Root>
+			<Dialog.Trigger render={(
+
+				<Button aria-label="Edit patch" variant="ghost" shape="square" title="Edit patch">
 					<Pencil className="h-4 w-4" />
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0">
-				<DialogHeader className="px-6 pt-6 pb-4">
-					<DialogTitle>Edit Patch</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0">
+				<div className="px-6 pt-6 pb-4">
+					<Dialog.Title>Edit Patch</Dialog.Title>
+					<Dialog.Description>
 						{patch ? `Editing: ${patch.filePath}` : "Loading patch..."}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isPatchLoading ? (
 					<div className="flex flex-1 items-center justify-center px-6 py-12">
 						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -85,18 +78,20 @@ export const EditPatchDialog = ({
 						/>
 					</div>
 				)}
-				<DialogFooter className="px-6 ">
-					<DialogClose asChild>
+				<div className="px-6 ">
+					<Dialog.Close render={(
+
 						<Button variant="outline">Cancel</Button>
-					</DialogClose>
-					<Button onClick={handleSave} isLoading={updatePatch.isPending}>
+					
+)} />
+					<Button onClick={handleSave} loading={updatePatch.isPending}>
 						{updatePatch.isPending && (
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 						)}
 						Save
 					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

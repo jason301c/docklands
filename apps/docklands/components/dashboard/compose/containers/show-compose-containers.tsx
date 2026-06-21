@@ -1,45 +1,18 @@
 import { Loader2, MoreHorizontal, RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { ShowContainerConfig } from "@/components/dashboard/docker/config/show-container-config";
 import { ShowContainerMounts } from "@/components/dashboard/docker/mounts/show-container-mounts";
 import { ShowContainerNetworks } from "@/components/dashboard/docker/networks/show-container-networks";
 import { DockerTerminalModal } from "@/components/dashboard/docker/terminal/docker-terminal-modal";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Table } from "@cloudflare/kumo/components/table";
 
 const DockerLogsId = dynamic(
 	() =>
@@ -75,25 +48,25 @@ export const ShowComposeContainers = ({
 		);
 
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row items-center justify-between">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row items-center justify-between">
 				<div>
-					<CardTitle className="text-xl">Containers</CardTitle>
-					<CardDescription>
+					<h3 className="text-xl">Containers</h3>
+					<p>
 						Inspect each container in this compose and run basic lifecycle
 						actions.
-					</CardDescription>
+					</p>
 				</div>
-				<Button
+				<Button aria-label="Action"
 					variant="outline"
-					size="icon"
+					shape="square"
 					onClick={() => refetch()}
 					disabled={isPending}
 				>
 					<RefreshCw className={`h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
 				</Button>
-			</CardHeader>
-			<CardContent>
+			</div>
+			<div>
 				{isPending ? (
 					<div className="flex items-center justify-center h-[20vh]">
 						<Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />
@@ -107,16 +80,16 @@ export const ShowComposeContainers = ({
 				) : (
 					<div className="rounded-md border">
 						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Name</TableHead>
-									<TableHead>State</TableHead>
-									<TableHead>Status</TableHead>
-									<TableHead>Container ID</TableHead>
-									<TableHead className="text-right" />
-								</TableRow>
-							</TableHeader>
-							<TableBody>
+							<Table.Header>
+								<Table.Row>
+									<Table.Head>Name</Table.Head>
+									<Table.Head>State</Table.Head>
+									<Table.Head>Status</Table.Head>
+									<Table.Head>Container ID</Table.Head>
+									<Table.Head className="text-right" />
+								</Table.Row>
+							</Table.Header>
+							<Table.Body>
 								{data.map((container) => (
 									<ContainerRow
 										key={container.containerId}
@@ -125,12 +98,12 @@ export const ShowComposeContainers = ({
 										onActionComplete={() => refetch()}
 									/>
 								))}
-							</TableBody>
+							</Table.Body>
 						</Table>
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };
 
@@ -180,13 +153,13 @@ const ContainerRow = ({
 	};
 
 	return (
-		<TableRow>
-			<TableCell className="font-medium">{container.name}</TableCell>
-			<TableCell>
+		<Table.Row>
+			<Table.Cell className="font-medium">{container.name}</Table.Cell>
+			<Table.Cell>
 				<Badge
 					variant={
 						container.state === "running"
-							? "default"
+							? "secondary"
 							: container.state === "exited"
 								? "secondary"
 								: "destructive"
@@ -194,15 +167,16 @@ const ContainerRow = ({
 				>
 					{container.state}
 				</Badge>
-			</TableCell>
-			<TableCell>{container.status}</TableCell>
-			<TableCell className="font-mono text-sm text-muted-foreground">
+			</Table.Cell>
+			<Table.Cell>{container.status}</Table.Cell>
+			<Table.Cell className="font-mono text-sm text-muted-foreground">
 				{container.containerId}
-			</TableCell>
-			<TableCell className="text-right">
-				<Dialog open={logsOpen} onOpenChange={setLogsOpen}>
+			</Table.Cell>
+			<Table.Cell className="text-right">
+				<Dialog.Root open={logsOpen} onOpenChange={setLogsOpen}>
 					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
+						<DropdownMenu.Trigger render={(
+
 							<Button variant="ghost" className="h-8 w-8 p-0">
 								{actionLoading ? (
 									<Loader2 className="h-4 w-4 animate-spin" />
@@ -210,17 +184,20 @@ const ContainerRow = ({
 									<MoreHorizontal className="h-4 w-4" />
 								)}
 							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuLabel>Actions</DropdownMenuLabel>
-							<DialogTrigger asChild>
-								<DropdownMenuItem
+						
+)} />
+						<DropdownMenu.Content align="end">
+							<DropdownMenu.Label>Actions</DropdownMenu.Label>
+							<Dialog.Trigger render={(
+
+								<DropdownMenu.Item
 									className="cursor-pointer"
 									onSelect={(e) => e.preventDefault()}
 								>
 									View Logs
-								</DropdownMenuItem>
-							</DialogTrigger>
+								</DropdownMenu.Item>
+							
+)} />
 							<ShowContainerConfig
 								containerId={container.containerId}
 								serverId={serverId || ""}
@@ -239,42 +216,42 @@ const ContainerRow = ({
 							>
 								Terminal
 							</DockerTerminalModal>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
+							<DropdownMenu.Separator />
+							<DropdownMenu.Item
 								className="cursor-pointer"
 								disabled={actionLoading !== null}
 								onClick={() => handleAction("restart", restartMutation)}
 							>
 								Restart
-							</DropdownMenuItem>
-							<DropdownMenuItem
+							</DropdownMenu.Item>
+							<DropdownMenu.Item
 								className="cursor-pointer"
 								disabled={actionLoading !== null}
 								onClick={() => handleAction("start", startMutation)}
 							>
 								Start
-							</DropdownMenuItem>
-							<DropdownMenuItem
+							</DropdownMenu.Item>
+							<DropdownMenu.Item
 								className="cursor-pointer"
 								disabled={actionLoading !== null}
 								onClick={() => handleAction("stop", stopMutation)}
 							>
 								Stop
-							</DropdownMenuItem>
-							<DropdownMenuItem
+							</DropdownMenu.Item>
+							<DropdownMenu.Item
 								className="cursor-pointer text-red-500 focus:text-red-600"
 								disabled={actionLoading !== null}
 								onClick={() => handleAction("kill", killMutation)}
 							>
 								Kill
-							</DropdownMenuItem>
-						</DropdownMenuContent>
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
 					</DropdownMenu>
-					<DialogContent className="sm:max-w-7xl">
-						<DialogHeader>
-							<DialogTitle>View Logs</DialogTitle>
-							<DialogDescription>Logs for {container.name}</DialogDescription>
-						</DialogHeader>
+					<Dialog className="sm:max-w-7xl">
+						<div>
+							<Dialog.Title>View Logs</Dialog.Title>
+							<Dialog.Description>Logs for {container.name}</Dialog.Description>
+						</div>
 						<div className="flex flex-col gap-4 pt-2.5">
 							<DockerLogsId
 								containerId={container.containerId}
@@ -282,9 +259,9 @@ const ContainerRow = ({
 								runType="native"
 							/>
 						</div>
-					</DialogContent>
-				</Dialog>
-			</TableCell>
-		</TableRow>
+					</Dialog>
+				</Dialog.Root>
+			</Table.Cell>
+		</Table.Row>
 	);
 };

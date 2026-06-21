@@ -1,16 +1,10 @@
 import copy from "copy-to-clipboard";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { TerminalLine } from "../../docker/logs/terminal-line";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
 
@@ -126,7 +120,7 @@ export const ShowDeployment = ({
 	const optionalErrors = parseLogs(errorMessage || "");
 
 	return (
-		<Dialog
+		<Dialog.Root
 			open={open}
 			onOpenChange={(e) => {
 				onClose();
@@ -141,13 +135,13 @@ export const ShowDeployment = ({
 				}
 			}}
 		>
-			<DialogContent className={"sm:max-w-5xl"}>
-				<DialogHeader>
-					<DialogTitle>Deployment</DialogTitle>
-					<DialogDescription className="flex items-center gap-2">
+			<Dialog className={"sm:max-w-5xl"}>
+				<div>
+					<Dialog.Title>Deployment</Dialog.Title>
+					<Dialog.Description className="flex items-center gap-2">
 						<span className="flex items-center gap-2">
 							See all the details of this deployment |{" "}
-							<Badge variant="blank" className="text-xs">
+							<Badge variant="neutral" className="text-xs">
 								{filteredLogs.length} lines
 							</Badge>
 						</span>
@@ -169,7 +163,6 @@ export const ShowDeployment = ({
 						{serverId && (
 							<div className="flex items-center space-x-2">
 								<Checkbox
-									id="show-extra-logs"
 									checked={showExtraLogs}
 									onCheckedChange={(checked) =>
 										setShowExtraLogs(checked as boolean)
@@ -183,8 +176,8 @@ export const ShowDeployment = ({
 								</label>
 							</div>
 						)}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 
 				<div
 					ref={scrollRef}
@@ -218,7 +211,7 @@ export const ShowDeployment = ({
 						</>
 					)}
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

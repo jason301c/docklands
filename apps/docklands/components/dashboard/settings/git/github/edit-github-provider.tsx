@@ -2,20 +2,14 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { PenBoxIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -23,8 +17,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const Schema = z.object({
 	name: z.string().min(1, {
@@ -88,22 +82,24 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				<Button
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
+				<Button aria-label="Action"
 					variant="ghost"
-					size="icon"
+					shape="square"
 					className="group hover:bg-blue-500/10 "
 				>
 					<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl ">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
+			
+)} />
+			<Dialog className="sm:max-w-2xl ">
+				<div>
+					<Dialog.Title className="flex items-center gap-2">
 						Update Github <GithubIcon className="size-5" />
-					</DialogTitle>
-				</DialogHeader>
+					</Dialog.Title>
+				</div>
 
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
@@ -112,7 +108,7 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="grid w-full gap-1"
 					>
-						<CardContent className="p-0">
+						<div className="p-0">
 							<div className="flex flex-col gap-4">
 								<FormField
 									control={form.control}
@@ -151,7 +147,7 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 									<Button
 										type="button"
 										variant={"secondary"}
-										isLoading={isPending}
+										loading={isPending}
 										onClick={async () => {
 											await testConnection({
 												githubId,
@@ -166,15 +162,15 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 									>
 										Test Connection
 									</Button>
-									<Button type="submit" isLoading={form.formState.isSubmitting}>
+									<Button type="submit" loading={form.formState.isSubmitting}>
 										Update
 									</Button>
 								</div>
 							</div>
-						</CardContent>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

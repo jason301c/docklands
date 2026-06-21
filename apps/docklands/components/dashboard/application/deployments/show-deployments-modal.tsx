@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { RouterOutputs } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { ShowDeployment } from "../deployments/show-deployment";
 import { ShowDeployments } from "./show-deployments";
 
@@ -39,24 +39,22 @@ export const ShowDeploymentsModal = ({
 	>(null);
 	const [isOpen, setIsOpen] = useState(false);
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				{children ? (
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(children ? (
 					children
 				) : (
 					<Button className="sm:w-auto w-full" size="sm" variant="outline">
 						View Logs
 					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-5xl p-0">
+				)) as never} />
+			<Dialog className="sm:max-w-5xl p-0">
 				<ShowDeployments
 					id={id}
 					type={type}
 					serverId={serverId}
 					refreshToken={refreshToken}
 				/>
-			</DialogContent>
+			</Dialog>
 			<ShowDeployment
 				serverId={serverId || ""}
 				open={Boolean(activeLog && activeLog.logPath !== null)}
@@ -64,6 +62,6 @@ export const ShowDeploymentsModal = ({
 				logPath={activeLog?.logPath || ""}
 				errorMessage={activeLog?.errorMessage || ""}
 			/>
-		</Dialog>
+		</Dialog.Root>
 	);
 };

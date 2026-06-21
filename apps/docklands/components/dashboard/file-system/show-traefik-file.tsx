@@ -2,13 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import {
 	Form,
 	FormControl,
@@ -17,8 +17,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
+} from "@/components/shared/form";
+import { Label } from "@cloudflare/kumo/components/label";
 import { validateAndFormatYAML } from "../application/advanced/traefik/update-traefik-config";
 
 const UpdateServerMiddlewareConfigSchema = z.object({
@@ -161,7 +161,6 @@ routers:
 					<div className="flex flex-col gap-4">
 						<div className="flex items-center space-x-2">
 							<Checkbox
-								id="skip-yaml-validation"
 								checked={skipYamlValidation}
 								onCheckedChange={(checked) =>
 									setSkipYamlValidation(checked === true)
@@ -182,7 +181,7 @@ routers:
 						</p>
 						<div className="flex justify-end">
 							<Button
-								isLoading={isPending}
+								loading={isPending}
 								disabled={canEdit || isLoadingFile}
 								type="submit"
 							>

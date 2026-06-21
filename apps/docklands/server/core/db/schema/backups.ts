@@ -21,6 +21,7 @@ import { mongo } from "./mongo";
 import { mysql } from "./mysql";
 import { postgres } from "./postgres";
 import { user } from "./user";
+
 export const databaseType = pgEnum("databaseType", [
 	"postgres",
 	"mariadb",

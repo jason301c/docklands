@@ -2,17 +2,11 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -20,8 +14,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 interface Props {
 	applicationId: string;
@@ -92,17 +86,17 @@ export const AddCommand = ({ applicationId }: Props) => {
 	};
 
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row justify-between">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row justify-between">
 				<div>
-					<CardTitle className="text-xl">Run Command</CardTitle>
-					<CardDescription>
+					<h3 className="text-xl">Run Command</h3>
+					<p>
 						Run a custom command in the container after the application
 						initialized
-					</CardDescription>
+					</p>
 				</div>
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				<Form {...form}>
 					<form
 						onSubmit={form.handleSubmit(onSubmit)}
@@ -160,10 +154,10 @@ export const AddCommand = ({ applicationId }: Props) => {
 															{...field}
 														/>
 													</FormControl>
-													<Button
+													<Button aria-label="Action"
 														type="button"
 														variant="destructive"
-														size="icon"
+														shape="square"
 														onClick={() => remove(index)}
 													>
 														<Trash2 className="h-4 w-4" />
@@ -177,13 +171,13 @@ export const AddCommand = ({ applicationId }: Props) => {
 							</div>
 						</div>
 						<div className="flex justify-end">
-							<Button isLoading={isPending} type="submit" className="w-fit">
+							<Button loading={isPending} type="submit" className="w-fit">
 								Save
 							</Button>
 						</div>
 					</form>
 				</Form>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

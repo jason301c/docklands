@@ -3,18 +3,12 @@ import { Server } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -22,17 +16,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 import { AddSwarmSettings } from "./modify-swarm-settings";
 
 interface Props {
@@ -131,17 +117,17 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 	};
 
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row justify-between">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row justify-between">
 				<div>
-					<CardTitle className="text-xl">Cluster Settings</CardTitle>
-					<CardDescription>
+					<h3 className="text-xl">Cluster Settings</h3>
+					<p>
 						Modify swarm settings for the service.
-					</CardDescription>
+					</p>
 				</div>
 				<AddSwarmSettings id={id} type={type} />
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				<AlertBlock type="info">
 					Please remember to click Redeploy after modify the cluster settings to
 					apply the changes.
@@ -204,29 +190,29 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel>Select a registry</FormLabel>
-													<Select
+													<Select aria-label="Select option"
 														onValueChange={field.onChange}
 														defaultValue={field.value}
 													>
-														<SelectTrigger>
-															<SelectValue placeholder="Select a registry" />
-														</SelectTrigger>
-														<SelectContent>
-															<SelectGroup>
+														<>
+															
+														</>
+														<>
+															<Select.Group>
 																{registries?.map((registry) => (
-																	<SelectItem
+																	<Select.Option
 																		key={registry.registryId}
 																		value={registry.registryId}
 																	>
 																		{registry.registryName}
-																	</SelectItem>
+																	</Select.Option>
 																))}
-																<SelectItem value={"none"}>None</SelectItem>
-																<SelectLabel>
+																<Select.Option value={"none"}>None</Select.Option>
+																<Select.GroupLabel>
 																	Registries ({registries?.length})
-																</SelectLabel>
-															</SelectGroup>
-														</SelectContent>
+																</Select.GroupLabel>
+															</Select.Group>
+														</>
 													</Select>
 												</FormItem>
 											)}
@@ -237,13 +223,13 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 						)}
 
 						<div className="flex justify-end">
-							<Button isLoading={isPending} type="submit" className="w-fit">
+							<Button loading={isPending} type="submit" className="w-fit">
 								Save
 							</Button>
 						</div>
 					</form>
 				</Form>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

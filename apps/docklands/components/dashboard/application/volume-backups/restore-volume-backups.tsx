@@ -4,29 +4,15 @@ import debounce from "lodash/debounce";
 import { CheckIcon, ChevronsUpDown, Copy, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-} from "@/components/ui/command";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -34,17 +20,24 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from "@cloudflare/kumo/components/popover";
+import { ScrollArea } from "@/components/shared/scroll-area";
 import { cn } from "@/shared/utils";
 import { formatBytes } from "../../database/backups/restore-backup";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
+
+const Command = Combobox;
+const CommandInput = Combobox.TriggerInput;
+const CommandList = Combobox.List;
+const CommandGroup = Combobox.Group;
+const CommandItem = Combobox.Item;
+const CommandEmpty = Combobox.Empty;
 
 interface Props {
 	id: string;
@@ -142,26 +135,28 @@ export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
 				<Button variant="outline">
 					<RotateCcw className="mr-2 size-4" />
 					Restore Volume Backup
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle className="flex items-center">
+			
+)} />
+			<Dialog className="sm:max-w-lg">
+				<div>
+					<Dialog.Title className="flex items-center">
 						<RotateCcw className="mr-2 size-4" />
 						Restore Volume Backup
-					</DialogTitle>
-					<DialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						Select a destination and search for volume backup files
-					</DialogDescription>
+					</Dialog.Description>
 					<AlertBlock>
 						Make sure the volume name is not being used by another container.
 					</AlertBlock>
-				</DialogHeader>
+				</div>
 
 				<Form {...form}>
 					<form
@@ -195,7 +190,7 @@ export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
 											</FormControl>
 										</PopoverTrigger>
 										<PopoverContent className="p-0" align="start">
-											<Command>
+											<Command items={[]}>
 												<CommandInput
 													placeholder="Search destinations..."
 													className="h-9"
@@ -275,11 +270,13 @@ export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
 											</FormControl>
 										</PopoverTrigger>
 										<PopoverContent className="p-0" align="start">
-											<Command>
+											<Command items={[]}>
 												<CommandInput
 													placeholder="Search backup files..."
 													value={search}
-													onValueChange={handleSearchChange}
+													onChange={(event) =>
+														handleSearchChange(event.target.value)
+													}
 													className="h-9"
 												/>
 												{isPending ? (
@@ -367,9 +364,9 @@ export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
 							)}
 						/>
 
-						<DialogFooter>
+						<div>
 							<Button
-								isLoading={isDeploying}
+								loading={isDeploying}
 								form="hook-form-restore-backup"
 								type="submit"
 								// disabled={
@@ -379,7 +376,7 @@ export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
 							>
 								Restore
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
 
@@ -393,7 +390,7 @@ export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
 					}}
 					filteredLogs={filteredLogs}
 				/>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

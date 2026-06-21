@@ -18,24 +18,24 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
-import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+} from "@cloudflare/kumo/components/popover";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Separator } from "@/components/shared/separator";
+import { SidebarTrigger } from "@cloudflare/kumo/components/sidebar";
 import type { ServiceType } from "@/server/core/db/schema";
+
+const Command = Combobox;
+const CommandInput = Combobox.TriggerInput;
+const CommandList = Combobox.List;
+const CommandGroup = Combobox.Group;
+const CommandItem = Combobox.Item;
+const CommandEmpty = Combobox.Empty;
 
 type ProjectItem = RouterOutputs["project"]["all"][number];
 type ProjectEnvironment = ProjectItem["environments"][number];
@@ -353,12 +353,12 @@ export const AdvanceBreadcrumb = () => {
 							align="start"
 							sideOffset={8}
 						>
-							<Command shouldFilter={false}>
+							<Command items={[]}>
 								<div className="relative">
 									<CommandInput
 										placeholder="Find Project..."
 										value={projectSearch}
-										onValueChange={setProjectSearch}
+										onChange={(event) => setProjectSearch(event.target.value)}
 										className="w-full focus-visible:ring-0"
 									/>
 									<kbd className="pointer-events-none h-5 absolute right-2 top-1/2 -translate-y-1/2 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
@@ -489,12 +489,14 @@ export const AdvanceBreadcrumb = () => {
 								align="start"
 								sideOffset={8}
 							>
-								<Command shouldFilter={false}>
+								<Command items={[]}>
 									<div className="relative">
 										<CommandInput
 											placeholder="Find Environment..."
 											value={environmentSearch}
-											onValueChange={setEnvironmentSearch}
+											onChange={(event) =>
+												setEnvironmentSearch(event.target.value)
+											}
 											className="w-full focus-visible:ring-0"
 										/>
 										<kbd className="pointer-events-none h-5 absolute right-2 top-1/2 -translate-y-1/2 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
@@ -562,12 +564,14 @@ export const AdvanceBreadcrumb = () => {
 									align="start"
 									sideOffset={8}
 								>
-									<Command shouldFilter={false}>
+									<Command items={[]}>
 										<div className="relative">
 											<CommandInput
 												placeholder="Find Service..."
 												value={serviceSearch}
-												onValueChange={setServiceSearch}
+												onChange={(event) =>
+													setServiceSearch(event.target.value)
+												}
 												className="w-full focus-visible:ring-0"
 											/>
 											<kbd className="pointer-events-none h-5 select-none absolute right-2 top-1/2 -translate-y-1/2 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
@@ -614,9 +618,9 @@ export const AdvanceBreadcrumb = () => {
 							</Popover>
 
 							{/* Close button to go back to environment */}
-							<Button
+							<Button aria-label="Action"
 								variant="ghost"
-								size="icon"
+								shape="square"
 								className="size-7 ml-1 hidden md:flex"
 								onClick={() => {
 									router.push(

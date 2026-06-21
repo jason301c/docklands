@@ -1,12 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from "@/components/ui/sheet";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { TerminalLine } from "../dashboard/docker/logs/terminal-line";
 import type { LogLine } from "../dashboard/docker/logs/utils";
 
@@ -41,17 +35,15 @@ export const DrawerLogs = ({ isOpen, onClose, filteredLogs }: Props) => {
 		}
 	}, [filteredLogs, autoScroll]);
 	return (
-		<Sheet
+		<Dialog.Root
 			open={!!isOpen}
-			onOpenChange={() => {
-				onClose();
+			onOpenChange={(open) => {
+				if (!open) onClose();
 			}}
 		>
-			<SheetContent className="sm:max-w-[740px] flex flex-col">
-				<SheetHeader>
-					<SheetTitle>Deployment Logs</SheetTitle>
-					<SheetDescription>Details of the request log entry.</SheetDescription>
-				</SheetHeader>
+			<Dialog size="xl" className="flex flex-col">
+				<Dialog.Title>Deployment Logs</Dialog.Title>
+				<Dialog.Description>Details of the request log entry.</Dialog.Description>
 				<div
 					ref={scrollRef}
 					onScroll={handleScroll}
@@ -72,7 +64,7 @@ export const DrawerLogs = ({ isOpen, onClose, filteredLogs }: Props) => {
 						</div>
 					)}
 				</div>
-			</SheetContent>
-		</Sheet>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

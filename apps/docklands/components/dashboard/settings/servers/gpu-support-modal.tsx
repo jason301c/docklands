@@ -1,36 +1,32 @@
 import { useState } from "react";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { GPUSupport } from "./gpu-support";
 
 export const GPUSupportModal = () => {
 	const [isOpen, setIsOpen] = useState(false);
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				<DropdownMenuItem
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
+				<DropdownMenu.Item
 					className="w-full cursor-pointer"
 					onSelect={(e) => e.preventDefault()}
 				>
 					<span>GPU Setup</span>
-				</DropdownMenuItem>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-4xl">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
+				</DropdownMenu.Item>
+			
+)} />
+			<Dialog className="sm:max-w-4xl">
+				<div>
+					<Dialog.Title className="flex items-center gap-2">
 						Docklands Server GPU Setup
-					</DialogTitle>
-				</DialogHeader>
+					</Dialog.Title>
+				</div>
 
 				<GPUSupport serverId="" />
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

@@ -2,19 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -22,9 +16,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
 
 const DockerProviderSchema = z.object({
 	externalPort: z.preprocess((a) => {
@@ -92,16 +86,16 @@ export const ShowExternalRedisCredentials = ({ redisId }: Props) => {
 	return (
 		<>
 			<div className="flex w-full flex-col gap-5 ">
-				<Card className="bg-background">
-					<CardHeader>
-						<CardTitle className="text-xl">External Credentials</CardTitle>
-						<CardDescription>
+				<LayerCard className="bg-background">
+					<div>
+						<h3 className="text-xl">External Credentials</h3>
+						<p>
 							In order to make the database reachable through the internet, you
 							must set a port and ensure that the port is not being used by
 							another application or database
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="flex w-full flex-col gap-4">
+						</p>
+					</div>
+					<div className="flex w-full flex-col gap-4">
 						{!getIp && (
 							<AlertBlock type="warning">
 								You need to set an IP address in your{" "}
@@ -154,14 +148,14 @@ export const ShowExternalRedisCredentials = ({ redisId }: Props) => {
 								)}
 
 								<div className="flex justify-end">
-									<Button type="submit" isLoading={isPending}>
+									<Button type="submit" loading={isPending}>
 										Save
 									</Button>
 								</div>
 							</form>
 						</Form>
-					</CardContent>
-				</Card>
+					</div>
+				</LayerCard>
 			</div>
 		</>
 	);

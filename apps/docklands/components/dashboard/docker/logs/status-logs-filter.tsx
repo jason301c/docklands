@@ -1,19 +1,9 @@
 import { CheckIcon } from "lucide-react";
 import type React from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandGroup,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Separator } from "@/components/shared/separator";
 import { cn } from "@/shared/utils";
 
 interface StatusLogsFilterProps {
@@ -36,135 +26,114 @@ export function StatusLogsFilter({
 	const selectedValues = new Set(value as string[]);
 	const allSelected = selectedValues.size === 0;
 
+	const getVariant = (status?: string) =>
+		status === "success"
+			? "green"
+			: status === "error"
+				? "red"
+				: status === "warning"
+					? "orange"
+					: status === "info"
+						? "blue"
+						: status === "debug"
+							? "warning"
+							: "neutral";
+
 	const getSelectedBadges = () => {
 		if (allSelected) {
 			return (
-				<Badge variant="blank" className="rounded-sm px-1 font-normal">
+				<Badge variant="neutral" className="rounded-sm px-1 font-normal">
 					All
 				</Badge>
 			);
 		}
 
-		if (selectedValues.size >= 1) {
-			const selected = options.find((opt) => selectedValues.has(opt.value));
-			return (
-				<>
-					<Badge
-						variant={
-							selected?.value === "success"
-								? "green"
-								: selected?.value === "error"
-									? "red"
-									: selected?.value === "warning"
-										? "orange"
-										: selected?.value === "info"
-											? "blue"
-											: selected?.value === "debug"
-												? "yellow"
-												: "blank"
-						}
-						className="rounded-sm px-1 font-normal"
-					>
-						{selected?.label}
+		const selected = options.find((opt) => selectedValues.has(opt.value));
+		return (
+			<>
+				<Badge
+					variant={getVariant(selected?.value)}
+					className="rounded-sm px-1 font-normal"
+				>
+					{selected?.label}
+				</Badge>
+				{selectedValues.size > 1 && (
+					<Badge variant="neutral" className="rounded-sm px-1 font-normal">
+						+{selectedValues.size - 1}
 					</Badge>
-					{selectedValues.size > 1 && (
-						<Badge variant="blank" className="rounded-sm px-1 font-normal">
-							+{selectedValues.size - 1}
-						</Badge>
-					)}
-				</>
-			);
-		}
-
-		return null;
+				)}
+			</>
+		);
 	};
 
 	return (
-		<Popover>
-			<PopoverTrigger asChild>
-				<Button
-					variant="outline"
-					size="sm"
-					className="h-9 bg-input text-sm placeholder-gray-400 w-full sm:w-auto"
-				>
-					{title}
-					<Separator orientation="vertical" className="mx-2 h-4" />
-					<div className="space-x-1 flex">{getSelectedBadges()}</div>
-				</Button>
-			</PopoverTrigger>
-			<PopoverContent className="w-[200px] p-0" align="start">
-				<Command>
-					<CommandList>
-						<CommandGroup>
-							<CommandItem
-								onSelect={() => {
-									setValue?.([]); // Empty array means "All"
+		<DropdownMenu>
+			<DropdownMenu.Trigger
+				render={
+					<Button
+						variant="outline"
+						size="sm"
+						className="h-9 bg-input text-sm placeholder-gray-400 w-full sm:w-auto"
+					>
+						{title}
+						<Separator orientation="vertical" className="mx-2 h-4" />
+						<div className="space-x-1 flex">{getSelectedBadges()}</div>
+					</Button>
+				}
+			/>
+			<DropdownMenu.Content className="w-[200px]" align="start">
+				<DropdownMenu.Group>
+					<DropdownMenu.CheckboxItem
+						checked={allSelected}
+						onCheckedChange={() => setValue?.([])}
+					>
+						<div
+							className={cn(
+								"mr-2 flex h-4 w-4 items-center rounded-sm border border-primary",
+								allSelected
+									? "bg-primary text-primary-foreground"
+									: "opacity-50 [&_svg]:invisible",
+							)}
+						>
+							<CheckIcon className="h-4 w-4" />
+						</div>
+						<Badge variant="neutral">All</Badge>
+					</DropdownMenu.CheckboxItem>
+					{options.map((option) => {
+						const isSelected = selectedValues.has(option.value);
+						return (
+							<DropdownMenu.CheckboxItem
+								key={option.value}
+								checked={isSelected}
+								onCheckedChange={() => {
+									const newValues = new Set(selectedValues);
+									if (isSelected) {
+										newValues.delete(option.value);
+									} else {
+										newValues.add(option.value);
+									}
+									setValue?.(Array.from(newValues));
 								}}
 							>
 								<div
 									className={cn(
 										"mr-2 flex h-4 w-4 items-center rounded-sm border border-primary",
-										allSelected
+										isSelected
 											? "bg-primary text-primary-foreground"
 											: "opacity-50 [&_svg]:invisible",
 									)}
 								>
-									<CheckIcon className={cn("h-4 w-4")} />
+									<CheckIcon className="h-4 w-4" />
 								</div>
-								<Badge variant="blank">All</Badge>
-							</CommandItem>
-							{options.map((option) => {
-								const isSelected = selectedValues.has(option.value);
-								return (
-									<CommandItem
-										key={option.value}
-										onSelect={() => {
-											const newValues = new Set(selectedValues);
-											if (isSelected) {
-												newValues.delete(option.value);
-											} else {
-												newValues.add(option.value);
-											}
-											setValue?.(Array.from(newValues));
-										}}
-									>
-										<div
-											className={cn(
-												"mr-2 flex h-4 w-4 items-center rounded-sm border border-primary",
-												isSelected
-													? "bg-primary text-primary-foreground"
-													: "opacity-50 [&_svg]:invisible",
-											)}
-										>
-											<CheckIcon className={cn("h-4 w-4")} />
-										</div>
-										{option.icon && (
-											<option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-										)}
-										<Badge
-											variant={
-												option.value === "success"
-													? "green"
-													: option.value === "error"
-														? "red"
-														: option.value === "warning"
-															? "orange"
-															: option.value === "info"
-																? "blue"
-																: option.value === "debug"
-																	? "yellow"
-																	: "blank"
-											}
-										>
-											{option.label}
-										</Badge>
-									</CommandItem>
-								);
-							})}
-						</CommandGroup>
-					</CommandList>
-				</Command>
-			</PopoverContent>
-		</Popover>
+								{option.icon && (
+									<option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+								)}
+								<Badge variant={getVariant(option.value)}>{option.label}</Badge>
+							</DropdownMenu.CheckboxItem>
+						);
+					})}
+				</DropdownMenu.Group>
+			</DropdownMenu.Content>
+		</DropdownMenu>
 	);
 }

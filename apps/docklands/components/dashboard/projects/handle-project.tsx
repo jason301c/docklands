@@ -1,25 +1,16 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-
 import { PlusIcon, SquarePen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { TagSelector } from "@/components/shared/tag-selector";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -27,9 +18,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Textarea } from "@cloudflare/kumo/components/input";
 
 const AddProjectSchema = z.object({
 	name: z
@@ -153,28 +144,26 @@ export const HandleProject = ({ projectId }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				{projectId ? (
-					<DropdownMenuItem
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={projectId ? (
+					<DropdownMenu.Item
 						className="w-full cursor-pointer space-x-3"
 						onSelect={(e) => e.preventDefault()}
 					>
 						<SquarePen className="size-4" />
 						<span>Update</span>
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 				) : (
 					<Button>
 						<PlusIcon className="h-4 w-4" />
 						Create Project
 					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:m:max-w-lg ">
-				<DialogHeader>
-					<DialogTitle>{projectId ? "Update" : "Add a"} project</DialogTitle>
-					<DialogDescription>The home of something big!</DialogDescription>
-				</DialogHeader>
+				) as never} />
+			<Dialog className="sm:m:max-w-lg ">
+				<div>
+					<Dialog.Title>{projectId ? "Update" : "Add a"} project</Dialog.Title>
+					<Dialog.Description>The home of something big!</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
 					<form
@@ -233,17 +222,17 @@ export const HandleProject = ({ projectId }: Props) => {
 						</div>
 					</form>
 
-					<DialogFooter>
+					<div>
 						<Button
-							isLoading={form.formState.isSubmitting}
+							loading={form.formState.isSubmitting}
 							form="hook-form-add-project"
 							type="submit"
 						>
 							{projectId ? "Update" : "Create"}
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

@@ -1,13 +1,7 @@
 import { FancyAnsi } from "fancy-ansi";
 import escapeRegExp from "lodash/escapeRegExp";
-import { Badge } from "@/components/ui/badge";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipPortal,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
 import { getLogType, type LogLine } from "./utils";
 
@@ -68,20 +62,12 @@ export function TerminalLine({ log, noTimestamp, searchTerm }: LogLineProps) {
 			<div className={cn("w-2 h-full flex-shrink-0 rounded-[3px]", color)} />
 		);
 		return timestamp ? (
-			<TooltipProvider delayDuration={0} disableHoverableContent>
-				<Tooltip>
-					<TooltipTrigger asChild>{square}</TooltipTrigger>
-					<TooltipPortal>
-						<TooltipContent
-							sideOffset={5}
-							className="bg-popover border-border z-[99999]"
-						>
+			<TooltipProvider delay={0}>
+				<Tooltip content={<>
 							<p className="text text-xs text-muted-foreground break-all max-w-md">
 								<pre>{timestamp}</pre>
 							</p>
-						</TooltipContent>
-					</TooltipPortal>
-				</Tooltip>
+						</>} className="bg-popover border-border z-[99999]"  asChild>{square}</Tooltip>
 			</TooltipProvider>
 		) : (
 			square

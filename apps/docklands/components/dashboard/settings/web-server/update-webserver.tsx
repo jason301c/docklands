@@ -7,20 +7,10 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
 
 type ServiceStatus = {
 	status: "healthy" | "unhealthy";
@@ -133,8 +123,9 @@ export const UpdateWebServer = () => {
 	};
 
 	return (
-		<AlertDialog open={open}>
-			<AlertDialogTrigger asChild>
+		<Dialog.Root role="alertdialog" open={open}>
+			<Dialog.Trigger render={(
+
 				<Button
 					className="relative w-full"
 					variant="secondary"
@@ -147,17 +138,18 @@ export const UpdateWebServer = () => {
 					</span>
 					Update Server
 				</Button>
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>
+			
+)} />
+			<Dialog>
+				<div>
+					<Dialog.Title>
 						{modalState === "idle" && "Are you absolutely sure?"}
 						{modalState === "checking" && "Verifying Services..."}
 						{modalState === "results" &&
 							(allHealthy ? "Ready to Update" : "Service Issues Detected")}
 						{modalState === "updating" && "Server update in progress"}
-					</AlertDialogTitle>
-					<AlertDialogDescription asChild>
+					</Dialog.Title>
+					<Dialog.Description>
 						<div>
 							{modalState === "idle" && (
 								<span>
@@ -230,33 +222,33 @@ export const UpdateWebServer = () => {
 								</span>
 							)}
 						</div>
-					</AlertDialogDescription>
-				</AlertDialogHeader>
+					</Dialog.Description>
+				</div>
 				{modalState === "idle" && (
-					<AlertDialogFooter>
-						<AlertDialogCancel onClick={handleClose}>Cancel</AlertDialogCancel>
+					<div>
+						<Dialog.Close onClick={handleClose}>Cancel</Dialog.Close>
 						<Button variant="secondary" onClick={handleVerify}>
 							<RefreshCw className="h-4 w-4" />
 							Verify Status
 						</Button>
-						<AlertDialogAction onClick={handleConfirm}>
+						<Dialog.Close onClick={handleConfirm}>
 							Confirm
-						</AlertDialogAction>
-					</AlertDialogFooter>
+						</Dialog.Close>
+					</div>
 				)}
 				{modalState === "results" && (
-					<AlertDialogFooter>
-						<AlertDialogCancel onClick={handleClose}>Cancel</AlertDialogCancel>
+					<div>
+						<Dialog.Close onClick={handleClose}>Cancel</Dialog.Close>
 						<Button variant="secondary" onClick={handleVerify}>
 							<RefreshCw className="h-4 w-4" />
 							Re-check
 						</Button>
-						<AlertDialogAction onClick={handleConfirm}>
+						<Dialog.Close onClick={handleConfirm}>
 							{allHealthy ? "Confirm" : "Confirm Anyway"}
-						</AlertDialogAction>
-					</AlertDialogFooter>
+						</Dialog.Close>
+					</div>
 				)}
-			</AlertDialogContent>
-		</AlertDialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

@@ -1,12 +1,6 @@
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { ComposeActions } from "./actions";
 import { ShowProviderFormCompose } from "./generic/show";
 
@@ -24,23 +18,23 @@ export const ShowGeneralCompose = ({ composeId }: Props) => {
 
 	return (
 		<>
-			<Card className="bg-background">
-				<CardHeader>
+			<LayerCard className="bg-background">
+				<div>
 					<div className="flex flex-row gap-2 justify-between flex-wrap">
-						<CardTitle className="text-xl">Deploy Settings</CardTitle>
+						<h3 className="text-xl">Deploy Settings</h3>
 						<Badge>
 							{data?.composeType === "docker-compose" ? "Compose" : "Stack"}
 						</Badge>
 					</div>
 
-					<CardDescription>
+					<p>
 						Create a compose file to deploy your compose
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="flex flex-col gap-4 flex-wrap">
+					</p>
+				</div>
+				<div className="flex flex-col gap-4 flex-wrap">
 					<ComposeActions composeId={composeId} />
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 			<ShowProviderFormCompose composeId={composeId} />
 		</>
 	);

@@ -24,6 +24,7 @@ import { redis } from "./redis";
 import { schedules } from "./schedule";
 import { sshKeys } from "./ssh-key";
 import { generateAppName } from "./utils";
+
 export const serverStatus = pgEnum("serverStatus", ["active", "inactive"]);
 export const serverType = pgEnum("serverType", ["deploy", "build"]);
 

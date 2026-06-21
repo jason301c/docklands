@@ -1,14 +1,10 @@
 import copy from "copy-to-clipboard";
 import { CopyIcon, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { CardContent } from "@/components/ui/card";
-import {
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 
 interface Props {
 	serverId?: string;
@@ -21,11 +17,11 @@ export const AddManager = ({ serverId }: Props) => {
 
 	return (
 		<>
-			<CardContent className="sm:max-w-4xl  flex flex-col gap-4 px-0">
-				<DialogHeader>
-					<DialogTitle>Add a new manager</DialogTitle>
-					<DialogDescription>Add a new manager</DialogDescription>
-				</DialogHeader>
+			<div className="sm:max-w-4xl  flex flex-col gap-4 px-0">
+				<div>
+					<Dialog.Title>Add a new manager</Dialog.Title>
+					<Dialog.Description>Add a new manager</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				{isPending ? (
 					<Loader2 className="w-full animate-spin text-muted-foreground" />
@@ -74,7 +70,7 @@ export const AddManager = ({ serverId }: Props) => {
 						</div>
 					</>
 				)}
-			</CardContent>
+			</div>
 		</>
 	);
 };

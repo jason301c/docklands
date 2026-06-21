@@ -26,39 +26,16 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Table } from "@cloudflare/kumo/components/table";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { createColumns } from "./columns";
 import { DnsHelperModal } from "./dns-helper-modal";
 import { AddDomain } from "./handle-domain";
@@ -226,21 +203,21 @@ export const ShowDomains = ({ id, type }: Props) => {
 
 	return (
 		<div className="flex w-full flex-col gap-5 ">
-			<Card className="bg-background">
-				<CardHeader className="flex flex-row items-center flex-wrap gap-4 justify-between">
+			<LayerCard className="bg-background">
+				<div className="flex flex-row items-center flex-wrap gap-4 justify-between">
 					<div className="flex flex-col gap-1">
-						<CardTitle className="text-xl">Domains</CardTitle>
-						<CardDescription>
+						<h3 className="text-xl">Domains</h3>
+						<p>
 							Domains are used to access to the application
-						</CardDescription>
+						</p>
 					</div>
 
 					<div className="flex flex-row gap-2 flex-wrap">
 						{data && data?.length > 0 && (
 							<>
-								<Button
+								<Button aria-label="Action"
 									variant="outline"
-									size="icon"
+									shape="square"
 									onClick={() => {
 										const next = viewMode === "grid" ? "table" : "grid";
 										localStorage.setItem("domains-view-mode", next);
@@ -263,8 +240,8 @@ export const ShowDomains = ({ id, type }: Props) => {
 							</>
 						)}
 					</div>
-				</CardHeader>
-				<CardContent className="flex w-full flex-row gap-4">
+				</div>
+				<div className="flex w-full flex-row gap-4">
 					{isLoadingDomains ? (
 						<div className="flex w-full flex-row gap-4 min-h-[40vh] justify-center items-center">
 							<Loader2 className="size-5 animate-spin text-muted-foreground" />
@@ -303,21 +280,23 @@ export const ShowDomains = ({ id, type }: Props) => {
 									className="md:max-w-sm"
 								/>
 								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
+									<DropdownMenu.Trigger render={(
+
 										<Button
 											variant="outline"
 											className="sm:ml-auto max-sm:w-full"
 										>
 											Columns <ChevronDown className="ml-2 h-4 w-4" />
 										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
+									
+)} />
+									<DropdownMenu.Content align="end">
 										{table
 											.getAllColumns()
 											.filter((column) => column.getCanHide())
 											.map((column) => {
 												return (
-													<DropdownMenuCheckboxItem
+													<DropdownMenu.CheckboxItem
 														key={column.id}
 														className="capitalize"
 														checked={column.getIsVisible()}
@@ -326,60 +305,60 @@ export const ShowDomains = ({ id, type }: Props) => {
 														}
 													>
 														{column.id}
-													</DropdownMenuCheckboxItem>
+													</DropdownMenu.CheckboxItem>
 												);
 											})}
-									</DropdownMenuContent>
+									</DropdownMenu.Content>
 								</DropdownMenu>
 							</div>
 							<div className="rounded-md border">
 								<Table>
-									<TableHeader>
+									<Table.Header>
 										{table.getHeaderGroups().map((headerGroup) => (
-											<TableRow key={headerGroup.id}>
+											<Table.Row key={headerGroup.id}>
 												{headerGroup.headers.map((header) => {
 													return (
-														<TableHead key={header.id}>
+														<Table.Head key={header.id}>
 															{header.isPlaceholder
 																? null
 																: flexRender(
 																		header.column.columnDef.header,
 																		header.getContext(),
 																	)}
-														</TableHead>
+														</Table.Head>
 													);
 												})}
-											</TableRow>
+											</Table.Row>
 										))}
-									</TableHeader>
-									<TableBody>
+									</Table.Header>
+									<Table.Body>
 										{table?.getRowModel()?.rows?.length ? (
 											table.getRowModel().rows.map((row) => (
-												<TableRow
+												<Table.Row
 													key={row.id}
 													data-state={row.getIsSelected() && "selected"}
 												>
 													{row.getVisibleCells().map((cell) => (
-														<TableCell key={cell.id}>
+														<Table.Cell key={cell.id}>
 															{flexRender(
 																cell.column.columnDef.cell,
 																cell.getContext(),
 															)}
-														</TableCell>
+														</Table.Cell>
 													))}
-												</TableRow>
+												</Table.Row>
 											))
 										) : (
-											<TableRow>
-												<TableCell
+											<Table.Row>
+												<Table.Cell
 													colSpan={columns.length}
 													className="h-24 text-center"
 												>
 													No results.
-												</TableCell>
-											</TableRow>
+												</Table.Cell>
+											</Table.Row>
 										)}
-									</TableBody>
+									</Table.Body>
 								</Table>
 							</div>
 							{data && data?.length > 0 && (
@@ -410,11 +389,11 @@ export const ShowDomains = ({ id, type }: Props) => {
 							{data?.map((item) => {
 								const validationState = validationStates[item.host];
 								return (
-									<Card
+									<LayerCard
 										key={item.domainId}
 										className="relative overflow-hidden w-full border transition-all hover:shadow-md bg-transparent h-fit"
 									>
-										<CardContent className="p-6">
+										<div className="p-6">
 											<div className="flex flex-col gap-4">
 												{/* Service & Domain Info */}
 												<div className="flex items-center justify-between flex-wrap gap-y-2">
@@ -444,9 +423,9 @@ export const ShowDomains = ({ id, type }: Props) => {
 																type={type}
 																domainId={item.domainId}
 															>
-																<Button
+																<Button aria-label="Action"
 																	variant="ghost"
-																	size="icon"
+																	shape="square"
 																	className="group hover:bg-blue-500/10"
 																>
 																	<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
@@ -473,11 +452,11 @@ export const ShowDomains = ({ id, type }: Props) => {
 																		});
 																}}
 															>
-																<Button
+																<Button aria-label="Action"
 																	variant="ghost"
-																	size="icon"
+																	shape="square"
 																	className="group hover:bg-red-500/10"
-																	isLoading={isRemoving}
+																	loading={isRemoving}
 																>
 																	<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 																</Button>
@@ -499,88 +478,85 @@ export const ShowDomains = ({ id, type }: Props) => {
 												{/* Domain Details */}
 												<div className="flex flex-wrap gap-3">
 													<TooltipProvider>
-														<Tooltip>
-															<TooltipTrigger asChild>
+														<Tooltip content={<>
+																<p>URL path for this service</p>
+															</>}  asChild>
 																<Badge variant="secondary">
 																	<InfoIcon className="size-3 mr-1" />
 																	Path: {item.path || "/"}
 																</Badge>
-															</TooltipTrigger>
-															<TooltipContent>
-																<p>URL path for this service</p>
-															</TooltipContent>
-														</Tooltip>
+															</Tooltip>
 													</TooltipProvider>
 
 													<TooltipProvider>
-														<Tooltip>
-															<TooltipTrigger asChild>
+														<Tooltip content={<>
+																<p>Container port exposed</p>
+															</>}  asChild>
 																<Badge variant="secondary">
 																	<InfoIcon className="size-3 mr-1" />
 																	Port: {item.port}
 																</Badge>
-															</TooltipTrigger>
-															<TooltipContent>
-																<p>Container port exposed</p>
-															</TooltipContent>
-														</Tooltip>
+															</Tooltip>
 													</TooltipProvider>
 
 													<TooltipProvider>
-														<Tooltip>
-															<TooltipTrigger asChild>
-																<Badge
-																	variant={item.https ? "outline" : "secondary"}
-																>
-																	{item.https ? "HTTPS" : "HTTP"}
-																</Badge>
-															</TooltipTrigger>
-															<TooltipContent>
+														<Tooltip content={<>
 																<p>
 																	{item.https
 																		? "Secure HTTPS connection"
 																		: "Standard HTTP connection"}
 																</p>
-															</TooltipContent>
-														</Tooltip>
+															</>}  asChild>
+																<Badge
+																	variant={item.https ? "outline" : "secondary"}
+																>
+																	{item.https ? "HTTPS" : "HTTP"}
+																</Badge>
+															</Tooltip>
 													</TooltipProvider>
 
 													{item.certificateType && (
 														<TooltipProvider>
-															<Tooltip>
-																<TooltipTrigger asChild>
+															<Tooltip content={<>
+																	<p>SSL Certificate Provider</p>
+																</>}  asChild>
 																	<Badge variant="outline">
 																		Cert: {item.certificateType}
 																	</Badge>
-																</TooltipTrigger>
-																<TooltipContent>
-																	<p>SSL Certificate Provider</p>
-																</TooltipContent>
-															</Tooltip>
+																</Tooltip>
 														</TooltipProvider>
 													)}
 
 													{item.middlewares?.map((middleware, index) => (
 														<TooltipProvider key={`${middleware}-${index}`}>
-															<Tooltip>
-																<TooltipTrigger asChild>
+															<Tooltip content={<>
+																	<p>Traefik middleware reference</p>
+																</>}  asChild>
 																	<Badge variant="secondary">
 																		<InfoIcon className="size-3 mr-1" />
 																		Middleware: {middleware}
 																	</Badge>
-																</TooltipTrigger>
-																<TooltipContent>
-																	<p>Traefik middleware reference</p>
-																</TooltipContent>
-															</Tooltip>
+																</Tooltip>
 														</TooltipProvider>
 													))}
 
 													<TooltipProvider>
-														<Tooltip>
-															<TooltipTrigger asChild>
-																<Badge
+														<Tooltip content={<>
+																{validationState?.error ? (
+																	<div className="flex flex-col gap-1">
+																		<p className="font-medium text-red-500">
+																			Error:
+																		</p>
+																		<p>{validationState.error}</p>
+																	</div>
+																) : (
+																	"Click to validate DNS configuration"
+																)}
+															</>} className="max-w-xs"  asChild>
+																<Button
+																	type="button"
 																	variant="outline"
+																	size="xs"
 																	className={
 																		validationState?.isValid
 																			? "bg-green-500/10 text-green-500 cursor-pointer"
@@ -616,32 +592,19 @@ export const ShowDomains = ({ id, type }: Props) => {
 																			Validate DNS
 																		</>
 																	)}
-																</Badge>
-															</TooltipTrigger>
-															<TooltipContent className="max-w-xs">
-																{validationState?.error ? (
-																	<div className="flex flex-col gap-1">
-																		<p className="font-medium text-red-500">
-																			Error:
-																		</p>
-																		<p>{validationState.error}</p>
-																	</div>
-																) : (
-																	"Click to validate DNS configuration"
-																)}
-															</TooltipContent>
-														</Tooltip>
+																</Button>
+															</Tooltip>
 													</TooltipProvider>
 												</div>
 											</div>
-										</CardContent>
-									</Card>
+										</div>
+									</LayerCard>
 								);
 							})}
 						</div>
 					)}
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 		</div>
 	);
 };

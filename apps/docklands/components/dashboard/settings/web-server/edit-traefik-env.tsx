@@ -1,22 +1,14 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { useHealthCheckAfterMutation } from "@/client/hooks/use-health-check-after-mutation";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -24,7 +16,7 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
+} from "@/components/shared/form";
 
 const schema = z.object({
 	env: z.string(),
@@ -105,15 +97,15 @@ export const EditTraefikEnv = ({ children, serverId }: Props) => {
 	}, [form, onSubmit, isPending, canEdit]);
 
 	return (
-		<Dialog>
-			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="sm:max-w-4xl">
-				<DialogHeader>
-					<DialogTitle>Update Traefik Environment</DialogTitle>
-					<DialogDescription>
+		<Dialog.Root>
+			<Dialog.Trigger render={children as never} />
+			<Dialog className="sm:max-w-4xl">
+				<div>
+					<Dialog.Title>Update Traefik Environment</Dialog.Title>
+					<Dialog.Description>
 						Update the traefik environment variables
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -166,18 +158,18 @@ TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_HTTP_CHALLENGE_DNS_PROVIDER=cloudflare
 						</div>
 					</form>
 
-					<DialogFooter>
+					<div>
 						<Button
-							isLoading={isPending || isHealthCheckExecuting}
+							loading={isPending || isHealthCheckExecuting}
 							disabled={canEdit || isPending || isHealthCheckExecuting}
 							form="hook-form-update-server-traefik-config"
 							type="submit"
 						>
 							Update
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

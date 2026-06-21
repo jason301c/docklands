@@ -2,20 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { PenBoxIcon, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -23,8 +15,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const organizationSchema = z.object({
 	name: z.string().min(1, {
@@ -99,17 +91,16 @@ export function AddOrganization({ organizationId }: Props) {
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				{organizationId ? (
-					<DropdownMenuItem
+		<Dialog.Root open={open} onOpenChange={setOpen}>
+			<Dialog.Trigger render={organizationId ? (
+					<DropdownMenu.Item
 						className="group cursor-pointer hover:bg-blue-500/10"
 						onSelect={(e) => e.preventDefault()}
 					>
 						<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 				) : (
-					<DropdownMenuItem
+					<DropdownMenu.Item
 						className="gap-2 p-2"
 						onSelect={(e) => e.preventDefault()}
 					>
@@ -119,20 +110,19 @@ export function AddOrganization({ organizationId }: Props) {
 						<div className="font-medium text-muted-foreground">
 							Add organization
 						</div>
-					</DropdownMenuItem>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px]">
-				<DialogHeader>
-					<DialogTitle>
+					</DropdownMenu.Item>
+				) as never} />
+			<Dialog className="sm:max-w-[425px]">
+				<div>
+					<Dialog.Title>
 						{organizationId ? "Update organization" : "Add organization"}
-					</DialogTitle>
-					<DialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						{organizationId
 							? "Update the organization name and logo"
 							: "Create a new organization to manage your projects."}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<Form {...form}>
 					<form
 						onSubmit={form.handleSubmit(onSubmit)}
@@ -173,14 +163,14 @@ export function AddOrganization({ organizationId }: Props) {
 								</FormItem>
 							)}
 						/>
-						<DialogFooter>
-							<Button type="submit" isLoading={isPending}>
+						<div>
+							<Button type="submit" loading={isPending}>
 								{organizationId ? "Update organization" : "Create organization"}
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 }

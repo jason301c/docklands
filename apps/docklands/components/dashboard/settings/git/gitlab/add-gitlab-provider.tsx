@@ -3,21 +3,15 @@ import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { useUrl } from "@/client/hooks/use-url";
 import { GitlabIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -26,8 +20,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const Schema = z.object({
 	name: z.string().min(1, {
@@ -112,22 +106,24 @@ export const AddGitlabProvider = () => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
 				<Button
-					variant="default"
+					variant="primary"
 					className="flex items-center space-x-1 bg-purple-700 text-white hover:bg-purple-600"
 				>
 					<GitlabIcon />
 					<span>GitLab</span>
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl  ">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
+			
+)} />
+			<Dialog className="sm:max-w-2xl  ">
+				<div>
+					<Dialog.Title className="flex items-center gap-2">
 						GitLab Provider <GitlabIcon className="size-5" />
-					</DialogTitle>
-				</DialogHeader>
+					</Dialog.Title>
+				</div>
 
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
@@ -136,7 +132,7 @@ export const AddGitlabProvider = () => {
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="grid w-full gap-1"
 					>
-						<CardContent className="p-0">
+						<div className="p-0">
 							<div className="flex flex-col gap-4">
 								<p className="text-muted-foreground text-sm">
 									To integrate your GitLab account, you need to create a new
@@ -292,14 +288,14 @@ export const AddGitlabProvider = () => {
 									)}
 								/>
 
-								<Button isLoading={form.formState.isSubmitting}>
+								<Button loading={form.formState.isSubmitting}>
 									Configure GitLab App
 								</Button>
 							</div>
-						</CardContent>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

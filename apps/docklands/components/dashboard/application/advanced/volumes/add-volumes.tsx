@@ -3,20 +3,13 @@ import { PlusIcon } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -24,10 +17,11 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Radio } from "@cloudflare/kumo/primitives/radio";
+import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
 import { cn } from "@/shared/utils";
 
 interface Props {
@@ -154,14 +148,16 @@ export const AddVolumes = ({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger className="" asChild>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger className="" render={(
+
 				<Button>{children}</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-3xl">
-				<DialogHeader>
-					<DialogTitle>Volumes / Mounts</DialogTitle>
-				</DialogHeader>
+			
+)} />
+			<Dialog className="sm:max-w-3xl">
+				<div>
+					<Dialog.Title>Volumes / Mounts</Dialog.Title>
+				</div>
 				{/* {isError && (
         <div className="flex items-center flex-row gap-4 rounded-lg bg-red-50 p-2 dark:bg-red-950">
           <AlertTriangle className="text-red-600 dark:text-red-400" />
@@ -213,7 +209,7 @@ export const AddVolumes = ({
 												<FormItem className="flex items-center space-x-3 space-y-0">
 													<FormControl className="w-full">
 														<div>
-															<RadioGroupItem
+															<Radio.Root
 																value="bind"
 																id="bind"
 																className="peer sr-only"
@@ -233,7 +229,7 @@ export const AddVolumes = ({
 												<FormItem className="flex items-center space-x-3 space-y-0">
 													<FormControl className="w-full">
 														<div>
-															<RadioGroupItem
+															<Radio.Root
 																value="volume"
 																id="volume"
 																className="peer sr-only"
@@ -257,7 +253,7 @@ export const AddVolumes = ({
 											>
 												<FormControl className="w-full">
 													<div>
-														<RadioGroupItem
+														<Radio.Root
 															value="file"
 															id="file"
 															className="peer sr-only"
@@ -382,17 +378,17 @@ PORT=3000
 						</div>
 					</form>
 
-					<DialogFooter>
+					<div>
 						<Button
-							isLoading={form.formState.isSubmitting}
+							loading={form.formState.isSubmitting}
 							form="hook-form-volume"
 							type="submit"
 						>
 							Create
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

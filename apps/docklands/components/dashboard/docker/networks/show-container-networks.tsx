@@ -1,22 +1,8 @@
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Table } from "@cloudflare/kumo/components/table";
 
 interface Props {
 	containerId: string;
@@ -55,22 +41,24 @@ export const ShowContainerNetworks = ({ containerId, serverId }: Props) => {
 	const entries = Object.entries(networks);
 
 	return (
-		<Dialog>
-			<DialogTrigger asChild>
-				<DropdownMenuItem
+		<Dialog.Root>
+			<Dialog.Trigger render={(
+
+				<DropdownMenu.Item
 					className="w-full cursor-pointer"
 					onSelect={(e) => e.preventDefault()}
 				>
 					View Networks
-				</DropdownMenuItem>
-			</DialogTrigger>
-			<DialogContent className="w-full md:w-[70vw] min-w-[70vw]">
-				<DialogHeader>
-					<DialogTitle>Container Networks</DialogTitle>
-					<DialogDescription>
+				</DropdownMenu.Item>
+			
+)} />
+			<Dialog className="w-full md:w-[70vw] min-w-[70vw]">
+				<div>
+					<Dialog.Title>Container Networks</Dialog.Title>
+					<Dialog.Description>
 						Networks attached to this container
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<div className="overflow-auto max-h-[70vh]">
 					{entries.length === 0 ? (
 						<div className="text-center text-muted-foreground py-8">
@@ -78,42 +66,42 @@ export const ShowContainerNetworks = ({ containerId, serverId }: Props) => {
 						</div>
 					) : (
 						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>Network</TableHead>
-									<TableHead>IP Address</TableHead>
-									<TableHead>Gateway</TableHead>
-									<TableHead>MAC Address</TableHead>
-									<TableHead>Aliases</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
+							<Table.Header>
+								<Table.Row>
+									<Table.Head>Network</Table.Head>
+									<Table.Head>IP Address</Table.Head>
+									<Table.Head>Gateway</Table.Head>
+									<Table.Head>MAC Address</Table.Head>
+									<Table.Head>Aliases</Table.Head>
+								</Table.Row>
+							</Table.Header>
+							<Table.Body>
 								{entries.map(([name, network]) => (
-									<TableRow key={name}>
-										<TableCell>
+									<Table.Row key={name}>
+										<Table.Cell>
 											<Badge variant="outline">{name}</Badge>
-										</TableCell>
-										<TableCell className="font-mono text-xs">
+										</Table.Cell>
+										<Table.Cell className="font-mono text-xs">
 											{network.IPAddress
 												? `${network.IPAddress}/${network.IPPrefixLen}`
 												: "-"}
-										</TableCell>
-										<TableCell className="font-mono text-xs">
+										</Table.Cell>
+										<Table.Cell className="font-mono text-xs">
 											{network.Gateway || "-"}
-										</TableCell>
-										<TableCell className="font-mono text-xs">
+										</Table.Cell>
+										<Table.Cell className="font-mono text-xs">
 											{network.MacAddress || "-"}
-										</TableCell>
-										<TableCell className="text-xs">
+										</Table.Cell>
+										<Table.Cell className="text-xs">
 											{network.Aliases?.join(", ") || "-"}
-										</TableCell>
-									</TableRow>
+										</Table.Cell>
+									</Table.Row>
 								))}
-							</TableBody>
+							</Table.Body>
 						</Table>
 					)}
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

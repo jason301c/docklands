@@ -2,20 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Dices } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import type z from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -24,22 +16,11 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input, NumberInput } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { domain } from "@/server/core/db/validations/domain";
 
 type Domain = z.infer<typeof domain>;
@@ -136,15 +117,13 @@ export const AddPreviewDomain = ({
 			});
 	};
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger className="" asChild>
-				{children}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>Domain</DialogTitle>
-					<DialogDescription>{dictionary.dialogDescription}</DialogDescription>
-				</DialogHeader>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger className="" render={children as never} />
+			<Dialog className="sm:max-w-2xl">
+				<div>
+					<Dialog.Title>Domain</Dialog.Title>
+					<Dialog.Description>{dictionary.dialogDescription}</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -175,13 +154,15 @@ export const AddPreviewDomain = ({
 														{...field}
 													/>
 												</FormControl>
-												<TooltipProvider delayDuration={0}>
-													<Tooltip>
-														<TooltipTrigger asChild>
+												<TooltipProvider delay={0}>
+													<Tooltip content={<>
+															<p>Generate sslip.io domain</p>
+														</>} side="left"
+															className="max-w-[10rem]"  asChild>
 															<Button
 																variant="secondary"
 																type="button"
-																isLoading={isLoadingGenerate}
+																loading={isLoadingGenerate}
 																onClick={() => {
 																	generateDomain({
 																		appName: previewDeployment?.appName || "",
@@ -199,15 +180,7 @@ export const AddPreviewDomain = ({
 															>
 																<Dices className="size-4 text-muted-foreground" />
 															</Button>
-														</TooltipTrigger>
-														<TooltipContent
-															side="left"
-															sideOffset={5}
-															className="max-w-[10rem]"
-														>
-															<p>Generate sslip.io domain</p>
-														</TooltipContent>
-													</Tooltip>
+														</Tooltip>
 												</TooltipProvider>
 											</div>
 
@@ -244,7 +217,8 @@ export const AddPreviewDomain = ({
 											<FormItem>
 												<FormLabel>Container Port</FormLabel>
 												<FormControl>
-													<NumberInput
+													<Input
+														type="number"
 														placeholder={"3000"}
 														{...field}
 														value={field.value ?? ""}
@@ -285,22 +259,22 @@ export const AddPreviewDomain = ({
 										render={({ field }) => (
 											<FormItem className="col-span-2">
 												<FormLabel>Certificate Provider</FormLabel>
-												<Select
+												<Select aria-label="Select option"
 													onValueChange={field.onChange}
 													defaultValue={field.value || ""}
 												>
 													<FormControl>
-														<SelectTrigger>
-															<SelectValue placeholder="Select a certificate provider" />
-														</SelectTrigger>
+														<>
+															
+														</>
 													</FormControl>
 
-													<SelectContent>
-														<SelectItem value="none">None</SelectItem>
-														<SelectItem value={"letsencrypt"}>
+													<>
+														<Select.Option value="none">None</Select.Option>
+														<Select.Option value={"letsencrypt"}>
 															Let's Encrypt
-														</SelectItem>
-													</SelectContent>
+														</Select.Option>
+													</>
 												</Select>
 												<FormMessage />
 											</FormItem>
@@ -311,13 +285,13 @@ export const AddPreviewDomain = ({
 						</div>
 					</form>
 
-					<DialogFooter>
-						<Button isLoading={isPending} form="hook-form" type="submit">
+					<div>
+						<Button loading={isPending} form="hook-form" type="submit">
 							{dictionary.submit}
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

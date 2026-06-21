@@ -2,18 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { InfoIcon, Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -21,25 +15,14 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import {
 	createConverter,
 	NumberInputWithSteps,
-} from "@/components/ui/number-input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/number-input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 const CPU_STEP = 0.25;
 const MEMORY_STEP_MB = 256;
@@ -191,15 +174,15 @@ export const ShowResources = ({ id, type }: Props) => {
 	};
 
 	return (
-		<Card className="bg-background">
-			<CardHeader>
-				<CardTitle className="text-xl">Resources</CardTitle>
-				<CardDescription>
+		<LayerCard className="bg-background">
+			<div>
+				<h3 className="text-xl">Resources</h3>
+				<p>
 					If you want to decrease or increase the resources to a specific.
 					application or database
-				</CardDescription>
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+				</p>
+			</div>
+			<div className="flex flex-col gap-4">
 				<AlertBlock type="info">
 					Please remember to click Redeploy after modify the resources to apply
 					the changes.
@@ -223,18 +206,19 @@ export const ShowResources = ({ id, type }: Props) => {
 											>
 												<FormLabel>Memory Limit</FormLabel>
 												<TooltipProvider>
-													<Tooltip delayDuration={0}>
-														<TooltipTrigger type="button">
-															<InfoIcon className="h-4 w-4 text-muted-foreground" />
-														</TooltipTrigger>
-														<TooltipContent>
+													<Tooltip delay={0} content={(
+
 															<p>
 																Memory hard limit in bytes. Example: 1GB =
 																1073741824 bytes. Use +/- buttons to adjust by
 																256 MB.
 															</p>
-														</TooltipContent>
-													</Tooltip>
+														
+)} render={(
+
+															<InfoIcon className="h-4 w-4 text-muted-foreground" />
+														
+)} />
 												</TooltipProvider>
 											</div>
 											<FormControl>
@@ -262,18 +246,19 @@ export const ShowResources = ({ id, type }: Props) => {
 										>
 											<FormLabel>Memory Reservation</FormLabel>
 											<TooltipProvider>
-												<Tooltip delayDuration={0}>
-													<TooltipTrigger type="button">
-														<InfoIcon className="h-4 w-4 text-muted-foreground" />
-													</TooltipTrigger>
-													<TooltipContent>
+												<Tooltip delay={0} content={(
+
 														<p>
 															Memory soft limit in bytes. Example: 256MB =
 															268435456 bytes. Use +/- buttons to adjust by 256
 															MB.
 														</p>
-													</TooltipContent>
-												</Tooltip>
+													
+)} render={(
+
+														<InfoIcon className="h-4 w-4 text-muted-foreground" />
+													
+)} />
 											</TooltipProvider>
 										</div>
 										<FormControl>
@@ -302,18 +287,19 @@ export const ShowResources = ({ id, type }: Props) => {
 											>
 												<FormLabel>CPU Limit</FormLabel>
 												<TooltipProvider>
-													<Tooltip delayDuration={0}>
-														<TooltipTrigger type="button">
-															<InfoIcon className="h-4 w-4 text-muted-foreground" />
-														</TooltipTrigger>
-														<TooltipContent>
+													<Tooltip delay={0} content={(
+
 															<p>
 																CPU quota in units of 10^-9 CPUs. Example: 2
 																CPUs = 2000000000. Use +/- buttons to adjust by
 																0.25 CPU.
 															</p>
-														</TooltipContent>
-													</Tooltip>
+														
+)} render={(
+
+															<InfoIcon className="h-4 w-4 text-muted-foreground" />
+														
+)} />
 												</TooltipProvider>
 											</div>
 											<FormControl>
@@ -342,18 +328,19 @@ export const ShowResources = ({ id, type }: Props) => {
 											>
 												<FormLabel>CPU Reservation</FormLabel>
 												<TooltipProvider>
-													<Tooltip delayDuration={0}>
-														<TooltipTrigger type="button">
-															<InfoIcon className="h-4 w-4 text-muted-foreground" />
-														</TooltipTrigger>
-														<TooltipContent>
+													<Tooltip delay={0} content={(
+
 															<p>
 																CPU shares (relative weight). Example: 1 CPU =
 																1000000000. Use +/- buttons to adjust by 0.25
 																CPU.
 															</p>
-														</TooltipContent>
-													</Tooltip>
+														
+)} render={(
+
+															<InfoIcon className="h-4 w-4 text-muted-foreground" />
+														
+)} />
 												</TooltipProvider>
 											</div>
 											<FormControl>
@@ -378,18 +365,19 @@ export const ShowResources = ({ id, type }: Props) => {
 								<div className="flex items-center gap-2">
 									<FormLabel className="text-base">Ulimits</FormLabel>
 									<TooltipProvider>
-										<Tooltip delayDuration={0}>
-											<TooltipTrigger type="button">
-												<InfoIcon className="h-4 w-4 text-muted-foreground" />
-											</TooltipTrigger>
-											<TooltipContent className="max-w-xs">
+										<Tooltip delay={0} className="max-w-xs" content={(
+
 												<p>
 													Set resource limits for the container. Each ulimit has
 													a soft limit (warning threshold) and hard limit
 													(maximum allowed). Use -1 for unlimited.
 												</p>
-											</TooltipContent>
-										</Tooltip>
+											
+)} render={(
+
+												<InfoIcon className="h-4 w-4 text-muted-foreground" />
+											
+)} />
 									</TooltipProvider>
 								</div>
 								<Button
@@ -418,25 +406,25 @@ export const ShowResources = ({ id, type }: Props) => {
 												render={({ field }) => (
 													<FormItem className="flex-1">
 														<FormLabel className="text-xs">Type</FormLabel>
-														<Select
+														<Select aria-label="Select option"
 															onValueChange={field.onChange}
 															value={field.value}
 														>
 															<FormControl>
-																<SelectTrigger>
-																	<SelectValue placeholder="Select ulimit" />
-																</SelectTrigger>
+																<>
+																	
+																</>
 															</FormControl>
-															<SelectContent>
+															<>
 																{ULIMIT_PRESETS.map((preset) => (
-																	<SelectItem
+																	<Select.Option
 																		key={preset.value}
 																		value={preset.value}
 																	>
 																		{preset.label}
-																	</SelectItem>
+																	</Select.Option>
 																))}
-															</SelectContent>
+															</>
 														</Select>
 														<FormMessage />
 													</FormItem>
@@ -498,10 +486,10 @@ export const ShowResources = ({ id, type }: Props) => {
 													</FormItem>
 												)}
 											/>
-											<Button
+											<Button aria-label="Action"
 												type="button"
 												variant="ghost"
-												size="icon"
+												shape="square"
 												className="mt-6 text-destructive hover:text-destructive"
 												onClick={() => remove(index)}
 											>
@@ -521,13 +509,13 @@ export const ShowResources = ({ id, type }: Props) => {
 						</div>
 
 						<div className="flex w-full justify-end">
-							<Button isLoading={isPending} type="submit">
+							<Button loading={isPending} type="submit">
 								Save
 							</Button>
 						</div>
 					</form>
 				</Form>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

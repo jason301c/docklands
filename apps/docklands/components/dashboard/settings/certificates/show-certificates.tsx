@@ -9,18 +9,12 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { HandleCertificate } from "./handle-certificate";
 import {
 	extractLeafCommonName,
@@ -38,16 +32,16 @@ export const ShowCertificates = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
+			<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
+					<div className="">
+						<h3 className="text-xl flex flex-row gap-2">
 							<ShieldCheck className="size-6 text-muted-foreground self-center" />
 							Certificates
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Create certificates in the Traefik directory
-						</CardDescription>
+						</p>
 
 						<AlertBlock type="warning">
 							Certificates are created in the Traefik directory. Traefik uses
@@ -55,8 +49,8 @@ export const ShowCertificates = () => {
 							certificates can break your Traefik instance, preventing access to
 							your applications.
 						</AlertBlock>
-					</CardHeader>
-					<CardContent className="space-y-2 py-8 border-t">
+					</div>
+					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
 								<span>Loading...</span>
@@ -218,11 +212,11 @@ export const ShowCertificates = () => {
 																				});
 																		}}
 																	>
-																		<Button
+																		<Button aria-label="Action"
 																			variant="ghost"
-																			size="icon"
+																			shape="square"
 																			className="group hover:bg-red-500/10"
-																			isLoading={isRemoving}
+																			loading={isRemoving}
 																		>
 																			<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 																		</Button>
@@ -244,9 +238,9 @@ export const ShowCertificates = () => {
 								)}
 							</>
 						)}
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

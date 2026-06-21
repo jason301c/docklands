@@ -3,7 +3,7 @@ import type React from "react";
 import { cn } from "@/shared/utils";
 import { GithubIcon } from "../icons/data-tools-icons";
 import { Logo } from "../shared/logo";
-import { Button } from "../ui/button";
+import { Button } from "@cloudflare/kumo/components/button";
 
 interface Props {
 	children: React.ReactNode;
@@ -34,12 +34,12 @@ export const OnboardingLayout = ({ children }: Props) => {
 					{children}
 				</div>
 				<div className="flex items-center gap-4 justify-center absolute bottom-4 right-4 text-muted-foreground">
-					<Button variant="ghost" size="icon">
+					<Button aria-label="Action" variant="ghost" shape="square">
 						<Link href="https://github.com/jason301c/docklands">
 							<GithubIcon />
 						</Link>
 					</Button>
-					<Button variant="ghost" size="icon">
+					<Button aria-label="Action" variant="ghost" shape="square">
 						<Link href="https://discord.com/invite/2tBnJ3jDJc">
 							<svg
 								xmlns="http://www.w3.org/2000/svg"

@@ -9,27 +9,13 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-} from "@/components/ui/command";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -38,30 +24,26 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@cloudflare/kumo/components/popover";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
 import { ScheduleFormField } from "../../application/schedules/handle-schedules";
+
+const Command = Combobox;
+const CommandInput = Combobox.TriggerInput;
+const CommandList = Combobox.List;
+const CommandGroup = Combobox.Group;
+const CommandItem = Combobox.Item;
+const CommandEmpty = Combobox.Empty;
 
 type CacheType = "cache" | "fetch";
 
@@ -329,12 +311,11 @@ export const HandleBackup = ({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				{backupId ? (
-					<Button
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={backupId ? (
+					<Button aria-label="Action"
 						variant="ghost"
-						size="icon"
+						shape="square"
 						className="group hover:bg-blue-500/10 size-8"
 					>
 						<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
@@ -344,17 +325,16 @@ export const HandleBackup = ({
 						<PlusIcon className="h-4 w-4" />
 						{backupId ? "Update Backup" : "Create Backup"}
 					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>
+				) as never} />
+			<Dialog className="sm:max-w-2xl">
+				<div>
+					<Dialog.Title>
 						{backupId ? "Update Backup" : "Create Backup"}
-					</DialogTitle>
-					<DialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						{backupId ? "Update a backup" : "Add a new backup"}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 
 				<Form {...form}>
 					<form
@@ -375,22 +355,23 @@ export const HandleBackup = ({
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Database Type</FormLabel>
-											<Select
+											<Select aria-label="Select option"
 												value={field.value}
 												onValueChange={(value) => {
+													if (value === null) return;
 													field.onChange(value as DatabaseType);
 													form.setValue("metadata", {});
 												}}
 											>
-												<SelectTrigger className="w-full">
-													<SelectValue placeholder="Select a database type" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="postgres">PostgreSQL</SelectItem>
-													<SelectItem value="mariadb">MariaDB</SelectItem>
-													<SelectItem value="mysql">MySQL</SelectItem>
-													<SelectItem value="mongo">MongoDB</SelectItem>
-												</SelectContent>
+												<>
+													
+												</>
+												<>
+													<Select.Option value="postgres">PostgreSQL</Select.Option>
+													<Select.Option value="mariadb">MariaDB</Select.Option>
+													<Select.Option value="mysql">MySQL</Select.Option>
+													<Select.Option value="mongo">MongoDB</Select.Option>
+												</>
 											</Select>
 											<FormMessage />
 										</FormItem>
@@ -427,7 +408,7 @@ export const HandleBackup = ({
 												</FormControl>
 											</PopoverTrigger>
 											<PopoverContent className="p-0" align="start">
-												<Command>
+												<Command items={[]}>
 													<CommandInput
 														placeholder="Search Destination..."
 														className="h-9"
@@ -481,39 +462,44 @@ export const HandleBackup = ({
 											<FormItem className="w-full">
 												<FormLabel>Service Name</FormLabel>
 												<div className="flex gap-2">
-													<Select
+													<Select aria-label="Select option"
 														onValueChange={field.onChange}
 														value={field.value || undefined}
 													>
 														<FormControl>
-															<SelectTrigger>
-																<SelectValue placeholder="Select a service name" />
-															</SelectTrigger>
+															<>
+																
+															</>
 														</FormControl>
 
-														<SelectContent>
+														<>
 															{services?.map((service, index) => (
-																<SelectItem
+																<Select.Option
 																	value={service}
 																	key={`${service}-${index}`}
 																>
 																	{service}
-																</SelectItem>
+																</Select.Option>
 															))}
 															{(!services || services.length === 0) && (
-																<SelectItem value="none" disabled>
+																<Select.Option value="none" disabled>
 																	Empty
-																</SelectItem>
+																</Select.Option>
 															)}
-														</SelectContent>
+														</>
 													</Select>
-													<TooltipProvider delayDuration={0}>
-														<Tooltip>
-															<TooltipTrigger asChild>
+													<TooltipProvider delay={0}>
+														<Tooltip content={<>
+																<p>
+																	Fetch: Will clone the repository and load the
+																	services
+																</p>
+															</>} side="left"
+																className="max-w-[10rem]"  asChild>
 																<Button
 																	variant="secondary"
 																	type="button"
-																	isLoading={isLoadingServices}
+																	loading={isLoadingServices}
 																	onClick={() => {
 																		if (cacheType === "fetch") {
 																			refetchServices();
@@ -524,26 +510,21 @@ export const HandleBackup = ({
 																>
 																	<RefreshCw className="size-4 text-muted-foreground" />
 																</Button>
-															</TooltipTrigger>
-															<TooltipContent
-																side="left"
-																sideOffset={5}
-																className="max-w-[10rem]"
-															>
-																<p>
-																	Fetch: Will clone the repository and load the
-																	services
-																</p>
-															</TooltipContent>
-														</Tooltip>
+															</Tooltip>
 													</TooltipProvider>
-													<TooltipProvider delayDuration={0}>
-														<Tooltip>
-															<TooltipTrigger asChild>
+													<TooltipProvider delay={0}>
+														<Tooltip content={<>
+																<p>
+																	Cache: If you previously deployed this
+																	compose, it will read the services from the
+																	last deployment/fetch from the repository
+																</p>
+															</>} side="left"
+																className="max-w-[10rem]"  asChild>
 																<Button
 																	variant="secondary"
 																	type="button"
-																	isLoading={isLoadingServices}
+																	loading={isLoadingServices}
 																	onClick={() => {
 																		if (cacheType === "cache") {
 																			refetchServices();
@@ -554,19 +535,7 @@ export const HandleBackup = ({
 																>
 																	<DatabaseZap className="size-4 text-muted-foreground" />
 																</Button>
-															</TooltipTrigger>
-															<TooltipContent
-																side="left"
-																sideOffset={5}
-																className="max-w-[10rem]"
-															>
-																<p>
-																	Cache: If you previously deployed this
-																	compose, it will read the services from the
-																	last deployment/fetch from the repository
-																</p>
-															</TooltipContent>
-														</Tooltip>
+															</Tooltip>
 													</TooltipProvider>
 												</div>
 
@@ -775,18 +744,18 @@ export const HandleBackup = ({
 								</>
 							)}
 						</div>
-						<DialogFooter>
+						<div>
 							<Button
-								isLoading={isCreatingPostgresBackup}
+								loading={isCreatingPostgresBackup}
 								form="hook-form-add-backup"
 								type="submit"
 							>
 								{backupId ? "Update" : "Create"}
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

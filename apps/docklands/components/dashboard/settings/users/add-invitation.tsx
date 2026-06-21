@@ -2,20 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -24,15 +16,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 
 const addInvitation = z
 	.object({
@@ -181,21 +167,23 @@ export const AddInvitation = () => {
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className="" asChild>
+		<Dialog.Root open={open} onOpenChange={setOpen}>
+			<Dialog.Trigger className="" render={(
+
 				<Button>
 					<PlusIcon className="h-4 w-4" /> Add Invitation
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>Add Invitation</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className="sm:max-w-2xl">
+				<div>
+					<Dialog.Title>Add Invitation</Dialog.Title>
+					<Dialog.Description>
 						{mode === "credentials"
 							? "Create a user with initial credentials"
 							: "Invite a new user"}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{error && <AlertBlock type="error">{error}</AlertBlock>}
 
 				<Form {...form}>
@@ -212,23 +200,23 @@ export const AddInvitation = () => {
 									return (
 										<FormItem>
 											<FormLabel>Invite Method</FormLabel>
-											<Select
+											<Select aria-label="Select option"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Select invite method" />
-													</SelectTrigger>
+													<>
+														
+													</>
 												</FormControl>
-												<SelectContent>
-													<SelectItem value="invitation">
+												<>
+													<Select.Option value="invitation">
 														Invitation Link
-													</SelectItem>
-													<SelectItem value="credentials">
+													</Select.Option>
+													<Select.Option value="credentials">
 														Initial Credentials
-													</SelectItem>
-												</SelectContent>
+													</Select.Option>
+												</>
 											</Select>
 											<FormDescription>
 												Choose between invitation link flow or direct
@@ -267,24 +255,24 @@ export const AddInvitation = () => {
 								return (
 									<FormItem>
 										<FormLabel>Role</FormLabel>
-										<Select
+										<Select aria-label="Select option"
 											onValueChange={field.onChange}
 											defaultValue={field.value}
 										>
 											<FormControl>
-												<SelectTrigger>
-													<SelectValue placeholder="Select a role" />
-												</SelectTrigger>
+												<>
+													
+												</>
 											</FormControl>
-											<SelectContent>
-												<SelectItem value="member">Member</SelectItem>
-												<SelectItem value="admin">Admin</SelectItem>
+											<>
+												<Select.Option value="member">Member</Select.Option>
+												<Select.Option value="admin">Admin</Select.Option>
 												{customRoles?.map((role) => (
-													<SelectItem key={role.role} value={role.role}>
+													<Select.Option key={role.role} value={role.role}>
 														{role.role}
-													</SelectItem>
+													</Select.Option>
 												))}
-											</SelectContent>
+											</>
 										</Select>
 										<FormDescription>
 											Select the role for the new user
@@ -303,28 +291,28 @@ export const AddInvitation = () => {
 									return (
 										<FormItem>
 											<FormLabel>Email Provider</FormLabel>
-											<Select
+											<Select aria-label="Select option"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Select an email provider" />
-													</SelectTrigger>
+													<>
+														
+													</>
 												</FormControl>
-												<SelectContent>
+												<>
 													{emailProviders?.map((provider) => (
-														<SelectItem
+														<Select.Option
 															key={provider.notificationId}
 															value={provider.notificationId}
 														>
 															{provider.name}
-														</SelectItem>
+														</Select.Option>
 													))}
-													<SelectItem value="none" disabled>
+													<Select.Option value="none" disabled>
 														None
-													</SelectItem>
-												</SelectContent>
+													</Select.Option>
+												</>
 											</Select>
 											<FormDescription>
 												Select the email provider to send the invitation
@@ -383,18 +371,18 @@ export const AddInvitation = () => {
 							</>
 						)}
 
-						<DialogFooter className="flex w-full flex-row">
+						<div className="flex w-full flex-row">
 							<Button
-								isLoading={isInviting || isCreating}
+								loading={isInviting || isCreating}
 								form="hook-form-add-invitation"
 								type="submit"
 							>
 								Create
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

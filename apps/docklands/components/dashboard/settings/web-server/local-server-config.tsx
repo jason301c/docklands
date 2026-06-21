@@ -2,13 +2,8 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Settings } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Collapsible } from "@cloudflare/kumo/components/collapsible";
+import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -16,8 +11,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import { cn } from "@/shared/utils";
 
 const Schema = z.object({
@@ -63,85 +58,92 @@ const LocalServerConfig = ({ onSave }: Props) => {
 	};
 
 	return (
-		<Accordion collapsible type="single">
-			<AccordionItem value="connectionSettings">
-				<AccordionTrigger
-					className={cn(
-						buttonVariants({ variant: "ghost" }),
-						"hover:no-underline px-1 mb-2 active:hover:transform-none",
-					)}
-				>
-					<div className="flex flex-row items-center gap-2 justify-between w-full">
-						<div className="flex flex-row gap-2 items-center">
-							<Settings className="h-4 w-4" />
-							<span className="dark:hover:text-white">Connection settings</span>
-						</div>
+		<Collapsible.Root>
+			<Collapsible.Trigger
+				render={
+					<button
+						type="button"
+						className={cn(
+							buttonVariants({ variant: "ghost" }),
+							"hover:no-underline px-1 mb-2 active:hover:transform-none",
+						)}
+					/>
+				}
+			>
+				<div className="flex flex-row items-center gap-2 justify-between w-full">
+					<div className="flex flex-row gap-2 items-center">
+						<Settings className="h-4 w-4" />
+						<span className="hover:text-kumo-strong">
+							Connection settings
+						</span>
 					</div>
-				</AccordionTrigger>
+				</div>
+			</Collapsible.Trigger>
 
-				<AccordionContent className="px-1 flex flex-col gap-2">
-					<Form {...form}>
-						<form
-							id="hook-form-add-server"
-							onSubmit={form.handleSubmit(onSubmit)}
-							className="w-full grid grid-cols-2 gap-4"
-						>
-							<FormField
-								control={form.control}
-								name="port"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Port</FormLabel>
-										<FormControl>
-											<Input
-												{...field}
-												onChange={(e) => {
-													const value = e.target.value;
-													if (value === "") {
-														field.onChange(1);
-													} else {
-														const number = Number.parseInt(value, 10);
-														if (!Number.isNaN(number)) {
-															field.onChange(number);
-														}
-													}
-												}}
-											/>
-										</FormControl>
-
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<FormField
-								control={form.control}
-								name="username"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Username</FormLabel>
-										<FormControl>
-											<Input placeholder="root" {...field} />
-										</FormControl>
-
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-						</form>
-					</Form>
-
-					<Button
-						form="hook-form-add-server"
-						type="submit"
-						className="ml-auto"
-						disabled={!form.formState.isDirty}
+			<Collapsible.Panel className="px-1 flex flex-col gap-2">
+				<Form {...form}>
+					<form
+						id="hook-form-add-server"
+						onSubmit={form.handleSubmit(onSubmit)}
+						className="w-full grid grid-cols-2 gap-4"
 					>
-						Save
-					</Button>
-				</AccordionContent>
-			</AccordionItem>
-		</Accordion>
+						<FormField
+							control={form.control}
+							name="port"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Port</FormLabel>
+									<FormControl>
+										<Input
+											{...field}
+											onChange={(e) => {
+												const value = e.target.value;
+												if (value === "") {
+													field.onChange(1);
+												} else {
+													const number = Number.parseInt(value, 10);
+													if (!Number.isNaN(number)) {
+														field.onChange(number);
+													}
+												}
+											}}
+										/>
+									</FormControl>
+
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+
+						<FormField
+							control={form.control}
+							name="username"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Username</FormLabel>
+									<FormControl>
+										<Input placeholder="root" {...field} />
+									</FormControl>
+
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					</form>
+				</Form>
+
+				<Button
+					form="hook-form-add-server"
+					type="submit"
+					className={cn(
+						"ml-auto",
+					)}
+					disabled={!form.formState.isDirty}
+				>
+					Save
+				</Button>
+			</Collapsible.Panel>
+		</Collapsible.Root>
 	);
 };
 

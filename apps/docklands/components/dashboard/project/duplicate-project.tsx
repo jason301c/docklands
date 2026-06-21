@@ -1,28 +1,15 @@
 import { Copy, Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Radio } from "@cloudflare/kumo/primitives/radio";
+import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
+import { Select } from "@cloudflare/kumo/components/select";
 
 export type Services = {
 	serverId?: string | null;
@@ -153,7 +140,7 @@ export const DuplicateProject = ({
 	};
 
 	return (
-		<Dialog
+		<Dialog.Root
 			open={open}
 			onOpenChange={(isOpen) => {
 				setOpen(isOpen);
@@ -167,19 +154,21 @@ export const DuplicateProject = ({
 				}
 			}}
 		>
-			<DialogTrigger asChild>
+			<Dialog.Trigger render={(
+
 				<Button variant="ghost" className="w-full justify-start">
 					<Copy className="mr-2 h-4 w-4" />
 					Duplicate
 				</Button>
-			</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Duplicate Services</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog>
+				<div>
+					<Dialog.Title>Duplicate Services</Dialog.Title>
+					<Dialog.Description>
 						Choose where to duplicate the selected services
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 
 				<div className="grid gap-4 py-4">
 					<div className="grid gap-2">
@@ -187,6 +176,7 @@ export const DuplicateProject = ({
 						<RadioGroup
 							value={duplicateType}
 							onValueChange={(value) => {
+								if (value === null) return;
 								setDuplicateType(value);
 								// Reset selections when changing type
 								if (value !== "existing-environment") {
@@ -197,11 +187,11 @@ export const DuplicateProject = ({
 							className="grid gap-2"
 						>
 							<div className="flex items-center space-x-2">
-								<RadioGroupItem value="new-project" id="new-project" />
+								<Radio.Root value="new-project" id="new-project" />
 								<Label htmlFor="new-project">New project</Label>
 							</div>
 							<div className="flex items-center space-x-2">
-								<RadioGroupItem
+								<Radio.Root
 									value="existing-environment"
 									id="existing-environment"
 								/>
@@ -250,28 +240,29 @@ export const DuplicateProject = ({
 									{/* Step 1: Select Project */}
 									<div className="grid gap-2">
 										<Label>Target Project</Label>
-										<Select
+										<Select aria-label="Select option"
 											value={selectedTargetProject}
 											onValueChange={(value) => {
+												if (value === null) return;
 												setSelectedTargetProject(value);
 												setSelectedTargetEnvironment(""); // Reset environment when project changes
 											}}
 										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select target project" />
-											</SelectTrigger>
-											<SelectContent>
+											<>
+												
+											</>
+											<>
 												{allProjects
 													?.filter((p) => p.projectId !== environmentId)
 													.map((project) => (
-														<SelectItem
+														<Select.Option
 															key={project.projectId}
 															value={project.projectId}
 														>
 															{project.name}
-														</SelectItem>
+														</Select.Option>
 													))}
-											</SelectContent>
+											</>
 										</Select>
 									</div>
 
@@ -279,23 +270,23 @@ export const DuplicateProject = ({
 									{selectedTargetProject && (
 										<div className="grid gap-2">
 											<Label>Target Environment</Label>
-											<Select
+											<Select aria-label="Select option"
 												value={selectedTargetEnvironment}
-												onValueChange={setSelectedTargetEnvironment}
+												onValueChange={(value) => value !== null && setSelectedTargetEnvironment(value as never)}
 											>
-												<SelectTrigger>
-													<SelectValue placeholder="Select target environment" />
-												</SelectTrigger>
-												<SelectContent>
+												<>
+													
+												</>
+												<>
 													{selectedProjectEnvironments?.map((env) => (
-														<SelectItem
+														<Select.Option
 															key={env.environmentId}
 															value={env.environmentId}
 														>
 															{env.name}
-														</SelectItem>
+														</Select.Option>
 													))}
-												</SelectContent>
+												</>
 											</Select>
 										</div>
 									)}
@@ -318,7 +309,7 @@ export const DuplicateProject = ({
 					</div>
 				</div>
 
-				<DialogFooter>
+				<div>
 					<Button
 						variant="outline"
 						onClick={() => setOpen(false)}
@@ -348,8 +339,8 @@ export const DuplicateProject = ({
 							"Duplicate to environment"
 						)}
 					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

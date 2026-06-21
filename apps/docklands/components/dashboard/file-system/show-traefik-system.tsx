@@ -9,14 +9,8 @@ import {
 import React from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Tree } from "@/components/ui/file-tree";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tree } from "@/components/shared/file-tree";
 import { ShowTraefikFile } from "./show-traefik-file";
 
 interface Props {
@@ -41,24 +35,24 @@ export const ShowTraefikSystem = ({ serverId }: Props) => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar p-2.5 rounded-xl">
+			<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
+					<div className="">
+						<h3 className="text-xl flex flex-row gap-2">
 							<FileIcon className="size-6 text-muted-foreground self-center" />
 							Traefik File System
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Manage all the files and directories in{" "}
 							{"'/etc/docklands/traefik'"}.
-						</CardDescription>
+						</p>
 
 						<AlertBlock type="warning">
 							Adding invalid configuration to existing files, can break your
 							Traefik instance, preventing access to your applications.
 						</AlertBlock>
-					</CardHeader>
-					<CardContent className="space-y-2 py-8 border-t">
+					</div>
+					<div className="space-y-2 py-8 border-t">
 						<div>
 							<div className="flex flex-col lg:flex-row gap-4 md:gap-10 w-full">
 								{isError && (
@@ -126,9 +120,9 @@ export const ShowTraefikSystem = ({ serverId }: Props) => {
 								)}
 							</div>
 						</div>
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

@@ -3,20 +3,13 @@ import { PenBoxIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { getGiteaOAuthUrl } from "@/client/git/gitea";
 import { useUrl } from "@/client/hooks/use-url";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -25,8 +18,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
@@ -146,12 +139,16 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 			toast.error("Gitea Not Connected", {
 				description:
 					error.message || "Please complete the OAuth authorization process.",
-				action:
+				actions:
 					authUrl && authUrl !== "#"
-						? {
-								label: "Authorize Now",
-								onClick: () => window.open(authUrl, "_blank"),
-							}
+						? [
+								{
+									children: "Authorize Now",
+									onClick: () => {
+										window.open(authUrl, "_blank");
+									},
+								},
+							]
 						: undefined,
 			});
 		}
@@ -159,7 +156,7 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 
 	if (isLoading) {
 		return (
-			<Button variant="ghost" size="icon" disabled>
+			<Button aria-label="Action" variant="ghost" shape="square" disabled>
 				<PenBoxIcon className="h-4 w-4 text-muted-foreground" />
 			</Button>
 		);
@@ -171,23 +168,25 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={handleOpenChange}>
-			<DialogTrigger asChild>
-				<Button
+		<Dialog.Root open={open} onOpenChange={handleOpenChange}>
+			<Dialog.Trigger render={(
+
+				<Button aria-label="Action"
 					variant="ghost"
-					size="icon"
+					shape="square"
 					className="group hover:bg-blue-500/10"
 				>
 					<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
 				</Button>
-			</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Edit Gitea Provider</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog>
+				<div>
+					<Dialog.Title>Edit Gitea Provider</Dialog.Title>
+					<Dialog.Description>
 						Update your Gitea provider details.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<FormField
@@ -278,7 +277,7 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 								type="button"
 								variant="outline"
 								onClick={handleTestConnection}
-								isLoading={isTesting}
+								loading={isTesting}
 							>
 								Test Connection
 							</Button>
@@ -302,13 +301,13 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 								Connect to Gitea
 							</Button>
 
-							<Button type="submit" isLoading={isUpdating}>
+							<Button type="submit" loading={isUpdating}>
 								Save
 							</Button>
 						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

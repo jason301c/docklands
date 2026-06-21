@@ -5,41 +5,16 @@ import {
 	LockIcon,
 	MoreHorizontal,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Table } from "@cloudflare/kumo/components/table";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { AddNode } from "./add-node";
 import { ShowNodeData } from "./show-node-data";
 
@@ -58,23 +33,23 @@ export const ShowNodes = ({ serverId }: Props) => {
 	const haveAtLeastOneRegistry = !!(registry && registry?.length > 0);
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
+			<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="flex flex-row gap-2 justify-between w-full items-center flex-wrap">
+					<div className="flex flex-row gap-2 justify-between w-full items-center flex-wrap">
 						<div className="flex flex-col gap-2">
-							<CardTitle className="text-xl flex flex-row gap-2">
+							<h3 className="text-xl flex flex-row gap-2">
 								<Boxes className="size-6 text-muted-foreground self-center" />
 								Cluster
-							</CardTitle>
-							<CardDescription>Add nodes to your cluster</CardDescription>
+							</h3>
+							<p>Add nodes to your cluster</p>
 						</div>
 						{haveAtLeastOneRegistry && (
 							<div className="flex flex-row gap-2">
 								<AddNode serverId={serverId} />
 							</div>
 						)}
-					</CardHeader>
-					<CardContent className="space-y-2 py-8 border-t min-h-[35vh]">
+					</div>
+					<div className="space-y-2 py-8 border-t min-h-[35vh]">
 						{isPending ? (
 							<div className="flex items-center justify-center w-full h-[40vh]">
 								<Loader2 className="size-8 animate-spin text-muted-foreground" />
@@ -82,67 +57,69 @@ export const ShowNodes = ({ serverId }: Props) => {
 						) : haveAtLeastOneRegistry ? (
 							<div className="grid md:grid-cols-1 gap-4">
 								<Table>
-									<TableCaption>
+									<caption>
 										A list of your managers / workers.
-									</TableCaption>
-									<TableHeader>
-										<TableRow>
-											<TableHead className="text-left">Hostname</TableHead>
-											<TableHead className="text-right">Status</TableHead>
-											<TableHead className="text-right">Role</TableHead>
-											<TableHead className="text-right">Availability</TableHead>
-											<TableHead className="text-right">
+									</caption>
+									<Table.Header>
+										<Table.Row>
+											<Table.Head className="text-left">Hostname</Table.Head>
+											<Table.Head className="text-right">Status</Table.Head>
+											<Table.Head className="text-right">Role</Table.Head>
+											<Table.Head className="text-right">Availability</Table.Head>
+											<Table.Head className="text-right">
 												Engine Version
-											</TableHead>
-											<TableHead className="text-right">Created</TableHead>
+											</Table.Head>
+											<Table.Head className="text-right">Created</Table.Head>
 
-											<TableHead className="text-right">Actions</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
+											<Table.Head className="text-right">Actions</Table.Head>
+										</Table.Row>
+									</Table.Header>
+									<Table.Body>
 										{data?.map((node) => {
 											const isManager = node.Spec.Role === "manager";
 											return (
-												<TableRow key={node.ID}>
-													<TableCell className="text-left">
+												<Table.Row key={node.ID}>
+													<Table.Cell className="text-left">
 														{node.Description.Hostname}
-													</TableCell>
-													<TableCell className="text-right">
+													</Table.Cell>
+													<Table.Cell className="text-right">
 														{node.Status.State}
-													</TableCell>
-													<TableCell className="text-right">
+													</Table.Cell>
+													<Table.Cell className="text-right">
 														<Badge
-															variant={isManager ? "default" : "secondary"}
+															variant={isManager ? "secondary" : "secondary"}
 														>
 															{node?.Spec?.Role}
 														</Badge>
-													</TableCell>
-													<TableCell className="text-right">
+													</Table.Cell>
+													<Table.Cell className="text-right">
 														{node.Spec.Availability}
-													</TableCell>
+													</Table.Cell>
 
-													<TableCell className="text-right">
+													<Table.Cell className="text-right">
 														{node?.Description.Engine.EngineVersion}
-													</TableCell>
+													</Table.Cell>
 
-													<TableCell className="text-right">
+													<Table.Cell className="text-right">
 														<DateTooltip
 															date={node.CreatedAt}
 															className="text-sm"
 														>
 															Created{" "}
 														</DateTooltip>
-													</TableCell>
-													<TableCell className="text-right flex justify-end">
+													</Table.Cell>
+													<Table.Cell className="text-right flex justify-end">
 														<DropdownMenu>
-															<DropdownMenuTrigger asChild>
+															<DropdownMenu.Trigger render={(
+
 																<Button variant="ghost" className="h-8 w-8 p-0">
 																	<span className="sr-only">Open menu</span>
 																	<MoreHorizontal className="h-4 w-4" />
 																</Button>
-															</DropdownMenuTrigger>
-															<DropdownMenuContent align="end">
-																<DropdownMenuLabel>Actions</DropdownMenuLabel>
+															
+)} />
+															<DropdownMenu.Content align="end">
+																<DropdownMenu.Label>Actions</DropdownMenu.Label>
 																<ShowNodeData data={node} />
 																{!node?.ManagerStatus?.Leader && (
 																	<DialogAction
@@ -165,20 +142,20 @@ export const ShowNodes = ({ serverId }: Props) => {
 																				});
 																		}}
 																	>
-																		<DropdownMenuItem
+																		<DropdownMenu.Item
 																			onSelect={(e) => e.preventDefault()}
 																		>
 																			Delete
-																		</DropdownMenuItem>
+																		</DropdownMenu.Item>
 																	</DialogAction>
 																)}
-															</DropdownMenuContent>
+															</DropdownMenu.Content>
 														</DropdownMenu>
-													</TableCell>
-												</TableRow>
+													</Table.Cell>
+												</Table.Row>
 											);
 										})}
-									</TableBody>
+									</Table.Body>
 								</Table>
 							</div>
 						) : (
@@ -189,15 +166,12 @@ export const ShowNodes = ({ serverId }: Props) => {
 										To add nodes to your cluster, you need to configure at least
 										one registry.
 									</span>
-									<TooltipProvider delayDuration={0}>
-										<Tooltip>
-											<TooltipTrigger className="self-center">
-												<HelpCircle className="size-5 text-muted-foreground " />
-											</TooltipTrigger>
-											<TooltipContent>
+									<TooltipProvider delay={0}>
+										<Tooltip content={<>
 												Nodes need a registry to pull images from.
-											</TooltipContent>
-										</Tooltip>
+											</>}>
+												<HelpCircle className="size-5 text-muted-foreground " />
+											</Tooltip>
 									</TooltipProvider>
 								</div>
 
@@ -209,9 +183,9 @@ export const ShowNodes = ({ serverId }: Props) => {
 								</ul>
 							</div>
 						)}
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

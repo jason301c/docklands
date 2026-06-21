@@ -21,33 +21,15 @@ import {
 	TrendingUpIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	Sheet,
-	SheetContent,
-	SheetDescription,
-	SheetHeader,
-	SheetTitle,
-} from "@/components/ui/sheet";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Table } from "@cloudflare/kumo/components/table";
 import { columns, getStatusColor } from "./columns";
 import type { LogEntry } from "./show-requests";
 import { DataTableFacetedFilter } from "./status-request-filter";
@@ -197,21 +179,23 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 								options={priorities}
 							/>
 							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
+								<DropdownMenu.Trigger
+									render={
 									<Button
 										variant="outline"
 										className="sm:ml-auto max-sm:w-full"
 									>
 										Columns <ChevronDown className="ml-2 h-4 w-4" />
 									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
+									}
+								/>
+								<DropdownMenu.Content align="end">
 									{table
 										.getAllColumns()
 										.filter((column) => column.getCanHide())
 										.map((column) => {
 											return (
-												<DropdownMenuCheckboxItem
+												<DropdownMenu.CheckboxItem
 													key={column.id}
 													className="capitalize"
 													checked={column.getIsVisible()}
@@ -220,36 +204,36 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 													}
 												>
 													{column.id}
-												</DropdownMenuCheckboxItem>
+												</DropdownMenu.CheckboxItem>
 											);
 										})}
-								</DropdownMenuContent>
+								</DropdownMenu.Content>
 							</DropdownMenu>
 						</div>
 						<div className="rounded-md border ">
 							<Table>
-								<TableHeader>
+								<Table.Header>
 									{table.getHeaderGroups().map((headerGroup) => (
-										<TableRow key={headerGroup.id}>
+										<Table.Row key={headerGroup.id}>
 											{headerGroup.headers.map((header) => {
 												return (
-													<TableHead key={header.id}>
+													<Table.Head key={header.id}>
 														{header.isPlaceholder
 															? null
 															: flexRender(
 																	header.column.columnDef.header,
 																	header.getContext(),
 																)}
-													</TableHead>
+													</Table.Head>
 												);
 											})}
-										</TableRow>
+										</Table.Row>
 									))}
-								</TableHeader>
-								<TableBody>
+								</Table.Header>
+								<Table.Body>
 									{table.getRowModel().rows?.length ? (
 										table.getRowModel().rows.map((row) => (
-											<TableRow
+											<Table.Row
 												key={row.id}
 												className="cursor-pointer"
 												onClick={() => {
@@ -258,18 +242,18 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 												data-state={row.getIsSelected() && "selected"}
 											>
 												{row.getVisibleCells().map((cell) => (
-													<TableCell key={cell.id}>
+													<Table.Cell key={cell.id}>
 														{flexRender(
 															cell.column.columnDef.cell,
 															cell.getContext(),
 														)}
-													</TableCell>
+													</Table.Cell>
 												))}
-											</TableRow>
+											</Table.Row>
 										))
 									) : (
-										<TableRow>
-											<TableCell
+										<Table.Row>
+											<Table.Cell
 												colSpan={columns.length}
 												className="h-24 text-center"
 											>
@@ -280,10 +264,10 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 														</span>
 													</div>
 												)}
-											</TableCell>
-										</TableRow>
+											</Table.Cell>
+										</Table.Row>
 									)}
-								</TableBody>
+								</Table.Body>
 							</Table>
 						</div>
 						<div className="flex items-center justify-end space-x-2 py-4">
@@ -324,25 +308,23 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 					</div>
 				</div>
 			</div>
-			<Sheet
+			<Dialog.Root
 				open={!!selectedRow}
-				onOpenChange={(_open) => setSelectedRow(undefined)}
+				onOpenChange={(open) => {
+					if (!open) setSelectedRow(undefined);
+				}}
 			>
-				<SheetContent className="sm:max-w-[740px]  flex flex-col">
-					<SheetHeader>
-						<SheetTitle>Request log</SheetTitle>
-						<SheetDescription>
-							Details of the request log entry.
-						</SheetDescription>
-					</SheetHeader>
+				<Dialog size="xl" className="flex flex-col">
+					<Dialog.Title>Request log</Dialog.Title>
+					<Dialog.Description>Details of the request log entry.</Dialog.Description>
 					<ScrollArea className="flex-grow mt-4 pr-4">
 						<div className="border rounded-md">
 							<Table>
-								<TableBody>
+								<Table.Body>
 									{Object.entries(selectedRow || {}).map(([key, value]) => (
-										<TableRow key={key}>
-											<TableCell className="font-medium">{key}</TableCell>
-											<TableCell className="truncate break-words break-before-all whitespace-pre-wrap">
+										<Table.Row key={key}>
+											<Table.Cell className="font-medium">{key}</Table.Cell>
+											<Table.Cell className="truncate break-words break-before-all whitespace-pre-wrap">
 												{key === "RequestAddr" ? (
 													<div className="flex items-center gap-2 bg-muted p-1 rounded">
 														<span>{value}</span>
@@ -357,10 +339,10 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 												) : (
 													formatValue(key, value)
 												)}
-											</TableCell>
-										</TableRow>
+											</Table.Cell>
+										</Table.Row>
 									))}
-								</TableBody>
+								</Table.Body>
 							</Table>
 						</div>
 					</ScrollArea>
@@ -389,8 +371,8 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 							Download as JSON
 						</Button>
 					</div>
-				</SheetContent>
-			</Sheet>
+				</Dialog>
+			</Dialog.Root>
 		</>
 	);
 };

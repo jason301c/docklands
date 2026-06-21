@@ -2,29 +2,16 @@ import copy from "copy-to-clipboard";
 import { CopyIcon, ExternalLinkIcon, ServerIcon, Settings } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/shared/utils";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { ShowDeployment } from "../../application/deployments/show-deployment";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
 import { EditScript } from "./edit-script";
@@ -39,6 +26,7 @@ interface Props {
 
 export const SetupServer = ({ serverId, asButton = false }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
+	const [setupTab, setSetupTab] = useState("ssh-keys");
 	const { data: server } = api.server.one.useQuery(
 		{
 			serverId,
@@ -79,13 +67,20 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 	);
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
 			{asButton ? (
-				<DialogTrigger asChild>
-					<Button variant="outline" size="icon" className="h-9 w-9">
-						<Settings className="h-4 w-4" />
-					</Button>
-				</DialogTrigger>
+				<Dialog.Trigger
+					render={
+						<Button
+							variant="outline"
+							shape="square"
+							aria-label="Setup server"
+							className="h-9 w-9"
+						>
+							<Settings className="h-4 w-4" />
+						</Button>
+					}
+				/>
 			) : (
 				<Button
 					className="w-full cursor-pointer "
@@ -97,17 +92,17 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 					Setup Server <Settings className="size-4" />
 				</Button>
 			)}
-			<DialogContent className="sm:max-w-4xl  ">
-				<DialogHeader>
+			<Dialog className="sm:max-w-4xl  ">
+				<div>
 					<div className="flex flex-col gap-1.5">
-						<DialogTitle className="flex items-center gap-2">
+						<Dialog.Title className="flex items-center gap-2">
 							<ServerIcon className="size-5" /> Setup Server
-						</DialogTitle>
+						</Dialog.Title>
 						<p className="text-muted-foreground text-sm">
 							To setup a server, please click on the button below.
 						</p>
 					</div>
-				</DialogHeader>
+				</div>
 				{!server?.sshKeyId ? (
 					<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 						<AlertBlock type="warning">
@@ -123,32 +118,24 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 							configured.
 						</AlertBlock>
 
-						<Tabs defaultValue="ssh-keys">
-							<TabsList
-								className={cn(
-									"grid  w-[700px]",
-									isBuildServer
-										? "grid-cols-3"
-										: isCloud
-											? "grid-cols-5"
-											: "grid-cols-5",
-								)}
-							>
-								<TabsTrigger value="ssh-keys">SSH Keys</TabsTrigger>
-								<TabsTrigger value="deployments">Deployments</TabsTrigger>
-								<TabsTrigger value="validate">Validate</TabsTrigger>
-
-								{!isBuildServer && (
-									<>
-										<TabsTrigger value="audit">Security</TabsTrigger>
-										<TabsTrigger value="gpu-setup">GPU Setup</TabsTrigger>
-									</>
-								)}
-							</TabsList>
-							<TabsContent
-								value="ssh-keys"
-								className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-							>
+						<Tabs
+							value={setupTab}
+							onValueChange={(value) => value !== null && setSetupTab(value as never)}
+							className="w-full overflow-auto"
+							tabs={[
+								{ value: "ssh-keys", label: "SSH Keys" },
+								{ value: "deployments", label: "Deployments" },
+								{ value: "validate", label: "Validate" },
+								...(!isBuildServer
+									? [
+											{ value: "audit", label: "Security" },
+											{ value: "gpu-setup", label: "GPU Setup" },
+										]
+									: []),
+							]}
+						/>
+						{setupTab === "ssh-keys" && (
+							<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 								<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 									<p className="text-primary text-base font-semibold">
 										You have two options to add SSH Keys to your server:
@@ -269,25 +256,27 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 										</ul>
 									</div>
 								</div>
-							</TabsContent>
-							<TabsContent value="deployments">
-								<CardContent className="p-0">
+							</div>
+						)}
+						{setupTab === "deployments" && (
+							<div>
+								<div className="p-0">
 									<div className="flex flex-col gap-4">
-										<Card className="bg-background">
-											<CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+										<LayerCard className="bg-background">
+											<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 												<div className="flex flex-row gap-2 justify-between w-full max-sm:flex-col">
 													<div className="flex flex-col gap-1">
-														<CardTitle className="text-xl">
+														<h3 className="text-xl">
 															Setup Server
-														</CardTitle>
-														<CardDescription>
+														</h3>
+														<p>
 															To setup a server, please click on the button
 															below.
-														</CardDescription>
+														</p>
 													</div>
 												</div>
-											</CardHeader>
-											<CardContent className="flex flex-col gap-4 min-h-[25vh] items-center">
+											</div>
+											<div className="flex flex-col gap-4 min-h-[25vh] items-center">
 												<div className="flex flex-col gap-4 items-center h-full max-w-xl mx-auto min-h-[25vh] justify-center">
 													<span className="text-sm text-muted-foreground text-center">
 														When your server is ready, you can click on the
@@ -314,43 +303,40 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 													onClose={() => setActiveLog(null)}
 													logPath={activeLog}
 												/>
-											</CardContent>
-										</Card>
+											</div>
+										</LayerCard>
 									</div>
-								</CardContent>
-							</TabsContent>
-							<TabsContent
-								value="validate"
-								className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-							>
+								</div>
+							</div>
+						)}
+						{setupTab === "validate" && (
+							<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 								<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 									<ValidateServer serverId={serverId} />
 								</div>
-							</TabsContent>
+							</div>
+						)}
 							{!isBuildServer && (
 								<>
-									<TabsContent
-										value="audit"
-										className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-									>
+									{setupTab === "audit" && (
+										<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 										<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 											<SecurityAudit serverId={serverId} />
 										</div>
-									</TabsContent>
-									<TabsContent
-										value="gpu-setup"
-										className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-									>
+										</div>
+									)}
+									{setupTab === "gpu-setup" && (
+										<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 										<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 											<GPUSupport serverId={serverId} />
 										</div>
-									</TabsContent>
+										</div>
+									)}
 								</>
 							)}
-						</Tabs>
 					</div>
 				)}
-			</DialogContent>
+			</Dialog>
 			<DrawerLogs
 				isOpen={isDrawerOpen}
 				onClose={() => {
@@ -360,6 +346,6 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 				}}
 				filteredLogs={filteredLogs}
 			/>
-		</Dialog>
+		</Dialog.Root>
 	);
 };

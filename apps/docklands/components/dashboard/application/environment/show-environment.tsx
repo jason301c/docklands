@@ -2,26 +2,20 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
 	FormField,
 	FormItem,
 	FormMessage,
-} from "@/components/ui/form";
-import { Toggle } from "@/components/ui/toggle";
+} from "@/components/shared/form";
+import { Toggle } from "@/components/shared/toggle";
 import type { ServiceType } from "../advanced/show-resources";
 
 const addEnvironmentSchema = z.object({
@@ -130,18 +124,18 @@ export const ShowEnvironment = ({ id, type }: Props) => {
 
 	return (
 		<div className="flex w-full flex-col gap-5 ">
-			<Card className="bg-background">
-				<CardHeader className="flex flex-row w-full items-center justify-between">
+			<LayerCard className="bg-background">
+				<div className="flex flex-row w-full items-center justify-between">
 					<div>
-						<CardTitle className="text-xl">Environment Settings</CardTitle>
-						<CardDescription>
+						<h3 className="text-xl">Environment Settings</h3>
+						<p>
 							You can add environment variables to your resource.
 							{hasChanges && (
 								<span className="text-yellow-500 ml-2">
 									(You have unsaved changes)
 								</span>
 							)}
-						</CardDescription>
+						</p>
 					</div>
 
 					<Toggle
@@ -155,8 +149,8 @@ export const ShowEnvironment = ({ id, type }: Props) => {
 							<EyeIcon className="h-4 w-4 text-muted-foreground" />
 						)}
 					</Toggle>
-				</CardHeader>
-				<CardContent>
+				</div>
+				<div>
 					<Form {...form}>
 						<form
 							id="hook-form"
@@ -202,7 +196,7 @@ PORT=3000
 										</Button>
 									)}
 									<Button
-										isLoading={isPending}
+										loading={isPending}
 										className="w-fit"
 										type="submit"
 										disabled={!hasChanges}
@@ -213,8 +207,8 @@ PORT=3000
 							)}
 						</form>
 					</Form>
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 		</div>
 	);
 };

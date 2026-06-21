@@ -2,19 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Loader2, Palette, User } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/shared/avatar";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -23,10 +17,11 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Radio } from "@cloudflare/kumo/primitives/radio";
+import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { getAvatarType, isSolidColorAvatar } from "@/shared/avatar-utils";
 import { generateSHA256Hash, getFallbackAvatarInitials } from "@/shared/utils";
 import { Configure2FA } from "./configure-2fa";
@@ -149,23 +144,23 @@ export const ProfileForm = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
+			<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="flex flex-row gap-2 flex-wrap justify-between items-center">
+					<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
 						<div>
-							<CardTitle className="text-xl flex flex-row gap-2">
+							<h3 className="text-xl flex flex-row gap-2">
 								<User className="size-6 text-muted-foreground self-center" />
 								Account
-							</CardTitle>
-							<CardDescription>
+							</h3>
+							<p>
 								Change the details of your profile here.
-							</CardDescription>
+							</p>
 						</div>
 
 						{!data?.user.twoFactorEnabled ? <Enable2FA /> : <Configure2FA />}
-					</CardHeader>
+					</div>
 
-					<CardContent className="space-y-2 py-8 border-t">
+					<div className="space-y-2 py-8 border-t">
 						{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 						{isPending ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[35vh]">
@@ -265,6 +260,7 @@ export const ProfileForm = () => {
 														<FormControl>
 															<RadioGroup
 																onValueChange={(e) => {
+																	if (e === null) return;
 																	field.onChange(e);
 																}}
 																defaultValue={getAvatarType(field.value)}
@@ -274,7 +270,7 @@ export const ProfileForm = () => {
 																<FormItem key="no-avatar">
 																	<FormLabel className="[&:has([data-state=checked])>.default-avatar]:border-primary [&:has([data-state=checked])>.default-avatar]:border-1 [&:has([data-state=checked])>.default-avatar]:p-px cursor-pointer">
 																		<FormControl>
-																			<RadioGroupItem
+																			<Radio.Root
 																				value=""
 																				className="sr-only"
 																			/>
@@ -292,7 +288,7 @@ export const ProfileForm = () => {
 																<FormItem key="custom-upload">
 																	<FormLabel className="[&:has([data-state=checked])>.upload-avatar]:border-primary [&:has([data-state=checked])>.upload-avatar]:border-1 [&:has([data-state=checked])>.upload-avatar]:p-px cursor-pointer">
 																		<FormControl>
-																			<RadioGroupItem
+																			<Radio.Root
 																				value="upload"
 																				className="sr-only"
 																			/>
@@ -358,7 +354,7 @@ export const ProfileForm = () => {
 																<FormItem key="color-avatar">
 																	<FormLabel className="[&:has([data-state=checked])>.color-avatar]:border-primary [&:has([data-state=checked])>.color-avatar]:border-1 [&:has([data-state=checked])>.color-avatar]:p-px cursor-pointer relative">
 																		<FormControl>
-																			<RadioGroupItem
+																			<Radio.Root
 																				value="color"
 																				className="sr-only"
 																			/>
@@ -393,7 +389,7 @@ export const ProfileForm = () => {
 																	<FormItem key={image}>
 																		<FormLabel className="[&:has([data-state=checked])>img]:border-primary [&:has([data-state=checked])>img]:border-1 [&:has([data-state=checked])>img]:p-px cursor-pointer">
 																			<FormControl>
-																				<RadioGroupItem
+																				<Radio.Root
 																					value={image}
 																					className="sr-only"
 																				/>
@@ -444,7 +440,7 @@ export const ProfileForm = () => {
 										</div>
 
 										<div className="flex items-center justify-end gap-2">
-											<Button type="submit" isLoading={isUpdating}>
+											<Button type="submit" loading={isUpdating}>
 												Save
 											</Button>
 										</div>
@@ -452,9 +448,9 @@ export const ProfileForm = () => {
 								</Form>
 							</>
 						)}
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

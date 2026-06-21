@@ -1,14 +1,8 @@
 import copy from "copy-to-clipboard";
 import { CopyIcon, ServerIcon } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { ShowDocklandsActions } from "./servers/actions/show-docklands-actions";
 import { ShowStorageActions } from "./servers/actions/show-storage-actions";
 import { ShowTraefikActions } from "./servers/actions/show-traefik-actions";
@@ -24,25 +18,25 @@ export const WebServer = () => {
 
 	return (
 		<div className="w-full">
-			{/* <Card className={cn("rounded-lg w-full bg-transparent p-0", className)}></Card> */}
-			<Card className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
+			{/* <LayerCard className={cn("rounded-lg w-full bg-transparent p-0", className)}></LayerCard> */}
+			<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
+					<div className="">
+						<h3 className="text-xl flex flex-row gap-2">
 							<ServerIcon className="size-6 text-muted-foreground self-center" />
 							Web Server
-						</CardTitle>
-						<CardDescription>Reload or clean the web server.</CardDescription>
-					</CardHeader>
-					{/* <CardHeader>
-						<CardTitle className="text-xl">
+						</h3>
+						<p>Reload or clean the web server.</p>
+					</div>
+					{/* <div>
+						<h3 className="text-xl">
 							Web Server
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Reload or clean the web server.
-						</CardDescription>
-					</CardHeader> */}
-					<CardContent className="space-y-6 py-6 border-t">
+						</p>
+					</div> */}
+					<div className="space-y-6 py-6 border-t">
 						<div className="grid md:grid-cols-2 gap-4">
 							<ShowDocklandsActions />
 							<ShowTraefikActions />
@@ -70,9 +64,9 @@ export const WebServer = () => {
 
 							<ToggleDockerCleanup />
 						</div>
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

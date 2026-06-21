@@ -3,19 +3,11 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Select } from "@cloudflare/kumo/components/select";
 
 const DOCKLANDS_SERVER = "docklands-server";
 
@@ -61,20 +53,20 @@ export const ServerFilter = ({ children }: Props) => {
 
 	if (isLoadingServers || isLoadingCloud) {
 		return (
-			<Card className="bg-sidebar p-2.5 rounded-xl w-full">
+			<LayerCard className="bg-sidebar p-2.5 rounded-xl w-full">
 				<div className="rounded-xl bg-background shadow-md flex flex-col gap-2 items-center justify-center min-h-[60vh]">
 					<span className="text-muted-foreground text-lg font-medium">
 						Loading...
 					</span>
 					<Loader2 className="animate-spin size-8 text-muted-foreground" />
 				</div>
-			</Card>
+			</LayerCard>
 		);
 	}
 
 	if (isCloud && !servers?.length) {
 		return (
-			<Card className="bg-sidebar p-2.5 rounded-xl w-full">
+			<LayerCard className="bg-sidebar p-2.5 rounded-xl w-full">
 				<div className="rounded-xl bg-background shadow-md flex flex-col items-center justify-center gap-5 min-h-[60vh] border border-dashed px-4">
 					<div className="flex items-center justify-center size-16 rounded-full bg-muted">
 						<ServerIcon className="size-8 text-muted-foreground" />
@@ -88,15 +80,13 @@ export const ServerFilter = ({ children }: Props) => {
 						</span>
 					</div>
 					{permissions?.server.create && (
-						<Button asChild>
-							<Link href="/dashboard/settings/servers">
-								<PlusIcon className="size-4" />
-								Add Server
-							</Link>
-						</Button>
+						<LinkButton href="/dashboard/settings/servers">
+							<PlusIcon className="size-4" />
+							Add Server
+						</LinkButton>
 					)}
 				</div>
-			</Card>
+			</LayerCard>
 		);
 	}
 
@@ -110,21 +100,21 @@ export const ServerFilter = ({ children }: Props) => {
 					>
 						Viewing server
 					</Label>
-					<Select
+					<Select aria-label="Select option"
 						value={serverId ?? DOCKLANDS_SERVER}
-						onValueChange={setServerId}
+						onValueChange={(value) => value !== null && setServerId(value as never)}
 					>
-						<SelectTrigger id="server-filter" className="w-fit min-w-[220px]">
+						<>
 							<div className="flex items-center gap-2">
 								<ServerIcon className="size-4 text-muted-foreground" />
-								<SelectValue placeholder="Select a server" />
+								
 							</div>
-						</SelectTrigger>
-						<SelectContent>
-							<SelectGroup>
-								<SelectLabel>Servers</SelectLabel>
+						</>
+						<>
+							<Select.Group>
+								<Select.GroupLabel>Servers</Select.GroupLabel>
 								{!isCloud && (
-									<SelectItem value={DOCKLANDS_SERVER}>
+									<Select.Option value={DOCKLANDS_SERVER}>
 										<div className="flex items-center gap-2">
 											<span>Docklands Server</span>
 											<Badge
@@ -134,20 +124,20 @@ export const ServerFilter = ({ children }: Props) => {
 												Local
 											</Badge>
 										</div>
-									</SelectItem>
+									</Select.Option>
 								)}
 								{servers.map((server) => (
-									<SelectItem key={server.serverId} value={server.serverId}>
+									<Select.Option key={server.serverId} value={server.serverId}>
 										<div className="flex items-center gap-2">
 											<span>{server.name}</span>
 											<span className="text-xs text-muted-foreground">
 												{server.ipAddress}
 											</span>
 										</div>
-									</SelectItem>
+									</Select.Option>
 								))}
-							</SelectGroup>
-						</SelectContent>
+							</Select.Group>
+						</>
 					</Select>
 				</div>
 			)}

@@ -1,17 +1,7 @@
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 
 interface Props {
 	containerId: string;
@@ -23,28 +13,30 @@ export const RemoveContainerDialog = ({ containerId, serverId }: Props) => {
 	const { mutateAsync, isPending } = api.docker.removeContainer.useMutation();
 
 	return (
-		<AlertDialog>
-			<AlertDialogTrigger asChild>
-				<DropdownMenuItem
+		<Dialog.Root role="alertdialog">
+			<Dialog.Trigger render={(
+
+				<DropdownMenu.Item
 					className="w-full cursor-pointer text-red-500 hover:!text-red-600"
 					onSelect={(e) => e.preventDefault()}
 				>
 					Remove Container
-				</DropdownMenuItem>
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>Are you sure?</AlertDialogTitle>
-					<AlertDialogDescription>
+				</DropdownMenu.Item>
+			
+)} />
+			<Dialog>
+				<div>
+					<Dialog.Title>Are you sure?</Dialog.Title>
+					<Dialog.Description>
 						This will permanently remove the container{" "}
 						<span className="font-semibold">{containerId}</span>. If the
 						container is running, it will be forcefully stopped and removed.
 						This action cannot be undone.
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction
+					</Dialog.Description>
+				</div>
+				<div>
+					<Dialog.Close>Cancel</Dialog.Close>
+					<Dialog.Close
 						disabled={isPending}
 						onClick={async () => {
 							await mutateAsync({ containerId, serverId })
@@ -58,9 +50,9 @@ export const RemoveContainerDialog = ({ containerId, serverId }: Props) => {
 						}}
 					>
 						Confirm
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
+					</Dialog.Close>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

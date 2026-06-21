@@ -3,13 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/client/api/trpc";
 import type { IUpdateData } from "@/server/core/services/settings";
 import UpdateServer from "../dashboard/settings/web-server/update-server";
-import { Button } from "../ui/button";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "../ui/tooltip";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 const AUTO_CHECK_UPDATES_INTERVAL_MINUTES = 7;
 
@@ -80,9 +75,13 @@ export const UpdateServerButton = () => {
 				isOpen={isOpen}
 				onOpenChange={setIsOpen}
 			>
-				<TooltipProvider delayDuration={0}>
-					<Tooltip>
-						<TooltipTrigger asChild>
+				<TooltipProvider delay={0}>
+					<Tooltip side="right" content={(
+
+								<p>Update Available</p>
+							
+)} render={(
+
 							<Button
 								variant={updateData ? "outline" : "secondary"}
 								className="w-full"
@@ -105,13 +104,8 @@ export const UpdateServerButton = () => {
 									</span>
 								)}
 							</Button>
-						</TooltipTrigger>
-						{updateData && (
-							<TooltipContent side="right" sideOffset={10}>
-								<p>Update Available</p>
-							</TooltipContent>
-						)}
-					</Tooltip>
+						
+)} />
 				</TooltipProvider>
 			</UpdateServer>
 		</div>

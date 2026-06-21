@@ -1,32 +1,41 @@
 "use client";
 
+import { useState } from "react";
 import { ShowSwarmContainers } from "@/components/dashboard/swarm/containers/show-swarm-containers";
 import SwarmMonitorCard from "@/components/dashboard/swarm/monitoring-card";
 import { ServerFilter } from "@/components/shared/server-filter";
-import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 
 const Dashboard = () => {
+	const [activeTab, setActiveTab] = useState("overview");
+
 	return (
 		<ServerFilter>
 			{(serverId) => (
 				<div className="space-y-4">
-					<Tabs defaultValue="overview">
-						<TabsList>
-							<TabsTrigger value="overview">Overview</TabsTrigger>
-							<TabsTrigger value="containers">Containers</TabsTrigger>
-						</TabsList>
-						<TabsContent value="overview">
+					<Tabs
+						value={activeTab}
+						onValueChange={(value) => value !== null && setActiveTab(value as never)}
+						tabs={[
+							{ value: "overview", label: "Overview" },
+							{ value: "containers", label: "Containers" },
+						]}
+					/>
+					{activeTab === "overview" && (
+						<div>
 							<SwarmMonitorCard serverId={serverId} />
-						</TabsContent>
-						<TabsContent value="containers">
-							<Card className="h-full bg-sidebar p-2.5 rounded-xl mx-auto w-full">
+						</div>
+					)}
+					{activeTab === "containers" && (
+						<div>
+							<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl mx-auto w-full">
 								<div className="rounded-xl bg-background shadow-md p-6">
 									<ShowSwarmContainers serverId={serverId} />
 								</div>
-							</Card>
-						</TabsContent>
-					</Tabs>
+							</LayerCard>
+						</div>
+					)}
 				</div>
 			)}
 		</ServerFilter>

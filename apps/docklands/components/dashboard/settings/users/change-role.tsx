@@ -1,21 +1,13 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -24,14 +16,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Select } from "@cloudflare/kumo/components/select";
 
 const changeRoleSchema = z.object({
 	role: z.string().min(1),
@@ -87,22 +73,24 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger className="" asChild>
-				<DropdownMenuItem
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger className="" render={(
+
+				<DropdownMenu.Item
 					className="w-full cursor-pointer"
 					onSelect={(e) => e.preventDefault()}
 				>
 					Change Role
-				</DropdownMenuItem>
-			</DialogTrigger>
-			<DialogContent className="max-h-[85vh] sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Change User Role</DialogTitle>
-					<DialogDescription>
+				</DropdownMenu.Item>
+			
+)} />
+			<Dialog className="max-h-[85vh] sm:max-w-lg">
+				<div>
+					<Dialog.Title>Change User Role</Dialog.Title>
+					<Dialog.Description>
 						Change the role for <strong>{userEmail}</strong>
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -117,27 +105,27 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Role</FormLabel>
-									<Select
+									<Select aria-label="Select option"
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 									>
 										<FormControl>
-											<SelectTrigger>
-												<SelectValue placeholder="Select a role" />
-											</SelectTrigger>
+											<>
+												
+											</>
 										</FormControl>
-										<SelectContent>
-											<SelectItem value="admin">Admin</SelectItem>
-											<SelectItem value="member">Member</SelectItem>
+										<>
+											<Select.Option value="admin">Admin</Select.Option>
+											<Select.Option value="member">Member</Select.Option>
 											{customRoles?.map((customRole) => (
-												<SelectItem
+												<Select.Option
 													key={customRole.role}
 													value={customRole.role}
 												>
 													{customRole.role}
-												</SelectItem>
+												</Select.Option>
 											))}
-										</SelectContent>
+										</>
 									</Select>
 									<FormDescription>
 										<strong>Admin:</strong> Can manage users and settings.
@@ -163,16 +151,16 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 					</form>
 				</Form>
 
-				<DialogFooter>
+				<div>
 					<Button
-						isLoading={isPending}
+						loading={isPending}
 						form="hook-form-change-role"
 						type="submit"
 					>
 						Update Role
 					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

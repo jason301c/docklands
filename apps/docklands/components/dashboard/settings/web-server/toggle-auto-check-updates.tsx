@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 export const ToggleAutoCheckUpdates = ({ disabled }: { disabled: boolean }) => {
 	const [enabled, setEnabled] = useState<boolean>(

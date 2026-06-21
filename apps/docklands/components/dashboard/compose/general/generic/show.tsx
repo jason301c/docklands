@@ -1,7 +1,7 @@
 import { CodeIcon, GitBranch, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { UnauthorizedGitProvider } from "@/components/dashboard/application/general/generic/unauthorized-git-provider";
 import {
@@ -11,8 +11,8 @@ import {
 	GitIcon,
 	GitlabIcon,
 } from "@/components/icons/data-tools-icons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { ComposeFileEditor } from "../compose-file-editor";
 import { ShowConvertedCompose } from "../show-converted-compose";
 import { SaveBitbucketProviderCompose } from "./save-bitbucket-provider-compose";
@@ -61,9 +61,9 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 
 	if (isLoading) {
 		return (
-			<Card className="group relative w-full bg-transparent">
-				<CardHeader>
-					<CardTitle className="flex items-start justify-between">
+			<LayerCard className="group relative w-full bg-transparent">
+				<div>
+					<h3 className="flex items-start justify-between">
 						<div className="flex flex-col gap-2">
 							<span className="flex flex-col space-y-0.5">Provider</span>
 							<p className="flex items-center text-sm font-normal text-muted-foreground">
@@ -73,17 +73,17 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 						<div className="hidden space-y-1 text-sm font-normal md:block">
 							<GitBranch className="size-6 text-muted-foreground" />
 						</div>
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+					</h3>
+				</div>
+				<div>
 					<div className="flex min-h-[25vh] items-center justify-center">
 						<div className="flex items-center gap-2 text-muted-foreground">
 							<Loader2 className="size-4 animate-spin" />
 							<span>Loading providers...</span>
 						</div>
 					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 		);
 	}
 
@@ -94,9 +94,9 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 		compose.sourceType !== "raw"
 	) {
 		return (
-			<Card className="group relative w-full bg-transparent">
-				<CardHeader>
-					<CardTitle className="flex items-start justify-between">
+			<LayerCard className="group relative w-full bg-transparent">
+				<div>
+					<h3 className="flex items-start justify-between">
 						<div className="flex flex-col gap-2">
 							<span className="flex flex-col space-y-0.5">Provider</span>
 							<p className="flex items-center text-sm font-normal text-muted-foreground">
@@ -106,22 +106,22 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 						<div className="hidden space-y-1 text-sm font-normal md:block">
 							<GitBranch className="size-6 text-muted-foreground" />
 						</div>
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+					</h3>
+				</div>
+				<div>
 					<UnauthorizedGitProvider
 						service={compose}
 						onDisconnect={handleDisconnect}
 					/>
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 		);
 	}
 
 	return (
-		<Card className="group relative w-full bg-transparent">
-			<CardHeader>
-				<CardTitle className="flex items-start justify-between">
+		<LayerCard className="group relative w-full bg-transparent">
+			<div>
+				<h3 className="flex items-start justify-between">
 					<div className="flex flex-col gap-2">
 						<span className="flex flex-col space-y-0.5">Provider</span>
 						<p className="flex items-center text-sm font-normal text-muted-foreground">
@@ -132,63 +132,77 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 						<ShowConvertedCompose composeId={composeId} />
 						<GitBranch className="size-6 text-muted-foreground" />
 					</div>
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<Tabs
-					value={tab}
-					className="w-full"
-					onValueChange={(e) => {
-						setSab(e as TabState);
-					}}
-				>
-					<div className="flex flex-row items-center justify-between w-full overflow-auto">
-						<TabsList className="flex gap-4 justify-start bg-transparent">
-							<TabsTrigger
-								value="github"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<GithubIcon className="size-4 text-current fill-current" />
-								GitHub
-							</TabsTrigger>
-							<TabsTrigger
-								value="gitlab"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<GitlabIcon className="size-4 text-current fill-current" />
-								GitLab
-							</TabsTrigger>
-							<TabsTrigger
-								value="bitbucket"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<BitbucketIcon className="size-4 text-current fill-current" />
-								Bitbucket
-							</TabsTrigger>
-							<TabsTrigger
-								value="gitea"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<GiteaIcon className="size-4 text-current fill-current" /> Gitea
-							</TabsTrigger>
-							<TabsTrigger
-								value="git"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<GitIcon />
-								Git
-							</TabsTrigger>
-							<TabsTrigger
-								value="raw"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<CodeIcon className="size-4" />
-								Raw
-							</TabsTrigger>
-						</TabsList>
-					</div>
+				</h3>
+			</div>
+			<div>
+				<div className="w-full">
+					<Tabs
+						value={tab}
+						className="w-full overflow-auto"
+						onValueChange={(e) => {
+							if (e === null) return;
+							setSab(e as TabState);
+						}}
+						tabs={[
+							{
+								value: "github",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<GithubIcon className="size-4 text-current fill-current" />
+										GitHub
+									</span>
+								),
+							},
+							{
+								value: "gitlab",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<GitlabIcon className="size-4 text-current fill-current" />
+										GitLab
+									</span>
+								),
+							},
+							{
+								value: "bitbucket",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<BitbucketIcon className="size-4 text-current fill-current" />
+										Bitbucket
+									</span>
+								),
+							},
+							{
+								value: "gitea",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<GiteaIcon className="size-4 text-current fill-current" />
+										Gitea
+									</span>
+								),
+							},
+							{
+								value: "git",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<GitIcon />
+										Git
+									</span>
+								),
+							},
+							{
+								value: "raw",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<CodeIcon className="size-4" />
+										Raw
+									</span>
+								),
+							},
+						]}
+					/>
 
-					<TabsContent value="github" className="w-full p-2">
+					{tab === "github" && (
+						<div className="w-full p-2">
 						{githubProviders && githubProviders?.length > 0 ? (
 							<SaveGithubProviderCompose composeId={composeId} />
 						) : (
@@ -207,8 +221,10 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 								</span>
 							</div>
 						)}
-					</TabsContent>
-					<TabsContent value="gitlab" className="w-full p-2">
+						</div>
+					)}
+					{tab === "gitlab" && (
+						<div className="w-full p-2">
 						{gitlabProviders && gitlabProviders?.length > 0 ? (
 							<SaveGitlabProviderCompose composeId={composeId} />
 						) : (
@@ -227,8 +243,10 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 								</span>
 							</div>
 						)}
-					</TabsContent>
-					<TabsContent value="bitbucket" className="w-full p-2">
+						</div>
+					)}
+					{tab === "bitbucket" && (
+						<div className="w-full p-2">
 						{bitbucketProviders && bitbucketProviders?.length > 0 ? (
 							<SaveBitbucketProviderCompose composeId={composeId} />
 						) : (
@@ -247,8 +265,10 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 								</span>
 							</div>
 						)}
-					</TabsContent>
-					<TabsContent value="gitea" className="w-full p-2">
+						</div>
+					)}
+					{tab === "gitea" && (
+						<div className="w-full p-2">
 						{giteaProviders && giteaProviders?.length > 0 ? (
 							<SaveGiteaProviderCompose composeId={composeId} />
 						) : (
@@ -267,16 +287,21 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 								</span>
 							</div>
 						)}
-					</TabsContent>
-					<TabsContent value="git" className="w-full p-2">
+						</div>
+					)}
+					{tab === "git" && (
+						<div className="w-full p-2">
 						<SaveGitProviderCompose composeId={composeId} />
-					</TabsContent>
+						</div>
+					)}
 
-					<TabsContent value="raw" className="w-full p-2 flex flex-col gap-4">
+					{tab === "raw" && (
+						<div className="w-full p-2 flex flex-col gap-4">
 						<ComposeFileEditor composeId={composeId} />
-					</TabsContent>
-				</Tabs>
-			</CardContent>
-		</Card>
+						</div>
+					)}
+				</div>
+			</div>
+		</LayerCard>
 	);
 };

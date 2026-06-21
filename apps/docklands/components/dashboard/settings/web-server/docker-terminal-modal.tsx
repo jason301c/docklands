@@ -3,26 +3,10 @@ import dynamic from "next/dynamic";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Select } from "@cloudflare/kumo/components/select";
 import { badgeStateColor } from "../../application/logs/show";
 
 const Terminal = dynamic(
@@ -87,33 +71,28 @@ export const DockerTerminalModal = ({
 	}, [data]);
 
 	return (
-		<Dialog open={mainDialogOpen} onOpenChange={handleMainDialogOpenChange}>
-			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent
-				className="max-h-[85vh] sm:max-w-7xl"
-				onEscapeKeyDown={(event) => event.preventDefault()}
-			>
-				<DialogHeader>
-					<DialogTitle>Docker Terminal</DialogTitle>
-					<DialogDescription>
+		<Dialog.Root open={mainDialogOpen} onOpenChange={handleMainDialogOpenChange}>
+			<Dialog.Trigger render={children as never} />
+			<Dialog className="max-h-[85vh] sm:max-w-7xl">
+				<div>
+					<Dialog.Title>Docker Terminal</Dialog.Title>
+					<Dialog.Description>
 						Easy way to access to docker container
-					</DialogDescription>
-				</DialogHeader>
-				<Select onValueChange={setContainerId} value={containerId}>
-					<SelectTrigger>
+					</Dialog.Description>
+				</div>
+				<Select aria-label="Select option" onValueChange={(value) => value !== null && setContainerId(value as never)} value={containerId}>
+					<>
 						{isPending ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
 								<span>Loading...</span>
 								<Loader2 className="animate-spin size-4" />
 							</div>
-						) : (
-							<SelectValue placeholder="Select a container" />
-						)}
-					</SelectTrigger>
-					<SelectContent>
-						<SelectGroup>
+						) : null}
+					</>
+					<>
+						<Select.Group>
 							{data?.map((container) => (
-								<SelectItem
+								<Select.Option
 									key={container.containerId}
 									value={container.containerId}
 								>
@@ -121,36 +100,36 @@ export const DockerTerminalModal = ({
 									<Badge variant={badgeStateColor(container.state)}>
 										{container.state}
 									</Badge>
-								</SelectItem>
+								</Select.Option>
 							))}
-							<SelectLabel>Containers ({data?.length})</SelectLabel>
-						</SelectGroup>
-					</SelectContent>
+							<Select.GroupLabel>Containers ({data?.length})</Select.GroupLabel>
+						</Select.Group>
+					</>
 				</Select>
 				<Terminal
 					serverId={serverId || ""}
 					id="terminal"
 					containerId={containerId || "select-a-container"}
 				/>
-				<Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
-					<DialogContent onEscapeKeyDown={(event) => event.preventDefault()}>
-						<DialogHeader>
-							<DialogTitle>
+				<Dialog.Root open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+					<Dialog>
+						<div>
+							<Dialog.Title>
 								Are you sure you want to close the terminal?
-							</DialogTitle>
-							<DialogDescription>
+							</Dialog.Title>
+							<Dialog.Description>
 								By clicking the confirm button, the terminal will be closed.
-							</DialogDescription>
-						</DialogHeader>
-						<DialogFooter>
+							</Dialog.Description>
+						</div>
+						<div>
 							<Button variant="outline" onClick={handleCancel}>
 								Cancel
 							</Button>
 							<Button onClick={handleConfirm}>Confirm</Button>
-						</DialogFooter>
-					</DialogContent>
-				</Dialog>
-			</DialogContent>
-		</Dialog>
+						</div>
+					</Dialog>
+				</Dialog.Root>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

@@ -1,11 +1,11 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -13,9 +13,9 @@ import {
 	FormField,
 	FormItem,
 	FormLabel,
-} from "@/components/ui/form";
-import { Secrets } from "@/components/ui/secrets";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Secrets } from "@/components/shared/secrets";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 const addEnvironmentSchema = z.object({
 	env: z.string(),
@@ -119,7 +119,7 @@ export const ShowEnvironment = ({ applicationId }: Props) => {
 	}, [form, onSubmit, isPending]);
 
 	return (
-		<Card className="bg-background px-6 pb-6">
+		<LayerCard className="bg-background px-6 pb-6">
 			<Form {...form}>
 				<form
 					onSubmit={form.handleSubmit(onSubmit)}
@@ -218,7 +218,7 @@ export const ShowEnvironment = ({ applicationId }: Props) => {
 								</Button>
 							)}
 							<Button
-								isLoading={isPending}
+								loading={isPending}
 								className="w-fit"
 								type="submit"
 								disabled={!hasChanges}
@@ -229,6 +229,6 @@ export const ShowEnvironment = ({ applicationId }: Props) => {
 					)}
 				</form>
 			</Form>
-		</Card>
+		</LayerCard>
 	);
 };

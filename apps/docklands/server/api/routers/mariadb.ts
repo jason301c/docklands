@@ -57,6 +57,7 @@ import {
 	execAsync,
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
+
 export const mariadbRouter = createTRPCRouter({
 	create: protectedProcedure
 		.input(apiCreateMariaDB)

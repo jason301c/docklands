@@ -1,27 +1,25 @@
 "use client";
 
+
+
+
+
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
 import { SignInWithGithub } from "@/components/auth/sign-in-with-github";
 import { SignInWithGoogle } from "@/components/auth/sign-in-with-google";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Logo } from "@/components/shared/logo";
-import { Button } from "@/components/ui/button";
-import { CardContent, CardDescription } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -29,10 +27,10 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { InputOTP } from "@/components/ui/input-otp";
-import { Label } from "@/components/ui/label";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { InputOTP } from "@/components/shared/input-otp";
+import { Label } from "@cloudflare/kumo/components/label";
 
 const LoginSchema = z.object({
 	email: z.string().email(),
@@ -203,7 +201,7 @@ export default function Home({ IS_CLOUD }: Props) {
 							</FormItem>
 						)}
 					/>
-					<Button className="w-full" type="submit" isLoading={isLoginLoading}>
+					<Button className="w-full" type="submit" loading={isLoginLoading}>
 						Login
 					</Button>
 				</form>
@@ -229,7 +227,7 @@ export default function Home({ IS_CLOUD }: Props) {
 					<span>{error}</span>
 				</AlertBlock>
 			)}
-			<CardContent className="p-0">
+			<div className="p-0">
 				{!isTwoFactor ? (
 					loginContent
 				) : (
@@ -252,9 +250,9 @@ export default function Home({ IS_CLOUD }: Props) {
 									pattern={REGEXP_ONLY_DIGITS}
 									autoFocus
 								/>
-								<CardDescription>
+								<p>
 									Enter the 6-digit code from your authenticator app
-								</CardDescription>
+								</p>
 								<button
 									type="button"
 									onClick={() => setIsBackupCodeModalOpen(true)}
@@ -279,24 +277,24 @@ export default function Home({ IS_CLOUD }: Props) {
 								<Button
 									className="w-full"
 									type="submit"
-									isLoading={isTwoFactorLoading}
+									loading={isTwoFactorLoading}
 								>
 									Verify
 								</Button>
 							</div>
 						</form>
 
-						<Dialog
+						<Dialog.Root
 							open={isBackupCodeModalOpen}
 							onOpenChange={setIsBackupCodeModalOpen}
 						>
-							<DialogContent>
-								<DialogHeader>
-									<DialogTitle>Enter Backup Code</DialogTitle>
-									<DialogDescription>
+							<Dialog>
+								<div>
+									<Dialog.Title>Enter Backup Code</Dialog.Title>
+									<Dialog.Description>
 										Enter one of your backup codes to access your account
-									</DialogDescription>
-								</DialogHeader>
+									</Dialog.Description>
+								</div>
 
 								<form onSubmit={onBackupCodeSubmit} className="space-y-4">
 									<div className="flex flex-col gap-2">
@@ -307,10 +305,10 @@ export default function Home({ IS_CLOUD }: Props) {
 											placeholder="Enter your backup code"
 											className="font-mono"
 										/>
-										<CardDescription>
+										<p>
 											Enter one of the backup codes you received when setting up
 											2FA
-										</CardDescription>
+										</p>
 									</div>
 
 									<div className="flex gap-4">
@@ -328,14 +326,14 @@ export default function Home({ IS_CLOUD }: Props) {
 										<Button
 											className="w-full"
 											type="submit"
-											isLoading={isBackupCodeLoading}
+											loading={isBackupCodeLoading}
 										>
 											Verify
 										</Button>
 									</div>
 								</form>
-							</DialogContent>
-						</Dialog>
+							</Dialog>
+						</Dialog.Root>
 					</>
 				)}
 
@@ -371,7 +369,7 @@ export default function Home({ IS_CLOUD }: Props) {
 					</div>
 				</div>
 				<div className="p-2" />
-			</CardContent>
+			</div>
 		</>
 	);
 }

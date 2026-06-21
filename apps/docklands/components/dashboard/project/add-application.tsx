@@ -2,21 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Folder, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -24,24 +16,11 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Textarea } from "@cloudflare/kumo/components/input";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 
@@ -118,23 +97,23 @@ export const AddApplication = ({ environmentId, projectName }: Props) => {
 	};
 
 	return (
-		<Dialog open={visible} onOpenChange={setVisible}>
-			<DialogTrigger className="w-full">
-				<DropdownMenuItem
+		<Dialog.Root open={visible} onOpenChange={setVisible}>
+			<Dialog.Trigger className="w-full">
+				<DropdownMenu.Item
 					className="w-full cursor-pointer space-x-3"
 					onSelect={(e) => e.preventDefault()}
 				>
 					<Folder className="size-4 text-muted-foreground" />
 					<span>Application</span>
-				</DropdownMenuItem>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Create</DialogTitle>
-					<DialogDescription>
+				</DropdownMenu.Item>
+			</Dialog.Trigger>
+			<Dialog className="sm:max-w-lg">
+				<div>
+					<Dialog.Title>Create</Dialog.Title>
+					<Dialog.Description>
 						Assign a name and description to your application
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
 					<form
@@ -170,56 +149,47 @@ export const AddApplication = ({ environmentId, projectName }: Props) => {
 								name="serverId"
 								render={({ field }) => (
 									<FormItem>
-										<TooltipProvider delayDuration={0}>
-											<Tooltip>
-												<TooltipTrigger asChild>
+										<TooltipProvider delay={0}>
+											<Tooltip content={<>
+													<span>
+														If no server is selected, the application will be
+														deployed on the server where the user is logged in.
+													</span>
+												</>} className="z-[999] w-[300px]"
+													align="start"
+													side="top"  asChild>
 													<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
 														Select a Server{" "}
 														{showLocalOption ? "(Optional)" : ""}
 														<HelpCircle className="size-4 text-muted-foreground" />
 													</FormLabel>
-												</TooltipTrigger>
-												<TooltipContent
-													className="z-[999] w-[300px]"
-													align="start"
-													side="top"
-												>
-													<span>
-														If no server is selected, the application will be
-														deployed on the server where the user is logged in.
-													</span>
-												</TooltipContent>
-											</Tooltip>
+												</Tooltip>
 										</TooltipProvider>
 
-										<Select
+										<Select aria-label="Select option"
 											onValueChange={field.onChange}
 											defaultValue={
 												field.value ||
 												(showLocalOption ? "docklands" : undefined)
 											}
 										>
-											<SelectTrigger>
-												<SelectValue
-													placeholder={
-														showLocalOption ? "Docklands" : "Select a Server"
-													}
-												/>
-											</SelectTrigger>
-											<SelectContent>
-												<SelectGroup>
+											<>
+												
+											</>
+											<>
+												<Select.Group>
 													{showLocalOption && (
-														<SelectItem value="docklands">
+														<Select.Option value="docklands">
 															<span className="flex items-center gap-2 justify-between w-full">
 																<span>Docklands</span>
 																<span className="text-muted-foreground text-xs self-center">
 																	Default
 																</span>
 															</span>
-														</SelectItem>
+														</Select.Option>
 													)}
 													{servers?.map((server) => (
-														<SelectItem
+														<Select.Option
 															key={server.serverId}
 															value={server.serverId}
 														>
@@ -229,14 +199,14 @@ export const AddApplication = ({ environmentId, projectName }: Props) => {
 																	{server.ipAddress}
 																</span>
 															</span>
-														</SelectItem>
+														</Select.Option>
 													))}
-													<SelectLabel>
+													<Select.GroupLabel>
 														Servers (
 														{servers?.length + (showLocalOption ? 1 : 0)})
-													</SelectLabel>
-												</SelectGroup>
-											</SelectContent>
+													</Select.GroupLabel>
+												</Select.Group>
+											</>
 										</Select>
 										<FormMessage />
 									</FormItem>
@@ -250,17 +220,14 @@ export const AddApplication = ({ environmentId, projectName }: Props) => {
 								<FormItem>
 									<FormLabel className="flex items-center gap-2">
 										App Name
-										<TooltipProvider delayDuration={0}>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<HelpCircle className="size-4 text-muted-foreground" />
-												</TooltipTrigger>
-												<TooltipContent side="right">
+										<TooltipProvider delay={0}>
+											<Tooltip content={<>
 													<p>
 														This will be the name of the Docker Swarm service
 													</p>
-												</TooltipContent>
-											</Tooltip>
+												</>} side="right"  asChild>
+													<HelpCircle className="size-4 text-muted-foreground" />
+												</Tooltip>
 										</TooltipProvider>
 									</FormLabel>
 									<FormControl>
@@ -290,13 +257,13 @@ export const AddApplication = ({ environmentId, projectName }: Props) => {
 						/>
 					</form>
 
-					<DialogFooter>
-						<Button isLoading={isPending} form="hook-form" type="submit">
+					<div>
+						<Button loading={isPending} form="hook-form" type="submit">
 							Create
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

@@ -4,16 +4,9 @@ import type { inferRouterOutputs } from "@trpc/server";
 import { ArrowRight, ListTodo, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { Table } from "@cloudflare/kumo/components/table";
 import type { AppRouter } from "@/server/api/root";
 
 type QueueRow =
@@ -21,17 +14,17 @@ type QueueRow =
 
 const stateVariants: Record<
 	string,
-	| "default"
+	| "secondary"
 	| "secondary"
 	| "destructive"
 	| "outline"
-	| "yellow"
+	| "warning"
 	| "green"
 	| "red"
 > = {
 	pending: "secondary",
 	waiting: "secondary",
-	active: "yellow",
+	active: "warning",
 	delayed: "outline",
 	completed: "green",
 	failed: "destructive",
@@ -97,20 +90,20 @@ export function ShowQueueTable(props: { embedded?: boolean }) {
 			) : (
 				<div className="rounded-md border overflow-x-auto">
 					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Job ID</TableHead>
-								<TableHead>Label</TableHead>
-								<TableHead>Type</TableHead>
-								<TableHead>State</TableHead>
-								<TableHead>Added</TableHead>
-								<TableHead>Processed</TableHead>
-								<TableHead>Finished</TableHead>
-								<TableHead>Error</TableHead>
-								<TableHead className="w-[100px]">Actions</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
+						<Table.Header>
+							<Table.Row>
+								<Table.Head>Job ID</Table.Head>
+								<Table.Head>Label</Table.Head>
+								<Table.Head>Type</Table.Head>
+								<Table.Head>State</Table.Head>
+								<Table.Head>Added</Table.Head>
+								<Table.Head>Processed</Table.Head>
+								<Table.Head>Finished</Table.Head>
+								<Table.Head>Error</Table.Head>
+								<Table.Head className="w-[100px]">Actions</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
 							{queueList?.length ? (
 								queueList.map((row) => {
 									const d = row.data as Record<string, unknown>;
@@ -118,40 +111,42 @@ export function ShowQueueTable(props: { embedded?: boolean }) {
 									const pathInfo = row.servicePath;
 									const hasLink = pathInfo?.href != null;
 									return (
-										<TableRow key={String(row.id)}>
-											<TableCell className="font-mono text-xs">
+										<Table.Row key={String(row.id)}>
+											<Table.Cell className="font-mono text-xs">
 												{String(row.id)}
-											</TableCell>
-											<TableCell className="max-w-[200px] truncate">
+											</Table.Cell>
+											<Table.Cell className="max-w-[200px] truncate">
 												{getJobLabel(row)}
-											</TableCell>
-											<TableCell>{appType ?? row.name ?? "—"}</TableCell>
-											<TableCell>
+											</Table.Cell>
+											<Table.Cell>{appType ?? row.name ?? "—"}</Table.Cell>
+											<Table.Cell>
 												<Badge variant={stateVariants[row.state] ?? "outline"}>
 													{row.state}
 												</Badge>
-											</TableCell>
-											<TableCell className="text-muted-foreground text-xs">
+											</Table.Cell>
+											<Table.Cell className="text-muted-foreground text-xs">
 												{formatTs(row.timestamp)}
-											</TableCell>
-											<TableCell className="text-muted-foreground text-xs">
+											</Table.Cell>
+											<Table.Cell className="text-muted-foreground text-xs">
 												{formatTs(row.processedOn)}
-											</TableCell>
-											<TableCell className="text-muted-foreground text-xs">
+											</Table.Cell>
+											<Table.Cell className="text-muted-foreground text-xs">
 												{formatTs(row.finishedOn)}
-											</TableCell>
-											<TableCell className="max-w-[180px] truncate text-xs text-destructive">
+											</Table.Cell>
+											<Table.Cell className="max-w-[180px] truncate text-xs text-destructive">
 												{row.failedReason ?? "—"}
-											</TableCell>
-											<TableCell>
+											</Table.Cell>
+											<Table.Cell>
 												<div className="flex items-center gap-1">
 													{hasLink ? (
-														<Button variant="ghost" size="sm" asChild>
-															<Link href={pathInfo!.href!}>
-																<ArrowRight className="size-4 mr-1" />
-																Service
-															</Link>
-														</Button>
+														<LinkButton
+															href={pathInfo!.href!}
+															variant="ghost"
+															size="sm"
+														>
+															<ArrowRight className="size-4 mr-1" />
+															Service
+														</LinkButton>
 													) : (
 														<span className="text-muted-foreground text-xs">
 															—
@@ -191,13 +186,13 @@ export function ShowQueueTable(props: { embedded?: boolean }) {
 															</Button>
 														)}
 												</div>
-											</TableCell>
-										</TableRow>
+											</Table.Cell>
+										</Table.Row>
 									);
 								})
 							) : (
-								<TableRow>
-									<TableCell colSpan={9} className="text-center py-12">
+								<Table.Row>
+									<Table.Cell colSpan={9} className="text-center py-12">
 										<div className="flex flex-col items-center justify-center gap-2 text-muted-foreground min-h-[30vh]">
 											<ListTodo className="size-8" />
 											<p className="font-medium">Queue is empty</p>
@@ -205,10 +200,10 @@ export function ShowQueueTable(props: { embedded?: boolean }) {
 												Deployment jobs will appear here when they are queued.
 											</p>
 										</div>
-									</TableCell>
-								</TableRow>
+									</Table.Cell>
+								</Table.Row>
 							)}
-						</TableBody>
+						</Table.Body>
 					</Table>
 				</div>
 			)}

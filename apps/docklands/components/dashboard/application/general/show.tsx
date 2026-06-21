@@ -1,4 +1,3 @@
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import {
 	Ban,
 	CheckCircle2,
@@ -8,20 +7,15 @@ import {
 	Terminal,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { ShowBuildChooseForm } from "@/components/dashboard/application/build/show";
 import { ShowProviderForm } from "@/components/dashboard/application/general/generic/show";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
 interface Props {
@@ -54,12 +48,12 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 
 	return (
 		<>
-			<Card className="bg-background">
-				<CardHeader>
-					<CardTitle className="text-xl">Deploy Settings</CardTitle>
-				</CardHeader>
-				<CardContent className="grid grid-cols-2 lg:flex lg:flex-row lg:flex-wrap gap-4">
-					<TooltipProvider delayDuration={0} disableHoverableContent={false}>
+			<LayerCard className="bg-background">
+				<div>
+					<h3 className="text-xl">Deploy Settings</h3>
+				</div>
+				<div className="grid grid-cols-2 lg:flex lg:flex-row lg:flex-wrap gap-4">
+					<TooltipProvider delay={0}>
 						{canDeploy && (
 							<DialogAction
 								title="Deploy Application"
@@ -82,26 +76,21 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 								}}
 							>
 								<Button
-									variant="default"
-									isLoading={data?.applicationStatus === "running"}
+									variant="primary"
+									loading={data?.applicationStatus === "running"}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<div className="flex items-center">
-												<Rocket className="size-4 mr-1" />
-												Deploy
-											</div>
-										</TooltipTrigger>
-										<TooltipPrimitive.Portal>
-											<TooltipContent sideOffset={5} className="z-[60]">
+									<Tooltip content={<>
 												<p>
 													Downloads the source code and performs a complete
 													build
 												</p>
-											</TooltipContent>
-										</TooltipPrimitive.Portal>
-									</Tooltip>
+											</>} className="z-[60]"  asChild>
+											<div className="flex items-center">
+												<Rocket className="size-4 mr-1" />
+												Deploy
+											</div>
+										</Tooltip>
 								</Button>
 							</DialogAction>
 						)}
@@ -126,22 +115,17 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 							>
 								<Button
 									variant="secondary"
-									isLoading={isReloading}
+									loading={isReloading}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip>
-										<TooltipTrigger asChild>
+									<Tooltip content={<>
+												<p>Reload the application without rebuilding it</p>
+											</>} className="z-[60]"  asChild>
 											<div className="flex items-center">
 												<RefreshCcw className="size-4 mr-1" />
 												Reload
 											</div>
-										</TooltipTrigger>
-										<TooltipPrimitive.Portal>
-											<TooltipContent sideOffset={5} className="z-[60]">
-												<p>Reload the application without rebuilding it</p>
-											</TooltipContent>
-										</TooltipPrimitive.Portal>
-									</Tooltip>
+										</Tooltip>
 								</Button>
 							</DialogAction>
 						)}
@@ -165,25 +149,20 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 							>
 								<Button
 									variant="secondary"
-									isLoading={data?.applicationStatus === "running"}
+									loading={data?.applicationStatus === "running"}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<div className="flex items-center">
-												<Hammer className="size-4 mr-1" />
-												Rebuild
-											</div>
-										</TooltipTrigger>
-										<TooltipPrimitive.Portal>
-											<TooltipContent sideOffset={5} className="z-[60]">
+									<Tooltip content={<>
 												<p>
 													Only rebuilds the application without downloading new
 													code
 												</p>
-											</TooltipContent>
-										</TooltipPrimitive.Portal>
-									</Tooltip>
+											</>} className="z-[60]"  asChild>
+											<div className="flex items-center">
+												<Hammer className="size-4 mr-1" />
+												Rebuild
+											</div>
+										</Tooltip>
 								</Button>
 							</DialogAction>
 						)}
@@ -208,25 +187,20 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 							>
 								<Button
 									variant="secondary"
-									isLoading={isStarting}
+									loading={isStarting}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<div className="flex items-center">
-												<CheckCircle2 className="size-4 mr-1" />
-												Start
-											</div>
-										</TooltipTrigger>
-										<TooltipPrimitive.Portal>
-											<TooltipContent sideOffset={5} className="z-[60]">
+									<Tooltip content={<>
 												<p>
 													Start the application (requires a previous successful
 													build)
 												</p>
-											</TooltipContent>
-										</TooltipPrimitive.Portal>
-									</Tooltip>
+											</>} className="z-[60]"  asChild>
+											<div className="flex items-center">
+												<CheckCircle2 className="size-4 mr-1" />
+												Start
+											</div>
+										</Tooltip>
 								</Button>
 							</DialogAction>
 						) : canDeploy ? (
@@ -248,22 +222,17 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 							>
 								<Button
 									variant="destructive"
-									isLoading={isStopping}
+									loading={isStopping}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip>
-										<TooltipTrigger asChild>
+									<Tooltip content={<>
+												<p>Stop the currently running application</p>
+											</>} className="z-[60]"  asChild>
 											<div className="flex items-center">
 												<Ban className="size-4 mr-1" />
 												Stop
 											</div>
-										</TooltipTrigger>
-										<TooltipPrimitive.Portal>
-											<TooltipContent sideOffset={5} className="z-[60]">
-												<p>Stop the currently running application</p>
-											</TooltipContent>
-										</TooltipPrimitive.Portal>
-									</Tooltip>
+										</Tooltip>
 								</Button>
 							</DialogAction>
 						) : null}
@@ -327,8 +296,8 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 							/>
 						</div>
 					)}
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 			<ShowProviderForm applicationId={applicationId} />
 			<ShowBuildChooseForm applicationId={applicationId} />
 		</>

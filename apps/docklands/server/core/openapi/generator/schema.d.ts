@@ -3,6 +3,7 @@ import { ZodObject, z } from 'zod';
 import { ZodOpenApiParameters, ZodOpenApiRequestBodyObject, ZodOpenApiResponseObject, ZodOpenApiResponsesObject } from 'zod-openapi';
 import { OpenApiContentType } from '../types';
 import { HttpMethods } from './paths';
+
 export declare const getParameterObjects: (schema: z.ZodObject<z.ZodRawShape>, required: boolean, pathParameters: string[], headersSchema: ZodObject | undefined, inType: "all" | "path" | "query") => ZodOpenApiParameters | undefined;
 export declare const getRequestBodyObject: (schema: z.ZodObject<z.ZodRawShape>, required: boolean, pathParameters: string[], contentTypes: OpenApiContentType[]) => ZodOpenApiRequestBodyObject | undefined;
 export declare const hasInputs: (schema: unknown) => boolean;

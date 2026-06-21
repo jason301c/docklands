@@ -15,28 +15,14 @@ import {
 	type Path,
 	useForm,
 } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -45,31 +31,27 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@cloudflare/kumo/components/popover";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
 import type { CacheType } from "../domains/handle-domain";
 import { getTimezoneLabel, TIMEZONES } from "./timezones";
+
+const Command = Combobox;
+const CommandInput = Combobox.TriggerInput;
+const CommandList = Combobox.List;
+const CommandGroup = Combobox.Group;
+const CommandItem = Combobox.Item;
+const CommandEmpty = Combobox.Empty;
 
 export const commonCronExpressions = [
 	{ label: "Every minute", value: "* * * * *" },
@@ -158,38 +140,36 @@ export const ScheduleFormField = <TFieldValues extends FieldValues>({
 					<FormLabel className="flex items-center gap-2">
 						Schedule
 						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Info className="w-4 h-4 text-muted-foreground cursor-help" />
-								</TooltipTrigger>
-								<TooltipContent>
+							<Tooltip content={<>
 									<p>Cron expression format: minute hour day month weekday</p>
 									<p>Example: 0 0 * * * (daily at midnight)</p>
-								</TooltipContent>
-							</Tooltip>
+								</>}  asChild>
+									<Info className="w-4 h-4 text-muted-foreground cursor-help" />
+								</Tooltip>
 						</TooltipProvider>
 					</FormLabel>
 					<div className="flex flex-col gap-2">
-						<Select
+						<Select aria-label="Select option"
 							value={selectedOption}
 							onValueChange={(value) => {
+								if (value === null) return;
 								setSelectedOption(value);
 								field.onChange(value === "custom" ? "" : value);
 							}}
 						>
 							<FormControl>
-								<SelectTrigger>
-									<SelectValue placeholder="Select a predefined schedule" />
-								</SelectTrigger>
+								<>
+									
+								</>
 							</FormControl>
-							<SelectContent>
+							<>
 								{commonCronExpressions.map((expr) => (
-									<SelectItem key={expr.value} value={expr.value}>
+									<Select.Option key={expr.value} value={expr.value}>
 										{expr.label}
 										{expr.value !== "custom" && ` (${expr.value})`}
-									</SelectItem>
+									</Select.Option>
 								))}
-							</SelectContent>
+							</>
 						</Select>
 						<div className="relative">
 							<FormControl>
@@ -324,12 +304,11 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				{scheduleId ? (
-					<Button
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={scheduleId ? (
+					<Button aria-label="Action"
 						variant="ghost"
-						size="icon"
+						shape="square"
 						className="group hover:bg-blue-500/10"
 					>
 						<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
@@ -339,9 +318,8 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 						<PlusCircle className="w-4 h-4 mr-2" />
 						Add Schedule
 					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent
+				) as never} />
+			<Dialog
 				className={cn(
 					scheduleTypeForm === "docklands-server" ||
 						scheduleTypeForm === "server"
@@ -349,13 +327,13 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 						: "sm:max-w-lg",
 				)}
 			>
-				<DialogHeader>
-					<DialogTitle>{scheduleId ? "Edit" : "Create"} Schedule</DialogTitle>
-					<DialogDescription>
+				<div>
+					<Dialog.Title>{scheduleId ? "Edit" : "Create"} Schedule</Dialog.Title>
+					<Dialog.Description>
 						{scheduleId ? "Manage" : "Create"} a schedule to run a task at a
 						specific time or interval.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 						{scheduleTypeForm === "compose" && (
@@ -375,37 +353,42 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 										<FormItem className="w-full">
 											<FormLabel>Service Name</FormLabel>
 											<div className="flex gap-2">
-												<Select
+												<Select aria-label="Select option"
 													onValueChange={field.onChange}
 													defaultValue={field.value || ""}
 												>
 													<FormControl>
-														<SelectTrigger>
-															<SelectValue placeholder="Select a service name" />
-														</SelectTrigger>
+														<>
+															
+														</>
 													</FormControl>
 
-													<SelectContent>
+													<>
 														{services?.map((service, index) => (
-															<SelectItem
+															<Select.Option
 																value={service}
 																key={`${service}-${index}`}
 															>
 																{service}
-															</SelectItem>
+															</Select.Option>
 														))}
-														<SelectItem value="none" disabled>
+														<Select.Option value="none" disabled>
 															Empty
-														</SelectItem>
-													</SelectContent>
+														</Select.Option>
+													</>
 												</Select>
-												<TooltipProvider delayDuration={0}>
-													<Tooltip>
-														<TooltipTrigger asChild>
+												<TooltipProvider delay={0}>
+													<Tooltip content={<>
+															<p>
+																Fetch: Will clone the repository and load the
+																services
+															</p>
+														</>} side="left"
+															className="max-w-[10rem]"  asChild>
 															<Button
 																variant="secondary"
 																type="button"
-																isLoading={isLoadingServices}
+																loading={isLoadingServices}
 																onClick={() => {
 																	if (cacheType === "fetch") {
 																		refetchServices();
@@ -416,26 +399,21 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 															>
 																<RefreshCw className="size-4 text-muted-foreground" />
 															</Button>
-														</TooltipTrigger>
-														<TooltipContent
-															side="left"
-															sideOffset={5}
-															className="max-w-[10rem]"
-														>
-															<p>
-																Fetch: Will clone the repository and load the
-																services
-															</p>
-														</TooltipContent>
-													</Tooltip>
+														</Tooltip>
 												</TooltipProvider>
-												<TooltipProvider delayDuration={0}>
-													<Tooltip>
-														<TooltipTrigger asChild>
+												<TooltipProvider delay={0}>
+													<Tooltip content={<>
+															<p>
+																Cache: If you previously deployed this compose,
+																it will read the services from the last
+																deployment/fetch from the repository
+															</p>
+														</>} side="left"
+															className="max-w-[10rem]"  asChild>
 															<Button
 																variant="secondary"
 																type="button"
-																isLoading={isLoadingServices}
+																loading={isLoadingServices}
 																onClick={() => {
 																	if (cacheType === "cache") {
 																		refetchServices();
@@ -446,19 +424,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 															>
 																<DatabaseZap className="size-4 text-muted-foreground" />
 															</Button>
-														</TooltipTrigger>
-														<TooltipContent
-															side="left"
-															sideOffset={5}
-															className="max-w-[10rem]"
-														>
-															<p>
-																Cache: If you previously deployed this compose,
-																it will read the services from the last
-																deployment/fetch from the repository
-															</p>
-														</TooltipContent>
-													</Tooltip>
+														</Tooltip>
 												</TooltipProvider>
 											</div>
 
@@ -521,17 +487,14 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 									<FormLabel className="flex items-center gap-2">
 										Timezone
 										<TooltipProvider>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<Info className="w-4 h-4 text-muted-foreground cursor-help" />
-												</TooltipTrigger>
-												<TooltipContent>
+											<Tooltip content={<>
 													<p>
 														Select a timezone for the schedule. If not
 														specified, UTC will be used.
 													</p>
-												</TooltipContent>
-											</Tooltip>
+												</>}  asChild>
+													<Info className="w-4 h-4 text-muted-foreground cursor-help" />
+												</Tooltip>
 										</TooltipProvider>
 									</FormLabel>
 									<Popover>
@@ -550,7 +513,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 											</FormControl>
 										</PopoverTrigger>
 										<PopoverContent className="w-[400px] p-0" align="start">
-											<Command>
+											<Command items={[]}>
 												<CommandInput
 													placeholder="Search timezone..."
 													className="h-9"
@@ -560,7 +523,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 													<ScrollArea className="h-72">
 														{Object.entries(TIMEZONES).map(
 															([region, zones]) => (
-																<CommandGroup key={region} heading={region}>
+																<CommandGroup key={region} aria-label={region}>
 																	{zones.map((tz) => (
 																		<CommandItem
 																			key={tz.value}
@@ -607,19 +570,19 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 											<FormLabel className="flex items-center gap-2">
 												Shell Type
 											</FormLabel>
-											<Select
+											<Select aria-label="Select option"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Select shell type" />
-													</SelectTrigger>
+													<>
+														
+													</>
 												</FormControl>
-												<SelectContent>
-													<SelectItem value="bash">Bash</SelectItem>
-													<SelectItem value="sh">Sh</SelectItem>
-												</SelectContent>
+												<>
+													<Select.Option value="bash">Bash</Select.Option>
+													<Select.Option value="sh">Sh</Select.Option>
+												</>
 											</Select>
 											<FormDescription>
 												Choose the shell to execute your command
@@ -691,12 +654,12 @@ echo "Hello, world!"
 							)}
 						/>
 
-						<Button type="submit" isLoading={isPending} className="w-full">
+						<Button type="submit" loading={isPending} className="w-full">
 							{scheduleId ? "Update" : "Create"} Schedule
 						</Button>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

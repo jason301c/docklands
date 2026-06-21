@@ -1,8 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { ArrowUpDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
 import type { LogEntry } from "./show-requests";
 
 export const getStatusColor = (status: number) => {
@@ -13,7 +13,7 @@ export const getStatusColor = (status: number) => {
 		return "outline";
 	}
 	if (status >= 200 && status < 300) {
-		return "default";
+		return "secondary";
 	}
 	if (status >= 300 && status < 400) {
 		return "outline";

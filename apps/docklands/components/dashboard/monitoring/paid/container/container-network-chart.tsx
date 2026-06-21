@@ -1,18 +1,12 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	type ChartConfig,
 	ChartContainer,
 	ChartLegend,
 	ChartLegendContent,
 	ChartTooltip,
-} from "@/components/ui/chart";
+} from "@/components/shared/chart";
 import { formatTimestamp } from "@/shared/utils";
 
 interface ContainerMetric {
@@ -65,16 +59,16 @@ export const ContainerNetworkChart = ({ data }: Props) => {
 	};
 
 	return (
-		<Card className="bg-transparent">
-			<CardHeader className="border-b py-5">
-				<CardTitle>Network I/O</CardTitle>
-				<CardDescription>
+		<LayerCard className="bg-transparent">
+			<div className="border-b py-5">
+				<h3>Network I/O</h3>
+				<p>
 					Input: {latestData.input}
 					{latestData.inputUnit} / Output: {latestData.output}
 					{latestData.outputUnit}
-				</CardDescription>
-			</CardHeader>
-			<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+				</p>
+			</div>
+			<div className="px-2 pt-4 sm:px-6 sm:pt-6">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-auto h-[250px] w-full"
@@ -180,7 +174,7 @@ export const ContainerNetworkChart = ({ data }: Props) => {
 						/>
 					</AreaChart>
 				</ChartContainer>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

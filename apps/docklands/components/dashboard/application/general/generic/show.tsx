@@ -1,7 +1,7 @@
 import { GitBranch, Loader2, UploadCloud } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { SaveDockerProvider } from "@/components/dashboard/application/general/generic/save-docker-provider";
 import { SaveGitProvider } from "@/components/dashboard/application/general/generic/save-git-provider";
@@ -15,8 +15,8 @@ import {
 	GitIcon,
 	GitlabIcon,
 } from "@/components/icons/data-tools-icons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { SaveBitbucketProvider } from "./save-bitbucket-provider";
 import { SaveDragNDrop } from "./save-drag-n-drop";
 import { SaveGitlabProvider } from "./save-gitlab-provider";
@@ -72,9 +72,9 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 
 	if (isLoading) {
 		return (
-			<Card className="group relative w-full bg-transparent">
-				<CardHeader>
-					<CardTitle className="flex items-start justify-between">
+			<LayerCard className="group relative w-full bg-transparent">
+				<div>
+					<h3 className="flex items-start justify-between">
 						<div className="flex flex-col gap-2">
 							<span className="flex flex-col space-y-0.5">Provider</span>
 							<p className="flex items-center text-sm font-normal text-muted-foreground">
@@ -84,17 +84,17 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 						<div className="hidden space-y-1 text-sm font-normal md:block">
 							<GitBranch className="size-6 text-muted-foreground" />
 						</div>
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+					</h3>
+				</div>
+				<div>
 					<div className="flex min-h-[25vh] items-center justify-center">
 						<div className="flex items-center gap-2 text-muted-foreground">
 							<Loader2 className="size-4 animate-spin" />
 							<span>Loading providers...</span>
 						</div>
 					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 		);
 	}
 
@@ -106,9 +106,9 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 		application.sourceType !== "drop"
 	) {
 		return (
-			<Card className="group relative w-full bg-transparent">
-				<CardHeader>
-					<CardTitle className="flex items-start justify-between">
+			<LayerCard className="group relative w-full bg-transparent">
+				<div>
+					<h3 className="flex items-start justify-between">
 						<div className="flex flex-col gap-2">
 							<span className="flex flex-col space-y-0.5">Provider</span>
 							<p className="flex items-center text-sm font-normal text-muted-foreground">
@@ -118,22 +118,22 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 						<div className="hidden space-y-1 text-sm font-normal md:block">
 							<GitBranch className="size-6 text-muted-foreground" />
 						</div>
-					</CardTitle>
-				</CardHeader>
-				<CardContent>
+					</h3>
+				</div>
+				<div>
 					<UnauthorizedGitProvider
 						service={application}
 						onDisconnect={handleDisconnect}
 					/>
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 		);
 	}
 
 	return (
-		<Card className="group relative w-full bg-transparent">
-			<CardHeader>
-				<CardTitle className="flex items-start justify-between">
+		<LayerCard className="group relative w-full bg-transparent">
+			<div>
+				<h3 className="flex items-start justify-between">
 					<div className="flex flex-col gap-2">
 						<span className="flex flex-col space-y-0.5">Provider</span>
 						<p className="flex items-center text-sm font-normal text-muted-foreground">
@@ -143,71 +143,86 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 					<div className="hidden space-y-1 text-sm font-normal md:block">
 						<GitBranch className="size-6 text-muted-foreground" />
 					</div>
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<Tabs
-					value={tab}
-					className="w-full"
-					onValueChange={(e) => {
-						setSab(e as TabState);
-					}}
-				>
-					<div className="flex flex-row items-center justify-between w-full overflow-auto">
-						<TabsList className="flex gap-4 justify-start bg-transparent">
-							<TabsTrigger
-								value="github"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<GithubIcon className="size-4 text-current fill-current" />
-								Github
-							</TabsTrigger>
-							<TabsTrigger
-								value="gitlab"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<GitlabIcon className="size-4 text-current fill-current" />
-								Gitlab
-							</TabsTrigger>
-							<TabsTrigger
-								value="bitbucket"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<BitbucketIcon className="size-4 text-current fill-current" />
-								Bitbucket
-							</TabsTrigger>
-							<TabsTrigger
-								value="gitea"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<GiteaIcon className="size-4 text-current fill-current" />
-								Gitea
-							</TabsTrigger>
-							<TabsTrigger
-								value="docker"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<DockerIcon className="size-5 text-current" />
-								Docker
-							</TabsTrigger>
-							<TabsTrigger
-								value="git"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<GitIcon />
-								Git
-							</TabsTrigger>
-							<TabsTrigger
-								value="drop"
-								className="rounded-none border-b-2 gap-2 border-b-transparent data-[state=active]:border-b-2 data-[state=active]:border-b-border"
-							>
-								<UploadCloud className="size-5 text-current" />
-								Drop
-							</TabsTrigger>
-						</TabsList>
-					</div>
+				</h3>
+			</div>
+			<div>
+				<div className="w-full">
+					<Tabs
+						value={tab}
+						className="w-full overflow-auto"
+						onValueChange={(e) => {
+							if (e === null) return;
+							setSab(e as TabState);
+						}}
+						tabs={[
+							{
+								value: "github",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<GithubIcon className="size-4 text-current fill-current" />
+										Github
+									</span>
+								),
+							},
+							{
+								value: "gitlab",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<GitlabIcon className="size-4 text-current fill-current" />
+										Gitlab
+									</span>
+								),
+							},
+							{
+								value: "bitbucket",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<BitbucketIcon className="size-4 text-current fill-current" />
+										Bitbucket
+									</span>
+								),
+							},
+							{
+								value: "gitea",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<GiteaIcon className="size-4 text-current fill-current" />
+										Gitea
+									</span>
+								),
+							},
+							{
+								value: "docker",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<DockerIcon className="size-5 text-current" />
+										Docker
+									</span>
+								),
+							},
+							{
+								value: "git",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<GitIcon />
+										Git
+									</span>
+								),
+							},
+							{
+								value: "drop",
+								label: (
+									<span className="inline-flex items-center gap-2">
+										<UploadCloud className="size-5 text-current" />
+										Drop
+									</span>
+								),
+							},
+						]}
+					/>
 
-					<TabsContent value="github" className="w-full p-2">
+					{tab === "github" && (
+						<div className="w-full p-2">
 						{githubProviders && githubProviders?.length > 0 ? (
 							<SaveGithubProvider applicationId={applicationId} />
 						) : (
@@ -226,8 +241,10 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 								</span>
 							</div>
 						)}
-					</TabsContent>
-					<TabsContent value="gitlab" className="w-full p-2">
+						</div>
+					)}
+					{tab === "gitlab" && (
+						<div className="w-full p-2">
 						{gitlabProviders && gitlabProviders?.length > 0 ? (
 							<SaveGitlabProvider applicationId={applicationId} />
 						) : (
@@ -246,8 +263,10 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 								</span>
 							</div>
 						)}
-					</TabsContent>
-					<TabsContent value="bitbucket" className="w-full p-2">
+						</div>
+					)}
+					{tab === "bitbucket" && (
+						<div className="w-full p-2">
 						{bitbucketProviders && bitbucketProviders?.length > 0 ? (
 							<SaveBitbucketProvider applicationId={applicationId} />
 						) : (
@@ -266,8 +285,10 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 								</span>
 							</div>
 						)}
-					</TabsContent>
-					<TabsContent value="gitea" className="w-full p-2">
+						</div>
+					)}
+					{tab === "gitea" && (
+						<div className="w-full p-2">
 						{giteaProviders && giteaProviders?.length > 0 ? (
 							<SaveGiteaProvider applicationId={applicationId} />
 						) : (
@@ -286,19 +307,26 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 								</span>
 							</div>
 						)}
-					</TabsContent>
-					<TabsContent value="docker" className="w-full p-2">
+						</div>
+					)}
+					{tab === "docker" && (
+						<div className="w-full p-2">
 						<SaveDockerProvider applicationId={applicationId} />
-					</TabsContent>
+						</div>
+					)}
 
-					<TabsContent value="git" className="w-full p-2">
+					{tab === "git" && (
+						<div className="w-full p-2">
 						<SaveGitProvider applicationId={applicationId} />
-					</TabsContent>
-					<TabsContent value="drop" className="w-full p-2">
+						</div>
+					)}
+					{tab === "drop" && (
+						<div className="w-full p-2">
 						<SaveDragNDrop applicationId={applicationId} />
-					</TabsContent>
-				</Tabs>
-			</CardContent>
-		</Card>
+						</div>
+					)}
+				</div>
+			</div>
+		</LayerCard>
 	);
 };

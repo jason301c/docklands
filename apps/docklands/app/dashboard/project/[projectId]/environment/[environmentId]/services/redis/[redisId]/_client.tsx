@@ -4,7 +4,7 @@ import copy from "copy-to-clipboard";
 import { HelpCircle, ServerOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { ShowEnvironment } from "@/components/dashboard/application/environment/show-environment";
@@ -20,25 +20,14 @@ import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/shared/show
 import { RedisIcon } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { Badge } from "@/components/ui/badge";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/shared/utils";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
-type TabState = "projects" | "monitoring" | "settings" | "advanced";
+type TabState = "general" | "environment" | "logs" | "monitoring" | "advanced";
 
 const Redis = (props: {
 	redisId: string;
@@ -72,11 +61,11 @@ const Redis = (props: {
 			<UseKeyboardNav forPage="redis" />
 			<AdvanceBreadcrumb />
 			<div className="w-full">
-				<Card className="h-full bg-sidebar  p-2.5 rounded-xl w-full">
+				<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl w-full">
 					<div className="rounded-xl bg-background shadow-md ">
-						<CardHeader className="flex flex-row justify-between items-center">
+						<div className="flex flex-row justify-between items-center">
 							<div className="flex flex-col">
-								<CardTitle className="text-xl flex flex-row gap-2">
+								<h3 className="text-xl flex flex-row gap-2">
 									<div className="relative flex flex-row gap-4">
 										<div className="absolute -right-1  -top-2">
 											<StatusTooltip status={data?.applicationStatus} />
@@ -85,9 +74,9 @@ const Redis = (props: {
 										<RedisIcon className="h-6 w-6 text-muted-foreground" />
 									</div>
 									{data?.name}
-								</CardTitle>
+								</h3>
 								{data?.description && (
-									<CardDescription>{data?.description}</CardDescription>
+									<p>{data?.description}</p>
 								)}
 
 								<span className="text-sm text-muted-foreground">
@@ -96,7 +85,7 @@ const Redis = (props: {
 							</div>
 							<div className="flex flex-col h-fit w-fit gap-2">
 								<div className="flex flex-row h-fit w-fit gap-2">
-									<Badge
+									<Button type="button" size="xs"
 										className="cursor-pointer"
 										onClick={() => {
 											const ip = data?.server?.ipAddress || serverIp;
@@ -107,34 +96,29 @@ const Redis = (props: {
 										}}
 										variant={
 											!data?.serverId
-												? "default"
+												? "secondary"
 												: data?.server?.serverStatus === "active"
-													? "default"
+													? "secondary"
 													: "destructive"
 										}
 									>
 										{data?.server?.name || "Docklands Server"}
-									</Badge>
+									</Button>
 									{data?.server?.serverStatus === "inactive" && (
-										<TooltipProvider delayDuration={0}>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<Label className="break-all w-fit flex flex-row gap-1 items-center">
-														<HelpCircle className="size-4 text-muted-foreground" />
-													</Label>
-												</TooltipTrigger>
-												<TooltipContent
-													className="z-[999] w-[300px]"
-													align="start"
-													side="top"
-												>
+										<TooltipProvider delay={0}>
+											<Tooltip content={<>
 													<span>
 														You cannot, deploy this application because the
 														server is inactive, please upgrade your plan to add
 														more servers.
 													</span>
-												</TooltipContent>
-											</Tooltip>
+												</>} className="z-[999] w-[300px]"
+													align="start"
+													side="top"  asChild>
+													<Label className="break-all w-fit flex flex-row gap-1 items-center">
+														<HelpCircle className="size-4 text-muted-foreground" />
+													</Label>
+												</Tooltip>
 										</TooltipProvider>
 									)}
 								</div>
@@ -148,8 +132,8 @@ const Redis = (props: {
 									)}
 								</div>
 							</div>
-						</CardHeader>
-						<CardContent className="space-y-2 py-8 border-t">
+						</div>
+						<div className="space-y-2 py-8 border-t">
 							{data?.server?.serverStatus === "inactive" ? (
 								<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
 									<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
@@ -163,65 +147,49 @@ const Redis = (props: {
 									</div>
 								</div>
 							) : (
-								<Tabs
-									value={tab}
-									defaultValue="general"
-									className="w-full"
-									onValueChange={(e) => {
-										setSab(e as TabState);
-										const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/redis/${redisId}?tab=${e}`;
+																<div className="w-full">
+									<Tabs
+										value={tab}
+										className="w-full overflow-auto"
+										onValueChange={(e) => {
+											if (e === null) return;
+											setSab(e as TabState);
+											const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/redis/${redisId}?tab=${e}`;
 
-										router.push(newPath);
-									}}
-								>
-									<div className="flex flex-row items-center justify-between w-full gap-4 overflow-x-scroll">
-										<TabsList
-											className={cn(
-												"md:grid md:w-fit max-md:overflow-y-scroll justify-start",
-												isCloud && data?.serverId
-													? "md:grid-cols-5"
-													: data?.serverId
-														? "md:grid-cols-4"
-														: "md:grid-cols-5",
-											)}
-										>
-											<TabsTrigger value="general">General</TabsTrigger>
-											{permissions?.envVars.read && (
-												<TabsTrigger value="environment">
-													Environment
-												</TabsTrigger>
-											)}
-											{permissions?.logs.read && (
-												<TabsTrigger value="logs">Logs</TabsTrigger>
-											)}
-											{permissions?.monitoring.read &&
-												((data?.serverId && isCloud) || !data?.server) && (
-													<TabsTrigger value="monitoring">
-														Monitoring
-													</TabsTrigger>
-												)}
-											{permissions?.service.create && (
-												<TabsTrigger value="advanced">Advanced</TabsTrigger>
-											)}
-										</TabsList>
-									</div>
+											router.push(newPath);
+										}}
+										tabs={[
+											{ value: "general", label: "General" },
+											permissions?.envVars.read ? { value: "environment", label: "Environment" } : null,
+											permissions?.logs.read ? { value: "logs", label: "Logs" } : null,
+											permissions?.monitoring.read &&
+											((data?.serverId && isCloud) || !data?.server)
+											? { value: "monitoring", label: "Monitoring" }
+											: null,
+											permissions?.service.create ? { value: "advanced", label: "Advanced" } : null,
+										].filter(Boolean) as { value: string; label: string }[]}
+									/>
+									{tab === "general" && (
+										<div>
 
-									<TabsContent value="general">
 										<div className="flex flex-col gap-4 pt-2.5">
 											<ShowGeneralRedis redisId={redisId} />
 											<ShowInternalRedisCredentials redisId={redisId} />
 											<ShowExternalRedisCredentials redisId={redisId} />
 										</div>
-									</TabsContent>
-									{permissions?.envVars.read && (
-										<TabsContent value="environment">
+										</div>
+									)}
+									{permissions?.envVars.read && tab === "environment" && (
+										<div>
+
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowEnvironment id={redisId} type="redis" />
 											</div>
-										</TabsContent>
+										</div>
 									)}
-									{permissions?.monitoring.read && (
-										<TabsContent value="monitoring">
+									{permissions?.monitoring.read && tab === "monitoring" && (
+										<div>
+
 											<div className="pt-2.5">
 												<div className="flex flex-col gap-4 border rounded-lg p-6">
 													{data?.serverId && isCloud ? (
@@ -265,33 +233,35 @@ const Redis = (props: {
 													)}
 												</div>
 											</div>
-										</TabsContent>
+										</div>
 									)}
-									{permissions?.logs.read && (
-										<TabsContent value="logs">
+									{permissions?.logs.read && tab === "logs" && (
+										<div>
+
 											<div className="flex flex-col gap-4  pt-2.5">
 												<ShowDockerLogs
 													serverId={data?.serverId || ""}
 													appName={data?.appName || ""}
 												/>
 											</div>
-										</TabsContent>
+										</div>
 									)}
-									{permissions?.service.create && (
-										<TabsContent value="advanced">
+									{permissions?.service.create && tab === "advanced" && (
+										<div>
+
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowDatabaseAdvancedSettings
 													id={redisId}
 													type="redis"
 												/>
 											</div>
-										</TabsContent>
+										</div>
 									)}
-								</Tabs>
+								</div>
 							)}
-						</CardContent>
+						</div>
 					</div>
-				</Card>
+				</LayerCard>
 			</div>
 		</div>
 	);

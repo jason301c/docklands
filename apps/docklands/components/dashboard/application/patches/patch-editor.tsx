@@ -8,18 +8,12 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { ScrollArea } from "@/components/shared/scroll-area";
 import { CreateFileDialog } from "./create-file-dialog";
 
 interface Props {
@@ -250,19 +244,19 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 	);
 
 	return (
-		<Card className="bg-background overflow-hidden">
-			<CardHeader className="flex flex-row items-center justify-between pb-4">
+		<LayerCard className="bg-background overflow-hidden">
+			<div className="flex flex-row items-center justify-between pb-4">
 				<div className="flex items-center gap-4">
-					<Button variant="ghost" size="icon" onClick={onClose}>
+					<Button aria-label="Close" variant="ghost" shape="square" onClick={onClose}>
 						<ArrowLeft className="h-4 w-4" />
 					</Button>
 					<div>
-						<CardTitle>Edit File</CardTitle>
-						<CardDescription>
+						<h3>Edit File</h3>
+						<p>
 							{selectedFile
 								? `Editing: ${selectedFile}`
 								: "Select a file from the tree to edit"}
-						</CardDescription>
+						</p>
 					</div>
 				</div>
 				{selectedFile && (
@@ -307,8 +301,8 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 						)}
 					</div>
 				)}
-			</CardHeader>
-			<CardContent className="p-0">
+			</div>
+			<div className="p-0">
 				<div className="grid grid-cols-[250px_1fr] border-t h-[600px]">
 					<div className="border-r h-full overflow-hidden">
 						<ScrollArea className="h-full">
@@ -362,7 +356,7 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 						)}
 					</div>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

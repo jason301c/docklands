@@ -23,6 +23,7 @@ import {
 	execFileAsync,
 } from "@/server/core/utils/process/execAsync";
 import { createTRPCRouter, withPermission } from "../trpc";
+
 export const registryRouter = createTRPCRouter({
 	create: withPermission("registry", "create")
 		.input(apiCreateRegistry)

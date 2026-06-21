@@ -4,13 +4,8 @@ import { Rocket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShowDeploymentsTable } from "@/components/dashboard/deployments/show-deployments-table";
 import { ShowQueueTable } from "@/components/dashboard/deployments/show-queue-table";
-import {
-	Card,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 
 const TAB_VALUES = ["deployments", "queue"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
@@ -32,35 +27,42 @@ function DeploymentsPage() {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar p-2.5 rounded-xl min-h-[45vh]">
+			<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl min-h-[45vh]">
 				<div className="rounded-xl bg-background shadow-md h-full">
-					<CardHeader>
+					<div>
 						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 							<div>
-								<CardTitle className="text-xl font-bold flex items-center gap-2">
+								<h3 className="text-xl font-bold flex items-center gap-2">
 									<Rocket className="size-5" />
 									Deployments
-								</CardTitle>
-								<CardDescription>
+								</h3>
+								<p>
 									All application and compose deployments in one place.
-								</CardDescription>
+								</p>
 							</div>
 						</div>
-						<Tabs value={tab} onValueChange={setTab} className="w-full">
-							<TabsList className="mt-2">
-								<TabsTrigger value="deployments">Deployments</TabsTrigger>
-								<TabsTrigger value="queue">Queue</TabsTrigger>
-							</TabsList>
-							<TabsContent value="deployments" className="mt-0 pt-4">
+						<Tabs
+							value={tab}
+							onValueChange={(value) => value !== null && setTab(value as never)}
+							className="mt-2 w-full"
+							tabs={[
+								{ value: "deployments", label: "Deployments" },
+								{ value: "queue", label: "Queue" },
+							]}
+						/>
+						{tab === "deployments" && (
+							<div className="mt-0 pt-4">
 								<ShowDeploymentsTable />
-							</TabsContent>
-							<TabsContent value="queue" className="mt-0 pt-4">
+							</div>
+						)}
+						{tab === "queue" && (
+							<div className="mt-0 pt-4">
 								<ShowQueueTable />
-							</TabsContent>
-						</Tabs>
-					</CardHeader>
+							</div>
+						)}
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 }

@@ -2,11 +2,11 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -14,8 +14,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import type { ServiceType } from "../../application/advanced/show-resources";
 
 const addDockerImage = z.object({
@@ -114,11 +114,11 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 	return (
 		<>
 			<div className="flex w-full flex-col gap-5 ">
-				<Card className="bg-background">
-					<CardHeader>
-						<CardTitle className="text-xl">Advanced Settings</CardTitle>
-					</CardHeader>
-					<CardContent className="flex flex-col gap-4">
+				<LayerCard className="bg-background">
+					<div>
+						<h3 className="text-xl">Advanced Settings</h3>
+					</div>
+					<div className="flex flex-col gap-4">
 						<Form {...form}>
 							<form
 								onSubmit={form.handleSubmit(onSubmit)}
@@ -200,10 +200,10 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 																{...field}
 															/>
 														</FormControl>
-														<Button
+														<Button aria-label="Action"
 															type="button"
 															variant="destructive"
-															size="icon"
+															shape="square"
 															onClick={() => remove(index)}
 														>
 															<Trash2 className="h-4 w-4" />
@@ -217,14 +217,14 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 								</div>
 
 								<div className="flex w-full justify-end">
-									<Button isLoading={form.formState.isSubmitting} type="submit">
+									<Button loading={form.formState.isSubmitting} type="submit">
 										Save
 									</Button>
 								</div>
 							</form>
 						</Form>
-					</CardContent>
-				</Card>
+					</div>
+				</LayerCard>
 			</div>
 		</>
 	);

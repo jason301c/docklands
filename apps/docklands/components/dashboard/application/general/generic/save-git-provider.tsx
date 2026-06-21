@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { GitIcon } from "@/components/icons/data-tools-icons";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -17,24 +17,11 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
 
 const GitProviderSchema = z.object({
@@ -150,29 +137,29 @@ export const SaveGitProvider = ({ applicationId }: Props) => {
 										<LockIcon className="size-4 text-muted-foreground" />
 									</FormLabel>
 									<FormControl>
-										<Select
+										<Select aria-label="Select option"
 											key={field.value}
 											onValueChange={field.onChange}
 											defaultValue={field.value}
 											value={field.value}
 										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select a key" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectGroup>
+											<>
+												
+											</>
+											<>
+												<Select.Group>
 													{sshKeys?.map((sshKey) => (
-														<SelectItem
+														<Select.Option
 															key={sshKey.sshKeyId}
 															value={sshKey.sshKeyId}
 														>
 															{sshKey.name}
-														</SelectItem>
+														</Select.Option>
 													))}
-													<SelectItem value="none">None</SelectItem>
-													<SelectLabel>Keys ({sshKeys?.length})</SelectLabel>
-												</SelectGroup>
-											</SelectContent>
+													<Select.Option value="none">None</Select.Option>
+													<Select.GroupLabel>Keys ({sshKeys?.length})</Select.GroupLabel>
+												</Select.Group>
+											</>
 										</Select>
 									</FormControl>
 								</FormItem>
@@ -224,18 +211,15 @@ export const SaveGitProvider = ({ applicationId }: Props) => {
 								<div className="flex items-center gap-2">
 									<FormLabel>Watch Paths</FormLabel>
 									<TooltipProvider>
-										<Tooltip>
-											<TooltipTrigger asChild>
-												<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
-											</TooltipTrigger>
-											<TooltipContent className="max-w-[300px]">
+										<Tooltip content={<>
 												<p>
 													Add paths to watch for changes. When files in these
 													paths change, a new deployment will be triggered. This
 													will work only when manual webhook is setup.
 												</p>
-											</TooltipContent>
-										</Tooltip>
+											</>} className="max-w-[300px]"  asChild>
+												<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+											</Tooltip>
 									</TooltipProvider>
 								</div>
 								<div className="flex flex-wrap gap-2 mb-2">
@@ -312,7 +296,7 @@ export const SaveGitProvider = ({ applicationId }: Props) => {
 				</div>
 
 				<div className="flex flex-row justify-end">
-					<Button type="submit" className="w-fit" isLoading={isPending}>
+					<Button type="submit" className="w-fit" loading={isPending}>
 						Save
 					</Button>
 				</div>

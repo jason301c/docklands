@@ -3,18 +3,12 @@ import { Server } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -23,16 +17,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Select } from "@cloudflare/kumo/components/select";
 
 interface Props {
 	applicationId: string;
@@ -115,19 +101,19 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 	};
 
 	return (
-		<Card className="bg-background">
-			<CardHeader>
+		<LayerCard className="bg-background">
+			<div>
 				<div className="flex flex-row items-center gap-2">
 					<Server className="size-6 text-muted-foreground" />
 					<div>
-						<CardTitle className="text-xl">Build Server</CardTitle>
-						<CardDescription>
+						<h3 className="text-xl">Build Server</h3>
+						<p>
 							Configure a dedicated server for building your application.
-						</CardDescription>
+						</p>
 					</div>
 				</div>
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				<AlertBlock type="info">
 					Build servers offload the build process from your deployment servers.
 					Select a build server and registry to use for building your
@@ -172,8 +158,9 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Build Server</FormLabel>
-									<Select
+									<Select aria-label="Select option"
 										onValueChange={(value) => {
+											if (value === null) return;
 											field.onChange(value);
 											// If setting to "none", also reset build registry to "none"
 											if (value === "none") {
@@ -183,19 +170,19 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 										value={field.value || "none"}
 									>
 										<FormControl>
-											<SelectTrigger>
-												<SelectValue placeholder="Select a build server" />
-											</SelectTrigger>
+											<>
+												
+											</>
 										</FormControl>
-										<SelectContent>
-											<SelectGroup>
-												<SelectItem value="none">
+										<>
+											<Select.Group>
+												<Select.Option value="none">
 													<span className="flex items-center gap-2">
 														<span>None</span>
 													</span>
-												</SelectItem>
+												</Select.Option>
 												{buildServers?.map((server) => (
-													<SelectItem
+													<Select.Option
 														key={server.serverId}
 														value={server.serverId}
 													>
@@ -205,13 +192,13 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 																{server.ipAddress}
 															</span>
 														</span>
-													</SelectItem>
+													</Select.Option>
 												))}
-												<SelectLabel>
+												<Select.GroupLabel>
 													Build Servers ({buildServers?.length || 0})
-												</SelectLabel>
-											</SelectGroup>
-										</SelectContent>
+												</Select.GroupLabel>
+											</Select.Group>
+										</>
 									</Select>
 									<FormDescription>
 										Select a build server to handle the build process for this
@@ -228,8 +215,9 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Build Registry</FormLabel>
-									<Select
+									<Select aria-label="Select option"
 										onValueChange={(value) => {
+											if (value === null) return;
 											field.onChange(value);
 											// If setting to "none", also reset build server to "none"
 											if (value === "none") {
@@ -239,30 +227,30 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 										value={field.value || "none"}
 									>
 										<FormControl>
-											<SelectTrigger>
-												<SelectValue placeholder="Select a registry" />
-											</SelectTrigger>
+											<>
+												
+											</>
 										</FormControl>
-										<SelectContent>
-											<SelectGroup>
-												<SelectItem value="none">
+										<>
+											<Select.Group>
+												<Select.Option value="none">
 													<span className="flex items-center gap-2">
 														<span>None</span>
 													</span>
-												</SelectItem>
+												</Select.Option>
 												{registries?.map((registry) => (
-													<SelectItem
+													<Select.Option
 														key={registry.registryId}
 														value={registry.registryId}
 													>
 														{registry.registryName}
-													</SelectItem>
+													</Select.Option>
 												))}
-												<SelectLabel>
+												<Select.GroupLabel>
 													Registries ({registries?.length || 0})
-												</SelectLabel>
-											</SelectGroup>
-										</SelectContent>
+												</Select.GroupLabel>
+											</Select.Group>
+										</>
 									</Select>
 									<FormDescription>
 										Select a registry to store the built images from the build
@@ -274,13 +262,13 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 						/>
 
 						<div className="flex w-full justify-end">
-							<Button isLoading={isPending} type="submit">
+							<Button loading={isPending} type="submit">
 								Save
 							</Button>
 						</div>
 					</form>
 				</Form>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

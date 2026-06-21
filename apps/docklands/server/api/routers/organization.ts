@@ -14,6 +14,7 @@ import {
 } from "@/server/core/db/schema";
 import { sendInvitationEmail } from "@/server/core/verification/send-verification-email";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
+
 export const organizationRouter = createTRPCRouter({
 	create: protectedProcedure
 		.input(

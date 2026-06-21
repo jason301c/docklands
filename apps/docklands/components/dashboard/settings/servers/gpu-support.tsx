@@ -1,17 +1,11 @@
 import { CheckCircle2, Cpu, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 
 interface GPUSupportProps {
 	serverId?: string;
@@ -80,19 +74,19 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 	};
 
 	return (
-		<CardContent className="p-0">
+		<div className="p-0">
 			<div className="flex flex-col gap-4">
-				<Card className="bg-background">
-					<CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 						<div className="flex flex-row gap-2 justify-between w-full items-end max-sm:flex-col">
 							<div className="flex flex-col gap-1">
 								<div className="flex items-center gap-2">
 									<Cpu className="size-5" />
-									<CardTitle className="text-xl">GPU Configuration</CardTitle>
+									<h3 className="text-xl">GPU Configuration</h3>
 								</div>
-								<CardDescription>
+								<p>
 									Configure and monitor GPU support
-								</CardDescription>
+								</p>
 							</div>
 							<div className="flex items-center gap-2">
 								<DialogAction
@@ -101,7 +95,7 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 									onClick={handleEnableGPU}
 								>
 									<Button
-										isLoading={isLoading}
+										loading={isLoading}
 										disabled={isLoading || serverId === undefined || isChecking}
 									>
 										{isLoading
@@ -111,8 +105,8 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 												: "Enable GPU"}
 									</Button>
 								</DialogAction>
-								<Button
-									size="icon"
+								<Button aria-label="Refresh"
+									shape="square"
 									onClick={handleRefresh}
 									disabled={isChecking || isRefreshing}
 								>
@@ -122,9 +116,9 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 								</Button>
 							</div>
 						</div>
-					</CardHeader>
+					</div>
 
-					<CardContent className="flex flex-col gap-4">
+					<div className="flex flex-col gap-4">
 						<AlertBlock type="info">
 							<div className="font-medium mb-2">System Requirements:</div>
 							<ul className="list-disc list-inside text-sm space-y-1">
@@ -233,10 +227,10 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 								</div>
 							</div>
 						)}
-					</CardContent>
-				</Card>
+					</div>
+				</LayerCard>
 			</div>
-		</CardContent>
+		</div>
 	);
 }
 

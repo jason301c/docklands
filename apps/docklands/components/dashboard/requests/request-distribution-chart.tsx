@@ -12,7 +12,7 @@ import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/shared/chart";
 
 export interface RequestDistributionChartProps {
 	dateRange?: {

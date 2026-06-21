@@ -2,20 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Upload } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Dropzone } from "@/components/ui/dropzone";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Dropzone } from "@/components/shared/dropzone";
 import {
 	Form,
 	FormControl,
@@ -23,8 +15,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import {
 	type UploadFileToContainer,
 	uploadFileToContainerSchema,
@@ -80,25 +72,27 @@ export const UploadFileModal = ({ children, containerId, serverId }: Props) => {
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				<DropdownMenuItem
+		<Dialog.Root open={open} onOpenChange={setOpen}>
+			<Dialog.Trigger render={(
+
+				<DropdownMenu.Item
 					className="w-full cursor-pointer space-x-3"
 					onSelect={(e) => e.preventDefault()}
 				>
 					{children}
-				</DropdownMenuItem>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
+				</DropdownMenu.Item>
+			
+)} />
+			<Dialog className="sm:max-w-2xl">
+				<div>
+					<Dialog.Title className="flex items-center gap-2">
 						<Upload className="h-5 w-5" />
 						Upload File to Container
-					</DialogTitle>
-					<DialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						Upload a file directly into the container's filesystem
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -163,7 +157,7 @@ export const UploadFileModal = ({ children, containerId, serverId }: Props) => {
 							)}
 						/>
 
-						<DialogFooter>
+						<div>
 							<Button
 								type="button"
 								variant="outline"
@@ -173,15 +167,15 @@ export const UploadFileModal = ({ children, containerId, serverId }: Props) => {
 							</Button>
 							<Button
 								type="submit"
-								isLoading={isLoading}
+								loading={isLoading}
 								disabled={!file || isLoading}
 							>
 								Upload File
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

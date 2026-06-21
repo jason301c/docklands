@@ -2,17 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -21,9 +17,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 interface Props {
 	composeId: string;
@@ -98,13 +94,13 @@ export const RandomizeCompose = ({ composeId }: Props) => {
 
 	return (
 		<div className="w-full">
-			<DialogHeader>
-				<DialogTitle>Randomize Compose (Experimental)</DialogTitle>
-				<DialogDescription>
+			<div>
+				<Dialog.Title>Randomize Compose (Experimental)</Dialog.Title>
+				<Dialog.Description>
 					Use this in case you want to deploy the same compose file and you have
 					conflicts with some property like volumes, networks, etc.
-				</DialogDescription>
-			</DialogHeader>
+				</Dialog.Description>
+			</div>
 			<div className="text-sm text-muted-foreground flex flex-col gap-2">
 				<span>
 					This will randomize the compose file and will add a suffix to the

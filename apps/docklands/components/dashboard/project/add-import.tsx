@@ -2,21 +2,14 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Code2, FileInput, Globe2, HardDrive, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -24,26 +17,13 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Separator } from "@/components/shared/separator";
+import { Textarea } from "@cloudflare/kumo/components/input";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 
@@ -167,23 +147,23 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 
 	return (
 		<>
-			<Dialog open={visible} onOpenChange={handleOpenChange}>
-				<DialogTrigger className="w-full">
-					<DropdownMenuItem
+			<Dialog.Root open={visible} onOpenChange={handleOpenChange}>
+				<Dialog.Trigger className="w-full">
+					<DropdownMenu.Item
 						className="w-full cursor-pointer space-x-3"
 						onSelect={(e) => e.preventDefault()}
 					>
 						<FileInput className="size-4 text-muted-foreground" />
 						<span>Import</span>
-					</DropdownMenuItem>
-				</DialogTrigger>
-				<DialogContent className="sm:max-w-xl">
-					<DialogHeader>
-						<DialogTitle>Import Compose</DialogTitle>
-						<DialogDescription>
+					</DropdownMenu.Item>
+				</Dialog.Trigger>
+				<Dialog className="sm:max-w-xl">
+					<div>
+						<Dialog.Title>Import Compose</Dialog.Title>
+						<Dialog.Description>
 							Paste a base64-encoded compose export to preview and import it
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 
 					<Form {...form}>
 						<form
@@ -222,54 +202,45 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 									name="serverId"
 									render={({ field }) => (
 										<FormItem>
-											<TooltipProvider delayDuration={0}>
-												<Tooltip>
-													<TooltipTrigger asChild>
-														<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
-															Select a Server {!isCloud ? "(Optional)" : ""}
-															<HelpCircle className="size-4 text-muted-foreground" />
-														</FormLabel>
-													</TooltipTrigger>
-													<TooltipContent
-														className="z-[999] w-[300px]"
-														align="start"
-														side="top"
-													>
+											<TooltipProvider delay={0}>
+												<Tooltip content={<>
 														<span>
 															If no server is selected, the compose will be
 															deployed on the server where the user is logged
 															in.
 														</span>
-													</TooltipContent>
-												</Tooltip>
+													</>} className="z-[999] w-[300px]"
+														align="start"
+														side="top"  asChild>
+														<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
+															Select a Server {!isCloud ? "(Optional)" : ""}
+															<HelpCircle className="size-4 text-muted-foreground" />
+														</FormLabel>
+													</Tooltip>
 											</TooltipProvider>
-											<Select
+											<Select aria-label="Select option"
 												onValueChange={field.onChange}
 												defaultValue={
 													field.value || (!isCloud ? "docklands" : undefined)
 												}
 											>
-												<SelectTrigger>
-													<SelectValue
-														placeholder={
-															!isCloud ? "Docklands" : "Select a Server"
-														}
-													/>
-												</SelectTrigger>
-												<SelectContent>
-													<SelectGroup>
+												<>
+													
+												</>
+												<>
+													<Select.Group>
 														{!isCloud && (
-															<SelectItem value="docklands">
+															<Select.Option value="docklands">
 																<span className="flex items-center gap-2 justify-between w-full">
 																	<span>Docklands</span>
 																	<span className="text-muted-foreground text-xs self-center">
 																		Default
 																	</span>
 																</span>
-															</SelectItem>
+															</Select.Option>
 														)}
 														{servers?.map((server) => (
-															<SelectItem
+															<Select.Option
 																key={server.serverId}
 																value={server.serverId}
 															>
@@ -279,14 +250,14 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 																		{server.ipAddress}
 																	</span>
 																</span>
-															</SelectItem>
+															</Select.Option>
 														))}
-														<SelectLabel>
+														<Select.GroupLabel>
 															Servers (
 															{(servers?.length ?? 0) + (!isCloud ? 1 : 0)})
-														</SelectLabel>
-													</SelectGroup>
-												</SelectContent>
+														</Select.GroupLabel>
+													</Select.Group>
+												</>
 											</Select>
 											<FormMessage />
 										</FormItem>
@@ -330,34 +301,34 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 								<Button
 									type="submit"
 									variant="outline"
-									isLoading={isCreating || isProcessing}
+									loading={isCreating || isProcessing}
 								>
 									Load
 								</Button>
 							</div>
 						</form>
 					</Form>
-				</DialogContent>
-			</Dialog>
+				</Dialog>
+			</Dialog.Root>
 
 			{/* Preview modal */}
-			<Dialog
+			<Dialog.Root
 				open={previewOpen}
 				onOpenChange={(open) => !open && handleCancelPreview()}
 			>
-				<DialogContent className="max-w-[60vw]">
-					<DialogHeader>
-						<DialogTitle className="text-2xl font-bold">
+				<Dialog className="max-w-[60vw]">
+					<div>
+						<Dialog.Title className="text-2xl font-bold">
 							Template Information
-						</DialogTitle>
-						<DialogDescription className="space-y-2">
+						</Dialog.Title>
+						<Dialog.Description className="space-y-2">
 							<p>Review the template information before importing</p>
 							<AlertBlock type="warning">
 								Warning: This will remove all existing environment variables,
 								mounts, and domains from this service.
 							</AlertBlock>
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 
 					<div className="flex flex-col gap-6">
 						<div className="space-y-4">
@@ -460,22 +431,22 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 						<Button variant="outline" onClick={handleCancelPreview}>
 							Cancel
 						</Button>
-						<Button isLoading={isImporting} onClick={handleImport}>
+						<Button loading={isImporting} onClick={handleImport}>
 							Import
 						</Button>
 					</div>
-				</DialogContent>
-			</Dialog>
+				</Dialog>
+			</Dialog.Root>
 
 			{/* Mount content modal */}
-			<Dialog open={mountOpen} onOpenChange={setMountOpen}>
-				<DialogContent className="max-w-[50vw]">
-					<DialogHeader>
-						<DialogTitle className="text-xl font-bold">
+			<Dialog.Root open={mountOpen} onOpenChange={setMountOpen}>
+				<Dialog className="max-w-[50vw]">
+					<div>
+						<Dialog.Title className="text-xl font-bold">
 							{selectedMount?.filePath}
-						</DialogTitle>
-						<DialogDescription>Mount File Content</DialogDescription>
-					</DialogHeader>
+						</Dialog.Title>
+						<Dialog.Description>Mount File Content</Dialog.Description>
+					</div>
 					<ScrollArea className="h-[45vh] pr-4">
 						<CodeEditor
 							language="yaml"
@@ -487,8 +458,8 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 					<div className="flex justify-end gap-2 pt-4">
 						<Button onClick={() => setMountOpen(false)}>Close</Button>
 					</div>
-				</DialogContent>
-			</Dialog>
+				</Dialog>
+			</Dialog.Root>
 		</>
 	);
 };

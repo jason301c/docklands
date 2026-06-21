@@ -1,14 +1,9 @@
 import { HelpCircle } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 export const ToggleRemoteServersOnly = () => {
 	const { data, refetch } = api.settings.getWebServerSettings.useQuery();
@@ -31,22 +26,19 @@ export const ToggleRemoteServersOnly = () => {
 				checked={!!data?.remoteServersOnly}
 				onCheckedChange={handleToggle}
 			/>
-			<TooltipProvider delayDuration={0}>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Label className="text-primary flex items-center gap-1.5 cursor-pointer">
-							Remote Servers Only
-							<HelpCircle className="size-4 text-muted-foreground" />
-						</Label>
-					</TooltipTrigger>
-					<TooltipContent side="top" className="max-w-sm">
+			<TooltipProvider delay={0}>
+				<Tooltip content={<>
 						<p>
 							When enabled, all services (applications, databases, compose) must
 							be deployed to a remote server. Deploying directly to the
 							Docklands host VM is not allowed.
 						</p>
-					</TooltipContent>
-				</Tooltip>
+					</>} side="top" className="max-w-sm"  asChild>
+						<Label className="text-primary flex items-center gap-1.5 cursor-pointer">
+							Remote Servers Only
+							<HelpCircle className="size-4 text-muted-foreground" />
+						</Label>
+					</Tooltip>
 			</TooltipProvider>
 		</div>
 	);

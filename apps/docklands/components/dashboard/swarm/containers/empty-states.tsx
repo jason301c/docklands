@@ -6,8 +6,8 @@ import {
 	RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/shared/alert";
+import { Button } from "@cloudflare/kumo/components/button";
 import type { ContainerInfo } from "./types";
 
 export const DocLinks = () => (

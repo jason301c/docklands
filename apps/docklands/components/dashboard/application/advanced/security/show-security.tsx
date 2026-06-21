@@ -1,18 +1,12 @@
 import { LockKeyhole, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
 import { HandleSecurity } from "./handle-security";
 
 interface Props {
@@ -32,11 +26,11 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 
 	const utils = api.useUtils();
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row justify-between flex-wrap gap-4">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row justify-between flex-wrap gap-4">
 				<div>
-					<CardTitle className="text-xl">Security</CardTitle>
-					<CardDescription>Add basic auth to your application</CardDescription>
+					<h3 className="text-xl">Security</h3>
+					<p>Add basic auth to your application</p>
 				</div>
 
 				{data && data?.security.length > 0 && (
@@ -44,8 +38,8 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 						Add Security
 					</HandleSecurity>
 				)}
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				{data?.security.length === 0 ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
 						<LockKeyhole className="size-8 text-muted-foreground" />
@@ -100,11 +94,11 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 														});
 												}}
 											>
-												<Button
+												<Button aria-label="Action"
 													variant="ghost"
-													size="icon"
+													shape="square"
 													className="group hover:bg-red-500/10"
-													isLoading={isRemoving}
+													loading={isRemoving}
 												>
 													<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 												</Button>
@@ -116,7 +110,7 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 						</div>
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

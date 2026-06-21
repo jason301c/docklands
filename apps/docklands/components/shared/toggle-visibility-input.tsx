@@ -1,9 +1,9 @@
 import copy from "copy-to-clipboard";
 import { Clipboard } from "lucide-react";
 import { useRef } from "react";
-import { toast } from "sonner";
-import { Button } from "../ui/button";
-import { Input, type InputProps } from "../ui/input";
+import { toast } from "@/components/shared/toast";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input, type InputProps } from "@cloudflare/kumo/components/input";
 
 export const ToggleVisibilityInput = ({ ...props }: InputProps) => {
 	const inputRef = useRef<HTMLInputElement>(null);

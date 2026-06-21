@@ -1,16 +1,8 @@
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { UpdateServerIp } from "@/components/dashboard/settings/web-server/update-server-ip";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuGroup,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { ShowModalLogs } from "../../web-server/show-modal-logs";
 import { TerminalModal } from "../../web-server/terminal-modal";
 import { GPUSupportModal } from "../gpu-support-modal";
@@ -26,16 +18,18 @@ export const ShowDocklandsActions = () => {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild disabled={isPending}>
-				<Button isLoading={isPending} variant="outline">
+			<DropdownMenu.Trigger disabled={isPending} render={(
+
+				<Button loading={isPending} variant="outline">
 					Server
 				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent className="w-56" align="start">
-				<DropdownMenuLabel>Actions</DropdownMenuLabel>
-				<DropdownMenuSeparator />
-				<DropdownMenuGroup>
-					<DropdownMenuItem
+			
+)} />
+			<DropdownMenu.Content className="w-56" align="start">
+				<DropdownMenu.Label>Actions</DropdownMenu.Label>
+				<DropdownMenu.Separator />
+				<DropdownMenu.Group>
+					<DropdownMenu.Item
 						onClick={async () => {
 							await reloadServer()
 								.then(async () => {
@@ -48,29 +42,29 @@ export const ShowDocklandsActions = () => {
 						className="cursor-pointer"
 					>
 						<span>Reload</span>
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 					<TerminalModal serverId="local">
 						<span>Terminal</span>
 					</TerminalModal>
 					<ShowModalLogs appName="docklands">
-						<DropdownMenuItem
+						<DropdownMenu.Item
 							className="cursor-pointer"
 							onSelect={(e) => e.preventDefault()}
 						>
 							View Logs
-						</DropdownMenuItem>
+						</DropdownMenu.Item>
 					</ShowModalLogs>
 					<GPUSupportModal />
 					<UpdateServerIp>
-						<DropdownMenuItem
+						<DropdownMenu.Item
 							className="cursor-pointer"
 							onSelect={(e) => e.preventDefault()}
 						>
 							Update Server IP
-						</DropdownMenuItem>
+						</DropdownMenu.Item>
 					</UpdateServerIp>
 
-					<DropdownMenuItem
+					<DropdownMenu.Item
 						className="cursor-pointer"
 						onClick={async () => {
 							await cleanRedis()
@@ -83,9 +77,9 @@ export const ShowDocklandsActions = () => {
 						}}
 					>
 						Clean Redis
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 
-					<DropdownMenuItem
+					<DropdownMenu.Item
 						className="cursor-pointer"
 						onClick={async () => {
 							await cleanAllDeploymentQueue()
@@ -98,9 +92,9 @@ export const ShowDocklandsActions = () => {
 						}}
 					>
 						Clean all deployment queue
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 
-					<DropdownMenuItem
+					<DropdownMenu.Item
 						className="cursor-pointer"
 						onClick={async () => {
 							await reloadRedis()
@@ -113,9 +107,9 @@ export const ShowDocklandsActions = () => {
 						}}
 					>
 						Reload Redis
-					</DropdownMenuItem>
-				</DropdownMenuGroup>
-			</DropdownMenuContent>
+					</DropdownMenu.Item>
+				</DropdownMenu.Group>
+			</DropdownMenu.Content>
 		</DropdownMenu>
 	);
 };

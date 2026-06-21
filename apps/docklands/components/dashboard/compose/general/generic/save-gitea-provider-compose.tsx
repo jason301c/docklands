@@ -3,21 +3,15 @@ import { CheckIcon, ChevronsUpDown, HelpCircle, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import type { Repository } from "@/client/git/gitea";
 import { GiteaIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-} from "@/components/ui/command";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
 import {
 	Form,
 	FormControl,
@@ -25,30 +19,26 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@cloudflare/kumo/components/popover";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
 import { cn } from "@/shared/utils";
+
+const Command = Combobox;
+const CommandInput = Combobox.TriggerInput;
+const CommandList = Combobox.List;
+const CommandGroup = Combobox.Group;
+const CommandItem = Combobox.Item;
+const CommandEmpty = Combobox.Empty;
 
 const GiteaProviderSchema = z.object({
 	composePath: z.string().min(1),
@@ -186,8 +176,9 @@ export const SaveGiteaProviderCompose = ({ composeId }: Props) => {
 							render={({ field }) => (
 								<FormItem className="md:col-span-2 flex flex-col">
 									<FormLabel>Gitea Account</FormLabel>
-									<Select
+									<Select aria-label="Select option"
 										onValueChange={(value) => {
+											if (value === null) return;
 											field.onChange(value);
 											form.setValue("repository", {
 												owner: "",
@@ -199,20 +190,20 @@ export const SaveGiteaProviderCompose = ({ composeId }: Props) => {
 										value={field.value}
 									>
 										<FormControl>
-											<SelectTrigger>
-												<SelectValue placeholder="Select a Gitea Account" />
-											</SelectTrigger>
+											<>
+												
+											</>
 										</FormControl>
-										<SelectContent>
+										<>
 											{giteaProviders?.map((giteaProvider) => (
-												<SelectItem
+												<Select.Option
 													key={giteaProvider.giteaId}
 													value={giteaProvider.giteaId}
 												>
 													{giteaProvider.gitProvider.name}
-												</SelectItem>
+												</Select.Option>
 											))}
-										</SelectContent>
+										</>
 									</Select>
 									<FormMessage />
 								</FormItem>
@@ -260,7 +251,7 @@ export const SaveGiteaProviderCompose = ({ composeId }: Props) => {
 											</FormControl>
 										</PopoverTrigger>
 										<PopoverContent className="p-0" align="start">
-											<Command>
+											<Command items={[]}>
 												<CommandInput
 													placeholder="Search repository..."
 													className="h-9"
@@ -347,7 +338,7 @@ export const SaveGiteaProviderCompose = ({ composeId }: Props) => {
 											</FormControl>
 										</PopoverTrigger>
 										<PopoverContent className="p-0" align="start">
-											<Command>
+											<Command items={[]}>
 												<CommandInput
 													placeholder="Search branches..."
 													className="h-9"
@@ -412,17 +403,14 @@ export const SaveGiteaProviderCompose = ({ composeId }: Props) => {
 									<div className="flex items-center gap-2">
 										<FormLabel>Watch Paths</FormLabel>
 										<TooltipProvider>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
-												</TooltipTrigger>
-												<TooltipContent>
+											<Tooltip content={<>
 													<p>
 														Add paths to watch for changes. When files in these
 														paths change, a new deployment will be triggered.
 													</p>
-												</TooltipContent>
-											</Tooltip>
+												</>}  asChild>
+													<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+												</Tooltip>
 										</TooltipProvider>
 									</div>
 									<div className="flex flex-wrap gap-2 mb-2">
@@ -457,10 +445,10 @@ export const SaveGiteaProviderCompose = ({ composeId }: Props) => {
 													}
 												}}
 											/>
-											<Button
+											<Button aria-label="Action"
 												type="button"
 												variant="outline"
-												size="icon"
+												shape="square"
 												onClick={() => {
 													const input = document.querySelector(
 														'input[placeholder*="Enter a path"]',
@@ -498,7 +486,7 @@ export const SaveGiteaProviderCompose = ({ composeId }: Props) => {
 					</div>
 
 					<div className="flex justify-end">
-						<Button type="submit" isLoading={isSavingGiteaProvider}>
+						<Button type="submit" loading={isSavingGiteaProvider}>
 							Save
 						</Button>
 					</div>

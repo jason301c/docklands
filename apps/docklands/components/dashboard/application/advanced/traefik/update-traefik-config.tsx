@@ -1,23 +1,15 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { parse, stringify, YAMLParseError } from "yaml";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -25,8 +17,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
+} from "@/components/shared/form";
+import { Label } from "@cloudflare/kumo/components/label";
 
 const UpdateTraefikConfigSchema = z.object({
 	traefikConfig: z.string(),
@@ -117,7 +109,7 @@ export const UpdateTraefikConfig = ({ applicationId }: Props) => {
 	};
 
 	return (
-		<Dialog
+		<Dialog.Root
 			open={open}
 			onOpenChange={(open) => {
 				setOpen(open);
@@ -128,15 +120,17 @@ export const UpdateTraefikConfig = ({ applicationId }: Props) => {
 			}}
 		>
 			{canWrite && (
-				<DialogTrigger asChild>
-					<Button isLoading={isPending}>Modify</Button>
-				</DialogTrigger>
+				<Dialog.Trigger render={(
+
+					<Button loading={isPending}>Modify</Button>
+				
+)} />
 			)}
-			<DialogContent className="sm:max-w-4xl">
-				<DialogHeader>
-					<DialogTitle>Update traefik config</DialogTitle>
-					<DialogDescription>Update the traefik config</DialogDescription>
-				</DialogHeader>
+			<Dialog className="sm:max-w-4xl">
+				<div>
+					<Dialog.Title>Update traefik config</Dialog.Title>
+					<Dialog.Description>Update the traefik config</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -179,11 +173,10 @@ routers:
 						</div>
 					</form>
 
-					<DialogFooter className="flex-col sm:flex-row gap-4">
+					<div className="flex-col sm:flex-row gap-4">
 						<div className="flex flex-col gap-1 w-full sm:w-auto sm:mr-auto">
 							<div className="flex items-center space-x-2">
 								<Checkbox
-									id="skip-yaml-validation-app"
 									checked={skipYamlValidation}
 									onCheckedChange={(checked) =>
 										setSkipYamlValidation(checked === true)
@@ -202,15 +195,15 @@ routers:
 							</p>
 						</div>
 						<Button
-							isLoading={isPending}
+							loading={isPending}
 							form="hook-form-update-traefik-config"
 							type="submit"
 						>
 							Update
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

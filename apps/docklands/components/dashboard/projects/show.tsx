@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { useDebounce } from "@/client/hooks/use-debounce";
 import { BreadcrumbSidebar } from "@/components/shared/breadcrumb-sidebar";
@@ -19,40 +19,11 @@ import { DateTooltip } from "@/components/shared/date-tooltip";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { TagBadge } from "@/components/shared/tag-badge";
 import { TagFilter } from "@/components/shared/tag-filter";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Select } from "@cloudflare/kumo/components/select";
 import { HandleProject } from "./handle-project";
 import { ProjectEnvironment } from "./project-environment";
 
@@ -204,18 +175,18 @@ export const ShowProjects = () => {
 				list={[{ name: "Projects", href: "/dashboard/projects" }]}
 			/>
 			<div className="w-full">
-				<Card className="h-full bg-sidebar p-2.5 rounded-xl  ">
+				<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl  ">
 					<div className="rounded-xl bg-background shadow-md ">
 						<div className="flex justify-between gap-4 w-full items-center flex-wrap p-6">
-							<CardHeader className="p-0">
-								<CardTitle className="text-xl flex flex-row gap-2">
+							<div className="p-0">
+								<h3 className="text-xl flex flex-row gap-2">
 									<FolderInput className="size-6 text-muted-foreground self-center" />
 									Projects
-								</CardTitle>
-								<CardDescription>
+								</h3>
+								<p>
 									Create and manage your projects
-								</CardDescription>
-							</CardHeader>
+								</p>
+							</div>
 							{permissions?.project.create && (
 								<div className="">
 									<HandleProject />
@@ -223,7 +194,7 @@ export const ShowProjects = () => {
 							)}
 						</div>
 
-						<CardContent className="space-y-2 py-8 border-t gap-4 flex flex-col min-h-[60vh]">
+						<div className="space-y-2 py-8 border-t gap-4 flex flex-col min-h-[60vh]">
 							{isPending ? (
 								<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[60vh]">
 									<span>Loading...</span>
@@ -256,28 +227,28 @@ export const ShowProjects = () => {
 											/>
 											<div className="flex items-center gap-2 min-w-48 max-sm:w-full">
 												<ArrowUpDown className="size-4 text-muted-foreground" />
-												<Select value={sortBy} onValueChange={setSortBy}>
-													<SelectTrigger className="w-full">
-														<SelectValue placeholder="Sort by..." />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectItem value="name-asc">Name (A-Z)</SelectItem>
-														<SelectItem value="name-desc">
+												<Select aria-label="Select option" value={sortBy} onValueChange={(value) => value !== null && setSortBy(value as never)}>
+													<>
+														
+													</>
+													<>
+														<Select.Option value="name-asc">Name (A-Z)</Select.Option>
+														<Select.Option value="name-desc">
 															Name (Z-A)
-														</SelectItem>
-														<SelectItem value="createdAt-desc">
+														</Select.Option>
+														<Select.Option value="createdAt-desc">
 															Newest first
-														</SelectItem>
-														<SelectItem value="createdAt-asc">
+														</Select.Option>
+														<Select.Option value="createdAt-asc">
 															Oldest first
-														</SelectItem>
-														<SelectItem value="services-desc">
+														</Select.Option>
+														<Select.Option value="services-desc">
 															Most services
-														</SelectItem>
-														<SelectItem value="services-asc">
+														</Select.Option>
+														<Select.Option value="services-asc">
 															Least services
-														</SelectItem>
-													</SelectContent>
+														</Select.Option>
+													</>
 												</Select>
 											</div>
 										</div>
@@ -346,9 +317,9 @@ export const ShowProjects = () => {
 															}
 														}}
 													>
-														<Card className="group relative w-full h-full bg-transparent transition-colors hover:bg-border flex flex-col">
-															<CardHeader>
-																<CardTitle className="flex items-center justify-between gap-2 overflow-clip">
+														<LayerCard className="group relative w-full h-full bg-transparent transition-colors hover:bg-border flex flex-col">
+															<div>
+																<h3 className="flex items-center justify-between gap-2 overflow-clip">
 																	<span className="flex flex-col gap-1.5 ">
 																		<div className="flex items-center gap-2">
 																			<BookIcon className="size-4 text-muted-foreground" />
@@ -386,22 +357,24 @@ export const ShowProjects = () => {
 																	</span>
 																	<div className="flex self-start space-x-1">
 																		<DropdownMenu>
-																			<DropdownMenuTrigger asChild>
-																				<Button
+																			<DropdownMenu.Trigger render={(
+
+																				<Button aria-label="Action"
 																					variant="ghost"
-																					size="icon"
+																					shape="square"
 																					className="px-2"
 																				>
 																					<MoreHorizontalIcon className="size-5" />
 																				</Button>
-																			</DropdownMenuTrigger>
-																			<DropdownMenuContent
+																			
+)} />
+																			<DropdownMenu.Content
 																				className="w-[200px] space-y-2 overflow-y-auto max-h-[280px]"
 																				onClick={(e) => e.stopPropagation()}
 																			>
-																				<DropdownMenuLabel className="font-normal">
+																				<DropdownMenu.Label className="font-normal">
 																					Actions
-																				</DropdownMenuLabel>
+																				</DropdownMenu.Label>
 																				<div
 																					onClick={(e) => e.stopPropagation()}
 																				>
@@ -421,9 +394,9 @@ export const ShowProjects = () => {
 																					onClick={(e) => e.stopPropagation()}
 																				>
 																					{permissions?.project.delete && (
-																						<AlertDialog>
-																							<AlertDialogTrigger className="w-full">
-																								<DropdownMenuItem
+																						<Dialog.Root role="alertdialog">
+																							<Dialog.Trigger className="w-full">
+																								<DropdownMenu.Item
 																									className="w-full cursor-pointer  space-x-3"
 																									onSelect={(e) =>
 																										e.preventDefault()
@@ -431,14 +404,14 @@ export const ShowProjects = () => {
 																								>
 																									<TrashIcon className="size-4" />
 																									<span>Delete</span>
-																								</DropdownMenuItem>
-																							</AlertDialogTrigger>
-																							<AlertDialogContent>
-																								<AlertDialogHeader>
-																									<AlertDialogTitle>
+																								</DropdownMenu.Item>
+																							</Dialog.Trigger>
+																							<Dialog>
+																								<div>
+																									<Dialog.Title>
 																										Are you sure to delete this
 																										project?
-																									</AlertDialogTitle>
+																									</Dialog.Title>
 																									{!emptyServices ? (
 																										<div className="flex flex-row gap-4 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
 																											<AlertTriangle className="text-yellow-600 dark:text-yellow-400" />
@@ -449,17 +422,17 @@ export const ShowProjects = () => {
 																											</span>
 																										</div>
 																									) : (
-																										<AlertDialogDescription>
+																										<Dialog.Description>
 																											This action cannot be
 																											undone
-																										</AlertDialogDescription>
+																										</Dialog.Description>
 																									)}
-																								</AlertDialogHeader>
-																								<AlertDialogFooter>
-																									<AlertDialogCancel>
+																								</div>
+																								<div>
+																									<Dialog.Close>
 																										Cancel
-																									</AlertDialogCancel>
-																									<AlertDialogAction
+																									</Dialog.Close>
+																									<Dialog.Close
 																										disabled={!emptyServices}
 																										onClick={async () => {
 																											await mutateAsync({
@@ -482,18 +455,18 @@ export const ShowProjects = () => {
 																										}}
 																									>
 																										Delete
-																									</AlertDialogAction>
-																								</AlertDialogFooter>
-																							</AlertDialogContent>
-																						</AlertDialog>
+																									</Dialog.Close>
+																								</div>
+																							</Dialog>
+																						</Dialog.Root>
 																					)}
 																				</div>
-																			</DropdownMenuContent>
+																			</DropdownMenu.Content>
 																		</DropdownMenu>
 																	</div>
-																</CardTitle>
-															</CardHeader>
-															<CardFooter className="pt-4 mt-auto">
+																</h3>
+															</div>
+															<div className="pt-4 mt-auto">
 																<div className="space-y-1 text-xs flex flex-row justify-between max-sm:flex-wrap w-full gap-2 sm:gap-4">
 																	<DateTooltip date={project.createdAt}>
 																		Created
@@ -505,8 +478,8 @@ export const ShowProjects = () => {
 																			: "services"}
 																	</span>
 																</div>
-															</CardFooter>
-														</Card>
+															</div>
+														</LayerCard>
 													</Link>
 												</div>
 											);
@@ -514,9 +487,9 @@ export const ShowProjects = () => {
 									</div>
 								</>
 							)}
-						</CardContent>
+						</div>
 					</div>
-				</Card>
+				</LayerCard>
 			</div>
 		</>
 	);

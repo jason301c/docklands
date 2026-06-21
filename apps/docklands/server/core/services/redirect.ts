@@ -9,6 +9,7 @@ import {
 	updateRedirectMiddleware,
 } from "@/server/core/utils/traefik/redirect";
 import { findApplicationById } from "./application";
+
 export type Redirect = typeof redirects.$inferSelect;
 
 export const findRedirectById = async (redirectId: string) => {

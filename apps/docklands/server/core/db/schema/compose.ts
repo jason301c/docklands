@@ -18,6 +18,7 @@ import { server } from "./server";
 import { applicationStatus, triggerType } from "./shared";
 import { sshKeys } from "./ssh-key";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX, generateAppName } from "./utils";
+
 export const sourceTypeCompose = pgEnum("sourceTypeCompose", [
 	"git",
 	"github",

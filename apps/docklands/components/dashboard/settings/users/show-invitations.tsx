@@ -1,34 +1,14 @@
 import copy from "copy-to-clipboard";
 import { format, isPast } from "date-fns";
 import { Loader2, Mail, MoreHorizontal, Users } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Table } from "@cloudflare/kumo/components/table";
 import { AddInvitation } from "./add-invitation";
 
 export const ShowInvitations = () => {
@@ -40,18 +20,18 @@ export const ShowInvitations = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
+			<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
+					<div className="">
+						<h3 className="text-xl flex flex-row gap-2">
 							<Mail className="size-6 text-muted-foreground self-center" />
 							Invitations
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Create invitations to your organization.
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-2 py-8 border-t">
+						</p>
+					</div>
+					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
 								<span>Loading...</span>
@@ -70,64 +50,65 @@ export const ShowInvitations = () => {
 								) : (
 									<div className="flex flex-col gap-4  min-h-[25vh]">
 										<Table>
-											<TableCaption>See all invitations</TableCaption>
-											<TableHeader>
-												<TableRow>
-													<TableHead className="w-[100px]">Email</TableHead>
-													<TableHead className="text-center">Role</TableHead>
-													<TableHead className="text-center">Status</TableHead>
-													<TableHead className="text-center">
+											<caption>See all invitations</caption>
+											<Table.Header>
+												<Table.Row>
+													<Table.Head className="w-[100px]">Email</Table.Head>
+													<Table.Head className="text-center">Role</Table.Head>
+													<Table.Head className="text-center">Status</Table.Head>
+													<Table.Head className="text-center">
 														Expires At
-													</TableHead>
-													<TableHead className="text-right">Actions</TableHead>
-												</TableRow>
-											</TableHeader>
-											<TableBody>
+													</Table.Head>
+													<Table.Head className="text-right">Actions</Table.Head>
+												</Table.Row>
+											</Table.Header>
+											<Table.Body>
 												{data?.map((invitation) => {
 													const isExpired = isPast(
 														new Date(invitation.expiresAt),
 													);
 													return (
-														<TableRow key={invitation.id}>
-															<TableCell className="w-[100px]">
+														<Table.Row key={invitation.id}>
+															<Table.Cell className="w-[100px]">
 																{invitation.email}
-															</TableCell>
-															<TableCell className="text-center">
+															</Table.Cell>
+															<Table.Cell className="text-center">
 																<Badge
 																	variant={
 																		invitation.role === "owner"
-																			? "default"
+																			? "secondary"
 																			: "secondary"
 																	}
 																>
 																	{invitation.role}
 																</Badge>
-															</TableCell>
-															<TableCell className="text-center">
+															</Table.Cell>
+															<Table.Cell className="text-center">
 																<Badge
 																	variant={
 																		invitation.status === "pending"
 																			? "secondary"
 																			: invitation.status === "canceled"
 																				? "destructive"
-																				: "default"
+																				: "secondary"
 																	}
 																>
 																	{invitation.status}
 																</Badge>
-															</TableCell>
-															<TableCell className="text-center">
+															</Table.Cell>
+															<Table.Cell className="text-center">
 																{format(new Date(invitation.expiresAt), "PPpp")}{" "}
 																{isExpired ? (
 																	<span className="text-muted-foreground">
 																		(Expired)
 																	</span>
 																) : null}
-															</TableCell>
+															</Table.Cell>
 
-															<TableCell className="text-right flex justify-end">
+															<Table.Cell className="text-right flex justify-end">
 																<DropdownMenu>
-																	<DropdownMenuTrigger asChild>
+																	<DropdownMenu.Trigger render={(
+
 																		<Button
 																			variant="ghost"
 																			className="h-8 w-8 p-0"
@@ -135,15 +116,16 @@ export const ShowInvitations = () => {
 																			<span className="sr-only">Open menu</span>
 																			<MoreHorizontal className="h-4 w-4" />
 																		</Button>
-																	</DropdownMenuTrigger>
-																	<DropdownMenuContent align="end">
-																		<DropdownMenuLabel>
+																	
+)} />
+																	<DropdownMenu.Content align="end">
+																		<DropdownMenu.Label>
 																			Actions
-																		</DropdownMenuLabel>
+																		</DropdownMenu.Label>
 																		{!isExpired && (
 																			<>
 																				{invitation.status === "pending" && (
-																					<DropdownMenuItem
+																					<DropdownMenu.Item
 																						className="w-full cursor-pointer"
 																						onSelect={() => {
 																							copy(
@@ -155,11 +137,11 @@ export const ShowInvitations = () => {
 																						}}
 																					>
 																						Copy Invitation
-																					</DropdownMenuItem>
+																					</DropdownMenu.Item>
 																				)}
 
 																				{invitation.status === "pending" && (
-																					<DropdownMenuItem
+																					<DropdownMenu.Item
 																						className="w-full cursor-pointer"
 																						onSelect={async () => {
 																							const result =
@@ -182,11 +164,11 @@ export const ShowInvitations = () => {
 																						}}
 																					>
 																						Cancel Invitation
-																					</DropdownMenuItem>
+																					</DropdownMenu.Item>
 																				)}
 																			</>
 																		)}
-																		<DropdownMenuItem
+																		<DropdownMenu.Item
 																			className="w-full cursor-pointer"
 																			onSelect={async () => {
 																				await removeInvitation({
@@ -198,14 +180,14 @@ export const ShowInvitations = () => {
 																			}}
 																		>
 																			Remove Invitation
-																		</DropdownMenuItem>
-																	</DropdownMenuContent>
+																		</DropdownMenu.Item>
+																	</DropdownMenu.Content>
 																</DropdownMenu>
-															</TableCell>
-														</TableRow>
+															</Table.Cell>
+														</Table.Row>
 													);
 												})}
-											</TableBody>
+											</Table.Body>
 										</Table>
 
 										<div className="flex flex-row gap-2 flex-wrap w-full justify-end mr-4">
@@ -215,9 +197,9 @@ export const ShowInvitations = () => {
 								)}
 							</>
 						)}
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

@@ -1,15 +1,15 @@
-import { Command as CommandPrimitive } from "cmdk";
 import debounce from "lodash/debounce";
 import { CheckIcon, Hash } from "lucide-react";
 import React, { useCallback, useRef } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
+} from "@cloudflare/kumo/components/popover";
+import { Separator } from "@/components/shared/separator";
 import { cn } from "@/shared/utils";
 
 const lineCountOptions = [
@@ -96,30 +96,32 @@ export function LineCountFilter({
 
 	return (
 		<Popover open={open} onOpenChange={setOpen}>
-			<PopoverTrigger asChild>
-				<Button
+			<PopoverTrigger
+				render={
+					<Button
 					variant="outline"
 					size="sm"
 					className="h-9 bg-input text-sm placeholder-gray-400 w-full sm:w-auto"
-				>
-					{title}
-					<Separator orientation="vertical" className="mx-2 h-4" />
-					<div className="space-x-1 flex">
-						<Badge variant="blank" className="rounded-sm px-1 font-normal">
-							{displayValue}
-						</Badge>
-					</div>
-				</Button>
-			</PopoverTrigger>
-			<PopoverContent className="w-[200px] p-0" align="start">
-				<CommandPrimitive className="overflow-hidden rounded-md border border-none bg-popover text-popover-foreground">
-					<div className="flex items-center border-b px-3">
+					>
+						{title}
+						<Separator orientation="vertical" className="mx-2 h-4" />
+						<div className="space-x-1 flex">
+							<Badge variant="neutral" className="rounded-sm px-1 font-normal">
+								{displayValue}
+							</Badge>
+						</div>
+					</Button>
+				}
+			/>
+			<PopoverContent className="w-[200px] p-2" align="start">
+				<div className="overflow-hidden rounded-md text-popover-foreground">
+					<div className="flex items-center border-b pb-2">
 						<Hash className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-						<CommandPrimitive.Input
+						<Input
 							placeholder="Number of lines"
 							value={inputValue}
-							onValueChange={handleInputChange}
-							className="flex h-9 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+							onChange={(event) => handleInputChange(event.target.value)}
+							className="h-9 w-full border-0 bg-transparent px-0 shadow-none"
 							onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
 								if (e.key === "Enter") {
 									e.preventDefault();
@@ -138,15 +140,15 @@ export function LineCountFilter({
 							}}
 						/>
 					</div>
-					<CommandPrimitive.List className="max-h-[300px] overflow-y-auto overflow-x-hidden">
-						<CommandPrimitive.Group className="px-2 py-1.5">
-							{lineCountOptions.map((option) => {
-								const isSelected = value === option.value;
-								return (
-									<CommandPrimitive.Item
-										key={option.value}
-										onSelect={() => handleSelect(option.label)}
-										className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 aria-selected:bg-accent aria-selected:text-accent-foreground"
+					<div className="max-h-[300px] overflow-y-auto overflow-x-hidden py-1.5">
+						{lineCountOptions.map((option) => {
+							const isSelected = value === option.value;
+							return (
+								<button
+									key={option.value}
+									type="button"
+									onClick={() => handleSelect(option.label)}
+									className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground"
 									>
 										<div
 											className={cn(
@@ -159,12 +161,11 @@ export function LineCountFilter({
 											<CheckIcon className={cn("h-4 w-4")} />
 										</div>
 										<span>{option.label}</span>
-									</CommandPrimitive.Item>
-								);
-							})}
-						</CommandPrimitive.Group>
-					</CommandPrimitive.List>
-				</CommandPrimitive>
+									</button>
+							);
+						})}
+					</div>
+				</div>
 			</PopoverContent>
 		</Popover>
 	);

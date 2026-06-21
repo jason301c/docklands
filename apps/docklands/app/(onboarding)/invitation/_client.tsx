@@ -1,18 +1,21 @@
 "use client";
 
+
+
+
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Logo } from "@/components/shared/logo";
-import { Button } from "@/components/ui/button";
-import { CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -20,8 +23,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const registerSchema = z
 	.object({
@@ -146,12 +149,12 @@ const Invitation = ({
 		<div>
 			<div className="flex  h-screen w-full items-center justify-center ">
 				<div className="flex flex-col items-center gap-4 w-full">
-					<CardTitle className="text-2xl font-bold flex items-center gap-2">
+					<h3 className="text-2xl font-bold flex items-center gap-2">
 						<Link href="/" className="flex flex-row items-center gap-2">
 							<Logo className="size-12" />
 						</Link>
 						Invitation
-					</CardTitle>
+					</h3>
 					{userAlreadyExists ? (
 						<div className="flex flex-col gap-4 justify-center items-center">
 							<AlertBlock type="success">
@@ -164,15 +167,15 @@ const Invitation = ({
 								</div>
 							</AlertBlock>
 
-							<Button asChild variant="default" className="w-full">
-								<Link href="/">Sign In</Link>
-							</Button>
+							<LinkButton href="/" variant="primary" className="w-full">
+								Sign In
+							</LinkButton>
 						</div>
 					) : (
 						<>
-							<CardDescription>
+							<p>
 								Fill the form below to create your account
-							</CardDescription>
+							</p>
 							<div className="w-full">
 								<div className="p-3" />
 
@@ -185,7 +188,7 @@ const Invitation = ({
 									</div>
 								)} */}
 
-								<CardContent className="p-0">
+								<div className="p-0">
 									<Form {...form}>
 										<form
 											onSubmit={form.handleSubmit(onSubmit)}
@@ -273,7 +276,7 @@ const Invitation = ({
 
 												<Button
 													type="submit"
-													isLoading={form.formState.isSubmitting}
+													loading={form.formState.isSubmitting}
 													className="w-full"
 												>
 													Register
@@ -300,7 +303,7 @@ const Invitation = ({
 											</div>
 										</form>
 									</Form>
-								</CardContent>
+								</div>
 							</div>
 						</>
 					)}

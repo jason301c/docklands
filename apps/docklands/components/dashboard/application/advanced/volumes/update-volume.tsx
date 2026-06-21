@@ -2,21 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { PenBoxIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -24,8 +16,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const mountSchema = z.object({
 	mountPath: z.string().min(1, "Mount path required"),
@@ -181,22 +173,24 @@ export const UpdateVolume = ({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				<Button
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
+				<Button aria-label="Action"
 					variant="ghost"
-					size="icon"
+					shape="square"
 					className="group hover:bg-blue-500/10 "
-					isLoading={isPending}
+					loading={isPending}
 				>
 					<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-3xl">
-				<DialogHeader>
-					<DialogTitle>Update</DialogTitle>
-					<DialogDescription>Update the mount</DialogDescription>
-				</DialogHeader>
+			
+)} />
+			<Dialog className="sm:max-w-3xl">
+				<div>
+					<Dialog.Title>Update</Dialog.Title>
+					<Dialog.Description>Update the mount</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				{type === "file" && (
 					<AlertBlock type="warning">
@@ -308,18 +302,18 @@ PORT=3000
 								/>
 							)}
 						</div>
-						<DialogFooter>
+						<div>
 							<Button
-								isLoading={isPending}
+								loading={isPending}
 								// form="hook-form-update-volume"
 								type="submit"
 							>
 								Update
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

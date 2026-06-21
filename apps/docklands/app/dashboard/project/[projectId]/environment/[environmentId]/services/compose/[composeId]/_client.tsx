@@ -4,7 +4,7 @@ import copy from "copy-to-clipboard";
 import { CircuitBoard, HelpCircle, ServerOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { ShowImport } from "@/components/dashboard/application/advanced/import/show-import";
@@ -28,31 +28,25 @@ import { ComposeFreeMonitoring } from "@/components/dashboard/monitoring/free/co
 import { ComposePaidMonitoring } from "@/components/dashboard/monitoring/paid/container/show-paid-compose-monitoring";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { Badge } from "@/components/ui/badge";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 type TabState =
-	| "projects"
-	| "settings"
+	| "general"
+	| "environment"
 	| "advanced"
+	| "backups"
 	| "deployments"
 	| "domains"
 	| "containers"
+	| "logs"
 	| "monitoring"
+	| "patches"
+	| "schedules"
 	| "volumeBackups";
 
 const Service = (props: {
@@ -89,18 +83,37 @@ const Service = (props: {
 			name: env.name,
 			href: `/dashboard/project/${projectId}/environment/${env.environmentId}`,
 		})) || [];
+	const serviceTabs = [
+		{ value: "general", label: "General" },
+		permissions?.envVars.read ? { value: "environment", label: "Environment" } : null,
+		permissions?.domain.read ? { value: "domains", label: "Domains" } : null,
+		permissions?.deployment.read ? { value: "deployments", label: "Deployments" } : null,
+		permissions?.service.read ? { value: "containers", label: "Containers" } : null,
+		permissions?.service.create ? { value: "backups", label: "Backups" } : null,
+		permissions?.schedule.read ? { value: "schedules", label: "Schedules" } : null,
+		permissions?.volumeBackup.read
+			? { value: "volumeBackups", label: "Volume Backups" }
+			: null,
+		permissions?.logs.read ? { value: "logs", label: "Logs" } : null,
+		data?.sourceType !== "raw" ? { value: "patches", label: "Patches" } : null,
+		permissions?.monitoring.read &&
+		((data?.serverId && isCloud) || !data?.server)
+			? { value: "monitoring", label: "Monitoring" }
+			: null,
+		permissions?.service.create ? { value: "advanced", label: "Advanced" } : null,
+	].filter(Boolean) as { value: string; label: string }[];
 
 	return (
 		<div className="pb-10">
 			<UseKeyboardNav forPage="compose" />
 			<AdvanceBreadcrumb />
 			<div className="w-full">
-				<Card className="h-full bg-sidebar p-2.5 rounded-xl w-full">
+				<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl w-full">
 					<div className="rounded-xl bg-background shadow-md ">
 						<div className="flex flex-col gap-4">
-							<CardHeader className="flex flex-row justify-between items-center">
+							<div className="flex flex-row justify-between items-center">
 								<div className="flex flex-col">
-									<CardTitle className="text-xl flex flex-row gap-2">
+									<h3 className="text-xl flex flex-row gap-2">
 										<div className="relative flex flex-row gap-4">
 											<div className="absolute -right-1 -top-2">
 												<StatusTooltip status={data?.composeStatus} />
@@ -109,9 +122,9 @@ const Service = (props: {
 											<CircuitBoard className="h-6 w-6 text-muted-foreground" />
 										</div>
 										{data?.name}
-									</CardTitle>
+									</h3>
 									{data?.description && (
-										<CardDescription>{data?.description}</CardDescription>
+										<p>{data?.description}</p>
 									)}
 
 									<span className="text-sm text-muted-foreground">
@@ -120,7 +133,7 @@ const Service = (props: {
 								</div>
 								<div className="flex flex-col h-fit w-fit gap-2">
 									<div className="flex flex-row h-fit w-fit gap-2">
-										<Badge
+										<Button type="button" size="xs"
 											className="cursor-pointer"
 											onClick={() => {
 												const ip = data?.server?.ipAddress || serverIp;
@@ -131,34 +144,29 @@ const Service = (props: {
 											}}
 											variant={
 												!data?.serverId
-													? "default"
+													? "secondary"
 													: data?.server?.serverStatus === "active"
-														? "default"
+														? "secondary"
 														: "destructive"
 											}
 										>
 											{data?.server?.name || "Docklands Server"}
-										</Badge>
+										</Button>
 										{data?.server?.serverStatus === "inactive" && (
 											<TooltipProvider>
-												<Tooltip>
-													<TooltipTrigger asChild>
-														<Label className="break-all w-fit flex flex-row gap-1 items-center">
-															<HelpCircle className="size-4 text-muted-foreground" />
-														</Label>
-													</TooltipTrigger>
-													<TooltipContent
-														className="z-[999] w-[300px]"
-														align="start"
-														side="top"
-													>
+												<Tooltip content={<>
 														<span>
 															You cannot, deploy this application because the
 															server is inactive, please upgrade your plan to
 															add more servers.
 														</span>
-													</TooltipContent>
-												</Tooltip>
+													</>} className="z-[999] w-[300px]"
+														align="start"
+														side="top"  asChild>
+														<Label className="break-all w-fit flex flex-row gap-1 items-center">
+															<HelpCircle className="size-4 text-muted-foreground" />
+														</Label>
+													</Tooltip>
 											</TooltipProvider>
 										)}
 									</div>
@@ -172,9 +180,9 @@ const Service = (props: {
 										)}
 									</div>
 								</div>
-							</CardHeader>
+							</div>
 						</div>
-						<CardContent className="space-y-2 py-8 border-t">
+						<div className="space-y-2 py-8 border-t">
 							{data?.server?.serverStatus === "inactive" ? (
 								<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
 									<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
@@ -188,93 +196,57 @@ const Service = (props: {
 									</div>
 								</div>
 							) : (
-								<Tabs
-									value={tab}
-									defaultValue="general"
-									className="w-full"
-									onValueChange={(e) => {
-										setTab(e as TabState);
-										const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/compose/${composeId}?tab=${e}`;
-										router.push(newPath);
-									}}
-								>
-									<div className="flex flex-row items-center w-full overflow-auto">
-										<TabsList className="flex gap-8 max-md:gap-4 justify-start">
-											<TabsTrigger value="general">General</TabsTrigger>
-											{permissions?.envVars.read && (
-												<TabsTrigger value="environment">
-													Environment
-												</TabsTrigger>
-											)}
-											{permissions?.domain.read && (
-												<TabsTrigger value="domains">Domains</TabsTrigger>
-											)}
-											{permissions?.deployment.read && (
-												<TabsTrigger value="deployments">
-													Deployments
-												</TabsTrigger>
-											)}
-											{permissions?.service.read && (
-												<TabsTrigger value="containers">Containers</TabsTrigger>
-											)}
-											{permissions?.service.create && (
-												<TabsTrigger value="backups">Backups</TabsTrigger>
-											)}
-											{permissions?.schedule.read && (
-												<TabsTrigger value="schedules">Schedules</TabsTrigger>
-											)}
-											{permissions?.volumeBackup.read && (
-												<TabsTrigger value="volumeBackups">
-													Volume Backups
-												</TabsTrigger>
-											)}
-											{permissions?.logs.read && (
-												<TabsTrigger value="logs">Logs</TabsTrigger>
-											)}
-											{data?.sourceType !== "raw" && (
-												<TabsTrigger value="patches">Patches</TabsTrigger>
-											)}
-											{permissions?.monitoring.read &&
-												((data?.serverId && isCloud) || !data?.server) && (
-													<TabsTrigger value="monitoring">
-														Monitoring
-													</TabsTrigger>
-												)}
-											{permissions?.service.create && (
-												<TabsTrigger value="advanced">Advanced</TabsTrigger>
-											)}
-										</TabsList>
-									</div>
+								<div className="w-full">
+									<Tabs
+										value={tab}
+										className="w-full overflow-auto"
+										onValueChange={(e) => {
+											if (e === null) return;
+											setTab(e as TabState);
+											const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/compose/${composeId}?tab=${e}`;
+											router.push(newPath);
+										}}
+										tabs={serviceTabs}
+									/>
 
-									<TabsContent value="general">
+									{tab === "general" && (
+										<div>
 										<div className="flex flex-col gap-4 pt-2.5">
 											<ShowGeneralCompose composeId={composeId} />
 										</div>
-									</TabsContent>
+										</div>
+									)}
 									{permissions?.envVars.read && (
-										<TabsContent value="environment">
+										tab === "environment" && (
+											<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowEnvironment id={composeId} type="compose" />
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
 									{permissions?.service.create && (
-										<TabsContent value="backups">
+										tab === "backups" && (
+											<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowBackups id={composeId} backupType="compose" />
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
 
 									{permissions?.schedule.read && (
-										<TabsContent value="schedules">
+										tab === "schedules" && (
+											<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowSchedules id={composeId} scheduleType="compose" />
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
 									{permissions?.volumeBackup.read && (
-										<TabsContent value="volumeBackups">
+										tab === "volumeBackups" && (
+											<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowVolumeBackups
 													id={composeId}
@@ -282,10 +254,12 @@ const Service = (props: {
 													serverId={data?.serverId || ""}
 												/>
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
 									{permissions?.service.read && (
-										<TabsContent value="containers">
+										tab === "containers" && (
+											<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowComposeContainers
 													serverId={data?.serverId || undefined}
@@ -293,11 +267,13 @@ const Service = (props: {
 													appType={data?.composeType || "docker-compose"}
 												/>
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
 
 									{permissions?.monitoring.read && (
-										<TabsContent value="monitoring">
+										tab === "monitoring" && (
+											<div>
 											<div className="pt-2.5">
 												<div className="flex flex-col border rounded-lg ">
 													{data?.serverId && isCloud ? (
@@ -348,11 +324,13 @@ const Service = (props: {
 													)}
 												</div>
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
 
 									{permissions?.logs.read && (
-										<TabsContent value="logs">
+										tab === "logs" && (
+											<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												{data?.composeType === "docker-compose" ? (
 													<ShowDockerLogsCompose
@@ -367,11 +345,13 @@ const Service = (props: {
 													/>
 												)}
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
 
 									{permissions?.deployment.read && (
-										<TabsContent value="deployments" className="w-full pt-2.5">
+										tab === "deployments" && (
+											<div className="w-full pt-2.5">
 											<div className="flex flex-col gap-4 border rounded-lg">
 												<ShowDeployments
 													id={composeId}
@@ -380,38 +360,45 @@ const Service = (props: {
 													refreshToken={data?.refreshToken || ""}
 												/>
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
 
 									{permissions?.domain.read && (
-										<TabsContent value="domains">
+										tab === "domains" && (
+											<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowDomains id={composeId} type="compose" />
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
 
-									<TabsContent value="patches" className="w-full">
+									{tab === "patches" && (
+										<div className="w-full">
 										<div className="flex flex-col gap-4 pt-2.5">
 											<ShowPatches id={composeId} type="compose" />
 										</div>
-									</TabsContent>
+										</div>
+									)}
 
 									{permissions?.service.create && (
-										<TabsContent value="advanced">
+										tab === "advanced" && (
+											<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<AddCommandCompose composeId={composeId} />
 												<ShowVolumes id={composeId} type="compose" />
 												<ShowImport composeId={composeId} />
 												<IsolatedDeploymentTab composeId={composeId} />
 											</div>
-										</TabsContent>
+											</div>
+										)
 									)}
-								</Tabs>
+								</div>
 							)}
-						</CardContent>
+						</div>
 					</div>
-				</Card>
+				</LayerCard>
 			</div>
 		</div>
 	);

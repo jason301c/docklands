@@ -1,17 +1,11 @@
 import { formatDistanceToNow } from "date-fns";
 import { Clock, KeyIcon, Tag, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { AddApiKey } from "./add-api-key";
 
 export const ShowApiKeys = () => {
@@ -21,20 +15,20 @@ export const ShowApiKeys = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar p-2.5 rounded-xl max-w-5xl mx-auto">
+			<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md">
-					<CardHeader className="flex flex-row gap-2 flex-wrap justify-between items-center">
+					<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
 						<div>
-							<CardTitle className="text-xl flex items-center gap-2">
+							<h3 className="text-xl flex items-center gap-2">
 								<KeyIcon className="size-5" />
 								API/CLI Keys
-							</CardTitle>
-							<CardDescription>
+							</h3>
+							<p>
 								Generate and manage API keys to access the API/CLI
-							</CardDescription>
+							</p>
 						</div>
-					</CardHeader>
-					<CardContent className="space-y-6">
+					</div>
+					<div className="space-y-6">
 						<div className="flex flex-col gap-4">
 							{data?.user.apiKeys && data.user.apiKeys.length > 0 ? (
 								data.user.apiKeys.map((apiKey) => (
@@ -95,10 +89,10 @@ export const ShowApiKeys = () => {
 													}
 												}}
 											>
-												<Button
+												<Button aria-label="Delete"
 													variant="ghost"
-													size="icon"
-													isLoading={isLoadingDelete}
+													shape="square"
+													loading={isLoadingDelete}
 												>
 													<Trash2 className="size-4" />
 												</Button>
@@ -120,9 +114,9 @@ export const ShowApiKeys = () => {
 						<div className="flex justify-end pt-4 border-t">
 							<AddApiKey />
 						</div>
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

@@ -1,12 +1,7 @@
 import { AlertCircle, HardDrive, Network } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { TableCell, TableRow } from "@/components/ui/table";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Table } from "@cloudflare/kumo/components/table";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import type { ContainerInfo, ContainerStat } from "./types";
 import { formatCpu, formatIOValue, formatMemUsage } from "./utils";
 
@@ -21,50 +16,47 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 
 	const stateBadge = (
 		<Badge
-			variant={hasError ? "destructive" : isRunning ? "default" : "destructive"}
+			variant={hasError ? "destructive" : isRunning ? "secondary" : "destructive"}
 		>
 			{container.CurrentState}
 		</Badge>
 	);
 
 	return (
-		<TableRow>
-			<TableCell>
+		<Table.Row>
+			<Table.Cell>
 				<div className="flex flex-col gap-1">
 					<span className="font-medium text-sm">{container.Name}</span>
 					<span className="text-xs text-muted-foreground truncate max-w-[230px]">
 						{container.Image}
 					</span>
 				</div>
-			</TableCell>
-			<TableCell>
+			</Table.Cell>
+			<Table.Cell>
 				{hasError ? (
 					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger asChild>
+						<Tooltip content={<>
+								<p className="text-xs font-medium">Error:</p>
+								<p className="text-xs">{container.Error}</p>
+							</>} side="top" className="max-w-xs"  asChild>
 								<span className="inline-flex items-center gap-1.5 cursor-help">
 									{stateBadge}
 									<AlertCircle className="h-3.5 w-3.5 text-destructive" />
 								</span>
-							</TooltipTrigger>
-							<TooltipContent side="top" className="max-w-xs">
-								<p className="text-xs font-medium">Error:</p>
-								<p className="text-xs">{container.Error}</p>
-							</TooltipContent>
-						</Tooltip>
+							</Tooltip>
 					</TooltipProvider>
 				) : (
 					stateBadge
 				)}
-			</TableCell>
-			<TableCell className="text-right">
+			</Table.Cell>
+			<Table.Cell className="text-right">
 				{stat ? (
 					<span className="text-sm font-medium">{formatCpu(stat.CPUPerc)}</span>
 				) : (
 					<span className="text-xs text-muted-foreground">--</span>
 				)}
-			</TableCell>
-			<TableCell className="text-right">
+			</Table.Cell>
+			<Table.Cell className="text-right">
 				{stat ? (
 					<span className="text-sm font-medium">
 						{formatMemUsage(stat.MemUsage)}
@@ -72,8 +64,8 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 				) : (
 					<span className="text-xs text-muted-foreground">--</span>
 				)}
-			</TableCell>
-			<TableCell className="text-right">
+			</Table.Cell>
+			<Table.Cell className="text-right">
 				{stat ? (
 					<div className="flex items-center justify-end gap-1.5">
 						<HardDrive className="h-3 w-3 text-muted-foreground" />
@@ -82,8 +74,8 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 				) : (
 					<span className="text-xs text-muted-foreground">--</span>
 				)}
-			</TableCell>
-			<TableCell className="text-right">
+			</Table.Cell>
+			<Table.Cell className="text-right">
 				{stat ? (
 					<div className="flex items-center justify-end gap-1.5">
 						<Network className="h-3 w-3 text-muted-foreground" />
@@ -92,7 +84,7 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 				) : (
 					<span className="text-xs text-muted-foreground">--</span>
 				)}
-			</TableCell>
-		</TableRow>
+			</Table.Cell>
+		</Table.Row>
 	);
 };

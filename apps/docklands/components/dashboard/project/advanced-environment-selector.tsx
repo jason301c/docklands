@@ -1,29 +1,15 @@
 import { ChevronDownIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Textarea } from "@cloudflare/kumo/components/input";
 import type { findEnvironmentsByProjectId } from "@/server/core/services/environment";
 
 type Environment = Awaited<
@@ -198,7 +184,8 @@ export const AdvancedEnvironmentSelector = ({
 	return (
 		<>
 			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
+				<DropdownMenu.Trigger render={(
+
 					<Button variant="ghost" className="h-auto p-2 font-normal">
 						<div className="flex items-center gap-1">
 							<span className="text-muted-foreground">/</span>
@@ -206,10 +193,11 @@ export const AdvancedEnvironmentSelector = ({
 							<ChevronDownIcon className="h-4 w-4 text-muted-foreground" />
 						</div>
 					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent className="w-[300px]" align="start">
-					<DropdownMenuLabel>Environments</DropdownMenuLabel>
-					<DropdownMenuSeparator />
+				
+)} />
+				<DropdownMenu.Content className="w-[300px]" align="start">
+					<DropdownMenu.Label>Environments</DropdownMenu.Label>
+					<DropdownMenu.Separator />
 
 					{environments?.map((environment) => {
 						const servicesCount =
@@ -225,7 +213,7 @@ export const AdvancedEnvironmentSelector = ({
 								key={environment.environmentId}
 								className="flex items-center"
 							>
-								<DropdownMenuItem
+								<DropdownMenu.Item
 									className="flex-1 cursor-pointer"
 									onClick={() => {
 										router.push(
@@ -241,7 +229,7 @@ export const AdvancedEnvironmentSelector = ({
 											<div className="w-2 h-2 bg-blue-500 rounded-full" />
 										)}
 									</div>
-								</DropdownMenuItem>
+								</DropdownMenu.Item>
 								<div className="flex items-center gap-1 px-2">
 									{!environment.isDefault && (
 										<Button
@@ -274,27 +262,27 @@ export const AdvancedEnvironmentSelector = ({
 						);
 					})}
 
-					<DropdownMenuSeparator />
+					<DropdownMenu.Separator />
 					{canCreateEnvironments && (
-						<DropdownMenuItem
+						<DropdownMenu.Item
 							className="cursor-pointer"
 							onClick={() => setIsCreateDialogOpen(true)}
 						>
 							<PlusIcon className="h-4 w-4 mr-2" />
 							Create Environment
-						</DropdownMenuItem>
+						</DropdownMenu.Item>
 					)}
-				</DropdownMenuContent>
+				</DropdownMenu.Content>
 			</DropdownMenu>
 
-			<Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Create Environment</DialogTitle>
-						<DialogDescription>
+			<Dialog.Root open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+				<Dialog>
+					<div>
+						<Dialog.Title>Create Environment</Dialog.Title>
+						<Dialog.Description>
 							Create a new environment for your project.
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 
 					<div className="space-y-4">
 						<div className="space-y-1">
@@ -317,7 +305,7 @@ export const AdvancedEnvironmentSelector = ({
 						</div>
 					</div>
 
-					<DialogFooter>
+					<div>
 						<Button
 							variant="outline"
 							onClick={() => {
@@ -334,19 +322,19 @@ export const AdvancedEnvironmentSelector = ({
 						>
 							{createEnvironment.isPending ? "Creating..." : "Create"}
 						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+					</div>
+				</Dialog>
+			</Dialog.Root>
 
 			{/* Edit Environment Dialog */}
-			<Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Edit Environment</DialogTitle>
-						<DialogDescription>
+			<Dialog.Root open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+				<Dialog>
+					<div>
+						<Dialog.Title>Edit Environment</Dialog.Title>
+						<Dialog.Description>
 							Update the environment details.
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 
 					<div className="space-y-4">
 						<div className="space-y-1">
@@ -369,7 +357,7 @@ export const AdvancedEnvironmentSelector = ({
 						</div>
 					</div>
 
-					<DialogFooter>
+					<div>
 						<Button
 							variant="outline"
 							onClick={() => {
@@ -387,21 +375,21 @@ export const AdvancedEnvironmentSelector = ({
 						>
 							{updateEnvironment.isPending ? "Updating..." : "Update"}
 						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+					</div>
+				</Dialog>
+			</Dialog.Root>
 
 			{/* Delete Environment Dialog */}
-			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Delete Environment</DialogTitle>
-						<DialogDescription>
+			<Dialog.Root open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+				<Dialog>
+					<div>
+						<Dialog.Title>Delete Environment</Dialog.Title>
+						<Dialog.Description>
 							Are you sure you want to delete the environment "
 							{selectedEnvironment?.name}"? This action cannot be undone and
 							will also delete all services in this environment.
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 
 					{haveServices && (
 						<AlertBlock type="warning">
@@ -409,7 +397,7 @@ export const AdvancedEnvironmentSelector = ({
 						</AlertBlock>
 					)}
 
-					<DialogFooter>
+					<div>
 						<Button
 							variant="outline"
 							onClick={() => {
@@ -430,9 +418,9 @@ export const AdvancedEnvironmentSelector = ({
 						>
 							{deleteEnvironment.isPending ? "Deleting..." : "Delete"}
 						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+					</div>
+				</Dialog>
+			</Dialog.Root>
 		</>
 	);
 };

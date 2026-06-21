@@ -1,33 +1,14 @@
 import { format } from "date-fns";
 import { Loader2, MoreHorizontal, Users } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Table } from "@cloudflare/kumo/components/table";
 import { AddUserPermissions } from "./add-permissions";
 import { ChangeRole } from "./change-role";
 
@@ -42,18 +23,18 @@ export const ShowUsers = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
+			<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
+					<div className="">
+						<h3 className="text-xl flex flex-row gap-2">
 							<Users className="size-6 text-muted-foreground self-center" />
 							Users
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Add your users to your Docklands account.
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-2 py-8 border-t">
+						</p>
+					</div>
+					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
 								<span>Loading...</span>
@@ -71,19 +52,19 @@ export const ShowUsers = () => {
 								) : (
 									<div className="flex flex-col gap-4  min-h-[25vh]">
 										<Table>
-											<TableHeader>
-												<TableRow>
-													<TableHead className="w-[100px]">Email</TableHead>
-													<TableHead className="text-center">Role</TableHead>
-													<TableHead className="text-center">2FA</TableHead>
+											<Table.Header>
+												<Table.Row>
+													<Table.Head className="w-[100px]">Email</Table.Head>
+													<Table.Head className="text-center">Role</Table.Head>
+													<Table.Head className="text-center">2FA</Table.Head>
 
-													<TableHead className="text-center">
+													<Table.Head className="text-center">
 														Created At
-													</TableHead>
-													<TableHead className="text-right">Actions</TableHead>
-												</TableRow>
-											</TableHeader>
-											<TableBody>
+													</Table.Head>
+													<Table.Head className="text-right">Actions</Table.Head>
+												</Table.Row>
+											</Table.Header>
+											<Table.Body>
 												{data?.map((member) => {
 													const currentUserRole = data?.find(
 														(m) => m.user.id === session?.user?.id,
@@ -131,41 +112,42 @@ export const ShowUsers = () => {
 														canUnlink;
 
 													return (
-														<TableRow key={member.id}>
-															<TableCell className="w-[100px]">
+														<Table.Row key={member.id}>
+															<Table.Cell className="w-[100px]">
 																{member.user.email}
 																{member.user.id === session?.user?.id && (
 																	<span className="text-muted-foreground ml-1">
 																		(You)
 																	</span>
 																)}
-															</TableCell>
-															<TableCell className="text-center">
+															</Table.Cell>
+															<Table.Cell className="text-center">
 																<Badge
 																	variant={
 																		member.role === "owner"
-																			? "default"
+																			? "secondary"
 																			: "secondary"
 																	}
 																>
 																	{member.role}
 																</Badge>
-															</TableCell>
-															<TableCell className="text-center">
+															</Table.Cell>
+															<Table.Cell className="text-center">
 																{member.user.twoFactorEnabled
 																	? "Enabled"
 																	: "Disabled"}
-															</TableCell>
-															<TableCell className="text-center">
+															</Table.Cell>
+															<Table.Cell className="text-center">
 																<span className="text-sm text-muted-foreground">
 																	{format(new Date(member.createdAt), "PPpp")}
 																</span>
-															</TableCell>
+															</Table.Cell>
 
-															<TableCell className="text-right flex justify-end">
+															<Table.Cell className="text-right flex justify-end">
 																{hasAnyAction ? (
 																	<DropdownMenu>
-																		<DropdownMenuTrigger asChild>
+																		<DropdownMenu.Trigger render={(
+
 																			<Button
 																				variant="ghost"
 																				className="h-8 w-8 p-0"
@@ -175,11 +157,12 @@ export const ShowUsers = () => {
 																				</span>
 																				<MoreHorizontal className="h-4 w-4" />
 																			</Button>
-																		</DropdownMenuTrigger>
-																		<DropdownMenuContent align="end">
-																			<DropdownMenuLabel>
+																		
+)} />
+																		<DropdownMenu.Content align="end">
+																			<DropdownMenu.Label>
 																				Actions
-																			</DropdownMenuLabel>
+																			</DropdownMenu.Label>
 
 																			{canChangeRole && (
 																				<ChangeRole
@@ -219,12 +202,12 @@ export const ShowUsers = () => {
 																							});
 																					}}
 																				>
-																					<DropdownMenuItem
+																					<DropdownMenu.Item
 																						className="w-full cursor-pointer text-red-500 hover:!text-red-600"
 																						onSelect={(e) => e.preventDefault()}
 																					>
 																						Delete User
-																					</DropdownMenuItem>
+																					</DropdownMenu.Item>
 																				</DialogAction>
 																			)}
 
@@ -280,15 +263,15 @@ export const ShowUsers = () => {
 																						}
 																					}}
 																				>
-																					<DropdownMenuItem
+																					<DropdownMenu.Item
 																						className="w-full cursor-pointer text-red-500 hover:!text-red-600"
 																						onSelect={(e) => e.preventDefault()}
 																					>
 																						Unlink User
-																					</DropdownMenuItem>
+																					</DropdownMenu.Item>
 																				</DialogAction>
 																			)}
-																		</DropdownMenuContent>
+																		</DropdownMenu.Content>
 																	</DropdownMenu>
 																) : (
 																	<Button
@@ -302,19 +285,19 @@ export const ShowUsers = () => {
 																		<MoreHorizontal className="h-4 w-4 text-muted-foreground" />
 																	</Button>
 																)}
-															</TableCell>
-														</TableRow>
+															</Table.Cell>
+														</Table.Row>
 													);
 												})}
-											</TableBody>
+											</Table.Body>
 										</Table>
 									</div>
 								)}
 							</>
 						)}
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

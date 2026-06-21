@@ -4,19 +4,12 @@ import { CopyIcon, DownloadIcon, Fingerprint, QrCode } from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -25,15 +18,10 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { InputOTP } from "@/components/ui/input-otp";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { InputOTP } from "@/components/shared/input-otp";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 const PasswordSchema = z.object({
 	password: z.string().min(8, {
@@ -251,22 +239,24 @@ export const Enable2FA = () => {
 	};
 
 	return (
-		<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-			<DialogTrigger asChild>
+		<Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+			<Dialog.Trigger render={(
+
 				<Button variant="ghost">
 					<Fingerprint className="size-4 text-muted-foreground" />
 					Enable 2FA
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-xl">
-				<DialogHeader>
-					<DialogTitle>2FA Setup</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className="sm:max-w-xl">
+				<div>
+					<Dialog.Title>2FA Setup</Dialog.Title>
+					<Dialog.Description>
 						{step === "password"
 							? "Enter your password to begin 2FA setup"
 							: "Scan the QR code and verify with your authenticator app"}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 
 				{step === "password" ? (
 					<Form {...passwordForm}>
@@ -319,7 +309,7 @@ export const Enable2FA = () => {
 							<Button
 								type="submit"
 								className="w-full"
-								isLoading={isPasswordLoading}
+								loading={isPasswordLoading}
 							>
 								Continue
 							</Button>
@@ -358,39 +348,41 @@ export const Enable2FA = () => {
 													<h4 className="font-medium">Backup Codes</h4>
 													<div className="flex items-center gap-2">
 														<TooltipProvider>
-															<Tooltip delayDuration={0}>
-																<TooltipTrigger asChild>
-																	<Button
+															<Tooltip delay={0} content={(
+
+																	<p>Copy</p>
+																
+)} render={(
+
+																	<Button aria-label="Copy"
 																		type="button"
 																		variant="outline"
-																		size="icon"
+																		shape="square"
 																		onClick={handleCopyBackupCodes}
 																	>
 																		<CopyIcon className="size-4" />
 																	</Button>
-																</TooltipTrigger>
-																<TooltipContent>
-																	<p>Copy</p>
-																</TooltipContent>
-															</Tooltip>
+																
+)} />
 														</TooltipProvider>
 
 														<TooltipProvider>
-															<Tooltip delayDuration={0}>
-																<TooltipTrigger asChild>
-																	<Button
+															<Tooltip delay={0} content={(
+
+																	<p>Download</p>
+																
+)} render={(
+
+																	<Button aria-label="Action"
 																		type="button"
 																		variant="outline"
-																		size="icon"
+																		shape="square"
 																		onClick={handleDownloadBackupCodes}
 																	>
 																		<DownloadIcon className="size-4" />
 																	</Button>
-																</TooltipTrigger>
-																<TooltipContent>
-																	<p>Download</p>
-																</TooltipContent>
-															</Tooltip>
+																
+)} />
 														</TooltipProvider>
 													</div>
 												</div>
@@ -435,7 +427,7 @@ export const Enable2FA = () => {
 							<Button
 								type="submit"
 								className="w-full"
-								isLoading={isPasswordLoading}
+								loading={isPasswordLoading}
 								disabled={otpValue.length !== 6}
 							>
 								Enable 2FA
@@ -443,7 +435,7 @@ export const Enable2FA = () => {
 						</form>
 					</Form>
 				)}
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

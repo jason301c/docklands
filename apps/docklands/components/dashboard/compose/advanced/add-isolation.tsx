@@ -2,26 +2,14 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -29,8 +17,8 @@ import {
 	FormField,
 	FormItem,
 	FormLabel,
-} from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 interface Props {
 	composeId: string;
@@ -108,10 +96,10 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 	};
 
 	return (
-		<Card className="bg-background">
-			<CardHeader>
-				<CardTitle className="text-xl">Enable Isolated Deployment</CardTitle>
-				<CardDescription>
+		<LayerCard className="bg-background">
+			<div>
+				<h3 className="text-xl">Enable Isolated Deployment</h3>
+				<p>
 					Configure isolated deployment to the compose file.
 					<div className="text-sm text-muted-foreground flex flex-col gap-2">
 						<span>
@@ -133,9 +121,9 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 							</div>
 						</div>
 					</div>
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
+				</p>
+			</div>
+			<div>
 				<div className="space-y-4">
 					{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 					<Form {...form}>
@@ -184,7 +172,7 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 										form="isolated-deployment-form"
 										type="submit"
 										className="lg:w-fit"
-										isLoading={form.formState.isSubmitting}
+										loading={form.formState.isSubmitting}
 									>
 										Save
 									</Button>
@@ -194,21 +182,21 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 							<div className="flex flex-col lg:flex-row gap-4 w-full items-end justify-end">
 								<Button
 									onClick={generatePreview}
-									isLoading={isPreviewLoading}
+									loading={isPreviewLoading}
 									variant="secondary"
 									className="lg:w-fit"
 								>
 									Preview Compose
 								</Button>
-								<Dialog open={isOpenPreview} onOpenChange={setIsOpenPreview}>
-									<DialogContent className="sm:max-w-6xl max-h-[80vh]">
-										<DialogHeader>
-											<DialogTitle>Isolated Deployment Preview</DialogTitle>
-											<DialogDescription>
+								<Dialog.Root open={isOpenPreview} onOpenChange={setIsOpenPreview}>
+									<Dialog className="sm:max-w-6xl max-h-[80vh]">
+										<div>
+											<Dialog.Title>Isolated Deployment Preview</Dialog.Title>
+											<Dialog.Description>
 												Preview of the compose file with isolated deployment
 												configuration
-											</DialogDescription>
-										</DialogHeader>
+											</Dialog.Description>
+										</div>
 										<div className="flex flex-col gap-4 overflow-auto">
 											{isPreviewLoading ? (
 												<div className="flex flex-col items-center justify-center py-12 gap-4">
@@ -228,13 +216,13 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 												</pre>
 											)}
 										</div>
-									</DialogContent>
-								</Dialog>
+									</Dialog>
+								</Dialog.Root>
 							</div>
 						</form>
 					</Form>
 				</div>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

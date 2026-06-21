@@ -9,6 +9,7 @@ import { compose } from "./compose";
 import { deployments } from "./deployment";
 import { server } from "./server";
 import { generateAppName } from "./utils";
+
 export const shellTypes = pgEnum("shellType", ["bash", "sh"]);
 
 export const scheduleType = pgEnum("scheduleType", [

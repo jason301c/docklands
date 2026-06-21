@@ -2,20 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { DownloadIcon, PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import type { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -23,9 +15,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Textarea } from "@cloudflare/kumo/components/input";
 import { sshKeyCreate, type sshKeyType } from "@/server/core/db/validations";
 
 type SSHKey = z.infer<typeof sshKeyCreate>;
@@ -135,12 +127,11 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger className="" asChild>
-				{sshKeyId ? (
-					<Button
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger className="" render={sshKeyId ? (
+					<Button aria-label="Action"
 						variant="ghost"
-						size="icon"
+						shape="square"
 						className="group hover:bg-blue-500/10 "
 					>
 						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
@@ -150,12 +141,11 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 						<PlusIcon className="h-4 w-4" />
 						Add SSH Key
 					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>SSH Key</DialogTitle>
-					<DialogDescription className="space-y-4">
+				) as never} />
+			<Dialog className="sm:max-w-2xl">
+				<div>
+					<Dialog.Title>SSH Key</Dialog.Title>
+					<Dialog.Description className="space-y-4">
 						<div>
 							In this section you can add one of your keys or generate a new
 							one.
@@ -190,8 +180,8 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 								</Button>
 							</div>
 						)}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -267,13 +257,13 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 								</FormItem>
 							)}
 						/>
-						<DialogFooter className="flex items-center justify-between">
+						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-4">
 								{form.watch("privateKey") && (
 									<Button
 										type="button"
 										variant="outline"
-										size="default"
+										size="base"
 										onClick={() =>
 											downloadKey(form.watch("privateKey"), "private")
 										}
@@ -287,7 +277,7 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 									<Button
 										type="button"
 										variant="outline"
-										size="default"
+										size="base"
 										onClick={() =>
 											downloadKey(form.watch("publicKey"), "public")
 										}
@@ -298,13 +288,13 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 									</Button>
 								)}
 							</div>
-							<Button isLoading={isPending} type="submit">
+							<Button loading={isPending} type="submit">
 								{sshKeyId ? "Update" : "Create"}
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

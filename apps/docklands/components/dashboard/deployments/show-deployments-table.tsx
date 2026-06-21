@@ -1,5 +1,6 @@
 "use client";
 
+
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -25,24 +26,11 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Table } from "@cloudflare/kumo/components/table";
 import type { AppRouter } from "@/server/api/root";
 
 type DeploymentRow =
@@ -50,15 +38,15 @@ type DeploymentRow =
 
 const statusVariants: Record<
 	string,
-	| "default"
+	| "secondary"
 	| "secondary"
 	| "destructive"
 	| "outline"
-	| "yellow"
+	| "warning"
 	| "green"
 	| "red"
 > = {
-	running: "yellow",
+	running: "warning",
 	done: "green",
 	error: "red",
 	cancelled: "outline",
@@ -419,12 +407,15 @@ export function ShowDeploymentsTable() {
 					const info = getServiceInfo(row.original);
 					if (!info) return null;
 					return (
-						<Button variant="ghost" size="sm" asChild>
-							<Link href={info.href} className="gap-1">
-								<ExternalLink className="size-4" />
-								Open
-							</Link>
-						</Button>
+						<LinkButton
+							href={info.href}
+							variant="ghost"
+							size="sm"
+							className="gap-1"
+						>
+							<ExternalLink className="size-4" />
+							Open
+						</LinkButton>
 					);
 				},
 			},
@@ -460,27 +451,27 @@ export function ShowDeploymentsTable() {
 					onChange={(e) => setGlobalFilter(e.target.value)}
 					className="max-w-xs"
 				/>
-				<Select value={statusFilter} onValueChange={setStatusFilter}>
-					<SelectTrigger className="w-[140px]">
-						<SelectValue placeholder="Status" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All statuses</SelectItem>
-						<SelectItem value="running">Running</SelectItem>
-						<SelectItem value="done">Done</SelectItem>
-						<SelectItem value="error">Error</SelectItem>
-						<SelectItem value="cancelled">Cancelled</SelectItem>
-					</SelectContent>
+				<Select aria-label="Select option" value={statusFilter} onValueChange={(value) => value !== null && setStatusFilter(value as never)}>
+					<>
+						
+					</>
+					<>
+						<Select.Option value="all">All statuses</Select.Option>
+						<Select.Option value="running">Running</Select.Option>
+						<Select.Option value="done">Done</Select.Option>
+						<Select.Option value="error">Error</Select.Option>
+						<Select.Option value="cancelled">Cancelled</Select.Option>
+					</>
 				</Select>
-				<Select value={typeFilter} onValueChange={setTypeFilter}>
-					<SelectTrigger className="w-[140px]">
-						<SelectValue placeholder="Type" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All types</SelectItem>
-						<SelectItem value="application">Application</SelectItem>
-						<SelectItem value="compose">Compose</SelectItem>
-					</SelectContent>
+				<Select aria-label="Select option" value={typeFilter} onValueChange={(value) => value !== null && setTypeFilter(value as never)}>
+					<>
+						
+					</>
+					<>
+						<Select.Option value="all">All types</Select.Option>
+						<Select.Option value="application">Application</Select.Option>
+						<Select.Option value="compose">Compose</Select.Option>
+					</>
 				</Select>
 			</div>
 			<div className="px-0">
@@ -493,39 +484,39 @@ export function ShowDeploymentsTable() {
 					<>
 						<div className="rounded-md border overflow-x-auto">
 							<Table>
-								<TableHeader>
+								<Table.Header>
 									{table.getHeaderGroups().map((headerGroup) => (
-										<TableRow key={headerGroup.id}>
+										<Table.Row key={headerGroup.id}>
 											{headerGroup.headers.map((header) => (
-												<TableHead key={header.id}>
+												<Table.Head key={header.id}>
 													{header.isPlaceholder
 														? null
 														: flexRender(
 																header.column.columnDef.header,
 																header.getContext(),
 															)}
-												</TableHead>
+												</Table.Head>
 											))}
-										</TableRow>
+										</Table.Row>
 									))}
-								</TableHeader>
-								<TableBody>
+								</Table.Header>
+								<Table.Body>
 									{table.getRowModel().rows?.length ? (
 										table.getRowModel().rows.map((row) => (
-											<TableRow key={row.id}>
+											<Table.Row key={row.id}>
 												{row.getVisibleCells().map((cell) => (
-													<TableCell key={cell.id}>
+													<Table.Cell key={cell.id}>
 														{flexRender(
 															cell.column.columnDef.cell,
 															cell.getContext(),
 														)}
-													</TableCell>
+													</Table.Cell>
 												))}
-											</TableRow>
+											</Table.Row>
 										))
 									) : (
-										<TableRow>
-											<TableCell
+										<Table.Row>
+											<Table.Cell
 												colSpan={columns.length}
 												className=" text-center"
 											>
@@ -537,10 +528,10 @@ export function ShowDeploymentsTable() {
 														appear here.
 													</p>
 												</div>
-											</TableCell>
-										</TableRow>
+											</Table.Cell>
+										</Table.Row>
 									)}
-								</TableBody>
+								</Table.Body>
 							</Table>
 						</div>
 						<div className="flex flex-col gap-4 px-4 py-4 border-t sm:flex-row sm:items-center sm:justify-between">
@@ -548,9 +539,10 @@ export function ShowDeploymentsTable() {
 								<span className="text-sm text-muted-foreground whitespace-nowrap">
 									Rows per page
 								</span>
-								<Select
+								<Select aria-label="Select option"
 									value={String(pagination.pageSize)}
 									onValueChange={(value) => {
+										if (value === null) return;
 										setPagination((p) => ({
 											...p,
 											pageSize: Number(value),
@@ -558,16 +550,16 @@ export function ShowDeploymentsTable() {
 										}));
 									}}
 								>
-									<SelectTrigger className="h-8 w-[70px]">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent side="top">
+									<>
+										
+									</>
+									<>
 										{[10, 25, 50, 100].map((size) => (
-											<SelectItem key={size} value={String(size)}>
+											<Select.Option key={size} value={String(size)}>
 												{size}
-											</SelectItem>
+											</Select.Option>
 										))}
-									</SelectContent>
+									</>
 								</Select>
 								<span className="text-sm text-muted-foreground whitespace-nowrap">
 									Showing{" "}

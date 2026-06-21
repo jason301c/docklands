@@ -4,22 +4,14 @@ import { Copy, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -27,8 +19,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import type { ServiceType } from "@/server/core/db/schema";
 
 const deleteComposeSchema = z.object({
@@ -131,26 +123,28 @@ export const DeleteService = ({ id, type }: Props) => {
 	if (!canDelete) return null;
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				<Button
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
+				<Button aria-label="Action"
 					variant="ghost"
-					size="icon"
+					shape="square"
 					className="group hover:bg-red-500/10 "
-					isLoading={isPending}
+					loading={isPending}
 				>
 					<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Are you absolutely sure?</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className="sm:max-w-lg">
+				<div>
+					<Dialog.Title>Are you absolutely sure?</Dialog.Title>
+					<Dialog.Description>
 						This action cannot be undone. This will permanently delete the
 						service. If you are sure please enter the service name to delete
 						this service.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<div className="grid gap-4">
 					<Form {...form}>
 						<form
@@ -166,9 +160,11 @@ export const DeleteService = ({ id, type }: Props) => {
 										<FormLabel className="flex items-center gap-2">
 											<span>
 												To confirm, type{" "}
-												<Badge
+												<Button
+													type="button"
 													className="p-2 rounded-md ml-1 mr-1 hover:border-primary hover:text-primary-foreground hover:bg-primary hover:cursor-pointer"
 													variant="outline"
+													size="xs"
 													onClick={() => {
 														if (data?.name && data?.appName) {
 															copy(`${data.name}/${data.appName}`);
@@ -178,7 +174,7 @@ export const DeleteService = ({ id, type }: Props) => {
 												>
 													{data?.name}/{data?.appName}&nbsp;
 													<Copy className="h-4 w-4 ml-1 text-muted-foreground" />
-												</Badge>{" "}
+												</Button>{" "}
 												in the box below:
 											</span>
 										</FormLabel>
@@ -224,7 +220,7 @@ export const DeleteService = ({ id, type }: Props) => {
 						build to finish and then try again.
 					</AlertBlock>
 				)}
-				<DialogFooter>
+				<div>
 					<Button
 						variant="secondary"
 						onClick={() => {
@@ -235,7 +231,7 @@ export const DeleteService = ({ id, type }: Props) => {
 					</Button>
 
 					<Button
-						isLoading={isPending}
+						loading={isPending}
 						disabled={isDisabled}
 						form="hook-form-delete-compose"
 						type="submit"
@@ -243,8 +239,8 @@ export const DeleteService = ({ id, type }: Props) => {
 					>
 						Confirm
 					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

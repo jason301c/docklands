@@ -1,25 +1,12 @@
 import { File, FilePlus2, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Table } from "@cloudflare/kumo/components/table";
 import { EditPatchDialog } from "./edit-patch-dialog";
 import { PatchEditor } from "./patch-editor";
 
@@ -83,14 +70,14 @@ export const ShowPatches = ({ id, type }: Props) => {
 	};
 
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row items-center justify-between">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row items-center justify-between">
 				<div>
-					<CardTitle>Patches</CardTitle>
-					<CardDescription>
+					<h3>Patches</h3>
+					<p>
 						Apply code patches to your repository during build. Patches are
 						applied after cloning the repository and before building.
-					</CardDescription>
+					</p>
 				</div>
 				{patches && patches?.length > 0 && (
 					<Button onClick={handleOpenEditor} disabled={isLoadingRepo}>
@@ -99,8 +86,8 @@ export const ShowPatches = ({ id, type }: Props) => {
 						Create Patch
 					</Button>
 				)}
-			</CardHeader>
-			<CardContent>
+			</div>
+			<div>
 				{isPatchesLoading ? (
 					<div className="flex items-center justify-center py-8">
 						<Loader2 className="h-6 w-6 animate-spin" />
@@ -127,38 +114,38 @@ export const ShowPatches = ({ id, type }: Props) => {
 					</div>
 				) : (
 					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>File Path</TableHead>
-								<TableHead className="w-[80px]">Type</TableHead>
-								<TableHead className="w-[100px]">Enabled</TableHead>
-								<TableHead className="w-[100px]">Actions</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
+						<Table.Header>
+							<Table.Row>
+								<Table.Head>File Path</Table.Head>
+								<Table.Head className="w-[80px]">Type</Table.Head>
+								<Table.Head className="w-[100px]">Enabled</Table.Head>
+								<Table.Head className="w-[100px]">Actions</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
 							{patches?.map((patch) => (
-								<TableRow key={patch.patchId}>
-									<TableCell className="font-mono text-sm">
+								<Table.Row key={patch.patchId}>
+									<Table.Cell className="font-mono text-sm">
 										<div className="flex items-center gap-2">
 											<File className="h-4 w-4 text-muted-foreground shrink-0" />
 											{patch.filePath}
 										</div>
-									</TableCell>
-									<TableCell>
+									</Table.Cell>
+									<Table.Cell>
 										<Badge
 											variant={
 												patch.type === "delete"
 													? "destructive"
 													: patch.type === "create"
-														? "default"
+														? "secondary"
 														: "secondary"
 											}
 											className="font-normal"
 										>
 											{patch.type}
 										</Badge>
-									</TableCell>
-									<TableCell>
+									</Table.Cell>
+									<Table.Cell>
 										<Switch
 											checked={patch.enabled}
 											onCheckedChange={(checked) => {
@@ -182,8 +169,8 @@ export const ShowPatches = ({ id, type }: Props) => {
 													});
 											}}
 										/>
-									</TableCell>
-									<TableCell>
+									</Table.Cell>
+									<Table.Cell>
 										<div className="flex items-center gap-1">
 											{(patch.type === "update" || patch.type === "create") && (
 												<EditPatchDialog
@@ -192,9 +179,9 @@ export const ShowPatches = ({ id, type }: Props) => {
 													type={type}
 												/>
 											)}
-											<Button
+											<Button aria-label="Action"
 												variant="ghost"
-												size="icon"
+												shape="square"
 												onClick={() => {
 													mutateAsync({ patchId: patch.patchId })
 														.then(() => {
@@ -213,13 +200,13 @@ export const ShowPatches = ({ id, type }: Props) => {
 												<Trash2 className="h-4 w-4 text-destructive" />
 											</Button>
 										</div>
-									</TableCell>
-								</TableRow>
+									</Table.Cell>
+								</Table.Row>
 							))}
-						</TableBody>
+						</Table.Body>
 					</Table>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

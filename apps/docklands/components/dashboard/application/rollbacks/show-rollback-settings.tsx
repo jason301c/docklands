@@ -2,19 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -23,17 +16,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 const formSchema = z
 	.object({
@@ -113,20 +98,20 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Rollback Settings</DialogTitle>
-					<DialogDescription>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={children as never} />
+			<Dialog>
+				<div>
+					<Dialog.Title>Rollback Settings</Dialog.Title>
+					<Dialog.Description>
 						Configure how rollbacks work for this application
-					</DialogDescription>
+					</Dialog.Description>
 					<AlertBlock>
 						Having rollbacks enabled increases storage usage. Be careful with
 						this option. Note that manually cleaning the cache may delete
 						rollback images, making them unavailable for future rollbacks.
 					</AlertBlock>
-				</DialogHeader>
+				</div>
 
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -160,35 +145,35 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Rollback Registry</FormLabel>
-										<Select
+										<Select aria-label="Select option"
 											onValueChange={field.onChange}
 											value={field.value || "none"}
 										>
 											<FormControl>
-												<SelectTrigger>
-													<SelectValue placeholder="Select a registry" />
-												</SelectTrigger>
+												<>
+													
+												</>
 											</FormControl>
-											<SelectContent>
-												<SelectGroup>
-													<SelectItem value="none">
+											<>
+												<Select.Group>
+													<Select.Option value="none">
 														<span className="flex items-center gap-2">
 															<span>None</span>
 														</span>
-													</SelectItem>
+													</Select.Option>
 													{registries?.map((registry) => (
-														<SelectItem
+														<Select.Option
 															key={registry.registryId}
 															value={registry.registryId}
 														>
 															{registry.registryName}
-														</SelectItem>
+														</Select.Option>
 													))}
-													<SelectLabel>
+													<Select.GroupLabel>
 														Registries ({registries?.length || 0})
-													</SelectLabel>
-												</SelectGroup>
-											</SelectContent>
+													</Select.GroupLabel>
+												</Select.Group>
+											</>
 										</Select>
 										{!registries || registries.length === 0 ? (
 											<FormDescription className="text-amber-600 dark:text-amber-500">
@@ -212,12 +197,12 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 							/>
 						)}
 
-						<Button type="submit" className="w-full" isLoading={isPending}>
+						<Button type="submit" className="w-full" loading={isPending}>
 							Save Settings
 						</Button>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

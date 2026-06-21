@@ -1,10 +1,10 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -13,15 +13,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 
 export const rollbackConfigFormSchema = z.object({
 	Parallelism: z.coerce.number().optional(),
@@ -167,16 +161,16 @@ export const RollbackConfigForm = ({ id, type }: RollbackConfigFormProps) => {
 						<FormItem>
 							<FormLabel>Failure Action</FormLabel>
 							<FormDescription>Action on rollback failure</FormDescription>
-							<Select onValueChange={field.onChange} value={field.value}>
+							<Select aria-label="Select option" onValueChange={field.onChange} value={field.value}>
 								<FormControl>
-									<SelectTrigger>
-										<SelectValue placeholder="Select failure action" />
-									</SelectTrigger>
+									<>
+										
+									</>
 								</FormControl>
-								<SelectContent>
-									<SelectItem value="pause">Pause</SelectItem>
-									<SelectItem value="continue">Continue</SelectItem>
-								</SelectContent>
+								<>
+									<Select.Option value="pause">Pause</Select.Option>
+									<Select.Option value="continue">Continue</Select.Option>
+								</>
 							</Select>
 							<FormMessage />
 						</FormItem>
@@ -224,16 +218,16 @@ export const RollbackConfigForm = ({ id, type }: RollbackConfigFormProps) => {
 						<FormItem>
 							<FormLabel>Order</FormLabel>
 							<FormDescription>Rollback order strategy</FormDescription>
-							<Select onValueChange={field.onChange} value={field.value}>
+							<Select aria-label="Select option" onValueChange={field.onChange} value={field.value}>
 								<FormControl>
-									<SelectTrigger>
-										<SelectValue placeholder="Select order" />
-									</SelectTrigger>
+									<>
+										
+									</>
 								</FormControl>
-								<SelectContent>
-									<SelectItem value="stop-first">Stop First</SelectItem>
-									<SelectItem value="start-first">Start First</SelectItem>
-								</SelectContent>
+								<>
+									<Select.Option value="stop-first">Stop First</Select.Option>
+									<Select.Option value="start-first">Start First</Select.Option>
+								</>
 							</Select>
 							<FormMessage />
 						</FormItem>
@@ -257,7 +251,7 @@ export const RollbackConfigForm = ({ id, type }: RollbackConfigFormProps) => {
 					>
 						Clear
 					</Button>
-					<Button type="submit" isLoading={isLoading}>
+					<Button type="submit" loading={isLoading}>
 						Save Rollback Config
 					</Button>
 				</div>

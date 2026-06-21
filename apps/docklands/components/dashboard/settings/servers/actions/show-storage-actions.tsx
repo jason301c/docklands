@@ -1,15 +1,7 @@
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuGroup,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 
 interface Props {
 	serverId?: string;
@@ -45,19 +37,17 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger
-				asChild
-				disabled={
+			<DropdownMenu.Trigger disabled={
 					cleanAllIsLoading ||
 					cleanDockerBuilderIsPending ||
 					cleanUnusedImagesIsPending ||
 					cleanUnusedVolumesIsPending ||
 					cleanStoppedContainersIsPending ||
 					cleanPatchReposIsLoading
-				}
-			>
+				} render={(
+
 				<Button
-					isLoading={
+					loading={
 						cleanAllIsLoading ||
 						cleanDockerBuilderIsPending ||
 						cleanUnusedImagesIsPending ||
@@ -69,12 +59,13 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 				>
 					Space
 				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent className="w-64" align="start">
-				<DropdownMenuLabel>Actions</DropdownMenuLabel>
-				<DropdownMenuSeparator />
-				<DropdownMenuGroup>
-					<DropdownMenuItem
+			
+)} />
+			<DropdownMenu.Content className="w-64" align="start">
+				<DropdownMenu.Label>Actions</DropdownMenu.Label>
+				<DropdownMenu.Separator />
+				<DropdownMenu.Group>
+					<DropdownMenu.Item
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanUnusedImages({
@@ -89,8 +80,8 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						}}
 					>
 						<span>Clean unused images</span>
-					</DropdownMenuItem>
-					<DropdownMenuItem
+					</DropdownMenu.Item>
+					<DropdownMenu.Item
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanUnusedVolumes({
@@ -105,9 +96,9 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						}}
 					>
 						<span>Clean unused volumes</span>
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 
-					<DropdownMenuItem
+					<DropdownMenu.Item
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanStoppedContainers({
@@ -122,9 +113,9 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						}}
 					>
 						<span>Clean stopped containers</span>
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 
-					<DropdownMenuItem
+					<DropdownMenu.Item
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanPatchRepos({
@@ -139,9 +130,9 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						}}
 					>
 						<span>Clean Patch Caches</span>
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 
-					<DropdownMenuItem
+					<DropdownMenu.Item
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanDockerBuilder({
@@ -156,9 +147,9 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						}}
 					>
 						<span>Clean Docker Builder & System</span>
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 					{!serverId && (
-						<DropdownMenuItem
+						<DropdownMenu.Item
 							className="w-full cursor-pointer"
 							onClick={async () => {
 								await cleanMonitoring()
@@ -171,10 +162,10 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 							}}
 						>
 							<span>Clean Monitoring</span>
-						</DropdownMenuItem>
+						</DropdownMenu.Item>
 					)}
 
-					<DropdownMenuItem
+					<DropdownMenu.Item
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanAll({
@@ -189,9 +180,9 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						}}
 					>
 						<span>Clean all</span>
-					</DropdownMenuItem>
-				</DropdownMenuGroup>
-			</DropdownMenuContent>
+					</DropdownMenu.Item>
+				</DropdownMenu.Group>
+			</DropdownMenu.Content>
 		</DropdownMenu>
 	);
 };

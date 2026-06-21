@@ -1,13 +1,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuLabel,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { ShowDockerModalStackLogs } from "../../docker/logs/show-docker-modal-stack-logs";
 
 export interface ApplicationList {
@@ -123,7 +118,7 @@ export const columns: ColumnDef<ApplicationList>[] = [
 					<Badge
 						variant={
 							valueStart === "Running"
-								? "default"
+								? "secondary"
 								: value === "Shutdown"
 									? "destructive"
 									: "secondary"
@@ -219,21 +214,23 @@ export const columns: ColumnDef<ApplicationList>[] = [
 			return (
 				<span className="w-[10rem]">
 					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
+						<DropdownMenu.Trigger render={(
+
 							<Button variant="ghost" className="h-8 w-8 p-0">
 								<span className="sr-only">Open menu</span>
 								<MoreHorizontal className="h-4 w-4" />
 							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuLabel>Actions</DropdownMenuLabel>
+						
+)} />
+						<DropdownMenu.Content align="end">
+							<DropdownMenu.Label>Actions</DropdownMenu.Label>
 							<ShowDockerModalStackLogs
 								containerId={row.original.ID}
 								serverId={row.original.serverId}
 							>
 								View Logs
 							</ShowDockerModalStackLogs>
-						</DropdownMenuContent>
+						</DropdownMenu.Content>
 					</DropdownMenu>
 				</span>
 			);

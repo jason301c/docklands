@@ -1,22 +1,14 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -25,8 +17,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 /** Shape returned by project.allForPermissions (admin only). Used for the permissions UI. */
 type ProjectForPermissions =
@@ -296,20 +288,22 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 			});
 	};
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger className="" asChild>
-				<DropdownMenuItem
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger className="" render={(
+
+				<DropdownMenu.Item
 					className="w-full cursor-pointer"
 					onSelect={(e) => e.preventDefault()}
 				>
 					Add Permissions
-				</DropdownMenuItem>
-			</DialogTrigger>
-			<DialogContent className="max-h-[85vh]  sm:max-w-4xl">
-				<DialogHeader>
-					<DialogTitle>Permissions</DialogTitle>
-					<DialogDescription>Add or remove permissions</DialogDescription>
-				</DialogHeader>
+				</DropdownMenu.Item>
+			
+)} />
+			<Dialog className="max-h-[85vh]  sm:max-w-4xl">
+				<div>
+					<Dialog.Title>Permissions</Dialog.Title>
+					<Dialog.Description>Add or remove permissions</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -1013,18 +1007,18 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 								</FormItem>
 							)}
 						/>
-						<DialogFooter className="flex w-full flex-row justify-end md:col-span-2">
+						<div className="flex w-full flex-row justify-end md:col-span-2">
 							<Button
-								isLoading={isPending}
+								loading={isPending}
 								form="hook-form-add-permissions"
 								type="submit"
 							>
 								Update
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

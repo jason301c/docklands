@@ -1,16 +1,10 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	type ChartConfig,
 	ChartContainer,
 	ChartTooltip,
-} from "@/components/ui/chart";
+} from "@/components/shared/chart";
 import { formatTimestamp } from "@/shared/utils";
 
 interface MemoryChartProps {
@@ -28,15 +22,15 @@ export function MemoryChart({ data }: MemoryChartProps) {
 	const latestData = data[data.length - 1] || {};
 
 	return (
-		<Card className="bg-transparent">
-			<CardHeader className="border-b py-5">
-				<CardTitle>Memory</CardTitle>
-				<CardDescription>
+		<LayerCard className="bg-transparent">
+			<div className="border-b py-5">
+				<h3>Memory</h3>
+				<p>
 					Memory Usage: {latestData.memUsedGB} GB of {latestData.memTotal} GB (
 					{latestData.memUsed}%)
-				</CardDescription>
-			</CardHeader>
-			<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+				</p>
+			</div>
+			<div className="px-2 pt-4 sm:px-6 sm:pt-6">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-auto h-[250px] w-full"
@@ -122,7 +116,7 @@ export function MemoryChart({ data }: MemoryChartProps) {
 						/>
 					</AreaChart>
 				</ChartContainer>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 }

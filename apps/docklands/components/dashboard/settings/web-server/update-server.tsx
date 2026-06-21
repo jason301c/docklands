@@ -9,21 +9,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import type { IUpdateData } from "@/server/core/services/settings";
 import { ToggleAutoCheckUpdates } from "./toggle-auto-check-updates";
 import { UpdateWebServer } from "./update-webserver";
@@ -87,14 +77,17 @@ export const UpdateServer = ({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={onOpenChange}>
-			<DialogTrigger asChild>
-				{children ? (
+		<Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
+			<Dialog.Trigger render={(children ? (
 					children
 				) : (
-					<TooltipProvider delayDuration={0}>
-						<Tooltip>
-							<TooltipTrigger asChild>
+					<TooltipProvider delay={0}>
+						<Tooltip side="right" content={(
+
+									<p>Update Available</p>
+								
+)} render={(
+
 								<Button
 									variant={updateData ? "outline" : "secondary"}
 									size="sm"
@@ -117,21 +110,15 @@ export const UpdateServer = ({
 										</span>
 									)}
 								</Button>
-							</TooltipTrigger>
-							{updateData && (
-								<TooltipContent side="right" sideOffset={10}>
-									<p>Update Available</p>
-								</TooltipContent>
-							)}
-						</Tooltip>
+							
+)} />
 					</TooltipProvider>
-				)}
-			</DialogTrigger>
-			<DialogContent className="max-w-lg">
+				)) as never} />
+			<Dialog className="max-w-lg">
 				<div className="flex items-center justify-between mb-8">
-					<DialogTitle className="text-2xl font-semibold">
+					<Dialog.Title className="text-2xl font-semibold">
 						Web Server Update
-					</DialogTitle>
+					</Dialog.Title>
 					{docklandsVersion && (
 						<div className="flex items-center gap-1.5 rounded-full px-3 py-1 mr-2 bg-muted">
 							<Server className="h-4 w-4 text-muted-foreground" />
@@ -284,8 +271,8 @@ export const UpdateServer = ({
 						)}
 					</div>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };
 

@@ -1,18 +1,12 @@
 import DOMPurify from "dompurify";
 import { GlobeIcon, Pencil, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Dropzone } from "@/components/ui/dropzone";
-import { Input } from "@/components/ui/input";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Dropzone } from "@/components/shared/dropzone";
+import { Input } from "@cloudflare/kumo/components/input";
 import { type BundledIcon, bundledIcons } from "@/shared/bundled-icons";
 
 interface ShowIconSettingsProps {
@@ -162,8 +156,9 @@ export const ShowIconSettings = ({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
+		<Dialog.Root open={open} onOpenChange={setOpen}>
+			<Dialog.Trigger render={(
+
 				<button
 					type="button"
 					className="relative group flex items-center justify-center"
@@ -182,10 +177,11 @@ export const ShowIconSettings = ({
 						<Pencil className="h-3 w-3 text-white" />
 					</div>
 				</button>
-			</DialogTrigger>
-			<DialogContent className="max-w-2xl">
-				<DialogHeader>
-					<DialogTitle className="flex items-center justify-between">
+			
+)} />
+			<Dialog className="max-w-2xl">
+				<div>
+					<Dialog.Title className="flex items-center justify-between">
 						Change Icon
 						{icon && (
 							<Button
@@ -198,8 +194,8 @@ export const ShowIconSettings = ({
 								Remove icon
 							</Button>
 						)}
-					</DialogTitle>
-				</DialogHeader>
+					</Dialog.Title>
+				</div>
 
 				<div className="space-y-4">
 					<div className="relative">
@@ -271,7 +267,7 @@ export const ShowIconSettings = ({
 						</div>
 					</div>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

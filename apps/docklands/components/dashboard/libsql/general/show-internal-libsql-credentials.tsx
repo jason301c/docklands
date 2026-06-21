@@ -1,16 +1,9 @@
-import { SelectGroup } from "@radix-ui/react-select";
 import { api } from "@/client/api/trpc";
 import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Select } from "@cloudflare/kumo/components/select";
 
 interface Props {
 	libsqlId: string;
@@ -20,11 +13,11 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 	return (
 		<>
 			<div className="flex w-full flex-col gap-5 ">
-				<Card className="bg-background">
-					<CardHeader>
-						<CardTitle className="text-xl">Internal Credentials</CardTitle>
-					</CardHeader>
-					<CardContent className="flex w-full flex-row gap-4">
+				<LayerCard className="bg-background">
+					<div>
+						<h3 className="text-xl">Internal Credentials</h3>
+					</div>
+					<div className="flex w-full flex-row gap-4">
 						<div className="grid w-full md:grid-cols-2 gap-4 md:gap-8">
 							<div className="flex flex-col gap-2">
 								<Label>User</Label>
@@ -32,17 +25,17 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Sqld Node</Label>
-								<Select value={data?.sqldNode} disabled>
-									<SelectTrigger>
-										<SelectValue placeholder="Select Node type" />
-									</SelectTrigger>
-									<SelectContent>
+								<Select aria-label="Select option" value={data?.sqldNode} disabled>
+									<>
+										
+									</>
+									<>
 										{["primary", "replica"].map((node) => (
-											<SelectItem key={node} value={node}>
+											<Select.Option key={node} value={node}>
 												{node.charAt(0).toUpperCase() + node.slice(1)}
-											</SelectItem>
+											</Select.Option>
 										))}
-									</SelectContent>
+									</>
 								</Select>
 							</div>
 							<div className="flex flex-col gap-2">
@@ -75,7 +68,7 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Enable Namespaces</Label>
-								<Select
+								<Select aria-label="Select option"
 									disabled
 									defaultValue={
 										data?.enableNamespaces
@@ -83,18 +76,18 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 											: "false"
 									}
 								>
-									<SelectTrigger>
-										<SelectValue placeholder={"false"} />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectGroup>
+									<>
+										
+									</>
+									<>
+										<Select.Group>
 											{["false", "true"].map((node) => (
-												<SelectItem key={node} value={node}>
+												<Select.Option key={node} value={node}>
 													{node.charAt(0).toUpperCase() + node.slice(1)}
-												</SelectItem>
+												</Select.Option>
 											))}
-										</SelectGroup>
-									</SelectContent>
+										</Select.Group>
+									</>
 								</Select>
 							</div>
 
@@ -113,8 +106,8 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 								/>
 							</div>
 						</div>
-					</CardContent>
-				</Card>
+					</div>
+				</LayerCard>
 			</div>
 		</>
 	);

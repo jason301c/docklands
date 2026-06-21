@@ -2,14 +2,14 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Cog } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import {
 	Form,
 	FormControl,
@@ -18,16 +18,11 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Radio } from "@cloudflare/kumo/primitives/radio";
+import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
+import { Select } from "@cloudflare/kumo/components/select";
 
 // Railpack versions from https://github.com/railwayapp/railpack/releases
 export const RAILPACK_VERSIONS = [
@@ -240,9 +235,9 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 	};
 
 	return (
-		<Card className="group relative w-full bg-transparent">
-			<CardHeader>
-				<CardTitle className="flex items-start justify-between">
+		<LayerCard className="group relative w-full bg-transparent">
+			<div>
+				<h3 className="flex items-start justify-between">
 					<div className="flex flex-col gap-2">
 						<span className="flex flex-col space-y-0.5">Build Type</span>
 						<p className="flex items-center text-sm font-normal text-muted-foreground">
@@ -252,9 +247,9 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 					<div className="hidden space-y-1 text-sm font-normal md:block">
 						<Cog className="size-6 text-muted-foreground" />
 					</div>
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
+				</h3>
+			</div>
+			<div>
 				<Form {...form}>
 					<AlertBlock>
 						Builders can consume significant memory and CPU resources
@@ -296,7 +291,7 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 														className="flex items-center space-x-3 space-y-0"
 													>
 														<FormControl>
-															<RadioGroupItem value={value} />
+															<Radio.Root value={value} />
 														</FormControl>
 														<FormLabel className="font-normal">
 															{label}
@@ -428,8 +423,6 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 										<FormControl>
 											<div className="flex items-center gap-x-2 p-2">
 												<Checkbox
-													id="checkboxIsStaticSpa"
-													value={String(field.value)}
 													checked={field.value}
 													onCheckedChange={field.onChange}
 												/>
@@ -472,8 +465,9 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 														</Button>
 													</div>
 												) : (
-													<Select
+													<Select aria-label="Select option"
 														onValueChange={(value) => {
+															if (value === null) return;
 															if (value === "manual") {
 																setIsManualRailpackVersion(true);
 																field.onChange("");
@@ -483,17 +477,17 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 														}}
 														value={field.value ?? "0.15.4"}
 													>
-														<SelectTrigger>
-															<SelectValue placeholder="Select Railpack version" />
-														</SelectTrigger>
-														<SelectContent>
-															<SelectItem value="manual">
+														<>
+															
+														</>
+														<>
+															<Select.Option value="manual">
 																<span className="font-medium">
 																	✏️ Manual (Custom Version)
 																</span>
-															</SelectItem>
+															</Select.Option>
 															{RAILPACK_VERSIONS.map((version) => (
-																<SelectItem key={version} value={version}>
+																<Select.Option key={version} value={version}>
 																	v{version}
 																	{version === "0.15.4" && (
 																		<Badge
@@ -503,9 +497,9 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 																			Latest
 																		</Badge>
 																	)}
-																</SelectItem>
+																</Select.Option>
 															))}
-														</SelectContent>
+														</>
 													</Select>
 												)}
 											</FormControl>
@@ -528,13 +522,13 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 							</>
 						)}
 						<div className="flex w-full justify-end">
-							<Button isLoading={isPending} type="submit">
+							<Button loading={isPending} type="submit">
 								Save
 							</Button>
 						</div>
 					</form>
 				</Form>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

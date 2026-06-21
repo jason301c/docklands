@@ -8,9 +8,9 @@ import {
 	GitlabIcon,
 } from "@/components/icons/data-tools-icons";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/shared/alert";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 
 interface Props {
 	service:
@@ -88,16 +88,16 @@ export const UnauthorizedGitProvider = ({ service, onDisconnect }: Props) => {
 				</AlertDescription>
 			</Alert>
 
-			<Card className="border-dashed border-2 border-muted-foreground/20 bg-transparent">
-				<CardHeader>
-					<CardTitle className="flex items-center gap-2">
+			<LayerCard className="border-dashed border-2 border-muted-foreground/20 bg-transparent">
+				<div>
+					<h3 className="flex items-center gap-2">
 						{getProviderIcon(service.sourceType)}
 						<span className="capitalize text-sm font-medium">
 							{service.sourceType} Repository
 						</span>
-					</CardTitle>
-				</CardHeader>
-				<CardContent className="space-y-3">
+					</h3>
+				</div>
+				<div className="space-y-3">
 					{owner && (
 						<div>
 							<span className="text-sm font-medium text-muted-foreground">
@@ -142,8 +142,8 @@ export const UnauthorizedGitProvider = ({ service, onDisconnect }: Props) => {
 							your own git providers.
 						</p>
 					</div>
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 		</div>
 	);
 };

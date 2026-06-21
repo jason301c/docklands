@@ -1,26 +1,13 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { badgeStateColor } from "@/components/dashboard/application/logs/show";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Select } from "@cloudflare/kumo/components/select";
 import { ContainerFreeMonitoring } from "./show-free-container-monitoring";
 
 interface Props {
@@ -63,15 +50,16 @@ export const ComposeFreeMonitoring = ({
 
 	return (
 		<>
-			<CardHeader>
-				<CardTitle className="text-xl">Monitoring</CardTitle>
-				<CardDescription>Watch the usage of your compose</CardDescription>
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			<div>
+				<h3 className="text-xl">Monitoring</h3>
+				<p>Watch the usage of your compose</p>
+			</div>
+			<div className="flex flex-col gap-4">
 				<Label>Select a container to watch the monitoring</Label>
 				<div className="flex flex-row gap-4">
-					<Select
+					<Select aria-label="Select option"
 						onValueChange={(value) => {
+							if (value === null) return;
 							setContainerAppName(value);
 							setContainerId(
 								data?.find((container) => container.name === value)
@@ -80,20 +68,18 @@ export const ComposeFreeMonitoring = ({
 						}}
 						value={containerAppName}
 					>
-						<SelectTrigger>
+						<>
 							{isPending ? (
 								<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
 									<span>Loading...</span>
 									<Loader2 className="animate-spin size-4" />
 								</div>
-							) : (
-								<SelectValue placeholder="Select a container" />
-							)}
-						</SelectTrigger>
-						<SelectContent>
-							<SelectGroup>
+							) : null}
+						</>
+						<>
+							<Select.Group>
 								{data?.map((container) => (
-									<SelectItem
+									<Select.Option
 										key={container.containerId}
 										value={container.name}
 									>
@@ -101,14 +87,14 @@ export const ComposeFreeMonitoring = ({
 										<Badge variant={badgeStateColor(container.state)}>
 											{container.state}
 										</Badge>
-									</SelectItem>
+									</Select.Option>
 								))}
-								<SelectLabel>Containers ({data?.length})</SelectLabel>
-							</SelectGroup>
-						</SelectContent>
+								<Select.GroupLabel>Containers ({data?.length})</Select.GroupLabel>
+							</Select.Group>
+						</>
 					</Select>
 					<Button
-						isLoading={isRestarting}
+						loading={isRestarting}
 						onClick={async () => {
 							if (!containerId) return;
 							toast.success(`Restarting container ${containerAppName}`);
@@ -124,7 +110,7 @@ export const ComposeFreeMonitoring = ({
 					appName={containerAppName || ""}
 					appType={appType}
 				/>
-			</CardContent>
+			</div>
 		</>
 	);
 };

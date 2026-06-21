@@ -2,18 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { GlobeIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -22,16 +16,10 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 const addServerDomain = z
 	.object({
@@ -111,20 +99,20 @@ export const WebDomain = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
+			<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="flex flex-row gap-2 flex-wrap justify-between items-center">
+					<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
 						<div className="flex flex-col gap-1">
-							<CardTitle className="text-xl flex flex-row gap-2">
+							<h3 className="text-xl flex flex-row gap-2">
 								<GlobeIcon className="size-6 text-muted-foreground self-center" />
 								Server Domain
-							</CardTitle>
-							<CardDescription>
+							</h3>
+							<p>
 								Add a domain to your server application.
-							</CardDescription>
+							</p>
 						</div>
-					</CardHeader>
-					<CardContent className="space-y-2 py-6 border-t">
+					</div>
+					<div className="space-y-2 py-6 border-t">
 						{/* Warning for GitHub webhook URL changes */}
 						{hasChanged && (
 							<AlertBlock type="warning">
@@ -211,21 +199,21 @@ export const WebDomain = () => {
 											return (
 												<FormItem className="col-span-2">
 													<FormLabel>Certificate Provider</FormLabel>
-													<Select
+													<Select aria-label="Select option"
 														onValueChange={field.onChange}
 														value={field.value}
 													>
 														<FormControl>
-															<SelectTrigger>
-																<SelectValue placeholder="Select a certificate" />
-															</SelectTrigger>
+															<>
+																
+															</>
 														</FormControl>
-														<SelectContent>
-															<SelectItem value={"none"}>None</SelectItem>
-															<SelectItem value={"letsencrypt"}>
+														<>
+															<Select.Option value={"none"}>None</Select.Option>
+															<Select.Option value={"letsencrypt"}>
 																Let's Encrypt
-															</SelectItem>
-														</SelectContent>
+															</Select.Option>
+														</>
 													</Select>
 													<FormMessage />
 												</FormItem>
@@ -235,15 +223,15 @@ export const WebDomain = () => {
 								)}
 
 								<div className="flex w-full justify-end col-span-2">
-									<Button isLoading={isPending} type="submit">
+									<Button loading={isPending} type="submit">
 										Save
 									</Button>
 								</div>
 							</form>
 						</Form>
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

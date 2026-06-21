@@ -3,21 +3,14 @@ import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { useHealthCheckAfterMutation } from "@/client/hooks/use-health-check-after-mutation";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -25,17 +18,10 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Select } from "@cloudflare/kumo/components/select";
 
 interface Props {
 	children: React.ReactNode;
@@ -123,13 +109,13 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 			<button type="button" onClick={() => setOpen(true)}>
 				{children}
 			</button>
-			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogContent className="sm:max-w-3xl">
-					<DialogHeader>
-						<DialogTitle className="flex items-center gap-2 text-xl">
+			<Dialog.Root open={open} onOpenChange={setOpen}>
+				<Dialog className="sm:max-w-3xl">
+					<div>
+						<Dialog.Title className="flex items-center gap-2 text-xl">
 							Additional Port Mappings
-						</DialogTitle>
-						<DialogDescription className="text-base w-full">
+						</Dialog.Title>
+						<Dialog.Description className="text-base w-full">
 							<div className="flex items-center justify-between">
 								<div className="flex flex-col gap-1">
 									Add or remove additional ports for Traefik
@@ -140,15 +126,15 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 								</div>
 								<Button
 									onClick={handleAddPort}
-									variant="default"
+									variant="primary"
 									className="gap-2"
 								>
 									<Plus className="h-4 w-4" />
 									Add Mapping
 								</Button>
 							</div>
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -167,8 +153,8 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 									<ScrollArea className="pr-4">
 										<div className="grid gap-4">
 											{fields.map((field, index) => (
-												<Card key={field.id} className="bg-transparent">
-													<CardContent className="grid grid-cols-4  gap-4 p-4 transparent">
+												<LayerCard key={field.id} className="bg-transparent">
+													<div className="grid grid-cols-4  gap-4 p-4 transparent">
 														<FormField
 															control={form.control}
 															name={`ports.${index}.targetPort`}
@@ -235,27 +221,27 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 																		Protocol
 																	</FormLabel>
 																	<FormControl>
-																		<Select
+																		<Select aria-label="Select option"
 																			onValueChange={field.onChange}
 																			defaultValue={field.value}
 																		>
-																			<SelectTrigger>
-																				<SelectValue placeholder="Select a protocol" />
-																			</SelectTrigger>
-																			<SelectContent>
-																				<SelectGroup>
+																			<>
+																				
+																			</>
+																			<>
+																				<Select.Group>
 																					{["tcp", "udp", "sctp"].map(
 																						(protocol) => (
-																							<SelectItem
+																							<Select.Option
 																								key={protocol}
 																								value={protocol}
 																							>
 																								{protocol}
-																							</SelectItem>
+																							</Select.Option>
 																						),
 																					)}
-																				</SelectGroup>
-																			</SelectContent>
+																				</Select.Group>
+																			</>
 																		</Select>
 																	</FormControl>
 																	<FormMessage />
@@ -265,16 +251,17 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 
 														<div className="flex items-end">
 															<Button
+																aria-label="Remove port"
 																onClick={() => remove(index)}
 																variant="ghost"
-																size="icon"
+																shape="square"
 																className="text-muted-foreground hover:text-destructive"
 															>
 																<Trash2 className="h-4 w-4" />
 															</Button>
 														</div>
-													</CardContent>
-												</Card>
+													</div>
+												</LayerCard>
 											))}
 										</div>
 									</ScrollArea>
@@ -314,20 +301,20 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 									may cause downtime in your applications.
 								</AlertBlock>
 							</div>
-							<DialogFooter>
+							<div>
 								<Button
 									type="submit"
-									variant="default"
+									variant="primary"
 									className="text-sm"
-									isLoading={isPending || isHealthCheckExecuting}
+									loading={isPending || isHealthCheckExecuting}
 								>
 									Save
 								</Button>
-							</DialogFooter>
+							</div>
 						</form>
 					</Form>
-				</DialogContent>
-			</Dialog>
+				</Dialog>
+			</Dialog.Root>
 		</>
 	);
 };

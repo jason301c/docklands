@@ -1,19 +1,10 @@
 import { FilePlus } from "lucide-react";
 import { useState } from "react";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
 
 interface Props {
 	folderPath: string;
@@ -40,31 +31,33 @@ export const CreateFileDialog = ({
 	};
 
 	return (
-		<Dialog>
-			<DialogTrigger asChild>
-				<Button
+		<Dialog.Root>
+			<Dialog.Trigger render={(
+
+				<Button aria-label="Create file"
 					variant="ghost"
-					size="icon"
+					shape="square"
 					type="button"
 					className={`h-6 w-6 ${alwaysVisible ? "" : "opacity-0 group-hover:opacity-100"}`}
 					title="Create file"
 				>
 					<FilePlus className="h-3 w-3" />
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
+			
+)} />
+			<Dialog className="sm:max-w-2xl">
 				<form
 					onSubmit={(e) => {
 						e.preventDefault();
 						handleCreate();
 					}}
 				>
-					<DialogHeader>
-						<DialogTitle>Create file</DialogTitle>
-						<DialogDescription>
+					<div>
+						<Dialog.Title>Create file</Dialog.Title>
+						<Dialog.Description>
 							{folderPath ? `New file in ${folderPath}/` : "New file in root"}
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 					<div className="space-y-4 py-4">
 						<div className="space-y-2">
 							<Label htmlFor="filename">Filename</Label>
@@ -88,20 +81,24 @@ export const CreateFileDialog = ({
 							</div>
 						</div>
 					</div>
-					<DialogFooter>
-						<DialogClose asChild>
+					<div>
+						<Dialog.Close render={(
+
 							<Button variant="outline" type="button">
 								Cancel
 							</Button>
-						</DialogClose>
-						<DialogClose asChild>
+						
+)} />
+						<Dialog.Close render={(
+
 							<Button type="submit" disabled={!filename.trim()}>
 								Create
 							</Button>
-						</DialogClose>
-					</DialogFooter>
+						
+)} />
+					</div>
 				</form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

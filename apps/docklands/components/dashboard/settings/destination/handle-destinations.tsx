@@ -2,20 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { PenBoxIcon, PlusIcon, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -23,17 +15,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 import {
 	ADDITIONAL_FLAG_ERROR,
 	ADDITIONAL_FLAG_REGEX,
@@ -221,12 +205,11 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className="" asChild>
-				{destinationId ? (
-					<Button
+		<Dialog.Root open={open} onOpenChange={setOpen}>
+			<Dialog.Trigger className="" render={destinationId ? (
+					<Button aria-label="Action"
 						variant="ghost"
-						size="icon"
+						shape="square"
 						className="group hover:bg-blue-500/10 "
 					>
 						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
@@ -236,19 +219,18 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 						<PlusIcon className="h-4 w-4" />
 						Add Destination
 					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>
+				) as never} />
+			<Dialog className="sm:max-w-2xl">
+				<div>
+					<Dialog.Title>
 						{destinationId ? "Update" : "Add"} Destination
-					</DialogTitle>
-					<DialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						In this section, you can configure and add new destinations for your
 						backups. Please ensure that you provide the correct information to
 						guarantee secure and efficient storage.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{(isError || isErrorConnection) && (
 					<AlertBlock type="error" className="w-full">
 						{connectionError?.message || error?.message}
@@ -284,26 +266,26 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 									<FormItem>
 										<FormLabel>Provider</FormLabel>
 										<FormControl>
-											<Select
+											<Select aria-label="Select option"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 												value={field.value}
 											>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Select a S3 Provider" />
-													</SelectTrigger>
+													<>
+														
+													</>
 												</FormControl>
-												<SelectContent>
+												<>
 													{S3_PROVIDERS.map((s3Provider) => (
-														<SelectItem
+														<Select.Option
 															key={s3Provider.key}
 															value={s3Provider.key}
 														>
 															{s3Provider.name}
-														</SelectItem>
+														</Select.Option>
 													))}
-												</SelectContent>
+												</>
 											</Select>
 										</FormControl>
 										<FormMessage />
@@ -415,10 +397,10 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 														{...field}
 													/>
 												</FormControl>
-												<Button
+												<Button aria-label="Action"
 													type="button"
 													variant="ghost"
-													size="icon"
+													shape="square"
 													onClick={() => remove(index)}
 												>
 													<Trash2 className="size-4 text-muted-foreground" />
@@ -432,7 +414,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 						</div>
 					</form>
 
-					<DialogFooter
+					<div
 						className={cn(
 							isCloud ? "!flex-col" : "flex-row",
 							"flex w-full  !justify-between gap-4",
@@ -451,27 +433,27 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 										<FormItem>
 											<FormLabel>Server (Optional)</FormLabel>
 											<FormControl>
-												<Select
+												<Select aria-label="Select option"
 													onValueChange={field.onChange}
 													defaultValue={field.value}
 												>
-													<SelectTrigger className="w-full">
-														<SelectValue placeholder="Select a server" />
-													</SelectTrigger>
-													<SelectContent>
-														<SelectGroup>
-															<SelectLabel>Servers</SelectLabel>
+													<>
+														
+													</>
+													<>
+														<Select.Group>
+															<Select.GroupLabel>Servers</Select.GroupLabel>
 															{servers?.map((server) => (
-																<SelectItem
+																<Select.Option
 																	key={server.serverId}
 																	value={server.serverId}
 																>
 																	{server.name}
-																</SelectItem>
+																</Select.Option>
 															))}
-															<SelectItem value={"none"}>None</SelectItem>
-														</SelectGroup>
-													</SelectContent>
+															<Select.Option value={"none"}>None</Select.Option>
+														</Select.Group>
+													</>
 												</Select>
 											</FormControl>
 
@@ -482,7 +464,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 								<Button
 									type="button"
 									variant={"secondary"}
-									isLoading={isPendingConnection}
+									loading={isPendingConnection}
 									onClick={async () => {
 										await handleTestConnection(form.getValues("serverId"));
 									}}
@@ -492,7 +474,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 							</div>
 						) : (
 							<Button
-								isLoading={isPendingConnection}
+								loading={isPendingConnection}
 								type="button"
 								variant="secondary"
 								onClick={async () => {
@@ -504,15 +486,15 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 						)}
 
 						<Button
-							isLoading={isPending}
+							loading={isPending}
 							form="hook-form-destination-add"
 							type="submit"
 						>
 							{destinationId ? "Update" : "Create"}
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

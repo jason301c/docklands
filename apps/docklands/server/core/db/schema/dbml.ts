@@ -1,4 +1,6 @@
-import { pgGenerate } from "drizzle-dbml-generator"; // Using Postgres for this example
+import { pgGenerate } from "drizzle-dbml-generator";
+
+ // Using Postgres for this example
 import * as schema from "./index";
 
 const out = "./schema.dbml";

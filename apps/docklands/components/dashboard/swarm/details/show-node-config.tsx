@@ -1,15 +1,8 @@
 import { Settings } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 
 interface Props {
 	nodeId: string;
@@ -22,20 +15,22 @@ export const ShowNodeConfig = ({ nodeId, serverId }: Props) => {
 		serverId,
 	});
 	return (
-		<Dialog>
-			<DialogTrigger asChild>
+		<Dialog.Root>
+			<Dialog.Trigger render={(
+
 				<Button variant="outline" size="sm" className="w-full">
 					<Settings className="h-4 w-4 mr-2" />
 					Config
 				</Button>
-			</DialogTrigger>
-			<DialogContent className={"sm:max-w-5xl"}>
-				<DialogHeader>
-					<DialogTitle>Node Config</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className={"sm:max-w-5xl"}>
+				<div>
+					<Dialog.Title>Node Config</Dialog.Title>
+					<Dialog.Description>
 						See in detail the metadata of this node
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<div className="text-wrap rounded-lg border p-4 text-sm sm:max-w-[59rem] bg-card max-h-[70vh] overflow-auto ">
 					<code>
 						<pre className="whitespace-pre-wrap break-words items-center justify-center">
@@ -50,7 +45,7 @@ export const ShowNodeConfig = ({ nodeId, serverId }: Props) => {
 						</pre>
 					</code>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

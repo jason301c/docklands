@@ -1,17 +1,20 @@
 "use client";
 
+
+
+
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Logo } from "@/components/shared/logo";
-import { Button } from "@/components/ui/button";
-import { CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -19,8 +22,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const loginSchema = z.object({
 	email: z
@@ -86,13 +89,13 @@ export default function Home() {
 					<Logo />
 					<span className="font-medium text-sm">Docklands</span>
 				</Link>
-				<CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
-				<CardDescription>
+				<h3 className="text-2xl font-bold">Reset Password</h3>
+				<p>
 					Enter your email to reset your password
-				</CardDescription>
+				</p>
 
 				<div className="mx-auto w-full max-w-lg bg-transparent ">
-					<CardContent className="p-0">
+					<div className="p-0">
 						{error && (
 							<AlertBlock type="error" className="my-2">
 								{error}
@@ -125,7 +128,7 @@ export default function Home() {
 
 										<Button
 											type="submit"
-											isLoading={isLoading}
+											loading={isLoading}
 											className="w-full"
 										>
 											Send Reset Link
@@ -145,7 +148,7 @@ export default function Home() {
 								</Link>
 							</div>
 						</div>
-					</CardContent>
+					</div>
 				</div>
 			</div>
 		</div>

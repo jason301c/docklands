@@ -1,6 +1,7 @@
 import { TRPCProcedureType } from '@trpc/server';
 import { ZodObject } from 'zod';
 import { OpenApiMethod, OpenApiProcedure, OpenApiProcedureRecord, ResolvedOpenApiMeta } from '../types';
+
 export declare const getMethod: (procedure: OpenApiProcedure) => OpenApiMethod;
 export declare const getInputOutputParsers: (procedure: OpenApiProcedure) => {
     inputParser: ZodObject;

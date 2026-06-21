@@ -13,63 +13,33 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-} from "@/components/ui/command";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@cloudflare/kumo/components/popover";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
+
+const Command = Combobox;
+const CommandInput = Combobox.TriggerInput;
+const CommandList = Combobox.List;
+const CommandGroup = Combobox.Group;
+const CommandItem = Combobox.Item;
+const CommandEmpty = Combobox.Empty;
 
 const TEMPLATE_BASE_URL_KEY = "docklands_template_base_url";
 
@@ -196,25 +166,25 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger className="w-full">
-				<DropdownMenuItem
+		<Dialog.Root open={open} onOpenChange={setOpen}>
+			<Dialog.Trigger className="w-full">
+				<DropdownMenu.Item
 					className="w-full cursor-pointer space-x-3"
 					onSelect={(e) => e.preventDefault()}
 				>
 					<PuzzleIcon className="size-4 text-muted-foreground" />
 					<span>Template</span>
-				</DropdownMenuItem>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-[90vw] p-0">
-				<DialogHeader className="sticky top-0 z-10 bg-background p-6 border-b">
+				</DropdownMenu.Item>
+			</Dialog.Trigger>
+			<Dialog className="sm:max-w-[90vw] p-0">
+				<div className="sticky top-0 z-10 bg-background p-6 border-b">
 					<div className="flex flex-col space-y-6">
 						<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
 							<div>
-								<DialogTitle>Create from Template</DialogTitle>
-								<DialogDescription>
+								<Dialog.Title>Create from Template</Dialog.Title>
+								<Dialog.Description>
 									Create an open source application from a template
-								</DialogDescription>
+								</Dialog.Description>
 							</div>
 							<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
 								<Input
@@ -249,7 +219,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 										</Button>
 									</PopoverTrigger>
 									<PopoverContent className="p-0" align="start">
-										<Command>
+										<Command items={[]}>
 											<CommandInput
 												placeholder="Search tag..."
 												className="h-9"
@@ -292,9 +262,9 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 										</Command>
 									</PopoverContent>
 								</Popover>
-								<Button
-									variant={showBookmarksOnly ? "default" : "outline"}
-									size="icon"
+								<Button aria-label="Action"
+									variant={showBookmarksOnly ? "secondary" : "outline"}
+									shape="square"
 									onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
 									className="h-9 w-9 flex-shrink-0"
 									disabled={isLoadingBookmarks}
@@ -306,8 +276,8 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 										)}
 									/>
 								</Button>
-								<Button
-									size="icon"
+								<Button aria-label="Action"
+									shape="square"
 									onClick={() =>
 										setViewMode(viewMode === "detailed" ? "icon" : "detailed")
 									}
@@ -324,21 +294,23 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 						{selectedTags.length > 0 && (
 							<div className="flex flex-wrap justify-end gap-2">
 								{selectedTags.map((tag) => (
-									<Badge
+									<Button
+										type="button"
 										key={tag}
 										variant="secondary"
+										size="xs"
 										className="cursor-pointer"
 										onClick={() =>
 											setSelectedTags(selectedTags.filter((t) => t !== tag))
 										}
 									>
 										{tag} ×
-									</Badge>
+									</Button>
 								))}
 							</div>
 						)}
 					</div>
-				</DialogHeader>
+				</div>
 
 				<ScrollArea className="h-[calc(98vh-8rem)]">
 					<div className="p-6">
@@ -395,9 +367,9 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 										)}
 									>
 										<div className="absolute top-2 left-2 z-10">
-											<Button
+											<Button aria-label="Action"
 												variant="ghost"
-												size="icon"
+												shape="square"
 												className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"
 												onClick={(e) => handleToggleBookmark(e, template.id)}
 											>
@@ -498,86 +470,78 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 													)}
 												</div>
 											)}
-											<AlertDialog>
-												<AlertDialogTrigger asChild>
-													<Button
-														variant="secondary"
-														size="sm"
-														className={cn(
-															"w-auto",
-															viewMode === "detailed" && "w-auto",
-														)}
-													>
-														Create
-													</Button>
-												</AlertDialogTrigger>
-												<AlertDialogContent>
-													<AlertDialogHeader>
-														<AlertDialogTitle>
+											<Dialog.Root role="alertdialog">
+												<Dialog.Trigger
+													render={
+														<Button
+															variant="secondary"
+															size="sm"
+															className={cn(
+																"w-auto",
+																viewMode === "detailed" && "w-auto",
+															)}
+														>
+															Create
+														</Button>
+													}
+												/>
+												<Dialog>
+													<div>
+														<Dialog.Title>
 															Are you absolutely sure?
-														</AlertDialogTitle>
-														<AlertDialogDescription>
+														</Dialog.Title>
+														<Dialog.Description>
 															This will create an application from the{" "}
 															{template?.name} template and add it to your
 															project.
-														</AlertDialogDescription>
+														</Dialog.Description>
 
 														{shouldShowServerDropdown && (
 															<div>
-																<TooltipProvider delayDuration={0}>
-																	<Tooltip>
-																		<TooltipTrigger asChild>
-																			<Label className="break-all w-fit flex flex-row gap-1 items-center pb-2 pt-3.5">
-																				Select a Server{" "}
-																				{!isCloud ? "(Optional)" : ""}
-																				<HelpCircle className="size-4 text-muted-foreground" />
-																			</Label>
-																		</TooltipTrigger>
-																		<TooltipContent
-																			className="z-[999] w-[300px]"
-																			align="start"
-																			side="top"
-																		>
+																<TooltipProvider delay={0}>
+																	<Tooltip content={<>
 																			<span>
 																				If no server is selected, the
 																				application will be deployed on the
 																				server where the user is logged in.
 																			</span>
-																		</TooltipContent>
-																	</Tooltip>
+																		</>} className="z-[999] w-[300px]"
+																			align="start"
+																			side="top"  asChild>
+																			<Label className="break-all w-fit flex flex-row gap-1 items-center pb-2 pt-3.5">
+																				Select a Server{" "}
+																				{!isCloud ? "(Optional)" : ""}
+																				<HelpCircle className="size-4 text-muted-foreground" />
+																			</Label>
+																		</Tooltip>
 																</TooltipProvider>
 
-																<Select
+																<Select aria-label="Select option"
 																	onValueChange={(e) => {
+																		if (e === null) return;
 																		setServerId(e);
 																	}}
 																	defaultValue={
 																		!isCloud ? "docklands" : undefined
 																	}
 																>
-																	<SelectTrigger>
-																		<SelectValue
-																			placeholder={
-																				!isCloud
-																					? "Docklands"
-																					: "Select a Server"
-																			}
-																		/>
-																	</SelectTrigger>
-																	<SelectContent>
-																		<SelectGroup>
+																	<>
+																		
+																	</>
+																	<>
+																		<Select.Group>
 																			{!isCloud && (
-																				<SelectItem value="docklands">
+																				<Select.Option value="docklands">
 																					<span className="flex items-center gap-2 justify-between w-full">
 																						<span>Docklands</span>
 																						<span className="text-muted-foreground text-xs self-center">
 																							Default
 																						</span>
 																					</span>
-																				</SelectItem>
+																				</Select.Option>
 																			)}
 																			{servers?.map((server) => (
-																				<SelectItem
+																				<Select.Option
 																					key={server.serverId}
 																					value={server.serverId}
 																				>
@@ -587,53 +551,59 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																							{server.ipAddress}
 																						</span>
 																					</span>
-																				</SelectItem>
+																				</Select.Option>
 																			))}
-																			<SelectLabel>
+																			<Select.GroupLabel>
 																				Servers (
 																				{servers?.length + (!isCloud ? 1 : 0)})
-																			</SelectLabel>
-																		</SelectGroup>
-																	</SelectContent>
+																			</Select.GroupLabel>
+																		</Select.Group>
+																	</>
 																</Select>
 															</div>
 														)}
-													</AlertDialogHeader>
-													<AlertDialogFooter>
-														<AlertDialogCancel>Cancel</AlertDialogCancel>
-														<AlertDialogAction
-															disabled={isPending}
-															onClick={async () => {
-																const promise = mutateAsync({
-																	serverId:
-																		serverId === "docklands"
-																			? undefined
-																			: serverId,
-																	environmentId,
-																	id: template.id,
-																	baseUrl: customBaseUrl,
-																});
-																toast.promise(promise, {
-																	loading: "Setting up...",
-																	success: () => {
-																		// Invalidate the project query to refresh the environment data
-																		utils.environment.one.invalidate({
+													</div>
+													<div>
+														<Dialog.Close
+															render={<Button variant="secondary">Cancel</Button>}
+														/>
+														<Dialog.Close
+															render={
+																<Button
+																	disabled={isPending}
+																	onClick={async () => {
+																		const promise = mutateAsync({
+																			serverId:
+																				serverId === "docklands"
+																					? undefined
+																					: serverId,
 																			environmentId,
+																			id: template.id,
+																			baseUrl: customBaseUrl,
 																		});
-																		setOpen(false);
-																		return `${template.name} template created successfully`;
-																	},
-																	error: () => {
-																		return `An error occurred deploying ${template.name} template`;
-																	},
-																});
-															}}
-														>
-															Confirm
-														</AlertDialogAction>
-													</AlertDialogFooter>
-												</AlertDialogContent>
-											</AlertDialog>
+																		toast.promise(promise, {
+																			loading: "Setting up...",
+																			success: () => {
+																				// Invalidate the project query to refresh the environment data
+																				utils.environment.one.invalidate({
+																					environmentId,
+																				});
+																				setOpen(false);
+																				return `${template.name} template created successfully`;
+																			},
+																			error: () => {
+																				return `An error occurred deploying ${template.name} template`;
+																			},
+																		});
+																	}}
+																>
+																	Confirm
+																</Button>
+															}
+														/>
+													</div>
+												</Dialog>
+											</Dialog.Root>
 										</div>
 									</div>
 								))}
@@ -641,7 +611,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 						)}
 					</div>
 				</ScrollArea>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

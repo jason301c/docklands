@@ -2,19 +2,11 @@ import { ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuGroup,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/shared/avatar";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { getFallbackAvatarInitials } from "@/shared/utils";
-import { ModeToggle } from "../ui/modeToggle";
-import { SidebarMenuButton } from "../ui/sidebar";
+import { ModeToggle } from "@/components/shared/mode-toggle";
+import { SidebarMenuButton } from "@cloudflare/kumo/components/sidebar";
 
 const _AUTO_CHECK_UPDATES_INTERVAL_MINUTES = 7;
 
@@ -28,9 +20,10 @@ export const UserNav = () => {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
+			<DropdownMenu.Trigger
+				render={
 				<SidebarMenuButton
-					size="lg"
+					size="base"
 					className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 				>
 					<Avatar className="h-8 w-8 rounded-lg">
@@ -51,86 +44,87 @@ export const UserNav = () => {
 					</div>
 					<ChevronsUpDown className="ml-auto size-4" />
 				</SidebarMenuButton>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent
+				}
+			/>
+			<DropdownMenu.Content
 				className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
 				side="bottom"
 				align="end"
 				sideOffset={4}
 			>
 				<div className="flex items-center justify-between px-2 py-1.5">
-					<DropdownMenuLabel className="flex flex-col">
+					<DropdownMenu.Label className="flex flex-col">
 						My Account
 						<span className="text-xs font-normal text-muted-foreground">
 							{data?.user?.email}
 						</span>
-					</DropdownMenuLabel>
+					</DropdownMenu.Label>
 					<ModeToggle />
 				</div>
-				<DropdownMenuSeparator />
-				<DropdownMenuGroup>
-					<DropdownMenuItem
+				<DropdownMenu.Separator />
+				<DropdownMenu.Group>
+					<DropdownMenu.Item
 						className="cursor-pointer"
 						onClick={() => {
 							router.push("/dashboard/settings/profile");
 						}}
 					>
 						Profile
-					</DropdownMenuItem>
-					<DropdownMenuItem
+					</DropdownMenu.Item>
+					<DropdownMenu.Item
 						className="cursor-pointer"
 						onClick={() => {
 							router.push("/dashboard/home");
 						}}
 					>
 						Projects
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 					{!isCloud ? (
 						<>
-							<DropdownMenuItem
+							<DropdownMenu.Item
 								className="cursor-pointer"
 								onClick={() => {
 									router.push("/dashboard/monitoring");
 								}}
 							>
 								Monitoring
-							</DropdownMenuItem>
+							</DropdownMenu.Item>
 							{permissions?.traefikFiles.read && (
-								<DropdownMenuItem
+								<DropdownMenu.Item
 									className="cursor-pointer"
 									onClick={() => {
 										router.push("/dashboard/traefik");
 									}}
 								>
 									Traefik
-								</DropdownMenuItem>
+								</DropdownMenu.Item>
 							)}
 							{permissions?.docker.read && (
-								<DropdownMenuItem
+								<DropdownMenu.Item
 									className="cursor-pointer"
 									onClick={() => {
 										router.push("/dashboard/docker");
 									}}
 								>
 									Docker
-								</DropdownMenuItem>
+								</DropdownMenu.Item>
 							)}
 						</>
 					) : (
 						permissions?.organization.update && (
-							<DropdownMenuItem
+							<DropdownMenu.Item
 								className="cursor-pointer"
 								onClick={() => {
 									router.push("/dashboard/settings/servers");
 								}}
 							>
 								Servers
-							</DropdownMenuItem>
+							</DropdownMenu.Item>
 						)
 					)}
-				</DropdownMenuGroup>
-				<DropdownMenuSeparator />
-				<DropdownMenuItem
+				</DropdownMenu.Group>
+				<DropdownMenu.Separator />
+				<DropdownMenu.Item
 					className="cursor-pointer"
 					onClick={async () => {
 						await authClient.signOut().then(() => {
@@ -142,8 +136,8 @@ export const UserNav = () => {
 					}}
 				>
 					Log out
-				</DropdownMenuItem>
-			</DropdownMenuContent>
+				</DropdownMenu.Item>
+			</DropdownMenu.Content>
 		</DropdownMenu>
 	);
 };

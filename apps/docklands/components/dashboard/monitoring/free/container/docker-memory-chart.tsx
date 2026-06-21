@@ -7,7 +7,7 @@ import {
 	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/components/shared/chart";
 import type { DockerStatsJSON } from "./show-free-container-monitoring";
 import { convertMemoryToBytes } from "./show-free-container-monitoring";
 

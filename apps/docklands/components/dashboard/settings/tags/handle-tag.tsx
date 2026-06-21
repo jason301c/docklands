@@ -2,21 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Palette, PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { TagBadge } from "@/components/shared/tag-badge";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -25,8 +17,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const TagSchema = z.object({
 	name: z
@@ -115,10 +107,9 @@ export const HandleTag = ({ tagId }: HandleTagProps) => {
 	const colorValue = form.watch("color");
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				{tagId ? (
-					<Button variant="ghost" size="icon" className="h-8 w-8">
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={tagId ? (
+					<Button aria-label="Action" variant="ghost" shape="square" className="h-8 w-8">
 						<PenBoxIcon className="h-4 w-4" />
 					</Button>
 				) : (
@@ -126,17 +117,16 @@ export const HandleTag = ({ tagId }: HandleTagProps) => {
 						<PlusIcon className="h-4 w-4" />
 						Create Tag
 					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>{tagId ? "Update" : "Create"} Tag</DialogTitle>
-					<DialogDescription>
+				) as never} />
+			<Dialog className="sm:max-w-lg">
+				<div>
+					<Dialog.Title>{tagId ? "Update" : "Create"} Tag</Dialog.Title>
+					<Dialog.Description>
 						{tagId
 							? "Update the tag name and color"
 							: "Create a new tag to organize your projects"}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
 					<form
@@ -169,7 +159,9 @@ export const HandleTag = ({ tagId }: HandleTagProps) => {
 									<FormLabel>Color (Optional)</FormLabel>
 									<FormControl>
 										<div className="flex items-center gap-3">
-											<FormLabel
+											<button
+												type="button"
+												aria-label="Choose tag color"
 												className="relative flex items-center justify-center w-12 h-12 rounded-md border-2 cursor-pointer hover:opacity-80 transition-opacity"
 												style={{
 													backgroundColor: field.value || "#3b82f6",
@@ -188,7 +180,7 @@ export const HandleTag = ({ tagId }: HandleTagProps) => {
 													value={field.value || "#3b82f6"}
 													onChange={field.onChange}
 												/>
-											</FormLabel>
+											</button>
 											<div className="flex-1">
 												<Input
 													placeholder="#3b82f6"
@@ -224,16 +216,16 @@ export const HandleTag = ({ tagId }: HandleTagProps) => {
 					</form>
 				</Form>
 
-				<DialogFooter>
+				<div>
 					<Button
-						isLoading={form.formState.isSubmitting}
+						loading={form.formState.isSubmitting}
 						form="hook-form-tag"
 						type="submit"
 					>
 						{tagId ? "Update" : "Create"}
 					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

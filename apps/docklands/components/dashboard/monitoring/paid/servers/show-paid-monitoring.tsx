@@ -1,13 +1,7 @@
 import { Clock, Cpu, HardDrive, Loader2, MemoryStick } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@cloudflare/kumo/components/select";
 import { CPUChart } from "./cpu-chart";
 import { DiskChart } from "./disk-chart";
 import { MemoryChart } from "./memory-chart";
@@ -156,22 +150,23 @@ export const ShowPaidMonitoring = ({
 				<div className="flex items-center gap-4 flex-wrap">
 					<div>
 						<span className="text-sm text-muted-foreground">Data points:</span>
-						<Select
+						<Select aria-label="Select option"
 							value={dataPoints}
-							onValueChange={(value: keyof typeof DATA_POINTS_OPTIONS) =>
-								setDataPoints(value)
+							onValueChange={(value) =>
+								value !== null &&
+								setDataPoints(value as keyof typeof DATA_POINTS_OPTIONS)
 							}
 						>
-							<SelectTrigger className="w-[180px]">
-								<SelectValue placeholder="Select points" />
-							</SelectTrigger>
-							<SelectContent>
+							<>
+								
+							</>
+							<>
 								{Object.entries(DATA_POINTS_OPTIONS).map(([value, label]) => (
-									<SelectItem key={value} value={value}>
+									<Select.Option key={value} value={value}>
 										{label}
-									</SelectItem>
+									</Select.Option>
 								))}
-							</SelectContent>
+							</>
 						</Select>
 					</div>
 
@@ -179,22 +174,23 @@ export const ShowPaidMonitoring = ({
 						<span className="text-sm text-muted-foreground">
 							Refresh interval:
 						</span>
-						<Select
+						<Select aria-label="Select option"
 							value={refreshInterval}
-							onValueChange={(value: keyof typeof REFRESH_INTERVALS) =>
-								setRefreshInterval(value)
+							onValueChange={(value) =>
+								value !== null &&
+								setRefreshInterval(value as keyof typeof REFRESH_INTERVALS)
 							}
 						>
-							<SelectTrigger className="w-[180px]">
-								<SelectValue placeholder="Select interval" />
-							</SelectTrigger>
-							<SelectContent>
+							<>
+								
+							</>
+							<>
 								{Object.entries(REFRESH_INTERVALS).map(([value, label]) => (
-									<SelectItem key={value} value={value}>
+									<Select.Option key={value} value={value}>
 										{label}
-									</SelectItem>
+									</Select.Option>
 								))}
-							</SelectContent>
+							</>
 						</Select>
 					</div>
 				</div>

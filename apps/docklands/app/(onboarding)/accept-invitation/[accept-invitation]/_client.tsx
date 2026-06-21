@@ -1,7 +1,9 @@
 "use client";
 
+
+
 import { authClient } from "@/client/auth/client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@cloudflare/kumo/components/button";
 
 export const AcceptInvitation = ({
 	invitationId,

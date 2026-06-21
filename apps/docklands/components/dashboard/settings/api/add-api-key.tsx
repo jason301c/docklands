@@ -2,19 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import copy from "copy-to-clipboard";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -23,16 +16,10 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
@@ -138,18 +125,20 @@ export const AddApiKey = () => {
 
 	return (
 		<>
-			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogTrigger asChild>
+			<Dialog.Root open={open} onOpenChange={setOpen}>
+				<Dialog.Trigger render={(
+
 					<Button>Generate New Key</Button>
-				</DialogTrigger>
-				<DialogContent className="sm:max-w-xl max-h-[90vh]">
-					<DialogHeader>
-						<DialogTitle>Generate API Key</DialogTitle>
-						<DialogDescription>
+				
+)} />
+				<Dialog className="sm:max-w-xl max-h-[90vh]">
+					<div>
+						<Dialog.Title>Generate API Key</Dialog.Title>
+						<Dialog.Description>
 							Create a new API key for accessing the API. You can set an
 							expiration date and a custom prefix for better organization.
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<FormField
@@ -184,24 +173,25 @@ export const AddApiKey = () => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Expiration</FormLabel>
-										<Select
+										<Select aria-label="Select option"
 											value={field.value?.toString() || "0"}
-											onValueChange={(value) =>
-												field.onChange(Number.parseInt(value, 10))
-											}
+											onValueChange={(value) => {
+												if (value === null) return;
+												field.onChange(Number.parseInt(value, 10));
+											}}
 										>
 											<FormControl>
-												<SelectTrigger>
-													<SelectValue placeholder="Select expiration time" />
-												</SelectTrigger>
+												<>
+													
+												</>
 											</FormControl>
-											<SelectContent>
+											<>
 												{EXPIRATION_OPTIONS.map((option) => (
-													<SelectItem key={option.value} value={option.value}>
+													<Select.Option key={option.value} value={option.value}>
 														{option.label}
-													</SelectItem>
+													</Select.Option>
 												))}
-											</SelectContent>
+											</>
 										</Select>
 										<FormMessage />
 									</FormItem>
@@ -213,19 +203,19 @@ export const AddApiKey = () => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Organization</FormLabel>
-										<Select value={field.value} onValueChange={field.onChange}>
+										<Select aria-label="Select option" value={field.value} onValueChange={field.onChange}>
 											<FormControl>
-												<SelectTrigger>
-													<SelectValue placeholder="Select organization" />
-												</SelectTrigger>
+												<>
+													
+												</>
 											</FormControl>
-											<SelectContent>
+											<>
 												{organizations?.map((org) => (
-													<SelectItem key={org.id} value={org.id}>
+													<Select.Option key={org.id} value={org.id}>
 														{org.name}
-													</SelectItem>
+													</Select.Option>
 												))}
-											</SelectContent>
+											</>
 										</Select>
 										<FormMessage />
 									</FormItem>
@@ -264,27 +254,28 @@ export const AddApiKey = () => {
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel>Time Window</FormLabel>
-													<Select
+													<Select aria-label="Select option"
 														value={field.value?.toString()}
-														onValueChange={(value) =>
-															field.onChange(Number.parseInt(value, 10))
-														}
+														onValueChange={(value) => {
+															if (value === null) return;
+															field.onChange(Number.parseInt(value, 10));
+														}}
 													>
 														<FormControl>
-															<SelectTrigger>
-																<SelectValue placeholder="Select time window" />
-															</SelectTrigger>
+															<>
+																
+															</>
 														</FormControl>
-														<SelectContent>
+														<>
 															{TIME_WINDOW_OPTIONS.map((option) => (
-																<SelectItem
+																<Select.Option
 																	key={option.value}
 																	value={option.value}
 																>
 																	{option.label}
-																</SelectItem>
+																</Select.Option>
 															))}
-														</SelectContent>
+														</>
 													</Select>
 													<FormDescription>
 														The duration in which requests are counted
@@ -391,24 +382,25 @@ export const AddApiKey = () => {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Refill Interval</FormLabel>
-											<Select
+											<Select aria-label="Select option"
 												value={field.value?.toString()}
-												onValueChange={(value) =>
-													field.onChange(Number.parseInt(value, 10))
-												}
+												onValueChange={(value) => {
+													if (value === null) return;
+													field.onChange(Number.parseInt(value, 10));
+												}}
 											>
 												<FormControl>
-													<SelectTrigger>
-														<SelectValue placeholder="Select refill interval" />
-													</SelectTrigger>
+													<>
+														
+													</>
 												</FormControl>
-												<SelectContent>
+												<>
 													{REFILL_INTERVAL_OPTIONS.map((option) => (
-														<SelectItem key={option.value} value={option.value}>
+														<Select.Option key={option.value} value={option.value}>
 															{option.label}
-														</SelectItem>
+														</Select.Option>
 													))}
-												</SelectContent>
+												</>
 											</Select>
 											<FormDescription>
 												How often to refill the request limit
@@ -431,17 +423,17 @@ export const AddApiKey = () => {
 							</div>
 						</form>
 					</Form>
-				</DialogContent>
-			</Dialog>
+				</Dialog>
+			</Dialog.Root>
 
-			<Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-				<DialogContent className="sm:max-w-xl">
-					<DialogHeader>
-						<DialogTitle>API Key Generated Successfully</DialogTitle>
-						<DialogDescription>
+			<Dialog.Root open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+				<Dialog className="sm:max-w-xl">
+					<div>
+						<Dialog.Title>API Key Generated Successfully</Dialog.Title>
+						<Dialog.Description>
 							Please copy your API key now. You won't be able to see it again!
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 					<div className="mt-4 space-y-4">
 						<CodeEditor
 							className="font-mono text-sm break-all"
@@ -466,8 +458,8 @@ export const AddApiKey = () => {
 							</Button>
 						</div>
 					</div>
-				</DialogContent>
-			</Dialog>
+				</Dialog>
+			</Dialog.Root>
 		</>
 	);
 };

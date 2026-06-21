@@ -6,24 +6,13 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { HandleVolumeBackups } from "./handle-volume-backups";
 import { RestoreVolumeBackups } from "./restore-volume-backups";
@@ -77,17 +66,17 @@ export const ShowVolumeBackups = ({
 	};
 
 	return (
-		<Card className="border px-6 shadow-none bg-transparent h-full min-h-[50vh]">
-			<CardHeader className="px-0">
+		<LayerCard className="border px-6 shadow-none bg-transparent h-full min-h-[50vh]">
+			<div className="px-0">
 				<div className="flex justify-between items-center flex-wrap gap-2">
 					<div className="flex flex-col gap-2">
-						<CardTitle className="text-xl font-bold flex items-center gap-2">
+						<h3 className="text-xl font-bold flex items-center gap-2">
 							Volume Backups
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Schedule volume backups to run automatically at specified
 							intervals
-						</CardDescription>
+						</p>
 					</div>
 					<div className="flex items-center gap-2 flex-wrap">
 						{volumeBackups && volumeBackups.length > 0 && (
@@ -104,8 +93,8 @@ export const ShowVolumeBackups = ({
 						)}
 					</div>
 				</div>
-			</CardHeader>
-			<CardContent className="px-0">
+			</div>
+			<div className="px-0">
 				{isLoadingVolumeBackups ? (
 					<div className="flex gap-4 w-full items-center justify-center text-center mx-auto min-h-[45vh]">
 						<Loader2 className="size-4 text-muted-foreground/70 transition-colors animate-spin self-center" />
@@ -140,7 +129,7 @@ export const ShowVolumeBackups = ({
 												</h3>
 												<Badge
 													variant={
-														volumeBackup.enabled ? "default" : "secondary"
+														volumeBackup.enabled ? "secondary" : "secondary"
 													}
 													className="text-[10px] px-1 py-0"
 												>
@@ -163,17 +152,18 @@ export const ShowVolumeBackups = ({
 											type="volumeBackup"
 											serverId={serverId || undefined}
 										>
-											<Button variant="ghost" size="icon">
+											<Button aria-label="Action" variant="ghost" shape="square">
 												<ClipboardList className="size-4 transition-colors" />
 											</Button>
 										</ShowDeploymentsModal>
-										<TooltipProvider delayDuration={0}>
-											<Tooltip>
-												<TooltipTrigger asChild>
-													<Button
+										<TooltipProvider delay={0}>
+											<Tooltip content={<>
+													Run Manual Volume Backup
+												</>}  asChild>
+													<Button aria-label="Action"
 														type="button"
 														variant="ghost"
-														size="icon"
+														shape="square"
 														disabled={runningBackups.has(
 															volumeBackup.volumeBackupId,
 														)}
@@ -187,11 +177,7 @@ export const ShowVolumeBackups = ({
 															<Play className="size-4 transition-colors" />
 														)}
 													</Button>
-												</TooltipTrigger>
-												<TooltipContent>
-													Run Manual Volume Backup
-												</TooltipContent>
-											</Tooltip>
+												</Tooltip>
 										</TooltipProvider>
 										<HandleVolumeBackups
 											volumeBackupId={volumeBackup.volumeBackupId}
@@ -218,11 +204,11 @@ export const ShowVolumeBackups = ({
 													});
 											}}
 										>
-											<Button
+											<Button aria-label="Action"
 												variant="ghost"
-												size="icon"
+												shape="square"
 												className="group hover:bg-red-500/10"
-												isLoading={isDeleting}
+												loading={isDeleting}
 											>
 												<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 											</Button>
@@ -247,7 +233,7 @@ export const ShowVolumeBackups = ({
 						</div>
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

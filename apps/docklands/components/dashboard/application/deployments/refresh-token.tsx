@@ -1,17 +1,7 @@
 import { RefreshCcw } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 
 interface Props {
 	id: string;
@@ -24,21 +14,21 @@ export const RefreshToken = ({ id, type }: Props) => {
 			: api.compose.refreshToken.useMutation();
 	const utils = api.useUtils();
 	return (
-		<AlertDialog>
-			<AlertDialogTrigger>
+		<Dialog.Root role="alertdialog">
+			<Dialog.Trigger>
 				<RefreshCcw className="h-4 w-4 cursor-pointer text-muted-foreground" />
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-					<AlertDialogDescription>
+			</Dialog.Trigger>
+			<Dialog>
+				<div>
+					<Dialog.Title>Are you absolutely sure?</Dialog.Title>
+					<Dialog.Description>
 						This action cannot be undone. This will change the refresh token and
 						other tokens will be invalidated.
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction
+					</Dialog.Description>
+				</div>
+				<div>
+					<Dialog.Close>Cancel</Dialog.Close>
+					<Dialog.Close
 						onClick={async () => {
 							await mutateAsync({
 								applicationId: id || "",
@@ -62,9 +52,9 @@ export const RefreshToken = ({ id, type }: Props) => {
 						}}
 					>
 						Confirm
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
+					</Dialog.Close>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

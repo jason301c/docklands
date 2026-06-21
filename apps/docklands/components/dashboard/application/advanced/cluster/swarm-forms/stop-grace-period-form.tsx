@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -11,8 +11,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const hasStopGracePeriodSwarm = (
 	value: unknown,
@@ -154,7 +154,7 @@ export const StopGracePeriodForm = ({ id, type }: StopGracePeriodFormProps) => {
 					>
 						Clear
 					</Button>
-					<Button type="submit" isLoading={isLoading}>
+					<Button type="submit" loading={isLoading}>
 						Save Stop Grace Period
 					</Button>
 				</div>

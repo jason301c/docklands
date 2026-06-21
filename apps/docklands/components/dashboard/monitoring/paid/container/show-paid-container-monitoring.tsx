@@ -1,14 +1,8 @@
 import { Cpu, HardDrive, Loader2, MemoryStick, Network } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Card } from "@/components/ui/card";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
 import { ContainerBlockChart } from "./container-block-chart";
 import { ContainerCPUChart } from "./container-cpu-chart";
 import { ContainerMemoryChart } from "./container-memory-chart";
@@ -138,22 +132,23 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 				<div className="flex items-center gap-4 flex-wrap">
 					<div>
 						<span className="text-sm text-muted-foreground">Data points:</span>
-						<Select
+						<Select aria-label="Select option"
 							value={dataPoints}
-							onValueChange={(value: keyof typeof DATA_POINTS_OPTIONS) =>
-								setDataPoints(value)
+							onValueChange={(value) =>
+								value !== null &&
+								setDataPoints(value as keyof typeof DATA_POINTS_OPTIONS)
 							}
 						>
-							<SelectTrigger className="w-[180px]">
-								<SelectValue placeholder="Select points" />
-							</SelectTrigger>
-							<SelectContent>
+							<>
+								
+							</>
+							<>
 								{Object.entries(DATA_POINTS_OPTIONS).map(([value, label]) => (
-									<SelectItem key={value} value={value}>
+									<Select.Option key={value} value={value}>
 										{label}
-									</SelectItem>
+									</Select.Option>
 								))}
-							</SelectContent>
+							</>
 						</Select>
 					</div>
 
@@ -161,22 +156,23 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 						<span className="text-sm text-muted-foreground">
 							Refresh interval:
 						</span>
-						<Select
+						<Select aria-label="Select option"
 							value={refreshInterval}
-							onValueChange={(value: keyof typeof REFRESH_INTERVALS) =>
-								setRefreshInterval(value)
+							onValueChange={(value) =>
+								value !== null &&
+								setRefreshInterval(value as keyof typeof REFRESH_INTERVALS)
 							}
 						>
-							<SelectTrigger className="w-[180px]">
-								<SelectValue placeholder="Select interval" />
-							</SelectTrigger>
-							<SelectContent>
+							<>
+								
+							</>
+							<>
 								{Object.entries(REFRESH_INTERVALS).map(([value, label]) => (
-									<SelectItem key={value} value={value}>
+									<Select.Option key={value} value={value}>
 										{label}
-									</SelectItem>
+									</Select.Option>
 								))}
-							</SelectContent>
+							</>
 						</Select>
 					</div>
 				</div>
@@ -184,15 +180,15 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 
 			{/* Stats Cards */}
 			<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-				<Card className="p-6 bg-transparent">
+				<LayerCard className="p-6 bg-transparent">
 					<div className="flex items-center gap-2">
 						<Cpu className="h-4 w-4 text-muted-foreground" />
 						<h3 className="text-sm font-medium">CPU Usage</h3>
 					</div>
 					<p className="mt-2 text-2xl font-bold">{metrics.CPU}%</p>
-				</Card>
+				</LayerCard>
 
-				<Card className="p-6 bg-transparent">
+				<LayerCard className="p-6 bg-transparent">
 					<div className="flex items-center gap-2">
 						<MemoryStick className="h-4 w-4 text-muted-foreground" />
 						<h3 className="text-sm font-medium">Memory Usage</h3>
@@ -204,9 +200,9 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 						{metrics?.Memory?.used} {metrics?.Memory?.unit} /{" "}
 						{metrics?.Memory?.total} {metrics?.Memory?.unit}
 					</p>
-				</Card>
+				</LayerCard>
 
-				<Card className="p-6 bg-transparent">
+				<LayerCard className="p-6 bg-transparent">
 					<div className="flex items-center gap-2">
 						<Network className="h-4 w-4 text-muted-foreground" />
 						<h3 className="text-sm font-medium">Network I/O</h3>
@@ -215,9 +211,9 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 						{metrics?.Network?.input} {metrics?.Network?.inputUnit} /{" "}
 						{metrics?.Network?.output} {metrics?.Network?.outputUnit}
 					</p>
-				</Card>
+				</LayerCard>
 
-				<Card className="p-6 bg-transparent">
+				<LayerCard className="p-6 bg-transparent">
 					<div className="flex items-center gap-2">
 						<HardDrive className="h-4 w-4 text-muted-foreground" />
 						<h3 className="text-sm font-medium">Block I/O</h3>
@@ -226,11 +222,11 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 						{metrics?.BlockIO?.read} {metrics?.BlockIO?.readUnit} /{" "}
 						{metrics?.BlockIO?.write} {metrics?.BlockIO?.writeUnit}
 					</p>
-				</Card>
+				</LayerCard>
 			</div>
 
 			{/* Container Information */}
-			<Card className="p-6 bg-transparent">
+			<LayerCard className="p-6 bg-transparent">
 				<h3 className="text-lg font-medium mb-4">Container Information</h3>
 				<div className="grid gap-4 md:grid-cols-2">
 					<div>
@@ -244,7 +240,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 						<p className="mt-1 truncate">{metrics.Name}</p>
 					</div>
 				</div>
-			</Card>
+			</LayerCard>
 
 			{/* Charts Grid */}
 			<div className="grid gap-4 grid-cols-1 md:grid-cols-1 xl:grid-cols-2">

@@ -2,26 +2,14 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Code2, Globe2, HardDrive } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -29,10 +17,10 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/shared/form";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Separator } from "@/components/shared/separator";
+import { Textarea } from "@cloudflare/kumo/components/input";
 
 const ImportSchema = z.object({
 	base64: z.string(),
@@ -141,12 +129,12 @@ export const ShowImport = ({ composeId }: Props) => {
 
 	return (
 		<>
-			<Card className="bg-background">
-				<CardHeader>
-					<CardTitle className="text-xl">Import</CardTitle>
-					<CardDescription>Import your Template configuration</CardDescription>
-				</CardHeader>
-				<CardContent className="flex flex-col gap-4">
+			<LayerCard className="bg-background">
+				<div>
+					<h3 className="text-xl">Import</h3>
+					<p>Import your Template configuration</p>
+				</div>
+				<div className="flex flex-col gap-4">
 					<AlertBlock type="warning">
 						Warning: Importing a template will remove all existing environment
 						variables, mounts, and domains from this service.
@@ -178,26 +166,26 @@ export const ShowImport = ({ composeId }: Props) => {
 									type="button"
 									className="w-fit"
 									variant="outline"
-									isLoading={isLoadingTemplate}
+									loading={isLoadingTemplate}
 									onClick={handleLoadTemplate}
 								>
 									Load
 								</Button>
 							</div>
-							<Dialog open={showModal} onOpenChange={setShowModal}>
-								<DialogContent className="max-w-[50vw]">
-									<DialogHeader>
-										<DialogTitle className="text-2xl font-bold">
+							<Dialog.Root open={showModal} onOpenChange={setShowModal}>
+								<Dialog className="max-w-[50vw]">
+									<div>
+										<Dialog.Title className="text-2xl font-bold">
 											Template Information
-										</DialogTitle>
-										<DialogDescription className="space-y-2">
+										</Dialog.Title>
+										<Dialog.Description className="space-y-2">
 											<p>Review the template information before importing</p>
 											<AlertBlock type="warning">
 												Warning: This will remove all existing environment
 												variables, mounts, and domains from this service.
 											</AlertBlock>
-										</DialogDescription>
-									</DialogHeader>
+										</Dialog.Description>
+									</div>
 
 									<div className="flex flex-col gap-6">
 										<div className="space-y-4">
@@ -304,7 +292,7 @@ export const ShowImport = ({ composeId }: Props) => {
 											Cancel
 										</Button>
 										<Button
-											isLoading={isImporting}
+											loading={isImporting}
 											type="submit"
 											onClick={form.handleSubmit(onSubmit)}
 											className="w-fit"
@@ -312,21 +300,21 @@ export const ShowImport = ({ composeId }: Props) => {
 											Import
 										</Button>
 									</div>
-								</DialogContent>
-							</Dialog>
+								</Dialog>
+							</Dialog.Root>
 						</form>
 					</Form>
-				</CardContent>
-			</Card>
+				</div>
+			</LayerCard>
 
-			<Dialog open={showMountContent} onOpenChange={setShowMountContent}>
-				<DialogContent className="max-w-[50vw]">
-					<DialogHeader>
-						<DialogTitle className="text-xl font-bold">
+			<Dialog.Root open={showMountContent} onOpenChange={setShowMountContent}>
+				<Dialog className="max-w-[50vw]">
+					<div>
+						<Dialog.Title className="text-xl font-bold">
 							{selectedMount?.filePath}
-						</DialogTitle>
-						<DialogDescription>Mount File Content</DialogDescription>
-					</DialogHeader>
+						</Dialog.Title>
+						<Dialog.Description>Mount File Content</Dialog.Description>
+					</div>
 
 					<ScrollArea className="h-[45vh] pr-4">
 						<CodeEditor
@@ -340,8 +328,8 @@ export const ShowImport = ({ composeId }: Props) => {
 					<div className="flex justify-end gap-2 pt-4">
 						<Button onClick={() => setShowMountContent(false)}>Close</Button>
 					</div>
-				</DialogContent>
-			</Dialog>
+				</Dialog>
+			</Dialog.Root>
 		</>
 	);
 };

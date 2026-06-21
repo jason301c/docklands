@@ -2,20 +2,12 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -23,14 +15,9 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 const schema = z.object({
 	serverIp: z.string(),
@@ -87,13 +74,13 @@ export const UpdateServerIp = ({ children }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Update Server IP</DialogTitle>
-					<DialogDescription>Update the IP of the server</DialogDescription>
-				</DialogHeader>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={children as never} />
+			<Dialog>
+				<div>
+					<Dialog.Title>Update Server IP</Dialog.Title>
+					<Dialog.Description>Update the IP of the server</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -111,9 +98,11 @@ export const UpdateServerIp = ({ children }: Props) => {
 										<div>
 											<Input {...field} />
 
-											<TooltipProvider delayDuration={0}>
-												<Tooltip>
-													<TooltipTrigger asChild>
+											<TooltipProvider delay={0}>
+												<Tooltip content={<>
+														<p>Set current public IP</p>
+													</>} side="left"
+														className="max-w-[11rem]"  asChild>
 														<Button
 															variant="secondary"
 															type="button"
@@ -121,15 +110,7 @@ export const UpdateServerIp = ({ children }: Props) => {
 														>
 															<RefreshCw className="size-4 text-muted-foreground" />
 														</Button>
-													</TooltipTrigger>
-													<TooltipContent
-														side="left"
-														sideOffset={5}
-														className="max-w-[11rem]"
-													>
-														<p>Set current public IP</p>
-													</TooltipContent>
-												</Tooltip>
+													</Tooltip>
 											</TooltipProvider>
 										</div>
 									</FormControl>
@@ -141,18 +122,18 @@ export const UpdateServerIp = ({ children }: Props) => {
 						/>
 					</form>
 
-					<DialogFooter>
+					<div>
 						<Button
-							isLoading={isPending}
+							loading={isPending}
 							disabled={isPending}
 							form="hook-form-update-server-ip"
 							type="submit"
 						>
 							Update
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

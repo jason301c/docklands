@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import {
 	MariadbIcon,
@@ -17,20 +17,9 @@ import {
 } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
 import { ShowDeploymentsModal } from "../../application/deployments/show-deployments-modal";
@@ -100,17 +89,17 @@ export const ShowBackups = ({
 		api.backup.remove.useMutation();
 
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row justify-between gap-4  flex-wrap">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row justify-between gap-4  flex-wrap">
 				<div className="flex flex-col gap-0.5">
-					<CardTitle className="text-xl flex flex-row gap-2">
+					<h3 className="text-xl flex flex-row gap-2">
 						<Database className="size-6 text-muted-foreground" />
 						Backups
-					</CardTitle>
-					<CardDescription>
+					</h3>
+					<p>
 						Add backups to your database to save the data to a different
 						provider.
-					</CardDescription>
+					</p>
 				</div>
 
 				{postgres && postgres?.backups?.length > 0 && (
@@ -131,8 +120,8 @@ export const ShowBackups = ({
 						/>
 					</div>
 				)}
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				{data?.length === 0 ? (
 					<div className="flex flex-col items-center gap-3 min-h-[35vh] justify-center">
 						<DatabaseBackup className="size-8 text-muted-foreground" />
@@ -287,23 +276,24 @@ export const ShowBackups = ({
 															type="backup"
 															serverId={serverId || undefined}
 														>
-															<Button
+															<Button aria-label="Action"
 																variant="ghost"
-																size="icon"
+																shape="square"
 																className="size-8"
 															>
 																<ClipboardList className="size-4  transition-colors " />
 															</Button>
 														</ShowDeploymentsModal>
-														<TooltipProvider delayDuration={0}>
-															<Tooltip>
-																<TooltipTrigger asChild>
-																	<Button
+														<TooltipProvider delay={0}>
+															<Tooltip content={<>
+																	Run Manual Backup
+																</>}  asChild>
+																	<Button aria-label="Action"
 																		type="button"
 																		variant="ghost"
-																		size="icon"
+																		shape="square"
 																		className="size-8"
-																		isLoading={
+																		loading={
 																			isManualBackup &&
 																			activeManualBackup === backup.backupId
 																		}
@@ -327,11 +317,7 @@ export const ShowBackups = ({
 																	>
 																		<Play className="size-4 " />
 																	</Button>
-																</TooltipTrigger>
-																<TooltipContent>
-																	Run Manual Backup
-																</TooltipContent>
-															</Tooltip>
+																</Tooltip>
 														</TooltipProvider>
 
 														<HandleBackup
@@ -359,11 +345,11 @@ export const ShowBackups = ({
 																	});
 															}}
 														>
-															<Button
+															<Button aria-label="Action"
 																variant="ghost"
-																size="icon"
+																shape="square"
 																className="group hover:bg-red-500/10 size-8"
-																isLoading={isRemoving}
+																loading={isRemoving}
 															>
 																<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 															</Button>
@@ -378,7 +364,7 @@ export const ShowBackups = ({
 						)}
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

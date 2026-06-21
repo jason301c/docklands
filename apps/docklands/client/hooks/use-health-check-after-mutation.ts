@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 
 const HEALTH_CHECK_URL = "/api/health";
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const MAX_BUILDS_CONCURRENCY = 100;
 
@@ -102,7 +102,7 @@ export const BuildsConcurrency = ({ serverId, label }: Props) => {
 						type="button"
 						size="sm"
 						onClick={handleSave}
-						isLoading={isPending}
+						loading={isPending}
 						disabled={!hasChanges}
 					>
 						Save

@@ -1,15 +1,8 @@
 import { Copy, HelpCircle, Server } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 
 interface Props {
 	domain: {
@@ -27,22 +20,22 @@ export const DnsHelperModal = ({ domain, serverIp }: Props) => {
 	};
 
 	return (
-		<Dialog>
-			<DialogTrigger>
-				<Button variant="ghost" size="icon" className="group">
+		<Dialog.Root>
+			<Dialog.Trigger>
+				<Button aria-label="Action" variant="ghost" shape="square" className="group">
 					<HelpCircle className="size-4" />
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
+			</Dialog.Trigger>
+			<Dialog className="sm:max-w-2xl">
+				<div>
+					<Dialog.Title className="flex items-center gap-2">
 						<Server className="size-5" />
 						DNS Configuration Guide
-					</DialogTitle>
-					<DialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						Follow these steps to configure your DNS records for {domain.host}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 
 				<div className="flex flex-col gap-4">
 					<AlertBlock type="info">
@@ -70,9 +63,9 @@ export const DnsHelperModal = ({ domain, serverIp }: Props) => {
 												Value: {serverIp || "Your server IP"}
 											</p>
 										</div>
-										<Button
+										<Button aria-label="Action"
 											variant="ghost"
-											size="icon"
+											shape="square"
 											onClick={() => copyToClipboard(serverIp || "")}
 											disabled={!serverIp}
 										>
@@ -103,7 +96,7 @@ export const DnsHelperModal = ({ domain, serverIp }: Props) => {
 						</div>
 					</div>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

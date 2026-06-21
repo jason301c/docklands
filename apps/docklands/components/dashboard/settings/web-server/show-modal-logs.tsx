@@ -3,25 +3,10 @@ import dynamic from "next/dynamic";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@/components/ui/badge";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Select } from "@cloudflare/kumo/components/select";
 import { badgeStateColor } from "../../application/logs/show";
 
 export const DockerLogsId = dynamic(
@@ -65,30 +50,28 @@ export const ShowModalLogs = ({
 		}
 	}, [data]);
 	return (
-		<Dialog>
-			<DialogTrigger asChild>{children}</DialogTrigger>
-			<DialogContent className="max-h-[85vh]  sm:max-w-7xl">
-				<DialogHeader>
-					<DialogTitle>View Logs</DialogTitle>
-					<DialogDescription>View the logs for {appName}</DialogDescription>
-				</DialogHeader>
+		<Dialog.Root>
+			<Dialog.Trigger render={children as never} />
+			<Dialog className="max-h-[85vh]  sm:max-w-7xl">
+				<div>
+					<Dialog.Title>View Logs</Dialog.Title>
+					<Dialog.Description>View the logs for {appName}</Dialog.Description>
+				</div>
 				<div className="flex flex-col gap-4 pt-2.5">
 					<Label>Select a container to view logs</Label>
-					<Select onValueChange={setContainerId} value={containerId}>
-						<SelectTrigger>
+					<Select aria-label="Select option" onValueChange={(value) => value !== null && setContainerId(value as never)} value={containerId}>
+						<>
 							{isPending ? (
 								<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
 									<span>Loading...</span>
 									<Loader2 className="animate-spin size-4" />
 								</div>
-							) : (
-								<SelectValue placeholder="Select a container" />
-							)}
-						</SelectTrigger>
-						<SelectContent>
-							<SelectGroup>
+							) : null}
+						</>
+						<>
+							<Select.Group>
 								{data?.map((container) => (
-									<SelectItem
+									<Select.Option
 										key={container.containerId}
 										value={container.containerId}
 									>
@@ -96,11 +79,11 @@ export const ShowModalLogs = ({
 										<Badge variant={badgeStateColor(container.state)}>
 											{container.state}
 										</Badge>
-									</SelectItem>
+									</Select.Option>
 								))}
-								<SelectLabel>Containers ({data?.length})</SelectLabel>
-							</SelectGroup>
-						</SelectContent>
+								<Select.GroupLabel>Containers ({data?.length})</Select.GroupLabel>
+							</Select.Group>
+						</>
 					</Select>
 					<DockerLogsId
 						containerId={containerId || ""}
@@ -108,7 +91,7 @@ export const ShowModalLogs = ({
 						runType="native"
 					/>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

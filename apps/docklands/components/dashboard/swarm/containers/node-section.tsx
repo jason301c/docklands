@@ -1,18 +1,8 @@
 import { ChevronDown, ChevronRight, Server } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-	Table,
-	TableBody,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Collapsible } from "@cloudflare/kumo/components/collapsible";
+import { Table } from "@cloudflare/kumo/components/table";
 import { ContainerRow } from "./container-row";
 import type { ContainerStat, NodeGroup } from "./types";
 
@@ -39,13 +29,20 @@ export const NodeSection = ({
 			group.nodeStatus.Availability !== "Active");
 
 	return (
-		<Collapsible
+		<Collapsible.Root
 			open={isExpanded}
 			onOpenChange={() => onToggleNode(group.nodeName)}
 		>
-			<Card className="bg-background">
-				<CollapsibleTrigger asChild>
-					<CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors rounded-t-lg">
+			<LayerCard className="bg-background">
+				<Collapsible.Trigger
+					render={
+						<button
+							type="button"
+							className="block w-full text-left rounded-t-lg"
+						/>
+					}
+				>
+					<div className="cursor-pointer hover:bg-muted/50 transition-colors">
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-3">
 								{isExpanded ? (
@@ -59,12 +56,12 @@ export const NodeSection = ({
 										<span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-destructive" />
 									)}
 								</div>
-								<CardTitle className="text-base">{group.nodeName}</CardTitle>
+								<h3 className="text-base">{group.nodeName}</h3>
 								{group.nodeStatus && (
 									<Badge
 										variant={
 											group.nodeStatus.ManagerStatus === "Leader"
-												? "default"
+												? "secondary"
 												: group.nodeStatus.ManagerStatus === "Reachable"
 													? "secondary"
 													: "outline"
@@ -79,12 +76,12 @@ export const NodeSection = ({
 									{group.containers.length !== 1 ? "s" : ""}
 								</Badge>
 								{nodeDown ? (
-									<Badge variant="destructive">
+									<Badge variant="error">
 										{group.nodeStatus?.Status} /{" "}
 										{group.nodeStatus?.Availability}
 									</Badge>
 								) : runningCount === group.containers.length ? (
-									<Badge variant="default">All Running</Badge>
+									<Badge variant="primary">All Running</Badge>
 								) : (
 									<Badge variant="orange">
 										{runningCount}/{group.containers.length} Running
@@ -92,22 +89,22 @@ export const NodeSection = ({
 								)}
 							</div>
 						</div>
-					</CardHeader>
-				</CollapsibleTrigger>
-				<CollapsibleContent>
-					<CardContent className="pt-0">
+					</div>
+				</Collapsible.Trigger>
+				<Collapsible.Panel>
+					<div className="pt-0">
 						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead className="w-[250px]">Container</TableHead>
-									<TableHead>State</TableHead>
-									<TableHead className="text-right">CPU</TableHead>
-									<TableHead className="text-right">Memory</TableHead>
-									<TableHead className="text-right">Block I/O</TableHead>
-									<TableHead className="text-right">Network I/O</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
+							<Table.Header>
+								<Table.Row>
+									<Table.Head className="w-[250px]">Container</Table.Head>
+									<Table.Head>State</Table.Head>
+									<Table.Head className="text-right">CPU</Table.Head>
+									<Table.Head className="text-right">Memory</Table.Head>
+									<Table.Head className="text-right">Block I/O</Table.Head>
+									<Table.Head className="text-right">Network I/O</Table.Head>
+								</Table.Row>
+							</Table.Header>
+							<Table.Body>
 								{group.containers.map((container) => {
 									const stat = findStatsForContainer(container.Name);
 									return (
@@ -118,11 +115,11 @@ export const NodeSection = ({
 										/>
 									);
 								})}
-							</TableBody>
+							</Table.Body>
 						</Table>
-					</CardContent>
-				</CollapsibleContent>
-			</Card>
-		</Collapsible>
+					</div>
+				</Collapsible.Panel>
+			</LayerCard>
+		</Collapsible.Root>
 	);
 };

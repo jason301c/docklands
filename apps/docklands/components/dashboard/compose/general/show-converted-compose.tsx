@@ -1,18 +1,11 @@
 import { Loader2, Puzzle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 
 interface Props {
 	composeId: string;
@@ -45,21 +38,23 @@ export const ShowConvertedCompose = ({ composeId }: Props) => {
 	}, [isOpen]);
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
 				<Button className="max-lg:w-full" variant="outline">
 					<Puzzle className="h-4 w-4" />
 					Preview Compose
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-6xl max-h-[50rem]">
-				<DialogHeader>
-					<DialogTitle>Converted Compose</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className="sm:max-w-6xl max-h-[50rem]">
+				<div>
+					<Dialog.Title>Converted Compose</Dialog.Title>
+					<Dialog.Description>
 						Preview your docker-compose file with added domains. Note: At least
 						one domain must be specified for this conversion to take effect.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<AlertBlock type="info" className="mb-4">
@@ -82,7 +77,7 @@ export const ShowConvertedCompose = ({ composeId }: Props) => {
 						<div className="flex flex-row gap-2 justify-end my-4">
 							<Button
 								variant="secondary"
-								isLoading={isPending}
+								loading={isPending}
 								onClick={() => {
 									mutateAsync({ composeId })
 										.then(() => {
@@ -110,7 +105,7 @@ export const ShowConvertedCompose = ({ composeId }: Props) => {
 						</pre>
 					</>
 				)}
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

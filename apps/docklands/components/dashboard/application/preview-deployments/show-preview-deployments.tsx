@@ -1,4 +1,3 @@
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import {
 	ExternalLink,
 	FileText,
@@ -9,28 +8,17 @@ import {
 	RocketIcon,
 	Trash2,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { ShowModalLogs } from "../../settings/web-server/show-modal-logs";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { AddPreviewDomain } from "./add-preview-domain";
@@ -75,17 +63,17 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 	};
 
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 				<div className="flex flex-col gap-2">
-					<CardTitle className="text-xl">Preview Deployments</CardTitle>
-					<CardDescription>See all the preview deployments</CardDescription>
+					<h3 className="text-xl">Preview Deployments</h3>
+					<p>See all the preview deployments</p>
 				</div>
 				{data?.isPreviewDeploymentsActive && (
 					<ShowPreviewSettings applicationId={applicationId} />
 				)}
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				{data?.isPreviewDeploymentsActive ? (
 					<>
 						<div className="flex flex-col gap-2 text-sm">
@@ -230,29 +218,21 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 															<Button
 																variant="outline"
 																size="sm"
-																isLoading={status === "running"}
+																loading={status === "running"}
 																className="gap-2"
 															>
 																<TooltipProvider>
-																	<Tooltip>
-																		<TooltipTrigger asChild>
-																			<div className="flex items-center gap-2">
-																				<Hammer className="size-4" />
-																				Rebuild
-																			</div>
-																		</TooltipTrigger>
-																		<TooltipPrimitive.Portal>
-																			<TooltipContent
-																				sideOffset={5}
-																				className="z-[60]"
-																			>
+																	<Tooltip content={<>
 																				<p>
 																					Rebuild the preview deployment without
 																					downloading new code
 																				</p>
-																			</TooltipContent>
-																		</TooltipPrimitive.Portal>
-																	</Tooltip>
+																			</>} className="z-[60]"  asChild>
+																			<div className="flex items-center gap-2">
+																				<Hammer className="size-4" />
+																				Rebuild
+																			</div>
+																		</Tooltip>
 																</TooltipProvider>
 															</Button>
 														</DialogAction>
@@ -281,7 +261,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 															<Button
 																variant="ghost"
 																size="sm"
-																isLoading={isPending}
+																loading={isPending}
 																className="text-red-600 hover:text-red-700 hover:bg-red-50"
 															>
 																<Trash2 className="size-4" />
@@ -306,7 +286,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 						<ShowPreviewSettings applicationId={applicationId} />
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

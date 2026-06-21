@@ -1,21 +1,9 @@
 import { Settings } from "lucide-react";
 import { useState } from "react";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
 import {
 	EndpointSpecForm,
@@ -133,20 +121,22 @@ export const AddSwarmSettings = ({ id, type }: Props) => {
 	const [activeMenu, setActiveMenu] = useState<string>("health-check");
 	const [open, setOpen] = useState(false);
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
+		<Dialog.Root open={open} onOpenChange={setOpen}>
+			<Dialog.Trigger render={(
+
 				<Button variant="secondary" className="cursor-pointer w-fit">
 					<Settings className="size-4 text-muted-foreground" />
 					Swarm Settings
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-6xl max-h-[85vh]">
-				<DialogHeader>
-					<DialogTitle>Swarm Settings</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className="sm:max-w-6xl max-h-[85vh]">
+				<div>
+					<Dialog.Title>Swarm Settings</Dialog.Title>
+					<Dialog.Description>
 						Configure swarm settings for your service.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<div>
 					<AlertBlock type="info">
 						Changing settings such as placements may cause the logs/monitoring,
@@ -160,8 +150,12 @@ export const AddSwarmSettings = ({ id, type }: Props) => {
 						<nav className="space-y-1">
 							<TooltipProvider>
 								{menuItems.map((item) => (
-									<Tooltip key={item.id}>
-										<TooltipTrigger asChild>
+									<Tooltip key={item.id} side="right" className="max-w-xs" content={(
+
+											<p className="text-xs">{item.docDescription}</p>
+										
+)} render={(
+
 											<button
 												type="button"
 												onClick={() => setActiveMenu(item.id)}
@@ -177,11 +171,8 @@ export const AddSwarmSettings = ({ id, type }: Props) => {
 													{item.description}
 												</div>
 											</button>
-										</TooltipTrigger>
-										<TooltipContent side="right" className="max-w-xs">
-											<p className="text-xs">{item.docDescription}</p>
-										</TooltipContent>
-									</Tooltip>
+										
+)} />
 								))}
 							</TooltipProvider>
 						</nav>
@@ -215,7 +206,7 @@ export const AddSwarmSettings = ({ id, type }: Props) => {
 						)}
 					</div>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

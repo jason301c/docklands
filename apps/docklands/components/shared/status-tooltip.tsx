@@ -1,9 +1,4 @@
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
 
 interface Props {
@@ -20,9 +15,16 @@ interface Props {
 
 export const StatusTooltip = ({ status, className }: Props) => {
 	return (
-		<TooltipProvider delayDuration={0}>
-			<Tooltip>
-				<TooltipTrigger>
+		<TooltipProvider delay={0}>
+			<Tooltip content={<>
+					<span>
+						{status === "idle" && "Idle"}
+						{status === "error" && "Error"}
+						{status === "done" && "Done"}
+						{status === "running" && "Running"}
+						{status === "cancelled" && "Cancelled"}
+					</span>
+				</>} align="center">
 					{status === "idle" && (
 						<div
 							className={cn(
@@ -54,17 +56,7 @@ export const StatusTooltip = ({ status, className }: Props) => {
 							className={cn("size-3.5 rounded-full bg-yellow-500", className)}
 						/>
 					)}
-				</TooltipTrigger>
-				<TooltipContent align="center">
-					<span>
-						{status === "idle" && "Idle"}
-						{status === "error" && "Error"}
-						{status === "done" && "Done"}
-						{status === "running" && "Running"}
-						{status === "cancelled" && "Cancelled"}
-					</span>
-				</TooltipContent>
-			</Tooltip>
+				</Tooltip>
 		</TooltipProvider>
 	);
 };

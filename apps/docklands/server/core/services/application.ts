@@ -52,6 +52,7 @@ import {
 	updatePreviewDeployment,
 } from "./preview-deployment";
 import { validUniqueServerAppName } from "./project";
+
 export type Application = typeof applications.$inferSelect;
 
 export const createApplication = async (

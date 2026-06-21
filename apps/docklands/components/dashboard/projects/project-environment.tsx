@@ -2,22 +2,14 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { FileIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -25,7 +17,7 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
+} from "@/components/shared/form";
 
 const updateProjectSchema = z.object({
 	env: z.string().optional(),
@@ -109,26 +101,24 @@ export const ProjectEnvironment = ({ projectId, children }: Props) => {
 	}
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
-				{children ?? (
-					<DropdownMenuItem
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(children ?? (
+					<DropdownMenu.Item
 						className="w-full cursor-pointer space-x-3"
 						onSelect={(e) => e.preventDefault()}
 					>
 						<FileIcon className="size-4" />
 						<span>Project Environment</span>
-					</DropdownMenuItem>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-6xl">
-				<DialogHeader>
-					<DialogTitle>Project Environment</DialogTitle>
-					<DialogDescription>
+					</DropdownMenu.Item>
+				)) as never} />
+			<Dialog className="sm:max-w-6xl">
+				<div>
+					<Dialog.Title>Project Environment</Dialog.Title>
+					<Dialog.Description>
 						Update the env Environment variables that are accessible to all
 						services of this project.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<AlertBlock type="info">
 					Use this syntax to reference project-level variables in your service
@@ -168,17 +158,17 @@ PORT=3000
 									)}
 								/>
 								{canWrite && (
-									<DialogFooter>
-										<Button isLoading={isPending} type="submit">
+									<div>
+										<Button loading={isPending} type="submit">
 											Update
 										</Button>
-									</DialogFooter>
+									</div>
 								)}
 							</form>
 						</Form>
 					</div>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

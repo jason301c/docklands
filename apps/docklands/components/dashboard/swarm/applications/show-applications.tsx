@@ -1,14 +1,7 @@
 import { Layers, Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { type ApplicationList, columns } from "./columns";
 import { DataTable } from "./data-table";
 
@@ -31,13 +24,15 @@ export const ShowNodeApplications = ({ serverId }: Props) => {
 
 	if (NodeAppsLoading || NodeAppDetailsLoading) {
 		return (
-			<Dialog>
-				<DialogTrigger asChild>
+			<Dialog.Root>
+				<Dialog.Trigger render={(
+
 					<Button variant="outline" size="sm" className="w-full">
 						<Loader2 className="h-4 w-4 mr-2 animate-spin" />
 					</Button>
-				</DialogTrigger>
-			</Dialog>
+				
+)} />
+			</Dialog.Root>
 		);
 	}
 
@@ -80,24 +75,26 @@ export const ShowNodeApplications = ({ serverId }: Props) => {
 	});
 
 	return (
-		<Dialog>
-			<DialogTrigger asChild>
+		<Dialog.Root>
+			<Dialog.Trigger render={(
+
 				<Button variant="outline" size="sm" className="w-full">
 					<Layers className="h-4 w-4 mr-2" />
 					Services
 				</Button>
-			</DialogTrigger>
-			<DialogContent className={"sm:max-w-10xl"}>
-				<DialogHeader>
-					<DialogTitle>Node Applications</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className={"sm:max-w-10xl"}>
+				<div>
+					<Dialog.Title>Node Applications</Dialog.Title>
+					<Dialog.Description>
 						See in detail the applications running on this node
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<div className="max-h-[80vh]">
 					<DataTable columns={columns} data={combinedData ?? []} />
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

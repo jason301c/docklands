@@ -2,15 +2,8 @@ import dynamic from "next/dynamic";
 import type React from "react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import LocalServerConfig from "./local-server-config";
 
 const Terminal = dynamic(() => import("./terminal").then((e) => e.Terminal), {
@@ -49,11 +42,11 @@ export const TerminalModal = ({
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
 			{asButton ? (
-				<DialogTrigger asChild>{children}</DialogTrigger>
+				<Dialog.Trigger render={children as never} />
 			) : (
-				<DropdownMenuItem
+				<DropdownMenu.Item
 					className="w-full cursor-pointer space-x-3"
 					onSelect={(e) => {
 						e.preventDefault();
@@ -61,16 +54,13 @@ export const TerminalModal = ({
 					}}
 				>
 					{children}
-				</DropdownMenuItem>
+				</DropdownMenu.Item>
 			)}
-			<DialogContent
-				className="sm:max-w-7xl"
-				onEscapeKeyDown={(event) => event.preventDefault()}
-			>
-				<DialogHeader className="flex flex-col gap-1">
-					<DialogTitle>Terminal ({data?.name ?? serverId})</DialogTitle>
-					<DialogDescription>Easy way to access the server</DialogDescription>
-				</DialogHeader>
+			<Dialog className="sm:max-w-7xl">
+				<div className="flex flex-col gap-1">
+					<Dialog.Title>Terminal ({data?.name ?? serverId})</Dialog.Title>
+					<Dialog.Description>Easy way to access the server</Dialog.Description>
+				</div>
 
 				{isLocalServer && (
 					<LocalServerConfig onSave={handleLocalServerConfigSave} />
@@ -79,7 +69,7 @@ export const TerminalModal = ({
 				<div className="flex flex-col gap-4 h-[552px]">
 					<Terminal id="terminal" key={terminalKey} serverId={serverId} />
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

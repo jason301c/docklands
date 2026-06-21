@@ -1,6 +1,7 @@
 "use client";
 
-import * as AccordionPrimitive from "@radix-ui/react-accordion";
+import { Collapsible } from "@cloudflare/kumo/components/collapsible";
+
 // import { ScrollArea } from "@acme/components/ui/scroll-area";
 // import { cn } from "@acme/components/lib/utils";
 import { ChevronRight, type LucideIcon } from "lucide-react";
@@ -139,52 +140,47 @@ const TreeItem = React.forwardRef<HTMLDivElement, TreeItemProps>(
 						data.map((item) => (
 							<li key={item.id}>
 								{item.children ? (
-									<AccordionPrimitive.Root
-										type="multiple"
-										defaultValue={expandedItemIds}
-									>
-										<AccordionPrimitive.Item value={item.id}>
-											<AccordionTrigger
-												className={cn(
-													"px-2 hover:before:opacity-100  before:absolute before:left-0 before:w-full before:opacity-0 before:bg-muted/80 before:h-[1.75rem] before:-z-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-													selectedItemId === item.id &&
-														"before:opacity-100 before:bg-accent text-accent-foreground before:border-l-2 before:border-l-accent-foreground/50 dark:before:border-0",
-												)}
-												onClick={() => handleSelectChange(item)}
-											>
-												{item.icon && (
-													<item.icon
-														className="h-4 w-4 shrink-0 mr-2 text-accent-foreground/50"
-														aria-hidden="true"
-													/>
-												)}
-												{!item.icon && FolderIcon && (
-													<FolderIcon
-														className="h-4 w-4 shrink-0 mr-2 text-accent-foreground/50"
-														aria-hidden="true"
-													/>
-												)}
-												<span className="text-sm truncate font-mono">
-													{item.name}
-												</span>
-											</AccordionTrigger>
-											<AccordionContent className="pl-6">
-												{item.children.length === 0 && (
-													<div className="text-sm text-muted-foreground pl-6">
-														No items
-													</div>
-												)}
-												<TreeItem
-													data={item.children ? item.children : item}
-													selectedItemId={selectedItemId}
-													handleSelectChange={handleSelectChange}
-													expandedItemIds={expandedItemIds}
-													FolderIcon={FolderIcon}
-													ItemIcon={ItemIcon}
+									<Collapsible.Root defaultOpen={expandedItemIds.includes(item.id)}>
+										<TreeItemTrigger
+											className={cn(
+												"px-2 hover:before:opacity-100  before:absolute before:left-0 before:w-full before:opacity-0 before:bg-muted/80 before:h-[1.75rem] before:-z-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+												selectedItemId === item.id &&
+													"before:opacity-100 before:bg-accent text-accent-foreground before:border-l-2 before:border-l-accent-foreground/50 dark:before:border-0",
+											)}
+											onClick={() => handleSelectChange(item)}
+										>
+											{item.icon && (
+												<item.icon
+													className="h-4 w-4 shrink-0 mr-2 text-accent-foreground/50"
+													aria-hidden="true"
 												/>
-											</AccordionContent>
-										</AccordionPrimitive.Item>
-									</AccordionPrimitive.Root>
+											)}
+											{!item.icon && FolderIcon && (
+												<FolderIcon
+													className="h-4 w-4 shrink-0 mr-2 text-accent-foreground/50"
+													aria-hidden="true"
+												/>
+											)}
+											<span className="text-sm truncate font-mono">
+												{item.name}
+											</span>
+										</TreeItemTrigger>
+										<Collapsible.Panel className="pl-6">
+											{item.children.length === 0 && (
+												<div className="text-sm text-muted-foreground pl-6">
+													No items
+												</div>
+											)}
+											<TreeItem
+												data={item.children ? item.children : item}
+												selectedItemId={selectedItemId}
+												handleSelectChange={handleSelectChange}
+												expandedItemIds={expandedItemIds}
+												FolderIcon={FolderIcon}
+												ItemIcon={ItemIcon}
+											/>
+										</Collapsible.Panel>
+									</Collapsible.Root>
 								) : (
 									<Leaf
 										item={item}
@@ -255,41 +251,27 @@ const Leaf = React.forwardRef<
 
 Leaf.displayName = "Leaf";
 
-const AccordionTrigger = React.forwardRef<
-	React.ElementRef<typeof AccordionPrimitive.Trigger>,
-	React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
+const TreeItemTrigger = React.forwardRef<
+	HTMLButtonElement,
+	React.ButtonHTMLAttributes<HTMLButtonElement>
 >(({ className, children, ...props }, ref) => (
-	<AccordionPrimitive.Header>
-		<AccordionPrimitive.Trigger
-			ref={ref}
-			className={cn(
-				"flex flex-1 w-full items-center py-2 transition-all last:[&[data-state=open]>svg]:rotate-90",
-				className,
-			)}
-			{...props}
-		>
-			{children}
-			<ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent-foreground/50 ml-auto" />
-		</AccordionPrimitive.Trigger>
-	</AccordionPrimitive.Header>
-));
-AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName;
-
-const AccordionContent = React.forwardRef<
-	React.ElementRef<typeof AccordionPrimitive.Content>,
-	React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-	<AccordionPrimitive.Content
-		ref={ref}
-		className={cn(
-			"overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down",
-			className,
-		)}
+	<Collapsible.Trigger
+		render={
+			<button
+				ref={ref}
+				type="button"
+				className={cn(
+					"flex flex-1 w-full items-center py-2 transition-all last:[&[data-state=open]>svg]:rotate-90",
+					className,
+				)}
+			/>
+		}
 		{...props}
 	>
-		<div className="pb-1 pt-0">{children}</div>
-	</AccordionPrimitive.Content>
+		{children}
+		<ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent-foreground/50 ml-auto" />
+	</Collapsible.Trigger>
 ));
-AccordionContent.displayName = AccordionPrimitive.Content.displayName;
+TreeItemTrigger.displayName = "TreeItemTrigger";
 
 export { Tree, type TreeDataItem };

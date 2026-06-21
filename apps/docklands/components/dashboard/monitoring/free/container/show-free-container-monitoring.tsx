@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Meter } from "@cloudflare/kumo/components/meter";
 import { DockerBlockChart } from "./docker-block-chart";
 import { DockerCpuChart } from "./docker-cpu-chart";
 import { DockerDiskChart } from "./docker-disk-chart";
@@ -213,16 +213,18 @@ export const ContainerFreeMonitoring = ({
 			</header>
 
 			<div className="grid gap-6 lg:grid-cols-2">
-				<Card className="bg-background">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="text-sm font-medium">CPU Usage</CardTitle>
-					</CardHeader>
-					<CardContent>
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<h3 className="text-sm font-medium">CPU Usage</h3>
+					</div>
+					<div>
 						<div className="flex flex-col gap-2 w-full">
 							<span className="text-sm text-muted-foreground">
 								Used: {String(currentData.cpu.value ?? "0%")}
 							</span>
-							<Progress
+							<Meter
+								label="CPU usage"
+								showValue={false}
 								value={Number.parseInt(
 									String(currentData.cpu.value ?? "0%").replace("%", ""),
 									10,
@@ -231,18 +233,20 @@ export const ContainerFreeMonitoring = ({
 							/>
 							<DockerCpuChart accumulativeData={accumulativeData.cpu} />
 						</div>
-					</CardContent>
-				</Card>
-				<Card className="bg-background">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="text-sm font-medium">Memory Usage</CardTitle>
-					</CardHeader>
-					<CardContent>
+					</div>
+				</LayerCard>
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<h3 className="text-sm font-medium">Memory Usage</h3>
+					</div>
+					<div>
 						<div className="flex flex-col gap-2 w-full">
 							<span className="text-sm text-muted-foreground">
 								{`Used:  ${currentData.memory.value.used} / Limit: ${currentData.memory.value.total} `}
 							</span>
-							<Progress
+							<Meter
+								label="Memory usage"
+								showValue={false}
 								value={
 									// @ts-expect-error
 									(convertMemoryToBytes(currentData.memory.value.used) /
@@ -261,19 +265,21 @@ export const ContainerFreeMonitoring = ({
 								}
 							/>
 						</div>
-					</CardContent>
-				</Card>
+					</div>
+				</LayerCard>
 				{appName === "docklands" && (
-					<Card className="bg-background">
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">Disk Space</CardTitle>
-						</CardHeader>
-						<CardContent>
+					<LayerCard className="bg-background">
+						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
+							<h3 className="text-sm font-medium">Disk Space</h3>
+						</div>
+						<div>
 							<div className="flex flex-col gap-2 w-full">
 								<span className="text-sm text-muted-foreground">
 									{`Used:  ${currentData.disk.value.diskUsage} GB / Limit: ${currentData.disk.value.diskTotal} GB`}
 								</span>
-								<Progress
+								<Meter
+									label="Disk space"
+									showValue={false}
 									value={currentData.disk.value.diskUsedPercentage}
 									className="w-[100%]"
 								/>
@@ -282,48 +288,48 @@ export const ContainerFreeMonitoring = ({
 									diskTotal={currentData.disk.value.diskTotal}
 								/>
 							</div>
-						</CardContent>
-					</Card>
+						</div>
+					</LayerCard>
 				)}
 				{appName === "docklands" && (
-					<Card className="bg-background">
-						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<CardTitle className="text-sm font-medium">
+					<LayerCard className="bg-background">
+						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
+							<h3 className="text-sm font-medium">
 								Docker Disk Usage
-							</CardTitle>
-						</CardHeader>
-						<CardContent>
+							</h3>
+						</div>
+						<div>
 							<DockerDiskUsageChart />
-						</CardContent>
-					</Card>
+						</div>
+					</LayerCard>
 				)}
 
-				<Card className="bg-background">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="text-sm font-medium">Block I/O</CardTitle>
-					</CardHeader>
-					<CardContent>
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<h3 className="text-sm font-medium">Block I/O</h3>
+					</div>
+					<div>
 						<div className="flex flex-col gap-2 w-full">
 							<span className="text-sm text-muted-foreground">
 								{`Read:  ${currentData.block.value.readMb}  / Write: ${currentData.block.value.writeMb} `}
 							</span>
 							<DockerBlockChart accumulativeData={accumulativeData.block} />
 						</div>
-					</CardContent>
-				</Card>
-				<Card className="bg-background">
-					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle className="text-sm font-medium">Network I/O</CardTitle>
-					</CardHeader>
-					<CardContent>
+					</div>
+				</LayerCard>
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<h3 className="text-sm font-medium">Network I/O</h3>
+					</div>
+					<div>
 						<div className="flex flex-col gap-2 w-full">
 							<span className="text-sm text-muted-foreground">
 								{`In MB: ${currentData.network.value.inputMb}  / Out MB: ${currentData.network.value.outputMb} `}
 							</span>
 							<DockerNetworkChart accumulativeData={accumulativeData.network} />
 						</div>
-					</CardContent>
-				</Card>
+					</div>
+				</LayerCard>
 			</div>
 		</div>
 	);

@@ -2,17 +2,11 @@ import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
-import { Button } from "@/components/ui/button";
-import { CardContent } from "@/components/ui/card";
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 export const AddGithubProvider = () => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -55,22 +49,24 @@ export const AddGithubProvider = () => {
 	}, [activeOrganization?.id, session?.user?.id]);
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
 				<Button variant="secondary" className="flex items-center space-x-1">
 					<GithubIcon className="text-current fill-current" />
 					<span>Github</span>
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl ">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
+			
+)} />
+			<Dialog className="sm:max-w-2xl ">
+				<div>
+					<Dialog.Title className="flex items-center gap-2">
 						Github Provider <GithubIcon className="size-5" />
-					</DialogTitle>
-				</DialogHeader>
+					</Dialog.Title>
+				</div>
 
 				<div id="hook-form-add-project" className="grid w-full gap-1">
-					<CardContent className="p-0">
+					<div className="p-0">
 						<div className="flex flex-col ">
 							<p className="text-muted-foreground text-sm">
 								To integrate your GitHub account with our services, you'll need
@@ -140,9 +136,9 @@ export const AddGithubProvider = () => {
 								</div>
 							</form>
 						</div>
-					</CardContent>
+					</div>
 				</div>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

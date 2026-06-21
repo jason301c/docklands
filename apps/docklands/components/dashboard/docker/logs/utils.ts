@@ -1,5 +1,5 @@
 export type LogType = "error" | "warning" | "success" | "info" | "debug";
-export type LogVariant = "red" | "yellow" | "green" | "blue" | "orange";
+export type LogVariant = "red" | "green" | "blue" | "orange";
 
 export interface LogLine {
 	rawTimestamp: string | null;
@@ -26,7 +26,7 @@ const LOG_STYLES: Record<LogType, LogStyle> = {
 	},
 	debug: {
 		type: "debug",
-		variant: "yellow",
+		variant: "orange",
 		color: "bg-yellow-500/40",
 	},
 	success: {

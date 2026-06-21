@@ -3,13 +3,7 @@
 import { api } from "@/client/api/trpc";
 import { BuildsConcurrency } from "@/components/dashboard/settings/servers/actions/builds-concurrency";
 import { AlertBlock } from "@/components/shared/alert-block";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 
 const Page = () => {
 	const { data: servers } = api.server.all.useQuery();
@@ -17,16 +11,16 @@ const Page = () => {
 	return (
 		<div className="w-full">
 			<div className="h-full rounded-xl max-w-5xl mx-auto flex flex-col gap-4">
-				<Card className="h-full bg-sidebar p-2.5 rounded-xl mx-auto w-full">
+				<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl mx-auto w-full">
 					<div className="rounded-xl bg-background shadow-md">
-						<CardHeader>
-							<CardTitle className="text-xl">Concurrent Builds</CardTitle>
-							<CardDescription>
+						<div>
+							<h3 className="text-xl">Concurrent Builds</h3>
+							<p>
 								Configure how many deployments can build at the same time on
 								each server. Builds of the same service are always serialized.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="flex flex-col gap-6">
+							</p>
+						</div>
+						<div className="flex flex-col gap-6">
 							<AlertBlock type="warning">
 								Running multiple builds at once increases CPU, memory and disk
 								usage on each server. Each concurrent build runs its own builder
@@ -61,9 +55,9 @@ const Page = () => {
 									</p>
 								)}
 							</div>
-						</CardContent>
+						</div>
 					</div>
-				</Card>
+				</LayerCard>
 			</div>
 		</div>
 	);

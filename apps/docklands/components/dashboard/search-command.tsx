@@ -15,27 +15,31 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
-import {
-	CommandDialog,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-	CommandSeparator,
-} from "@/components/ui/command";
+import { CommandPalette } from "@cloudflare/kumo/components/command-palette";
 import { StatusTooltip } from "../shared/status-tooltip";
 
-// Extended Services type to include environmentId and environmentName for search navigation
 type SearchServices = Services & {
 	environmentId: string;
 	environmentName: string;
 };
 
+type SearchItem = {
+	id: string;
+	title: string;
+	searchText: string;
+	icon?: React.ReactNode;
+	status?: "running" | "error" | "done" | "idle" | "cancelled" | null;
+	onSelect: () => void;
+};
+
+type SearchGroup = {
+	label: string;
+	items: SearchItem[];
+};
+
 const extractAllServicesFromProject = (project: any): SearchServices[] => {
 	const allServices: SearchServices[] = [];
 
-	// Iterate through all environments in the project
 	project.environments?.forEach((environment: any) => {
 		const environmentServices = extractServices(environment);
 		const servicesWithEnvironmentId: SearchServices[] = environmentServices.map(
@@ -49,6 +53,30 @@ const extractAllServicesFromProject = (project: any): SearchServices[] => {
 	});
 
 	return allServices;
+};
+
+const toStatusTooltipStatus = (status?: string | null): SearchItem["status"] => {
+	if (
+		status === "running" ||
+		status === "error" ||
+		status === "done" ||
+		status === "idle" ||
+		status === "cancelled"
+	) {
+		return status;
+	}
+	return null;
+};
+
+const serviceIcon = (type: string) => {
+	if (type === "postgres") return <PostgresqlIcon className="h-6 w-6 mr-2" />;
+	if (type === "redis") return <RedisIcon className="h-6 w-6 mr-2" />;
+	if (type === "mariadb") return <MariadbIcon className="h-6 w-6 mr-2" />;
+	if (type === "mongo") return <MongodbIcon className="h-6 w-6 mr-2" />;
+	if (type === "mysql") return <MysqlIcon className="h-6 w-6 mr-2" />;
+	if (type === "application") return <GlobeIcon className="h-6 w-6 mr-2" />;
+	if (type === "compose") return <CircuitBoard className="h-6 w-6 mr-2" />;
+	return null;
 };
 
 export const SearchCommand = () => {
@@ -65,7 +93,7 @@ export const SearchCommand = () => {
 		const down = (e: KeyboardEvent) => {
 			if (e.code === "KeyJ" && (e.metaKey || e.ctrlKey)) {
 				e.preventDefault();
-				setOpen((open) => !open);
+				setOpen((current) => !current);
 			}
 		};
 
@@ -73,161 +101,163 @@ export const SearchCommand = () => {
 		return () => document.removeEventListener("keydown", down);
 	}, []);
 
+	const groups = React.useMemo<SearchGroup[]>(() => {
+		const navigate = (href: string) => {
+			router.push(href);
+			setOpen(false);
+		};
+
+		const projects: SearchItem[] =
+			data?.flatMap((project) => {
+				const defaultEnvironment =
+					project.environments.find((environment) => environment.isDefault) ||
+					project.environments?.[0];
+				if (!defaultEnvironment) return [];
+
+				const title = `${project.name} / ${defaultEnvironment.name}`;
+				return [
+					{
+						id: `project-${project.projectId}`,
+						title,
+						searchText: title.toLowerCase(),
+						icon: <BookIcon className="size-4 text-muted-foreground mr-2" />,
+						onSelect: () =>
+							navigate(
+								`/dashboard/project/${project.projectId}/environment/${defaultEnvironment.environmentId}`,
+							),
+					},
+				];
+			}) ?? [];
+
+		const services: SearchItem[] =
+			data?.flatMap((project) =>
+				extractAllServicesFromProject(project).map((service) => {
+					const title = `${project.name} / ${service.environmentName} / ${service.name}`;
+					return {
+						id: `service-${service.type}-${service.id}`,
+						title,
+						searchText: `${title} ${service.id} ${service.type}`.toLowerCase(),
+						icon: serviceIcon(service.type),
+						status: toStatusTooltipStatus(service.status),
+						onSelect: () =>
+							navigate(
+								`/dashboard/project/${project.projectId}/environment/${service.environmentId}/services/${service.type}/${service.id}`,
+							),
+					};
+				}),
+			) ?? [];
+
+		const applicationItems: SearchItem[] = [
+			{
+				id: "app-projects",
+				title: "Projects",
+				searchText: "projects",
+				onSelect: () => navigate("/dashboard/home"),
+			},
+			{
+				id: "app-deployments",
+				title: "Deployments",
+				searchText: "deployments",
+				onSelect: () => navigate("/dashboard/deployments"),
+			},
+			...(!isCloud
+				? [
+						{
+							id: "app-monitoring",
+							title: "Monitoring",
+							searchText: "monitoring",
+							onSelect: () => navigate("/dashboard/monitoring"),
+						},
+						{
+							id: "app-traefik",
+							title: "Traefik",
+							searchText: "traefik",
+							onSelect: () => navigate("/dashboard/traefik"),
+						},
+						{
+							id: "app-docker",
+							title: "Docker",
+							searchText: "docker",
+							onSelect: () => navigate("/dashboard/docker"),
+						},
+						{
+							id: "app-requests",
+							title: "Requests",
+							searchText: "requests",
+							onSelect: () => navigate("/dashboard/requests"),
+						},
+					]
+				: []),
+			{
+				id: "app-settings",
+				title: "Settings",
+				searchText: "settings",
+				onSelect: () => navigate("/dashboard/settings/server"),
+			},
+		];
+
+		return [
+			{ label: "Projects", items: projects },
+			{ label: "Services", items: services },
+			{ label: "Application", items: applicationItems },
+		].filter((group) => group.items.length > 0);
+	}, [data, isCloud, router]);
+
+	const filteredGroups = React.useMemo(() => {
+		const query = search.trim().toLowerCase();
+		if (!query) return groups;
+
+		return groups
+			.map((group) => ({
+				...group,
+				items: group.items.filter((item) => item.searchText.includes(query)),
+			}))
+			.filter((group) => group.items.length > 0);
+	}, [groups, search]);
+
 	return (
-		<div>
-			<CommandDialog open={open} onOpenChange={setOpen}>
-				<CommandInput
-					placeholder={"Search projects or settings"}
-					value={search}
-					onValueChange={setSearch}
-				/>
-				<CommandList>
-					<CommandEmpty>
-						No projects added yet. Click on Create project.
-					</CommandEmpty>
-					<CommandGroup heading={"Projects"}>
-						<CommandList>
-							{data?.map((project) => {
-								// Find default environment from accessible environments, or fall back to first accessible environment
-								const defaultEnvironment =
-									project.environments.find(
-										(environment) => environment.isDefault,
-									) || project?.environments?.[0];
-
-								if (!defaultEnvironment) return null;
-
-								return (
-									<CommandItem
-										key={project.projectId}
-										onSelect={() => {
-											router.push(
-												`/dashboard/project/${project.projectId}/environment/${defaultEnvironment.environmentId}`,
-											);
-											setOpen(false);
-										}}
+		<CommandPalette.Root
+			open={open}
+			onOpenChange={setOpen}
+			items={filteredGroups}
+			value={search}
+			onValueChange={(value) => value !== null && setSearch(value as never)}
+			itemToStringValue={(group: SearchGroup) => group.label}
+			getSelectableItems={(items: SearchGroup[]) =>
+				items.flatMap((group) => group.items)
+			}
+			onSelect={(item: SearchItem) => item.onSelect()}
+		>
+			<CommandPalette.Input placeholder="Search projects or settings" />
+			<CommandPalette.List>
+				<CommandPalette.Results>
+					{(group: SearchGroup) => (
+						<CommandPalette.Group items={group.items}>
+							<CommandPalette.GroupLabel>
+								{group.label}
+							</CommandPalette.GroupLabel>
+							<CommandPalette.Items>
+								{(item: SearchItem) => (
+									<CommandPalette.Item
+										key={item.id}
+										value={item}
+										onClick={item.onSelect}
 									>
-										<BookIcon className="size-4 text-muted-foreground mr-2" />
-										{project.name} / {defaultEnvironment.name}
-									</CommandItem>
-								);
-							})}
-						</CommandList>
-					</CommandGroup>
-					<CommandSeparator />
-					<CommandGroup heading={"Services"}>
-						<CommandList>
-							{data?.map((project) => {
-								const applications: SearchServices[] =
-									extractAllServicesFromProject(project);
-								return applications.map((application) => (
-									<CommandItem
-										key={application.id}
-										onSelect={() => {
-											router.push(
-												`/dashboard/project/${project.projectId}/environment/${application.environmentId}/services/${application.type}/${application.id}`,
-											);
-											setOpen(false);
-										}}
-									>
-										{application.type === "postgres" && (
-											<PostgresqlIcon className="h-6 w-6 mr-2" />
+										{item.icon}
+										<span className="flex-grow">{item.title}</span>
+										{item.status && (
+											<div>
+												<StatusTooltip status={item.status} />
+											</div>
 										)}
-										{application.type === "redis" && (
-											<RedisIcon className="h-6 w-6 mr-2" />
-										)}
-										{application.type === "mariadb" && (
-											<MariadbIcon className="h-6 w-6 mr-2" />
-										)}
-										{application.type === "mongo" && (
-											<MongodbIcon className="h-6 w-6 mr-2" />
-										)}
-										{application.type === "mysql" && (
-											<MysqlIcon className="h-6 w-6 mr-2" />
-										)}
-										{application.type === "application" && (
-											<GlobeIcon className="h-6 w-6 mr-2" />
-										)}
-										{application.type === "compose" && (
-											<CircuitBoard className="h-6 w-6 mr-2" />
-										)}
-										<span className="flex-grow">
-											{project.name} / {application.environmentName} /{" "}
-											{application.name}{" "}
-											<div style={{ display: "none" }}>{application.id}</div>
-										</span>
-										<div>
-											<StatusTooltip status={application.status} />
-										</div>
-									</CommandItem>
-								));
-							})}
-						</CommandList>
-					</CommandGroup>
-					<CommandSeparator />
-					<CommandGroup heading={"Application"} hidden={true}>
-						<CommandItem
-							onSelect={() => {
-								router.push("/dashboard/home");
-								setOpen(false);
-							}}
-						>
-							Projects
-						</CommandItem>
-						<CommandItem
-							onSelect={() => {
-								router.push("/dashboard/deployments");
-								setOpen(false);
-							}}
-						>
-							Deployments
-						</CommandItem>
-						{!isCloud && (
-							<>
-								<CommandItem
-									onSelect={() => {
-										router.push("/dashboard/monitoring");
-										setOpen(false);
-									}}
-								>
-									Monitoring
-								</CommandItem>
-								<CommandItem
-									onSelect={() => {
-										router.push("/dashboard/traefik");
-										setOpen(false);
-									}}
-								>
-									Traefik
-								</CommandItem>
-								<CommandItem
-									onSelect={() => {
-										router.push("/dashboard/docker");
-										setOpen(false);
-									}}
-								>
-									Docker
-								</CommandItem>
-								<CommandItem
-									onSelect={() => {
-										router.push("/dashboard/requests");
-										setOpen(false);
-									}}
-								>
-									Requests
-								</CommandItem>
-							</>
-						)}
-						<CommandItem
-							onSelect={() => {
-								router.push("/dashboard/settings/server");
-								setOpen(false);
-							}}
-						>
-							Settings
-						</CommandItem>
-					</CommandGroup>
-				</CommandList>
-			</CommandDialog>
-		</div>
+									</CommandPalette.Item>
+								)}
+							</CommandPalette.Items>
+						</CommandPalette.Group>
+					)}
+				</CommandPalette.Results>
+				<CommandPalette.Empty>No results found.</CommandPalette.Empty>
+			</CommandPalette.List>
+		</CommandPalette.Root>
 	);
 };

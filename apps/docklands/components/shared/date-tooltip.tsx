@@ -1,10 +1,5 @@
 import { format, formatDistanceToNow } from "date-fns";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
 
 interface Props {
@@ -15,9 +10,8 @@ interface Props {
 
 export const DateTooltip = ({ date, children, className }: Props) => {
 	return (
-		<TooltipProvider delayDuration={0}>
-			<Tooltip>
-				<TooltipTrigger>
+		<TooltipProvider delay={0}>
+			<Tooltip content={<>{format(new Date(date), "PPpp")}</>}>
 					<span
 						className={cn(
 							"flex items-center text-muted-foreground text-left",
@@ -29,9 +23,7 @@ export const DateTooltip = ({ date, children, className }: Props) => {
 							addSuffix: true,
 						})}
 					</span>
-				</TooltipTrigger>
-				<TooltipContent>{format(new Date(date), "PPpp")}</TooltipContent>
-			</Tooltip>
+				</Tooltip>
 		</TooltipProvider>
 	);
 };

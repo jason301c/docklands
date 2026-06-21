@@ -1,6 +1,6 @@
 import { MinusIcon, PlusIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
 
 export interface UnitConverter {
 	toValue: (raw: string | undefined) => number;
@@ -51,7 +51,8 @@ export const NumberInputWithSteps = ({
 				<Button
 					type="button"
 					variant="outline"
-					size="icon"
+					shape="square"
+					aria-label="Decrease value"
 					className="h-9 w-9 shrink-0"
 					onClick={handleDecrement}
 					disabled={numericValue <= 0}
@@ -67,7 +68,8 @@ export const NumberInputWithSteps = ({
 				<Button
 					type="button"
 					variant="outline"
-					size="icon"
+					shape="square"
+					aria-label="Increase value"
 					className="h-9 w-9 shrink-0"
 					onClick={handleIncrement}
 				>

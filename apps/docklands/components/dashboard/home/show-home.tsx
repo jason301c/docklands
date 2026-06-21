@@ -3,8 +3,8 @@ import { ArrowRight, Rocket, Server } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 
 type DeploymentStatus = "idle" | "running" | "done" | "error";
 
@@ -163,18 +163,20 @@ export const ShowHome = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar p-2.5 rounded-xl min-h-[85vh]">
+			<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl min-h-[85vh]">
 				<div className="rounded-xl bg-background shadow-md p-6 flex flex-col gap-6 h-full">
 					<div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
 						<h1 className="text-3xl font-semibold tracking-tight">
 							{firstName ? `Welcome back, ${firstName}` : "Welcome back"}
 						</h1>
-						<Button asChild variant="secondary" className="w-fit">
-							<Link href="/dashboard/projects">
-								Go to projects
-								<ArrowRight className="size-4" />
-							</Link>
-						</Button>
+						<LinkButton
+							href="/dashboard/projects"
+							variant="secondary"
+							className="w-fit"
+						>
+							Go to projects
+							<ArrowRight className="size-4" />
+						</LinkButton>
 					</div>
 
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -285,7 +287,7 @@ export const ShowHome = () => {
 						)}
 					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

@@ -31,41 +31,22 @@ import {
 	User,
 	Users,
 } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
+import { Breadcrumbs } from "@cloudflare/kumo/components/breadcrumbs";
+import { Collapsible } from "@cloudflare/kumo/components/collapsible";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Separator } from "@/components/shared/separator";
 import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-} from "@/components/ui/breadcrumb";
-import {
-	Collapsible,
-	CollapsibleContent,
-	CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import {
-	SIDEBAR_COOKIE_NAME,
 	Sidebar,
 	SidebarContent,
 	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupLabel,
 	SidebarHeader,
-	SidebarInset,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
@@ -76,14 +57,14 @@ import {
 	SidebarRail,
 	SidebarTrigger,
 	useSidebar,
-} from "@/components/ui/sidebar";
+} from "@cloudflare/kumo/components/sidebar";
 import type { AppRouter } from "@/server/api/root";
 import { cn } from "@/shared/utils";
 import { AddOrganization } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
 import { Logo } from "../shared/logo";
-import { Button } from "../ui/button";
-import { TimeBadge } from "../ui/time-badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { TimeBadge } from "@/components/shared/time-badge";
 import { UpdateServerButton } from "./update-server";
 import { UserNav } from "./user-nav";
 
@@ -91,6 +72,8 @@ import { UserNav } from "./user-nav";
 type AuthQueryOutput = inferRouterOutputs<AppRouter>["user"]["get"];
 type PermissionsOutput =
 	inferRouterOutputs<AppRouter>["user"]["getPermissions"];
+
+const SIDEBAR_COOKIE_NAME = "sidebar_state";
 
 type EnabledOpts = {
 	auth?: AuthQueryOutput;
@@ -527,9 +510,10 @@ function SidebarLogo() {
 					{/* Organization Logo and Selector */}
 					<SidebarMenuItem className={"w-full"}>
 						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
+							<DropdownMenu.Trigger
+								render={
 								<SidebarMenuButton
-									size={isCollapsed ? "sm" : "lg"}
+									size={isCollapsed ? "sm" : "base"}
 									className={cn(
 										"data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
 										isCollapsed &&
@@ -571,16 +555,17 @@ function SidebarLogo() {
 										className={cn("ml-auto", isCollapsed && "hidden")}
 									/>
 								</SidebarMenuButton>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent
+								}
+							/>
+							<DropdownMenu.Content
 								className="rounded-lg max-h-[min(70vh,28rem)] flex flex-col"
 								align="start"
 								side={isMobile ? "bottom" : "right"}
 								sideOffset={4}
 							>
-								<DropdownMenuLabel className="text-xs text-muted-foreground shrink-0">
+								<DropdownMenu.Label className="text-xs text-muted-foreground shrink-0">
 									Organizations
-								</DropdownMenuLabel>
+								</DropdownMenu.Label>
 								<div className="overflow-y-auto overflow-x-hidden min-h-0 -mx-1 px-1">
 									{organizations?.map((org) => {
 										const isDefault = org.members?.[0]?.isDefault ?? false;
@@ -589,7 +574,7 @@ function SidebarLogo() {
 												className="flex flex-row justify-between"
 												key={org.name}
 											>
-												<DropdownMenuItem
+												<DropdownMenu.Item
 													onClick={async () => {
 														await authClient.organization.setActive({
 															organizationId: org.id,
@@ -612,19 +597,24 @@ function SidebarLogo() {
 															logoUrl={org.logo ?? undefined}
 														/>
 													</div>
-												</DropdownMenuItem>
+												</DropdownMenu.Item>
 
 												<div className="flex items-center gap-2">
 													<Button
 														variant="ghost"
-														size="icon"
+														shape="square"
+														aria-label={
+															isDefault
+																? "Default organization"
+																: "Set as default organization"
+														}
 														className={cn(
 															"group",
 															isDefault
 																? "hover:bg-yellow-500/10"
 																: "hover:bg-blue-500/10",
 														)}
-														isLoading={isSettingDefault && !isDefault}
+														loading={isSettingDefault && !isDefault}
 														disabled={isDefault}
 														onClick={async (e) => {
 															if (isDefault) return;
@@ -690,9 +680,10 @@ function SidebarLogo() {
 															>
 																<Button
 																	variant="ghost"
-																	size="icon"
+																	shape="square"
+																	aria-label="Delete organization"
 																	className="group hover:bg-red-500/10"
-																	isLoading={isRemoving}
+																	loading={isRemoving}
 																>
 																	<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 																</Button>
@@ -708,21 +699,23 @@ function SidebarLogo() {
 									user?.role === "admin" ||
 									isCloud) && (
 									<>
-										<DropdownMenuSeparator />
+										<DropdownMenu.Separator />
 										<AddOrganization />
 									</>
 								)}
-							</DropdownMenuContent>
+							</DropdownMenu.Content>
 						</DropdownMenu>
 					</SidebarMenuItem>
 
 					{/* Notification Bell */}
 					<SidebarMenuItem className={cn(isCollapsed && "mt-2")}>
 						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
+							<DropdownMenu.Trigger
+								render={
 								<Button
 									variant="ghost"
-									size="icon"
+									shape="square"
+									aria-label="Open invitations"
 									className={cn(
 										"relative",
 										isCollapsed && "h-8 w-8 p-1.5 mx-auto",
@@ -731,22 +724,23 @@ function SidebarLogo() {
 									<Bell className="size-4" />
 									{invitations && invitations.length > 0 && (
 										<span className="absolute -top-0 -right-0 flex size-4 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
-											{invitations.length}
-										</span>
-									)}
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent
+										{invitations.length}
+									</span>
+								)}
+							</Button>
+								}
+							/>
+							<DropdownMenu.Content
 								align="start"
 								side={"right"}
 								className="w-80"
 							>
-								<DropdownMenuLabel>Pending Invitations</DropdownMenuLabel>
+								<DropdownMenu.Label>Pending Invitations</DropdownMenu.Label>
 								<div className="flex flex-col gap-2">
 									{invitations && invitations.length > 0 ? (
 										invitations.map((invitation) => (
 											<div key={invitation.id} className="flex flex-col gap-2">
-												<DropdownMenuItem
+												<DropdownMenu.Item
 													className="flex flex-col items-start gap-1 p-3"
 													onSelect={(e) => e.preventDefault()}
 												>
@@ -760,7 +754,7 @@ function SidebarLogo() {
 													<div className="text-xs text-muted-foreground">
 														Role: {invitation.role}
 													</div>
-												</DropdownMenuItem>
+												</DropdownMenu.Item>
 												<DialogAction
 													title="Accept Invitation"
 													description="Are you sure you want to accept this invitation?"
@@ -789,12 +783,12 @@ function SidebarLogo() {
 											</div>
 										))
 									) : (
-										<DropdownMenuItem disabled>
+										<DropdownMenu.Item disabled>
 											No pending invitations
-										</DropdownMenuItem>
+										</DropdownMenu.Item>
 									)}
 								</div>
-							</DropdownMenuContent>
+							</DropdownMenu.Content>
 						</DropdownMenu>
 					</SidebarMenuItem>
 				</SidebarMenu>
@@ -864,6 +858,8 @@ export default function Page({ children }: Props) {
 		<SidebarProvider
 			defaultOpen={defaultOpen}
 			open={defaultOpen}
+			collapsible="icon"
+			variant="floating"
 			onOpenChange={(open) => {
 				setDefaultOpen(open);
 
@@ -878,7 +874,7 @@ export default function Page({ children }: Props) {
 			}
 		>
 			<MobileCloser />
-			<Sidebar collapsible="icon" variant="floating">
+			<Sidebar>
 				<SidebarHeader>
 					{/* <SidebarMenuButton
 						className="group-data-[collapsible=icon]:!p-0"
@@ -900,79 +896,71 @@ export default function Page({ children }: Props) {
 										);
 
 								return (
-									<Collapsible
-										key={item.title}
-										asChild
-										defaultOpen={isActive}
-										className="group/collapsible"
-									>
-										<SidebarMenuItem>
-											{isSingle ? (
-												<SidebarMenuButton
-													asChild
-													tooltip={item.title}
-													className={cn(isActive && "bg-border")}
-												>
-													<Link
-														href={item.url}
-														className="flex w-full items-center gap-2"
-													>
-														{item.icon && (
-															<item.icon
-																className={cn(isActive && "text-primary")}
-															/>
-														)}
-														<span>{item.title}</span>
-													</Link>
-												</SidebarMenuButton>
-											) : (
-												<>
-													<CollapsibleTrigger asChild>
+									<SidebarMenuItem key={item.title}>
+										{isSingle ? (
+											<SidebarMenuButton
+												href={item.url}
+												tooltip={item.title}
+												active={isActive}
+												icon={item.icon}
+												className={cn(isActive && "bg-border")}
+											>
+												<span>{item.title}</span>
+											</SidebarMenuButton>
+										) : (
+											<Collapsible.Root
+												defaultOpen={isActive}
+												className="group/collapsible"
+											>
+												<Collapsible.Trigger
+													render={
 														<SidebarMenuButton
 															tooltip={item.title}
-															isActive={isActive}
+															active={isActive}
+															icon={item.icon}
 														>
-															{item.icon && <item.icon />}
-
 															<span>{item.title}</span>
 															{item.items?.length && (
 																<ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
 															)}
 														</SidebarMenuButton>
-													</CollapsibleTrigger>
-													<CollapsibleContent>
-														<SidebarMenuSub>
-															{item.items?.map((subItem) => (
+													}
+												/>
+												<Collapsible.Panel>
+													<SidebarMenuSub>
+														{item.items?.map((subItem) => {
+															const subActive = isActiveRoute({
+																itemUrl: subItem.url,
+																pathname,
+															});
+
+															return (
 																<SidebarMenuSubItem key={subItem.title}>
 																	<SidebarMenuSubButton
-																		asChild
-																		className={cn(isActive && "bg-border")}
+																		href={subItem.url}
+																		active={subActive}
+																		className={cn(subActive && "bg-border")}
 																	>
-																		<Link
-																			href={subItem.url}
-																			className="flex w-full items-center"
-																		>
-																			{subItem.icon && (
-																				<span className="mr-2">
-																					<subItem.icon
-																						className={cn(
-																							"h-4 w-4 text-muted-foreground",
-																							isActive && "text-primary",
-																						)}
-																					/>
-																				</span>
-																			)}
-																			<span>{subItem.title}</span>
-																		</Link>
+																		{subItem.icon && (
+																			<span className="mr-2">
+																				<subItem.icon
+																					className={cn(
+																						"h-4 w-4 text-muted-foreground",
+																						subActive && "text-primary",
+																					)}
+																				/>
+																			</span>
+																		)}
+																		<span>{subItem.title}</span>
 																	</SidebarMenuSubButton>
 																</SidebarMenuSubItem>
-															))}
-														</SidebarMenuSub>
-													</CollapsibleContent>
-												</>
-											)}
-										</SidebarMenuItem>
-									</Collapsible>
+															);
+														})}
+													</SidebarMenuSub>
+												</Collapsible.Panel>
+											</Collapsible.Root>
+										)}
+									</SidebarMenuItem>
 								);
 							})}
 						</SidebarMenu>
@@ -989,79 +977,71 @@ export default function Page({ children }: Props) {
 										);
 
 								return (
-									<Collapsible
-										key={item.title}
-										asChild
-										defaultOpen={isActive}
-										className="group/collapsible"
-									>
-										<SidebarMenuItem>
-											{isSingle ? (
-												<SidebarMenuButton
-													asChild
-													tooltip={item.title}
-													className={cn(isActive && "bg-border")}
-												>
-													<Link
-														href={item.url}
-														className="flex w-full items-center gap-2"
-													>
-														{item.icon && (
-															<item.icon
-																className={cn(isActive && "text-primary")}
-															/>
-														)}
-														<span>{item.title}</span>
-													</Link>
-												</SidebarMenuButton>
-											) : (
-												<>
-													<CollapsibleTrigger asChild>
+									<SidebarMenuItem key={item.title}>
+										{isSingle ? (
+											<SidebarMenuButton
+												href={item.url}
+												tooltip={item.title}
+												active={isActive}
+												icon={item.icon}
+												className={cn(isActive && "bg-border")}
+											>
+												<span>{item.title}</span>
+											</SidebarMenuButton>
+										) : (
+											<Collapsible.Root
+												defaultOpen={isActive}
+												className="group/collapsible"
+											>
+												<Collapsible.Trigger
+													render={
 														<SidebarMenuButton
 															tooltip={item.title}
-															isActive={isActive}
+															active={isActive}
+															icon={item.icon}
 														>
-															{item.icon && <item.icon />}
-
 															<span>{item.title}</span>
 															{item.items?.length && (
 																<ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
 															)}
 														</SidebarMenuButton>
-													</CollapsibleTrigger>
-													<CollapsibleContent>
-														<SidebarMenuSub>
-															{item.items?.map((subItem) => (
+													}
+												/>
+												<Collapsible.Panel>
+													<SidebarMenuSub>
+														{item.items?.map((subItem) => {
+															const subActive = isActiveRoute({
+																itemUrl: subItem.url,
+																pathname,
+															});
+
+															return (
 																<SidebarMenuSubItem key={subItem.title}>
 																	<SidebarMenuSubButton
-																		asChild
-																		className={cn(isActive && "bg-border")}
+																		href={subItem.url}
+																		active={subActive}
+																		className={cn(subActive && "bg-border")}
 																	>
-																		<Link
-																			href={subItem.url}
-																			className="flex w-full items-center"
-																		>
-																			{subItem.icon && (
-																				<span className="mr-2">
-																					<subItem.icon
-																						className={cn(
-																							"h-4 w-4 text-muted-foreground",
-																							isActive && "text-primary",
-																						)}
-																					/>
-																				</span>
-																			)}
-																			<span>{subItem.title}</span>
-																		</Link>
+																		{subItem.icon && (
+																			<span className="mr-2">
+																				<subItem.icon
+																					className={cn(
+																						"h-4 w-4 text-muted-foreground",
+																						subActive && "text-primary",
+																					)}
+																				/>
+																			</span>
+																		)}
+																		<span>{subItem.title}</span>
 																	</SidebarMenuSubButton>
 																</SidebarMenuSubItem>
-															))}
-														</SidebarMenuSub>
-													</CollapsibleContent>
-												</>
-											)}
-										</SidebarMenuItem>
-									</Collapsible>
+															);
+														})}
+													</SidebarMenuSub>
+												</Collapsible.Panel>
+											</Collapsible.Root>
+										)}
+									</SidebarMenuItem>
 								);
 							})}
 						</SidebarMenu>
@@ -1071,18 +1051,12 @@ export default function Page({ children }: Props) {
 						<SidebarMenu>
 							{help.map((item: ExternalLink) => (
 								<SidebarMenuItem key={item.name}>
-									<SidebarMenuButton asChild>
-										<a
-											href={item.url}
-											target="_blank"
-											rel="noopener noreferrer"
-											className="flex w-full items-center gap-2"
-										>
-											<span className="mr-2">
-												<item.icon className="h-4 w-4" />
-											</span>
-											<span>{item.name}</span>
-										</a>
+									<SidebarMenuButton
+										href={item.url}
+										target="_blank"
+										icon={item.icon}
+									>
+										<span>{item.name}</span>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
 							))}
@@ -1108,27 +1082,18 @@ export default function Page({ children }: Props) {
 				</SidebarFooter>
 				<SidebarRail />
 			</Sidebar>
-			<SidebarInset>
+			<main className="flex min-h-svh flex-1 flex-col">
 				{!includesProjects && (
 					<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
 						<div className="flex items-center justify-between w-full px-4">
 							<div className="flex items-center gap-2">
 								<SidebarTrigger className="-ml-1" />
 								<Separator orientation="vertical" className="mr-2 h-4" />
-								<Breadcrumb>
-									<BreadcrumbList>
-										<BreadcrumbItem className="block">
-											<BreadcrumbLink asChild>
-												<Link
-													href={activeItem?.url || "/"}
-													className="flex items-center gap-1.5"
-												>
-													{activeItem?.title}
-												</Link>
-											</BreadcrumbLink>
-										</BreadcrumbItem>
-									</BreadcrumbList>
-								</Breadcrumb>
+								<Breadcrumbs>
+									<Breadcrumbs.Link href={activeItem?.url || "/"}>
+										{activeItem?.title}
+									</Breadcrumbs.Link>
+								</Breadcrumbs>
 							</div>
 							{!isCloud && <TimeBadge />}
 						</div>
@@ -1136,7 +1101,7 @@ export default function Page({ children }: Props) {
 				)}
 
 				<div className="flex flex-col w-full p-4 pt-0">{children}</div>
-			</SidebarInset>
+			</main>
 		</SidebarProvider>
 	);
 }

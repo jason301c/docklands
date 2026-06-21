@@ -11,25 +11,14 @@ import {
 	User,
 } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { TerminalModal } from "../web-server/terminal-modal";
 import { ShowServerActions } from "./actions/show-server-actions";
 import { HandleServers } from "./handle-servers";
@@ -44,18 +33,18 @@ export const ShowServers = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full  p-2.5 rounded-xl  max-w-5xl mx-auto">
+			<LayerCard className="h-full  p-2.5 rounded-xl  max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
+					<div className="">
+						<h3 className="text-xl flex flex-row gap-2">
 							<ServerIcon className="size-6 text-muted-foreground self-center" />
 							Servers
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Add servers to deploy your applications remotely.
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-2 py-8 border-t">
+						</p>
+					</div>
+					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
 								<span>Loading...</span>
@@ -95,17 +84,17 @@ export const ShowServers = () => {
 														const isActive = server.serverStatus === "active";
 														const isBuildServer = server.serverType === "build";
 														return (
-															<Card
+															<LayerCard
 																key={server.serverId}
 																className="relative hover:shadow-lg transition-shadow flex flex-col bg-transparent"
 															>
-																<CardHeader className="pb-3">
+																<div className="pb-3">
 																	<div className="flex items-start justify-between gap-2">
 																		<div className="flex min-w-0 items-center gap-2">
 																			<ServerIcon className="size-5 shrink-0 text-muted-foreground" />
-																			<CardTitle className="text-lg break-words min-w-0">
+																			<h3 className="text-lg break-words min-w-0">
 																				{server.name}
-																			</CardTitle>
+																			</h3>
 																		</div>
 																	</div>
 																	<TooltipProvider>
@@ -113,25 +102,12 @@ export const ShowServers = () => {
 																			{isCloud && (
 																				<>
 																					{server.serverStatus === "active" ? (
-																						<Badge variant="default">
+																						<Badge variant="primary">
 																							{server.serverStatus}
 																						</Badge>
 																					) : (
-																						<Tooltip delayDuration={0}>
-																							<TooltipTrigger asChild>
-																								<span className="inline-block">
-																									<Badge
-																										variant="destructive"
-																										className="cursor-help"
-																									>
-																										{server.serverStatus}
-																									</Badge>
-																								</span>
-																							</TooltipTrigger>
-																							<TooltipContent
-																								className="max-w-xs"
-																								side="bottom"
-																							>
+																						<Tooltip delay={0} side="bottom" className="max-w-xs" content={(
+
 																								<p className="text-sm">
 																									This server is currently
 																									marked inactive. Update the
@@ -139,8 +115,19 @@ export const ShowServers = () => {
 																									details before deploying
 																									services to it.
 																								</p>
-																							</TooltipContent>
-																						</Tooltip>
+																							
+)} render={(
+
+																								<span className="inline-block">
+																									<Badge
+																										variant="error"
+																										className="cursor-help"
+																									>
+																										{server.serverStatus}
+																									</Badge>
+																								</span>
+																							
+)} />
 																					)}
 																				</>
 																			)}
@@ -148,15 +135,15 @@ export const ShowServers = () => {
 																				variant={
 																					isBuildServer
 																						? "secondary"
-																						: "default"
+																						: "secondary"
 																				}
 																			>
 																				{server.serverType}
 																			</Badge>
 																		</div>
 																	</TooltipProvider>
-																</CardHeader>
-																<CardContent className="space-y-3 flex-1 flex flex-col">
+																</div>
+																<div className="space-y-3 flex-1 flex flex-col">
 																	<div className="flex items-center gap-2 text-sm">
 																		<Network className="size-4 text-muted-foreground" />
 																		<span className="text-muted-foreground">
@@ -205,16 +192,7 @@ export const ShowServers = () => {
 																	{isActive && (
 																		<div className="flex items-center  gap-2 pt-3 border-t mt-auto flex-wrap">
 																			<div className="flex items-center gap-2 w-full">
-																				<Tooltip>
-																					<TooltipTrigger asChild>
-																						<SetupServer
-																							serverId={server.serverId}
-																						/>
-																					</TooltipTrigger>
-																					<TooltipContent
-																						className="max-w-xs"
-																						side="bottom"
-																					>
+																				<Tooltip content={<>
 																						<div className="space-y-1">
 																							<p className="font-semibold">
 																								Setup Server
@@ -225,70 +203,70 @@ export const ShowServers = () => {
 																								other essential services
 																							</p>
 																						</div>
-																					</TooltipContent>
-																				</Tooltip>
+																					</>} className="max-w-xs"
+																						side="bottom"  asChild>
+																						<SetupServer
+																							serverId={server.serverId}
+																						/>
+																					</Tooltip>
 																			</div>
 
 																			<TooltipProvider>
 																				{server.sshKeyId && (
-																					<Tooltip>
-																						<TooltipTrigger asChild>
+																					<Tooltip content={<>
+																							<p>Terminal</p>
+																						</>}  asChild>
 																							<div>
 																								<TerminalModal
 																									serverId={server.serverId}
 																									asButton={true}
 																								>
-																									<Button
+																									<Button aria-label="Action"
 																										variant="outline"
-																										size="icon"
+																										shape="square"
 																										className="h-9 w-9"
 																									>
 																										<Terminal className="h-4 w-4" />
 																									</Button>
 																								</TerminalModal>
 																							</div>
-																						</TooltipTrigger>
-																						<TooltipContent>
-																							<p>Terminal</p>
-																						</TooltipContent>
-																					</Tooltip>
+																						</Tooltip>
 																				)}
 
-																				<Tooltip>
-																					<TooltipTrigger asChild>
+																				<Tooltip content={<>
+																						<p>Edit Server</p>
+																					</>}  asChild>
 																						<div>
 																							<HandleServers
 																								serverId={server.serverId}
 																								asButton={true}
 																							/>
 																						</div>
-																					</TooltipTrigger>
-																					<TooltipContent>
-																						<p>Edit Server</p>
-																					</TooltipContent>
-																				</Tooltip>
+																					</Tooltip>
 
 																				{server.sshKeyId && !isBuildServer && (
-																					<Tooltip>
-																						<TooltipTrigger asChild>
+																					<Tooltip content={<>
+																							<p>Web Server Actions</p>
+																						</>}  asChild>
 																							<div>
 																								<ShowServerActions
 																									serverId={server.serverId}
 																									asButton={true}
 																								/>
 																							</div>
-																						</TooltipTrigger>
-																						<TooltipContent>
-																							<p>Web Server Actions</p>
-																						</TooltipContent>
-																					</Tooltip>
+																						</Tooltip>
 																				)}
 
 																				<div className="flex-1" />
 
 																				{permissions?.server.delete && (
-																					<Tooltip>
-																						<TooltipTrigger asChild>
+																					<Tooltip content={<>
+																							<p>
+																								{canDelete
+																									? "Delete Server"
+																									: "Cannot delete - has active services"}
+																							</p>
+																						</>}  asChild>
 																							<div>
 																								<DialogAction
 																									disabled={!canDelete}
@@ -332,30 +310,22 @@ export const ShowServers = () => {
 																											});
 																									}}
 																								>
-																									<Button
+																									<Button aria-label="Delete"
 																										variant="ghost"
-																										size="icon"
+																										shape="square"
 																										className={`h-9 w-9 ${canDelete ? "text-destructive hover:text-destructive hover:bg-destructive/10" : "text-muted-foreground hover:bg-muted"}`}
 																									>
 																										<Trash2 className="h-4 w-4" />
 																									</Button>
 																								</DialogAction>
 																							</div>
-																						</TooltipTrigger>
-																						<TooltipContent>
-																							<p>
-																								{canDelete
-																									? "Delete Server"
-																									: "Cannot delete - has active services"}
-																							</p>
-																						</TooltipContent>
-																					</Tooltip>
+																						</Tooltip>
 																				)}
 																			</TooltipProvider>
 																		</div>
 																	)}
-																</CardContent>
-															</Card>
+																</div>
+															</LayerCard>
 														);
 													})}
 												</div>
@@ -375,9 +345,9 @@ export const ShowServers = () => {
 								)}
 							</>
 						)}
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

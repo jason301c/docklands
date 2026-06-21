@@ -1,18 +1,12 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	type ChartConfig,
 	ChartContainer,
 	ChartLegend,
 	ChartLegendContent,
 	ChartTooltip,
-} from "@/components/ui/chart";
+} from "@/components/shared/chart";
 import { formatTimestamp } from "@/shared/utils";
 
 interface NetworkChartProps {
@@ -34,15 +28,15 @@ export function NetworkChart({ data }: NetworkChartProps) {
 	const latestData = data[data.length - 1] || {};
 
 	return (
-		<Card className="bg-transparent">
-			<CardHeader className="border-b py-5">
-				<CardTitle>Network</CardTitle>
-				<CardDescription>
+		<LayerCard className="bg-transparent">
+			<div className="border-b py-5">
+				<h3>Network</h3>
+				<p>
 					Network Traffic: ↑ {latestData.networkOut} KB/s ↓{" "}
 					{latestData.networkIn} KB/s
-				</CardDescription>
-			</CardHeader>
-			<CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
+				</p>
+			</div>
+			<div className="px-2 pt-4 sm:px-6 sm:pt-6">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-auto h-[250px] w-full"
@@ -139,7 +133,7 @@ export function NetworkChart({ data }: NetworkChartProps) {
 						/>
 					</AreaChart>
 				</ChartContainer>
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 }

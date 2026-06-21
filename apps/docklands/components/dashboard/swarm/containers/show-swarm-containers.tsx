@@ -8,9 +8,9 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/shared/alert";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	NoRunningContainers,
 	NoServices,
@@ -259,10 +259,10 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 		<div className="flex flex-col gap-4">
 			<header className="flex items-center flex-wrap gap-4 justify-between">
 				<div className="space-y-1">
-					<CardTitle className="text-xl flex flex-row gap-2">
+					<h3 className="text-xl flex flex-row gap-2">
 						<Container className="size-6 text-muted-foreground self-center" />
 						Container Breakdown by Node
-					</CardTitle>
+					</h3>
 					<p className="text-sm text-muted-foreground">
 						Showing containers across {nodes?.length ?? 0} swarm node(s)
 						{statsLoading ? "" : " (metrics refresh every 5s)"}

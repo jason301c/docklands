@@ -1,10 +1,10 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -12,8 +12,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const DockerProviderSchema = z.object({
 	dockerImage: z.string().min(1, {
@@ -152,7 +152,7 @@ export const SaveDockerProvider = ({ applicationId }: Props) => {
 					<Button
 						type="submit"
 						className="w-fit"
-						isLoading={form.formState.isSubmitting}
+						loading={form.formState.isSubmitting}
 					>
 						Save{" "}
 					</Button>

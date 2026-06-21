@@ -4,16 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -21,8 +13,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const DATABASE_PASSWORD_REGEX = /^[a-zA-Z0-9@#%^&*()_+\-=[\]{}|;:,.<>?~`]*$/;
 
@@ -83,7 +75,7 @@ export const UpdateDatabasePassword = ({
 		}
 	};
 	return (
-		<Dialog
+		<Dialog.Root
 			open={isOpen}
 			onOpenChange={(open) => {
 				setIsOpen(open);
@@ -93,18 +85,20 @@ export const UpdateDatabasePassword = ({
 				}
 			}}
 		>
-			<DialogTrigger asChild>
-				<Button variant="ghost" size="icon">
+			<Dialog.Trigger render={(
+
+				<Button aria-label="Action" variant="ghost" shape="square">
 					<PenBox className="size-3.5 text-muted-foreground" />
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Update {label}</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className="sm:max-w-lg">
+				<div>
+					<Dialog.Title>Update {label}</Dialog.Title>
+					<Dialog.Description>
 						Enter the new {label.toLowerCase()} for the database
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				{error && <AlertBlock type="error">{error}</AlertBlock>}
 				<AlertBlock type="warning" className="my-4">
 					This will change the {label.toLowerCase()} both in the running
@@ -150,14 +144,14 @@ export const UpdateDatabasePassword = ({
 								</FormItem>
 							)}
 						/>
-						<DialogFooter>
-							<Button isLoading={isPending} type="submit">
+						<div>
+							<Button loading={isPending} type="submit">
 								Update
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

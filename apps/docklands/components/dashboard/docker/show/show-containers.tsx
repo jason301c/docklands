@@ -12,30 +12,13 @@ import {
 import { ChevronDown, Container } from "lucide-react";
 import * as React from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Table } from "@cloudflare/kumo/components/table";
 import { columns } from "./columns";
+
 export type Container = NonNullable<
 	RouterOutputs["docker"]["getContainers"]
 >[0];
@@ -78,18 +61,18 @@ export const ShowContainers = ({ serverId }: Props) => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar p-2.5 rounded-xl">
+			<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
+					<div className="">
+						<h3 className="text-xl flex flex-row gap-2">
 							<Container className="size-6 text-muted-foreground self-center" />
 							Docker Containers
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							See all the containers on this Docklands server
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-2 py-8 border-t">
+						</p>
+					</div>
+					<div className="space-y-2 py-8 border-t">
 						<div className="gap-4 pb-20 w-full">
 							<div className="flex flex-col gap-4  w-full overflow-auto">
 								<div className="flex items-center gap-2 max-sm:flex-wrap">
@@ -107,21 +90,23 @@ export const ShowContainers = ({ serverId }: Props) => {
 										className="md:max-w-sm"
 									/>
 									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
+										<DropdownMenu.Trigger render={(
+
 											<Button
 												variant="outline"
 												className="sm:ml-auto max-sm:w-full"
 											>
 												Columns <ChevronDown className="ml-2 h-4 w-4" />
 											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
+										
+)} />
+										<DropdownMenu.Content align="end">
 											{table
 												.getAllColumns()
 												.filter((column) => column.getCanHide())
 												.map((column) => {
 													return (
-														<DropdownMenuCheckboxItem
+														<DropdownMenu.CheckboxItem
 															key={column.id}
 															className="capitalize"
 															checked={column.getIsVisible()}
@@ -130,10 +115,10 @@ export const ShowContainers = ({ serverId }: Props) => {
 															}
 														>
 															{column.id}
-														</DropdownMenuCheckboxItem>
+														</DropdownMenu.CheckboxItem>
 													);
 												})}
-										</DropdownMenuContent>
+										</DropdownMenu.Content>
 									</DropdownMenu>
 								</div>
 								<div className="rounded-md border">
@@ -151,44 +136,44 @@ export const ShowContainers = ({ serverId }: Props) => {
 										</div>
 									) : (
 										<Table>
-											<TableHeader>
+											<Table.Header>
 												{table.getHeaderGroups().map((headerGroup) => (
-													<TableRow key={headerGroup.id}>
+													<Table.Row key={headerGroup.id}>
 														{headerGroup.headers.map((header) => {
 															return (
-																<TableHead key={header.id}>
+																<Table.Head key={header.id}>
 																	{header.isPlaceholder
 																		? null
 																		: flexRender(
 																				header.column.columnDef.header,
 																				header.getContext(),
 																			)}
-																</TableHead>
+																</Table.Head>
 															);
 														})}
-													</TableRow>
+													</Table.Row>
 												))}
-											</TableHeader>
-											<TableBody>
+											</Table.Header>
+											<Table.Body>
 												{table?.getRowModel()?.rows?.length ? (
 													table.getRowModel().rows.map((row) => (
-														<TableRow
+														<Table.Row
 															key={row.id}
 															data-state={row.getIsSelected() && "selected"}
 														>
 															{row.getVisibleCells().map((cell) => (
-																<TableCell key={cell.id}>
+																<Table.Cell key={cell.id}>
 																	{flexRender(
 																		cell.column.columnDef.cell,
 																		cell.getContext(),
 																	)}
-																</TableCell>
+																</Table.Cell>
 															))}
-														</TableRow>
+														</Table.Row>
 													))
 												) : (
-													<TableRow>
-														<TableCell
+													<Table.Row>
+														<Table.Cell
 															colSpan={columns.length}
 															className="h-24 text-center"
 														>
@@ -201,10 +186,10 @@ export const ShowContainers = ({ serverId }: Props) => {
 															) : (
 																<>No results.</>
 															)}
-														</TableCell>
-													</TableRow>
+														</Table.Cell>
+													</Table.Row>
 												)}
-											</TableBody>
+											</Table.Body>
 										</Table>
 									)}
 								</div>
@@ -232,9 +217,9 @@ export const ShowContainers = ({ serverId }: Props) => {
 								)}
 							</div>
 						</div>
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

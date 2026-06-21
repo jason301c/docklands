@@ -13,14 +13,9 @@ import {
 import Link from "next/link";
 import type { RouterOutputs } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { DnsHelperModal } from "./dns-helper-modal";
 import { AddDomain } from "./handle-domain";
 import type { ValidationStates } from "./show-domains";
@@ -170,10 +165,20 @@ export const createColumns = ({
 					)}
 					{!domain.host.includes("sslip.io") && (
 						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<Badge
+							<Tooltip content={<>
+									{validationState?.error ? (
+										<div className="flex flex-col gap-1">
+											<p className="font-medium text-red-500">Error:</p>
+											<p>{validationState.error}</p>
+										</div>
+									) : (
+										"Click to validate DNS configuration"
+									)}
+								</>} className="max-w-xs"  asChild>
+									<Button
+										type="button"
 										variant="outline"
+										size="xs"
 										className={
 											validationState?.isValid
 												? "bg-green-500/10 text-green-500 cursor-pointer"
@@ -206,19 +211,8 @@ export const createColumns = ({
 												Validate
 											</>
 										)}
-									</Badge>
-								</TooltipTrigger>
-								<TooltipContent className="max-w-xs">
-									{validationState?.error ? (
-										<div className="flex flex-col gap-1">
-											<p className="font-medium text-red-500">Error:</p>
-											<p>{validationState.error}</p>
-										</div>
-									) : (
-										"Click to validate DNS configuration"
-									)}
-								</TooltipContent>
-							</Tooltip>
+									</Button>
+								</Tooltip>
 						</TooltipProvider>
 					)}
 				</div>
@@ -268,9 +262,9 @@ export const createColumns = ({
 					)}
 					{canCreateDomain && (
 						<AddDomain id={id} type={type} domainId={domain.domainId}>
-							<Button
+							<Button aria-label="Action"
 								variant="ghost"
-								size="icon"
+								shape="square"
 								className="group hover:bg-blue-500/10 h-8 w-8"
 							>
 								<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
@@ -286,11 +280,11 @@ export const createColumns = ({
 								await handleDeleteDomain(domain.domainId);
 							}}
 						>
-							<Button
+							<Button aria-label="Action"
 								variant="ghost"
-								size="icon"
+								shape="square"
 								className="group hover:bg-red-500/10 h-8 w-8"
-								isLoading={isDeleting}
+								loading={isDeleting}
 							>
 								<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 							</Button>

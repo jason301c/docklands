@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import {
@@ -23,16 +23,8 @@ import {
 	TeamsIcon,
 	TelegramIcon,
 } from "@/components/icons/notification-icons";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -41,11 +33,12 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Switch } from "@/components/ui/switch";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Radio } from "@cloudflare/kumo/primitives/radio";
+import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
+import { Switch } from "@cloudflare/kumo/components/switch";
 
 const notificationBaseSchema = z.object({
 	name: z.string().min(1, {
@@ -827,12 +820,11 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 		}
 	};
 	return (
-		<Dialog open={visible} onOpenChange={setVisible}>
-			<DialogTrigger className="" asChild>
-				{notificationId ? (
-					<Button
+		<Dialog.Root open={visible} onOpenChange={setVisible}>
+			<Dialog.Trigger className="" render={notificationId ? (
+					<Button aria-label="Action"
 						variant="ghost"
-						size="icon"
+						shape="square"
 						className="group hover:bg-blue-500/10 "
 					>
 						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
@@ -842,19 +834,18 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 						<PlusIcon className="h-4 w-4" />
 						Add Notification
 					</Button>
-				)}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-3xl">
-				<DialogHeader>
-					<DialogTitle>
+				) as never} />
+			<Dialog className="sm:max-w-3xl">
+				<div>
+					<Dialog.Title>
 						{notificationId ? "Update" : "Add"} Notification
-					</DialogTitle>
-					<DialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						{notificationId
 							? "Update your notification providers for multiple channels."
 							: "Create new notification providers for multiple channels."}
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<Form {...form}>
 					<form
 						id="hook-form"
@@ -883,7 +874,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 												>
 													<FormControl className="w-full">
 														<div>
-															<RadioGroupItem
+															<Radio.Root
 																value={key}
 																id={key}
 																className="peer sr-only"
@@ -1996,9 +1987,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 						</div>
 					</form>
 
-					<DialogFooter className="flex flex-row gap-2 !justify-between w-full">
+					<div className="flex flex-row gap-2 !justify-between w-full">
 						<Button
-							isLoading={
+							loading={
 								isLoadingSlack ||
 								isLoadingTelegram ||
 								isLoadingDiscord ||
@@ -2123,15 +2114,15 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 							Test Notification
 						</Button>
 						<Button
-							isLoading={form.formState.isSubmitting}
+							loading={form.formState.isSubmitting}
 							form="hook-form"
 							type="submit"
 						>
 							{notificationId ? "Update" : "Create"}
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

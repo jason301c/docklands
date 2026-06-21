@@ -2,10 +2,10 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { TrashIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@/components/ui/button";
-import { Dropzone } from "@/components/ui/dropzone";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dropzone } from "@/components/shared/dropzone";
 import {
 	Form,
 	FormControl,
@@ -13,8 +13,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import { type UploadFile, uploadFileSchema } from "@/shared/validation/schema";
 
 interface Props {
@@ -129,7 +129,7 @@ export const SaveDragNDrop = ({ applicationId }: Props) => {
 					<Button
 						type="submit"
 						className="w-fit"
-						isLoading={isPending}
+						loading={isPending}
 						disabled={!zip || isPending}
 					>
 						Deploy{" "}

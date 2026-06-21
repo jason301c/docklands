@@ -1,6 +1,7 @@
 import type { CreateServiceOptions } from "dockerode";
 import { docker } from "../constants";
 import { pullImage } from "../utils/docker/utils";
+
 export const initializePostgres = async () => {
 	const imageName = "postgres:16";
 	const containerName = "docklands-postgres";

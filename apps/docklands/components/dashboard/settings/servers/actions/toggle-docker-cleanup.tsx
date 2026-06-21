@@ -1,14 +1,9 @@
 import { HelpCircle } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 interface Props {
 	serverId?: string;
@@ -59,15 +54,8 @@ export const ToggleDockerCleanup = ({ serverId }: Props) => {
 	return (
 		<div className="flex items-center gap-4">
 			<Switch checked={!!enabled} onCheckedChange={handleToggle} />
-			<TooltipProvider delayDuration={0}>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<Label className="text-primary flex items-center gap-1.5 cursor-pointer">
-							Daily Docker Cleanup
-							<HelpCircle className="size-4 text-muted-foreground" />
-						</Label>
-					</TooltipTrigger>
-					<TooltipContent side="top" className="max-w-sm">
+			<TooltipProvider delay={0}>
+				<Tooltip content={<>
 						<p>
 							Runs a full Docker cleanup daily, pruning stopped containers,
 							unused images, volumes, build cache, and system resources. This
@@ -86,8 +74,12 @@ export const ToggleDockerCleanup = ({ serverId }: Props) => {
 							</a>{" "}
 							on your web server or remote servers.
 						</p>
-					</TooltipContent>
-				</Tooltip>
+					</>} side="top" className="max-w-sm"  asChild>
+						<Label className="text-primary flex items-center gap-1.5 cursor-pointer">
+							Daily Docker Cleanup
+							<HelpCircle className="size-4 text-muted-foreground" />
+						</Label>
+					</Tooltip>
 			</TooltipProvider>
 		</div>
 	);

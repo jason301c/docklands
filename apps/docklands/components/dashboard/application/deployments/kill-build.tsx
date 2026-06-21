@@ -1,18 +1,8 @@
 import { Scissors } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
 
 interface Props {
 	id: string;
@@ -26,23 +16,25 @@ export const KillBuild = ({ id, type }: Props) => {
 			: api.compose.killBuild.useMutation();
 
 	return (
-		<AlertDialog>
-			<AlertDialogTrigger asChild>
-				<Button variant="outline" className="w-fit" isLoading={isPending}>
+		<Dialog.Root role="alertdialog">
+			<Dialog.Trigger render={(
+
+				<Button variant="outline" className="w-fit" loading={isPending}>
 					Kill Build
 					<Scissors className="size-4" />
 				</Button>
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>Are you sure to kill the build?</AlertDialogTitle>
-					<AlertDialogDescription>
+			
+)} />
+			<Dialog>
+				<div>
+					<Dialog.Title>Are you sure to kill the build?</Dialog.Title>
+					<Dialog.Description>
 						This will kill the build process
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction
+					</Dialog.Description>
+				</div>
+				<div>
+					<Dialog.Close>Cancel</Dialog.Close>
+					<Dialog.Close
 						onClick={async () => {
 							await mutateAsync({
 								applicationId: id || "",
@@ -57,9 +49,9 @@ export const KillBuild = ({ id, type }: Props) => {
 						}}
 					>
 						Confirm
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
+					</Dialog.Close>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

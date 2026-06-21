@@ -11,28 +11,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-} from "@/components/ui/command";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -40,30 +26,26 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@cloudflare/kumo/components/popover";
+import { ScrollArea } from "@/components/shared/scroll-area";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
+
+const Command = Combobox;
+const CommandInput = Combobox.TriggerInput;
+const CommandList = Combobox.List;
+const CommandGroup = Combobox.Group;
+const CommandItem = Combobox.Item;
+const CommandEmpty = Combobox.Empty;
 
 type DatabaseType =
 	| Exclude<ServiceType, "application" | "redis">
@@ -309,23 +291,25 @@ export const RestoreBackup = ({
 	);
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
 				<Button variant="outline">
 					<RotateCcw className="mr-2 size-4" />
 					Restore Backup
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle className="flex items-center">
+			
+)} />
+			<Dialog className="sm:max-w-lg">
+				<div>
+					<Dialog.Title className="flex items-center">
 						<RotateCcw className="mr-2 size-4" />
 						Restore Backup
-					</DialogTitle>
-					<DialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						Select a destination and search for backup files
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 
 				<Form {...form}>
 					<form
@@ -359,7 +343,7 @@ export const RestoreBackup = ({
 											</FormControl>
 										</PopoverTrigger>
 										<PopoverContent className="p-0" align="start">
-											<Command>
+											<Command items={[]}>
 												<CommandInput
 													placeholder="Search destinations..."
 													className="h-9"
@@ -439,11 +423,13 @@ export const RestoreBackup = ({
 											</FormControl>
 										</PopoverTrigger>
 										<PopoverContent className="p-0" align="start">
-											<Command>
+											<Command items={[]}>
 												<CommandInput
 													placeholder="Search backup files..."
 													value={search}
-													onValueChange={handleSearchChange}
+													onChange={(event) =>
+														handleSearchChange(event.target.value)
+													}
 													className="h-9"
 												/>
 												{isPending ? (
@@ -546,22 +532,23 @@ export const RestoreBackup = ({
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Database Type</FormLabel>
-											<Select
+											<Select aria-label="Select option"
 												value={field.value}
-												onValueChange={(value: DatabaseType) => {
+												onValueChange={(value) => {
+													if (value === null) return;
 													field.onChange(value);
 													form.setValue("metadata", {});
 												}}
 											>
-												<SelectTrigger>
-													<SelectValue placeholder="Select database type" />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value="postgres">PostgreSQL</SelectItem>
-													<SelectItem value="mariadb">MariaDB</SelectItem>
-													<SelectItem value="mongo">MongoDB</SelectItem>
-													<SelectItem value="mysql">MySQL</SelectItem>
-												</SelectContent>
+												<>
+													
+												</>
+												<>
+													<Select.Option value="postgres">PostgreSQL</Select.Option>
+													<Select.Option value="mariadb">MariaDB</Select.Option>
+													<Select.Option value="mongo">MongoDB</Select.Option>
+													<Select.Option value="mysql">MySQL</Select.Option>
+												</>
 											</Select>
 											<FormMessage />
 										</FormItem>
@@ -575,39 +562,44 @@ export const RestoreBackup = ({
 										<FormItem className="w-full">
 											<FormLabel>Service Name</FormLabel>
 											<div className="flex gap-2">
-												<Select
+												<Select aria-label="Select option"
 													onValueChange={field.onChange}
 													value={field.value || undefined}
 												>
 													<FormControl>
-														<SelectTrigger>
-															<SelectValue placeholder="Select a service name" />
-														</SelectTrigger>
+														<>
+															
+														</>
 													</FormControl>
 
-													<SelectContent>
+													<>
 														{services?.map((service, index) => (
-															<SelectItem
+															<Select.Option
 																value={service}
 																key={`${service}-${index}`}
 															>
 																{service}
-															</SelectItem>
+															</Select.Option>
 														))}
 														{(!services || services.length === 0) && (
-															<SelectItem value="none" disabled>
+															<Select.Option value="none" disabled>
 																Empty
-															</SelectItem>
+															</Select.Option>
 														)}
-													</SelectContent>
+													</>
 												</Select>
-												<TooltipProvider delayDuration={0}>
-													<Tooltip>
-														<TooltipTrigger asChild>
+												<TooltipProvider delay={0}>
+													<Tooltip content={<>
+															<p>
+																Fetch: Will clone the repository and load the
+																services
+															</p>
+														</>} side="left"
+															className="max-w-[10rem]"  asChild>
 															<Button
 																variant="secondary"
 																type="button"
-																isLoading={isLoadingServices}
+																loading={isLoadingServices}
 																onClick={() => {
 																	if (cacheType === "fetch") {
 																		refetchServices();
@@ -618,26 +610,21 @@ export const RestoreBackup = ({
 															>
 																<RefreshCw className="size-4 text-muted-foreground" />
 															</Button>
-														</TooltipTrigger>
-														<TooltipContent
-															side="left"
-															sideOffset={5}
-															className="max-w-[10rem]"
-														>
-															<p>
-																Fetch: Will clone the repository and load the
-																services
-															</p>
-														</TooltipContent>
-													</Tooltip>
+														</Tooltip>
 												</TooltipProvider>
-												<TooltipProvider delayDuration={0}>
-													<Tooltip>
-														<TooltipTrigger asChild>
+												<TooltipProvider delay={0}>
+													<Tooltip content={<>
+															<p>
+																Cache: If you previously deployed this compose,
+																it will read the services from the last
+																deployment/fetch from the repository
+															</p>
+														</>} side="left"
+															className="max-w-[10rem]"  asChild>
 															<Button
 																variant="secondary"
 																type="button"
-																isLoading={isLoadingServices}
+																loading={isLoadingServices}
 																onClick={() => {
 																	if (cacheType === "cache") {
 																		refetchServices();
@@ -648,19 +635,7 @@ export const RestoreBackup = ({
 															>
 																<DatabaseZap className="size-4 text-muted-foreground" />
 															</Button>
-														</TooltipTrigger>
-														<TooltipContent
-															side="left"
-															sideOffset={5}
-															className="max-w-[10rem]"
-														>
-															<p>
-																Cache: If you previously deployed this compose,
-																it will read the services from the last
-																deployment/fetch from the repository
-															</p>
-														</TooltipContent>
-													</Tooltip>
+														</Tooltip>
 												</TooltipProvider>
 											</div>
 
@@ -783,9 +758,9 @@ export const RestoreBackup = ({
 							</>
 						)}
 
-						<DialogFooter>
+						<div>
 							<Button
-								isLoading={isDeploying}
+								loading={isDeploying}
 								form="hook-form-restore-backup"
 								type="submit"
 								// disabled={
@@ -795,7 +770,7 @@ export const RestoreBackup = ({
 							>
 								Restore
 							</Button>
-						</DialogFooter>
+						</div>
 					</form>
 				</Form>
 
@@ -809,7 +784,7 @@ export const RestoreBackup = ({
 					}}
 					filteredLogs={filteredLogs}
 				/>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

@@ -1,13 +1,7 @@
 import { File, Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { UpdateTraefikConfig } from "./update-traefik-config";
 
 interface Props {
@@ -27,18 +21,18 @@ export const ShowTraefikConfig = ({ applicationId }: Props) => {
 	if (!canRead) return null;
 
 	return (
-		<Card className="bg-background">
-			<CardHeader className="flex flex-row justify-between">
+		<LayerCard className="bg-background">
+			<div className="flex flex-row justify-between">
 				<div>
-					<CardTitle className="text-xl">Traefik</CardTitle>
-					<CardDescription>
+					<h3 className="text-xl">Traefik</h3>
+					<p>
 						Modify the traefik config, in rare cases you may need to add
 						specific config, be careful because modifying incorrectly can break
 						traefik and your application
-					</CardDescription>
+					</p>
 				</div>
-			</CardHeader>
-			<CardContent className="flex flex-col gap-4">
+			</div>
+			<div className="flex flex-col gap-4">
 				{isPending ? (
 					<span className="text-base text-muted-foreground flex flex-row gap-3 items-center justify-center min-h-[10vh]">
 						Loading...
@@ -66,7 +60,7 @@ export const ShowTraefikConfig = ({ applicationId }: Props) => {
 						</div>
 					</div>
 				)}
-			</CardContent>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 };

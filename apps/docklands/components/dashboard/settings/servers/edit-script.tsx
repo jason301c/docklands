@@ -2,21 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { FileTerminal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -24,7 +16,7 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
+} from "@/components/shared/form";
 
 interface Props {
 	serverId: string;
@@ -92,26 +84,28 @@ export const EditScript = ({ serverId }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger asChild>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger render={(
+
 				<Button variant="outline">
 					Modify Script
 					<FileTerminal className="size-4 text-muted-foreground" />
 				</Button>
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-5xl overflow-x-hidden">
-				<DialogHeader>
-					<DialogTitle>Modify Script</DialogTitle>
-					<DialogDescription>
+			
+)} />
+			<Dialog className="sm:max-w-5xl overflow-x-hidden">
+				<div>
+					<Dialog.Title>Modify Script</Dialog.Title>
+					<Dialog.Description>
 						Modify the script which install everything necessary to deploy
 						applications on your server,
-					</DialogDescription>
+					</Dialog.Description>
 
 					<AlertBlock type="warning">
 						We recommend not modifying this script unless you know what you are
 						doing.
 					</AlertBlock>
-				</DialogHeader>
+				</div>
 				<div className="grid gap-4">
 					<Form {...form}>
 						<form
@@ -143,7 +137,7 @@ echo "Hello world"
 						</form>
 					</Form>
 				</div>
-				<DialogFooter className="flex justify-between w-full">
+				<div className="flex justify-between w-full">
 					<Button
 						variant="secondary"
 						onClick={() => {
@@ -155,14 +149,14 @@ echo "Hello world"
 						Reset
 					</Button>
 					<Button
-						isLoading={isPending}
+						loading={isPending}
 						form="hook-form-delete-application"
 						type="submit"
 					>
 						Save
 					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

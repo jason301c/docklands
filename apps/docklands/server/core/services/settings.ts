@@ -13,6 +13,7 @@ import {
 	initializeTraefikService,
 	type TraefikOptions,
 } from "../setup/traefik-setup";
+
 export interface IUpdateData {
 	latestVersion: string | null;
 	updateAvailable: boolean;

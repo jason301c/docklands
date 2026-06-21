@@ -8,7 +8,7 @@ import {
 	Users,
 } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { useUrl } from "@/client/hooks/use-url";
 import {
@@ -18,22 +18,11 @@ import {
 	GitlabIcon,
 } from "@/components/icons/data-tools-icons";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { AddBitbucketProvider } from "./bitbucket/add-bitbucket-provider";
 import { EditBitbucketProvider } from "./bitbucket/edit-bitbucket-provider";
 import { AddGiteaProvider } from "./gitea/add-gitea-provider";
@@ -68,18 +57,18 @@ export const ShowGitProviders = () => {
 
 	return (
 		<div className="w-full">
-			<Card className="h-full bg-sidebar p-2.5 rounded-xl max-w-5xl mx-auto">
+			<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl max-w-5xl mx-auto">
 				<div className="rounded-xl bg-background shadow-md ">
-					<CardHeader className="">
-						<CardTitle className="text-xl flex flex-row gap-2">
+					<div className="">
+						<h3 className="text-xl flex flex-row gap-2">
 							<GitBranch className="size-6 text-muted-foreground self-center" />
 							Git Providers
-						</CardTitle>
-						<CardDescription>
+						</h3>
+						<p>
 							Connect your Git provider for authentication.
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="space-y-2 py-8 border-t">
+						</p>
+					</div>
+					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
 								<span>Loading...</span>
@@ -182,9 +171,10 @@ export const ShowGitProviders = () => {
 
 															<div className="flex flex-row gap-1 items-center">
 																{gitProvider.isOwner && (
-																	<TooltipProvider delayDuration={0}>
-																		<Tooltip>
-																			<TooltipTrigger asChild>
+																	<TooltipProvider delay={0}>
+																		<Tooltip content={<>
+																				Share with entire organization
+																			</>}  asChild>
 																				<div className="flex items-center gap-1.5 mr-2">
 																					<Users className="size-4 text-muted-foreground" />
 																					<Switch
@@ -216,17 +206,13 @@ export const ShowGitProviders = () => {
 																						}}
 																					/>
 																				</div>
-																			</TooltipTrigger>
-																			<TooltipContent>
-																				Share with entire organization
-																			</TooltipContent>
-																		</Tooltip>
+																			</Tooltip>
 																	</TooltipProvider>
 																)}
 
 																{isBitbucket &&
 																gitProvider.bitbucket?.isDeprecated ? (
-																	<Badge variant="yellow">Deprecated</Badge>
+																	<Badge variant="warning">Deprecated</Badge>
 																) : null}
 
 																{!haveGithubRequirements && isGithub && (
@@ -240,7 +226,7 @@ export const ShowGitProviders = () => {
 																		<Link
 																			href={`${gitProvider?.github?.githubAppName}/installations/new?state=gh_setup:${gitProvider?.github?.githubId}`}
 																			className={buttonVariants({
-																				size: "icon",
+																				shape: "square",
 																				variant: "ghost",
 																			})}
 																		>
@@ -254,7 +240,7 @@ export const ShowGitProviders = () => {
 																			href={`${gitProvider?.github?.githubAppName}`}
 																			target="_blank"
 																			className={buttonVariants({
-																				size: "icon",
+																				shape: "square",
 																				variant: "ghost",
 																			})}
 																		>
@@ -278,7 +264,7 @@ export const ShowGitProviders = () => {
 																			)}
 																			target="_blank"
 																			className={buttonVariants({
-																				size: "icon",
+																				shape: "square",
 																				variant: "ghost",
 																			})}
 																		>
@@ -345,11 +331,11 @@ export const ShowGitProviders = () => {
 																					});
 																			}}
 																		>
-																			<Button
+																			<Button aria-label="Action"
 																				variant="ghost"
-																				size="icon"
+																				shape="square"
 																				className="group hover:bg-red-500/10"
-																				isLoading={isRemoving}
+																				loading={isRemoving}
 																			>
 																				<Trash2 className="size-4 text-primary group-hover:text-red-500" />
 																			</Button>
@@ -370,9 +356,9 @@ export const ShowGitProviders = () => {
 								)}
 							</>
 						)}
-					</CardContent>
+					</div>
 				</div>
-			</Card>
+			</LayerCard>
 		</div>
 	);
 };

@@ -3,21 +3,13 @@ import { DatabaseZap, Dices, RefreshCw, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import z from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -26,22 +18,11 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input, NumberInput } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 export type CacheType = "fetch" | "cache";
 
@@ -319,15 +300,13 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 			});
 	};
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger className="" asChild>
-				{children}
-			</DialogTrigger>
-			<DialogContent className="sm:max-w-2xl">
-				<DialogHeader>
-					<DialogTitle>Domain</DialogTitle>
-					<DialogDescription>{dictionary.dialogDescription}</DialogDescription>
-				</DialogHeader>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
+			<Dialog.Trigger className="" render={children as never} />
+			<Dialog className="sm:max-w-2xl">
+				<div>
+					<Dialog.Title>Domain</Dialog.Title>
+					<Dialog.Description>{dictionary.dialogDescription}</Dialog.Description>
+				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				{type === "compose" && (
@@ -372,40 +351,45 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																	/>
 																</FormControl>
 															) : (
-																<Select
+																<Select aria-label="Select option"
 																	onValueChange={field.onChange}
 																	defaultValue={field.value || ""}
 																>
 																	<FormControl>
-																		<SelectTrigger>
-																			<SelectValue placeholder="Select a service name" />
-																		</SelectTrigger>
+																		<>
+																			
+																		</>
 																	</FormControl>
 
-																	<SelectContent>
+																	<>
 																		{services?.map((service, index) => (
-																			<SelectItem
+																			<Select.Option
 																				value={service}
 																				key={`${service}-${index}`}
 																			>
 																				{service}
-																			</SelectItem>
+																			</Select.Option>
 																		))}
-																		<SelectItem value="none" disabled>
+																		<Select.Option value="none" disabled>
 																			Empty
-																		</SelectItem>
-																	</SelectContent>
+																		</Select.Option>
+																	</>
 																</Select>
 															)}
 															{!isManualInput && (
 																<>
-																	<TooltipProvider delayDuration={0}>
-																		<Tooltip>
-																			<TooltipTrigger asChild>
+																	<TooltipProvider delay={0}>
+																		<Tooltip content={<>
+																				<p>
+																					Fetch: Will clone the repository and
+																					load the services
+																				</p>
+																			</>} side="left"
+																				className="max-w-[10rem]"  asChild>
 																				<Button
 																					variant="secondary"
 																					type="button"
-																					isLoading={isLoadingServices}
+																					loading={isLoadingServices}
 																					onClick={() => {
 																						if (cacheType === "fetch") {
 																							refetchServices();
@@ -416,26 +400,22 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																				>
 																					<RefreshCw className="size-4 text-muted-foreground" />
 																				</Button>
-																			</TooltipTrigger>
-																			<TooltipContent
-																				side="left"
-																				sideOffset={5}
-																				className="max-w-[10rem]"
-																			>
-																				<p>
-																					Fetch: Will clone the repository and
-																					load the services
-																				</p>
-																			</TooltipContent>
-																		</Tooltip>
+																			</Tooltip>
 																	</TooltipProvider>
-																	<TooltipProvider delayDuration={0}>
-																		<Tooltip>
-																			<TooltipTrigger asChild>
+																	<TooltipProvider delay={0}>
+																		<Tooltip content={<>
+																				<p>
+																					Cache: If you previously deployed this
+																					compose, it will read the services
+																					from the last deployment/fetch from
+																					the repository
+																				</p>
+																			</>} side="left"
+																				className="max-w-[10rem]"  asChild>
 																				<Button
 																					variant="secondary"
 																					type="button"
-																					isLoading={isLoadingServices}
+																					loading={isLoadingServices}
 																					onClick={() => {
 																						if (cacheType === "cache") {
 																							refetchServices();
@@ -446,26 +426,19 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																				>
 																					<DatabaseZap className="size-4 text-muted-foreground" />
 																				</Button>
-																			</TooltipTrigger>
-																			<TooltipContent
-																				side="left"
-																				sideOffset={5}
-																				className="max-w-[10rem]"
-																			>
-																				<p>
-																					Cache: If you previously deployed this
-																					compose, it will read the services
-																					from the last deployment/fetch from
-																					the repository
-																				</p>
-																			</TooltipContent>
-																		</Tooltip>
+																			</Tooltip>
 																	</TooltipProvider>
 																</>
 															)}
-															<TooltipProvider delayDuration={0}>
-																<Tooltip>
-																	<TooltipTrigger asChild>
+															<TooltipProvider delay={0}>
+																<Tooltip content={<>
+																		<p>
+																			{isManualInput
+																				? "Switch to service selection"
+																				: "Enter service name manually"}
+																		</p>
+																	</>} side="left"
+																		className="max-w-[10rem]"  asChild>
 																		<Button
 																			variant="secondary"
 																			type="button"
@@ -484,19 +457,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																				</span>
 																			)}
 																		</Button>
-																	</TooltipTrigger>
-																	<TooltipContent
-																		side="left"
-																		sideOffset={5}
-																		className="max-w-[10rem]"
-																	>
-																		<p>
-																			{isManualInput
-																				? "Switch to service selection"
-																				: "Enter service name manually"}
-																		</p>
-																	</TooltipContent>
-																</Tooltip>
+																	</Tooltip>
 															</TooltipProvider>
 														</div>
 
@@ -542,13 +503,15 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 														{...field}
 													/>
 												</FormControl>
-												<TooltipProvider delayDuration={0}>
-													<Tooltip>
-														<TooltipTrigger asChild>
+												<TooltipProvider delay={0}>
+													<Tooltip content={<>
+															<p>Generate sslip.io domain</p>
+														</>} side="left"
+															className="max-w-[10rem]"  asChild>
 															<Button
 																variant="secondary"
 																type="button"
-																isLoading={isLoadingGenerate}
+																loading={isLoadingGenerate}
 																onClick={() => {
 																	generateDomain({
 																		appName: application?.appName || "",
@@ -564,15 +527,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 															>
 																<Dices className="size-4 text-muted-foreground" />
 															</Button>
-														</TooltipTrigger>
-														<TooltipContent
-															side="left"
-															sideOffset={5}
-															className="max-w-[10rem]"
-														>
-															<p>Generate sslip.io domain</p>
-														</TooltipContent>
-													</Tooltip>
+														</Tooltip>
 												</TooltipProvider>
 											</div>
 
@@ -653,7 +608,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 													for Java)
 												</FormDescription>
 												<FormControl>
-													<NumberInput placeholder={"3000"} {...field} />
+													<Input type="number" placeholder={"3000"} {...field} />
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -741,8 +696,9 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 												return (
 													<FormItem>
 														<FormLabel>Certificate Provider</FormLabel>
-														<Select
+														<Select aria-label="Select option"
 															onValueChange={(value) => {
+																if (value === null) return;
 																field.onChange(value);
 																if (value !== "custom") {
 																	form.setValue(
@@ -754,17 +710,17 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 															value={field.value}
 														>
 															<FormControl>
-																<SelectTrigger>
-																	<SelectValue placeholder="Select a certificate provider" />
-																</SelectTrigger>
+																<>
+																	
+																</>
 															</FormControl>
-															<SelectContent>
-																<SelectItem value={"none"}>None</SelectItem>
-																<SelectItem value={"letsencrypt"}>
+															<>
+																<Select.Option value={"none"}>None</Select.Option>
+																<Select.Option value={"letsencrypt"}>
 																	Let's Encrypt
-																</SelectItem>
-																<SelectItem value={"custom"}>Custom</SelectItem>
-															</SelectContent>
+																</Select.Option>
+																<Select.Option value={"custom"}>Custom</Select.Option>
+															</>
 														</Select>
 														<FormMessage />
 													</FormItem>
@@ -808,19 +764,16 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 											<div className="flex items-center gap-2">
 												<FormLabel>Middlewares</FormLabel>
 												<TooltipProvider>
-													<Tooltip>
-														<TooltipTrigger type="button">
-															<div className="size-4 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
-																?
-															</div>
-														</TooltipTrigger>
-														<TooltipContent className="max-w-[300px]">
+													<Tooltip content={<>
 															<p>
 																Add Traefik middleware references. Middlewares
 																must be defined in your Traefik configuration.
 															</p>
-														</TooltipContent>
-													</Tooltip>
+														</>} className="max-w-[300px]">
+															<div className="size-4 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+																?
+															</div>
+														</Tooltip>
 												</TooltipProvider>
 											</div>
 											<div className="flex flex-wrap gap-2 mb-2">
@@ -886,13 +839,13 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 						</div>
 					</form>
 
-					<DialogFooter>
-						<Button isLoading={isPending} form="hook-form" type="submit">
+					<div>
+						<Button loading={isPending} form="hook-form" type="submit">
 							{dictionary.submit}
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

@@ -2,21 +2,13 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { Pencil, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -25,19 +17,11 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Textarea } from "@cloudflare/kumo/components/input";
 
 const Schema = z.object({
 	name: z.string().min(1, {
@@ -133,16 +117,18 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 	};
 
 	return (
-		<Dialog open={isOpen} onOpenChange={setIsOpen}>
+		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
 			{serverId ? (
 				asButton ? (
-					<DialogTrigger asChild>
-						<Button variant="outline" size="icon" className="h-9 w-9">
+					<Dialog.Trigger render={(
+
+						<Button aria-label="Action" variant="outline" shape="square" className="h-9 w-9">
 							<Pencil className="h-4 w-4" />
 						</Button>
-					</DialogTrigger>
+					
+)} />
 				) : (
-					<DropdownMenuItem
+					<DropdownMenu.Item
 						className="w-full cursor-pointer "
 						onSelect={(e) => {
 							e.preventDefault();
@@ -150,24 +136,26 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 						}}
 					>
 						Edit Server
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 				)
 			) : (
-				<DialogTrigger asChild>
+				<Dialog.Trigger render={(
+
 					<Button className="cursor-pointer space-x-3">
 						<PlusIcon className="h-4 w-4" />
 						Create Server
 					</Button>
-				</DialogTrigger>
+				
+)} />
 			)}
-			<DialogContent className="sm:max-w-3xl ">
-				<DialogHeader>
-					<DialogTitle>{serverId ? "Edit" : "Create"} Server</DialogTitle>
-					<DialogDescription>
+			<Dialog className="sm:max-w-3xl ">
+				<div>
+					<Dialog.Title>{serverId ? "Edit" : "Create"} Server</Dialog.Title>
+					<Dialog.Description>
 						{serverId ? "Edit" : "Create"} a server to deploy your applications
 						remotely.
-					</DialogDescription>
-				</DialogHeader>
+					</Dialog.Description>
+				</div>
 				<div>
 					<p className="text-primary text-sm font-medium">
 						Use any VPS or machine that supports SSH and a Docker-compatible
@@ -227,20 +215,20 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 								return (
 									<FormItem>
 										<FormLabel>Server Type</FormLabel>
-										<Select
+										<Select aria-label="Select option"
 											onValueChange={field.onChange}
 											defaultValue={field.value}
 										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select a server type" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectGroup>
-													<SelectItem value="deploy">Deploy Server</SelectItem>
-													<SelectItem value="build">Build Server</SelectItem>
-													<SelectLabel>Server Type</SelectLabel>
-												</SelectGroup>
-											</SelectContent>
+											<>
+												
+											</>
+											<>
+												<Select.Group>
+													<Select.Option value="deploy">Deploy Server</Select.Option>
+													<Select.Option value="build">Build Server</Select.Option>
+													<Select.GroupLabel>Server Type</Select.GroupLabel>
+												</Select.Group>
+											</>
 										</Select>
 										<FormMessage />
 										{serverTypeValue === "deploy" && (
@@ -269,28 +257,28 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Select a SSH Key</FormLabel>
-									<Select
+									<Select aria-label="Select option"
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 									>
-										<SelectTrigger>
-											<SelectValue placeholder="Select a SSH Key" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectGroup>
+										<>
+											
+										</>
+										<>
+											<Select.Group>
 												{sshKeys?.map((sshKey) => (
-													<SelectItem
+													<Select.Option
 														key={sshKey.sshKeyId}
 														value={sshKey.sshKeyId}
 													>
 														{sshKey.name}
-													</SelectItem>
+													</Select.Option>
 												))}
-												<SelectLabel>
+												<Select.GroupLabel>
 													Registries ({sshKeys?.length})
-												</SelectLabel>
-											</SelectGroup>
-										</SelectContent>
+												</Select.GroupLabel>
+											</Select.Group>
+										</>
 									</Select>
 									<FormMessage />
 								</FormItem>
@@ -381,17 +369,17 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 						/>
 					</form>
 
-					<DialogFooter>
+					<div>
 						<Button
-							isLoading={isPending}
+							loading={isPending}
 							form="hook-form-add-server"
 							type="submit"
 						>
 							{serverId ? "Update" : "Create"}
 						</Button>
-					</DialogFooter>
+					</div>
 				</Form>
-			</DialogContent>
-		</Dialog>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

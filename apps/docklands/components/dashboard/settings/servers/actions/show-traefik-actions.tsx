@@ -1,18 +1,10 @@
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { useHealthCheckAfterMutation } from "@/client/hooks/use-health-check-after-mutation";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuGroup,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { EditTraefikEnv } from "../../web-server/edit-traefik-env";
 import { ManageTraefikPorts } from "../../web-server/manage-traefik-ports";
 import { ShowModalLogs } from "../../web-server/show-modal-logs";
@@ -55,17 +47,15 @@ export const ShowTraefikActions = ({ serverId }: Props) => {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger
-				asChild
-				disabled={
+			<DropdownMenu.Trigger disabled={
 					reloadTraefikIsLoading ||
 					toggleDashboardIsLoading ||
 					isHealthCheckExecuting ||
 					isReloadHealthCheckExecuting
-				}
-			>
+				} render={(
+
 				<Button
-					isLoading={
+					loading={
 						reloadTraefikIsLoading ||
 						toggleDashboardIsLoading ||
 						isHealthCheckExecuting ||
@@ -75,12 +65,13 @@ export const ShowTraefikActions = ({ serverId }: Props) => {
 				>
 					Traefik
 				</Button>
-			</DropdownMenuTrigger>
-			<DropdownMenuContent className="w-56" align="start">
-				<DropdownMenuLabel>Actions</DropdownMenuLabel>
-				<DropdownMenuSeparator />
-				<DropdownMenuGroup>
-					<DropdownMenuItem
+			
+)} />
+			<DropdownMenu.Content className="w-56" align="start">
+				<DropdownMenu.Label>Actions</DropdownMenu.Label>
+				<DropdownMenu.Separator />
+				<DropdownMenu.Group>
+					<DropdownMenu.Item
 						onClick={async () => {
 							try {
 								await executeReloadWithHealthCheck(() =>
@@ -97,26 +88,26 @@ export const ShowTraefikActions = ({ serverId }: Props) => {
 						disabled={isReloadHealthCheckExecuting}
 					>
 						<span>Reload</span>
-					</DropdownMenuItem>
+					</DropdownMenu.Item>
 					<ShowModalLogs
 						appName="docklands-traefik"
 						serverId={serverId}
 						type="standalone"
 					>
-						<DropdownMenuItem
+						<DropdownMenu.Item
 							onSelect={(e) => e.preventDefault()}
 							className="cursor-pointer"
 						>
 							View Logs
-						</DropdownMenuItem>
+						</DropdownMenu.Item>
 					</ShowModalLogs>
 					<EditTraefikEnv serverId={serverId}>
-						<DropdownMenuItem
+						<DropdownMenu.Item
 							onSelect={(e) => e.preventDefault()}
 							className="cursor-pointer"
 						>
 							<span>Modify Environment</span>
-						</DropdownMenuItem>
+						</DropdownMenu.Item>
 					</EditTraefikEnv>
 
 					<DialogAction
@@ -157,7 +148,7 @@ export const ShowTraefikActions = ({ serverId }: Props) => {
 						disabled={toggleDashboardIsLoading || isHealthCheckExecuting}
 						type="default"
 					>
-						<DropdownMenuItem
+						<DropdownMenu.Item
 							onSelect={(e) => e.preventDefault()}
 							className="w-full cursor-pointer space-x-3"
 						>
@@ -165,18 +156,18 @@ export const ShowTraefikActions = ({ serverId }: Props) => {
 								{haveTraefikDashboardPortEnabled ? "Disable" : "Enable"}{" "}
 								Dashboard
 							</span>
-						</DropdownMenuItem>
+						</DropdownMenu.Item>
 					</DialogAction>
 					<ManageTraefikPorts serverId={serverId}>
-						<DropdownMenuItem
+						<DropdownMenu.Item
 							onSelect={(e) => e.preventDefault()}
 							className="cursor-pointer"
 						>
 							<span>Additional Port Mappings</span>
-						</DropdownMenuItem>
+						</DropdownMenu.Item>
 					</ManageTraefikPorts>
-				</DropdownMenuGroup>
-			</DropdownMenuContent>
+				</DropdownMenu.Group>
+			</DropdownMenu.Content>
 		</DropdownMenu>
 	);
 };

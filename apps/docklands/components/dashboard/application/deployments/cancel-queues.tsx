@@ -1,18 +1,8 @@
 import { Ban } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
 
 interface Props {
 	id: string;
@@ -31,25 +21,27 @@ export const CancelQueues = ({ id, type }: Props) => {
 	}
 
 	return (
-		<AlertDialog>
-			<AlertDialogTrigger asChild>
-				<Button variant="destructive" className="w-fit" isLoading={isPending}>
+		<Dialog.Root role="alertdialog">
+			<Dialog.Trigger render={(
+
+				<Button variant="destructive" className="w-fit" loading={isPending}>
 					Cancel Queues
 					<Ban className="size-4" />
 				</Button>
-			</AlertDialogTrigger>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>
+			
+)} />
+			<Dialog>
+				<div>
+					<Dialog.Title>
 						Are you sure to cancel the incoming deployments?
-					</AlertDialogTitle>
-					<AlertDialogDescription>
+					</Dialog.Title>
+					<Dialog.Description>
 						This will cancel all the incoming deployments
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction
+					</Dialog.Description>
+				</div>
+				<div>
+					<Dialog.Close>Cancel</Dialog.Close>
+					<Dialog.Close
 						onClick={async () => {
 							await mutateAsync({
 								applicationId: id || "",
@@ -64,9 +56,9 @@ export const CancelQueues = ({ id, type }: Props) => {
 						}}
 					>
 						Confirm
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
+					</Dialog.Close>
+				</div>
+			</Dialog>
+		</Dialog.Root>
 	);
 };

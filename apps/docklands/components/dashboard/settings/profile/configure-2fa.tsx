@@ -9,29 +9,12 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -40,8 +23,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 import {
 	BACKUP_CODES_PLACEHOLDER,
 	backupCodeTemplate,
@@ -222,29 +205,31 @@ export const Configure2FA = () => {
 
 	return (
 		<>
-			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-				<DialogTrigger asChild>
+			<Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<Dialog.Trigger render={(
+
 					<Button variant="secondary">
 						<KeyRound className="size-4 text-muted-foreground" />
 						Manage 2FA
 					</Button>
-				</DialogTrigger>
-				<DialogContent className="sm:max-w-xl">
-					<DialogHeader>
-						<DialogTitle>
+				
+)} />
+				<Dialog className="sm:max-w-xl">
+					<div>
+						<Dialog.Title>
 							{step === "password" && "Verify Your Identity"}
 							{step === "actions" && "2FA Configuration"}
 							{step === "backup-codes" && "New Backup Codes"}
-						</DialogTitle>
-						<DialogDescription>
+						</Dialog.Title>
+						<Dialog.Description>
 							{step === "password" &&
 								"Enter your password to manage your 2FA settings"}
 							{step === "actions" &&
 								"Choose an action to manage your two-factor authentication"}
 							{step === "backup-codes" &&
 								"Save these backup codes in a secure place"}
-						</DialogDescription>
-					</DialogHeader>
+						</Dialog.Description>
+					</div>
 
 					{step === "password" && (
 						<Form {...form}>
@@ -280,7 +265,7 @@ export const Configure2FA = () => {
 									>
 										Cancel
 									</Button>
-									<Button type="submit" isLoading={isRegenerating}>
+									<Button type="submit" loading={isRegenerating}>
 										Continue
 									</Button>
 								</div>
@@ -308,7 +293,7 @@ export const Configure2FA = () => {
 										onClick={handleRegenerateBackupCodes}
 										variant="outline"
 										className="w-full mt-2"
-										isLoading={isRegenerating}
+										loading={isRegenerating}
 									>
 										<RefreshCw className="size-4 mr-2" />
 										Regenerate Backup Codes
@@ -397,33 +382,33 @@ export const Configure2FA = () => {
 							</div>
 						</div>
 					)}
-				</DialogContent>
-			</Dialog>
+				</Dialog>
+			</Dialog.Root>
 
-			<AlertDialog
+			<Dialog.Root role="alertdialog"
 				open={showDisableConfirm}
 				onOpenChange={setShowDisableConfirm}
 			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-						<AlertDialogDescription>
+				<Dialog>
+					<div>
+						<Dialog.Title>Are you absolutely sure?</Dialog.Title>
+						<Dialog.Description>
 							This will permanently disable Two-Factor Authentication for your
 							account. Your account will be less secure without 2FA enabled.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction
+						</Dialog.Description>
+					</div>
+					<div>
+						<Dialog.Close>Cancel</Dialog.Close>
+						<Dialog.Close
 							onClick={handleDisable2FA}
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
 							disabled={isDisabling}
 						>
 							{isDisabling ? "Disabling..." : "Disable 2FA"}
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+						</Dialog.Close>
+					</div>
+				</Dialog>
+			</Dialog.Root>
 		</>
 	);
 };

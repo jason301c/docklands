@@ -1,17 +1,20 @@
 "use client";
 
+
+
+
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Logo } from "@/components/shared/logo";
-import { Button } from "@/components/ui/button";
-import { CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -19,8 +22,8 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/components/shared/form";
+import { Input } from "@cloudflare/kumo/components/input";
 
 const loginSchema = z
 	.object({
@@ -94,18 +97,18 @@ export default function Home({ tokenResetPassword }: Props) {
 	return (
 		<div className="flex  h-screen w-full items-center justify-center ">
 			<div className="flex flex-col items-center gap-4 w-full">
-				<CardTitle className="text-2xl font-bold flex flex-row gap-2 items-center">
+				<h3 className="text-2xl font-bold flex flex-row gap-2 items-center">
 					<Link href="/" className="flex flex-row items-center gap-2">
 						<Logo className="size-12" />
 					</Link>
 					Reset Password
-				</CardTitle>
-				<CardDescription>
+				</h3>
+				<p>
 					Enter your email to reset your password
-				</CardDescription>
+				</p>
 
 				<div className="w-full">
-					<CardContent className="p-0">
+					<div className="p-0">
 						{error && (
 							<AlertBlock type="error" className="my-2">
 								{error}
@@ -154,7 +157,7 @@ export default function Home({ tokenResetPassword }: Props) {
 
 									<Button
 										type="submit"
-										isLoading={isLoading}
+										loading={isLoading}
 										className="w-full"
 									>
 										Confirm
@@ -166,7 +169,7 @@ export default function Home({ tokenResetPassword }: Props) {
 								</div>
 							</form>
 						</Form>
-					</CardContent>
+					</div>
 				</div>
 			</div>
 		</div>

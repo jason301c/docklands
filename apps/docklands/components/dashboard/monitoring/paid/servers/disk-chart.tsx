@@ -6,16 +6,8 @@ import {
 	RadialBar,
 	RadialBarChart,
 } from "recharts";
-
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { type ChartConfig, ChartContainer } from "@/components/shared/chart";
 
 interface RadialChartProps {
 	data: any;
@@ -43,12 +35,12 @@ export function DiskChart({ data }: RadialChartProps) {
 	const endAngle = (diskUsed * 360) / 100;
 
 	return (
-		<Card className="flex flex-col bg-transparent">
-			<CardHeader className="items-center border-b pb-5">
-				<CardTitle>Disk</CardTitle>
-				<CardDescription>Storage Space</CardDescription>
-			</CardHeader>
-			<CardContent className="flex-1 pb-0">
+		<LayerCard className="flex flex-col bg-transparent">
+			<div className="items-center border-b pb-5">
+				<h3>Disk</h3>
+				<p>Storage Space</p>
+			</div>
+			<div className="flex-1 pb-0">
 				<ChartContainer
 					config={chartConfig}
 					className="mx-auto aspect-square max-h-[250px]"
@@ -106,15 +98,15 @@ export function DiskChart({ data }: RadialChartProps) {
 						</PolarRadiusAxis>
 					</RadialBarChart>
 				</ChartContainer>
-			</CardContent>
-			<CardFooter className="flex-col gap-2 text-sm">
+			</div>
+			<div className="flex-col gap-2 text-sm">
 				<div className="flex items-center gap-2 font-medium leading-none">
 					<HardDrive className="h-4 w-4" /> {usedDiskGB.toFixed(1)} GB used
 				</div>
 				<div className="leading-none text-muted-foreground">
 					Of {totalDiskGB.toFixed(1)} GB total
 				</div>
-			</CardFooter>
-		</Card>
+			</div>
+		</LayerCard>
 	);
 }
