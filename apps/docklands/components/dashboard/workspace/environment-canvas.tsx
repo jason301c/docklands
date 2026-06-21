@@ -87,6 +87,7 @@ import { EnvironmentVariables } from "@/components/dashboard/project/environment
 import { ProjectEnvironment } from "@/components/dashboard/projects/project-environment";
 import { ShowExternalRedisCredentials } from "@/components/dashboard/redis/general/show-external-redis-credentials";
 import { ShowInternalRedisCredentials } from "@/components/dashboard/redis/general/show-internal-redis-credentials";
+import { DockerTerminalModal } from "@/components/dashboard/settings/web-server/docker-terminal-modal";
 import {
 	LibsqlIcon,
 	MariadbIcon,
@@ -419,6 +420,33 @@ const DatabaseCredentials = ({ service }: { service: WorkspaceService }) => {
 	return null;
 };
 
+const ServiceTerminalButton = ({
+	service,
+	className,
+}: {
+	service: WorkspaceService;
+	className?: string;
+}) => {
+	if (!service.appName) return null;
+
+	return (
+		<DockerTerminalModal
+			appName={service.appName}
+			serverId={service.serverId || ""}
+			appType={
+				service.type === "compose"
+					? service.composeType || "docker-compose"
+					: undefined
+			}
+		>
+			<Button variant="outline" className={className}>
+				<SquareTerminal className="size-4" />
+				Open terminal
+			</Button>
+		</DockerTerminalModal>
+	);
+};
+
 export const EnvironmentCanvas = ({
 	projectId,
 	environmentId,
@@ -458,6 +486,7 @@ export const EnvironmentCanvas = ({
 		| "domains"
 		| "previews"
 		| "logs"
+		| "terminal"
 		| "containers"
 		| "metrics"
 		| "schedules"
@@ -759,6 +788,9 @@ export const EnvironmentCanvas = ({
 		...(selectedServiceModel?.appName && permissions?.logs.read
 			? [{ value: "logs", label: "Logs" }]
 			: []),
+		...(selectedServiceModel?.appName && permissions?.service.read
+			? [{ value: "terminal", label: "Terminal" }]
+			: []),
 		...(selectedServiceModel?.type === "compose" && permissions?.service.read
 			? [{ value: "containers", label: "Containers" }]
 			: []),
@@ -794,6 +826,12 @@ export const EnvironmentCanvas = ({
 		if (
 			drawerTab === "logs" &&
 			(!selectedServiceModel?.appName || !permissions?.logs.read)
+		) {
+			setDrawerTab("overview");
+		}
+		if (
+			drawerTab === "terminal" &&
+			(!selectedServiceModel?.appName || !permissions?.service.read)
 		) {
 			setDrawerTab("overview");
 		}
@@ -1640,6 +1678,28 @@ export const EnvironmentCanvas = ({
 										serviceType: service.type,
 									});
 									setDrawerTab("logs");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(service.appName && permissions?.service.read
+					? [
+							{
+								id: `terminal:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Terminal for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · container shell`,
+								search: `${baseSearch} terminal shell exec bash sh container console`,
+								icon: (
+									<SquareTerminal className="size-5 text-muted-foreground" />
+								),
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("terminal");
 									setCommandOpen(false);
 								},
 							},
@@ -2592,6 +2652,10 @@ export const EnvironmentCanvas = ({
 											Full settings
 										</Button>
 									</Link>
+									{selectedServiceModel.appName &&
+										permissions?.service.read && (
+											<ServiceTerminalButton service={selectedServiceModel} />
+										)}
 									<DeleteService
 										id={selectedServiceModel.id}
 										type={selectedServiceModel.type}
@@ -2729,6 +2793,20 @@ export const EnvironmentCanvas = ({
 									/>
 								)}
 							</div>
+						)}
+
+						{drawerTab === "terminal" && selectedServiceModel.appName && (
+							<LayerCard className="bg-muted/20">
+								<div className="flex items-center justify-between gap-4">
+									<div className="min-w-0">
+										<h3 className="font-medium">Container Terminal</h3>
+										<p className="truncate text-sm text-muted-foreground">
+											{selectedServiceModel.appName}
+										</p>
+									</div>
+									<ServiceTerminalButton service={selectedServiceModel} />
+								</div>
+							</LayerCard>
 						)}
 
 						{drawerTab === "containers" &&
