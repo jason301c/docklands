@@ -1922,10 +1922,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
 											<div className="space-y-0.5">
-												<FormLabel>Docker Cleanup</FormLabel>
+												<FormLabel>Runtime Cleanup</FormLabel>
 												<FormDescription>
-													Trigger the action when the docker cleanup is
-													performed.
+													Trigger the action when runtime cleanup is performed.
 												</FormDescription>
 											</div>
 											<FormControl>

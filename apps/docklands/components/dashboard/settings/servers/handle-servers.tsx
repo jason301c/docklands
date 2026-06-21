@@ -1,14 +1,16 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input, Textarea } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Pencil, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -18,10 +20,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Textarea } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 
 const Schema = z.object({
 	name: z.string().min(1, {
@@ -120,13 +119,18 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
 			{serverId ? (
 				asButton ? (
-					<Dialog.Trigger render={(
-
-						<Button aria-label="Action" variant="outline" shape="square" className="h-9 w-9">
-							<Pencil className="h-4 w-4" />
-						</Button>
-					
-)} />
+					<Dialog.Trigger
+						render={
+							<Button
+								aria-label="Action"
+								variant="outline"
+								shape="square"
+								className="h-9 w-9"
+							>
+								<Pencil className="h-4 w-4" />
+							</Button>
+						}
+					/>
 				) : (
 					<DropdownMenu.Item
 						className="w-full cursor-pointer "
@@ -139,14 +143,14 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 					</DropdownMenu.Item>
 				)
 			) : (
-				<Dialog.Trigger render={(
-
-					<Button className="cursor-pointer space-x-3">
-						<PlusIcon className="h-4 w-4" />
-						Create Server
-					</Button>
-				
-)} />
+				<Dialog.Trigger
+					render={
+						<Button className="cursor-pointer space-x-3">
+							<PlusIcon className="h-4 w-4" />
+							Create Server
+						</Button>
+					}
+				/>
 			)}
 			<Dialog className="sm:max-w-3xl ">
 				<div>
@@ -215,17 +219,20 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 								return (
 									<FormItem>
 										<FormLabel>Server Type</FormLabel>
-										<Select aria-label="Select option"
+										<Select
+											aria-label="Select option"
 											onValueChange={field.onChange}
 											defaultValue={field.value}
 										>
-											<>
-												
-											</>
+											<></>
 											<>
 												<Select.Group>
-													<Select.Option value="deploy">Deploy Server</Select.Option>
-													<Select.Option value="build">Build Server</Select.Option>
+													<Select.Option value="deploy">
+														Deploy Server
+													</Select.Option>
+													<Select.Option value="build">
+														Build Server
+													</Select.Option>
 													<Select.GroupLabel>Server Type</Select.GroupLabel>
 												</Select.Group>
 											</>
@@ -257,13 +264,12 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Select a SSH Key</FormLabel>
-									<Select aria-label="Select option"
+									<Select
+										aria-label="Select option"
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 									>
-										<>
-											
-										</>
+										<></>
 										<>
 											<Select.Group>
 												{sshKeys?.map((sshKey) => (
@@ -352,10 +358,10 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 							render={({ field }) => (
 								<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
 									<div className="space-y-0.5">
-										<FormLabel>Enable Docker Cleanup</FormLabel>
+										<FormLabel>Enable Runtime Cleanup</FormLabel>
 										<FormDescription>
-											Automatically prune unused Docker images daily. Keeps disk
-											usage in check on this remote server.
+											Automatically prune unused container images daily. Keeps
+											disk usage in check on this runtime worker.
 										</FormDescription>
 									</div>
 									<FormControl>

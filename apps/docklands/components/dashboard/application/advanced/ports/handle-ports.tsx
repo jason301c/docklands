@@ -1,13 +1,14 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -16,8 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 const AddPortSchema = z.object({
 	publishedPort: z.number().int().min(1).max(65535),
@@ -98,17 +98,22 @@ export const HandlePorts = ({
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={portId ? (
-					<Button aria-label="Action"
-						variant="ghost"
-						shape="square"
-						className="group hover:bg-blue-500/10 "
-					>
-						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
-					</Button>
-				) : (
-					<Button>{children}</Button>
-				) as never} />
+			<Dialog.Trigger
+				render={
+					portId ? (
+						<Button
+							aria-label="Action"
+							variant="ghost"
+							shape="square"
+							className="group hover:bg-blue-500/10 "
+						>
+							<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+						</Button>
+					) : (
+						((<Button>{children}</Button>) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-lg">
 				<div>
 					<Dialog.Title>Ports</Dialog.Title>
@@ -161,17 +166,18 @@ export const HandlePorts = ({
 									return (
 										<FormItem className="md:col-span-2">
 											<FormLabel>Published Port Mode</FormLabel>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Select option"
 												onValueChange={field.onChange}
 												value={field.value}
 											>
 												<FormControl>
-													<>
-														
-													</>
+													<></>
 												</FormControl>
 												<>
-													<Select.Option value={"ingress"}>Ingress</Select.Option>
+													<Select.Option value={"ingress"}>
+														Ingress
+													</Select.Option>
 													<Select.Option value={"host"}>Host</Select.Option>
 												</>
 											</Select>
@@ -216,14 +222,13 @@ export const HandlePorts = ({
 									return (
 										<FormItem className="md:col-span-2">
 											<FormLabel>Protocol</FormLabel>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Select option"
 												onValueChange={field.onChange}
 												value={field.value}
 											>
 												<FormControl>
-													<>
-														
-													</>
+													<></>
 												</FormControl>
 												<>
 													<Select.Option value={"tcp"}>TCP</Select.Option>
@@ -241,7 +246,7 @@ export const HandlePorts = ({
 					{publishMode === "host" && (
 						<AlertBlock type="warning" className="mt-4">
 							<strong>Host Mode Limitation:</strong> When using Host publish
-							mode, Docker Swarm has limitations that prevent proper container
+							mode, orchestration has limitations that prevent proper container
 							updates during deployments. Old containers may not be replaced
 							automatically. Consider using Ingress mode instead, or be prepared
 							to manually stop/start the application after deployments.
@@ -249,11 +254,7 @@ export const HandlePorts = ({
 					)}
 
 					<div>
-						<Button
-							loading={isPending}
-							form="hook-form-add-port"
-							type="submit"
-						>
+						<Button loading={isPending} form="hook-form-add-port" type="submit">
 							{portId ? "Update" : "Create"}
 						</Button>
 					</div>

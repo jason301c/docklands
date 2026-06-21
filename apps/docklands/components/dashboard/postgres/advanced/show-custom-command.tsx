@@ -1,12 +1,12 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -15,7 +15,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 import type { ServiceType } from "../../application/advanced/show-resources";
 
 const addDockerImage = z.object({
@@ -130,7 +130,7 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 										name="dockerImage"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Docker Image</FormLabel>
+												<FormLabel>Container Image</FormLabel>
 												<FormControl>
 													<Input placeholder="postgres:18" {...field} />
 												</FormControl>
@@ -200,7 +200,8 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 																{...field}
 															/>
 														</FormControl>
-														<Button aria-label="Action"
+														<Button
+															aria-label="Action"
 															type="button"
 															variant="destructive"
 															shape="square"

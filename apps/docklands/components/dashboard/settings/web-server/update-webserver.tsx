@@ -147,7 +147,7 @@ export const UpdateWebServer = () => {
 						{modalState === "checking" && "Verifying Services..."}
 						{modalState === "results" &&
 							(allHealthy ? "Ready to Update" : "Service Issues Detected")}
-						{modalState === "updating" && "Server update in progress"}
+						{modalState === "updating" && "Runtime update in progress"}
 					</Dialog.Title>
 					<Dialog.Description>
 						<div>
@@ -166,7 +166,7 @@ export const UpdateWebServer = () => {
 							{modalState === "checking" && (
 								<span className="flex items-center gap-2">
 									<Loader2 className="animate-spin h-4 w-4" />
-									Checking PostgreSQL, Redis and Traefik...
+									Checking PostgreSQL, Redis and ingress...
 								</span>
 							)}
 
@@ -182,7 +182,7 @@ export const UpdateWebServer = () => {
 											service={healthResult.redis}
 										/>
 										<ServiceStatusItem
-											name="Traefik"
+											name="Ingress"
 											service={healthResult.traefik}
 										/>
 									</div>

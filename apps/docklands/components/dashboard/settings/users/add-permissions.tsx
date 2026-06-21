@@ -1,14 +1,14 @@
-import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
-import { z } from "zod";
-import { api, type RouterOutputs } from "@/client/api/trpc";
-import { AlertBlock } from "@/components/shared/alert-block";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { api, type RouterOutputs } from "@/client/api/trpc";
+import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
 	FormControl,
@@ -18,7 +18,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 
 /** Shape returned by project.allForPermissions (admin only). Used for the permissions UI. */
 type ProjectForPermissions =
@@ -289,16 +289,17 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 	};
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger className="" render={(
-
-				<DropdownMenu.Item
-					className="w-full cursor-pointer"
-					onSelect={(e) => e.preventDefault()}
-				>
-					Add Permissions
-				</DropdownMenu.Item>
-			
-)} />
+			<Dialog.Trigger
+				className=""
+				render={
+					<DropdownMenu.Item
+						className="w-full cursor-pointer"
+						onSelect={(e) => e.preventDefault()}
+					>
+						Add Permissions
+					</DropdownMenu.Item>
+				}
+			/>
 			<Dialog className="max-h-[85vh]  sm:max-w-4xl">
 				<div>
 					<Dialog.Title>Permissions</Dialog.Title>
@@ -447,9 +448,9 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 											<div className="space-y-0.5">
-												<FormLabel>Access to Traefik Files</FormLabel>
+												<FormLabel>Access to Ingress Files</FormLabel>
 												<FormDescription>
-													Allow the user to access to the Traefik Tab Files
+													Allow the user to access the ingress file view
 												</FormDescription>
 											</div>
 											<FormControl>

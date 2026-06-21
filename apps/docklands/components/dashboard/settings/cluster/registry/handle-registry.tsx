@@ -1,12 +1,13 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { AlertTriangle, PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -16,8 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 const AddRegistrySchema = z.object({
 	registryName: z.string().min(1, {
@@ -193,20 +193,27 @@ export const HandleRegistry = ({ registryId }: Props) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={registryId ? (
-					<Button aria-label="Action"
-						variant="ghost"
-						shape="square"
-						className="group hover:bg-blue-500/10 "
-					>
-						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
-					</Button>
-				) : (
-					<Button className="cursor-pointer space-x-3">
-						<PlusIcon className="h-4 w-4" />
-						Add Registry
-					</Button>
-				) as never} />
+			<Dialog.Trigger
+				render={
+					registryId ? (
+						<Button
+							aria-label="Action"
+							variant="ghost"
+							shape="square"
+							className="group hover:bg-blue-500/10 "
+						>
+							<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+						</Button>
+					) : (
+						((
+							<Button className="cursor-pointer space-x-3">
+								<PlusIcon className="h-4 w-4" />
+								Add Registry
+							</Button>
+						) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title>Add a external registry</Dialog.Title>
@@ -351,14 +358,14 @@ export const HandleRegistry = ({ registryId }: Props) => {
 														<>
 															Authentication will be performed on{" "}
 															<strong>{selectedServer.name}</strong>. This
-															registry will be available on this server.
+															registry will be available on this runtime worker.
 														</>
 													) : (
 														<>
 															Choose where to authenticate with the registry. By
-															default, authentication occurs on the Docklands
-															server. Select a specific server to authenticate
-															from that server instead.
+															default, authentication occurs on the local
+															Docklands runtime. Select a specific worker to
+															authenticate from that worker instead.
 														</>
 													)}
 												</>
@@ -368,30 +375,31 @@ export const HandleRegistry = ({ registryId }: Props) => {
 														<>
 															Authentication will be performed on{" "}
 															<strong>{selectedServer.name}</strong>. This
-															registry will be available on this server.
+															registry will be available on this runtime worker.
 														</>
 													) : (
 														<>
-															Select a server to authenticate with the registry.
-															The authentication will be performed from the
-															selected server.
+															Select a runtime worker to authenticate with the
+															registry. Authentication will be performed from
+															the selected worker.
 														</>
 													)}
 												</>
 											)}
 										</FormDescription>
 										<FormControl>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Select option"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>
-												<>
-													
-												</>
+												<></>
 												<>
 													{deployServers && deployServers.length > 0 && (
 														<Select.Group>
-															<Select.GroupLabel>Deploy Servers</Select.GroupLabel>
+															<Select.GroupLabel>
+																Deploy Servers
+															</Select.GroupLabel>
 															{deployServers.map((server) => (
 																<Select.Option
 																	key={server.serverId}
@@ -404,7 +412,9 @@ export const HandleRegistry = ({ registryId }: Props) => {
 													)}
 													{buildServers && buildServers.length > 0 && (
 														<Select.Group>
-															<Select.GroupLabel>Build Servers</Select.GroupLabel>
+															<Select.GroupLabel>
+																Build Servers
+															</Select.GroupLabel>
 															{buildServers.map((server) => (
 																<Select.Option
 																	key={server.serverId}

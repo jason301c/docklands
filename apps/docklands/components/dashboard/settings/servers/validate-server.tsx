@@ -1,9 +1,9 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Loader2, PcCase, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { StatusRow } from "./gpu-support";
 
 interface Props {
@@ -38,9 +38,7 @@ export const ValidateServer = ({ serverId }: Props) => {
 									<PcCase className="size-5" />
 									<h3 className="text-xl">Setup Validation</h3>
 								</div>
-								<p>
-									Check if your server is ready for deployment
-								</p>
+								<p>Check if your server is ready for deployment</p>
 							</div>
 							<Button
 								loading={isRefreshing}
@@ -129,7 +127,7 @@ export const ValidateServer = ({ serverId }: Props) => {
 										{!isBuildServer && (
 											<>
 												<StatusRow
-													label="Docker Swarm Initialized"
+													label="Orchestration Initialized"
 													isEnabled={data?.isSwarmInstalled}
 													description={
 														data?.isSwarmInstalled

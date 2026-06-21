@@ -1,13 +1,14 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon, PlusIcon, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -16,8 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 import {
 	ADDITIONAL_FLAG_ERROR,
 	ADDITIONAL_FLAG_REGEX,
@@ -206,20 +206,28 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
-			<Dialog.Trigger className="" render={destinationId ? (
-					<Button aria-label="Action"
-						variant="ghost"
-						shape="square"
-						className="group hover:bg-blue-500/10 "
-					>
-						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
-					</Button>
-				) : (
-					<Button className="cursor-pointer space-x-3">
-						<PlusIcon className="h-4 w-4" />
-						Add Destination
-					</Button>
-				) as never} />
+			<Dialog.Trigger
+				className=""
+				render={
+					destinationId ? (
+						<Button
+							aria-label="Action"
+							variant="ghost"
+							shape="square"
+							className="group hover:bg-blue-500/10 "
+						>
+							<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+						</Button>
+					) : (
+						((
+							<Button className="cursor-pointer space-x-3">
+								<PlusIcon className="h-4 w-4" />
+								Add Destination
+							</Button>
+						) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title>
@@ -266,15 +274,14 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 									<FormItem>
 										<FormLabel>Provider</FormLabel>
 										<FormControl>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Select option"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 												value={field.value}
 											>
 												<FormControl>
-													<>
-														
-													</>
+													<></>
 												</FormControl>
 												<>
 													{S3_PROVIDERS.map((s3Provider) => (
@@ -397,7 +404,8 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 														{...field}
 													/>
 												</FormControl>
-												<Button aria-label="Action"
+												<Button
+													aria-label="Action"
 													type="button"
 													variant="ghost"
 													shape="square"
@@ -423,23 +431,22 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 						{isCloud ? (
 							<div className="flex flex-col gap-4 border p-2 rounded-lg">
 								<span className="text-sm text-muted-foreground">
-									Select a server to test the destination. If you don't have a
-									server choose the default one.
+									Select a runtime worker to test the destination. If you do not
+									have a worker, use automatic placement.
 								</span>
 								<FormField
 									control={form.control}
 									name="serverId"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>Server (Optional)</FormLabel>
+											<FormLabel>Runtime Worker (Optional)</FormLabel>
 											<FormControl>
-												<Select aria-label="Select option"
+												<Select
+													aria-label="Select option"
 													onValueChange={field.onChange}
 													defaultValue={field.value}
 												>
-													<>
-														
-													</>
+													<></>
 													<>
 														<Select.Group>
 															<Select.GroupLabel>Servers</Select.GroupLabel>

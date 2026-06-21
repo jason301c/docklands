@@ -1,7 +1,7 @@
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { File, Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { UpdateTraefikConfig } from "./update-traefik-config";
 
 interface Props {
@@ -24,11 +24,11 @@ export const ShowTraefikConfig = ({ applicationId }: Props) => {
 		<LayerCard className="bg-background">
 			<div className="flex flex-row justify-between">
 				<div>
-					<h3 className="text-xl">Traefik</h3>
+					<h3 className="text-xl">Ingress Config</h3>
 					<p>
-						Modify the traefik config, in rare cases you may need to add
-						specific config, be careful because modifying incorrectly can break
-						traefik and your application
+						Modify the service ingress config. Use this only when you need
+						specific routing behavior, because invalid config can break ingress
+						for this application.
 					</p>
 				</div>
 			</div>
@@ -42,7 +42,7 @@ export const ShowTraefikConfig = ({ applicationId }: Props) => {
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
 						<File className="size-8 text-muted-foreground" />
 						<span className="text-base text-muted-foreground">
-							No traefik config detected
+							No ingress config detected
 						</span>
 					</div>
 				) : (

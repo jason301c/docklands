@@ -1,15 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Label } from "@cloudflare/kumo/components/label";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { parse, stringify, YAMLParseError } from "yaml";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -18,7 +18,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Label } from "@cloudflare/kumo/components/label";
+import { toast } from "@/components/shared/toast";
 
 const UpdateTraefikConfigSchema = z.object({
 	traefikConfig: z.string(),
@@ -98,13 +98,13 @@ export const UpdateTraefikConfig = ({ applicationId }: Props) => {
 			traefikConfig: data.traefikConfig,
 		})
 			.then(async () => {
-				toast.success("Traefik config Updated");
+				toast.success("Ingress config updated");
 				refetch();
 				setOpen(false);
 				form.reset();
 			})
 			.catch(() => {
-				toast.error("Error updating the Traefik config");
+				toast.error("Error updating the ingress config");
 			});
 	};
 
@@ -120,16 +120,14 @@ export const UpdateTraefikConfig = ({ applicationId }: Props) => {
 			}}
 		>
 			{canWrite && (
-				<Dialog.Trigger render={(
-
-					<Button loading={isPending}>Modify</Button>
-				
-)} />
+				<Dialog.Trigger render={<Button loading={isPending}>Modify</Button>} />
 			)}
 			<Dialog className="sm:max-w-4xl">
 				<div>
-					<Dialog.Title>Update traefik config</Dialog.Title>
-					<Dialog.Description>Update the traefik config</Dialog.Description>
+					<Dialog.Title>Update ingress config</Dialog.Title>
+					<Dialog.Description>
+						Update the service ingress config
+					</Dialog.Description>
 				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
@@ -145,7 +143,7 @@ export const UpdateTraefikConfig = ({ applicationId }: Props) => {
 								name="traefikConfig"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Traefik config</FormLabel>
+										<FormLabel>Ingress config</FormLabel>
 										<FormControl>
 											<CodeEditor
 												lineWrapping

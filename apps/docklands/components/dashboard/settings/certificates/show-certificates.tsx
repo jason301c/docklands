@@ -39,13 +39,13 @@ export const ShowCertificates = () => {
 							<ShieldCheck className="size-6 text-muted-foreground self-center" />
 							Certificates
 						</h3>
-						<p>Create certificates in the Traefik directory</p>
+						<p>Create certificates in the ingress runtime directory</p>
 
 						<AlertBlock type="warning">
-							Certificates are created in the Traefik directory. Traefik uses
-							these certificates to secure your applications. Using invalid
-							certificates can break your Traefik instance, preventing access to
-							your applications.
+							Certificates are created in the ingress runtime directory. The
+							ingress runtime uses these certificates to secure your
+							applications. Invalid certificates can break ingress and prevent
+							access to your applications.
 						</AlertBlock>
 					</div>
 					<div className="space-y-2 py-8 border-t">
