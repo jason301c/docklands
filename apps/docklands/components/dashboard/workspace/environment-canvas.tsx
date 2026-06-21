@@ -449,6 +449,16 @@ export const EnvironmentCanvas = ({
 						connection.targetServiceType === selectedService.serviceType),
 			)
 		: [];
+	const workspaceStats = useMemo(
+		() => ({
+			services: services.length,
+			running: services.filter((service) => service.status === "running")
+				.length,
+			errors: services.filter((service) => service.status === "error").length,
+			connections: connections.length,
+		}),
+		[connections.length, services],
+	);
 
 	const canvasBounds = useMemo(() => {
 		const maxX = nodes.reduce(
@@ -933,6 +943,12 @@ export const EnvironmentCanvas = ({
 								{workspace.environment.description ||
 									`${workspace.environment.name} environment`}
 							</p>
+							<div className="mt-2 flex flex-wrap items-center gap-1.5">
+								<Badge>{workspaceStats.services} services</Badge>
+								<Badge>{workspaceStats.running} running</Badge>
+								<Badge>{workspaceStats.errors} errors</Badge>
+								<Badge>{workspaceStats.connections} links</Badge>
+							</div>
 						</div>
 					</div>
 
