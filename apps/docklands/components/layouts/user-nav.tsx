@@ -119,7 +119,7 @@ export const UserNav = () => {
 							<DropdownMenu.Item
 								className="cursor-pointer"
 								onClick={() => {
-									router.push("/dashboard/settings/servers");
+									router.push("/dashboard/settings/runtime");
 								}}
 							>
 								Runtime capacity

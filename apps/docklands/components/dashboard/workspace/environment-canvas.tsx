@@ -2198,7 +2198,7 @@ export const EnvironmentCanvas = ({
 				id: "system:web-server",
 				label: "Ingress",
 				detail: "Domains, TLS, cleanup, and proxy",
-				path: "/dashboard/settings/server",
+				path: "/dashboard/settings/ingress",
 				search: "ingress web server domain tls ssl proxy traefik cleanup",
 				icon: <ServerIcon className="size-5 text-muted-foreground" />,
 			},
@@ -2206,7 +2206,7 @@ export const EnvironmentCanvas = ({
 				id: "system:remote-servers",
 				label: "Runtime capacity",
 				detail: "Worker machines and placement",
-				path: "/dashboard/settings/servers",
+				path: "/dashboard/settings/runtime",
 				search: "remote servers runtime capacity workers nodes machines",
 				icon: <Network className="size-5 text-muted-foreground" />,
 			},
@@ -2448,12 +2448,12 @@ export const EnvironmentCanvas = ({
 									System settings
 								</DropdownMenu.Label>
 								<DropdownMenu.Separator />
-								<Link href="/dashboard/settings/server">
+								<Link href="/dashboard/settings/ingress">
 									<DropdownMenu.Item className="cursor-pointer">
 										Ingress
 									</DropdownMenu.Item>
 								</Link>
-								<Link href="/dashboard/settings/servers">
+								<Link href="/dashboard/settings/runtime">
 									<DropdownMenu.Item className="cursor-pointer">
 										Runtime capacity
 									</DropdownMenu.Item>

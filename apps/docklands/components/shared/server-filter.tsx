@@ -79,7 +79,7 @@ export const ServerFilter = ({ children }: Props) => {
 						</span>
 					</div>
 					{permissions?.server.create && (
-						<LinkButton href="/dashboard/settings/servers">
+						<LinkButton href="/dashboard/settings/runtime">
 							<PlusIcon className="size-4" />
 							Add Worker
 						</LinkButton>

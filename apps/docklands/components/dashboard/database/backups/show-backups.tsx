@@ -129,7 +129,7 @@ export const ShowBackups = ({
 							To create a backup it is required to set at least 1 provider.
 							Please, go to{" "}
 							<Link
-								href="/dashboard/settings/destinations"
+								href="/dashboard/settings/storage"
 								className="text-foreground"
 							>
 								Storage providers

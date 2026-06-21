@@ -129,7 +129,7 @@ export const ShowExternalLibsqlCredentials = ({ libsqlId }: Props) => {
 					{!getIp && (
 						<AlertBlock type="warning">
 							You need to set an IP address in your{" "}
-							<Link href="/dashboard/settings/server" className="text-primary">
+							<Link href="/dashboard/settings/ingress" className="text-primary">
 								Runtime network settings
 							</Link>{" "}
 							to fix the database url connection.

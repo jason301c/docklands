@@ -108,7 +108,7 @@ export const ShowExternalPostgresCredentials = ({ postgresId }: Props) => {
 							<AlertBlock type="warning">
 								You need to set an IP address in your{" "}
 								<Link
-									href="/dashboard/settings/server"
+									href="/dashboard/settings/ingress"
 									className="text-primary"
 								>
 									Runtime network settings

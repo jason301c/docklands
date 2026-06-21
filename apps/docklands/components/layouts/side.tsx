@@ -158,7 +158,7 @@ const MENU: Menu = {
 		{
 			isSingle: true,
 			title: "Ingress",
-			url: "/dashboard/settings/server",
+			url: "/dashboard/settings/ingress",
 			icon: Activity,
 			// Only enabled for admins in non-cloud environments
 			isEnabled: ({ permissions, isCloud }) =>
@@ -219,7 +219,7 @@ const MENU: Menu = {
 		{
 			isSingle: true,
 			title: "Storage",
-			url: "/dashboard/settings/destinations",
+			url: "/dashboard/settings/storage",
 			icon: Database,
 			isEnabled: ({ permissions }) => !!permissions?.destination.read,
 		},
@@ -255,7 +255,7 @@ const MENU: Menu = {
 				{
 					isSingle: true,
 					title: "Runtime Capacity",
-					url: "/dashboard/settings/servers",
+					url: "/dashboard/settings/runtime",
 					icon: Server,
 					isEnabled: ({ permissions }) => !!permissions?.server.read,
 				},

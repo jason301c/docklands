@@ -201,7 +201,7 @@ export const SearchCommand = () => {
 				id: "app-settings",
 				title: "Ingress settings",
 				searchText: "settings ingress domains tls proxy",
-				onSelect: () => navigate("/dashboard/settings/server"),
+				onSelect: () => navigate("/dashboard/settings/ingress"),
 			},
 		];
 

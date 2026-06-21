@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
 import { requireAdmin } from "@/server/web/app-auth";
+import ClientPage from "../servers/_client";
 
 export default async function Page() {
 	await requireAdmin();
-	redirect("/dashboard/settings/runtime");
+	return <ClientPage />;
 }

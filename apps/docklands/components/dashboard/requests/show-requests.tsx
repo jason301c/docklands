@@ -1,3 +1,13 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { format } from "date-fns";
 import {
 	AlertCircle,
@@ -7,21 +17,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@cloudflare/kumo/components/button";
 import { Calendar } from "@/components/shared/calendar";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Label } from "@cloudflare/kumo/components/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { DialogAction } from "@/components/shared/dialog-action";
+import { toast } from "@/components/shared/toast";
 import { RequestDistributionChart } from "./request-distribution-chart";
 import { RequestsTable } from "./requests-table";
 
@@ -89,16 +89,14 @@ export const ShowRequests = () => {
 								<ArrowDownUp className="size-6 text-muted-foreground self-center" />
 								Requests
 							</h3>
-							<p>
-								See all the incoming requests that pass trough Traefik
-							</p>
+							<p>See all the incoming requests that pass trough Traefik</p>
 
 							{shouldShowWarning && (
 								<AlertBlock type="warning">
 									When you activate, you need to reload traefik to apply the
 									changes, you can reload traefik in{" "}
 									<Link
-										href="/dashboard/settings/server"
+										href="/dashboard/settings/ingress"
 										className="text-primary"
 									>
 										Settings
@@ -114,16 +112,20 @@ export const ShowRequests = () => {
 											Log Cleanup Schedule
 										</Label>
 										<TooltipProvider>
-											<Tooltip content={<>
-													<p className="max-w-80">
-														At the scheduled time, the cleanup job will keep
-														only the last 1000 entries in the access log file
-														and signal Traefik to reopen its log files. The
-														default schedule is daily at midnight (0 0 * * *).
-													</p>
-												</>}>
-													<InfoIcon className="size-4 text-muted-foreground" />
-												</Tooltip>
+											<Tooltip
+												content={
+													<>
+														<p className="max-w-80">
+															At the scheduled time, the cleanup job will keep
+															only the last 1000 entries in the access log file
+															and signal Traefik to reopen its log files. The
+															default schedule is daily at midnight (0 0 * * *).
+														</p>
+													</>
+												}
+											>
+												<InfoIcon className="size-4 text-muted-foreground" />
+											</Tooltip>
 										</TooltipProvider>
 									</div>
 									<div className="flex-1 flex gap-4">
