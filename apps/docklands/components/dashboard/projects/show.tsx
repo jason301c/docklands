@@ -27,6 +27,36 @@ import { Select } from "@cloudflare/kumo/components/select";
 import { HandleProject } from "./handle-project";
 import { ProjectEnvironment } from "./project-environment";
 
+const serviceCollections = [
+	"applications",
+	"compose",
+	"libsql",
+	"mariadb",
+	"mongo",
+	"mysql",
+	"postgres",
+	"redis",
+] as const;
+
+type EnvironmentWithServices = Record<
+	(typeof serviceCollections)[number],
+	unknown[]
+>;
+
+const countEnvironmentServices = (environment: EnvironmentWithServices) =>
+	serviceCollections.reduce(
+		(total, collection) => total + environment[collection].length,
+		0,
+	);
+
+const countProjectServices = (project: {
+	environments: EnvironmentWithServices[];
+}) =>
+	project.environments.reduce(
+		(total, environment) => total + countEnvironmentServices(environment),
+		0,
+	);
+
 export const ShowProjects = () => {
 	const utils = api.useUtils();
 	const router = useRouter();
@@ -133,33 +163,7 @@ export const ShowProjects = () => {
 						new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
 					break;
 				case "services": {
-					const aTotalServices = a.environments.reduce((total, env) => {
-						return (
-							total +
-							(env.applications?.length || 0) +
-							(env.libsql?.length || 0) +
-							(env.mariadb?.length || 0) +
-							(env.mongo?.length || 0) +
-							(env.mysql?.length || 0) +
-							(env.postgres?.length || 0) +
-							(env.redis?.length || 0) +
-							(env.compose?.length || 0)
-						);
-					}, 0);
-					const bTotalServices = b.environments.reduce((total, env) => {
-						return (
-							total +
-							(env.applications?.length || 0) +
-							(env.libsql?.length || 0) +
-							(env.mariadb?.length || 0) +
-							(env.mongo?.length || 0) +
-							(env.mysql?.length || 0) +
-							(env.postgres?.length || 0) +
-							(env.redis?.length || 0) +
-							(env.compose?.length || 0)
-						);
-					}, 0);
-					comparison = aTotalServices - bTotalServices;
+					comparison = countProjectServices(a) - countProjectServices(b);
 					break;
 				}
 				default:
@@ -168,6 +172,11 @@ export const ShowProjects = () => {
 			return direction === "asc" ? comparison : -comparison;
 		});
 	}, [data, debouncedSearchQuery, sortBy, selectedTagIds]);
+
+	const visibleServicesCount = filteredProjects.reduce(
+		(total, project) => total + countProjectServices(project),
+		0,
+	);
 
 	return (
 		<>
@@ -183,8 +192,9 @@ export const ShowProjects = () => {
 									<FolderInput className="size-6 text-muted-foreground self-center" />
 									Projects
 								</h3>
-								<p>
-									Create and manage your projects
+								<p className="text-sm text-muted-foreground">
+									{filteredProjects.length} visible · {visibleServicesCount}{" "}
+									services
 								</p>
 							</div>
 							{permissions?.project.create && (
@@ -227,28 +237,31 @@ export const ShowProjects = () => {
 											/>
 											<div className="flex items-center gap-2 min-w-48 max-sm:w-full">
 												<ArrowUpDown className="size-4 text-muted-foreground" />
-												<Select aria-label="Select option" value={sortBy} onValueChange={(value) => value !== null && setSortBy(value as never)}>
-													<>
-														
-													</>
-													<>
-														<Select.Option value="name-asc">Name (A-Z)</Select.Option>
-														<Select.Option value="name-desc">
-															Name (Z-A)
-														</Select.Option>
-														<Select.Option value="createdAt-desc">
-															Newest first
-														</Select.Option>
-														<Select.Option value="createdAt-asc">
-															Oldest first
-														</Select.Option>
-														<Select.Option value="services-desc">
-															Most services
-														</Select.Option>
-														<Select.Option value="services-asc">
-															Least services
-														</Select.Option>
-													</>
+												<Select
+													aria-label="Select option"
+													value={sortBy}
+													onValueChange={(value) =>
+														value !== null && setSortBy(value as never)
+													}
+												>
+													<Select.Option value="name-asc">
+														Name (A-Z)
+													</Select.Option>
+													<Select.Option value="name-desc">
+														Name (Z-A)
+													</Select.Option>
+													<Select.Option value="createdAt-desc">
+														Newest first
+													</Select.Option>
+													<Select.Option value="createdAt-asc">
+														Oldest first
+													</Select.Option>
+													<Select.Option value="services-desc">
+														Most services
+													</Select.Option>
+													<Select.Option value="services-asc">
+														Least services
+													</Select.Option>
 												</Select>
 											</div>
 										</div>
@@ -263,225 +276,198 @@ export const ShowProjects = () => {
 									)}
 									<div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 flex-wrap gap-5">
 										{filteredProjects?.map((project) => {
-											const emptyServices = project?.environments
-												.map(
-													(env) =>
-														env.applications.length === 0 &&
-														env.compose.length === 0 &&
-														env.libsql.length === 0 &&
-														env.mariadb.length === 0 &&
-														env.mongo.length === 0 &&
-														env.mysql.length === 0 &&
-														env.postgres.length === 0 &&
-														env.redis.length === 0,
-												)
-												.every(Boolean);
-
-											const totalServices = project?.environments
-												.map(
-													(env) =>
-														env.applications.length +
-														env.compose.length +
-														env.libsql.length +
-														env.mariadb.length +
-														env.mongo.length +
-														env.mysql.length +
-														env.postgres.length +
-														env.redis.length,
-												)
-												.reduce((acc, curr) => acc + curr, 0);
-
-											// Find default environment from accessible environments, or fall back to first accessible environment
+											const totalServices = countProjectServices(project);
+											const emptyServices = totalServices === 0;
 											const accessibleEnvironment =
 												project?.environments.find((env) => env.isDefault) ||
 												project?.environments?.[0];
-
 											const hasNoEnvironments = !accessibleEnvironment;
+											const workspaceHref = hasNoEnvironments
+												? null
+												: `/dashboard/project/${project.projectId}/environment/${accessibleEnvironment?.environmentId}`;
 
 											return (
-												<div
+												<LayerCard
 													key={project.projectId}
-													className="w-full lg:max-w-md"
+													className="group flex h-full min-h-[230px] flex-col bg-background transition-colors hover:bg-muted/30"
 												>
-													<Link
-														href={
-															hasNoEnvironments
-																? "#"
-																: `/dashboard/project/${project.projectId}/environment/${accessibleEnvironment?.environmentId}`
-														}
-														onClick={(
-															e: React.MouseEvent<HTMLAnchorElement>,
-														) => {
-															if (hasNoEnvironments) {
-																e.preventDefault();
-															}
-														}}
-													>
-														<LayerCard className="group relative w-full h-full bg-transparent transition-colors hover:bg-border flex flex-col">
-															<div>
-																<h3 className="flex items-center justify-between gap-2 overflow-clip">
-																	<span className="flex flex-col gap-1.5 ">
-																		<div className="flex items-center gap-2">
-																			<BookIcon className="size-4 text-muted-foreground" />
-																			<span className="text-base font-medium leading-none">
-																				{project.name}
-																			</span>
-																		</div>
-
-																		<span className="text-sm font-medium text-muted-foreground break-normal">
-																			{project.description}
-																		</span>
-
-																		{project.projectTags &&
-																			project.projectTags.length > 0 && (
-																				<div className="flex flex-wrap gap-1.5 mt-2">
-																					{project.projectTags.map((pt) => (
-																						<TagBadge
-																							key={pt.tag.tagId}
-																							name={pt.tag.name}
-																							color={pt.tag.color}
-																						/>
-																					))}
-																				</div>
-																			)}
-
-																		{hasNoEnvironments && (
-																			<div className="flex flex-row gap-2 items-center rounded-lg bg-yellow-50 p-2 mt-2 dark:bg-yellow-950">
-																				<AlertTriangle className="size-4 text-yellow-600 dark:text-yellow-400 shrink-0" />
-																				<span className="text-xs text-yellow-600 dark:text-yellow-400">
-																					You have access to this project but no
-																					environments are available
-																				</span>
-																			</div>
-																		)}
+													<div className="flex items-start justify-between gap-3">
+														<div className="min-w-0 space-y-1.5">
+															<div className="flex min-w-0 items-center gap-2">
+																<BookIcon className="size-4 shrink-0 text-muted-foreground" />
+																{workspaceHref ? (
+																	<Link
+																		href={workspaceHref}
+																		className="truncate text-base font-medium leading-none hover:underline"
+																	>
+																		{project.name}
+																	</Link>
+																) : (
+																	<span className="truncate text-base font-medium leading-none">
+																		{project.name}
 																	</span>
-																	<div className="flex self-start space-x-1">
-																		<DropdownMenu>
-																			<DropdownMenu.Trigger render={(
+																)}
+															</div>
+															{project.description && (
+																<p className="line-clamp-2 text-sm text-muted-foreground">
+																	{project.description}
+																</p>
+															)}
+														</div>
 
-																				<Button aria-label="Action"
-																					variant="ghost"
-																					shape="square"
-																					className="px-2"
-																				>
-																					<MoreHorizontalIcon className="size-5" />
-																				</Button>
-																			
-)} />
-																			<DropdownMenu.Content
-																				className="w-[200px] space-y-2 overflow-y-auto max-h-[280px]"
-																				onClick={(e) => e.stopPropagation()}
-																			>
-																				<DropdownMenu.Label className="font-normal">
-																					Actions
-																				</DropdownMenu.Label>
-																				<div
-																					onClick={(e) => e.stopPropagation()}
-																				>
-																					<ProjectEnvironment
-																						projectId={project.projectId}
-																					/>
-																				</div>
-																				<div
-																					onClick={(e) => e.stopPropagation()}
-																				>
-																					<HandleProject
-																						projectId={project.projectId}
-																					/>
-																				</div>
+														<DropdownMenu>
+															<DropdownMenu.Trigger
+																render={
+																	(
+																		<Button
+																			aria-label="Project actions"
+																			variant="ghost"
+																			shape="square"
+																		>
+																			<MoreHorizontalIcon className="size-5" />
+																		</Button>
+																	) as never
+																}
+															/>
+															<DropdownMenu.Content
+																className="w-[200px] space-y-2 overflow-y-auto max-h-[280px]"
+																onClick={(e) => e.stopPropagation()}
+															>
+																<DropdownMenu.Label className="font-normal">
+																	Actions
+																</DropdownMenu.Label>
+																<div onClick={(e) => e.stopPropagation()}>
+																	<ProjectEnvironment
+																		projectId={project.projectId}
+																	/>
+																</div>
+																<div onClick={(e) => e.stopPropagation()}>
+																	<HandleProject
+																		projectId={project.projectId}
+																	/>
+																</div>
 
-																				<div
-																					onClick={(e) => e.stopPropagation()}
+																<div onClick={(e) => e.stopPropagation()}>
+																	{permissions?.project.delete && (
+																		<Dialog.Root role="alertdialog">
+																			<Dialog.Trigger className="w-full">
+																				<DropdownMenu.Item
+																					className="w-full cursor-pointer space-x-3"
+																					onSelect={(e) => e.preventDefault()}
 																				>
-																					{permissions?.project.delete && (
-																						<Dialog.Root role="alertdialog">
-																							<Dialog.Trigger className="w-full">
-																								<DropdownMenu.Item
-																									className="w-full cursor-pointer  space-x-3"
-																									onSelect={(e) =>
-																										e.preventDefault()
-																									}
-																								>
-																									<TrashIcon className="size-4" />
-																									<span>Delete</span>
-																								</DropdownMenu.Item>
-																							</Dialog.Trigger>
-																							<Dialog>
-																								<div>
-																									<Dialog.Title>
-																										Are you sure to delete this
-																										project?
-																									</Dialog.Title>
-																									{!emptyServices ? (
-																										<div className="flex flex-row gap-4 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
-																											<AlertTriangle className="text-yellow-600 dark:text-yellow-400" />
-																											<span className="text-sm text-yellow-600 dark:text-yellow-400">
-																												You have active
-																												services, please delete
-																												them first
-																											</span>
-																										</div>
-																									) : (
-																										<Dialog.Description>
-																											This action cannot be
-																											undone
-																										</Dialog.Description>
-																									)}
-																								</div>
-																								<div>
-																									<Dialog.Close>
-																										Cancel
-																									</Dialog.Close>
-																									<Dialog.Close
-																										disabled={!emptyServices}
-																										onClick={async () => {
-																											await mutateAsync({
-																												projectId:
-																													project.projectId,
-																											})
-																												.then(() => {
-																													toast.success(
-																														"Project deleted successfully",
-																													);
-																												})
-																												.catch(() => {
-																													toast.error(
-																														"Error deleting this project",
-																													);
-																												})
-																												.finally(() => {
-																													utils.project.all.invalidate();
-																												});
-																										}}
-																									>
-																										Delete
-																									</Dialog.Close>
-																								</div>
-																							</Dialog>
-																						</Dialog.Root>
+																					<TrashIcon className="size-4" />
+																					<span>Delete</span>
+																				</DropdownMenu.Item>
+																			</Dialog.Trigger>
+																			<Dialog>
+																				<div>
+																					<Dialog.Title>
+																						Delete project?
+																					</Dialog.Title>
+																					{!emptyServices ? (
+																						<div className="flex flex-row gap-4 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
+																							<AlertTriangle className="text-yellow-600 dark:text-yellow-400" />
+																							<span className="text-sm text-yellow-600 dark:text-yellow-400">
+																								Delete services first.
+																							</span>
+																						</div>
+																					) : (
+																						<Dialog.Description>
+																							This action cannot be undone
+																						</Dialog.Description>
 																					)}
 																				</div>
-																			</DropdownMenu.Content>
-																		</DropdownMenu>
-																	</div>
-																</h3>
+																				<div>
+																					<Dialog.Close>Cancel</Dialog.Close>
+																					<Dialog.Close
+																						disabled={!emptyServices}
+																						onClick={async () => {
+																							try {
+																								await mutateAsync({
+																									projectId: project.projectId,
+																								});
+																								toast.success(
+																									"Project deleted successfully",
+																								);
+																							} catch {
+																								toast.error(
+																									"Error deleting this project",
+																								);
+																							} finally {
+																								await utils.project.all.invalidate();
+																							}
+																						}}
+																					>
+																						Delete
+																					</Dialog.Close>
+																				</div>
+																			</Dialog>
+																		</Dialog.Root>
+																	)}
+																</div>
+															</DropdownMenu.Content>
+														</DropdownMenu>
+													</div>
+
+													{project.projectTags &&
+														project.projectTags.length > 0 && (
+															<div className="mt-4 flex flex-wrap gap-1.5">
+																{project.projectTags.map((pt) => (
+																	<TagBadge
+																		key={pt.tag.tagId}
+																		name={pt.tag.name}
+																		color={pt.tag.color}
+																	/>
+																))}
 															</div>
-															<div className="pt-4 mt-auto">
-																<div className="space-y-1 text-xs flex flex-row justify-between max-sm:flex-wrap w-full gap-2 sm:gap-4">
-																	<DateTooltip date={project.createdAt}>
-																		Created
-																	</DateTooltip>
-																	<span>
-																		{totalServices}{" "}
-																		{totalServices === 1
-																			? "service"
-																			: "services"}
-																	</span>
+														)}
+
+													{hasNoEnvironments && (
+														<div className="mt-4 flex flex-row gap-2 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
+															<AlertTriangle className="size-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
+															<span className="text-xs text-yellow-600 dark:text-yellow-400">
+																No environments are available.
+															</span>
+														</div>
+													)}
+
+													<div className="mt-auto pt-5">
+														<div className="grid grid-cols-2 gap-3 rounded-md border bg-muted/20 p-3 text-xs">
+															<div className="space-y-1">
+																<div className="text-muted-foreground">
+																	Services
+																</div>
+																<div className="text-lg font-semibold tabular-nums">
+																	{totalServices}
 																</div>
 															</div>
-														</LayerCard>
-													</Link>
-												</div>
+															<div className="space-y-1">
+																<div className="text-muted-foreground">
+																	Environments
+																</div>
+																<div className="text-lg font-semibold tabular-nums">
+																	{project.environments.length}
+																</div>
+															</div>
+														</div>
+														<div className="mt-4 flex items-center justify-between gap-3">
+															<DateTooltip date={project.createdAt}>
+																Created
+															</DateTooltip>
+															{workspaceHref ? (
+																<Link href={workspaceHref}>
+																	<Button variant="outline">
+																		Open workspace
+																	</Button>
+																</Link>
+															) : (
+																<Button variant="outline" disabled>
+																	Open workspace
+																</Button>
+															)}
+														</div>
+													</div>
+												</LayerCard>
 											);
 										})}
 									</div>
