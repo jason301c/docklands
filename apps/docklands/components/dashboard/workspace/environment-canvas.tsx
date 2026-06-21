@@ -6,6 +6,7 @@ import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Textarea } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -292,8 +293,20 @@ export const EnvironmentCanvas = ({
 	const [isSelectionMode, setIsSelectionMode] = useState(false);
 	const [selectedBulkKeys, setSelectedBulkKeys] = useState<string[]>([]);
 	const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
+	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+	const [selectedTargetProject, setSelectedTargetProject] = useState("");
+	const [selectedTargetEnvironment, setSelectedTargetEnvironment] =
+		useState("");
 	const dragState = useRef<DragState | null>(null);
 	const suppressClick = useRef(false);
+	const { data: allProjects } = api.project.all.useQuery(undefined, {
+		enabled: isSelectionMode,
+	});
+	const { data: selectedProjectEnvironments } =
+		api.environment.byProjectId.useQuery(
+			{ projectId: selectedTargetProject },
+			{ enabled: isMoveDialogOpen && !!selectedTargetProject },
+		);
 
 	const updateNode = api.workspace.updateNode.useMutation();
 	const connect = api.workspace.connect.useMutation();
@@ -307,41 +320,49 @@ export const EnvironmentCanvas = ({
 			start: api.application.start.useMutation(),
 			stop: api.application.stop.useMutation(),
 			deploy: api.application.deploy.useMutation(),
+			move: api.application.move.useMutation(),
 		},
 		compose: {
 			start: api.compose.start.useMutation(),
 			stop: api.compose.stop.useMutation(),
 			deploy: api.compose.deploy.useMutation(),
+			move: api.compose.move.useMutation(),
 		},
 		postgres: {
 			start: api.postgres.start.useMutation(),
 			stop: api.postgres.stop.useMutation(),
 			deploy: api.postgres.deploy.useMutation(),
+			move: api.postgres.move.useMutation(),
 		},
 		mysql: {
 			start: api.mysql.start.useMutation(),
 			stop: api.mysql.stop.useMutation(),
 			deploy: api.mysql.deploy.useMutation(),
+			move: api.mysql.move.useMutation(),
 		},
 		mariadb: {
 			start: api.mariadb.start.useMutation(),
 			stop: api.mariadb.stop.useMutation(),
 			deploy: api.mariadb.deploy.useMutation(),
+			move: api.mariadb.move.useMutation(),
 		},
 		redis: {
 			start: api.redis.start.useMutation(),
 			stop: api.redis.stop.useMutation(),
 			deploy: api.redis.deploy.useMutation(),
+			move: api.redis.move.useMutation(),
 		},
 		mongo: {
 			start: api.mongo.start.useMutation(),
 			stop: api.mongo.stop.useMutation(),
 			deploy: api.mongo.deploy.useMutation(),
+			move: api.mongo.move.useMutation(),
 		},
 		libsql: {
 			start: api.libsql.start.useMutation(),
 			stop: api.libsql.stop.useMutation(),
 			deploy: api.libsql.deploy.useMutation(),
+			move: api.libsql.move.useMutation(),
 		},
 	};
 
@@ -358,6 +379,7 @@ export const EnvironmentCanvas = ({
 			if (event.key === "Escape") {
 				setConnectSource(null);
 				setCommandOpen(false);
+				setIsMoveDialogOpen(false);
 				setIsSelectionMode(false);
 				setSelectedBulkKeys([]);
 			}
@@ -400,6 +422,13 @@ export const EnvironmentCanvas = ({
 				),
 			),
 		[services, selectedBulkKeySet],
+	);
+	const targetEnvironments = useMemo(
+		() =>
+			(selectedProjectEnvironments ?? []).filter(
+				(environment) => environment.environmentId !== environmentId,
+			),
+		[selectedProjectEnvironments, environmentId],
 	);
 
 	useEffect(() => {
@@ -718,6 +747,7 @@ export const EnvironmentCanvas = ({
 				closeSelectedService();
 			} else {
 				setSelectedBulkKeys([]);
+				setIsMoveDialogOpen(false);
 			}
 			return next;
 		});
@@ -741,6 +771,18 @@ export const EnvironmentCanvas = ({
 
 	const clearBulkSelection = () => {
 		setSelectedBulkKeys([]);
+	};
+
+	const resetMoveDialog = () => {
+		setIsMoveDialogOpen(false);
+		setSelectedTargetProject("");
+		setSelectedTargetEnvironment("");
+	};
+
+	const openMoveDialog = () => {
+		setSelectedTargetProject(projectId);
+		setSelectedTargetEnvironment("");
+		setIsMoveDialogOpen(true);
 	};
 
 	const runServiceAction = async (
@@ -805,6 +847,57 @@ export const EnvironmentCanvas = ({
 			}
 			if (failed === 0) {
 				setSelectedBulkKeys([]);
+			}
+		} finally {
+			setIsBulkActionLoading(false);
+		}
+	};
+
+	const runBulkMove = async () => {
+		if (selectedBulkServices.length === 0) return;
+		if (!selectedTargetProject) {
+			toast.error("Select a target project");
+			return;
+		}
+		if (!selectedTargetEnvironment) {
+			toast.error("Select a target environment");
+			return;
+		}
+
+		const servicesToMove = [...selectedBulkServices];
+		let succeeded = 0;
+		let failed = 0;
+		setIsBulkActionLoading(true);
+
+		try {
+			for (const service of servicesToMove) {
+				const mutation = serviceActions[service.type].move;
+				const actionInput = {
+					...getActionInput(service),
+					targetEnvironmentId: selectedTargetEnvironment,
+				};
+
+				try {
+					await (mutation.mutateAsync as (input: never) => Promise<unknown>)(
+						actionInput as never,
+					);
+					succeeded++;
+				} catch {
+					failed++;
+				}
+			}
+
+			await utils.workspace.byEnvironment.invalidate({ environmentId });
+			await utils.project.all.invalidate();
+			if (succeeded > 0) {
+				toast.success(`${succeeded} services moved`);
+			}
+			if (failed > 0) {
+				toast.error(`${failed} services could not move`);
+			}
+			if (failed === 0) {
+				setSelectedBulkKeys([]);
+				resetMoveDialog();
 			}
 		} finally {
 			setIsBulkActionLoading(false);
@@ -1336,6 +1429,14 @@ export const EnvironmentCanvas = ({
 								</Button>
 								<Button
 									variant="outline"
+									onClick={openMoveDialog}
+									disabled={selectedBulkServices.length === 0}
+								>
+									<ArrowRight className="size-4" />
+									Move
+								</Button>
+								<Button
+									variant="outline"
 									onClick={() => void runBulkServiceAction("start")}
 									loading={isBulkActionLoading}
 									disabled={selectedBulkServices.length === 0}
@@ -1836,6 +1937,96 @@ export const EnvironmentCanvas = ({
 					</div>
 				</aside>
 			)}
+
+			<Dialog.Root
+				open={isMoveDialogOpen}
+				onOpenChange={(open) => {
+					if (open) {
+						setIsMoveDialogOpen(true);
+						return;
+					}
+					resetMoveDialog();
+				}}
+			>
+				<Dialog className="sm:max-w-lg">
+					<div>
+						<Dialog.Title>Move Services</Dialog.Title>
+						<Dialog.Description>
+							Move {selectedBulkServices.length} selected service
+							{selectedBulkServices.length === 1 ? "" : "s"} to another
+							environment.
+						</Dialog.Description>
+					</div>
+
+					<div className="space-y-4">
+						<div className="space-y-2">
+							<label className="text-sm font-medium">Project</label>
+							<Select
+								aria-label="Target project"
+								value={selectedTargetProject}
+								onValueChange={(value) => {
+									if (value === null) return;
+									setSelectedTargetProject(value as string);
+									setSelectedTargetEnvironment("");
+								}}
+							>
+								{allProjects?.map((project) => (
+									<Select.Option
+										key={project.projectId}
+										value={project.projectId}
+									>
+										{project.name}
+									</Select.Option>
+								))}
+							</Select>
+						</div>
+
+						<div className="space-y-2">
+							<label className="text-sm font-medium">Environment</label>
+							<Select
+								aria-label="Target environment"
+								value={selectedTargetEnvironment}
+								onValueChange={(value) => {
+									if (value !== null) {
+										setSelectedTargetEnvironment(value as string);
+									}
+								}}
+							>
+								{targetEnvironments.map((environment) => (
+									<Select.Option
+										key={environment.environmentId}
+										value={environment.environmentId}
+									>
+										{environment.name}
+									</Select.Option>
+								))}
+							</Select>
+							{selectedTargetProject && targetEnvironments.length === 0 && (
+								<p className="text-xs text-muted-foreground">
+									This project has no other environments.
+								</p>
+							)}
+						</div>
+					</div>
+
+					<div className="flex justify-end gap-2">
+						<Button variant="outline" onClick={resetMoveDialog}>
+							Cancel
+						</Button>
+						<Button
+							onClick={() => void runBulkMove()}
+							loading={isBulkActionLoading}
+							disabled={
+								selectedBulkServices.length === 0 ||
+								!selectedTargetProject ||
+								!selectedTargetEnvironment
+							}
+						>
+							Move services
+						</Button>
+					</div>
+				</Dialog>
+			</Dialog.Root>
 
 			<Dialog.Root open={commandOpen} onOpenChange={setCommandOpen}>
 				<Dialog className="sm:max-w-2xl">
