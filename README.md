@@ -2,7 +2,7 @@
 
 Docklands is a community fork of the upstream self-hosted deployment platform at [dokploy/dokploy](https://github.com/dokploy/dokploy), focused on a cleaner deployment control plane with a more deliberate product direction.
 
-The current branch starts from upstream `canary`, keeps the useful base, and adds a small curated set of reviewed fixes. The next major workstream is the Docklands identity and UI refresh.
+The current branch starts from upstream `canary`, keeps the useful base, and is moving the product toward a project-first workspace experience for self-hosted VM operators.
 
 ## Status
 
@@ -12,6 +12,8 @@ Docklands is early and should be treated as a fork-in-progress.
 - Extra upstream branches were removed from this fork; only `canary` and `main` are kept.
 - A first batch of security-positive upstream PRs was merged after review.
 - Remaining upstream PRs are intentionally not mass-merged. Most need dedicated security or product review.
+- The primary project environment view is now a workspace canvas with persisted service layout, service connections, generated connection variables, service variables, deployments, domains, previews, and command-bar navigation.
+- The inherited list view remains available as a fallback while remaining bulk operations are migrated into the workspace surface.
 
 ## What It Does
 
@@ -19,6 +21,8 @@ Docklands inherits the upstream project's core capabilities:
 
 - Deploy applications from Git, Docker images, and Docker Compose.
 - Manage PostgreSQL, MySQL, MariaDB, MongoDB, Redis, and libSQL services.
+- Arrange services on a project canvas and model private service-to-service connections.
+- Apply generated database/cache connection variables to connected services.
 - Route traffic through Traefik.
 - Run database and volume backups.
 - Manage multi-server Docker deployments.
