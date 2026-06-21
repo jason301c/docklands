@@ -23,11 +23,26 @@ Docklands inherits the upstream project's core capabilities:
 - Manage PostgreSQL, MySQL, MariaDB, MongoDB, Redis, and libSQL services.
 - Arrange services on a project canvas and model private service-to-service connections.
 - Apply generated database/cache connection variables to connected services.
-- Route traffic through Traefik.
+- Route traffic through the Docklands ingress runtime, powered by Traefik under the hood.
 - Run database and volume backups.
-- Manage multi-server Docker deployments.
+- Manage local and remote runtime workers for multi-machine container deployments.
 - Monitor deployments, logs, resources, and service state.
 - Send deployment notifications through configured providers.
+
+## Product Surface
+
+The primary app surface is `/dashboard/workspace`: a project environment canvas
+for services, variables, deployments, domains, previews, and connection mapping.
+Older inherited routes are kept as compatibility redirects while the product
+continues moving toward the workspace model.
+
+Preferred route names in docs, navigation, and new links:
+
+- `/dashboard/workspace` for the project overview.
+- `/dashboard/runtime` for runtime containers.
+- `/dashboard/orchestration` for worker and scheduling state.
+- `/dashboard/ingress` for ingress runtime files.
+- `/dashboard/settings/ingress`, `/dashboard/settings/runtime`, and `/dashboard/settings/storage` for the renamed settings surfaces.
 
 ## Development
 
@@ -46,7 +61,8 @@ Useful checks:
 
 ```bash
 pnpm typecheck
-pnpm test
+pnpm --filter docklands exec vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts
+pnpm build
 ```
 
 Docklands targets Node `>=24.4.0 <26` and pnpm `>=10.22.0`.
@@ -59,7 +75,7 @@ Docklands targets Node `>=24.4.0 <26` and pnpm `>=10.22.0`.
 - `apps/docklands/client/` contains browser-only app glue such as tRPC, auth client helpers, and hooks.
 - `apps/docklands/shared/` contains cross-runtime validation and utility helpers.
 - `apps/docklands/server/` contains the custom server, tRPC routers, queues, WebSocket glue, ops scripts, and backend runtime.
-- `apps/docklands/server/core/` contains backend/domain code: database, services, Docker, Traefik, deployments, backups, auth, templates, and verification.
+- `apps/docklands/server/core/` contains backend/domain code: database, services, container runtime, ingress, deployments, backups, auth, templates, and verification.
 - `apps/docklands/tools/` contains app-coupled utilities such as OpenAPI generation.
 - `apps/docklands/drizzle/` contains database migrations.
 - `apps/docklands/__test__/` contains the Vitest suite.
