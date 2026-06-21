@@ -8,7 +8,7 @@ import { Switch } from "@cloudflare/kumo/components/switch";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { AlertTriangle, Database, HelpCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
@@ -193,6 +193,7 @@ interface Props {
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	hideTrigger?: boolean;
+	initialType?: DbType;
 }
 
 export const AddDatabase = ({
@@ -201,12 +202,14 @@ export const AddDatabase = ({
 	open: controlledOpen,
 	onOpenChange,
 	hideTrigger = false,
+	initialType,
 }: Props) => {
 	const utils = api.useUtils();
 	const [internalVisible, setInternalVisible] = useState(false);
 	const visible = controlledOpen ?? internalVisible;
 	const setVisible = onOpenChange ?? setInternalVisible;
 	const slug = slugify(projectName);
+	const defaultDatabaseType = initialType ?? "postgres";
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
@@ -230,7 +233,7 @@ export const AddDatabase = ({
 
 	const form = useForm({
 		defaultValues: {
-			type: "postgres",
+			type: defaultDatabaseType,
 			dockerImage: "",
 			name: "",
 			appName: `${slug}-`,
@@ -242,6 +245,12 @@ export const AddDatabase = ({
 		},
 		resolver: zodResolver(mySchema),
 	});
+
+	useEffect(() => {
+		if (!visible || !initialType) return;
+		form.setValue("type", initialType, { shouldDirty: false });
+	}, [form, initialType, visible]);
+
 	const sqldNode = form.watch("sqldNode");
 	const type = form.watch("type");
 	const activeMutation = {
@@ -251,6 +260,70 @@ export const AddDatabase = ({
 		mysql: mysqlMutation,
 		postgres: postgresMutation,
 		redis: redisMutation,
+	};
+
+	const resetForm = (databaseType: DbType) => {
+		const base = {
+			dockerImage: "",
+			name: "",
+			appName: `${slug}-`,
+			databasePassword: "",
+			description: "",
+			serverId: null,
+		};
+
+		switch (databaseType) {
+			case "libsql":
+				form.reset({
+					...base,
+					type: "libsql",
+					databaseUser: "",
+					sqldNode: "primary",
+					sqldPrimaryUrl: "",
+					enableNamespaces: false,
+				});
+				return;
+			case "mariadb":
+				form.reset({
+					...base,
+					type: "mariadb",
+					databaseRootPassword: "",
+					databaseName: "",
+					databaseUser: "",
+				});
+				return;
+			case "mongo":
+				form.reset({
+					...base,
+					type: "mongo",
+					databaseUser: "",
+					replicaSets: false,
+				});
+				return;
+			case "mysql":
+				form.reset({
+					...base,
+					type: "mysql",
+					databaseRootPassword: "",
+					databaseName: "",
+					databaseUser: "",
+				});
+				return;
+			case "postgres":
+				form.reset({
+					...base,
+					type: "postgres",
+					databaseName: "",
+					databaseUser: "",
+				});
+				return;
+			case "redis":
+				form.reset({
+					...base,
+					type: "redis",
+				});
+				return;
+		}
 	};
 
 	const onSubmit = async (data: AddDatabase) => {
@@ -328,16 +401,7 @@ export const AddDatabase = ({
 			await promise
 				.then(async () => {
 					toast.success("Database Created");
-					form.reset({
-						type: "postgres",
-						dockerImage: "",
-						name: "",
-						appName: `${projectName}-`,
-						databasePassword: "",
-						description: "",
-						databaseName: "",
-						databaseUser: "",
-					});
+					resetForm(defaultDatabaseType);
 					setVisible(false);
 					// Invalidate the project query to refresh the environment data
 					await utils.environment.one.invalidate({
@@ -365,7 +429,7 @@ export const AddDatabase = ({
 			)}
 			<Dialog className="md:max-h-[90vh]  sm:max-w-2xl">
 				<div>
-					<Dialog.Title>Databases</Dialog.Title>
+					<Dialog.Title>Create Database</Dialog.Title>
 				</div>
 
 				<Form {...form}>
@@ -423,7 +487,7 @@ export const AddDatabase = ({
 						/>
 						<div className="flex flex-col gap-4">
 							<FormLabel className="text-lg font-semibold leading-none tracking-tight">
-								Fill the next fields.
+								Configure database
 							</FormLabel>
 							<div className="flex flex-col gap-2">
 								<FormField
@@ -455,7 +519,7 @@ export const AddDatabase = ({
 										name="serverId"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Select a Server</FormLabel>
+												<FormLabel>Runtime capacity</FormLabel>
 												<Select
 													aria-label="Select option"
 													onValueChange={field.onChange}
@@ -470,7 +534,7 @@ export const AddDatabase = ({
 															{showLocalOption && (
 																<Select.Option value="docklands">
 																	<span className="flex items-center gap-2 justify-between w-full">
-																		<span>Docklands</span>
+																		<span>Local runtime</span>
 																		<span className="text-muted-foreground text-xs self-center">
 																			Default
 																		</span>
@@ -486,7 +550,7 @@ export const AddDatabase = ({
 																</Select.Option>
 															))}
 															<Select.GroupLabel>
-																Servers (
+																Runtime capacity (
 																{servers?.length + (showLocalOption ? 1 : 0)})
 															</Select.GroupLabel>
 														</Select.Group>
@@ -503,15 +567,12 @@ export const AddDatabase = ({
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel className="flex items-center gap-2">
-												App Name
+												Service Name
 												<TooltipProvider delay={0}>
 													<Tooltip
 														content={
 															<>
-																<p>
-																	This will be the name of the Docker Swarm
-																	service
-																</p>
+																<p>Internal runtime service name.</p>
 															</>
 														}
 														side="right"
@@ -725,7 +786,7 @@ export const AddDatabase = ({
 									render={({ field }) => {
 										return (
 											<FormItem>
-												<FormLabel>Docker image</FormLabel>
+												<FormLabel>Container image</FormLabel>
 												<FormControl>
 													<Input
 														placeholder={`Default ${dockerImageDefaultPlaceholder[type]}`}

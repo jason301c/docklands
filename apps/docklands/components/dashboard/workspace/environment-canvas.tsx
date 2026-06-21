@@ -160,6 +160,14 @@ type CreateServiceDialog =
 	| "template"
 	| "import";
 
+type CreateDatabaseType =
+	| "libsql"
+	| "mariadb"
+	| "mongo"
+	| "mysql"
+	| "postgres"
+	| "redis";
+
 type ServiceKindFilter =
 	| "all"
 	| "runtimes"
@@ -502,6 +510,8 @@ export const EnvironmentCanvas = ({
 	const [createDialog, setCreateDialog] = useState<CreateServiceDialog | null>(
 		null,
 	);
+	const [createDatabaseType, setCreateDatabaseType] =
+		useState<CreateDatabaseType>();
 	const [drawerTab, setDrawerTab] = useState<
 		| "overview"
 		| "variables"
@@ -642,6 +652,7 @@ export const EnvironmentCanvas = ({
 				setCommandOpen(false);
 				setCommandQuery("");
 				setCreateDialog(null);
+				setCreateDatabaseType(undefined);
 				setIsMoveDialogOpen(false);
 				setIsBulkDeleteDialogOpen(false);
 				setIsDuplicateDialogOpen(false);
@@ -1657,9 +1668,16 @@ export const EnvironmentCanvas = ({
 		setCommandQuery("");
 		setCreateDialog(dialog);
 	};
+	const openDatabaseDialog = (databaseType?: CreateDatabaseType) => {
+		setCreateDatabaseType(databaseType);
+		openCreateDialog("database");
+	};
 	const getCreateDialogProps = (dialog: CreateServiceDialog) => ({
 		open: createDialog === dialog,
-		onOpenChange: (open: boolean) => setCreateDialog(open ? dialog : null),
+		onOpenChange: (open: boolean) => {
+			setCreateDialog(open ? dialog : null);
+			if (!open && dialog === "database") setCreateDatabaseType(undefined);
+		},
 		hideTrigger: true,
 	});
 	const commandItems: CommandItem[] = [
@@ -1683,8 +1701,60 @@ export const EnvironmentCanvas = ({
 						search:
 							"new create database postgres redis mysql mariadb mongo libsql",
 						icon: <Database className="size-5 text-muted-foreground" />,
-						run: () => openCreateDialog("database"),
+						run: () => openDatabaseDialog(),
 					},
+					...[
+						{
+							type: "postgres" as const,
+							label: "PostgreSQL",
+							detail: "Provision a Postgres database",
+							search: "postgres postgresql database sql relational",
+							icon: <PostgresqlIcon className="size-5" />,
+						},
+						{
+							type: "redis" as const,
+							label: "Redis",
+							detail: "Provision a Redis datastore",
+							search: "redis cache queue key value datastore",
+							icon: <RedisIcon className="size-5" />,
+						},
+						{
+							type: "mysql" as const,
+							label: "MySQL",
+							detail: "Provision a MySQL database",
+							search: "mysql database sql relational",
+							icon: <MysqlIcon className="size-5" />,
+						},
+						{
+							type: "mariadb" as const,
+							label: "MariaDB",
+							detail: "Provision a MariaDB database",
+							search: "mariadb mysql database sql relational",
+							icon: <MariadbIcon className="size-5" />,
+						},
+						{
+							type: "mongo" as const,
+							label: "MongoDB",
+							detail: "Provision a MongoDB database",
+							search: "mongo mongodb database document",
+							icon: <MongodbIcon className="size-5" />,
+						},
+						{
+							type: "libsql" as const,
+							label: "libSQL",
+							detail: "Provision a libSQL database",
+							search: "libsql sqlite turso database",
+							icon: <LibsqlIcon className="size-5" />,
+						},
+					].map((database) => ({
+						id: `create:database:${database.type}`,
+						group: "Create" as const,
+						label: database.label,
+						detail: database.detail,
+						search: `new create ${database.search}`,
+						icon: database.icon,
+						run: () => openDatabaseDialog(database.type),
+					})),
 					{
 						id: "create:compose",
 						group: "Create" as const,
@@ -3682,6 +3752,7 @@ export const EnvironmentCanvas = ({
 					<AddDatabase
 						projectName={workspace.project.name}
 						environmentId={environmentId}
+						initialType={createDatabaseType}
 						{...getCreateDialogProps("database")}
 					/>
 					<AddCompose
