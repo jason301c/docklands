@@ -4,13 +4,13 @@ import { apiFindAllByApplication } from "@/server/db/schema";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
 import { deploy } from "@/server/utils/deploy";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { findApplicationById } from "@/server-core/services/application";
 import {
-	findApplicationById,
 	findPreviewDeploymentById,
 	findPreviewDeploymentsByApplicationId,
-	IS_CLOUD,
 	removePreviewDeployment,
-} from "@/server-core";
+} from "@/server-core/services/preview-deployment";
 import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 

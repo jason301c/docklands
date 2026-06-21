@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { quote } from "shell-quote";
 import type { z } from "zod";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import { db } from "@/server-core/db";
 import {
 	type apiCreateDeployment,

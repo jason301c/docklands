@@ -35,6 +35,22 @@ export const getPublicIpWithFallback = async () => {
 	return ip;
 };
 
+export const getLocalServerIp = async () => {
+	try {
+		const { execAsync } = await import("@/server-core/utils/process/execAsync");
+		const command = `ip addr show | grep -E "inet (192.168.|10.|172.1[6-9].|172.2[0-9].|172.3[0-1].)" | head -n1 | awk '{print $2}' | cut -d/ -f1`;
+		const { stdout } = await execAsync(command);
+		const ip = stdout.trim();
+		return (
+			ip ||
+			"We were unable to obtain the local server IP, please use your private IP address"
+		);
+	} catch (error) {
+		console.error("Error obtaining local server IP", error);
+		return "We were unable to obtain the local server IP, please use your private IP address";
+	}
+};
+
 export const readValidDirectory = (
 	directory: string,
 	serverId?: string | null,

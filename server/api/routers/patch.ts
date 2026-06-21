@@ -13,21 +13,23 @@ import {
 	apiTogglePatchEnabled,
 	apiUpdatePatch,
 } from "@/server/db/schema";
+import { findApplicationById } from "@/server-core/services/application";
+import { findComposeById } from "@/server-core/services/compose";
 import {
-	cleanPatchRepos,
 	createPatch,
 	deletePatch,
-	ensurePatchRepo,
-	findApplicationById,
-	findComposeById,
 	findPatchByFilePath,
 	findPatchById,
 	findPatchesByEntityId,
 	markPatchForDeletion,
+	updatePatch,
+} from "@/server-core/services/patch";
+import {
+	cleanPatchRepos,
+	ensurePatchRepo,
 	readPatchRepoDirectory,
 	readPatchRepoFile,
-	updatePatch,
-} from "@/server-core";
+} from "@/server-core/services/patch-repo";
 import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
 
 /**

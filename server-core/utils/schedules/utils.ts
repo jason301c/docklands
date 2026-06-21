@@ -1,7 +1,8 @@
 import { createWriteStream } from "node:fs";
 import path from "node:path";
 import { scheduledJobs, scheduleJob as scheduleJobNode } from "node-schedule";
-import { IS_CLOUD, paths } from "@/server-core/constants";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { paths } from "@/server-core/constants/paths";
 import type { Schedule } from "@/server-core/db/schema/schedule";
 import {
 	createDeploymentSchedule,

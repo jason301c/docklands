@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execAsync, IS_CLOUD, paths } from "@/server-core";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { paths } from "@/server-core/constants/paths";
+import { execAsync } from "@/server-core/utils/process/execAsync";
 
 /**
  * Validates that the container ID matches Docker's expected format.

@@ -15,12 +15,14 @@ import {
 import {
 	createBitbucket,
 	findBitbucketById,
-	getAccessibleGitProviderIds,
+	updateBitbucket,
+} from "@/server-core/services/bitbucket";
+import { getAccessibleGitProviderIds } from "@/server-core/services/git-provider";
+import {
 	getBitbucketBranches,
 	getBitbucketRepositories,
 	testBitbucketConnection,
-	updateBitbucket,
-} from "@/server-core";
+} from "@/server-core/utils/providers/bitbucket";
 import { db } from "@/server-core/db";
 
 export const bitbucketRouter = createTRPCRouter({

@@ -1,5 +1,5 @@
 import Dockerode from "dockerode";
-import { docker } from "@/server-core/constants";
+import { docker } from "@/server-core/constants/docker";
 import { findServerById } from "@/server-core/services/server";
 
 export const getRemoteDocker = async (serverId?: string | null) => {

@@ -22,10 +22,38 @@ import {
 import { assertBuildsConcurrencyAllowed } from "@/server/queues/concurrency";
 import { cleanAllDeploymentQueue } from "@/server/queues/queueSetup";
 import { removeJob, schedule } from "@/server/utils/backup";
+import { CLEANUP_CRON_JOB } from "@/server-core/constants/cleanup";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { paths } from "@/server-core/constants/paths";
 import {
-	CLEANUP_CRON_JOB,
-	checkGPUStatus,
+	findServerById,
+	updateServerById,
+} from "@/server-core/services/server";
+import {
 	checkPortInUse,
+	DEFAULT_UPDATE_DATA,
+	getDocklandsImageTag,
+	getUpdateData,
+	readDirectory,
+	readEnvironmentVariables,
+	readPorts,
+	reloadDockerResource,
+	writeTraefikSetup,
+} from "@/server-core/services/settings";
+import {
+	getWebServerSettings,
+	updateWebServerSettings,
+} from "@/server-core/services/web-server-settings";
+import {
+	getLogCleanupStatus,
+	startLogCleanup,
+	stopLogCleanup,
+} from "@/server-core/utils/access-log/handler";
+import {
+	parseRawConfig,
+	processLogs,
+} from "@/server-core/utils/access-log/utils";
+import {
 	checkPostgresHealth,
 	checkRedisHealth,
 	checkTraefikHealth,
@@ -36,42 +64,27 @@ import {
 	cleanupImages,
 	cleanupSystem,
 	cleanupVolumes,
-	DEFAULT_UPDATE_DATA,
-	execAsync,
-	findServerById,
 	getDockerDiskUsage,
-	getDocklandsImageTag,
-	getLogCleanupStatus,
-	getUpdateData,
-	getWebServerSettings,
-	IS_CLOUD,
-	parseRawConfig,
-	paths,
 	prepareEnvironmentVariables,
-	processLogs,
+} from "@/server-core/utils/docker/utils";
+import { recreateDirectory } from "@/server-core/utils/filesystem/directory";
+import { checkGPUStatus, setupGPUSupport } from "@/server-core/utils/gpu-setup";
+import { sendDockerCleanupNotifications } from "@/server-core/utils/notifications/docker-cleanup";
+import { execAsync } from "@/server-core/utils/process/execAsync";
+import { spawnAsync } from "@/server-core/utils/process/spawnAsync";
+import {
 	readConfig,
 	readConfigInPath,
-	readDirectory,
-	readEnvironmentVariables,
-	readMainConfig,
 	readMonitoringConfig,
-	readPorts,
-	recreateDirectory,
-	reloadDockerResource,
-	sendDockerCleanupNotifications,
-	setupGPUSupport,
-	spawnAsync,
-	startLogCleanup,
-	stopLogCleanup,
-	updateLetsEncryptEmail,
-	updateServerById,
-	updateServerTraefik,
-	updateWebServerSettings,
 	writeConfig,
-	writeMainConfig,
 	writeTraefikConfigInPath,
-	writeTraefikSetup,
-} from "@/server-core";
+} from "@/server-core/utils/traefik/application";
+import {
+	readMainConfig,
+	updateLetsEncryptEmail,
+	updateServerTraefik,
+	writeMainConfig,
+} from "@/server-core/utils/traefik/web-server";
 import { db } from "@/server-core/db";
 import { checkPermission } from "@/server-core/services/permission";
 import packageInfo from "../../../package.json";

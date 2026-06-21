@@ -1,6 +1,8 @@
 import { expect, test } from "vitest";
-import type { ApplicationNested, Domain, Redirect } from "@/server-core";
-import { createRouterConfig } from "@/server-core";
+import type { Domain } from "@/server-core/services/domain";
+import type { Redirect } from "@/server-core/services/redirect";
+import type { ApplicationNested } from "@/server-core/utils/builders/index";
+import { createRouterConfig } from "@/server-core/utils/traefik/domain";
 
 const baseApp: ApplicationNested = {
 	railpackVersion: "0.15.4",

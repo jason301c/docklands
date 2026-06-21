@@ -16,27 +16,29 @@ import {
 	apiUpdateLibsql,
 	libsql as libsqlTable,
 } from "@/server/db/schema";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { getContainerLogs } from "@/server-core/services/docker";
+import { findEnvironmentById } from "@/server-core/services/environment";
 import {
-	checkPortInUse,
 	createLibsql,
-	createMount,
 	deployLibsql,
-	findEnvironmentById,
 	findLibsqlById,
-	findProjectById,
-	getAccessibleServerIds,
-	getContainerLogs,
-	getWebServerSettings,
-	IS_CLOUD,
-	rebuildDatabase,
 	removeLibsqlById,
+	updateLibsqlById,
+} from "@/server-core/services/libsql";
+import { createMount } from "@/server-core/services/mount";
+import { findProjectById } from "@/server-core/services/project";
+import { getAccessibleServerIds } from "@/server-core/services/server";
+import { checkPortInUse } from "@/server-core/services/settings";
+import { getWebServerSettings } from "@/server-core/services/web-server-settings";
+import { rebuildDatabase } from "@/server-core/utils/databases/rebuild";
+import {
 	removeService,
 	startService,
 	startServiceRemote,
 	stopService,
 	stopServiceRemote,
-	updateLibsqlById,
-} from "@/server-core";
+} from "@/server-core/utils/docker/utils";
 import {
 	addNewService,
 	checkServiceAccess,

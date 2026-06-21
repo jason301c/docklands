@@ -8,22 +8,22 @@ import {
 	apiRemoveMount,
 	apiUpdateMount,
 } from "@/server/db/schema";
+import { findApplicationById } from "@/server-core/services/application";
+import { findComposeById } from "@/server-core/services/compose";
+import { findLibsqlById } from "@/server-core/services/libsql";
+import { findMariadbById } from "@/server-core/services/mariadb";
+import { findMongoById } from "@/server-core/services/mongo";
 import {
 	createMount,
 	deleteMount,
-	findApplicationById,
-	findComposeById,
-	findLibsqlById,
-	findMariadbById,
-	findMongoById,
 	findMountById,
 	findMountsByApplicationId,
-	findMySqlById,
-	findPostgresById,
-	findRedisById,
-	getServiceContainer,
 	updateMount,
-} from "@/server-core";
+} from "@/server-core/services/mount";
+import { findMySqlById } from "@/server-core/services/mysql";
+import { findPostgresById } from "@/server-core/services/postgres";
+import { findRedisById } from "@/server-core/services/redis";
+import { getServiceContainer } from "@/server-core/utils/docker/utils";
 import type { ServiceType } from "@/server-core/db/schema/mount";
 import {
 	checkServiceAccess,

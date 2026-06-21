@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDocklandsNetworkToRoot } from "@/server-core";
+import { addDocklandsNetworkToRoot } from "@/server-core/utils/docker/domain";
 
 describe("addDocklandsNetworkToRoot", () => {
 	it("should create network object if networks is undefined", () => {

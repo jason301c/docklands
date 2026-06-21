@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import type { z } from "zod";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import { db } from "@/server-core/db";
 import { type apiCreatePatch, patch } from "@/server-core/db/schema";
 import { encodeBase64 } from "../utils/docker/utils";

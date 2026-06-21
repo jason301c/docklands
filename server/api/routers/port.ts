@@ -11,7 +11,7 @@ import {
 	finPortById,
 	removePortById,
 	updatePortById,
-} from "@/server-core";
+} from "@/server-core/services/port";
 import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
 
 export const portRouter = createTRPCRouter({

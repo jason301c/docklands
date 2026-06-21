@@ -1,6 +1,6 @@
 import path, { join } from "node:path";
 import { quote } from "shell-quote";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import {
 	findSSHKeyById,
 	updateSSHKeyById,

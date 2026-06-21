@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { scheduledJobs, scheduleJob } from "node-schedule";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import {
 	getWebServerSettings,
 	updateWebServerSettings,

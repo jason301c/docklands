@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { Octokit } from "octokit";
 import { quote } from "shell-quote";
 import type { z } from "zod";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import type { apiFindGithubBranches } from "@/server-core/db/schema";
 import { findGithubById, type Github } from "@/server-core/services/github";
 import type { InferResultType } from "@/server-core/types/with";

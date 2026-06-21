@@ -3,19 +3,18 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import AdmZip from "adm-zip";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import type { ApplicationNested } from "@/server-core";
-import { unzipDrop } from "@/server-core";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
+import type { ApplicationNested } from "@/server-core/utils/builders";
+import { unzipDrop } from "@/server-core/utils/builders/drop";
 
 const OUTPUT_BASE = "./__test__/drop/zips/output";
 const { APPLICATIONS_PATH } = paths();
-vi.mock("@/server-core/constants", async (importOriginal) => {
-	const actual = await importOriginal();
+vi.mock("@/server-core/constants/paths", async (importOriginal) => {
+	const actual =
+		await importOriginal<typeof import("@/server-core/constants/paths")>();
 	return {
-		// @ts-expect-error
 		...actual,
 		paths: () => ({
-			// @ts-expect-error
 			...actual.paths(),
 			BASE_PATH: OUTPUT_BASE,
 			APPLICATIONS_PATH: OUTPUT_BASE,

@@ -2,7 +2,7 @@ import path from "node:path";
 import { TRPCError } from "@trpc/server";
 import { eq, type SQL, sql } from "drizzle-orm";
 import type { z } from "zod";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import { db } from "@/server-core/db";
 import {
 	type apiCreateMount,

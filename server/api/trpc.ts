@@ -9,19 +9,27 @@
 
 import type { OpenApiMeta } from "@dokploy/trpc-openapi";
 import { initTRPC, TRPCError } from "@trpc/server";
+import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import type { Session, User } from "better-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
 // import { getServerAuthSession } from "@/server/auth";
 import { db } from "@/server-core/db";
-import { hasValidLicense } from "@/server-core/index";
+import { hasValidLicense } from "@/server-core/services/enterprise/license-key";
 import type { statements } from "@/server-core/lib/access-control";
-import { validateRequest } from "@/server-core/lib/auth";
+import {
+	validateRequest,
+	validateRequestHeaders,
+} from "@/server-core/lib/auth";
 import { checkPermission } from "@/server-core/services/permission";
 
 type Resource = keyof typeof statements;
 type ActionOf<R extends Resource> = (typeof statements)[R][number];
+type RequestLike = {
+	headers: Record<string, string | string[] | undefined>;
+};
+type ResponseLike = CreateNextContextOptions["res"] | { headers: Headers };
 
 /**
  * 1. CONTEXT
@@ -43,8 +51,8 @@ interface CreateContextOptions {
 	session:
 		| (Session & { activeOrganizationId: string; impersonatedBy?: string })
 		| null;
-	req: CreateNextContextOptions["req"];
-	res: CreateNextContextOptions["res"];
+	req: RequestLike;
+	res: ResponseLike;
 }
 
 /**
@@ -67,6 +75,35 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
 	};
 };
 
+const normalizeContextUser = (
+	user: Awaited<ReturnType<typeof validateRequestHeaders>>["user"],
+) =>
+	user
+		? {
+				...user,
+				email: user.email,
+				role: user.role as "owner" | "member" | "admin",
+				id: user.id,
+				ownerId: user.ownerId,
+			}
+		: null;
+
+const normalizeContextSession = (
+	session: Awaited<ReturnType<typeof validateRequestHeaders>>["session"],
+) =>
+	session
+		? {
+				...session,
+				activeOrganizationId: session.activeOrganizationId || "",
+			}
+		: null;
+
+const requestHeadersToObject = (headers: Headers) =>
+	Object.fromEntries(headers.entries()) as Record<
+		string,
+		string | string[] | undefined
+	>;
+
 /**
  * This is the actual context you will use in your router. It will be used to process every request
  * that goes through your tRPC endpoint.
@@ -82,21 +119,26 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 	return createInnerTRPCContext({
 		req,
 		res,
-		session: session
-			? {
-					...session,
-					activeOrganizationId: session.activeOrganizationId || "",
-				}
-			: null,
-		user: user
-			? {
-					...user,
-					email: user.email,
-					role: user.role as "owner" | "member" | "admin",
-					id: user.id,
-					ownerId: user.ownerId,
-				}
-			: null,
+		session: normalizeContextSession(session),
+		user: normalizeContextUser(user),
+	});
+};
+
+export const createFetchTRPCContext = async (
+	opts: FetchCreateContextFnOptions,
+) => {
+	const { req, resHeaders } = opts;
+	const { session, user } = await validateRequestHeaders(req.headers);
+
+	return createInnerTRPCContext({
+		req: {
+			headers: requestHeadersToObject(req.headers),
+		},
+		res: {
+			headers: resHeaders,
+		},
+		session: normalizeContextSession(session),
+		user: normalizeContextUser(user),
 	});
 };
 

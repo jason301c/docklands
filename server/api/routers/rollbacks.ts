@@ -1,7 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { audit } from "@/server/api/utils/audit";
 import { apiFindOneRollback } from "@/server/db/schema";
-import { findRollbackById, removeRollbackById, rollback } from "@/server-core";
+import {
+	findRollbackById,
+	removeRollbackById,
+	rollback,
+} from "@/server-core/services/rollbacks";
 import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 

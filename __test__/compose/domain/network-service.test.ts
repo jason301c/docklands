@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDocklandsNetworkToService } from "@/server-core";
+import { addDocklandsNetworkToService } from "@/server-core/utils/docker/domain";
 
 describe("addDocklandsNetworkToService", () => {
 	it("should add network to an empty array", () => {

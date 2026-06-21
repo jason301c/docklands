@@ -13,16 +13,20 @@ import {
 	apiUpdateGitea,
 } from "@/server/db/schema";
 import {
+	getAccessibleGitProviderIds,
+	updateGitProvider,
+} from "@/server-core/services/git-provider";
+import {
 	createGitea,
 	findGiteaById,
-	getAccessibleGitProviderIds,
+	updateGitea,
+} from "@/server-core/services/gitea";
+import {
 	getGiteaBranches,
 	getGiteaRepositories,
 	haveGiteaRequirements,
 	testGiteaConnection,
-	updateGitea,
-	updateGitProvider,
-} from "@/server-core";
+} from "@/server-core/utils/providers/gitea";
 import { db } from "@/server-core/db";
 
 export const giteaRouter = createTRPCRouter({

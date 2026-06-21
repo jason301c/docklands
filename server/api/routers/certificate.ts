@@ -8,13 +8,13 @@ import {
 	apiUpdateCertificate,
 	certificates,
 } from "@/server/db/schema";
+import { IS_CLOUD } from "@/server-core/constants/env";
 import {
 	createCertificate,
 	findCertificateById,
-	IS_CLOUD,
 	removeCertificateById,
 	updateCertificate,
-} from "@/server-core";
+} from "@/server-core/services/certificate";
 import { db } from "@/server-core/db";
 
 export const certificateRouter = createTRPCRouter({

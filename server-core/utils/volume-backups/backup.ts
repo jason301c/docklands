@@ -1,5 +1,5 @@
 import path from "node:path";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import { findComposeById } from "@/server-core/services/compose";
 import { findDestinationById } from "@/server-core/services/destination";
 import type { findVolumeBackupById } from "@/server-core/services/volume-backups";

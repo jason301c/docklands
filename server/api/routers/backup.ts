@@ -14,35 +14,47 @@ import {
 	apiUpdateBackup,
 } from "@/server/db/schema";
 import { removeJob, schedule, updateJob } from "@/server/utils/backup";
+import { IS_CLOUD } from "@/server-core/constants/env";
 import {
 	createBackup,
 	findBackupById,
-	findComposeByBackupId,
-	findComposeById,
+	removeBackupById,
+	updateBackupById,
+} from "@/server-core/services/backup";
+import { findComposeById } from "@/server-core/services/compose";
+import {
 	findLibsqlByBackupId,
 	findLibsqlById,
+} from "@/server-core/services/libsql";
+import {
 	findMariadbByBackupId,
 	findMariadbById,
+} from "@/server-core/services/mariadb";
+import {
+	findComposeByBackupId,
 	findMongoByBackupId,
 	findMongoById,
+} from "@/server-core/services/mongo";
+import {
 	findMySqlByBackupId,
 	findMySqlById,
+} from "@/server-core/services/mysql";
+import {
 	findPostgresByBackupId,
 	findPostgresById,
-	findServerById,
-	IS_CLOUD,
-	keepLatestNBackups,
-	removeBackupById,
+} from "@/server-core/services/postgres";
+import { findServerById } from "@/server-core/services/server";
+import { keepLatestNBackups } from "@/server-core/utils/backups/index";
+import { runLibsqlBackup } from "@/server-core/utils/backups/libsql";
+import { runMariadbBackup } from "@/server-core/utils/backups/mariadb";
+import { runMongoBackup } from "@/server-core/utils/backups/mongo";
+import { runMySqlBackup } from "@/server-core/utils/backups/mysql";
+import { runPostgresBackup } from "@/server-core/utils/backups/postgres";
+import {
 	removeScheduleBackup,
-	runLibsqlBackup,
-	runMariadbBackup,
-	runMongoBackup,
-	runMySqlBackup,
-	runPostgresBackup,
-	runWebServerBackup,
 	scheduleBackup,
-	updateBackupById,
-} from "@/server-core";
+} from "@/server-core/utils/backups/utils";
+import { runWebServerBackup } from "@/server-core/utils/backups/web-server";
 import { findDestinationById } from "@/server-core/services/destination";
 import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
 import { runComposeBackup } from "@/server-core/utils/backups/compose";

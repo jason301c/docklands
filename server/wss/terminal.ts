@@ -1,13 +1,9 @@
 import type http from "node:http";
-import { publicIpv4, publicIpv6 } from "public-ip";
 import { Client, type ConnectConfig } from "ssh2";
 import { WebSocketServer } from "ws";
-import {
-	execAsync,
-	findServerById,
-	IS_CLOUD,
-	validateRequest,
-} from "@/server-core";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { validateRequest } from "@/server-core/lib/auth";
+import { findServerById } from "@/server-core/services/server";
 import { getDockerHost } from "../utils/docker";
 import { setupLocalServerSSHKey } from "./utils";
 
@@ -26,42 +22,6 @@ const COMMAND_TO_GRANT_PERMISSION_ACCESS = `
 sudo chown -R $USER:$USER /etc/dokploy/ssh
 # ----------------------------------------
 `;
-
-export const getPublicIpWithFallback = async () => {
-	let ip = null;
-	try {
-		ip = await publicIpv4();
-	} catch (error) {
-		console.log(
-			"Error to obtain public IPv4 address, falling back to IPv6",
-			// @ts-expect-error
-			error.message,
-		);
-		try {
-			ip = await publicIpv6();
-		} catch (error) {
-			// @ts-expect-error
-			console.error("Error to obtain public IPv6 address", error.message);
-			ip = null;
-		}
-	}
-	return ip;
-};
-
-export const getLocalServerIp = async () => {
-	try {
-		const command = `ip addr show | grep -E "inet (192.168.|10.|172.1[6-9].|172.2[0-9].|172.3[0-1].)" | head -n1 | awk '{print $2}' | cut -d/ -f1`;
-		const { stdout } = await execAsync(command);
-		const ip = stdout.trim();
-		return (
-			ip ||
-			"We were unable to obtain the local server IP, please use your private IP address"
-		);
-	} catch (error) {
-		console.error("Error to obtain local server IP", error);
-		return "We were unable to obtain the local server IP, please use your private IP address";
-	}
-};
 
 export const setupTerminalWebSocketServer = (
 	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,

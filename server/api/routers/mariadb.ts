@@ -21,31 +21,35 @@ import {
 	projects,
 } from "@/server/db/schema";
 import { cancelJobs } from "@/server/utils/backup";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { findBackupsByDbId } from "@/server-core/services/backup";
+import { getContainerLogs } from "@/server-core/services/docker";
+import { findEnvironmentById } from "@/server-core/services/environment";
 import {
-	checkPortInUse,
 	createMariadb,
-	createMount,
 	deployMariadb,
-	execAsync,
-	execAsyncRemote,
-	findBackupsByDbId,
-	findEnvironmentById,
 	findMariadbById,
-	findProjectById,
-	getAccessibleServerIds,
-	getContainerLogs,
-	getServiceContainerCommand,
-	getWebServerSettings,
-	IS_CLOUD,
-	rebuildDatabase,
 	removeMariadbById,
+	updateMariadbById,
+} from "@/server-core/services/mariadb";
+import { createMount } from "@/server-core/services/mount";
+import { findProjectById } from "@/server-core/services/project";
+import { getAccessibleServerIds } from "@/server-core/services/server";
+import { checkPortInUse } from "@/server-core/services/settings";
+import { getWebServerSettings } from "@/server-core/services/web-server-settings";
+import { getServiceContainerCommand } from "@/server-core/utils/backups/utils";
+import { rebuildDatabase } from "@/server-core/utils/databases/rebuild";
+import {
 	removeService,
 	startService,
 	startServiceRemote,
 	stopService,
 	stopServiceRemote,
-	updateMariadbById,
-} from "@/server-core";
+} from "@/server-core/utils/docker/utils";
+import {
+	execAsync,
+	execAsyncRemote,
+} from "@/server-core/utils/process/execAsync";
 import { db } from "@/server-core/db";
 import {
 	addNewService,

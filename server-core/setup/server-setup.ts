@@ -1,7 +1,7 @@
 import path from "node:path";
 import slug from "slugify";
 import { Client } from "ssh2";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import {
 	createServerDeployment,
 	updateDeploymentStatus,

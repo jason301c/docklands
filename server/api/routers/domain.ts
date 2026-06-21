@@ -13,22 +13,21 @@ import {
 	apiFindOneApplication,
 	apiUpdateDomain,
 } from "@/server/db/schema";
+import { findApplicationById } from "@/server-core/services/application";
 import {
 	createDomain,
-	findApplicationById,
 	findDomainById,
 	findDomainsByApplicationId,
 	findDomainsByComposeId,
-	findPreviewDeploymentById,
-	findServerById,
 	generateTraefikMeDomain,
-	getWebServerSettings,
-	manageDomain,
-	removeDomain,
 	removeDomainById,
 	updateDomainById,
 	validateDomain,
-} from "@/server-core";
+} from "@/server-core/services/domain";
+import { findPreviewDeploymentById } from "@/server-core/services/preview-deployment";
+import { findServerById } from "@/server-core/services/server";
+import { getWebServerSettings } from "@/server-core/services/web-server-settings";
+import { manageDomain, removeDomain } from "@/server-core/utils/traefik/domain";
 import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
 
 export const domainRouter = createTRPCRouter({

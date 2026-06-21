@@ -10,15 +10,17 @@ import {
 	apiUpdateRegistry,
 	registry,
 } from "@/server/db/schema";
+import { IS_CLOUD } from "@/server-core/constants/env";
 import {
 	createRegistry,
-	execAsyncRemote,
-	execFileAsync,
 	findRegistryById,
-	IS_CLOUD,
 	removeRegistry,
 	updateRegistry,
-} from "@/server-core";
+} from "@/server-core/services/registry";
+import {
+	execAsyncRemote,
+	execFileAsync,
+} from "@/server-core/utils/process/execAsync";
 import { db } from "@/server-core/db";
 import { createTRPCRouter, withPermission } from "../trpc";
 export const registryRouter = createTRPCRouter({

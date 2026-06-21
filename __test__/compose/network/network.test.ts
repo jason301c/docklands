@@ -1,12 +1,12 @@
 import { expect, test } from "vitest";
 import { parse } from "yaml";
-import type { ComposeSpecification } from "@/server-core";
+import type { ComposeSpecification } from "@/server-core/utils/docker/types";
+import { generateRandomHash } from "@/server-core/utils/docker/compose";
 import {
 	addSuffixToAllNetworks,
 	addSuffixToNetworksRoot,
 	addSuffixToServiceNetworks,
-	generateRandomHash,
-} from "@/server-core";
+} from "@/server-core/utils/docker/compose/network";
 
 const composeFileCombined = `
 version: "3.8"

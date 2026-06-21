@@ -2,7 +2,8 @@ import { createWriteStream } from "node:fs";
 import { mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { IS_CLOUD, paths } from "@/server-core/constants";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { paths } from "@/server-core/constants/paths";
 import type { BackupSchedule } from "@/server-core/services/backup";
 import {
 	createDeploymentBackup,

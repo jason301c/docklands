@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
-import { docker } from "@/server-core/constants";
+import { docker } from "@/server-core/constants/docker";
 import { db } from "@/server-core/db";
 import {
 	type apiCreateApplication,

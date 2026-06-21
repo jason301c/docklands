@@ -1,6 +1,6 @@
 import fs, { promises as fsPromises } from "node:fs";
 import path from "node:path";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import type { Application } from "@/server-core/services/application";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 

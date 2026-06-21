@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { TRPCError } from "@trpc/server";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import { execAsync, execAsyncRemote } from "../utils/process/execAsync";
 import { cloneBitbucketRepository } from "../utils/providers/bitbucket";
 import { cloneGitRepository } from "../utils/providers/git";

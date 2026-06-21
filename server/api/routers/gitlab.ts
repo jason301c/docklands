@@ -13,16 +13,20 @@ import {
 	apiUpdateGitlab,
 } from "@/server/db/schema";
 import {
+	getAccessibleGitProviderIds,
+	updateGitProvider,
+} from "@/server-core/services/git-provider";
+import {
 	createGitlab,
 	findGitlabById,
-	getAccessibleGitProviderIds,
+	updateGitlab,
+} from "@/server-core/services/gitlab";
+import {
 	getGitlabBranches,
 	getGitlabRepositories,
 	haveGitlabRequirements,
 	testGitlabConnection,
-	updateGitlab,
-	updateGitProvider,
-} from "@/server-core";
+} from "@/server-core/utils/providers/gitlab";
 import { db } from "@/server-core/db";
 
 export const gitlabRouter = createTRPCRouter({

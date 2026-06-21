@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { TRPCError } from "@trpc/server";
 import { quote } from "shell-quote";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import {
 	findGiteaById,
 	type Gitea,

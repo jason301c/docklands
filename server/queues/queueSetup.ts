@@ -1,4 +1,4 @@
-import { IS_CLOUD } from "@/server-core";
+import { IS_CLOUD } from "@/server-core/constants/env";
 import {
 	execAsync,
 	execAsyncRemote,

@@ -2,7 +2,9 @@ import type http from "node:http";
 import { spawn } from "node-pty";
 import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
-import { findServerById, IS_CLOUD, validateRequest } from "@/server-core";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { validateRequest } from "@/server-core/lib/auth";
+import { findServerById } from "@/server-core/services/server";
 import { isValidContainerId, isValidShell } from "./utils";
 
 export const setupDockerContainerTerminalWebSocketServer = (

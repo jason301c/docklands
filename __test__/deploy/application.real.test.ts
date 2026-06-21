@@ -2,8 +2,8 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { format } from "date-fns";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ApplicationNested } from "@/server-core";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
+import type { ApplicationNested } from "@/server-core/utils/builders";
 import { execAsync } from "@/server-core/utils/process/execAsync";
 
 const REAL_TEST_TIMEOUT = 180000; // 3 minutes

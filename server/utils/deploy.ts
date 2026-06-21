@@ -1,4 +1,4 @@
-import { findServerById } from "@/server-core";
+import { findServerById } from "@/server-core/services/server";
 import type { DeploymentJob } from "../queues/queue-types";
 import {
 	cleanQueuesByApplication,

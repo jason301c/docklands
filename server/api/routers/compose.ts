@@ -27,40 +27,49 @@ import {
 	myQueue,
 } from "@/server/queues/queueSetup";
 import { cancelDeployment, deploy } from "@/server/utils/deploy";
+import { IS_CLOUD } from "@/server-core/constants/env";
 import {
-	addDomainToCompose,
-	clearOldDeployments,
-	cloneCompose,
-	createCommand,
 	createCompose,
 	createComposeByTemplate,
-	createDomain,
-	createMount,
-	deleteMount,
-	execAsync,
-	execAsyncRemote,
 	findComposeById,
-	findDomainsByComposeId,
-	findEnvironmentById,
-	findProjectById,
-	findServerById,
-	getAccessibleServerIds,
-	getComposeContainer,
-	getContainerLogs,
-	getWebServerSettings,
-	IS_CLOUD,
 	loadServices,
-	randomizeComposeFile,
-	randomizeIsolatedDeploymentComposeFile,
 	removeCompose,
-	removeComposeDirectory,
-	removeDeploymentsByComposeId,
-	removeDomainById,
 	startCompose,
 	stopCompose,
 	updateCompose,
+} from "@/server-core/services/compose";
+import {
+	clearOldDeployments,
+	removeDeploymentsByComposeId,
 	updateDeploymentStatus,
-} from "@/server-core";
+} from "@/server-core/services/deployment";
+import { getContainerLogs } from "@/server-core/services/docker";
+import {
+	createDomain,
+	findDomainsByComposeId,
+	removeDomainById,
+} from "@/server-core/services/domain";
+import { findEnvironmentById } from "@/server-core/services/environment";
+import { createMount, deleteMount } from "@/server-core/services/mount";
+import { findProjectById } from "@/server-core/services/project";
+import {
+	findServerById,
+	getAccessibleServerIds,
+} from "@/server-core/services/server";
+import { getWebServerSettings } from "@/server-core/services/web-server-settings";
+import { createCommand } from "@/server-core/utils/builders/compose";
+import { randomizeIsolatedDeploymentComposeFile } from "@/server-core/utils/docker/collision";
+import { randomizeComposeFile } from "@/server-core/utils/docker/compose";
+import {
+	addDomainToCompose,
+	cloneCompose,
+} from "@/server-core/utils/docker/domain";
+import { getComposeContainer } from "@/server-core/utils/docker/utils";
+import { removeComposeDirectory } from "@/server-core/utils/filesystem/directory";
+import {
+	execAsync,
+	execAsyncRemote,
+} from "@/server-core/utils/process/execAsync";
 import { db } from "@/server-core/db";
 import { canEditDeployGitSource } from "@/server-core/services/git-provider";
 import {

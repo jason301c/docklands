@@ -2,15 +2,21 @@ import { scheduledJobs, scheduleJob as scheduleNodeJob } from "node-schedule";
 import {
 	type BackupScheduleList,
 	findBackupById,
-	findScheduleById,
-	findServerById,
+} from "@/server-core/services/backup";
+import { findScheduleById } from "@/server-core/services/schedule";
+import { findServerById } from "@/server-core/services/server";
+import {
 	removeScheduleBackup,
-	removeScheduleJob,
-	removeVolumeBackupJob,
 	scheduleBackup,
+} from "@/server-core/utils/backups/utils";
+import {
+	removeScheduleJob,
 	scheduleJob as scheduleDocklandsJob,
+} from "@/server-core/utils/schedules/utils";
+import {
+	removeVolumeBackupJob,
 	scheduleVolumeBackup,
-} from "@/server-core/index";
+} from "@/server-core/utils/volume-backups/utils";
 import { cleanupAll } from "@/server-core/utils/docker/utils";
 import { sendDockerCleanupNotifications } from "@/server-core/utils/notifications/docker-cleanup";
 

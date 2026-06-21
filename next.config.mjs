@@ -6,9 +6,7 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
-	typescript: {
-		ignoreBuildErrors: true,
-	},
+	serverExternalPackages: ["cpu-features", "node-pty", "ssh2"],
 	async headers() {
 		return [
 			{

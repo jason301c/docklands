@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse, stringify } from "yaml";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import type { webServerSettings } from "@/server-core/db/schema/web-server-settings";
 import {
 	loadOrCreateConfig,

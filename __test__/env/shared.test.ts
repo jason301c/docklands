@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { prepareEnvironmentVariables } from "@/server-core/index";
+import { prepareEnvironmentVariables } from "@/server-core/utils/docker/utils";
 
 const projectEnv = `
 ENVIRONMENT=staging

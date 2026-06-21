@@ -11,7 +11,8 @@ import {
 	user,
 } from "@/server/db/schema";
 import { db } from "@/server-core/db";
-import { IS_CLOUD, sendInvitationEmail } from "@/server-core/index";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { sendInvitationEmail } from "@/server-core/verification/send-verification-email";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 export const organizationRouter = createTRPCRouter({
 	create: protectedProcedure

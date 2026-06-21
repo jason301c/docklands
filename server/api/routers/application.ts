@@ -36,37 +36,45 @@ import {
 	myQueue,
 } from "@/server/queues/queueSetup";
 import { cancelDeployment, deploy } from "@/server/utils/deploy";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import {
+	createApplication,
+	findApplicationById,
+	getApplicationStats,
+	updateApplication,
+	updateApplicationStatus,
+} from "@/server-core/services/application";
 import {
 	clearOldDeployments,
-	createApplication,
-	deleteAllMiddlewares,
-	findApplicationById,
-	findEnvironmentById,
-	findProjectById,
-	getAccessibleServerIds,
-	getApplicationStats,
-	getContainerLogs,
-	getWebServerSettings,
-	IS_CLOUD,
-	mechanizeDockerContainer,
-	readConfig,
-	readRemoteConfig,
 	removeDeployments,
-	removeDirectoryCode,
-	removeMonitoringDirectory,
+	updateDeploymentStatus,
+} from "@/server-core/services/deployment";
+import { getContainerLogs } from "@/server-core/services/docker";
+import { findEnvironmentById } from "@/server-core/services/environment";
+import { findProjectById } from "@/server-core/services/project";
+import { getAccessibleServerIds } from "@/server-core/services/server";
+import { getWebServerSettings } from "@/server-core/services/web-server-settings";
+import { unzipDrop } from "@/server-core/utils/builders/drop";
+import { mechanizeDockerContainer } from "@/server-core/utils/builders/index";
+import {
 	removeService,
-	removeTraefikConfig,
 	startService,
 	startServiceRemote,
 	stopService,
 	stopServiceRemote,
-	unzipDrop,
-	updateApplication,
-	updateApplicationStatus,
-	updateDeploymentStatus,
+} from "@/server-core/utils/docker/utils";
+import {
+	removeDirectoryCode,
+	removeMonitoringDirectory,
+} from "@/server-core/utils/filesystem/directory";
+import {
+	readConfig,
+	readRemoteConfig,
+	removeTraefikConfig,
 	writeConfig,
 	writeConfigRemote,
-} from "@/server-core";
+} from "@/server-core/utils/traefik/application";
+import { deleteAllMiddlewares } from "@/server-core/utils/traefik/middleware";
 import { db } from "@/server-core/db";
 import { canEditDeployGitSource } from "@/server-core/services/git-provider";
 import {

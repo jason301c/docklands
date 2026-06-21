@@ -11,14 +11,15 @@ import {
 	apiUpdateGithub,
 } from "@/server/db/schema";
 import {
-	findGithubById,
 	getAccessibleGitProviderIds,
+	updateGitProvider,
+} from "@/server-core/services/git-provider";
+import { findGithubById, updateGithub } from "@/server-core/services/github";
+import {
 	getGithubBranches,
 	getGithubRepositories,
 	haveGithubRequirements,
-	updateGithub,
-	updateGitProvider,
-} from "@/server-core";
+} from "@/server-core/utils/providers/github";
 import { db } from "@/server-core/db";
 
 export const githubRouter = createTRPCRouter({

@@ -16,7 +16,7 @@ import {
 	getAccessibleGitProviderIds,
 	removeGitProvider,
 	updateGitProvider,
-} from "@/server-core";
+} from "@/server-core/services/git-provider";
 import { db } from "@/server-core/db";
 import { hasValidLicense } from "@/server-core/services/enterprise/license-key";
 

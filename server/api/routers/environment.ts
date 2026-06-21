@@ -19,7 +19,7 @@ import {
 	findEnvironmentById,
 	findEnvironmentsByProjectId,
 	updateEnvironmentById,
-} from "@/server-core";
+} from "@/server-core/services/environment";
 import { db } from "@/server-core/db";
 import {
 	addNewEnvironment,

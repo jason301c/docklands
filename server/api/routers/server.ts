@@ -26,21 +26,20 @@ import {
 } from "@/server/db/schema";
 import { assertBuildsConcurrencyAllowed } from "@/server/queues/concurrency";
 import { applyDockerCleanupSchedule } from "@/server/utils/docker-cleanup";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { removeDeploymentsByServerId } from "@/server-core/services/deployment";
 import {
 	createServer,
-	defaultCommand,
 	deleteServer,
 	findServerById,
 	getAccessibleServerIds,
-	getPublicIpWithFallback,
 	haveActiveServices,
-	IS_CLOUD,
-	removeDeploymentsByServerId,
-	serverAudit,
-	serverSetup,
-	serverValidate,
 	updateServerById,
-} from "@/server-core";
+} from "@/server-core/services/server";
+import { serverAudit } from "@/server-core/setup/server-audit";
+import { defaultCommand, serverSetup } from "@/server-core/setup/server-setup";
+import { serverValidate } from "@/server-core/setup/server-validate";
+import { getPublicIpWithFallback } from "@/server-core/wss/utils";
 import { db } from "@/server-core/db";
 import { hasValidLicense } from "@/server-core/services/enterprise/license-key";
 

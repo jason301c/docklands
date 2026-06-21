@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { scheduleJob } from "node-schedule";
-import { CLEANUP_CRON_JOB } from "@/server-core/constants";
+import { CLEANUP_CRON_JOB } from "@/server-core/constants/cleanup";
 import { member } from "@/server-core/db/schema";
 import type { BackupSchedule } from "@/server-core/services/backup";
 import { findDestinationById } from "@/server-core/services/destination";

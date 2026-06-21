@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getEnvironmentVariablesObject } from "@/server-core/index";
+import { getEnvironmentVariablesObject } from "@/server-core/utils/docker/utils";
 
 const projectEnv = `
 ENVIRONMENT=staging

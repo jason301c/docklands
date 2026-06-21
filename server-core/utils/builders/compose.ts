@@ -1,7 +1,7 @@
 import { dirname, join } from "node:path";
 import boxen from "boxen";
 import { quote } from "shell-quote";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import type { InferResultType } from "@/server-core/types/with";
 import { writeDomainsToCompose } from "../docker/domain";
 import {

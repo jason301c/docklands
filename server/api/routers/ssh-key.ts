@@ -17,10 +17,10 @@ import {
 import {
 	createSshKey,
 	findSSHKeyById,
-	generateSSHKey,
 	removeSSHKeyById,
 	updateSSHKeyById,
-} from "@/server-core";
+} from "@/server-core/services/ssh-key";
+import { generateSSHKey } from "@/server-core/utils/filesystem/ssh";
 import { db } from "@/server-core/db";
 
 export const sshRouter = createTRPCRouter({

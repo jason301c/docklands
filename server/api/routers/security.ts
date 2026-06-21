@@ -10,7 +10,7 @@ import {
 	deleteSecurityById,
 	findSecurityById,
 	updateSecurityById,
-} from "@/server-core";
+} from "@/server-core/services/security";
 import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
 
 export const securityRouter = createTRPCRouter({

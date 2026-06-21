@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parse, stringify } from "yaml";
-import type { Domain } from "@/server-core";
-import { createDomainLabels } from "@/server-core";
+import type { Domain } from "@/server-core/services/domain";
+import { createDomainLabels } from "@/server-core/utils/docker/domain";
 
 /**
  * Regression tests for Traefik Host rule label format.

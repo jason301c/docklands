@@ -9,15 +9,17 @@ import {
 	apiUpdateDestination,
 	destinations,
 } from "@/server/db/schema";
+import { IS_CLOUD } from "@/server-core/constants/env";
 import {
 	createDestination,
-	execAsync,
-	execAsyncRemote,
 	findDestinationById,
-	IS_CLOUD,
 	removeDestinationById,
 	updateDestinationById,
-} from "@/server-core";
+} from "@/server-core/services/destination";
+import {
+	execAsync,
+	execAsyncRemote,
+} from "@/server-core/utils/process/execAsync";
 import { db } from "@/server-core/db";
 
 export const destinationRouter = createTRPCRouter({

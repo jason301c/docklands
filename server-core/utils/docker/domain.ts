@@ -1,7 +1,7 @@
 import fs, { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse, stringify } from "yaml";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import type { Compose } from "@/server-core/services/compose";
 import type { Domain } from "@/server-core/services/domain";
 import { execAsyncRemote } from "../process/execAsync";

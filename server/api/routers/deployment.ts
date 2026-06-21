@@ -10,19 +10,21 @@ import {
 	deployments,
 } from "@/server/db/schema";
 import { myQueue } from "@/server/queues/queueSetup";
+import { IS_CLOUD } from "@/server-core/constants/env";
 import {
-	execAsync,
-	execAsyncRemote,
 	findAllDeploymentsByApplicationId,
 	findAllDeploymentsByComposeId,
 	findAllDeploymentsByServerId,
 	findAllDeploymentsCentralized,
 	findDeploymentById,
-	IS_CLOUD,
 	removeDeployment,
 	resolveServicePath,
 	updateDeploymentStatus,
-} from "@/server-core";
+} from "@/server-core/services/deployment";
+import {
+	execAsync,
+	execAsyncRemote,
+} from "@/server-core/utils/process/execAsync";
 import { db } from "@/server-core/db";
 import {
 	checkServicePermissionAndAccess,

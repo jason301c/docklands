@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import type { Compose } from "@/server-core/services/compose";
 import { encodeBase64 } from "../docker/utils";
 

@@ -24,38 +24,36 @@ import {
 	projects,
 	redis,
 } from "@/server/db/schema";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { findUserById } from "@/server-core/services/admin";
 import {
 	createApplication,
-	createBackup,
-	createCompose,
-	createDomain,
-	createLibsql,
-	createMariadb,
-	createMongo,
-	createMount,
-	createMysql,
-	createPort,
-	createPostgres,
-	createPreviewDeployment,
-	createProject,
-	createRedirect,
-	createRedis,
-	createSecurity,
-	deleteProject,
 	findApplicationById,
-	findComposeById,
-	findEnvironmentById,
-	findLibsqlById,
-	findMariadbById,
-	findMongoById,
-	findMySqlById,
+} from "@/server-core/services/application";
+import { createBackup } from "@/server-core/services/backup";
+import { createCompose, findComposeById } from "@/server-core/services/compose";
+import { createDomain } from "@/server-core/services/domain";
+import { findEnvironmentById } from "@/server-core/services/environment";
+import { createLibsql, findLibsqlById } from "@/server-core/services/libsql";
+import { createMariadb, findMariadbById } from "@/server-core/services/mariadb";
+import { createMongo, findMongoById } from "@/server-core/services/mongo";
+import { createMount } from "@/server-core/services/mount";
+import { createMysql, findMySqlById } from "@/server-core/services/mysql";
+import { createPort } from "@/server-core/services/port";
+import {
+	createPostgres,
 	findPostgresById,
+} from "@/server-core/services/postgres";
+import { createPreviewDeployment } from "@/server-core/services/preview-deployment";
+import {
+	createProject,
+	deleteProject,
 	findProjectById,
-	findRedisById,
-	findUserById,
-	IS_CLOUD,
 	updateProjectById,
-} from "@/server-core";
+} from "@/server-core/services/project";
+import { createRedirect } from "@/server-core/services/redirect";
+import { createRedis, findRedisById } from "@/server-core/services/redis";
+import { createSecurity } from "@/server-core/services/security";
 import { db } from "@/server-core/db";
 import {
 	addNewEnvironment,

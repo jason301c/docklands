@@ -7,7 +7,6 @@ import {
 	containerRestart,
 	containerStart,
 	containerStop,
-	findServerById,
 	getConfig,
 	getContainers,
 	getContainersByAppLabel,
@@ -15,7 +14,8 @@ import {
 	getServiceContainersByAppName,
 	getStackContainersByAppName,
 	uploadFileToContainer,
-} from "@/server-core";
+} from "@/server-core/services/docker";
+import { findServerById } from "@/server-core/services/server";
 import { uploadFileToContainerSchema } from "@/utils/schema";
 import { createTRPCRouter, withPermission } from "../trpc";
 

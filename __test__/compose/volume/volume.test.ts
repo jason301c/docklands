@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { parse } from "yaml";
-import type { ComposeSpecification } from "@/server-core";
-import { addSuffixToAllVolumes } from "@/server-core";
+import type { ComposeSpecification } from "@/server-core/utils/docker/types";
+import { addSuffixToAllVolumes } from "@/server-core/utils/docker/compose/volume";
 
 const composeFileTypeVolume = `
 version: "3.8"

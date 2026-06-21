@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { TRPCError } from "@trpc/server";
 import { quote } from "shell-quote";
 import type { z } from "zod";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 import type { apiGitlabTestConnection } from "@/server-core/db/schema";
 import {
 	findGitlabById,

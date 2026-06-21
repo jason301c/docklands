@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
-import { findOwner, generateRandomPassword } from "@/server-core";
+import { generateRandomPassword } from "@/server-core/auth/random-password";
+import { findOwner } from "@/server-core/services/admin";
 import { db } from "@/server-core/db";
 import { account } from "@/server-core/db/schema";
 
