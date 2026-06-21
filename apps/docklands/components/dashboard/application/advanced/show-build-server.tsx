@@ -1,24 +1,23 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Server } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
-	FormControl,
 	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	applicationId: string;
@@ -92,11 +91,11 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 					: formData?.buildRegistryId,
 		})
 			.then(async () => {
-				toast.success("Build Server Settings Updated");
+				toast.success("Build worker settings updated");
 				await refetch();
 			})
 			.catch(() => {
-				toast.error("Error updating build server settings");
+				toast.error("Error updating build worker settings");
 			});
 	};
 
@@ -106,36 +105,34 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 				<div className="flex flex-row items-center gap-2">
 					<Server className="size-6 text-muted-foreground" />
 					<div>
-						<h3 className="text-xl">Build Server</h3>
-						<p>
-							Configure a dedicated server for building your application.
-						</p>
+						<h3 className="text-xl">Build Worker</h3>
+						<p>Configure a dedicated worker for building your application.</p>
 					</div>
 				</div>
 			</div>
 			<div className="flex flex-col gap-4">
 				<AlertBlock type="info">
-					Build servers offload the build process from your deployment servers.
-					Select a build server and registry to use for building your
+					Build workers offload the build process from your deployment workers.
+					Select a build worker and registry to use for building your
 					application.
 				</AlertBlock>
 
 				<AlertBlock type="info">
 					📊 <strong>Important:</strong> Once the build finishes, you'll need to
-					wait a few seconds for the deployment server to download the image.
+					wait a few seconds for the deployment worker to download the image.
 					These download logs will <strong>NOT</strong> appear in the build
 					deployment logs. Check the <strong>Logs</strong> tab to see when the
 					container starts running.
 				</AlertBlock>
 
 				<AlertBlock type="info">
-					<strong>Note:</strong> Build Server and Build Registry must be
+					<strong>Note:</strong> Build Worker and Build Registry must be
 					configured together. You can either select both or set both to None.
 				</AlertBlock>
 
 				{!registries || registries.length === 0 ? (
 					<AlertBlock type="warning">
-						You need to add at least one registry to use build servers. Please
+						You need to add at least one registry to use build workers. Please
 						go to{" "}
 						<Link
 							href="/dashboard/settings/registry"
@@ -157,51 +154,44 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 							name="buildServerId"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Build Server</FormLabel>
-									<Select aria-label="Select option"
+									<FormLabel>Build Worker</FormLabel>
+									<Select
+										aria-label="Select option"
 										onValueChange={(value) => {
 											if (value === null) return;
 											field.onChange(value);
-											// If setting to "none", also reset build registry to "none"
 											if (value === "none") {
 												form.setValue("buildRegistryId", "none");
 											}
 										}}
 										value={field.value || "none"}
 									>
-										<FormControl>
-											<>
-												
-											</>
-										</FormControl>
-										<>
-											<Select.Group>
-												<Select.Option value="none">
-													<span className="flex items-center gap-2">
-														<span>None</span>
+										<Select.Group>
+											<Select.Option value="none">
+												<span className="flex items-center gap-2">
+													<span>None</span>
+												</span>
+											</Select.Option>
+											{buildServers?.map((server) => (
+												<Select.Option
+													key={server.serverId}
+													value={server.serverId}
+												>
+													<span className="flex items-center gap-2 justify-between w-full">
+														<span>{server.name}</span>
+														<span className="text-muted-foreground text-xs">
+															{server.ipAddress}
+														</span>
 													</span>
 												</Select.Option>
-												{buildServers?.map((server) => (
-													<Select.Option
-														key={server.serverId}
-														value={server.serverId}
-													>
-														<span className="flex items-center gap-2 justify-between w-full">
-															<span>{server.name}</span>
-															<span className="text-muted-foreground text-xs">
-																{server.ipAddress}
-															</span>
-														</span>
-													</Select.Option>
-												))}
-												<Select.GroupLabel>
-													Build Servers ({buildServers?.length || 0})
-												</Select.GroupLabel>
-											</Select.Group>
-										</>
+											))}
+											<Select.GroupLabel>
+												Build Workers ({buildServers?.length || 0})
+											</Select.GroupLabel>
+										</Select.Group>
 									</Select>
 									<FormDescription>
-										Select a build server to handle the build process for this
+										Select a build worker to handle the build process for this
 										application.
 									</FormDescription>
 									<FormMessage />
@@ -215,46 +205,39 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Build Registry</FormLabel>
-									<Select aria-label="Select option"
+									<Select
+										aria-label="Select option"
 										onValueChange={(value) => {
 											if (value === null) return;
 											field.onChange(value);
-											// If setting to "none", also reset build server to "none"
 											if (value === "none") {
 												form.setValue("buildServerId", "none");
 											}
 										}}
 										value={field.value || "none"}
 									>
-										<FormControl>
-											<>
-												
-											</>
-										</FormControl>
-										<>
-											<Select.Group>
-												<Select.Option value="none">
-													<span className="flex items-center gap-2">
-														<span>None</span>
-													</span>
+										<Select.Group>
+											<Select.Option value="none">
+												<span className="flex items-center gap-2">
+													<span>None</span>
+												</span>
+											</Select.Option>
+											{registries?.map((registry) => (
+												<Select.Option
+													key={registry.registryId}
+													value={registry.registryId}
+												>
+													{registry.registryName}
 												</Select.Option>
-												{registries?.map((registry) => (
-													<Select.Option
-														key={registry.registryId}
-														value={registry.registryId}
-													>
-														{registry.registryName}
-													</Select.Option>
-												))}
-												<Select.GroupLabel>
-													Registries ({registries?.length || 0})
-												</Select.GroupLabel>
-											</Select.Group>
-										</>
+											))}
+											<Select.GroupLabel>
+												Registries ({registries?.length || 0})
+											</Select.GroupLabel>
+										</Select.Group>
 									</Select>
 									<FormDescription>
 										Select a registry to store the built images from the build
-										server.
+										worker.
 									</FormDescription>
 									<FormMessage />
 								</FormItem>
