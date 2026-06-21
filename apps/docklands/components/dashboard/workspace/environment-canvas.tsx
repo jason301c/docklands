@@ -5,7 +5,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Textarea } from "@cloudflare/kumo/components/input";
+import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
@@ -416,7 +416,16 @@ export const EnvironmentCanvas = ({
 	const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
 	const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+	const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false);
 	const [deleteComposeVolumes, setDeleteComposeVolumes] = useState(false);
+	const [duplicateMode, setDuplicateMode] = useState<
+		"new-project" | "existing-environment"
+	>("new-project");
+	const [duplicateName, setDuplicateName] = useState("");
+	const [duplicateDescription, setDuplicateDescription] = useState("");
+	const [duplicateTargetProject, setDuplicateTargetProject] = useState("");
+	const [duplicateTargetEnvironment, setDuplicateTargetEnvironment] =
+		useState("");
 	const [selectedTargetProject, setSelectedTargetProject] = useState("");
 	const [selectedTargetEnvironment, setSelectedTargetEnvironment] =
 		useState("");
@@ -430,6 +439,11 @@ export const EnvironmentCanvas = ({
 			{ projectId: selectedTargetProject },
 			{ enabled: isMoveDialogOpen && !!selectedTargetProject },
 		);
+	const { data: duplicateProjectEnvironments } =
+		api.environment.byProjectId.useQuery(
+			{ projectId: duplicateTargetProject },
+			{ enabled: isDuplicateDialogOpen && !!duplicateTargetProject },
+		);
 
 	const updateNode = api.workspace.updateNode.useMutation();
 	const connect = api.workspace.connect.useMutation();
@@ -437,6 +451,7 @@ export const EnvironmentCanvas = ({
 	const applyConnectionVariables =
 		api.workspace.applyConnectionVariables.useMutation();
 	const updateServiceEnv = api.workspace.updateServiceEnv.useMutation();
+	const duplicateProject = api.project.duplicate.useMutation();
 
 	const serviceActions = {
 		application: {
@@ -512,6 +527,7 @@ export const EnvironmentCanvas = ({
 				setCommandOpen(false);
 				setIsMoveDialogOpen(false);
 				setIsBulkDeleteDialogOpen(false);
+				setIsDuplicateDialogOpen(false);
 				setIsSelectionMode(false);
 				setSelectedBulkKeys([]);
 			}
@@ -965,6 +981,7 @@ export const EnvironmentCanvas = ({
 				setSelectedBulkKeys([]);
 				setIsMoveDialogOpen(false);
 				setIsBulkDeleteDialogOpen(false);
+				setIsDuplicateDialogOpen(false);
 			}
 			return next;
 		});
@@ -999,6 +1016,15 @@ export const EnvironmentCanvas = ({
 	const resetBulkDeleteDialog = () => {
 		setIsBulkDeleteDialogOpen(false);
 		setDeleteComposeVolumes(false);
+	};
+
+	const resetDuplicateDialog = () => {
+		setIsDuplicateDialogOpen(false);
+		setDuplicateMode("new-project");
+		setDuplicateName("");
+		setDuplicateDescription("");
+		setDuplicateTargetProject("");
+		setDuplicateTargetEnvironment("");
 	};
 
 	const openMoveDialog = () => {
@@ -1167,6 +1193,64 @@ export const EnvironmentCanvas = ({
 			}
 		} finally {
 			setIsBulkActionLoading(false);
+		}
+	};
+
+	const runBulkDuplicate = async () => {
+		if (selectedBulkServices.length === 0) return;
+		if (duplicateMode === "new-project" && !duplicateName.trim()) {
+			toast.error("Project name is required");
+			return;
+		}
+		if (
+			duplicateMode === "existing-environment" &&
+			!duplicateTargetEnvironment
+		) {
+			toast.error("Select a target environment");
+			return;
+		}
+
+		const targetEnvironmentId =
+			duplicateMode === "existing-environment"
+				? duplicateTargetEnvironment
+				: environmentId;
+
+		try {
+			const newEnvironment = await duplicateProject.mutateAsync({
+				sourceEnvironmentId: targetEnvironmentId,
+				name: duplicateName.trim(),
+				description: duplicateDescription.trim() || undefined,
+				includeServices: true,
+				selectedServices: selectedBulkServices.map((service) => ({
+					id: service.id,
+					type: service.type,
+				})),
+				duplicateInSameProject: duplicateMode === "existing-environment",
+			});
+
+			await utils.project.all.invalidate();
+			if (
+				duplicateMode === "existing-environment" &&
+				duplicateTargetEnvironment === environmentId
+			) {
+				await utils.workspace.byEnvironment.invalidate({ environmentId });
+			}
+			toast.success(
+				duplicateMode === "new-project"
+					? "Services duplicated to a new project"
+					: "Services duplicated",
+			);
+			resetDuplicateDialog();
+
+			if (duplicateMode === "new-project" && newEnvironment?.projectId) {
+				router.push(
+					`/dashboard/project/${newEnvironment.projectId}/environment/${newEnvironment.environmentId}`,
+				);
+			}
+		} catch (error) {
+			toast.error(
+				`Could not duplicate services: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
 		}
 	};
 
@@ -1851,6 +1935,14 @@ export const EnvironmentCanvas = ({
 								>
 									<ArrowRight className="size-4" />
 									Move
+								</Button>
+								<Button
+									variant="outline"
+									onClick={() => setIsDuplicateDialogOpen(true)}
+									disabled={selectedBulkServices.length === 0}
+								>
+									<FolderInput className="size-4" />
+									Duplicate
 								</Button>
 								{permissions?.service.delete && (
 									<Button
@@ -2627,6 +2719,152 @@ export const EnvironmentCanvas = ({
 							}
 						>
 							Delete services
+						</Button>
+					</div>
+				</Dialog>
+			</Dialog.Root>
+
+			<Dialog.Root
+				open={isDuplicateDialogOpen}
+				onOpenChange={(open) => {
+					if (open) {
+						setIsDuplicateDialogOpen(true);
+						return;
+					}
+					resetDuplicateDialog();
+				}}
+			>
+				<Dialog className="sm:max-w-lg">
+					<div>
+						<Dialog.Title>Duplicate Services</Dialog.Title>
+						<Dialog.Description>
+							Duplicate {selectedBulkServices.length} selected service
+							{selectedBulkServices.length === 1 ? "" : "s"}.
+						</Dialog.Description>
+					</div>
+
+					<div className="space-y-4">
+						<div className="grid grid-cols-2 gap-2">
+							<Button
+								variant={
+									duplicateMode === "new-project" ? "primary" : "outline"
+								}
+								onClick={() => {
+									setDuplicateMode("new-project");
+									setDuplicateTargetProject("");
+									setDuplicateTargetEnvironment("");
+								}}
+							>
+								New project
+							</Button>
+							<Button
+								variant={
+									duplicateMode === "existing-environment"
+										? "primary"
+										: "outline"
+								}
+								onClick={() => setDuplicateMode("existing-environment")}
+							>
+								Environment
+							</Button>
+						</div>
+
+						{duplicateMode === "new-project" ? (
+							<div className="space-y-3">
+								<div className="space-y-2">
+									<label className="text-sm font-medium">Project name</label>
+									<Input
+										value={duplicateName}
+										onChange={(event) => setDuplicateName(event.target.value)}
+										placeholder="New project"
+									/>
+								</div>
+								<div className="space-y-2">
+									<label className="text-sm font-medium">Description</label>
+									<Input
+										value={duplicateDescription}
+										onChange={(event) =>
+											setDuplicateDescription(event.target.value)
+										}
+										placeholder="Optional"
+									/>
+								</div>
+							</div>
+						) : (
+							<div className="space-y-3">
+								<div className="space-y-2">
+									<label className="text-sm font-medium">Project</label>
+									<Select
+										aria-label="Target project"
+										value={duplicateTargetProject}
+										onValueChange={(value) => {
+											if (value === null) return;
+											setDuplicateTargetProject(value as string);
+											setDuplicateTargetEnvironment("");
+										}}
+									>
+										{allProjects?.map((project) => (
+											<Select.Option
+												key={project.projectId}
+												value={project.projectId}
+											>
+												{project.name}
+											</Select.Option>
+										))}
+									</Select>
+								</div>
+								<div className="space-y-2">
+									<label className="text-sm font-medium">Environment</label>
+									<Select
+										aria-label="Target environment"
+										value={duplicateTargetEnvironment}
+										onValueChange={(value) => {
+											if (value !== null) {
+												setDuplicateTargetEnvironment(value as string);
+											}
+										}}
+									>
+										{duplicateProjectEnvironments?.map((environment) => (
+											<Select.Option
+												key={environment.environmentId}
+												value={environment.environmentId}
+											>
+												{environment.name}
+											</Select.Option>
+										))}
+									</Select>
+								</div>
+							</div>
+						)}
+
+						<div className="rounded-md border bg-muted/30 p-3 text-sm">
+							{selectedBulkServices.map((service) => (
+								<div
+									key={getWorkspaceServiceKey(service.type, service.id)}
+									className="flex items-center justify-between gap-3 py-1"
+								>
+									<span className="truncate">{service.name}</span>
+									<Badge>{serviceTypeLabels[service.type]}</Badge>
+								</div>
+							))}
+						</div>
+					</div>
+
+					<div className="flex justify-end gap-2">
+						<Button variant="outline" onClick={resetDuplicateDialog}>
+							Cancel
+						</Button>
+						<Button
+							onClick={() => void runBulkDuplicate()}
+							loading={duplicateProject.isPending}
+							disabled={
+								selectedBulkServices.length === 0 ||
+								(duplicateMode === "new-project" && !duplicateName.trim()) ||
+								(duplicateMode === "existing-environment" &&
+									!duplicateTargetEnvironment)
+							}
+						>
+							Duplicate services
 						</Button>
 					</div>
 				</Dialog>
