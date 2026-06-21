@@ -1,3 +1,4 @@
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	AlertTriangle,
 	Container,
@@ -9,8 +10,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { Alert, AlertDescription, AlertTitle } from "@/components/shared/alert";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	NoRunningContainers,
 	NoServices,
@@ -219,7 +218,7 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 	if (!nodesError && nodes === undefined) {
 		return (
 			<SwarmNotAvailable
-				errorMessage="Docker Swarm may not be initialized — docker node ls returned no data."
+				errorMessage="The orchestration layer may not be initialized - docker node ls returned no data."
 				onRetry={() => refetchNodes()}
 			/>
 		);
@@ -261,10 +260,10 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 				<div className="space-y-1">
 					<h3 className="text-xl flex flex-row gap-2">
 						<Container className="size-6 text-muted-foreground self-center" />
-						Container Breakdown by Node
+						Container Breakdown by Worker
 					</h3>
 					<p className="text-sm text-muted-foreground">
-						Showing containers across {nodes?.length ?? 0} swarm node(s)
+						Showing containers across {nodes?.length ?? 0} worker(s)
 						{statsLoading ? "" : " (metrics refresh every 5s)"}
 					</p>
 				</div>
@@ -285,11 +284,11 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 			{downNodes.length > 0 && (
 				<Alert variant="destructive">
 					<AlertTriangle className="h-4 w-4" />
-					<AlertTitle>{downNodes.length} Node(s) Unavailable</AlertTitle>
+					<AlertTitle>{downNodes.length} Worker(s) Unavailable</AlertTitle>
 					<AlertDescription>
 						<p className="mb-2">
-							The following nodes are not ready or have been drained. Containers
-							scheduled on these nodes may not be running.
+							The following workers are not ready or have been drained.
+							Containers scheduled on these workers may not be running.
 						</p>
 						<ul className="list-disc list-inside space-y-1 text-xs">
 							{downNodes.map((node: SwarmNode) => (
@@ -301,12 +300,12 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 							))}
 						</ul>
 						<p className="mt-2 text-xs">
-							Manage nodes in{" "}
+							Manage workers in{" "}
 							<Link
 								href="/dashboard/settings/cluster"
 								className="underline underline-offset-4"
 							>
-								Cluster Settings
+								Orchestration Settings
 							</Link>
 						</p>
 					</AlertDescription>
@@ -316,14 +315,14 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 			{isMultiNode && (
 				<Alert>
 					<Info className="h-4 w-4" />
-					<AlertTitle>Multi-Node Metrics Note</AlertTitle>
+					<AlertTitle>Multi-Worker Metrics Note</AlertTitle>
 					<AlertDescription>
-						CPU, memory, and I/O metrics are collected from the manager node via{" "}
+						CPU, memory, and I/O metrics are collected from the manager via{" "}
 						<code className="bg-muted px-1 py-0.5 rounded text-xs">
 							docker stats
 						</code>
-						. Containers running on worker nodes will show &ldquo;--&rdquo; for
-						metrics.
+						. Containers running on remote workers will show &ldquo;--&rdquo;
+						for metrics.
 					</AlertDescription>
 				</Alert>
 			)}
@@ -348,8 +347,8 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 					</AlertTitle>
 					<AlertDescription>
 						<p className="mb-2">
-							These services exist in the swarm but have no running containers.
-							They may be scaled to 0 replicas or failing to start.
+							These services exist in orchestration but have no running
+							containers. They may be scaled to 0 replicas or failing to start.
 						</p>
 						<ul className="list-disc list-inside space-y-1 text-xs">
 							{unscheduledServices.map((svc) => (

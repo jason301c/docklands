@@ -1,5 +1,5 @@
-import { Container, Cpu, Server } from "lucide-react";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Container, Cpu, Server } from "lucide-react";
 
 interface SummaryCardsProps {
 	nodeCount: number;
@@ -19,7 +19,7 @@ export const SummaryCards = ({
 	<div className="grid gap-4 md:grid-cols-3">
 		<LayerCard className="bg-background">
 			<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-				<h3 className="text-sm font-medium">Swarm Nodes</h3>
+				<h3 className="text-sm font-medium">Workers</h3>
 				<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
 					<Server className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
 				</div>
@@ -28,7 +28,7 @@ export const SummaryCards = ({
 				<div className="text-2xl font-bold">{nodeCount}</div>
 				{downNodeCount > 0 && (
 					<p className="text-xs text-destructive mt-1">
-						{downNodeCount} node(s) down or drained
+						{downNodeCount} worker(s) down or drained
 					</p>
 				)}
 			</div>
@@ -53,9 +53,7 @@ export const SummaryCards = ({
 
 		<LayerCard className="bg-background">
 			<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-				<h3 className="text-sm font-medium">
-					Running Containers
-				</h3>
+				<h3 className="text-sm font-medium">Running Containers</h3>
 				<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
 					<Container className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
 				</div>

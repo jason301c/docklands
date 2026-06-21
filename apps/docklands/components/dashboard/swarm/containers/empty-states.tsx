@@ -1,3 +1,4 @@
+import { Button } from "@cloudflare/kumo/components/button";
 import {
 	AlertCircle,
 	AlertTriangle,
@@ -7,7 +8,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Alert, AlertDescription, AlertTitle } from "@/components/shared/alert";
-import { Button } from "@cloudflare/kumo/components/button";
 import type { ContainerInfo } from "./types";
 
 export const DocLinks = () => (
@@ -31,14 +31,14 @@ export const DocLinks = () => (
 				rel="noopener noreferrer"
 				className="text-xs text-primary underline underline-offset-4 inline-flex items-center gap-1"
 			>
-				Docker Swarm Guide
+				Docker Swarm engine guide
 				<ExternalLink className="h-3 w-3" />
 			</a>
 			<Link
 				href="/dashboard/settings/cluster"
 				className="text-xs text-primary underline underline-offset-4 inline-flex items-center gap-1"
 			>
-				Cluster Settings
+				Orchestration Settings
 			</Link>
 		</div>
 	</div>
@@ -56,9 +56,9 @@ export const SwarmNotAvailable = ({
 	<div className="flex flex-col gap-4 py-6 max-w-2xl mx-auto">
 		<Alert variant="destructive">
 			<AlertTriangle className="h-4 w-4" />
-			<AlertTitle>Swarm Not Available</AlertTitle>
+			<AlertTitle>Orchestration Not Available</AlertTitle>
 			<AlertDescription>
-				Could not reach Docker Swarm.{" "}
+				Could not reach the orchestration layer.{" "}
 				{errorMessage && (
 					<span className="block mt-1 text-xs opacity-80">{errorMessage}</span>
 				)}
@@ -66,12 +66,12 @@ export const SwarmNotAvailable = ({
 		</Alert>
 		<div className="space-y-3 text-sm text-muted-foreground">
 			<p>
-				This feature requires Docker Swarm to be initialized and active. To get
-				started:
+				This view uses Docker Swarm under the hood, so the runtime worker needs
+				orchestration initialized before Docklands can list scheduled services.
 			</p>
 			<ol className="list-decimal list-inside space-y-2 ml-1">
 				<li>
-					Initialize Swarm on your server:{" "}
+					Initialize orchestration on your runtime worker:{" "}
 					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">
 						docker swarm init
 					</code>
@@ -88,9 +88,9 @@ export const SwarmNotAvailable = ({
 						href="/dashboard/settings/cluster"
 						className="text-primary underline underline-offset-4"
 					>
-						Cluster Settings
+						Orchestration Settings
 					</Link>{" "}
-					page to manage your swarm nodes
+					page to manage your workers
 				</li>
 			</ol>
 			<DocLinks />
@@ -116,7 +116,7 @@ export const ServicesError = ({
 			<AlertTriangle className="h-4 w-4" />
 			<AlertTitle>Failed to Load Services</AlertTitle>
 			<AlertDescription>
-				Swarm is reachable but service listing failed.{" "}
+				Orchestration is reachable but service listing failed.{" "}
 				{errorMessage && (
 					<span className="block mt-1 text-xs opacity-80">{errorMessage}</span>
 				)}
@@ -125,15 +125,15 @@ export const ServicesError = ({
 		<div className="space-y-3 text-sm text-muted-foreground">
 			<p>This could be caused by:</p>
 			<ul className="list-disc list-inside space-y-1 ml-1">
-				<li>Permission issues running Docker commands on the server</li>
+				<li>Permission issues running Docker commands on the runtime worker</li>
 				<li>Docker daemon not responding</li>
 				<li>
-					Network connectivity issues to a remote server &mdash; check{" "}
+					Network connectivity issues to a remote worker &mdash; check{" "}
 					<Link
 						href="/dashboard/settings/cluster"
 						className="text-primary underline underline-offset-4"
 					>
-						Cluster Settings
+						Orchestration Settings
 					</Link>
 				</li>
 			</ul>
@@ -154,29 +154,29 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 	<div className="flex flex-col gap-4 py-6 max-w-2xl mx-auto">
 		<Alert>
 			<Info className="h-4 w-4" />
-			<AlertTitle>No Swarm Services Found</AlertTitle>
+			<AlertTitle>No Orchestrated Services Found</AlertTitle>
 			<AlertDescription>
-				Docker Swarm is active with <strong>{nodeCount} node(s)</strong>, but
-				there are no application services running in the swarm.
+				Orchestration is active with <strong>{nodeCount} worker(s)</strong>, but
+				there are no application services running yet.
 			</AlertDescription>
 		</Alert>
 		<div className="space-y-3 text-sm text-muted-foreground">
 			<p>
-				This view shows containers deployed as <strong>Swarm services</strong>.
-				Standalone or Docker Compose containers won&apos;t appear here.
+				This view shows containers deployed through the{" "}
+				<strong>orchestration layer</strong>. Standalone containers and Compose
+				services that are not deployed as stacks won&apos;t appear here.
 			</p>
 			<p>To see containers in this view, make sure your applications are:</p>
 			<ol className="list-decimal list-inside space-y-2 ml-1">
 				<li>
-					<strong>Deployed as Swarm services</strong> &mdash; Applications in
-					Docklands deploy to Swarm by default. Docker Compose projects need to
-					use{" "}
+					<strong>Deployed as orchestrated services</strong> &mdash; Docklands
+					deploys applications this way by default. Compose projects need to use{" "}
 					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">Stack</code>{" "}
 					type (not{" "}
 					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">
 						Docker Compose
 					</code>
-					) to run as Swarm services.
+					) to run across workers.
 				</li>
 				<li>
 					<strong>Using a registry</strong> (for multi-node setups) &mdash;
@@ -186,7 +186,7 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 						href="/dashboard/settings/cluster"
 						className="text-primary underline underline-offset-4"
 					>
-						Cluster Settings
+						Orchestration Settings
 					</Link>
 					.
 				</li>
@@ -222,7 +222,7 @@ export const NoRunningContainers = ({
 				<AlertTriangle className="h-4 w-4" />
 				<AlertTitle>No Running Containers</AlertTitle>
 				<AlertDescription>
-					Found <strong>{serviceCount} service(s)</strong> in the swarm, but
+					Found <strong>{serviceCount} service(s)</strong> in orchestration, but
 					none have running containers.
 				</AlertDescription>
 			</Alert>
@@ -253,7 +253,7 @@ export const NoRunningContainers = ({
 						errors
 					</li>
 					<li>
-						Images can&apos;t be pulled on worker nodes &mdash; verify your{" "}
+						Images can&apos;t be pulled on workers &mdash; verify your{" "}
 						<Link
 							href="/dashboard/settings/cluster"
 							className="text-primary underline underline-offset-4"
@@ -262,8 +262,8 @@ export const NoRunningContainers = ({
 						</Link>
 					</li>
 					<li>
-						Node constraints prevent scheduling &mdash; check placement rules in
-						your app&apos;s Cluster settings
+						Placement constraints prevent scheduling &mdash; check placement
+						rules in your service&apos;s orchestration settings
 					</li>
 				</ul>
 				<DocLinks />
