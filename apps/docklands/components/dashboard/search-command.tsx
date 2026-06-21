@@ -181,13 +181,13 @@ export const SearchCommand = () => {
 							id: "app-traefik",
 							title: "Ingress files",
 							searchText: "ingress files traefik proxy",
-							onSelect: () => navigate("/dashboard/traefik"),
+							onSelect: () => navigate("/dashboard/ingress"),
 						},
 						{
 							id: "app-docker",
 							title: "Runtime containers",
 							searchText: "runtime containers docker",
-							onSelect: () => navigate("/dashboard/docker"),
+							onSelect: () => navigate("/dashboard/runtime"),
 						},
 						{
 							id: "app-requests",

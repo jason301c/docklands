@@ -97,7 +97,7 @@ export const UserNav = () => {
 								<DropdownMenu.Item
 									className="cursor-pointer"
 									onClick={() => {
-										router.push("/dashboard/traefik");
+										router.push("/dashboard/ingress");
 									}}
 								>
 									Ingress files
@@ -107,7 +107,7 @@ export const UserNav = () => {
 								<DropdownMenu.Item
 									className="cursor-pointer"
 									onClick={() => {
-										router.push("/dashboard/docker");
+										router.push("/dashboard/runtime");
 									}}
 								>
 									Runtime containers

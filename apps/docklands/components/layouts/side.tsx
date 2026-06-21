@@ -262,14 +262,14 @@ const MENU: Menu = {
 				{
 					isSingle: true,
 					title: "Containers",
-					url: "/dashboard/docker",
+					url: "/dashboard/runtime",
 					icon: BlocksIcon,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
 				},
 				{
 					isSingle: true,
 					title: "Orchestration",
-					url: "/dashboard/swarm",
+					url: "/dashboard/orchestration",
 					icon: PieChart,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
 				},
@@ -284,7 +284,7 @@ const MENU: Menu = {
 				{
 					isSingle: true,
 					title: "Ingress Files",
-					url: "/dashboard/traefik",
+					url: "/dashboard/ingress",
 					icon: GalleryVerticalEnd,
 					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
 				},
