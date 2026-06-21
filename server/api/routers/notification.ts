@@ -47,8 +47,8 @@ import {
 	apiUpdateTelegram,
 	notifications,
 	server,
-} from "@/server/db/schema";
-import { IS_CLOUD } from "@/server-core/constants/env";
+} from "@/server/core/db/schema";
+import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	createCustomNotification,
 	createDiscordNotification,
@@ -76,9 +76,9 @@ import {
 	updateSlackNotification,
 	updateTeamsNotification,
 	updateTelegramNotification,
-} from "@/server-core/services/notification";
-import { getWebServerSettings } from "@/server-core/services/web-server-settings";
-import { sendServerThresholdNotifications } from "@/server-core/utils/notifications/server-threshold";
+} from "@/server/core/services/notification";
+import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { sendServerThresholdNotifications } from "@/server/core/utils/notifications/server-threshold";
 import {
 	sendCustomNotification,
 	sendDiscordNotification,
@@ -92,8 +92,8 @@ import {
 	sendSlackNotification,
 	sendTeamsNotification,
 	sendTelegramNotification,
-} from "@/server-core/utils/notifications/utils";
-import { db } from "@/server-core/db";
+} from "@/server/core/utils/notifications/utils";
+import { db } from "@/server/core/db";
 
 export const notificationRouter = createTRPCRouter({
 	createSlack: withPermission("notification", "create")

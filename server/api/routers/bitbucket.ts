@@ -11,19 +11,19 @@ import {
 	apiFindBitbucketBranches,
 	apiFindOneBitbucket,
 	apiUpdateBitbucket,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	createBitbucket,
 	findBitbucketById,
 	updateBitbucket,
-} from "@/server-core/services/bitbucket";
-import { getAccessibleGitProviderIds } from "@/server-core/services/git-provider";
+} from "@/server/core/services/bitbucket";
+import { getAccessibleGitProviderIds } from "@/server/core/services/git-provider";
 import {
 	getBitbucketBranches,
 	getBitbucketRepositories,
 	testBitbucketConnection,
-} from "@/server-core/utils/providers/bitbucket";
-import { db } from "@/server-core/db";
+} from "@/server/core/utils/providers/bitbucket";
+import { db } from "@/server/core/db";
 
 export const bitbucketRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")

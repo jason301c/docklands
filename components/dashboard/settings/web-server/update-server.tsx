@@ -23,7 +23,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import type { IUpdateData } from "@/server-core/services/settings";
+import type { IUpdateData } from "@/server/core/services/settings";
 import { api } from "@/utils/api";
 import { ToggleAutoCheckUpdates } from "./toggle-auto-check-updates";
 import { UpdateWebServer } from "./update-webserver";

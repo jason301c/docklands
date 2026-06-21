@@ -15,14 +15,14 @@ import type { Session, User } from "better-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
 // import { getServerAuthSession } from "@/server/auth";
-import { db } from "@/server-core/db";
-import { hasValidLicense } from "@/server-core/services/enterprise/license-key";
-import type { statements } from "@/server-core/lib/access-control";
+import { db } from "@/server/core/db";
+import { hasValidLicense } from "@/server/core/services/enterprise/license-key";
+import type { statements } from "@/server/core/lib/access-control";
 import {
 	validateRequest,
 	validateRequestHeaders,
-} from "@/server-core/lib/auth";
-import { checkPermission } from "@/server-core/services/permission";
+} from "@/server/core/lib/auth";
+import { checkPermission } from "@/server/core/services/permission";
 
 type Resource = keyof typeof statements;
 type ActionOf<R extends Resource> = (typeof statements)[R][number];

@@ -4,13 +4,13 @@ import {
 	rebuildApplication,
 	rebuildPreviewApplication,
 	updateApplicationStatus,
-} from "@/server-core/services/application";
+} from "@/server/core/services/application";
 import {
 	deployCompose,
 	rebuildCompose,
 	updateCompose,
-} from "@/server-core/services/compose";
-import { updatePreviewDeployment } from "@/server-core/services/preview-deployment";
+} from "@/server/core/services/compose";
+import { updatePreviewDeployment } from "@/server/core/services/preview-deployment";
 import type { InMemoryJob } from "./in-memory-queue";
 
 /**

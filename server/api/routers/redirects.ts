@@ -4,14 +4,14 @@ import {
 	apiCreateRedirect,
 	apiFindOneRedirect,
 	apiUpdateRedirect,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	createRedirect,
 	findRedirectById,
 	removeRedirectById,
 	updateRedirectById,
-} from "@/server-core/services/redirect";
-import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
+} from "@/server/core/services/redirect";
+import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 
 export const redirectsRouter = createTRPCRouter({
 	create: protectedProcedure

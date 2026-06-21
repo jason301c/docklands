@@ -1,7 +1,7 @@
 import { createOpenApiFetchHandler } from "@dokploy/trpc-openapi";
 import { appRouter } from "@/server/api/root";
 import { createFetchTRPCContext } from "@/server/api/trpc";
-import { validateRequestHeaders } from "@/server-core/lib/auth";
+import { validateRequestHeaders } from "@/server/core/lib/auth";
 
 export const runtime = "nodejs";
 

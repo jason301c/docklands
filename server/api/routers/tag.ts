@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "@/server/db";
+import { db } from "@/server/core/db";
 import {
 	apiCreateTag,
 	apiFindOneTag,
@@ -10,8 +10,8 @@ import {
 	projects,
 	projectTags,
 	tags,
-} from "@/server/db/schema";
-import { findMemberByUserId } from "@/server-core/services/permission";
+} from "@/server/core/db/schema";
+import { findMemberByUserId } from "@/server/core/services/permission";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 
 export const tagRouter = createTRPCRouter({

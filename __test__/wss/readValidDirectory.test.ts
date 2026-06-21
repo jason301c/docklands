@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 
 const BASE = "/base";
 
-vi.mock("@/server-core/constants/paths", async (importOriginal) => {
+vi.mock("@/server/core/constants/paths", async (importOriginal) => {
 	const actual =
-		await importOriginal<typeof import("@/server-core/constants/paths")>();
+		await importOriginal<typeof import("@/server/core/constants/paths")>();
 	return {
 		...actual,
 		paths: () => ({
@@ -18,7 +18,7 @@ vi.mock("@/server-core/constants/paths", async (importOriginal) => {
 });
 
 // Import after mock so paths() uses our BASE
-const { readValidDirectory } = await import("@/server-core/wss/utils");
+const { readValidDirectory } = await import("@/server/core/wss/utils");
 
 describe("readValidDirectory (path traversal)", () => {
 	it("returns true when directory is exactly BASE_PATH", () => {

@@ -3,31 +3,31 @@ import { asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
 import { removeJob, schedule } from "@/server/utils/backup";
-import { IS_CLOUD } from "@/server-core/constants/env";
+import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	removeScheduleJob,
 	scheduleJob,
-} from "@/server-core/utils/schedules/utils";
-import { db } from "@/server-core/db";
-import { deployments } from "@/server-core/db/schema/deployment";
+} from "@/server/core/utils/schedules/utils";
+import { db } from "@/server/core/db";
+import { deployments } from "@/server/core/db/schema/deployment";
 import {
 	createScheduleSchema,
 	schedules,
 	updateScheduleSchema,
-} from "@/server-core/db/schema/schedule";
-import { runCommand } from "@/server-core/utils/schedules/utils";
+} from "@/server/core/db/schema/schedule";
+import { runCommand } from "@/server/core/utils/schedules/utils";
 import {
 	checkPermission,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
-} from "@/server-core/services/permission";
+} from "@/server/core/services/permission";
 import {
 	createSchedule,
 	deleteSchedule,
 	findScheduleById,
 	updateSchedule,
-} from "@/server-core/services/schedule";
-import { findServerById } from "@/server-core/services/server";
+} from "@/server/core/services/schedule";
+import { findServerById } from "@/server/core/services/server";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const scheduleRouter = createTRPCRouter({

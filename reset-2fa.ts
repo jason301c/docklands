@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
-import { findOwner } from "@/server-core/services/admin";
-import { db } from "@/server-core/db";
-import { user } from "@/server-core/db/schema";
+import { findOwner } from "@/server/core/services/admin";
+import { db } from "@/server/core/db";
+import { user } from "@/server/core/db/schema";
 
 (async () => {
 	try {

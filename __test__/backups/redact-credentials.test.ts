@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { redactRcloneCredentials } from "@/server-core/utils/backups/redact";
+import { redactRcloneCredentials } from "@/server/core/utils/backups/redact";
 
 describe("redactRcloneCredentials (#4621)", () => {
 	it("should redact access key in rclone command", () => {

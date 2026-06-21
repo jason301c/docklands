@@ -28,7 +28,7 @@ import {
 	applications,
 	environments,
 	projects,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import {
 	cleanQueuesByApplication,
@@ -36,53 +36,53 @@ import {
 	myQueue,
 } from "@/server/queues/queueSetup";
 import { cancelDeployment, deploy } from "@/server/utils/deploy";
-import { IS_CLOUD } from "@/server-core/constants/env";
+import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	createApplication,
 	findApplicationById,
 	getApplicationStats,
 	updateApplication,
 	updateApplicationStatus,
-} from "@/server-core/services/application";
+} from "@/server/core/services/application";
 import {
 	clearOldDeployments,
 	removeDeployments,
 	updateDeploymentStatus,
-} from "@/server-core/services/deployment";
-import { getContainerLogs } from "@/server-core/services/docker";
-import { findEnvironmentById } from "@/server-core/services/environment";
-import { findProjectById } from "@/server-core/services/project";
-import { getAccessibleServerIds } from "@/server-core/services/server";
-import { getWebServerSettings } from "@/server-core/services/web-server-settings";
-import { unzipDrop } from "@/server-core/utils/builders/drop";
-import { mechanizeDockerContainer } from "@/server-core/utils/builders/index";
+} from "@/server/core/services/deployment";
+import { getContainerLogs } from "@/server/core/services/docker";
+import { findEnvironmentById } from "@/server/core/services/environment";
+import { findProjectById } from "@/server/core/services/project";
+import { getAccessibleServerIds } from "@/server/core/services/server";
+import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { unzipDrop } from "@/server/core/utils/builders/drop";
+import { mechanizeDockerContainer } from "@/server/core/utils/builders/index";
 import {
 	removeService,
 	startService,
 	startServiceRemote,
 	stopService,
 	stopServiceRemote,
-} from "@/server-core/utils/docker/utils";
+} from "@/server/core/utils/docker/utils";
 import {
 	removeDirectoryCode,
 	removeMonitoringDirectory,
-} from "@/server-core/utils/filesystem/directory";
+} from "@/server/core/utils/filesystem/directory";
 import {
 	readConfig,
 	readRemoteConfig,
 	removeTraefikConfig,
 	writeConfig,
 	writeConfigRemote,
-} from "@/server-core/utils/traefik/application";
-import { deleteAllMiddlewares } from "@/server-core/utils/traefik/middleware";
-import { db } from "@/server-core/db";
-import { canEditDeployGitSource } from "@/server-core/services/git-provider";
+} from "@/server/core/utils/traefik/application";
+import { deleteAllMiddlewares } from "@/server/core/utils/traefik/middleware";
+import { db } from "@/server/core/db";
+import { canEditDeployGitSource } from "@/server/core/services/git-provider";
 import {
 	addNewService,
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
-} from "@/server-core/services/permission";
+} from "@/server/core/services/permission";
 
 export const applicationRouter = createTRPCRouter({
 	create: protectedProcedure

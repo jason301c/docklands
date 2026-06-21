@@ -11,8 +11,8 @@
 
 import { symmetricDecrypt, symmetricEncrypt } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
-import { db } from "@/server-core/db";
-import { twoFactor } from "@/server-core/db/schema";
+import { db } from "@/server/core/db";
+import { twoFactor } from "@/server/core/db/schema";
 
 const OLD_SECRET = process.env.OLD_SECRET as string;
 const NEW_SECRET = process.env.NEW_SECRET as string;

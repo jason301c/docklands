@@ -37,7 +37,7 @@ import { cn } from "@/lib/utils";
 import {
 	ADDITIONAL_FLAG_ERROR,
 	ADDITIONAL_FLAG_REGEX,
-} from "@/server-core/db/validations/destination";
+} from "@/server/core/db/validations/destination";
 import { api } from "@/utils/api";
 import { S3_PROVIDERS } from "./constants";
 

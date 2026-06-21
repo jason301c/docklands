@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { truncateErrorMessage } from "@/server-core/utils/notifications/build-error";
+import { truncateErrorMessage } from "@/server/core/utils/notifications/build-error";
 
 describe("truncateErrorMessage", () => {
 	it("returns the message unchanged when within the limit", () => {

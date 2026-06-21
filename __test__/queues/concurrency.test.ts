@@ -5,7 +5,7 @@ const getWebServerSettings = vi.fn();
 const findFirstOrg = vi.fn();
 const findFirstServer = vi.fn();
 
-vi.mock("@/server-core/db", () => ({
+vi.mock("@/server/core/db", () => ({
 	db: {
 		query: {
 			organization: {
@@ -18,16 +18,16 @@ vi.mock("@/server-core/db", () => ({
 	},
 }));
 
-vi.mock("@/server-core/db/schema", () => ({
+vi.mock("@/server/core/db/schema", () => ({
 	organization: {},
 	server: {},
 }));
 
-vi.mock("@/server-core/services/enterprise/license-key", () => ({
+vi.mock("@/server/core/services/enterprise/license-key", () => ({
 	hasValidLicense: (...args: unknown[]) => hasValidLicense(...args),
 }));
 
-vi.mock("@/server-core/services/web-server-settings", () => ({
+vi.mock("@/server/core/services/web-server-settings", () => ({
 	getWebServerSettings: (...args: unknown[]) => getWebServerSettings(...args),
 }));
 

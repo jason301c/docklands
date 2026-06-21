@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { apiCreateRegistry, apiTestRegistry } from "@/server-core/db/schema";
+import { apiCreateRegistry, apiTestRegistry } from "@/server/core/db/schema";
 
 describe("Registry Schema - Username case preservation (#4632)", () => {
 	const validBase = {

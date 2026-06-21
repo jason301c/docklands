@@ -11,23 +11,23 @@ import {
 	apiFindOneGitea,
 	apiGiteaTestConnection,
 	apiUpdateGitea,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	getAccessibleGitProviderIds,
 	updateGitProvider,
-} from "@/server-core/services/git-provider";
+} from "@/server/core/services/git-provider";
 import {
 	createGitea,
 	findGiteaById,
 	updateGitea,
-} from "@/server-core/services/gitea";
+} from "@/server/core/services/gitea";
 import {
 	getGiteaBranches,
 	getGiteaRepositories,
 	haveGiteaRequirements,
 	testGiteaConnection,
-} from "@/server-core/utils/providers/gitea";
-import { db } from "@/server-core/db";
+} from "@/server/core/utils/providers/gitea";
+import { db } from "@/server/core/db";
 
 export const giteaRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")

@@ -5,14 +5,14 @@ import {
 	apiCreatePort,
 	apiFindOnePort,
 	apiUpdatePort,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	createPort,
 	finPortById,
 	removePortById,
 	updatePortById,
-} from "@/server-core/services/port";
-import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
+} from "@/server/core/services/port";
+import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 
 export const portRouter = createTRPCRouter({
 	create: protectedProcedure

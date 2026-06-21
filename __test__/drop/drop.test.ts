@@ -3,15 +3,15 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import AdmZip from "adm-zip";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { paths } from "@/server-core/constants/paths";
-import type { ApplicationNested } from "@/server-core/utils/builders";
-import { unzipDrop } from "@/server-core/utils/builders/drop";
+import { paths } from "@/server/core/constants/paths";
+import type { ApplicationNested } from "@/server/core/utils/builders";
+import { unzipDrop } from "@/server/core/utils/builders/drop";
 
 const OUTPUT_BASE = "./__test__/drop/zips/output";
 const { APPLICATIONS_PATH } = paths();
-vi.mock("@/server-core/constants/paths", async (importOriginal) => {
+vi.mock("@/server/core/constants/paths", async (importOriginal) => {
 	const actual =
-		await importOriginal<typeof import("@/server-core/constants/paths")>();
+		await importOriginal<typeof import("@/server/core/constants/paths")>();
 	return {
 		...actual,
 		paths: () => ({

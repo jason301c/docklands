@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import type { Domain } from "@/server-core/services/domain";
+import type { Domain } from "@/server/core/services/domain";
 
 export interface Schema {
 	serverIp: string;

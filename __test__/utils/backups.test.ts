@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
-import type { BackupSchedule } from "@/server-core/services/backup";
+import type { BackupSchedule } from "@/server/core/services/backup";
 import {
 	generateBackupCommand,
 	getBackupCommand,
 	normalizeS3Path,
-} from "@/server-core/utils/backups/utils";
+} from "@/server/core/utils/backups/utils";
 
 describe("normalizeS3Path", () => {
 	test("should handle empty and whitespace-only prefix", () => {

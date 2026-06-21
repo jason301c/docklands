@@ -2,15 +2,15 @@ import { promises as fsPromises } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as execProcess from "@/server-core/utils/process/execAsync";
+import * as execProcess from "@/server/core/utils/process/execAsync";
 
-vi.mock("@/server-core/utils/process/execAsync", () => ({
+vi.mock("@/server/core/utils/process/execAsync", () => ({
 	execAsync: vi.fn(),
 	execAsyncRemote: vi.fn(),
 	ExecError: class ExecError extends Error {},
 }));
 
-import { getDeploymentErrorMessage } from "@/server-core/services/deployment";
+import { getDeploymentErrorMessage } from "@/server/core/services/deployment";
 
 const FALLBACK = "Error building, check the logs for details.";
 

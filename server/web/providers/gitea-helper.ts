@@ -1,4 +1,4 @@
-import { findGiteaById } from "@/server-core/services/gitea";
+import { findGiteaById } from "@/server/core/services/gitea";
 import { redirectResponse } from "@/server/web/request";
 
 export interface Gitea {

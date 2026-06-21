@@ -39,7 +39,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { domain } from "@/server/db/validations/domain";
+import { domain } from "@/server/core/db/validations/domain";
 import { api } from "@/utils/api";
 
 type Domain = z.infer<typeof domain>;
@@ -224,7 +224,11 @@ export const AddPreviewDomain = ({
 											<FormItem>
 												<FormLabel>Path</FormLabel>
 												<FormControl>
-													<Input placeholder={"/"} {...field} />
+													<Input
+														placeholder={"/"}
+														{...field}
+														value={field.value ?? ""}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>
@@ -240,7 +244,11 @@ export const AddPreviewDomain = ({
 											<FormItem>
 												<FormLabel>Container Port</FormLabel>
 												<FormControl>
-													<NumberInput placeholder={"3000"} {...field} />
+													<NumberInput
+														placeholder={"3000"}
+														{...field}
+														value={field.value ?? ""}
+													/>
 												</FormControl>
 												<FormMessage />
 											</FormItem>

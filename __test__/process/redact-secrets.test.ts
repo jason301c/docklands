@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	redactErrorSecrets,
 	redactSecrets,
-} from "@/server-core/utils/process/redactSecrets";
+} from "@/server/core/utils/process/redactSecrets";
 
 // All key material below is synthetic: these base64 strings decode to the
 // literal text "synthetic-test-not-a-real-...-key" and are not real keys.

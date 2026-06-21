@@ -1,4 +1,4 @@
-import { updateGitea } from "@/server-core/services/gitea";
+import { updateGitea } from "@/server/core/services/gitea";
 import { getQueryParam, redirectResponse } from "@/server/web/request";
 import { findGitea, type Gitea, redirectWithError } from "./gitea-helper";
 

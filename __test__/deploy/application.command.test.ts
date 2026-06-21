@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as adminService from "@/server-core/services/admin";
-import * as applicationService from "@/server-core/services/application";
-import { deployApplication } from "@/server-core/services/application";
-import * as deploymentService from "@/server-core/services/deployment";
-import * as builders from "@/server-core/utils/builders";
-import * as notifications from "@/server-core/utils/notifications/build-success";
-import * as execProcess from "@/server-core/utils/process/execAsync";
-import * as gitProvider from "@/server-core/utils/providers/git";
+import * as adminService from "@/server/core/services/admin";
+import * as applicationService from "@/server/core/services/application";
+import { deployApplication } from "@/server/core/services/application";
+import * as deploymentService from "@/server/core/services/deployment";
+import * as builders from "@/server/core/utils/builders";
+import * as notifications from "@/server/core/utils/notifications/build-success";
+import * as execProcess from "@/server/core/utils/process/execAsync";
+import * as gitProvider from "@/server/core/utils/providers/git";
 
-vi.mock("@/server-core/db", () => {
+vi.mock("@/server/core/db", () => {
 	const createChainableMock = (): any => {
 		const chain = {
 			set: vi.fn(() => chain),
@@ -45,10 +45,10 @@ vi.mock("@/server-core/db", () => {
 	};
 });
 
-vi.mock("@/server-core/services/application", async () => {
+vi.mock("@/server/core/services/application", async () => {
 	const actual = await vi.importActual<
-		typeof import("@/server-core/services/application")
-	>("@/server-core/services/application");
+		typeof import("@/server/core/services/application")
+	>("@/server/core/services/application");
 	return {
 		...actual,
 		findApplicationById: vi.fn(),
@@ -56,11 +56,11 @@ vi.mock("@/server-core/services/application", async () => {
 	};
 });
 
-vi.mock("@/server-core/services/admin", () => ({
+vi.mock("@/server/core/services/admin", () => ({
 	getDocklandsUrl: vi.fn(),
 }));
 
-vi.mock("@/server-core/services/deployment", () => ({
+vi.mock("@/server/core/services/deployment", () => ({
 	createDeployment: vi.fn(),
 	updateDeploymentStatus: vi.fn(),
 	updateDeployment: vi.fn(),
@@ -69,25 +69,25 @@ vi.mock("@/server-core/services/deployment", () => ({
 		.mockResolvedValue("Error building, check the logs for details."),
 }));
 
-vi.mock("@/server-core/utils/providers/git", async () => {
+vi.mock("@/server/core/utils/providers/git", async () => {
 	const actual = await vi.importActual<
-		typeof import("@/server-core/utils/providers/git")
-	>("@/server-core/utils/providers/git");
+		typeof import("@/server/core/utils/providers/git")
+	>("@/server/core/utils/providers/git");
 	return {
 		...actual,
 		getGitCommitInfo: vi.fn(),
 	};
 });
 
-vi.mock("@/server-core/utils/process/execAsync", () => ({
+vi.mock("@/server/core/utils/process/execAsync", () => ({
 	execAsync: vi.fn(),
 	ExecError: class ExecError extends Error {},
 }));
 
-vi.mock("@/server-core/utils/builders", async () => {
+vi.mock("@/server/core/utils/builders", async () => {
 	const actual = await vi.importActual<
-		typeof import("@/server-core/utils/builders")
-	>("@/server-core/utils/builders");
+		typeof import("@/server/core/utils/builders")
+	>("@/server/core/utils/builders");
 	return {
 		...actual,
 		mechanizeDockerContainer: vi.fn(),
@@ -95,20 +95,20 @@ vi.mock("@/server-core/utils/builders", async () => {
 	};
 });
 
-vi.mock("@/server-core/utils/notifications/build-success", () => ({
+vi.mock("@/server/core/utils/notifications/build-success", () => ({
 	sendBuildSuccessNotifications: vi.fn(),
 }));
 
-vi.mock("@/server-core/utils/notifications/build-error", () => ({
+vi.mock("@/server/core/utils/notifications/build-error", () => ({
 	sendBuildErrorNotifications: vi.fn(),
 }));
 
-vi.mock("@/server-core/services/rollbacks", () => ({
+vi.mock("@/server/core/services/rollbacks", () => ({
 	createRollback: vi.fn(),
 }));
 
-import { db } from "@/server-core/db";
-import { cloneGitRepository } from "@/server-core/utils/providers/git";
+import { db } from "@/server/core/db";
+import { cloneGitRepository } from "@/server/core/utils/providers/git";
 
 const createMockApplication = (overrides = {}) => ({
 	applicationId: "test-app-id",

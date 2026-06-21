@@ -9,18 +9,18 @@ import {
 	apiFindGithubBranches,
 	apiFindOneGithub,
 	apiUpdateGithub,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	getAccessibleGitProviderIds,
 	updateGitProvider,
-} from "@/server-core/services/git-provider";
-import { findGithubById, updateGithub } from "@/server-core/services/github";
+} from "@/server/core/services/git-provider";
+import { findGithubById, updateGithub } from "@/server/core/services/github";
 import {
 	getGithubBranches,
 	getGithubRepositories,
 	haveGithubRequirements,
-} from "@/server-core/utils/providers/github";
-import { db } from "@/server-core/db";
+} from "@/server/core/utils/providers/github";
+import { db } from "@/server/core/db";
 
 export const githubRouter = createTRPCRouter({
 	one: protectedProcedure.input(apiFindOneGithub).query(async ({ input }) => {

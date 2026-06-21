@@ -2,14 +2,14 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { format } from "date-fns";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { paths } from "@/server-core/constants/paths";
-import type { ApplicationNested } from "@/server-core/utils/builders";
-import { execAsync } from "@/server-core/utils/process/execAsync";
+import { paths } from "@/server/core/constants/paths";
+import type { ApplicationNested } from "@/server/core/utils/builders";
+import { execAsync } from "@/server/core/utils/process/execAsync";
 
 const REAL_TEST_TIMEOUT = 180000; // 3 minutes
 
 // Mock ONLY database and notifications
-vi.mock("@/server-core/db", () => {
+vi.mock("@/server/core/db", () => {
 	const createChainableMock = (): any => {
 		const chain: any = {
 			set: vi.fn(() => chain),
@@ -46,10 +46,10 @@ vi.mock("@/server-core/db", () => {
 	};
 });
 
-vi.mock("@/server-core/services/application", async () => {
+vi.mock("@/server/core/services/application", async () => {
 	const actual = await vi.importActual<
-		typeof import("@/server-core/services/application")
-	>("@/server-core/services/application");
+		typeof import("@/server/core/services/application")
+	>("@/server/core/services/application");
 	return {
 		...actual,
 		findApplicationById: vi.fn(),
@@ -57,11 +57,11 @@ vi.mock("@/server-core/services/application", async () => {
 	};
 });
 
-vi.mock("@/server-core/services/admin", () => ({
+vi.mock("@/server/core/services/admin", () => ({
 	getDocklandsUrl: vi.fn().mockResolvedValue("http://localhost:3000"),
 }));
 
-vi.mock("@/server-core/services/deployment", () => ({
+vi.mock("@/server/core/services/deployment", () => ({
 	createDeployment: vi.fn(),
 	updateDeploymentStatus: vi.fn(),
 	updateDeployment: vi.fn(),
@@ -70,15 +70,15 @@ vi.mock("@/server-core/services/deployment", () => ({
 		.mockResolvedValue("Error building, check the logs for details."),
 }));
 
-vi.mock("@/server-core/utils/notifications/build-success", () => ({
+vi.mock("@/server/core/utils/notifications/build-success", () => ({
 	sendBuildSuccessNotifications: vi.fn(),
 }));
 
-vi.mock("@/server-core/utils/notifications/build-error", () => ({
+vi.mock("@/server/core/utils/notifications/build-error", () => ({
 	sendBuildErrorNotifications: vi.fn(),
 }));
 
-vi.mock("@/server-core/services/rollbacks", () => ({
+vi.mock("@/server/core/services/rollbacks", () => ({
 	createRollback: vi.fn(),
 }));
 
@@ -88,11 +88,11 @@ vi.mock("@/server-core/services/rollbacks", () => ({
 // - getBuildCommand
 // - mechanizeDockerContainer (requires Docker Swarm)
 
-import { db } from "@/server-core/db";
-import * as adminService from "@/server-core/services/admin";
-import * as applicationService from "@/server-core/services/application";
-import { deployApplication } from "@/server-core/services/application";
-import * as deploymentService from "@/server-core/services/deployment";
+import { db } from "@/server/core/db";
+import * as adminService from "@/server/core/services/admin";
+import * as applicationService from "@/server/core/services/application";
+import { deployApplication } from "@/server/core/services/application";
+import * as deploymentService from "@/server/core/services/deployment";
 
 const createMockApplication = (
 	overrides: Partial<ApplicationNested> = {},

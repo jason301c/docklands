@@ -11,7 +11,7 @@ import {
 	apiUpdateEnvironment,
 	environments,
 	projects,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	createEnvironment,
 	deleteEnvironment,
@@ -19,8 +19,8 @@ import {
 	findEnvironmentById,
 	findEnvironmentsByProjectId,
 	updateEnvironmentById,
-} from "@/server-core/services/environment";
-import { db } from "@/server-core/db";
+} from "@/server/core/services/environment";
+import { db } from "@/server/core/db";
 import {
 	addNewEnvironment,
 	checkEnvironmentAccess,
@@ -28,7 +28,7 @@ import {
 	checkEnvironmentDeletionPermission,
 	checkPermission,
 	findMemberByUserId,
-} from "@/server-core/services/permission";
+} from "@/server/core/services/permission";
 
 const filterEnvironmentServices = (
 	environment: any,

@@ -4,14 +4,14 @@ import {
 	apiCreateSecurity,
 	apiFindOneSecurity,
 	apiUpdateSecurity,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	createSecurity,
 	deleteSecurityById,
 	findSecurityById,
 	updateSecurityById,
-} from "@/server-core/services/security";
-import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
+} from "@/server/core/services/security";
+import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 
 export const securityRouter = createTRPCRouter({
 	create: protectedProcedure

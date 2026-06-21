@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
-import { db } from "@/server/db";
+import { db } from "@/server/core/db";
 import {
 	apiChangeLibsqlStatus,
 	apiCreateLibsql,
@@ -15,35 +15,35 @@ import {
 	apiSaveExternalPortsLibsql,
 	apiUpdateLibsql,
 	libsql as libsqlTable,
-} from "@/server/db/schema";
-import { IS_CLOUD } from "@/server-core/constants/env";
-import { getContainerLogs } from "@/server-core/services/docker";
-import { findEnvironmentById } from "@/server-core/services/environment";
+} from "@/server/core/db/schema";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { getContainerLogs } from "@/server/core/services/docker";
+import { findEnvironmentById } from "@/server/core/services/environment";
 import {
 	createLibsql,
 	deployLibsql,
 	findLibsqlById,
 	removeLibsqlById,
 	updateLibsqlById,
-} from "@/server-core/services/libsql";
-import { createMount } from "@/server-core/services/mount";
-import { findProjectById } from "@/server-core/services/project";
-import { getAccessibleServerIds } from "@/server-core/services/server";
-import { checkPortInUse } from "@/server-core/services/settings";
-import { getWebServerSettings } from "@/server-core/services/web-server-settings";
-import { rebuildDatabase } from "@/server-core/utils/databases/rebuild";
+} from "@/server/core/services/libsql";
+import { createMount } from "@/server/core/services/mount";
+import { findProjectById } from "@/server/core/services/project";
+import { getAccessibleServerIds } from "@/server/core/services/server";
+import { checkPortInUse } from "@/server/core/services/settings";
+import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { rebuildDatabase } from "@/server/core/utils/databases/rebuild";
 import {
 	removeService,
 	startService,
 	startServiceRemote,
 	stopService,
 	stopServiceRemote,
-} from "@/server-core/utils/docker/utils";
+} from "@/server/core/utils/docker/utils";
 import {
 	addNewService,
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
-} from "@/server-core/services/permission";
+} from "@/server/core/services/permission";
 export const libsqlRouter = createTRPCRouter({
 	create: protectedProcedure
 		.input(apiCreateLibsql)

@@ -12,60 +12,60 @@ import {
 	apiRemoveBackup,
 	apiRestoreBackup,
 	apiUpdateBackup,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import { removeJob, schedule, updateJob } from "@/server/utils/backup";
-import { IS_CLOUD } from "@/server-core/constants/env";
+import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	createBackup,
 	findBackupById,
 	removeBackupById,
 	updateBackupById,
-} from "@/server-core/services/backup";
-import { findComposeById } from "@/server-core/services/compose";
+} from "@/server/core/services/backup";
+import { findComposeById } from "@/server/core/services/compose";
 import {
 	findLibsqlByBackupId,
 	findLibsqlById,
-} from "@/server-core/services/libsql";
+} from "@/server/core/services/libsql";
 import {
 	findMariadbByBackupId,
 	findMariadbById,
-} from "@/server-core/services/mariadb";
+} from "@/server/core/services/mariadb";
 import {
 	findComposeByBackupId,
 	findMongoByBackupId,
 	findMongoById,
-} from "@/server-core/services/mongo";
+} from "@/server/core/services/mongo";
 import {
 	findMySqlByBackupId,
 	findMySqlById,
-} from "@/server-core/services/mysql";
+} from "@/server/core/services/mysql";
 import {
 	findPostgresByBackupId,
 	findPostgresById,
-} from "@/server-core/services/postgres";
-import { findServerById } from "@/server-core/services/server";
-import { keepLatestNBackups } from "@/server-core/utils/backups/index";
-import { runLibsqlBackup } from "@/server-core/utils/backups/libsql";
-import { runMariadbBackup } from "@/server-core/utils/backups/mariadb";
-import { runMongoBackup } from "@/server-core/utils/backups/mongo";
-import { runMySqlBackup } from "@/server-core/utils/backups/mysql";
-import { runPostgresBackup } from "@/server-core/utils/backups/postgres";
+} from "@/server/core/services/postgres";
+import { findServerById } from "@/server/core/services/server";
+import { keepLatestNBackups } from "@/server/core/utils/backups/index";
+import { runLibsqlBackup } from "@/server/core/utils/backups/libsql";
+import { runMariadbBackup } from "@/server/core/utils/backups/mariadb";
+import { runMongoBackup } from "@/server/core/utils/backups/mongo";
+import { runMySqlBackup } from "@/server/core/utils/backups/mysql";
+import { runPostgresBackup } from "@/server/core/utils/backups/postgres";
 import {
 	removeScheduleBackup,
 	scheduleBackup,
-} from "@/server-core/utils/backups/utils";
-import { runWebServerBackup } from "@/server-core/utils/backups/web-server";
-import { findDestinationById } from "@/server-core/services/destination";
-import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
-import { runComposeBackup } from "@/server-core/utils/backups/compose";
+} from "@/server/core/utils/backups/utils";
+import { runWebServerBackup } from "@/server/core/utils/backups/web-server";
+import { findDestinationById } from "@/server/core/services/destination";
+import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
+import { runComposeBackup } from "@/server/core/utils/backups/compose";
 import {
 	getS3Credentials,
 	normalizeS3Path,
-} from "@/server-core/utils/backups/utils";
+} from "@/server/core/utils/backups/utils";
 import {
 	execAsync,
 	execAsyncRemote,
-} from "@/server-core/utils/process/execAsync";
+} from "@/server/core/utils/process/execAsync";
 import {
 	restoreComposeBackup,
 	restoreLibsqlBackup,
@@ -74,7 +74,7 @@ import {
 	restoreMySqlBackup,
 	restorePostgresBackup,
 	restoreWebServerBackup,
-} from "@/server-core/utils/restore";
+} from "@/server/core/utils/restore";
 
 interface RcloneFile {
 	Path: string;

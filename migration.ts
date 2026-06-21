@@ -1,7 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
-import { dbUrl } from "@/server-core/db";
+import { dbUrl } from "@/server/core/db";
 
 const sql = postgres(dbUrl, { max: 1 });
 const db = drizzle(sql);

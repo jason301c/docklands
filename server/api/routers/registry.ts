@@ -9,19 +9,19 @@ import {
 	apiTestRegistryById,
 	apiUpdateRegistry,
 	registry,
-} from "@/server/db/schema";
-import { IS_CLOUD } from "@/server-core/constants/env";
+} from "@/server/core/db/schema";
+import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	createRegistry,
 	findRegistryById,
 	removeRegistry,
 	updateRegistry,
-} from "@/server-core/services/registry";
+} from "@/server/core/services/registry";
 import {
 	execAsyncRemote,
 	execFileAsync,
-} from "@/server-core/utils/process/execAsync";
-import { db } from "@/server-core/db";
+} from "@/server/core/utils/process/execAsync";
+import { db } from "@/server/core/db";
 import { createTRPCRouter, withPermission } from "../trpc";
 export const registryRouter = createTRPCRouter({
 	create: withPermission("registry", "create")

@@ -34,7 +34,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import type { ServiceType } from "@/server-core/db/schema";
+import type { ServiceType } from "@/server/core/db/schema";
 import { api, type RouterOutputs } from "@/utils/api";
 
 type ProjectItem = RouterOutputs["project"]["all"][number];

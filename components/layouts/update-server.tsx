@@ -1,6 +1,6 @@
 import { Download } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { IUpdateData } from "@/server-core/services/settings";
+import type { IUpdateData } from "@/server/core/services/settings";
 import { api } from "@/utils/api";
 import UpdateServer from "../dashboard/settings/web-server/update-server";
 import { Button } from "../ui/button";

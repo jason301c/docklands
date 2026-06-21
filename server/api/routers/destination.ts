@@ -8,19 +8,19 @@ import {
 	apiRemoveDestination,
 	apiUpdateDestination,
 	destinations,
-} from "@/server/db/schema";
-import { IS_CLOUD } from "@/server-core/constants/env";
+} from "@/server/core/db/schema";
+import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	createDestination,
 	findDestinationById,
 	removeDestinationById,
 	updateDestinationById,
-} from "@/server-core/services/destination";
+} from "@/server/core/services/destination";
 import {
 	execAsync,
 	execAsyncRemote,
-} from "@/server-core/utils/process/execAsync";
-import { db } from "@/server-core/db";
+} from "@/server/core/utils/process/execAsync";
+import { db } from "@/server/core/db";
 
 export const destinationRouter = createTRPCRouter({
 	create: withPermission("destination", "create")

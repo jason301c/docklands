@@ -7,15 +7,15 @@ import {
 	apiFindCertificate,
 	apiUpdateCertificate,
 	certificates,
-} from "@/server/db/schema";
-import { IS_CLOUD } from "@/server-core/constants/env";
+} from "@/server/core/db/schema";
+import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	createCertificate,
 	findCertificateById,
 	removeCertificateById,
 	updateCertificate,
-} from "@/server-core/services/certificate";
-import { db } from "@/server-core/db";
+} from "@/server/core/services/certificate";
+import { db } from "@/server/core/db";
 
 export const certificateRouter = createTRPCRouter({
 	create: withPermission("certificate", "create")

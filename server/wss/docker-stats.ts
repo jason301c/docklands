@@ -1,14 +1,14 @@
 import type http from "node:http";
 import { WebSocketServer } from "ws";
-import { docker } from "@/server-core/constants/docker";
-import { IS_CLOUD } from "@/server-core/constants/env";
-import { validateRequest } from "@/server-core/lib/auth";
+import { docker } from "@/server/core/constants/docker";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { validateRequest } from "@/server/core/lib/auth";
 import {
 	getHostSystemStats,
 	getLastAdvancedStatsFile,
 	recordAdvancedStats,
-} from "@/server-core/monitoring/utils";
-import { execAsync } from "@/server-core/utils/process/execAsync";
+} from "@/server/core/monitoring/utils";
+import { execAsync } from "@/server/core/utils/process/execAsync";
 
 export const setupDockerStatsMonitoringSocketServer = (
 	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,

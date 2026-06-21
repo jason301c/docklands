@@ -1,5 +1,5 @@
-import type { AuditAction, AuditResourceType } from "@/server-core/db/schema";
-import { createAuditLog } from "@/server-core/services/enterprise/audit-log";
+import type { AuditAction, AuditResourceType } from "@/server/core/db/schema";
+import { createAuditLog } from "@/server/core/services/enterprise/audit-log";
 
 interface AuditCtx {
 	user: { id: string; email: string; role: string };

@@ -11,13 +11,13 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./*"],
-			"@/server-core/*": ["./server-core/*"]
+			"@/server/core/*": ["./server/core/*"]
 		}
 	},
 	"include": [
 		"next-env.d.ts",
 		"./server/**/*",
-		"./server-core/**/*",
+		"./server/core/**/*",
 		"./migration.ts",
 		"./setup.ts",
 		"./wait-for-postgres.ts",

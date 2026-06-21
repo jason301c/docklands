@@ -12,9 +12,9 @@ import {
 	apiFindPatch,
 	apiTogglePatchEnabled,
 	apiUpdatePatch,
-} from "@/server/db/schema";
-import { findApplicationById } from "@/server-core/services/application";
-import { findComposeById } from "@/server-core/services/compose";
+} from "@/server/core/db/schema";
+import { findApplicationById } from "@/server/core/services/application";
+import { findComposeById } from "@/server/core/services/compose";
 import {
 	createPatch,
 	deletePatch,
@@ -23,14 +23,14 @@ import {
 	findPatchesByEntityId,
 	markPatchForDeletion,
 	updatePatch,
-} from "@/server-core/services/patch";
+} from "@/server/core/services/patch";
 import {
 	cleanPatchRepos,
 	ensurePatchRepo,
 	readPatchRepoDirectory,
 	readPatchRepoFile,
-} from "@/server-core/services/patch-repo";
-import { checkServicePermissionAndAccess } from "@/server-core/services/permission";
+} from "@/server/core/services/patch-repo";
+import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 
 /**
  * Resolves the serviceId from a patch record (applicationId or composeId).

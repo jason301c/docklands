@@ -13,15 +13,15 @@ import {
 	apiRemoveSshKey,
 	apiUpdateSshKey,
 	sshKeys,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	createSshKey,
 	findSSHKeyById,
 	removeSSHKeyById,
 	updateSSHKeyById,
-} from "@/server-core/services/ssh-key";
-import { generateSSHKey } from "@/server-core/utils/filesystem/ssh";
-import { db } from "@/server-core/db";
+} from "@/server/core/services/ssh-key";
+import { generateSSHKey } from "@/server/core/utils/filesystem/ssh";
+import { db } from "@/server/core/db";
 
 export const sshRouter = createTRPCRouter({
 	create: withPermission("sshKeys", "create")

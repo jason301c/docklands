@@ -1,19 +1,19 @@
 import http from "node:http";
 import { config } from "dotenv";
 import next from "next";
-import { IS_CLOUD } from "@/server-core/constants/env";
-import { setupDirectories } from "@/server-core/setup/config-paths";
-import { initializeNetwork } from "@/server-core/setup/setup";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { setupDirectories } from "@/server/core/setup/config-paths";
+import { initializeNetwork } from "@/server/core/setup/setup";
 import {
 	createDefaultMiddlewares,
 	createDefaultServerTraefikConfig,
 	createDefaultTraefikConfig,
-} from "@/server-core/setup/traefik-setup";
-import { initCronJobs } from "@/server-core/utils/backups/index";
-import { sendDocklandsRestartNotifications } from "@/server-core/utils/notifications/dokploy-restart";
-import { initSchedules } from "@/server-core/utils/schedules/index";
-import { initCancelDeployments } from "@/server-core/utils/startup/cancel-deployments";
-import { initVolumeBackupsCronJobs } from "@/server-core/utils/volume-backups/index";
+} from "@/server/core/setup/traefik-setup";
+import { initCronJobs } from "@/server/core/utils/backups/index";
+import { sendDocklandsRestartNotifications } from "@/server/core/utils/notifications/dokploy-restart";
+import { initSchedules } from "@/server/core/utils/schedules/index";
+import { initCancelDeployments } from "@/server/core/utils/startup/cancel-deployments";
+import { initVolumeBackupsCronJobs } from "@/server/core/utils/volume-backups/index";
 import packageInfo from "../package.json";
 import { setupDockerContainerLogsWebSocketServer } from "./wss/docker-container-logs";
 import { setupDockerContainerTerminalWebSocketServer } from "./wss/docker-container-terminal";

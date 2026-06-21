@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	enterpriseOnlyResources,
 	statements,
-} from "@/server-core/lib/access-control";
+} from "@/server/core/lib/access-control";
 
 const FREE_TIER_RESOURCES = [
 	"organization",

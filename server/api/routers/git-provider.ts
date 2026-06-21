@@ -10,15 +10,15 @@ import {
 	apiRemoveGitProvider,
 	apiToggleShareGitProvider,
 	gitProvider,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	findGitProviderById,
 	getAccessibleGitProviderIds,
 	removeGitProvider,
 	updateGitProvider,
-} from "@/server-core/services/git-provider";
-import { db } from "@/server-core/db";
-import { hasValidLicense } from "@/server-core/services/enterprise/license-key";
+} from "@/server/core/services/git-provider";
+import { db } from "@/server/core/db";
+import { hasValidLicense } from "@/server/core/services/enterprise/license-key";
 
 export const gitProviderRouter = createTRPCRouter({
 	getAll: protectedProcedure.query(async ({ ctx }) => {

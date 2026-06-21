@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { ApplicationNested } from "@/server-core/utils/builders";
-import { mechanizeDockerContainer } from "@/server-core/utils/builders";
+import type { ApplicationNested } from "@/server/core/utils/builders";
+import { mechanizeDockerContainer } from "@/server/core/utils/builders";
 
 type MockCreateServiceOptions = {
 	TaskTemplate?: {
@@ -31,7 +31,7 @@ const { inspectMock, getServiceMock, createServiceMock, getRemoteDockerMock } =
 		};
 	});
 
-vi.mock("@/server-core/utils/servers/remote-docker", () => ({
+vi.mock("@/server/core/utils/servers/remote-docker", () => ({
 	getRemoteDocker: getRemoteDockerMock,
 }));
 

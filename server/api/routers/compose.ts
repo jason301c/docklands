@@ -19,7 +19,7 @@ import {
 	compose as composeTable,
 	environments,
 	projects,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import {
 	cleanQueuesByCompose,
@@ -27,7 +27,7 @@ import {
 	myQueue,
 } from "@/server/queues/queueSetup";
 import { cancelDeployment, deploy } from "@/server/utils/deploy";
-import { IS_CLOUD } from "@/server-core/constants/env";
+import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	createCompose,
 	createComposeByTemplate,
@@ -37,53 +37,53 @@ import {
 	startCompose,
 	stopCompose,
 	updateCompose,
-} from "@/server-core/services/compose";
+} from "@/server/core/services/compose";
 import {
 	clearOldDeployments,
 	removeDeploymentsByComposeId,
 	updateDeploymentStatus,
-} from "@/server-core/services/deployment";
-import { getContainerLogs } from "@/server-core/services/docker";
+} from "@/server/core/services/deployment";
+import { getContainerLogs } from "@/server/core/services/docker";
 import {
 	createDomain,
 	findDomainsByComposeId,
 	removeDomainById,
-} from "@/server-core/services/domain";
-import { findEnvironmentById } from "@/server-core/services/environment";
-import { createMount, deleteMount } from "@/server-core/services/mount";
-import { findProjectById } from "@/server-core/services/project";
+} from "@/server/core/services/domain";
+import { findEnvironmentById } from "@/server/core/services/environment";
+import { createMount, deleteMount } from "@/server/core/services/mount";
+import { findProjectById } from "@/server/core/services/project";
 import {
 	findServerById,
 	getAccessibleServerIds,
-} from "@/server-core/services/server";
-import { getWebServerSettings } from "@/server-core/services/web-server-settings";
-import { createCommand } from "@/server-core/utils/builders/compose";
-import { randomizeIsolatedDeploymentComposeFile } from "@/server-core/utils/docker/collision";
-import { randomizeComposeFile } from "@/server-core/utils/docker/compose";
+} from "@/server/core/services/server";
+import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { createCommand } from "@/server/core/utils/builders/compose";
+import { randomizeIsolatedDeploymentComposeFile } from "@/server/core/utils/docker/collision";
+import { randomizeComposeFile } from "@/server/core/utils/docker/compose";
 import {
 	addDomainToCompose,
 	cloneCompose,
-} from "@/server-core/utils/docker/domain";
-import { getComposeContainer } from "@/server-core/utils/docker/utils";
-import { removeComposeDirectory } from "@/server-core/utils/filesystem/directory";
+} from "@/server/core/utils/docker/domain";
+import { getComposeContainer } from "@/server/core/utils/docker/utils";
+import { removeComposeDirectory } from "@/server/core/utils/filesystem/directory";
 import {
 	execAsync,
 	execAsyncRemote,
-} from "@/server-core/utils/process/execAsync";
-import { db } from "@/server-core/db";
-import { canEditDeployGitSource } from "@/server-core/services/git-provider";
+} from "@/server/core/utils/process/execAsync";
+import { db } from "@/server/core/db";
+import { canEditDeployGitSource } from "@/server/core/services/git-provider";
 import {
 	addNewService,
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
-} from "@/server-core/services/permission";
+} from "@/server/core/services/permission";
 import {
 	type CompleteTemplate,
 	fetchTemplateFiles,
 	fetchTemplatesList,
-} from "@/server-core/templates/github";
-import { processTemplate } from "@/server-core/templates/processors";
+} from "@/server/core/templates/github";
+import { processTemplate } from "@/server/core/templates/processors";
 import { generatePassword } from "@/templates/utils";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { audit } from "../utils/audit";

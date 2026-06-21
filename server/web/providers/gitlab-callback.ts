@@ -1,4 +1,4 @@
-import { findGitlabById, updateGitlab } from "@/server-core/services/gitlab";
+import { findGitlabById, updateGitlab } from "@/server/core/services/gitlab";
 import {
 	getQueryParam,
 	jsonResponse,

@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
 import { parse } from "yaml";
-import type { ComposeSpecification } from "@/server-core/utils/docker/types";
+import type { ComposeSpecification } from "@/server/core/utils/docker/types";
 import {
 	addSuffixToAllServiceNames,
 	addSuffixToServiceNames,
-} from "@/server-core/utils/docker/compose/service";
+} from "@/server/core/utils/docker/compose/service";
 
 const composeFileCombinedAllCases = `
 version: "3.8"

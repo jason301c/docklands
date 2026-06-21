@@ -11,23 +11,23 @@ import {
 	apiFindOneGitlab,
 	apiGitlabTestConnection,
 	apiUpdateGitlab,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import {
 	getAccessibleGitProviderIds,
 	updateGitProvider,
-} from "@/server-core/services/git-provider";
+} from "@/server/core/services/git-provider";
 import {
 	createGitlab,
 	findGitlabById,
 	updateGitlab,
-} from "@/server-core/services/gitlab";
+} from "@/server/core/services/gitlab";
 import {
 	getGitlabBranches,
 	getGitlabRepositories,
 	haveGitlabRequirements,
 	testGitlabConnection,
-} from "@/server-core/utils/providers/gitlab";
-import { db } from "@/server-core/db";
+} from "@/server/core/utils/providers/gitlab";
+import { db } from "@/server/core/db";
 
 export const gitlabRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")

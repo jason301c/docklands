@@ -1,6 +1,6 @@
 import net from "node:net";
 import { URL } from "node:url";
-import { dbUrl } from "@/server-core/db/constants";
+import { dbUrl } from "@/server/core/db/constants";
 
 const TIMEOUT_MS = Number(process.env.POSTGRES_WAIT_TIMEOUT || 120_000);
 const RETRY_DELAY_MS = Number(process.env.POSTGRES_WAIT_RETRY || 2000);

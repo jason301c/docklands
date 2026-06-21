@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 import { parse } from "yaml";
-import type { ComposeSpecification } from "@/server-core/utils/docker/types";
-import { generateRandomHash } from "@/server-core/utils/docker/compose";
-import { addSuffixToSecretsRoot } from "@/server-core/utils/docker/compose/secrets";
+import type { ComposeSpecification } from "@/server/core/utils/docker/types";
+import { generateRandomHash } from "@/server/core/utils/docker/compose";
+import { addSuffixToSecretsRoot } from "@/server/core/utils/docker/compose/secrets";
 
 test("Generate random hash with 8 characters", () => {
 	const hash = generateRandomHash();

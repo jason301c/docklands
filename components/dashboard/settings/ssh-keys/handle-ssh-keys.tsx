@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { sshKeyCreate, type sshKeyType } from "@/server/db/validations";
+import { sshKeyCreate, type sshKeyType } from "@/server/core/db/validations";
 import { api } from "@/utils/api";
 
 type SSHKey = z.infer<typeof sshKeyCreate>;

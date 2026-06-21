@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { findEnvironmentsByProjectId } from "@/server-core/services/environment";
+import type { findEnvironmentsByProjectId } from "@/server/core/services/environment";
 import { api } from "@/utils/api";
 
 type Environment = Awaited<

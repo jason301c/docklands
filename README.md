@@ -50,7 +50,7 @@ The upstream project currently declares Node `^24.4.0`, so use Node 24.x for CI-
 ### Layout
 
 - `pages/`, `components/`, `server/`, and `utils/` contain the Docklands web app.
-- `server-core/` contains the backend/domain code folded in from the old upstream server package.
+- `server/core/` contains the backend/domain code folded in from the old upstream server package.
 - `drizzle/` contains database migrations.
 - `__test__/` contains the Vitest suite.
 

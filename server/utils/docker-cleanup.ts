@@ -1,8 +1,8 @@
 import { scheduledJobs, scheduleJob } from "node-schedule";
-import { CLEANUP_CRON_JOB } from "@/server-core/constants/cleanup";
-import { IS_CLOUD } from "@/server-core/constants/env";
-import { cleanupAll } from "@/server-core/utils/docker/utils";
-import { sendDockerCleanupNotifications } from "@/server-core/utils/notifications/docker-cleanup";
+import { CLEANUP_CRON_JOB } from "@/server/core/constants/cleanup";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { cleanupAll } from "@/server/core/utils/docker/utils";
+import { sendDockerCleanupNotifications } from "@/server/core/utils/notifications/docker-cleanup";
 import { removeJob, schedule } from "./backup";
 
 export const applyDockerCleanupSchedule = async (

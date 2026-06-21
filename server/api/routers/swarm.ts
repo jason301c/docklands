@@ -6,8 +6,8 @@ import {
 	getNodeApplications,
 	getNodeInfo,
 	getSwarmNodes,
-} from "@/server-core/services/docker";
-import { findServerById } from "@/server-core/services/server";
+} from "@/server/core/services/docker";
+import { findServerById } from "@/server/core/services/server";
 import { createTRPCRouter, withPermission } from "../trpc";
 import { containerIdRegex } from "./docker";
 

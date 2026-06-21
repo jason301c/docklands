@@ -28,7 +28,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { ServiceType } from "@/server-core/db/schema";
+import type { ServiceType } from "@/server/core/db/schema";
 import { api } from "@/utils/api";
 
 const deleteComposeSchema = z.object({

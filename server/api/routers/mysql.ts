@@ -18,44 +18,44 @@ import {
 	environments,
 	mysql as mysqlTable,
 	projects,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import { cancelJobs } from "@/server/utils/backup";
-import { IS_CLOUD } from "@/server-core/constants/env";
-import { findBackupsByDbId } from "@/server-core/services/backup";
-import { getContainerLogs } from "@/server-core/services/docker";
-import { findEnvironmentById } from "@/server-core/services/environment";
-import { createMount } from "@/server-core/services/mount";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { findBackupsByDbId } from "@/server/core/services/backup";
+import { getContainerLogs } from "@/server/core/services/docker";
+import { findEnvironmentById } from "@/server/core/services/environment";
+import { createMount } from "@/server/core/services/mount";
 import {
 	createMysql,
 	deployMySql,
 	findMySqlById,
 	removeMySqlById,
 	updateMySqlById,
-} from "@/server-core/services/mysql";
-import { findProjectById } from "@/server-core/services/project";
-import { getAccessibleServerIds } from "@/server-core/services/server";
-import { checkPortInUse } from "@/server-core/services/settings";
-import { getWebServerSettings } from "@/server-core/services/web-server-settings";
-import { getServiceContainerCommand } from "@/server-core/utils/backups/utils";
-import { rebuildDatabase } from "@/server-core/utils/databases/rebuild";
+} from "@/server/core/services/mysql";
+import { findProjectById } from "@/server/core/services/project";
+import { getAccessibleServerIds } from "@/server/core/services/server";
+import { checkPortInUse } from "@/server/core/services/settings";
+import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { getServiceContainerCommand } from "@/server/core/utils/backups/utils";
+import { rebuildDatabase } from "@/server/core/utils/databases/rebuild";
 import {
 	removeService,
 	startService,
 	startServiceRemote,
 	stopService,
 	stopServiceRemote,
-} from "@/server-core/utils/docker/utils";
+} from "@/server/core/utils/docker/utils";
 import {
 	execAsync,
 	execAsyncRemote,
-} from "@/server-core/utils/process/execAsync";
-import { db } from "@/server-core/db";
+} from "@/server/core/utils/process/execAsync";
+import { db } from "@/server/core/db";
 import {
 	addNewService,
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
-} from "@/server-core/services/permission";
+} from "@/server/core/services/permission";
 
 export const mysqlRouter = createTRPCRouter({
 	create: protectedProcedure

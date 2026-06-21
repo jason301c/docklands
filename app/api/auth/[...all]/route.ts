@@ -1,4 +1,4 @@
-import { auth } from "@/server-core/lib/auth";
+import { auth } from "@/server/core/lib/auth";
 
 export const runtime = "nodejs";
 

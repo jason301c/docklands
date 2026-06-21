@@ -18,17 +18,17 @@ import {
 	apiUpdateWebServerBuildsConcurrency,
 	projects,
 	server,
-} from "@/server/db/schema";
+} from "@/server/core/db/schema";
 import { assertBuildsConcurrencyAllowed } from "@/server/queues/concurrency";
 import { cleanAllDeploymentQueue } from "@/server/queues/queueSetup";
 import { removeJob, schedule } from "@/server/utils/backup";
-import { CLEANUP_CRON_JOB } from "@/server-core/constants/cleanup";
-import { IS_CLOUD } from "@/server-core/constants/env";
-import { paths } from "@/server-core/constants/paths";
+import { CLEANUP_CRON_JOB } from "@/server/core/constants/cleanup";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { paths } from "@/server/core/constants/paths";
 import {
 	findServerById,
 	updateServerById,
-} from "@/server-core/services/server";
+} from "@/server/core/services/server";
 import {
 	checkPortInUse,
 	DEFAULT_UPDATE_DATA,
@@ -39,20 +39,20 @@ import {
 	readPorts,
 	reloadDockerResource,
 	writeTraefikSetup,
-} from "@/server-core/services/settings";
+} from "@/server/core/services/settings";
 import {
 	getWebServerSettings,
 	updateWebServerSettings,
-} from "@/server-core/services/web-server-settings";
+} from "@/server/core/services/web-server-settings";
 import {
 	getLogCleanupStatus,
 	startLogCleanup,
 	stopLogCleanup,
-} from "@/server-core/utils/access-log/handler";
+} from "@/server/core/utils/access-log/handler";
 import {
 	parseRawConfig,
 	processLogs,
-} from "@/server-core/utils/access-log/utils";
+} from "@/server/core/utils/access-log/utils";
 import {
 	checkPostgresHealth,
 	checkRedisHealth,
@@ -66,27 +66,27 @@ import {
 	cleanupVolumes,
 	getDockerDiskUsage,
 	prepareEnvironmentVariables,
-} from "@/server-core/utils/docker/utils";
-import { recreateDirectory } from "@/server-core/utils/filesystem/directory";
-import { checkGPUStatus, setupGPUSupport } from "@/server-core/utils/gpu-setup";
-import { sendDockerCleanupNotifications } from "@/server-core/utils/notifications/docker-cleanup";
-import { execAsync } from "@/server-core/utils/process/execAsync";
-import { spawnAsync } from "@/server-core/utils/process/spawnAsync";
+} from "@/server/core/utils/docker/utils";
+import { recreateDirectory } from "@/server/core/utils/filesystem/directory";
+import { checkGPUStatus, setupGPUSupport } from "@/server/core/utils/gpu-setup";
+import { sendDockerCleanupNotifications } from "@/server/core/utils/notifications/docker-cleanup";
+import { execAsync } from "@/server/core/utils/process/execAsync";
+import { spawnAsync } from "@/server/core/utils/process/spawnAsync";
 import {
 	readConfig,
 	readConfigInPath,
 	readMonitoringConfig,
 	writeConfig,
 	writeTraefikConfigInPath,
-} from "@/server-core/utils/traefik/application";
+} from "@/server/core/utils/traefik/application";
 import {
 	readMainConfig,
 	updateLetsEncryptEmail,
 	updateServerTraefik,
 	writeMainConfig,
-} from "@/server-core/utils/traefik/web-server";
-import { db } from "@/server-core/db";
-import { checkPermission } from "@/server-core/services/permission";
+} from "@/server/core/utils/traefik/web-server";
+import { db } from "@/server/core/db";
+import { checkPermission } from "@/server/core/services/permission";
 import packageInfo from "../../../package.json";
 import { appRouter } from "../root";
 import {

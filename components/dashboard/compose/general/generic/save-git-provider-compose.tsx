@@ -34,7 +34,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { VALID_BRANCH_REGEX } from "@/server-core/utils/git-branch-validation";
+import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
 import { api } from "@/utils/api";
 
 const GitProviderSchema = z.object({

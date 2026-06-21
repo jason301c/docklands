@@ -29,7 +29,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./*"],
-			"@/server-core/*": ["./server-core/*"]
+			"@/server/core/*": ["./server/core/*"]
 		}
 	},
 	"include": [

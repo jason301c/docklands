@@ -2,11 +2,11 @@ import { spawn } from "node:child_process";
 import type http from "node:http";
 import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
-import { IS_CLOUD } from "@/server-core/constants/env";
-import { validateRequest } from "@/server-core/lib/auth";
-import { findServerById } from "@/server-core/services/server";
-import { encodeBase64 } from "@/server-core/utils/docker/utils";
-import { readValidDirectory } from "@/server-core/wss/utils";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { validateRequest } from "@/server/core/lib/auth";
+import { findServerById } from "@/server/core/services/server";
+import { encodeBase64 } from "@/server/core/utils/docker/utils";
+import { readValidDirectory } from "@/server/core/wss/utils";
 
 export const setupDeploymentLogsWebSocketServer = (
 	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,

@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
-import { compose } from "@/server/db/schema";
+import { compose } from "@/server/core/db/schema";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
 import { deploy } from "@/server/utils/deploy";
-import { IS_CLOUD } from "@/server-core/constants/env";
-import { db } from "@/server-core/db";
-import { shouldDeploy } from "@/server-core/utils/watch-paths/should-deploy";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { db } from "@/server/core/db";
+import { shouldDeploy } from "@/server/core/utils/watch-paths/should-deploy";
 import {
 	jsonResponse,
 	parseRequestBody,

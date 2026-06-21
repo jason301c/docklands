@@ -1,14 +1,14 @@
 import { beforeAll, describe, expect, test } from "vitest";
-import type { Domain } from "@/server-core/services/domain";
-import type { ApplicationNested } from "@/server-core/utils/builders/index";
+import type { Domain } from "@/server/core/services/domain";
+import type { ApplicationNested } from "@/server/core/utils/builders/index";
 import {
 	buildForwardAuthEnv,
 	deriveBaseDomain,
 	deriveCookieSecret,
 	forwardAuthCallbackUrl,
-} from "@/server-core/setup/forward-auth-setup";
-import { createRouterConfig } from "@/server-core/utils/traefik/domain";
-import { forwardAuthMiddlewareName } from "@/server-core/utils/traefik/forward-auth";
+} from "@/server/core/setup/forward-auth-setup";
+import { createRouterConfig } from "@/server/core/utils/traefik/domain";
+import { forwardAuthMiddlewareName } from "@/server/core/utils/traefik/forward-auth";
 
 const app = {
 	appName: "my-app",

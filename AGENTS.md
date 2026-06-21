@@ -4,11 +4,10 @@ This is Docklands: a fork of Dokploy focused on self-hosted deployment managemen
 
 ## Project Shape
 
-- `pages/` contains the Next.js Pages Router UI and API routes.
+- `app/` contains the Next.js App Router UI and API route handlers.
 - `components/` contains dashboard, shared, layout, and primitive UI components.
 - `server/` contains the custom server entrypoint, tRPC API wiring, queues, and WebSocket glue.
-- `server-core/` contains the shared backend/domain code: database schema, services, auth, Docker/Traefik/deployment/backup utilities, monitoring, templates, and verification.
-- `server/db/` contains Drizzle config, reset, and seed scripts.
+- `server/core/` contains the shared backend/domain code: database schema, Drizzle config, services, auth, Docker/Traefik/deployment/backup utilities, monitoring, templates, and verification.
 - `drizzle/` contains generated SQL migrations and snapshots. Do not hand-edit snapshots unless you are deliberately repairing a generated migration.
 - `__test__/` contains Vitest coverage for backend behavior, security fixes, templates, deployments, WebSockets, permissions, and utilities.
 - `styles/globals.css` is the Tailwind v4 entrypoint and explicitly loads `tailwind.config.ts` with `@config`.
@@ -45,7 +44,7 @@ rg -n "Route Handlers|App Router|Server Actions" node_modules/next/dist/docs
 - Do not reintroduce AI features or AI dependencies. The AI router, schema, service, provider utilities, settings page, project assistant, and log analyzer were intentionally removed.
 - Do not reintroduce proprietary or hosted-only code paths unless the user explicitly asks and the licensing implications are reviewed.
 - Preserve the single-root app layout. Do not recreate `apps/` or package-scope splits unless the user explicitly asks for a larger architecture change.
-- Keep `server-core/` as the backend/domain library unless there is a real architectural reason to move code.
+- Keep `server/core/` as the backend/domain library unless there is a real architectural reason to move code.
 - Be careful with security-sensitive areas: drop uploads, zip extraction, shell command building, Docker/Traefik config generation, authentication, secrets, SSH keys, Git webhooks, and deployment logs.
 - Do not weaken type safety or disable strictness globally to get past upgrade friction.
 - Avoid touching generated build output such as `.next/`, `dist/`, and `node_modules/`.

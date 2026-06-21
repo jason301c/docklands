@@ -25,7 +25,7 @@ export default defineConfig({
 	],
 	resolve: {
 		alias: {
-			"@/server-core": path.resolve(__dirname, "../server-core"),
+			"@/server/core": path.resolve(__dirname, "../server/core"),
 		},
 	},
 });

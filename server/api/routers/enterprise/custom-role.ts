@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { statements } from "@/server-core/lib/access-control";
+import { statements } from "@/server/core/lib/access-control";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
 const disabled = () =>

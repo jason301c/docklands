@@ -1,8 +1,8 @@
-import { IS_CLOUD } from "@/server-core/constants/env";
+import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	execAsync,
 	execAsyncRemote,
-} from "@/server-core/utils/process/execAsync";
+} from "@/server/core/utils/process/execAsync";
 import { resolveBuildsConcurrency } from "./concurrency";
 import { processDeploymentJob } from "./deployments-queue";
 import { type InMemoryJob, InMemoryQueue } from "./in-memory-queue";

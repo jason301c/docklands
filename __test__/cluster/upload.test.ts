@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Registry } from "@/server-core/services/registry";
-import { getRegistryTag } from "@/server-core/utils/cluster/upload";
+import type { Registry } from "@/server/core/services/registry";
+import { getRegistryTag } from "@/server/core/utils/cluster/upload";
 
 describe("getRegistryTag", () => {
 	// Helper to create a mock registry

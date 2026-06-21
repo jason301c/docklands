@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shouldDeploy } from "@/server-core/utils/watch-paths/should-deploy";
+import { shouldDeploy } from "@/server/core/utils/watch-paths/should-deploy";
 
 describe("shouldDeploy", () => {
 	it("should deploy when no watch paths are configured", () => {

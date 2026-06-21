@@ -1,9 +1,9 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
-import { db } from "@/server-core/db";
-import { server } from "@/server-core/db/schema";
-import { hasValidLicense } from "@/server-core/services/enterprise/license-key";
-import { getWebServerSettings } from "@/server-core/services/web-server-settings";
+import { db } from "@/server/core/db";
+import { server } from "@/server/core/db/schema";
+import { hasValidLicense } from "@/server/core/services/enterprise/license-key";
+import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { LOCAL_PARTITION } from "./in-memory-queue";
 
 /**

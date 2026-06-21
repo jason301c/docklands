@@ -1,4 +1,4 @@
-import { execAsync } from "@/server-core/utils/process/execAsync";
+import { execAsync } from "@/server/core/utils/process/execAsync";
 
 /** Returns if the current operating system is Windows Subsystem for Linux (WSL). */
 export const isWSL = async () => {

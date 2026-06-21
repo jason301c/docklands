@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Schema } from "@/server-core/templates";
-import { processValue } from "@/server-core/templates/processors";
+import type { Schema } from "@/server/core/templates";
+import { processValue } from "@/server/core/templates/processors";
 
 describe("helpers functions", () => {
 	// Mock schema for testing

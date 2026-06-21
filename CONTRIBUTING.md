@@ -24,7 +24,7 @@ The app runs at http://localhost:3000.
 ## Layout
 
 - `pages/`, `components/`, `server/`, and `utils/` are the web app.
-- `server-core/` is the folded-in backend/domain layer from upstream's old server package.
+- `server/core/` is the folded-in backend/domain layer from upstream's old server package.
 - `drizzle/` contains migrations.
 - `__test__/` contains Vitest tests.
 

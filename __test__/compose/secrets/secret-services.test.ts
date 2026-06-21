@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 import { parse } from "yaml";
-import type { ComposeSpecification } from "@/server-core/utils/docker/types";
-import { generateRandomHash } from "@/server-core/utils/docker/compose";
-import { addSuffixToSecretsInServices } from "@/server-core/utils/docker/compose/secrets";
+import type { ComposeSpecification } from "@/server/core/utils/docker/types";
+import { generateRandomHash } from "@/server/core/utils/docker/compose";
+import { addSuffixToSecretsInServices } from "@/server/core/utils/docker/compose/secrets";
 
 const composeFileSecretsServices = `
 version: "3.8"
