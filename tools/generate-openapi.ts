@@ -2,8 +2,7 @@
 
 /**
  * Script to generate OpenAPI specification locally
- * This runs in CI/CD to generate the openapi.json file
- * which can then be consumed by the documentation website
+ * This writes openapi.json for local docs/tooling consumers.
  */
 
 import { writeFileSync } from "node:fs";
