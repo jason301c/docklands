@@ -1,7 +1,8 @@
 "use client";
 
+import { CommandPalette } from "@cloudflare/kumo/components/command-palette";
 import { BookIcon, CircuitBoard, GlobeIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 import { api } from "@/client/api/trpc";
 import {
@@ -15,7 +16,6 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
-import { CommandPalette } from "@cloudflare/kumo/components/command-palette";
 import { StatusTooltip } from "../shared/status-tooltip";
 
 type SearchServices = Services & {
@@ -83,6 +83,7 @@ const serviceIcon = (type: string) => {
 
 export const SearchCommand = () => {
 	const router = useRouter();
+	const pathname = usePathname();
 	const [open, setOpen] = React.useState(false);
 	const [search, setSearch] = React.useState("");
 	const { data: session } = api.user.session.useQuery();
@@ -93,7 +94,13 @@ export const SearchCommand = () => {
 
 	React.useEffect(() => {
 		const down = (e: KeyboardEvent) => {
-			if (e.code === "KeyJ" && (e.metaKey || e.ctrlKey)) {
+			const isShortcut =
+				(e.code === "KeyK" || e.code === "KeyJ") && (e.metaKey || e.ctrlKey);
+			const canvasOwnsCommandK =
+				e.code === "KeyK" &&
+				/^\/dashboard\/project\/[^/]+\/environment\/[^/]+\/?$/.test(pathname);
+
+			if (isShortcut && !canvasOwnsCommandK) {
 				e.preventDefault();
 				setOpen((current) => !current);
 			}
@@ -101,7 +108,7 @@ export const SearchCommand = () => {
 
 		document.addEventListener("keydown", down);
 		return () => document.removeEventListener("keydown", down);
-	}, []);
+	}, [pathname]);
 
 	const groups = React.useMemo<SearchGroup[]>(() => {
 		const navigate = (href: string) => {
@@ -230,7 +237,7 @@ export const SearchCommand = () => {
 			}
 			onSelect={(item: SearchItem) => item.onSelect()}
 		>
-			<CommandPalette.Input placeholder="Search projects or settings" />
+			<CommandPalette.Input placeholder="Search projects, services, or settings" />
 			<CommandPalette.List>
 				<CommandPalette.Results>
 					{(group: SearchGroup) => (
