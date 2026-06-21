@@ -1,5 +1,4 @@
 import path from "node:path";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -18,12 +17,8 @@ export default defineConfig({
 			GOOGLE_CLIENT_SECRET: "test",
 		},
 	},
-	plugins: [
-		tsconfigPaths({
-			projects: [path.resolve(__dirname, "../tsconfig.json")],
-		}),
-	],
 	resolve: {
+		tsconfigPaths: true,
 		alias: {
 			"@/server/core": path.resolve(__dirname, "../server/core"),
 		},
