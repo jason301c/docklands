@@ -193,7 +193,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 														</ShowDeploymentsModal>
 
 														<DialogAction
-															title="Rebuild Preview Deployment"
+															title="Rebuild Preview Environment"
 															description="Are you sure you want to rebuild this preview environment?"
 															type="default"
 															onClick={async () => {

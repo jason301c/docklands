@@ -1,14 +1,17 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { HelpCircle, Plus, Settings2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -18,11 +21,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
 import { Secrets } from "@/components/shared/secrets";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 
 const schema = z
 	.object({
@@ -127,7 +127,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 				formData.previewRequireCollaboratorPermissions,
 		})
 			.then(() => {
-				toast.success("Preview Deployments settings updated");
+				toast.success("Preview environment settings updated");
 			})
 			.catch((error) => {
 				toast.error(error.message);
@@ -136,21 +136,20 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 	return (
 		<div>
 			<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-				<Dialog.Trigger render={(
-
-					<Button variant="outline">
-						<Settings2 className="size-4" />
-						Configure
-					</Button>
-				
-)} />
+				<Dialog.Trigger
+					render={
+						<Button variant="outline">
+							<Settings2 className="size-4" />
+							Configure
+						</Button>
+					}
+				/>
 				<Dialog className="sm:max-w-5xl w-full">
 					<div>
-						<Dialog.Title>Preview Deployment Settings</Dialog.Title>
+						<Dialog.Title>Preview Environment Settings</Dialog.Title>
 						<Dialog.Description>
-							Adjust the settings for preview deployments of this application,
-							including environment variables, build options, and deployment
-							rules.
+							Adjust pull request environments for this application, including
+							environment variables, build options, and deployment rules.
 						</Dialog.Description>
 					</div>
 					<div className="grid gap-4">
@@ -186,7 +185,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 										name="previewPath"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Preview Path</FormLabel>
+												<FormLabel>Preview URL Path</FormLabel>
 												<FormControl>
 													<Input placeholder="/" {...field} />
 												</FormControl>
@@ -213,18 +212,23 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 										render={({ field }) => (
 											<FormItem className="md:col-span-2">
 												<div className="flex items-center gap-2">
-													<FormLabel>Preview Labels</FormLabel>
+													<FormLabel>Pull Request Labels</FormLabel>
 													<TooltipProvider>
-														<Tooltip content={<>
-																<p>
-																	Add a labels that will trigger a preview
-																	deployment for a pull request. If no labels
-																	are specified, all pull requests will trigger
-																	a preview deployment.
-																</p>
-															</>}  asChild>
-																<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
-															</Tooltip>
+														<Tooltip
+															content={
+																<>
+																	<p>
+																		Add a labels that will trigger a preview
+																		deployment for a pull request. If no labels
+																		are specified, all pull requests will
+																		trigger a preview environment.
+																	</p>
+																</>
+															}
+															asChild
+														>
+															<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+														</Tooltip>
 													</TooltipProvider>
 												</div>
 												<div className="flex flex-wrap gap-2 mb-2">
@@ -266,7 +270,8 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 															}}
 														/>
 													</FormControl>
-													<Button aria-label="Action"
+													<Button
+														aria-label="Action"
 														type="button"
 														variant="outline"
 														shape="square"
@@ -293,7 +298,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 										name="previewLimit"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Preview Limit</FormLabel>
+												<FormLabel>Environment Limit</FormLabel>
 												<FormControl>
 													<Input type="number" placeholder="3000" {...field} />
 												</FormControl>
@@ -329,14 +334,13 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel>Certificate Provider</FormLabel>
-													<Select aria-label="Select option"
+													<Select
+														aria-label="Select option"
 														onValueChange={field.onChange}
 														defaultValue={field.value || ""}
 													>
 														<FormControl>
-															<>
-																
-															</>
+															<></>
 														</FormControl>
 
 														<>
@@ -344,7 +348,9 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 															<Select.Option value={"letsencrypt"}>
 																Let's Encrypt
 															</Select.Option>
-															<Select.Option value={"custom"}>Custom</Select.Option>
+															<Select.Option value={"custom"}>
+																Custom
+															</Select.Option>
 														</>
 													</Select>
 													<FormMessage />
@@ -376,10 +382,10 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 									<div className="flex flex-row items-center justify-between rounded-lg border p-4 col-span-2">
 										<div className="space-y-0.5">
 											<FormLabel className="text-base">
-												Enable preview deployments
+												Enable preview environments
 											</FormLabel>
 											<FormDescription>
-												Enable or disable preview deployments for this
+												Enable or disable pull request environments for this
 												application.
 											</FormDescription>
 										</div>
