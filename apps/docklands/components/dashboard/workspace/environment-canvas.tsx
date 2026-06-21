@@ -50,6 +50,9 @@ import {
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
+import { ShowPorts } from "@/components/dashboard/application/advanced/ports/show-port";
+import { ShowResources } from "@/components/dashboard/application/advanced/show-resources";
+import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
 import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
@@ -407,6 +410,7 @@ export const EnvironmentCanvas = ({
 		| "backups"
 		| "volume-backups"
 		| "credentials"
+		| "resources"
 		| "connections"
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
@@ -657,6 +661,10 @@ export const EnvironmentCanvas = ({
 		(selectedServiceModel && getDatabaseBackupType(selectedServiceModel))
 			? [{ value: "backups", label: "Backups" }]
 			: []),
+		...(selectedServiceModel &&
+		(permissions?.service.create || permissions?.volume.read)
+			? [{ value: "resources", label: "Resources" }]
+			: []),
 		...(selectedServiceModel && hasDatabaseCredentials(selectedServiceModel)
 			? [{ value: "credentials", label: "Credentials" }]
 			: []),
@@ -753,6 +761,13 @@ export const EnvironmentCanvas = ({
 			setDrawerTab("overview");
 		}
 		if (
+			drawerTab === "resources" &&
+			(!selectedServiceModel ||
+				(!permissions?.service.create && !permissions?.volume.read))
+		) {
+			setDrawerTab("overview");
+		}
+		if (
 			drawerTab === "volume-backups" &&
 			(!selectedServiceModel ||
 				!deploymentServiceTypes.has(selectedServiceModel.type) ||
@@ -780,6 +795,8 @@ export const EnvironmentCanvas = ({
 		permissions?.monitoring.read,
 		permissions?.schedule.read,
 		permissions?.service.read,
+		permissions?.service.create,
+		permissions?.volume.read,
 		permissions?.volumeBackup.read,
 		selectedServiceModel,
 	]);
@@ -1521,6 +1538,26 @@ export const EnvironmentCanvas = ({
 										serviceType: service.type,
 									});
 									setDrawerTab("credentials");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(permissions?.service.create || permissions?.volume.read
+					? [
+							{
+								id: `resources:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Resources for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · limits, ports, and storage`,
+								search: `${baseSearch} resources storage volumes mounts ports cpu memory limits`,
+								icon: <Box className="size-5 text-muted-foreground" />,
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("resources");
 									setCommandOpen(false);
 								},
 							},
@@ -2416,6 +2453,26 @@ export const EnvironmentCanvas = ({
 							hasDatabaseCredentials(selectedServiceModel) && (
 								<DatabaseCredentials service={selectedServiceModel} />
 							)}
+
+						{drawerTab === "resources" && (
+							<div className="space-y-4">
+								{selectedServiceModel.type !== "compose" &&
+									permissions?.service.create && (
+										<ShowResources
+											id={selectedServiceModel.id}
+											type={selectedServiceModel.type}
+										/>
+									)}
+								<ShowVolumes
+									id={selectedServiceModel.id}
+									type={selectedServiceModel.type}
+								/>
+								{selectedServiceModel.type === "application" &&
+									permissions?.service.create && (
+										<ShowPorts applicationId={selectedServiceModel.id} />
+									)}
+							</div>
+						)}
 
 						{drawerTab === "volume-backups" &&
 							(selectedServiceModel.type === "application" ||
