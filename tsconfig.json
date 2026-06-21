@@ -39,6 +39,7 @@
 		"**/*.cjs",
 		"**/*.js",
 		".next/types/**/*.ts",
+		".next/dev/types/**/*.ts",
 		"env.js",
 		"next.config.mjs"
 	],

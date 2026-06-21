@@ -1,6 +1,6 @@
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon } from "lucide-react";
-import { useRouter } from "next/router";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -45,6 +45,9 @@ interface Props {
 
 export const EditGiteaProvider = ({ giteaId }: Props) => {
 	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const currentPathname = pathname ?? "/dashboard/settings/git-providers";
 	const [open, setOpen] = useState(false);
 	const {
 		data: gitea,
@@ -58,9 +61,8 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 	const utils = api.useUtils();
 
 	useEffect(() => {
-		const { connected, error } = router.query;
-
-		if (!router.isReady) return;
+		const connected = searchParams?.get("connected");
+		const error = searchParams?.get("error");
 
 		if (connected) {
 			toast.success("Successfully connected to Gitea", {
@@ -68,31 +70,17 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 				id: "gitea-connection-success",
 			});
 			refetch();
-			router.replace(
-				{
-					pathname: router.pathname,
-					query: {},
-				},
-				undefined,
-				{ shallow: true },
-			);
+			router.replace(currentPathname, { scroll: false });
 		}
 
 		if (error) {
 			toast.error("Gitea Connection Failed", {
-				description: decodeURIComponent(error as string),
+				description: decodeURIComponent(error),
 				id: "gitea-connection-error",
 			});
-			router.replace(
-				{
-					pathname: router.pathname,
-					query: {},
-				},
-				undefined,
-				{ shallow: true },
-			);
+			router.replace(currentPathname, { scroll: false });
 		}
-	}, [router.query, router.isReady, refetch]);
+	}, [currentPathname, refetch, router, searchParams]);
 
 	const form = useForm({
 		resolver: zodResolver(formSchema),

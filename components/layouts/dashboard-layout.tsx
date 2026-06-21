@@ -1,3 +1,5 @@
+"use client";
+
 import { api } from "@/utils/api";
 import { ImpersonationBar } from "../dashboard/impersonation/impersonation-bar";
 import Page from "./side";

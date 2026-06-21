@@ -1,6 +1,6 @@
 import { Loader2, PlusIcon, ServerIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,16 +25,16 @@ interface Props {
 
 export const ServerFilter = ({ children }: Props) => {
 	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const currentPathname = pathname ?? "/dashboard/home";
 	const { data: servers, isLoading: isLoadingServers } =
 		api.server.withSSHKey.useQuery();
 	const { data: isCloud, isLoading: isLoadingCloud } =
 		api.settings.isCloud.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
-	const queryServerId =
-		typeof router.query.serverId === "string"
-			? router.query.serverId
-			: undefined;
+	const queryServerId = searchParams?.get("serverId") ?? undefined;
 
 	const selectedServer = servers?.find(
 		(server) => server.serverId === queryServerId,
@@ -47,15 +47,16 @@ export const ServerFilter = ({ children }: Props) => {
 			: undefined;
 
 	const setServerId = (value: string) => {
-		const { serverId: _current, ...query } = router.query;
-		router.replace(
-			{
-				pathname: router.pathname,
-				query: value === DOKPLOY_SERVER ? query : { ...query, serverId: value },
-			},
-			undefined,
-			{ shallow: true },
-		);
+		const query = new URLSearchParams(searchParams?.toString() ?? "");
+		if (value === DOKPLOY_SERVER) {
+			query.delete("serverId");
+		} else {
+			query.set("serverId", value);
+		}
+		const suffix = query.toString();
+		router.replace(suffix ? `${currentPathname}?${suffix}` : currentPathname, {
+			scroll: false,
+		});
 	};
 
 	if (isLoadingServers || isLoadingCloud) {

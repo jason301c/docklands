@@ -1,7 +1,7 @@
 "use client";
 
 import { BookIcon, CircuitBoard, GlobeIcon } from "lucide-react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import React from "react";
 import {
 	extractServices,

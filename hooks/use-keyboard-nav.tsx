@@ -93,7 +93,7 @@ export function UseKeyboardNav({ forPage }: { forPage: Page }) {
 
 	const updateSearchParam = useCallback(
 		(name: string, value: string) => {
-			const params = new URLSearchParams(sp.toString());
+			const params = new URLSearchParams(sp?.toString() ?? "");
 			params.set(name, value);
 
 			return params.toString();

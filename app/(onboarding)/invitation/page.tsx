@@ -1,0 +1,33 @@
+import { redirect } from "next/navigation";
+import ClientPage from "./_client";
+import { IS_CLOUD } from "@/server-core/constants/env";
+import { getUserByToken } from "@/server-core/services/admin";
+
+type PageProps = {
+	searchParams: Promise<{ token?: string | string[] }>;
+};
+
+export default async function Page({ searchParams }: PageProps) {
+	const { token } = await searchParams;
+	if (typeof token !== "string") {
+		redirect("/");
+	}
+
+	try {
+		const invitation = await getUserByToken(token);
+		if (invitation.isExpired) {
+			redirect("/");
+		}
+
+		return (
+			<ClientPage
+				isCloud={IS_CLOUD}
+				token={token}
+				invitation={invitation}
+				userAlreadyExists={!!invitation.userAlreadyExists}
+			/>
+		);
+	} catch {
+		redirect("/");
+	}
+}

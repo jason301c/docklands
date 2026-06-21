@@ -9,7 +9,7 @@ import {
 	TrashIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BreadcrumbSidebar } from "@/components/shared/breadcrumb-sidebar";
@@ -59,6 +59,9 @@ import { ProjectEnvironment } from "./project-environment";
 export const ShowProjects = () => {
 	const utils = api.useUtils();
 	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
+	const currentPathname = pathname ?? "/dashboard/projects";
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data, isPending } = api.project.all.useQuery();
 	const { data: auth } = api.user.get.useQuery();
@@ -66,9 +69,7 @@ export const ShowProjects = () => {
 	const { mutateAsync } = api.project.remove.useMutation();
 	const { data: availableTags } = api.tag.all.useQuery();
 
-	const [searchQuery, setSearchQuery] = useState(
-		router.isReady && typeof router.query.q === "string" ? router.query.q : "",
-	);
+	const [searchQuery, setSearchQuery] = useState(searchParams?.get("q") ?? "");
 	const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
 	const [sortBy, setSortBy] = useState<string>(() => {
@@ -104,28 +105,27 @@ export const ShowProjects = () => {
 	}, [availableTags]);
 
 	useEffect(() => {
-		if (!router.isReady) return;
-		const urlQuery = typeof router.query.q === "string" ? router.query.q : "";
+		const urlQuery = searchParams?.get("q") ?? "";
 		if (urlQuery !== searchQuery) {
 			setSearchQuery(urlQuery);
 		}
-	}, [router.isReady, router.query.q]);
+	}, [searchParams, searchQuery]);
 
 	useEffect(() => {
-		if (!router.isReady) return;
-		const urlQuery = typeof router.query.q === "string" ? router.query.q : "";
+		const urlQuery = searchParams?.get("q") ?? "";
 		if (debouncedSearchQuery === urlQuery) return;
 
-		const newQuery = { ...router.query };
+		const newQuery = new URLSearchParams(searchParams?.toString() ?? "");
 		if (debouncedSearchQuery) {
-			newQuery.q = debouncedSearchQuery;
+			newQuery.set("q", debouncedSearchQuery);
 		} else {
-			delete newQuery.q;
+			newQuery.delete("q");
 		}
-		router.replace({ pathname: router.pathname, query: newQuery }, undefined, {
-			shallow: true,
+		const suffix = newQuery.toString();
+		router.replace(suffix ? `${currentPathname}?${suffix}` : currentPathname, {
+			scroll: false,
 		});
-	}, [debouncedSearchQuery]);
+	}, [currentPathname, debouncedSearchQuery, router, searchParams]);
 
 	const filteredProjects = useMemo(() => {
 		if (!data) return [];

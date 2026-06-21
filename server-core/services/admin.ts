@@ -7,7 +7,7 @@ import {
 	organization,
 	user,
 } from "@/server-core/db/schema";
-import { IS_CLOUD } from "../constants";
+import { IS_CLOUD } from "../constants/env";
 import { getWebServerSettings } from "./web-server-settings";
 
 export const findUserById = async (userId: string) => {

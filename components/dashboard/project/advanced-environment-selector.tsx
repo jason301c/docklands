@@ -1,5 +1,5 @@
 import { ChevronDownIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AlertBlock } from "@/components/shared/alert-block";

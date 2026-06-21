@@ -1,5 +1,5 @@
 import { ChevronsUpDown } from "lucide-react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -109,9 +109,7 @@ export const UserNav = () => {
 								<DropdownMenuItem
 									className="cursor-pointer"
 									onClick={() => {
-										router.push("/dashboard/docker", undefined, {
-											shallow: true,
-										});
+										router.push("/dashboard/docker");
 									}}
 								>
 									Docker

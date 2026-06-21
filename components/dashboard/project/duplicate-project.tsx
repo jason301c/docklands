@@ -1,5 +1,5 @@
 import { Copy, Loader2 } from "lucide-react";
-import { useRouter } from "next/router";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -63,6 +63,7 @@ export const DuplicateProject = ({
 		useState<string>("");
 	const utils = api.useUtils();
 	const router = useRouter();
+	const params = useParams<{ projectId?: string }>();
 
 	// Queries for project and environment selection
 	const { data: allProjects } = api.project.all.useQuery();
@@ -96,7 +97,7 @@ export const DuplicateProject = ({
 					if (selectedTargetEnvironment === environmentId) {
 						await utils.environment.one.invalidate({ environmentId });
 						// Also invalidate the project query to refresh the project data
-						const projectId = router.query.projectId as string;
+						const projectId = params?.projectId;
 						if (projectId) {
 							await utils.project.one.invalidate({ projectId });
 						}

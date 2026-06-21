@@ -7,7 +7,7 @@ import {
 	GlobeIcon,
 	X,
 } from "lucide-react";
-import { useRouter } from "next/router";
+import { useParams, useRouter } from "next/navigation";
 import { type ComponentType, useEffect, useMemo, useState } from "react";
 import {
 	LibsqlIcon,
@@ -184,13 +184,13 @@ const getTargetEnvironmentId = (
 
 export const AdvanceBreadcrumb = () => {
 	const router = useRouter();
-	const { query } = router;
+	const params = useParams<Record<string, string | string[] | undefined>>();
 
 	// Read IDs from URL (dynamic route segments)
-	const projectId = getStringQueryParam(query.projectId);
-	const environmentId = getStringQueryParam(query.environmentId);
+	const projectId = getStringQueryParam(params.projectId);
+	const environmentId = getStringQueryParam(params.environmentId);
 	const serviceId =
-		SERVICE_QUERY_KEYS.map((key) => getStringQueryParam(query[key])).find(
+		SERVICE_QUERY_KEYS.map((key) => getStringQueryParam(params[key])).find(
 			(value): value is string => !!value,
 		) ?? null;
 

@@ -20,7 +20,7 @@ interface GPUSupportProps {
 export function GPUSupport({ serverId }: GPUSupportProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isRefreshing, setIsRefreshing] = useState(false);
-	const utils = api.useContext();
+	const utils = api.useUtils();
 
 	const {
 		data: gpuStatus,

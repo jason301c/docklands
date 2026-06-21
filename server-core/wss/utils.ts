@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import { publicIpv4, publicIpv6 } from "public-ip";
-import { paths } from "@/server-core/constants";
+import { paths } from "@/server-core/constants/paths";
 
 export const getShell = () => {
 	switch (os.platform()) {

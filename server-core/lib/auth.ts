@@ -7,7 +7,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
 import { admin, organization, twoFactor } from "better-auth/plugins";
 import { and, desc, eq } from "drizzle-orm";
-import { IS_CLOUD } from "../constants";
+import { IS_CLOUD } from "../constants/env";
 import { db } from "../db";
 import * as schema from "../db/schema";
 import {
@@ -406,8 +406,8 @@ const _auth = {
 export type AuthType = typeof _auth;
 export const auth: AuthType = _auth;
 
-export const validateRequest = async (request: IncomingMessage) => {
-	const apiKey = request.headers["x-api-key"] as string;
+export const validateRequestHeaders = async (headers: Headers) => {
+	const apiKey = headers.get("x-api-key") || "";
 	if (apiKey) {
 		try {
 			const { valid, key, error } = await api.verifyApiKey({
@@ -502,9 +502,7 @@ export const validateRequest = async (request: IncomingMessage) => {
 
 	// If no API key, proceed with normal session validation
 	const session = await api.getSession({
-		headers: new Headers({
-			cookie: request.headers.cookie || "",
-		}),
+		headers,
 	});
 
 	if (!session?.session || !session.user) {
@@ -548,4 +546,21 @@ export const validateRequest = async (request: IncomingMessage) => {
 	}
 
 	return session;
+};
+
+export const validateRequest = async (request: IncomingMessage) => {
+	const headers = new Headers();
+	const cookie = request.headers.cookie;
+	const apiKey = request.headers["x-api-key"];
+
+	if (cookie) {
+		headers.set("cookie", cookie);
+	}
+	if (Array.isArray(apiKey)) {
+		headers.set("x-api-key", apiKey[0] || "");
+	} else if (apiKey) {
+		headers.set("x-api-key", apiKey);
+	}
+
+	return validateRequestHeaders(headers);
 };
