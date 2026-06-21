@@ -33,7 +33,6 @@ import {
 	ServerIcon,
 	Settings2,
 	SquareTerminal,
-	Table2,
 	Trash2,
 	X,
 } from "lucide-react";
@@ -450,11 +449,9 @@ const ServiceTerminalButton = ({
 export const EnvironmentCanvas = ({
 	projectId,
 	environmentId,
-	onOpenListView,
 }: {
 	projectId: string;
 	environmentId: string;
-	onOpenListView?: () => void;
 }) => {
 	const router = useRouter();
 	const pathname = usePathname();
@@ -2172,13 +2169,6 @@ export const EnvironmentCanvas = ({
 								</Link>
 							</DropdownMenu.Content>
 						</DropdownMenu>
-
-						{onOpenListView && (
-							<Button variant="outline" onClick={onOpenListView}>
-								<Table2 className="size-4" />
-								List
-							</Button>
-						)}
 
 						<ProjectEnvironment projectId={projectId}>
 							<Button variant="outline">
