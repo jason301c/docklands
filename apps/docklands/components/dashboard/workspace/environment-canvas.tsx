@@ -536,6 +536,8 @@ export const EnvironmentCanvas = ({
 	const removeConnection = api.workspace.removeConnection.useMutation();
 	const applyConnectionVariables =
 		api.workspace.applyConnectionVariables.useMutation();
+	const syncConnectionVariables =
+		api.workspace.syncServiceConnectionVariables.useMutation();
 	const duplicateProject = api.project.duplicate.useMutation();
 
 	const serviceActions = {
@@ -974,6 +976,13 @@ export const EnvironmentCanvas = ({
 						connection.sourceServiceType === selectedService.serviceType) ||
 					(connection.targetServiceId === selectedService.serviceId &&
 						connection.targetServiceType === selectedService.serviceType),
+			)
+		: [];
+	const selectedIncomingConnections = selectedService
+		? connections.filter(
+				(connection) =>
+					connection.targetServiceId === selectedService.serviceId &&
+					connection.targetServiceType === selectedService.serviceType,
 			)
 		: [];
 	const workspaceStats = useMemo(
@@ -1517,6 +1526,35 @@ export const EnvironmentCanvas = ({
 				},
 				error: (error) =>
 					`Could not apply variables: ${error instanceof Error ? error.message : "Unknown error"}`,
+			},
+		);
+	};
+
+	const syncVariablesForSelectedService = async () => {
+		if (!selectedServiceModel) return;
+
+		toast.promise(
+			syncConnectionVariables.mutateAsync({
+				environmentId,
+				serviceId: selectedServiceModel.id,
+				serviceType: selectedServiceModel.type,
+			}),
+			{
+				loading: "Syncing linked variables...",
+				success: async (result) => {
+					await invalidateServiceEnvironment({
+						serviceId: selectedServiceModel.id,
+						serviceType: selectedServiceModel.type,
+					});
+
+					if (result.variablesApplied === 0) {
+						return "No generated variables to sync";
+					}
+
+					return `${result.variablesApplied} variable${result.variablesApplied === 1 ? "" : "s"} synced from ${result.connectionsApplied} link${result.connectionsApplied === 1 ? "" : "s"}`;
+				},
+				error: (error) =>
+					`Could not sync variables: ${error instanceof Error ? error.message : "Unknown error"}`,
 			},
 		);
 	};
@@ -2805,6 +2843,27 @@ export const EnvironmentCanvas = ({
 
 						{drawerTab === "connections" && (
 							<div className="space-y-3">
+								<div className="flex items-start justify-between gap-3">
+									<div className="min-w-0">
+										<p className="text-sm font-medium">Service graph</p>
+										<p className="text-xs text-muted-foreground">
+											Incoming database links can sync generated variables into
+											this service.
+										</p>
+									</div>
+									<Button
+										variant="outline"
+										loading={syncConnectionVariables.isPending}
+										disabled={
+											!permissions?.envVars.write ||
+											selectedIncomingConnections.length === 0
+										}
+										onClick={() => void syncVariablesForSelectedService()}
+									>
+										<RefreshCw className="size-4" />
+										Sync vars
+									</Button>
+								</div>
 								{selectedConnections.length === 0 ? (
 									<div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
 										No connections yet. Use Connect, then select another service

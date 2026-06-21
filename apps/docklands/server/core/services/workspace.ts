@@ -542,6 +542,48 @@ export const applyWorkspaceConnectionVariables = async (
 	};
 };
 
+export const syncWorkspaceConnectionVariablesForService = async (input: {
+	environmentId: string;
+	serviceType: WorkspaceServiceType;
+	serviceId: string;
+}) => {
+	const connections = await db.query.workspaceServiceConnections.findMany({
+		where: and(
+			eq(workspaceServiceConnections.environmentId, input.environmentId),
+			eq(workspaceServiceConnections.targetServiceType, input.serviceType),
+			eq(workspaceServiceConnections.targetServiceId, input.serviceId),
+		),
+	});
+
+	const applied: { connectionId: string; keys: string[] }[] = [];
+
+	for (const connection of connections) {
+		const entries = await getWorkspaceConnectionVariableEntries(connection);
+		if (entries.length === 0) continue;
+
+		const result = await applyWorkspaceConnectionVariables(connection);
+		applied.push({
+			connectionId: connection.connectionId,
+			keys: result.entries.map(({ key }) => key),
+		});
+	}
+
+	return {
+		connectionsScanned: connections.length,
+		connectionsApplied: applied.length,
+		variablesApplied: applied.reduce(
+			(total, connection) => total + connection.keys.length,
+			0,
+		),
+		entries: applied.flatMap((connection) =>
+			connection.keys.map((key) => ({
+				connectionId: connection.connectionId,
+				key,
+			})),
+		),
+	};
+};
+
 export const deleteWorkspaceNodesForMissingServices = async (
 	environment: Environment,
 ) => {

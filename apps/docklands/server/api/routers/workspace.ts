@@ -4,6 +4,7 @@ import {
 	apiCreateWorkspaceConnection,
 	apiFindWorkspace,
 	apiRemoveWorkspaceConnection,
+	apiSyncWorkspaceServiceConnectionVariables,
 	apiUpdateWorkspaceNode,
 	apiUpdateWorkspaceServiceEnv,
 	apiWorkspaceConnectionVariables,
@@ -24,6 +25,7 @@ import {
 	getWorkspaceConnectionVariableEntries,
 	readWorkspaceServiceEnv,
 	removeWorkspaceConnection,
+	syncWorkspaceConnectionVariablesForService,
 	updateWorkspaceServiceEnv,
 	upsertWorkspaceNode,
 } from "@/server/core/services/workspace";
@@ -295,5 +297,22 @@ export const workspaceRouter = createTRPCRouter({
 			);
 
 			return applyWorkspaceConnectionVariables(connection);
+		}),
+
+	syncServiceConnectionVariables: protectedProcedure
+		.input(apiSyncWorkspaceServiceConnectionVariables)
+		.mutation(async ({ input, ctx }) => {
+			await checkPermission(ctx, { envVars: ["write"] });
+			const environment = await getAuthorizedEnvironment(
+				ctx,
+				input.environmentId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				input.serviceType,
+				input.serviceId,
+			);
+
+			return syncWorkspaceConnectionVariablesForService(input);
 		}),
 });
