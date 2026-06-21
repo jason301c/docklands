@@ -55,7 +55,9 @@ const extractAllServicesFromProject = (project: any): SearchServices[] => {
 	return allServices;
 };
 
-const toStatusTooltipStatus = (status?: string | null): SearchItem["status"] => {
+const toStatusTooltipStatus = (
+	status?: string | null,
+): SearchItem["status"] => {
 	if (
 		status === "running" ||
 		status === "error" ||
@@ -141,7 +143,7 @@ export const SearchCommand = () => {
 						status: toStatusTooltipStatus(service.status),
 						onSelect: () =>
 							navigate(
-								`/dashboard/project/${project.projectId}/environment/${service.environmentId}/services/${service.type}/${service.id}`,
+								`/dashboard/project/${project.projectId}/environment/${service.environmentId}?serviceType=${service.type}&serviceId=${service.id}`,
 							),
 					};
 				}),
@@ -152,7 +154,7 @@ export const SearchCommand = () => {
 				id: "app-projects",
 				title: "Projects",
 				searchText: "projects",
-				onSelect: () => navigate("/dashboard/home"),
+				onSelect: () => navigate("/dashboard/projects"),
 			},
 			{
 				id: "app-deployments",

@@ -33,7 +33,7 @@ import {
 	X,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
 	type PointerEvent,
 	type ReactNode,
@@ -72,6 +72,7 @@ import { cn } from "@/shared/utils";
 import {
 	getDefaultWorkspacePosition,
 	getWorkspaceServiceKey,
+	isWorkspaceServiceType,
 	type WorkspaceNode,
 	type WorkspaceService,
 	type WorkspaceServiceType,
@@ -224,6 +225,8 @@ export const EnvironmentCanvas = ({
 	onOpenListView?: () => void;
 }) => {
 	const router = useRouter();
+	const pathname = usePathname();
+	const searchParams = useSearchParams();
 	const utils = api.useUtils();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const workspaceQuery = api.workspace.byEnvironment.useQuery({
@@ -351,6 +354,40 @@ export const EnvironmentCanvas = ({
 				),
 			)
 		: null;
+	const queryServiceType = searchParams.get("serviceType");
+	const queryServiceId = searchParams.get("serviceId");
+
+	useEffect(() => {
+		if (
+			!queryServiceId ||
+			!queryServiceType ||
+			!isWorkspaceServiceType(queryServiceType)
+		) {
+			return;
+		}
+
+		if (
+			!servicesByKey.has(
+				getWorkspaceServiceKey(queryServiceType, queryServiceId),
+			)
+		) {
+			return;
+		}
+
+		if (
+			selectedService?.serviceId === queryServiceId &&
+			selectedService.serviceType === queryServiceType
+		) {
+			return;
+		}
+
+		setSelectedService({
+			serviceId: queryServiceId,
+			serviceType: queryServiceType,
+		});
+		setDrawerTab("overview");
+	}, [queryServiceId, queryServiceType, selectedService, servicesByKey]);
+
 	const drawerTabs = [
 		{ value: "overview", label: "Overview" },
 		{ value: "variables", label: "Variables" },
@@ -682,6 +719,20 @@ export const EnvironmentCanvas = ({
 					`Could not save variables: ${error instanceof Error ? error.message : "Unknown error"}`,
 			},
 		);
+	};
+
+	const closeSelectedService = () => {
+		setSelectedService(null);
+
+		if (!queryServiceId && !queryServiceType) return;
+
+		const nextParams = new URLSearchParams(searchParams.toString());
+		nextParams.delete("serviceId");
+		nextParams.delete("serviceType");
+		const query = nextParams.toString();
+		router.replace(query ? `${pathname}?${query}` : pathname, {
+			scroll: false,
+		});
 	};
 
 	const arrangeWorkspace = async () => {
@@ -1322,7 +1373,7 @@ export const EnvironmentCanvas = ({
 							aria-label="Close service panel"
 							variant="ghost"
 							shape="square"
-							onClick={() => setSelectedService(null)}
+							onClick={closeSelectedService}
 						>
 							<X className="size-4" />
 						</Button>
@@ -1408,7 +1459,7 @@ export const EnvironmentCanvas = ({
 												serviceId: selectedServiceModel.id,
 												serviceType: selectedServiceModel.type,
 											});
-											setSelectedService(null);
+											closeSelectedService();
 											toast.info(
 												"Select another service on the canvas to connect it",
 											);
