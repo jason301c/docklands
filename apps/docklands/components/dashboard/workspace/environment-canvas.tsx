@@ -392,6 +392,84 @@ const ConnectionVariablePreview = ({
 	);
 };
 
+const WorkspaceServiceFlowNode = ({
+	service,
+	serviceType,
+	fallbackLabel,
+}: {
+	service?: WorkspaceService;
+	serviceType: WorkspaceServiceType;
+	fallbackLabel: string;
+}) => (
+	<div className="min-w-0 rounded-md border bg-background px-3 py-2">
+		<div className="flex min-w-0 items-center gap-2">
+			<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/30">
+				{service ? (
+					<WorkspaceServiceIcon service={service} />
+				) : (
+					<Network className="size-4 text-muted-foreground" />
+				)}
+			</div>
+			<div className="min-w-0">
+				<p className="truncate text-sm font-medium">
+					{service?.name ?? fallbackLabel}
+				</p>
+				<p className="truncate text-xs text-muted-foreground">
+					{serviceTypeLabels[service?.type ?? serviceType] ?? serviceType}
+				</p>
+			</div>
+		</div>
+	</div>
+);
+
+const ConnectionVariableFlowCard = ({
+	connection,
+	source,
+	target,
+	variablePreviewEnabled,
+	actions,
+}: {
+	connection: WorkspaceConnection;
+	source?: WorkspaceService;
+	target?: WorkspaceService;
+	variablePreviewEnabled: boolean;
+	actions?: ReactNode;
+}) => (
+	<div className="space-y-3 rounded-md border bg-background/80 p-3">
+		<div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+			<WorkspaceServiceFlowNode
+				service={source}
+				serviceType={connection.sourceServiceType}
+				fallbackLabel="Unknown source"
+			/>
+			<div className="flex size-8 items-center justify-center rounded-full border bg-muted/30">
+				<ArrowRight className="size-4 text-muted-foreground" />
+			</div>
+			<WorkspaceServiceFlowNode
+				service={target}
+				serviceType={connection.targetServiceType}
+				fallbackLabel="Unknown target"
+			/>
+		</div>
+
+		<div className="flex items-start justify-between gap-3">
+			<div className="min-w-0 flex-1 space-y-2">
+				<div className="flex flex-wrap items-center gap-1.5">
+					<Badge>{connection.label || "Private network"}</Badge>
+					<Badge>Generated variables</Badge>
+				</div>
+				<ConnectionVariablePreview
+					connectionId={connection.connectionId}
+					enabled={variablePreviewEnabled}
+				/>
+			</div>
+			{actions ? (
+				<div className="flex shrink-0 items-center gap-1">{actions}</div>
+			) : null}
+		</div>
+	</div>
+);
+
 const nodeCenter = (node: WorkspaceNode) => ({
 	x: node.x + node.width / 2,
 	y: node.y + node.height / 2,
@@ -3358,25 +3436,15 @@ export const EnvironmentCanvas = ({
 															);
 
 															return (
-																<div
+																<ConnectionVariableFlowCard
 																	key={connection.connectionId}
-																	className="space-y-2 rounded-md border bg-background p-3"
-																>
-																	<div className="flex items-center justify-between gap-3">
-																		<span className="truncate text-sm">
-																			{source?.name ?? "Unknown service"}
-																		</span>
-																		<Badge>
-																			{serviceTypeLabels[
-																				connection.sourceServiceType
-																			] ?? connection.sourceServiceType}
-																		</Badge>
-																	</div>
-																	<ConnectionVariablePreview
-																		connectionId={connection.connectionId}
-																		enabled={!!permissions?.envVars.read}
-																	/>
-																</div>
+																	connection={connection}
+																	source={source}
+																	target={selectedServiceModel}
+																	variablePreviewEnabled={
+																		!!permissions?.envVars.read
+																	}
+																/>
 															);
 														})}
 													</div>
@@ -3600,30 +3668,14 @@ export const EnvironmentCanvas = ({
 										);
 
 										return (
-											<LayerCard
+											<ConnectionVariableFlowCard
 												key={connection.connectionId}
-												className="bg-muted/20"
-											>
-												<div className="flex items-center justify-between gap-3">
-													<div className="min-w-0 space-y-2 text-sm">
-														<div className="flex min-w-0 items-center gap-2">
-															<span className="truncate">
-																{source?.name || "Unknown"}
-															</span>
-															<ArrowRight className="size-4 shrink-0 text-muted-foreground" />
-															<span className="truncate">
-																{target?.name || "Unknown"}
-															</span>
-														</div>
-														<p className="text-xs text-muted-foreground">
-															{connection.label || "Private network"}
-														</p>
-														<ConnectionVariablePreview
-															connectionId={connection.connectionId}
-															enabled={!!permissions?.envVars.read}
-														/>
-													</div>
-													<div className="flex shrink-0 items-center gap-1">
+												connection={connection}
+												source={source}
+												target={target}
+												variablePreviewEnabled={!!permissions?.envVars.read}
+												actions={
+													<>
 														<Button
 															variant="outline"
 															disabled={!permissions?.envVars.write}
@@ -3644,9 +3696,9 @@ export const EnvironmentCanvas = ({
 														>
 															<Trash2 className="size-4" />
 														</Button>
-													</div>
-												</div>
-											</LayerCard>
+													</>
+												}
+											/>
 										);
 									})
 								)}
