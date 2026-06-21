@@ -1,10 +1,10 @@
+import { LinkButton } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowRight, BookIcon, FolderInput, Rocket, Server } from "lucide-react";
+import { ArrowRight, BookIcon, FolderInput, Rocket } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { api } from "@/client/api/trpc";
-import { LinkButton } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { HandleProject } from "@/components/dashboard/projects/handle-project";
 
 type DeploymentStatus = "idle" | "running" | "done" | "error";
@@ -49,14 +49,11 @@ const statusDotClass: Record<string, string> = {
 function getServiceInfo(d: any) {
 	const app = d.application;
 	const comp = d.compose;
-	const serverName: string =
-		d.server?.name ?? app?.server?.name ?? comp?.server?.name ?? "Docklands";
 	if (app?.environment?.project && app.environment) {
 		return {
 			name: app.name as string,
 			environment: app.environment.name as string,
 			projectName: app.environment.project.name as string,
-			serverName,
 			href: `/dashboard/project/${app.environment.project.projectId}/environment/${app.environment.environmentId}/services/application/${app.applicationId}`,
 		};
 	}
@@ -65,7 +62,6 @@ function getServiceInfo(d: any) {
 			name: comp.name as string,
 			environment: comp.environment.name as string,
 			projectName: comp.environment.project.name as string,
-			serverName,
 			href: `/dashboard/project/${comp.environment.project.projectId}/environment/${comp.environment.environmentId}/services/compose/${comp.composeId}`,
 		};
 	}
@@ -326,10 +322,8 @@ export const ShowHome = () => {
 														</span>
 													</div>
 													<span className="text-xs text-muted-foreground w-36 hidden lg:flex items-center justify-end gap-1.5 truncate">
-														<Server className="size-3 shrink-0" />
-														<span className="truncate">
-															{info.serverName}
-														</span>
+														<Rocket className="size-3 shrink-0" />
+														<span className="truncate">Runtime</span>
 													</span>
 													<span className="text-xs text-muted-foreground w-20 text-right hidden sm:inline">
 														{status}

@@ -152,7 +152,6 @@ type ServiceSort =
 	| "name-asc"
 	| "type-asc"
 	| "status-asc"
-	| "server-asc"
 	| "last-deploy-desc";
 
 const deploymentServiceTypes = new Set<WorkspaceServiceType>([
@@ -219,7 +218,6 @@ const serviceSortOptions: { value: ServiceSort; label: string }[] = [
 	{ value: "name-asc", label: "Name" },
 	{ value: "type-asc", label: "Type" },
 	{ value: "status-asc", label: "Status" },
-	{ value: "server-asc", label: "Host" },
 	{ value: "last-deploy-desc", label: "Recent deploy" },
 ];
 
@@ -479,7 +477,6 @@ export const EnvironmentCanvas = ({
 		useState<ServiceKindFilter>("all");
 	const [serviceStatusFilter, setServiceStatusFilter] =
 		useState<ServiceStatusFilter>("all");
-	const [serviceServerFilter, setServiceServerFilter] = useState("all");
 	const [serviceSort, setServiceSort] = useState<ServiceSort>("manual");
 	const [commandOpen, setCommandOpen] = useState(false);
 	const [drawerTab, setDrawerTab] = useState<
@@ -671,38 +668,6 @@ export const EnvironmentCanvas = ({
 			),
 		[selectedProjectEnvironments, environmentId],
 	);
-	const serviceServerOptions = useMemo(() => {
-		const options = new Map<
-			string,
-			{ value: string; label: string; count: number }
-		>();
-
-		for (const service of services) {
-			const value = service.serverId || "local";
-			const label = service.serverName || "Docklands host";
-			const existing = options.get(value);
-			if (existing) {
-				existing.count++;
-			} else {
-				options.set(value, { value, label, count: 1 });
-			}
-		}
-
-		return [...options.values()].sort((a, b) => a.label.localeCompare(b.label));
-	}, [services]);
-
-	useEffect(() => {
-		if (serviceServerFilter === "all") return;
-		if (
-			serviceServerOptions.some(
-				(option) => option.value === serviceServerFilter,
-			)
-		) {
-			return;
-		}
-		setServiceServerFilter("all");
-	}, [serviceServerFilter, serviceServerOptions]);
-
 	useEffect(() => {
 		setSelectedBulkKeys((current) =>
 			current.filter((key) => servicesByKey.has(key)),
@@ -904,13 +869,11 @@ export const EnvironmentCanvas = ({
 	const hasCanvasFilters =
 		searchQuery.trim().length > 0 ||
 		serviceKindFilter !== "all" ||
-		serviceStatusFilter !== "all" ||
-		serviceServerFilter !== "all";
+		serviceStatusFilter !== "all";
 	const canvasFilterCount = [
 		searchQuery.trim().length > 0,
 		serviceKindFilter !== "all",
 		serviceStatusFilter !== "all",
-		serviceServerFilter !== "all",
 	].filter(Boolean).length;
 
 	const filteredServices = useMemo(() => {
@@ -921,7 +884,6 @@ export const EnvironmentCanvas = ({
 				service.name.toLowerCase().includes(query) ||
 				service.type.toLowerCase().includes(query) ||
 				service.description?.toLowerCase().includes(query) ||
-				service.serverName?.toLowerCase().includes(query) ||
 				service.status?.toLowerCase().includes(query);
 
 			const matchesKind =
@@ -936,11 +898,7 @@ export const EnvironmentCanvas = ({
 				serviceStatusFilter === "all" ||
 				(service.status ?? "idle") === serviceStatusFilter;
 
-			const matchesServer =
-				serviceServerFilter === "all" ||
-				(service.serverId || "local") === serviceServerFilter;
-
-			return matchesSearch && matchesKind && matchesStatus && matchesServer;
+			return matchesSearch && matchesKind && matchesStatus;
 		});
 
 		if (serviceSort === "manual") return nextServices;
@@ -960,12 +918,6 @@ export const EnvironmentCanvas = ({
 						a.name.localeCompare(b.name)
 					);
 				}
-				case "server-asc":
-					return (
-						(a.serverName || "Docklands host").localeCompare(
-							b.serverName || "Docklands host",
-						) || a.name.localeCompare(b.name)
-					);
 				case "last-deploy-desc":
 					return (
 						new Date(b.lastDeployAt || 0).getTime() -
@@ -982,7 +934,6 @@ export const EnvironmentCanvas = ({
 		services,
 		searchQuery,
 		serviceKindFilter,
-		serviceServerFilter,
 		serviceSort,
 		serviceStatusFilter,
 	]);
@@ -1260,7 +1211,6 @@ export const EnvironmentCanvas = ({
 		setSearchQuery("");
 		setServiceKindFilter("all");
 		setServiceStatusFilter("all");
-		setServiceServerFilter("all");
 	};
 
 	const resetMoveDialog = () => {
@@ -1630,7 +1580,6 @@ export const EnvironmentCanvas = ({
 				service.type,
 				service.description,
 				serviceTypeLabels[service.type],
-				service.serverName,
 			]
 				.filter(Boolean)
 				.join(" ")
@@ -1936,10 +1885,10 @@ export const EnvironmentCanvas = ({
 			},
 			{
 				id: "system:remote-servers",
-				label: "Remote servers",
-				detail: "Connected Docker hosts",
+				label: "Runtime capacity",
+				detail: "Worker machines and placement",
 				path: "/dashboard/settings/servers",
-				search: "remote servers docker hosts nodes machines",
+				search: "remote servers runtime capacity workers nodes machines",
 				icon: <Network className="size-5 text-muted-foreground" />,
 			},
 			{
@@ -2092,22 +2041,6 @@ export const EnvironmentCanvas = ({
 								))}
 							</Select>
 						</div>
-						<div className="w-[170px]">
-							<Select
-								aria-label="Service host filter"
-								value={serviceServerFilter}
-								onValueChange={(value) =>
-									value !== null && setServiceServerFilter(value as string)
-								}
-							>
-								<Select.Option value="all">All hosts</Select.Option>
-								{serviceServerOptions.map((option) => (
-									<Select.Option key={option.value} value={option.value}>
-										{option.label} ({option.count})
-									</Select.Option>
-								))}
-							</Select>
-						</div>
 						<div className="flex w-[170px] items-center gap-2">
 							<ArrowUpDown className="size-4 shrink-0 text-muted-foreground" />
 							<Select
@@ -2191,7 +2124,7 @@ export const EnvironmentCanvas = ({
 								</Link>
 								<Link href="/dashboard/settings/servers">
 									<DropdownMenu.Item className="cursor-pointer">
-										Remote servers
+										Runtime capacity
 									</DropdownMenu.Item>
 								</Link>
 								<Link href="/dashboard/settings/git-providers">
@@ -2527,10 +2460,8 @@ export const EnvironmentCanvas = ({
 											<div className="mt-auto space-y-1 text-xs text-muted-foreground">
 												<div className="flex items-center justify-between gap-3">
 													<span className="flex min-w-0 items-center gap-1.5">
-														<ServerIcon className="size-3 shrink-0" />
-														<span className="truncate">
-															{service.serverName || "Docklands host"}
-														</span>
+														<Network className="size-3 shrink-0" />
+														<span className="truncate">Private runtime</span>
 													</span>
 													<span>
 														{
@@ -2643,10 +2574,8 @@ export const EnvironmentCanvas = ({
 										</div>
 										<div className="grid gap-2 text-sm text-muted-foreground">
 											<div className="flex items-center justify-between gap-4">
-												<span>Host</span>
-												<span className="truncate">
-													{selectedServiceModel.serverName || "Docklands host"}
-												</span>
+												<span>Network</span>
+												<span className="truncate">Private runtime</span>
 											</div>
 											<div className="flex items-center justify-between gap-4">
 												<span>Type</span>
