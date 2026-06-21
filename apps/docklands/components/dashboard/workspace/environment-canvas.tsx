@@ -25,6 +25,7 @@ import {
 	RefreshCw,
 	Search,
 	ServerIcon,
+	Settings2,
 	SquareTerminal,
 	Table2,
 	Trash2,
@@ -666,6 +667,58 @@ export const EnvironmentCanvas = ({
 							<Command className="size-4" />
 							Cmd K
 						</Button>
+
+						<DropdownMenu>
+							<DropdownMenu.Trigger
+								render={
+									(
+										<Button
+											aria-label="System settings"
+											variant="outline"
+											shape="square"
+										>
+											<Settings2 className="size-4" />
+										</Button>
+									) as never
+								}
+							/>
+							<DropdownMenu.Content className="w-[240px] space-y-1" align="end">
+								<DropdownMenu.Label className="text-sm font-normal">
+									System settings
+								</DropdownMenu.Label>
+								<DropdownMenu.Separator />
+								<Link href="/dashboard/settings/server">
+									<DropdownMenu.Item className="cursor-pointer">
+										Web server
+									</DropdownMenu.Item>
+								</Link>
+								<Link href="/dashboard/settings/servers">
+									<DropdownMenu.Item className="cursor-pointer">
+										Remote servers
+									</DropdownMenu.Item>
+								</Link>
+								<Link href="/dashboard/settings/git-providers">
+									<DropdownMenu.Item className="cursor-pointer">
+										Git providers
+									</DropdownMenu.Item>
+								</Link>
+								<Link href="/dashboard/settings/registry">
+									<DropdownMenu.Item className="cursor-pointer">
+										Registry
+									</DropdownMenu.Item>
+								</Link>
+								<Link href="/dashboard/settings/ssh-keys">
+									<DropdownMenu.Item className="cursor-pointer">
+										SSH keys
+									</DropdownMenu.Item>
+								</Link>
+								<Link href="/dashboard/settings/notifications">
+									<DropdownMenu.Item className="cursor-pointer">
+										Notifications
+									</DropdownMenu.Item>
+								</Link>
+							</DropdownMenu.Content>
+						</DropdownMenu>
 
 						{onOpenListView && (
 							<Button variant="outline" onClick={onOpenListView}>
