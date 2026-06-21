@@ -10,7 +10,7 @@ import type { ReactElement, ReactNode } from "react";
 import { SearchCommand } from "@/components/dashboard/search-command";
 import { WhitelabelingProvider } from "@/components/enterprise/whitelabeling/whitelabeling-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { api } from "@/utils/api";
+import { TRPCReactProvider } from "@/utils/trpc-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -41,21 +41,23 @@ const MyApp = ({
 			<Head>
 				<title>Docklands</title>
 			</Head>
-			<ThemeProvider
-				attribute="class"
-				defaultTheme="system"
-				enableSystem
-				disableTransitionOnChange
-				forcedTheme={Component.theme}
-			>
-				<NextTopLoader color="hsl(var(--sidebar-ring))" />
-				<WhitelabelingProvider />
-				<Toaster richColors />
-				<SearchCommand />
-				{getLayout(<Component {...pageProps} />)}
-			</ThemeProvider>
+			<TRPCReactProvider>
+				<ThemeProvider
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+					forcedTheme={Component.theme}
+				>
+					<NextTopLoader color="hsl(var(--sidebar-ring))" />
+					<WhitelabelingProvider />
+					<Toaster richColors />
+					<SearchCommand />
+					{getLayout(<Component {...pageProps} />)}
+				</ThemeProvider>
+			</TRPCReactProvider>
 		</>
 	);
 };
 
-export default api.withTRPC(MyApp);
+export default MyApp;
