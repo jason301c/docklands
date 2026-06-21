@@ -2,6 +2,12 @@
 
 This is Docklands: a fork of Dokploy focused on self-hosted deployment management. Treat it as a single-root Next.js app with a colocated backend, not as a multi-package monorepo.
 
+## AGENTS.md Scope
+
+- This root file owns repo-wide architecture, stack, development modes, common commands, dependency notes, and branding.
+- Nested `AGENTS.md` files are intentionally disjoint. They should add only subtree-specific boundaries and should not copy root-level rules.
+- If guidance applies everywhere, keep it here. If guidance applies only to one subtree, keep it in the nearest nested `AGENTS.md`.
+
 ## Project Shape
 
 - `app/` contains the Next.js App Router UI and API route handlers.
@@ -15,7 +21,7 @@ This is Docklands: a fork of Dokploy focused on self-hosted deployment managemen
 - `drizzle/` contains generated SQL migrations and snapshots. Do not hand-edit snapshots unless you are deliberately repairing a generated migration.
 - `__test__/` contains Vitest coverage for backend behavior, security fixes, templates, deployments, WebSockets, permissions, and utilities.
 - `styles/globals.css` is the Tailwind v4 entrypoint and explicitly loads `tailwind.config.ts` with `@config`.
-- `docker/`, `.docker/`, and Docker socket access are part of normal local workflows.
+- `docker/` contains image build/push helpers. `.docker/` is generated local runtime state.
 
 ## Current Stack
 
@@ -33,6 +39,16 @@ Key versions after the dependency refresh:
 - Better Auth
 - Vitest 4
 
+## Development Model
+
+Docklands is a deployment control plane, so full local development is closer to a disposable Linux VM/devbox than a normal Next-only app. It can initialize Docker Swarm, create Docker networks/services/containers/volumes, bind common ports, and mount the Docker socket.
+
+- For UI or light backend work, use a normal Node environment plus a reachable Postgres, then run `pnpm install`, copy `.env.example` to `.env`, run `pnpm migration:run`, and start `pnpm dev`. Docker-heavy deployment flows will not be representative in this mode.
+- For full local behavior, use a Docker Engine you are comfortable mutating. The setup path initializes Swarm, `dokploy-network`, Traefik, Redis, Postgres, local runtime directories, and migrations. Use `NODE_ENV=development pnpm setup` when you need Postgres and Redis published on local ports, then run `pnpm dev`.
+- The best practical full-dev target is a disposable Linux VM/devbox with Docker Engine, Node 24, and pnpm. Avoid running full setup against a laptop Docker daemon that has important containers, networks, or port bindings.
+- Development runtime files use `.docker/`; production/server-mode paths still use `/etc/dokploy` and several Docker resources still keep Dokploy-compatible names such as `dokploy-network`, `dokploy-postgres`, `dokploy-redis`, and `dokploy-traefik`.
+- Expect possible conflicts on ports `80`, `443`, `5432`, `6379`, `3000`, and any app ports created by deployment tests or manual experiments.
+
 ## Local Documentation
 
 - The installed Next.js package includes bundled docs at `node_modules/next/dist/docs`.
@@ -49,7 +65,7 @@ rg -n "Route Handlers|App Router|Server Actions" node_modules/next/dist/docs
 - Do not reintroduce proprietary, commercial-license, or hosted-only code paths unless the user explicitly asks and the licensing implications are reviewed.
 - Preserve the single-root app layout. Do not recreate `apps/` or package-scope splits unless the user explicitly asks for a larger architecture change.
 - Keep `server/core/` as the backend/domain library unless there is a real architectural reason to move code.
-- Be careful with security-sensitive areas: drop uploads, zip extraction, shell command building, Docker/Traefik config generation, authentication, secrets, SSH keys, Git webhooks, and deployment logs.
+- Treat security-sensitive changes as test-worthy. Local `AGENTS.md` files call out the riskiest boundaries for each subtree.
 - Do not weaken type safety or disable strictness globally to get past upgrade friction.
 - Avoid touching generated build output such as `.next/`, `dist/`, and `node_modules/`.
 

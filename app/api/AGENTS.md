@@ -2,7 +2,6 @@
 
 `app/api/` contains App Router route handlers.
 
-- Route handlers should translate HTTP to domain calls; avoid embedding deployment, provider, auth, or Docker logic here.
-- Keep webhook and OAuth callback behavior security-focused: validate signatures, tokens, providers, and redirect targets before side effects.
-- Legacy webhook/provider code may be wrapped through `server/web/next-api-compat.ts`; prefer deleting that compatibility layer only after rewriting the handler and covering it with tests.
+- Route handlers should translate `Request` objects into calls to tRPC, auth, or `server/web/` helpers; avoid embedding deployment, provider, auth, or Docker logic here.
+- Non-tRPC webhook, provider, and deploy logic should live in `server/web/` and be called from thin route handlers.
 - Return standard `Response`/`NextResponse` values and keep runtime assumptions explicit when Node APIs are required.
