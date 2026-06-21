@@ -71,7 +71,7 @@ export const validateMainDirectory = () => `
   fi
 `;
 
-export const validateDokployNetwork = () => `
+export const validateDocklandsNetwork = () => `
   if docker network ls | grep -q 'dokploy-network'; then
 	echo true
   else
@@ -132,7 +132,7 @@ export const serverValidate = async (serverId: string) => {
           buildpacksVersion=$(echo $buildpacksVersionEnabled | awk '{print $1}')
           buildpacksEnabled=$(echo $buildpacksVersionEnabled | awk '{print $2}')
 
-          isDokployNetworkInstalled=$(${validateDokployNetwork()})
+          isDocklandsNetworkInstalled=$(${validateDocklandsNetwork()})
           isSwarmInstalled=$(${validateSwarm()})
           isMainDirectoryInstalled=$(${validateMainDirectory()})
 
@@ -140,7 +140,7 @@ export const serverValidate = async (serverId: string) => {
           privilegeMode=$(echo $sudoAccessResult | awk '{print $1}')
           isDockerGroupMember=$(${validateDockerGroup()})
 
-  echo "{\\"docker\\": {\\"version\\": \\"$dockerVersion\\", \\"enabled\\": $dockerEnabled}, \\"rclone\\": {\\"version\\": \\"$rcloneVersion\\", \\"enabled\\": $rcloneEnabled}, \\"nixpacks\\": {\\"version\\": \\"$nixpacksVersion\\", \\"enabled\\": $nixpacksEnabled}, \\"buildpacks\\": {\\"version\\": \\"$buildpacksVersion\\", \\"enabled\\": $buildpacksEnabled}, \\"railpack\\": {\\"version\\": \\"$railpackVersion\\", \\"enabled\\": $railpackEnabled}, \\"isDokployNetworkInstalled\\": $isDokployNetworkInstalled, \\"isSwarmInstalled\\": $isSwarmInstalled, \\"isMainDirectoryInstalled\\": $isMainDirectoryInstalled, \\"privilegeMode\\": \\"$privilegeMode\\", \\"dockerGroupMember\\": $isDockerGroupMember}"
+  echo "{\\"docker\\": {\\"version\\": \\"$dockerVersion\\", \\"enabled\\": $dockerEnabled}, \\"rclone\\": {\\"version\\": \\"$rcloneVersion\\", \\"enabled\\": $rcloneEnabled}, \\"nixpacks\\": {\\"version\\": \\"$nixpacksVersion\\", \\"enabled\\": $nixpacksEnabled}, \\"buildpacks\\": {\\"version\\": \\"$buildpacksVersion\\", \\"enabled\\": $buildpacksEnabled}, \\"railpack\\": {\\"version\\": \\"$railpackVersion\\", \\"enabled\\": $railpackEnabled}, \\"isDocklandsNetworkInstalled\\": $isDocklandsNetworkInstalled, \\"isSwarmInstalled\\": $isSwarmInstalled, \\"isMainDirectoryInstalled\\": $isMainDirectoryInstalled, \\"privilegeMode\\": \\"$privilegeMode\\", \\"dockerGroupMember\\": $isDockerGroupMember}"
         `;
 				client.exec(bashCommand, (err, stream) => {
 					if (err) {

@@ -22,7 +22,7 @@ export const VerifyEmailTemplate = ({
 	userName = "User",
 	verificationUrl = "https://app.dokploy.com/verify",
 }: TemplateProps) => {
-	const previewText = "Verify your email address to get started with Dokploy";
+	const previewText = "Verify your email address to get started with Docklands";
 	return (
 		<Html>
 			<Head />
@@ -43,10 +43,10 @@ export const VerifyEmailTemplate = ({
 						{/* Header */}
 						<Section className="bg-[#09090b] rounded-t-xl px-[40px] py-[32px] text-center">
 							<Img
-								src="https://raw.githubusercontent.com/Dokploy/website/refs/heads/main/apps/docs/public/logo-dokploy-blackpng.png"
+								src="https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/dokploy/logo.png"
 								width="190"
 								height="120"
-								alt="Dokploy"
+								alt="Docklands"
 								className="my-0 mx-auto"
 							/>
 						</Section>
@@ -57,7 +57,7 @@ export const VerifyEmailTemplate = ({
 								Verify Your Email
 							</Heading>
 							<Text className="text-[#71717a] text-[14px] leading-[22px] m-0 mb-[24px]">
-								Hello {userName}, thank you for signing up for Dokploy. Please
+								Hello {userName}, thank you for signing up for Docklands. Please
 								verify your email address to activate your account.
 							</Text>
 
@@ -88,7 +88,7 @@ export const VerifyEmailTemplate = ({
 									href="https://dokploy.com"
 									className="text-[#71717a] underline"
 								>
-									Dokploy Cloud
+									Docklands Cloud
 								</Link>
 								. If you didn't create an account, you can safely ignore this
 								email.

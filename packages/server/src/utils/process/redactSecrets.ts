@@ -1,4 +1,4 @@
-// Dokploy embeds some secrets directly into the shell commands it runs: the
+// Docklands embeds some secrets directly into the shell commands it runs: the
 // SSH key written to /tmp/id_rsa when cloning over SSH, and the base64 TLS key
 // piped to `base64 -d` when provisioning certificates on a remote server. When
 // such a command fails, its ExecError (command/stdout/stderr) is logged, which

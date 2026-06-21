@@ -114,7 +114,7 @@ export const sendDockerCleanupNotifications = async (
 					],
 					timestamp: date.toISOString(),
 					footer: {
-						text: "Dokploy Docker Cleanup Notification",
+						text: "Docklands Docker Cleanup Notification",
 					},
 				});
 			}
@@ -175,7 +175,7 @@ export const sendDockerCleanupNotifications = async (
 				await sendMattermostNotification(mattermost, {
 					text: `**✅ Docker Cleanup**\n\n**Message:** ${message}\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}`,
 					channel: mattermost.channel,
-					username: mattermost.username || "Dokploy",
+					username: mattermost.username || "Docklands",
 				});
 			}
 

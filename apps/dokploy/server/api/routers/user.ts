@@ -4,7 +4,7 @@ import {
 	findNotificationById,
 	findOrganizationById,
 	findUserById,
-	getDokployUrl,
+	getDocklandsUrl,
 	getUserByToken,
 	getWebServerSettings,
 	IS_CLOUD,
@@ -649,7 +649,7 @@ export const userRouter = createTRPCRouter({
 			const host =
 				process.env.NODE_ENV === "development"
 					? "http://localhost:3000"
-					: await getDokployUrl();
+					: await getDocklandsUrl();
 			const inviteLink = `${host}/invitation?token=${input.invitationId}`;
 
 			const organization = await findOrganizationById(
@@ -659,7 +659,7 @@ export const userRouter = createTRPCRouter({
 			try {
 				const toEmail = currentInvitation?.email || "";
 				const orgName = organization?.name || "organization";
-				const subject = `You've been invited to join ${orgName} on Dokploy`;
+				const subject = `You've been invited to join ${orgName} on Docklands`;
 				const html = await renderInvitationEmail({
 					email: toEmail,
 					inviteLink,

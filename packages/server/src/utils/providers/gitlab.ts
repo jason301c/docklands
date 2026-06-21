@@ -23,7 +23,7 @@ export const refreshGitlabToken = async (gitlabProviderId: string) => {
 		return;
 	}
 
-	// Use internal URL for token refresh when GitLab is on same instance as Dokploy
+	// Use internal URL for token refresh when GitLab is on same instance as Docklands
 	const baseUrl = gitlabProvider.gitlabInternalUrl || gitlabProvider.gitlabUrl;
 	const response = await fetch(`${baseUrl}/oauth/token`, {
 		method: "POST",
@@ -153,7 +153,7 @@ export const cloneGitlabRepository = async ({
 	const repoClone = getGitlabRepoClone(gitlab, gitlabPathNamespace);
 	const cloneUrl = getGitlabCloneUrl(gitlab, repoClone);
 	command += `echo "Cloning Repo ${repoClone} to ${outputPath}: ✅";`;
-	command += `git clone --branch ${quote([gitlabBranch])} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} ${cloneUrl} ${outputPath} --progress;`;
+	command += `git clone --branch ${quote([gitlabBranch ?? ""])} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} ${cloneUrl} ${outputPath} --progress;`;
 	return command;
 };
 

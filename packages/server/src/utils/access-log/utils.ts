@@ -99,7 +99,7 @@ export function parseRawConfig(
 			.compact()
 			.value();
 
-		// Filter out Dokploy dashboard requests
+		// Filter out Docklands dashboard requests
 		parsedLogs = parsedLogs.filter(
 			(log) => log.ServiceName !== "dokploy-service-app@file",
 		);

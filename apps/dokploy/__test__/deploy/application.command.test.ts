@@ -56,7 +56,7 @@ vi.mock("@dokploy/server/services/application", async () => {
 });
 
 vi.mock("@dokploy/server/services/admin", () => ({
-	getDokployUrl: vi.fn(),
+	getDocklandsUrl: vi.fn(),
 }));
 
 vi.mock("@dokploy/server/services/deployment", () => ({
@@ -114,7 +114,7 @@ const createMockApplication = (overrides = {}) => ({
 	name: "Test App",
 	appName: "test-app",
 	sourceType: "git" as const,
-	customGitUrl: "https://github.com/Dokploy/examples.git",
+	customGitUrl: "https://github.com/dokploy/examples.git",
 	customGitBranch: "main",
 	customGitSSHKeyId: null,
 	buildType: "nixpacks" as const,
@@ -152,7 +152,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		vi.mocked(applicationService.findApplicationById).mockResolvedValue(
 			createMockApplication() as any,
 		);
-		vi.mocked(adminService.getDokployUrl).mockResolvedValue(
+		vi.mocked(adminService.getDocklandsUrl).mockResolvedValue(
 			"http://localhost:3000",
 		);
 		vi.mocked(deploymentService.createDeployment).mockResolvedValue(
@@ -186,7 +186,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		const command = await cloneGitRepository(app);
 		console.log(command);
 
-		expect(command).toContain("https://github.com/Dokploy/examples.git");
+		expect(command).toContain("https://github.com/dokploy/examples.git");
 		expect(command).not.toContain("--recurse-submodules");
 		expect(command).toContain("--branch main");
 		expect(command).toContain("--depth 1");
@@ -198,7 +198,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		const command = await cloneGitRepository(app);
 
 		expect(command).toContain("--recurse-submodules");
-		expect(command).toContain("https://github.com/Dokploy/examples.git");
+		expect(command).toContain("https://github.com/dokploy/examples.git");
 	});
 
 	it("should verify nixpacks command is called with correct app", async () => {
@@ -214,7 +214,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		expect(builders.getBuildCommand).toHaveBeenCalledWith(
 			expect.objectContaining({
 				buildType: "nixpacks",
-				customGitUrl: "https://github.com/Dokploy/examples.git",
+				customGitUrl: "https://github.com/dokploy/examples.git",
 				buildPath: "/astro",
 			}),
 		);

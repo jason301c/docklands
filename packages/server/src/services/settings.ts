@@ -24,12 +24,12 @@ export const DEFAULT_UPDATE_DATA: IUpdateData = {
 	updateAvailable: false,
 };
 
-/** Returns current Dokploy docker image tag or `latest` by default. */
-export const getDokployImageTag = () => {
+/** Returns current Docklands docker image tag or `latest` by default. */
+export const getDocklandsImageTag = () => {
 	return process.env.RELEASE_TAG || "latest";
 };
 
-/** Returns Dokploy docker service image digest */
+/** Returns Docklands docker service image digest */
 export const getServiceImageDigest = async () => {
 	const { stdout } = await execAsync(
 		"docker service inspect dokploy --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}'",
@@ -70,7 +70,7 @@ export const getUpdateData = async (
 			url = data?.next;
 		}
 
-		const currentImageTag = getDokployImageTag();
+		const currentImageTag = getDocklandsImageTag();
 
 		// Special handling for canary and feature branches
 		// For development versions (canary/feature), don't perform update checks
@@ -289,7 +289,7 @@ export const reloadDockerResource = async (
 	let command = "";
 	if (resourceType === "service") {
 		if (resourceName === "dokploy") {
-			const currentImageTag = getDokployImageTag();
+			const currentImageTag = getDocklandsImageTag();
 			let imageTag = version;
 			if (currentImageTag === "canary" || currentImageTag === "feature") {
 				imageTag = currentImageTag;
@@ -429,7 +429,7 @@ export const checkPortInUse = async (
 		}
 
 		// Check if port is in use by a host-level service (non-Docker)
-		// Dokploy runs inside a container, so we spawn an ephemeral container
+		// Docklands runs inside a container, so we spawn an ephemeral container
 		// with --net=host to share the host's network stack and use nc -z to
 		// check if something is listening on the port
 		const hostCommand = `docker run --rm --net=host busybox sh -c 'nc -z 0.0.0.0 ${port} 2>/dev/null && echo in_use || echo free'`;

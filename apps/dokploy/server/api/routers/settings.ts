@@ -16,7 +16,7 @@ import {
 	execAsync,
 	findServerById,
 	getDockerDiskUsage,
-	getDokployImageTag,
+	getDocklandsImageTag,
 	getLogCleanupStatus,
 	getUpdateData,
 	getWebServerSettings,
@@ -618,11 +618,11 @@ export const settingsRouter = createTRPCRouter({
 		return true;
 	}),
 
-	getDokployVersion: protectedProcedure.query(() => {
+	getDocklandsVersion: protectedProcedure.query(() => {
 		return packageInfo.version;
 	}),
 	getReleaseTag: protectedProcedure.query(() => {
-		return getDokployImageTag();
+		return getDocklandsImageTag();
 	}),
 	readDirectories: protectedProcedure
 		.input(apiServerSchema)
@@ -754,7 +754,7 @@ export const settingsRouter = createTRPCRouter({
 			});
 
 			openApiDocument.info = {
-				title: "Dokploy API",
+				title: "Docklands API",
 				description: "Endpoints for dokploy",
 				version: packageInfo.version,
 			};
@@ -1138,7 +1138,7 @@ export const settingsRouter = createTRPCRouter({
 		return getLogCleanupStatus();
 	}),
 
-	getDokployCloudIps: adminProcedure.query(async () => {
+	getDocklandsCloudIps: adminProcedure.query(async () => {
 		if (!IS_CLOUD) {
 			return [];
 		}

@@ -33,7 +33,7 @@ const Page = ({ isCloud }: Props) => {
 								lockedProps={{
 									title: "Enterprise SSO",
 									description:
-										"Single sign-on (SSO) with OIDC and SAML is part of Dokploy Enterprise. Add a valid license to configure it.",
+										"Single sign-on (SSO) with OIDC and SAML is part of Docklands Enterprise. Add a valid license to configure it.",
 									ctaLabel: "Go to License",
 								}}
 							>
@@ -48,7 +48,7 @@ const Page = ({ isCloud }: Props) => {
 							lockedProps={{
 								title: "Application Authentication",
 								description:
-									"Protect deployed applications behind an OIDC SSO gate (oauth2-proxy). Part of Dokploy Enterprise.",
+									"Protect deployed applications behind an OIDC SSO gate (oauth2-proxy). Part of Docklands Enterprise.",
 								ctaLabel: "Go to License",
 							}}
 						>
@@ -63,7 +63,7 @@ const Page = ({ isCloud }: Props) => {
 								lockedProps={{
 									title: "Self-hosted Restrictions",
 									description:
-										"Deployment and authentication restrictions are part of Dokploy Enterprise. Add a valid license to configure them.",
+										"Deployment and authentication restrictions are part of Docklands Enterprise. Add a valid license to configure them.",
 									ctaLabel: "Go to License",
 								}}
 							>

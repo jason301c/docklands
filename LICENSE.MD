@@ -1,4 +1,4 @@
-Copyright 2026-present Dokploy Technology, Inc.
+Copyright 2026-present Docklands Technology, Inc.
 
 Portions of this software are licensed as follows:
 
@@ -7,7 +7,7 @@ Portions of this software are licensed as follows:
 
 ## Apache License 2.0
 
-Copyright 2026-present Dokploy Technology, Inc.
+Copyright 2026-present Docklands Technology, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

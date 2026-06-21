@@ -36,7 +36,7 @@ const baseSettings: WebServerSettings = {
 			},
 		},
 		server: {
-			type: "Dokploy",
+			type: "Docklands",
 			cronJob: "",
 			port: 4500,
 			refreshRate: 20,

@@ -8,7 +8,7 @@ CREATE TABLE "webServerSettings" (
 	"sshPrivateKey" text,
 	"enableDockerCleanup" boolean DEFAULT true NOT NULL,
 	"logCleanupCron" text DEFAULT '0 0 * * *',
-	"metricsConfig" jsonb DEFAULT '{"server":{"type":"Dokploy","refreshRate":60,"port":4500,"token":"","retentionDays":2,"cronJob":"","urlCallback":"","thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb NOT NULL,
+	"metricsConfig" jsonb DEFAULT '{"server":{"type":"Docklands","refreshRate":60,"port":4500,"token":"","retentionDays":2,"cronJob":"","urlCallback":"","thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb NOT NULL,
 	"cleanupCacheApplications" boolean DEFAULT false NOT NULL,
 	"cleanupCacheOnPreviews" boolean DEFAULT false NOT NULL,
 	"cleanupCacheOnCompose" boolean DEFAULT false NOT NULL,
@@ -47,7 +47,7 @@ SELECT
 	COALESCE(u."logCleanupCron", '0 0 * * *') as "logCleanupCron",
 	COALESCE(
 		u."metricsConfig",
-		'{"server":{"type":"Dokploy","refreshRate":60,"port":4500,"token":"","retentionDays":2,"cronJob":"","urlCallback":"","thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb
+		'{"server":{"type":"Docklands","refreshRate":60,"port":4500,"token":"","retentionDays":2,"cronJob":"","urlCallback":"","thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb
 	) as "metricsConfig",
 	COALESCE(u."cleanupCacheApplications", false) as "cleanupCacheApplications",
 	COALESCE(u."cleanupCacheOnPreviews", false) as "cleanupCacheOnPreviews",
@@ -88,7 +88,7 @@ SELECT
 	NULL as "sshPrivateKey",
 	true as "enableDockerCleanup",
 	'0 0 * * *' as "logCleanupCron",
-	'{"server":{"type":"Dokploy","refreshRate":60,"port":4500,"token":"","retentionDays":2,"cronJob":"","urlCallback":"","thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb as "metricsConfig",
+	'{"server":{"type":"Docklands","refreshRate":60,"port":4500,"token":"","retentionDays":2,"cronJob":"","urlCallback":"","thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb as "metricsConfig",
 	false as "cleanupCacheApplications",
 	false as "cleanupCacheOnPreviews",
 	false as "cleanupCacheOnCompose",

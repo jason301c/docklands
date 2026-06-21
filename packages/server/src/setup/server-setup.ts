@@ -1,6 +1,6 @@
 import path from "node:path";
 import { IS_CLOUD, paths } from "@dokploy/server/constants";
-import { getDokployUrl } from "@dokploy/server/services/admin";
+import { getDocklandsUrl } from "@dokploy/server/services/admin";
 import {
 	createServerDeployment,
 	updateDeploymentStatus,
@@ -75,7 +75,7 @@ export const serverSetup = async (
 		if (IS_CLOUD) {
 			onData?.("\nConfiguring Monitoring: 🔄\n");
 
-			const baseUrl = await getDokployUrl();
+			const baseUrl = await getDocklandsUrl();
 			const token = generateToken();
 			const urlCallback = `${baseUrl}/api/trpc/notification.receiveNotification`;
 
@@ -319,8 +319,8 @@ const installRequirements = async (
 						`Technical details: ${technicalDetail}`,
 						"",
 						"💡 Hints:",
-						"  • Check that the SSH key you added in Dokploy is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
-						"  • Try generating a new SSH key in Dokploy and add only the public key to the server, then try again.",
+						"  • Check that the SSH key you added in Docklands is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
+						"  • Try generating a new SSH key in Docklands and add only the public key to the server, then try again.",
 						"  • Make sure to follow the instructions on the Setup Server Button on the SSH Keys tab",
 					].join("\n");
 					onData?.(friendlyMessage);
@@ -341,7 +341,7 @@ const installRequirements = async (
 						"",
 						"💡 Hints:",
 						"  • Check that the server IP address and SSH port are correct and the server is powered on.",
-						"  • If the server is in a private network, ensure Dokploy can reach it (VPN, firewall rules, or correct security groups).",
+						"  • If the server is in a private network, ensure Docklands can reach it (VPN, firewall rules, or correct security groups).",
 						"  • Make sure the SSH port (usually 22) is open and the SSH service is running on the server.",
 					].join("\n");
 					onData?.(friendlyMessage);
@@ -520,7 +520,7 @@ if [ -x "$(command -v snap)" ]; then
     SNAP_DOCKER_INSTALLED=$(snap list docker >/dev/null 2>&1 && echo "true" || echo "false")
     if [ "$SNAP_DOCKER_INSTALLED" = "true" ]; then
         echo " - Docker is installed via snap."
-        echo "   Please note that Dokploy does not support Docker installed via snap."
+        echo "   Please note that Docklands does not support Docker installed via snap."
         echo "   Please remove Docker with snap (snap remove docker) and reexecute this script."
         exit 1
     fi

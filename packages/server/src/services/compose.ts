@@ -35,7 +35,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { encodeBase64 } from "../utils/docker/utils";
-import { getDokployUrl } from "./admin";
+import { getDocklandsUrl } from "./admin";
 import {
 	createDeploymentCompose,
 	getDeploymentErrorMessage,
@@ -222,7 +222,7 @@ export const deployCompose = async ({
 }) => {
 	const compose = await findComposeById(composeId);
 
-	const buildLink = `${await getDokployUrl()}/dashboard/project/${
+	const buildLink = `${await getDocklandsUrl()}/dashboard/project/${
 		compose.environment.projectId
 	}/environment/${compose.environmentId}/services/compose/${compose.composeId}?tab=deployments`;
 	const deployment = await createDeploymentCompose({

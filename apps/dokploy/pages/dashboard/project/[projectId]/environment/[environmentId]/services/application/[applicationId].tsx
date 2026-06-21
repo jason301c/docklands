@@ -101,7 +101,7 @@ const Service = (
 		projectId: data?.environment?.project?.projectId || "",
 	});
 	const { config: whitelabeling } = useWhitelabeling();
-	const appName = whitelabeling?.appName || "Dokploy";
+	const appName = whitelabeling?.appName || "Docklands";
 	const environmentDropdownItems =
 		environments?.map((env) => ({
 			name: env.name,
@@ -162,7 +162,7 @@ const Service = (
 													: "destructive"
 										}
 									>
-										{data?.server?.name || "Dokploy Server"}
+										{data?.server?.name || "Docklands Server"}
 									</Badge>
 									{data?.server?.serverStatus === "inactive" && (
 										<TooltipProvider delayDuration={0}>

@@ -9,7 +9,7 @@ import {
 	updateDeploymentStatus,
 } from "@dokploy/server/services/deployment";
 import { findDestinationById } from "@dokploy/server/services/destination";
-import { sendDokployBackupNotifications } from "../notifications/dokploy-backup";
+import { sendDocklandsBackupNotifications } from "../notifications/dokploy-backup";
 import { execAsync } from "../process/execAsync";
 import { getBackupTimestamp, getS3Credentials, normalizeS3Path } from "./utils";
 
@@ -52,12 +52,12 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 			);
 
 			if (!containerId) {
-				writeStream.write("Dokploy postgres container not found❌\n");
+				writeStream.write("Docklands postgres container not found❌\n");
 				writeStream.end();
-				throw new Error("Dokploy postgres container not found");
+				throw new Error("Docklands postgres container not found");
 			}
 
-			writeStream.write(`Dokploy postgres container ID: ${containerId}\n`);
+			writeStream.write(`Docklands postgres container ID: ${containerId}\n`);
 
 			const postgresContainerId = containerId.trim();
 
@@ -103,7 +103,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 			await execAsync(uploadCommand);
 			writeStream.write("Uploaded backup to S3 ✅\n");
 			writeStream.end();
-			await sendDokployBackupNotifications({
+			await sendDocklandsBackupNotifications({
 				type: "success",
 				backupSize: formatBytes(computedBackupSize),
 			});
@@ -123,7 +123,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 			error instanceof Error ? error.message : "Unknown error\n",
 		);
 		writeStream.end();
-		await sendDokployBackupNotifications({
+		await sendDocklandsBackupNotifications({
 			type: "error",
 			// @ts-ignore
 			errorMessage: error?.message || "Error message not provided",

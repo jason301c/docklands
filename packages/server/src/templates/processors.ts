@@ -136,7 +136,8 @@ export function processValue(
 			if (params.length === 1 && params[0] && params[0].match(/^\d{1,3}$/)) {
 				return generateJwt({ length: Number.parseInt(params[0], 10) });
 			}
-			let [secret, payload] = params;
+			const secret = params[0];
+			let payload: string | Record<string, unknown> | undefined = params[1];
 			if (typeof payload === "string" && variables[payload]) {
 				payload = variables[payload];
 			}
@@ -153,12 +154,12 @@ export function processValue(
 					console.error("Invalid JWT payload", e);
 				}
 			}
-			if (typeof payload !== "object") {
+			if (typeof payload !== "object" || payload === null) {
 				payload = undefined;
 			}
 			return generateJwt({
 				secret: secret ? variables[secret] || secret : undefined,
-				payload: payload as any,
+				payload,
 			});
 		}
 

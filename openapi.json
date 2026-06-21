@@ -1,11 +1,11 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Dokploy API",
-    "description": "Complete API documentation for Dokploy - Deploy applications, manage databases, and orchestrate your infrastructure. This API allows you to programmatically manage all aspects of your Dokploy instance.",
+    "title": "Docklands API",
+    "description": "Complete API documentation for Docklands - Deploy applications, manage databases, and orchestrate your infrastructure. This API allows you to programmatically manage all aspects of your Docklands instance.",
     "version": "1.0.0",
     "contact": {
-      "name": "Dokploy Team",
+      "name": "Docklands Team",
       "url": "https://dokploy.com"
     },
     "license": {
@@ -27402,9 +27402,9 @@
         }
       }
     },
-    "/settings.getDokployVersion": {
+    "/settings.getDocklandsVersion": {
       "get": {
-        "operationId": "settings-getDokployVersion",
+        "operationId": "settings-getDocklandsVersion",
         "tags": [
           "settings"
         ],
@@ -29262,9 +29262,9 @@
         }
       }
     },
-    "/settings.getDokployCloudIps": {
+    "/settings.getDocklandsCloudIps": {
       "get": {
-        "operationId": "settings-getDokployCloudIps",
+        "operationId": "settings-getDocklandsCloudIps",
         "tags": [
           "settings"
         ],
@@ -33543,10 +33543,10 @@
                 "type": "object",
                 "properties": {
                   "ServerType": {
-                    "default": "Dokploy",
+                    "default": "Docklands",
                     "type": "string",
                     "enum": [
-                      "Dokploy",
+                      "Docklands",
                       "Remote"
                     ]
                   },
@@ -48964,7 +48964,7 @@
         "type": "apiKey",
         "in": "header",
         "name": "x-api-key",
-        "description": "API key authentication. Generate an API key from your Dokploy dashboard under Settings > API Keys."
+        "description": "API key authentication. Generate an API key from your Docklands dashboard under Settings > API Keys."
       }
     }
   },

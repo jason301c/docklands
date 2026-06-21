@@ -264,7 +264,7 @@ export const getForwardAuthServerStatus = async (organizationId: string) => {
 			: [
 					{
 						serverId: null,
-						name: "Dokploy Server (local)",
+						name: "Docklands Server (local)",
 						ipAddress: null,
 					},
 				]),

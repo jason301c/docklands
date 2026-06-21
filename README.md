@@ -1,21 +1,21 @@
 # Docklands
 
-Docklands is a community fork of [Dokploy](https://github.com/Dokploy/dokploy), focused on a cleaner self-hosted deployment control plane with a more deliberate product direction.
+Docklands is a community fork of the upstream self-hosted deployment platform at [dokploy/dokploy](https://github.com/dokploy/dokploy), focused on a cleaner deployment control plane with a more deliberate product direction.
 
-The current branch starts from Dokploy `canary`, keeps the useful upstream base, and adds a small curated set of reviewed fixes. The next major workstream is the Docklands identity and UI refresh.
+The current branch starts from upstream `canary`, keeps the useful base, and adds a small curated set of reviewed fixes. The next major workstream is the Docklands identity and UI refresh.
 
 ## Status
 
 Docklands is early and should be treated as a fork-in-progress.
 
-- Forked from Dokploy and kept on `canary`.
+- Forked from the upstream project and kept on `canary`.
 - Extra upstream branches were removed from this fork; only `canary` and `main` are kept.
 - A first batch of security-positive upstream PRs was merged after review.
 - Remaining upstream PRs are intentionally not mass-merged. Most need dedicated security or product review.
 
 ## What It Does
 
-Docklands inherits Dokploy's core capabilities:
+Docklands inherits the upstream project's core capabilities:
 
 - Deploy applications from Git, Docker images, and Docker Compose.
 - Manage PostgreSQL, MySQL, MariaDB, MongoDB, Redis, and libSQL services.
@@ -51,9 +51,9 @@ outputs/docklands-pr-security-audit.md
 
 ## Attribution
 
-Docklands is based on Dokploy. The original project, contributors, and licensing remain important context. See:
+Docklands started as a fork of the upstream project. The original project, contributors, and licensing remain important context. See:
 
-- [Dokploy upstream](https://github.com/Dokploy/dokploy)
+- [Original upstream](https://github.com/dokploy/dokploy)
 - [LICENSE.MD](LICENSE.MD)
 - [LICENSE_PROPRIETARY.md](LICENSE_PROPRIETARY.md)
 

@@ -15,7 +15,7 @@ import { LOCAL_PARTITION } from "./in-memory-queue";
  * back to sequential deployments instead of breaking anything.
  *
  * - `LOCAL_PARTITION` -> concurrency stored on the web server settings (the
- *   local Dokploy web server), gated by the owner organization's license.
+ *   local Docklands web server), gated by the owner organization's license.
  * - any other partition -> concurrency stored on the matching `server` row,
  *   gated by that server's organization license.
  */

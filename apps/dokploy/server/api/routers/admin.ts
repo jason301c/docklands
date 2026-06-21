@@ -23,7 +23,7 @@ export const adminRouter = createTRPCRouter({
 				await updateWebServerSettings({
 					metricsConfig: {
 						server: {
-							type: "Dokploy",
+							type: "Docklands",
 							refreshRate: input.metricsConfig.server.refreshRate,
 							port: input.metricsConfig.server.port,
 							token: input.metricsConfig.server.token,

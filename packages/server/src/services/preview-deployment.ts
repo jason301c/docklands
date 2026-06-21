@@ -154,7 +154,7 @@ export const createPreviewDeployment = async (
 		owner: application?.owner || "",
 		repo: application?.repository || "",
 		issue_number: Number.parseInt(schema.pullRequestNumber),
-		body: `### Dokploy Preview Deployment\n\n${runningComment}`,
+		body: `### Docklands Preview Deployment\n\n${runningComment}`,
 	});
 
 	const previewDeployment = await db

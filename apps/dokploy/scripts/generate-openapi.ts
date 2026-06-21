@@ -20,7 +20,7 @@ async function generateOpenAPI() {
 		console.log("🔄 Generating OpenAPI specification...");
 
 		const openApiDocument = generateOpenApiDocument(appRouter, {
-			title: "Dokploy API",
+			title: "Docklands API",
 			version: "1.0.0",
 			baseUrl: "https://your-dokploy-instance.com/api",
 			docsUrl: "https://docs.dokploy.com/api",
@@ -67,12 +67,12 @@ async function generateOpenAPI() {
 
 		// Enhance metadata
 		openApiDocument.info = {
-			title: "Dokploy API",
+			title: "Docklands API",
 			description:
-				"Complete API documentation for Dokploy - Deploy applications, manage databases, and orchestrate your infrastructure. This API allows you to programmatically manage all aspects of your Dokploy instance.",
+				"Complete API documentation for Docklands - Deploy applications, manage databases, and orchestrate your infrastructure. This API allows you to programmatically manage all aspects of your Docklands instance.",
 			version: "1.0.0",
 			contact: {
-				name: "Dokploy Team",
+				name: "Docklands Team",
 				url: "https://dokploy.com",
 			},
 			license: {
@@ -90,7 +90,7 @@ async function generateOpenAPI() {
 					in: "header",
 					name: "x-api-key",
 					description:
-						"API key authentication. Generate an API key from your Dokploy dashboard under Settings > API Keys.",
+						"API key authentication. Generate an API key from your Docklands dashboard under Settings > API Keys.",
 				},
 			},
 		};

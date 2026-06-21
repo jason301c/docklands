@@ -1,6 +1,6 @@
 # Contributing
 
-Hey, thanks for your interest in contributing to Dokploy! We appreciate your help and taking your time to contribute.
+Hey, thanks for your interest in contributing to Docklands! We appreciate your help and taking your time to contribute.
 
 Before you start, please first discuss the feature/bug you want to add with the owners and community via github issues.
 
@@ -176,13 +176,13 @@ curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.39.1/pack-v0.
 - **Focus and Scope:** Each Pull Request should ideally address a single, well-defined problem or introduce one new feature. This greatly facilitates review and reduces the chances of introducing unintended side effects.
 - **Avoid Unfocused Changes:** Please avoid submitting Pull Requests that contain only minor changes such as whitespace adjustments, IDE-generated formatting, or removal of unused variables, unless these are part of a larger, clearly defined refactor or a dedicated "cleanup" Pull Request that addresses a specific `good first issue` or maintenance task.
 - **Issue Association:** For any significant change, it's highly recommended to open an issue first to discuss the proposed solution with the community and maintainers. This ensures alignment and avoids duplicated effort. If your PR resolves an existing issue, please link it in the description (e.g., `Fixes #123`, `Closes #456`).
-- **Large Features:** Pull Requests that introduce very large or broad features **will not be accepted** unless the idea is first outlined and discussed in a GitHub issue. Large features should be designed together with the Dokploy team so the project stays coherent and moves in the same direction. Open an issue to propose and align on the design before implementing.
+- **Large Features:** Pull Requests that introduce very large or broad features **will not be accepted** unless the idea is first outlined and discussed in a GitHub issue. Large features should be designed together with the Docklands team so the project stays coherent and moves in the same direction. Open an issue to propose and align on the design before implementing.
 
 Thank you for your contribution!
 
 ## Templates
 
-To add a new template, go to `https://github.com/Dokploy/templates` repository and read the README.md file.
+To add a new template, go to `https://github.com/dokploy/templates` repository and read the README.md file.
 
 ### Recommendations
 
@@ -193,4 +193,4 @@ To add a new template, go to `https://github.com/Dokploy/templates` repository a
 
 ## Docs & Website
 
-To contribute to the Dokploy docs or website, please go to this [repository](https://github.com/Dokploy/website).
+To contribute to the Docklands docs or website, please go to this [repository](https://github.com/dokploy/website).

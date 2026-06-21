@@ -50,7 +50,7 @@ export const refreshGiteaToken = async (giteaProviderId: string) => {
 		}
 
 		// Token is expired or about to expire, refresh it
-		// Use internal URL when Gitea is on same instance as Dokploy
+		// Use internal URL when Gitea is on same instance as Docklands
 		const baseUrl = giteaProvider.giteaInternalUrl || giteaProvider.giteaUrl;
 		const tokenEndpoint = `${baseUrl}/login/oauth/access_token`;
 		const params = new URLSearchParams({
@@ -178,7 +178,7 @@ export const cloneGiteaRepository = async ({
 	);
 
 	command += `echo "Cloning Repo ${repoClone} to ${outputPath}: ✅";`;
-	command += `git clone --branch ${quote([giteaBranch])} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} ${cloneUrl} ${outputPath} --progress;`;
+	command += `git clone --branch ${quote([giteaBranch ?? ""])} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} ${cloneUrl} ${outputPath} --progress;`;
 	return command;
 };
 

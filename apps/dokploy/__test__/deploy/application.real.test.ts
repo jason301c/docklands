@@ -57,7 +57,7 @@ vi.mock("@dokploy/server/services/application", async () => {
 });
 
 vi.mock("@dokploy/server/services/admin", () => ({
-	getDokployUrl: vi.fn().mockResolvedValue("http://localhost:3000"),
+	getDocklandsUrl: vi.fn().mockResolvedValue("http://localhost:3000"),
 }));
 
 vi.mock("@dokploy/server/services/deployment", () => ({
@@ -101,7 +101,7 @@ const createMockApplication = (
 		name: "Real Test App",
 		appName: `real-test-${Date.now()}`,
 		sourceType: "git" as const,
-		customGitUrl: "https://github.com/Dokploy/examples.git",
+		customGitUrl: "https://github.com/dokploy/examples.git",
 		customGitBranch: "main",
 		customGitSSHKeyId: null,
 		customGitBuildPath: "/astro",
@@ -195,7 +195,7 @@ describe(
 			vi.mocked(applicationService.findApplicationById).mockResolvedValue(
 				mockApp as any,
 			);
-			vi.mocked(adminService.getDokployUrl).mockResolvedValue(
+			vi.mocked(adminService.getDocklandsUrl).mockResolvedValue(
 				"http://localhost:3000",
 			);
 			vi.mocked(deploymentService.createDeployment).mockResolvedValue(

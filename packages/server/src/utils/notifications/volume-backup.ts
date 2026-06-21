@@ -176,7 +176,7 @@ export const sendVolumeBackupNotifications = async ({
 					],
 					timestamp: date.toISOString(),
 					footer: {
-						text: "Dokploy Volume Backup Notification",
+						text: "Docklands Volume Backup Notification",
 					},
 				});
 			}
@@ -317,7 +317,7 @@ export const sendVolumeBackupNotifications = async ({
 				await sendMattermostNotification(mattermost, {
 					text: `**${statusEmoji} Volume Backup ${typeStatus}**\n\n**Project:** ${projectName}\n**Application:** ${applicationName}\n**Volume Name:** ${volumeName}\n**Service Type:** ${serviceType}${sizeInfo}\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}${errorMsg}`,
 					channel: mattermost.channel,
-					username: mattermost.username || "Dokploy",
+					username: mattermost.username || "Docklands",
 				});
 			}
 

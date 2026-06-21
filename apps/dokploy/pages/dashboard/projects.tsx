@@ -9,10 +9,10 @@ import { DashboardLayout } from "@/components/layouts/dashboard-layout";
 import { appRouter } from "@/server/api/root";
 import { api } from "@/utils/api";
 
-const ShowWelcomeDokploy = dynamic(
+const ShowWelcomeDocklands = dynamic(
 	() =>
 		import("@/components/dashboard/settings/billing/show-welcome-dokploy").then(
-			(mod) => mod.ShowWelcomeDokploy,
+			(mod) => mod.ShowWelcomeDocklands,
 		),
 	{ ssr: false },
 );
@@ -21,7 +21,7 @@ const Dashboard = () => {
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	return (
 		<>
-			{isCloud && <ShowWelcomeDokploy />}
+			{isCloud && <ShowWelcomeDocklands />}
 
 			<ShowProjects />
 		</>

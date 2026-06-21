@@ -33,7 +33,7 @@ export const InvoiceNotificationEmail = ({
 	date = "2024-01-01",
 	hostedInvoiceUrl = "https://invoice.stripe.com/example",
 }: TemplateProps) => {
-	const previewText = `Your Dokploy invoice ${invoiceNumber} for ${amountPaid} is ready`;
+	const previewText = `Your Docklands invoice ${invoiceNumber} for ${amountPaid} is ready`;
 	return (
 		<Html>
 			<Head />
@@ -54,10 +54,10 @@ export const InvoiceNotificationEmail = ({
 						{/* Header */}
 						<Section className="bg-[#09090b] rounded-t-xl px-[40px] py-[32px] text-center">
 							<Img
-								src="https://raw.githubusercontent.com/Dokploy/website/refs/heads/main/apps/docs/public/logo-dokploy-blackpng.png"
+								src="https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/dokploy/logo.png"
 								width="190"
 								height="120"
-								alt="Dokploy"
+								alt="Docklands"
 								className="my-0 mx-auto"
 							/>
 						</Section>
@@ -148,7 +148,7 @@ export const InvoiceNotificationEmail = ({
 									href="https://dokploy.com"
 									className="text-[#71717a] underline"
 								>
-									Dokploy Cloud
+									Docklands Cloud
 								</Link>
 								. If you have any questions about your billing, please contact
 								our{" "}

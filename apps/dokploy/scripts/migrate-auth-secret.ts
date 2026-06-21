@@ -6,7 +6,7 @@
  *   OLD_SECRET=<old_secret> NEW_SECRET=<new_secret> npx tsx apps/dokploy/scripts/migrate-auth-secret.ts
  *
  * Both OLD_SECRET and NEW_SECRET are required.
- * Run this BEFORE restarting Dokploy with the new secret.
+ * Run this BEFORE restarting Docklands with the new secret.
  */
 import { db } from "@dokploy/server/db";
 import { twoFactor } from "@dokploy/server/db/schema";

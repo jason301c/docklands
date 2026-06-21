@@ -104,7 +104,7 @@ export const removeUserById = async (userId: string) => {
 		.then((res) => res[0]);
 };
 
-export const getDokployUrl = async () => {
+export const getDocklandsUrl = async () => {
 	if (IS_CLOUD) {
 		return "https://app.dokploy.com";
 	}

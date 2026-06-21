@@ -222,7 +222,7 @@ export const addDomainToCompose = async (
 
 		if (!compose.isolatedDeployment) {
 			// Add the dokploy-network to the service
-			result.services[serviceName].networks = addDokployNetworkToService(
+			result.services[serviceName].networks = addDocklandsNetworkToService(
 				result.services[serviceName].networks,
 			);
 		}
@@ -230,7 +230,7 @@ export const addDomainToCompose = async (
 
 	// Add dokploy-network to the root of the compose file
 	if (!compose.isolatedDeployment) {
-		result.networks = addDokployNetworkToRoot(result.networks);
+		result.networks = addDocklandsNetworkToRoot(result.networks);
 	}
 
 	return result;
@@ -347,7 +347,7 @@ export const createDomainLabels = (
 	return labels;
 };
 
-export const addDokployNetworkToService = (
+export const addDocklandsNetworkToService = (
 	networkService: DefinitionsService["networks"],
 ) => {
 	let networks = networkService;
@@ -376,7 +376,7 @@ export const addDokployNetworkToService = (
 	return networks;
 };
 
-export const addDokployNetworkToRoot = (
+export const addDocklandsNetworkToRoot = (
 	networkRoot: PropertiesNetworks | undefined,
 ) => {
 	let networks = networkRoot;
