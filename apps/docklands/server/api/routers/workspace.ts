@@ -5,7 +5,9 @@ import {
 	apiFindWorkspace,
 	apiRemoveWorkspaceConnection,
 	apiUpdateWorkspaceNode,
+	apiUpdateWorkspaceServiceEnv,
 	apiWorkspaceConnectionVariables,
+	apiWorkspaceServiceEnv,
 } from "@/server/core/db/schema";
 import { findEnvironmentById } from "@/server/core/services/environment";
 import {
@@ -20,7 +22,9 @@ import {
 	findWorkspaceConnectionById,
 	getEnvironmentWorkspace,
 	getWorkspaceConnectionVariableEntries,
+	readWorkspaceServiceEnv,
 	removeWorkspaceConnection,
+	updateWorkspaceServiceEnv,
 	upsertWorkspaceNode,
 } from "@/server/core/services/workspace";
 
@@ -120,6 +124,53 @@ export const workspaceRouter = createTRPCRouter({
 			);
 
 			return upsertWorkspaceNode(input);
+		}),
+
+	serviceEnv: protectedProcedure
+		.input(apiWorkspaceServiceEnv)
+		.query(async ({ input, ctx }) => {
+			await checkPermission(ctx, { envVars: ["read"] });
+			const environment = await getAuthorizedEnvironment(
+				ctx,
+				input.environmentId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				input.serviceType,
+				input.serviceId,
+			);
+
+			const service = await readWorkspaceServiceEnv(input);
+			if (!service) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Service not found",
+				});
+			}
+
+			return {
+				env: service.env ?? "",
+			};
+		}),
+
+	updateServiceEnv: protectedProcedure
+		.input(apiUpdateWorkspaceServiceEnv)
+		.mutation(async ({ input, ctx }) => {
+			await checkPermission(ctx, { envVars: ["write"] });
+			const environment = await getAuthorizedEnvironment(
+				ctx,
+				input.environmentId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				input.serviceType,
+				input.serviceId,
+			);
+
+			await updateWorkspaceServiceEnv(input);
+			return {
+				env: input.env,
+			};
 		}),
 
 	connect: protectedProcedure

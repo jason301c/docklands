@@ -367,102 +367,124 @@ const getConnectionVariableEntriesFromSource = async (
 };
 
 const readTargetEnv = async (connection: WorkspaceConnection) => {
-	switch (connection.targetServiceType) {
-		case "application":
-			return db.query.applications.findFirst({
-				where: eq(applications.applicationId, connection.targetServiceId),
-				columns: { env: true },
-			});
-		case "compose":
-			return db.query.compose.findFirst({
-				where: eq(compose.composeId, connection.targetServiceId),
-				columns: { env: true },
-			});
-		case "postgres":
-			return db.query.postgres.findFirst({
-				where: eq(postgres.postgresId, connection.targetServiceId),
-				columns: { env: true },
-			});
-		case "mysql":
-			return db.query.mysql.findFirst({
-				where: eq(mysql.mysqlId, connection.targetServiceId),
-				columns: { env: true },
-			});
-		case "mariadb":
-			return db.query.mariadb.findFirst({
-				where: eq(mariadb.mariadbId, connection.targetServiceId),
-				columns: { env: true },
-			});
-		case "mongo":
-			return db.query.mongo.findFirst({
-				where: eq(mongo.mongoId, connection.targetServiceId),
-				columns: { env: true },
-			});
-		case "redis":
-			return db.query.redis.findFirst({
-				where: eq(redis.redisId, connection.targetServiceId),
-				columns: { env: true },
-			});
-		case "libsql":
-			return db.query.libsql.findFirst({
-				where: eq(libsql.libsqlId, connection.targetServiceId),
-				columns: { env: true },
-			});
-	}
+	return readWorkspaceServiceEnv({
+		serviceType: connection.targetServiceType,
+		serviceId: connection.targetServiceId,
+	});
 };
 
 const updateTargetEnv = async (
 	connection: WorkspaceConnection,
 	env: string,
 ) => {
-	switch (connection.targetServiceType) {
+	return updateWorkspaceServiceEnv({
+		serviceType: connection.targetServiceType,
+		serviceId: connection.targetServiceId,
+		env,
+	});
+};
+
+export const readWorkspaceServiceEnv = async (input: {
+	serviceType: WorkspaceServiceType;
+	serviceId: string;
+}) => {
+	switch (input.serviceType) {
+		case "application":
+			return db.query.applications.findFirst({
+				where: eq(applications.applicationId, input.serviceId),
+				columns: { env: true },
+			});
+		case "compose":
+			return db.query.compose.findFirst({
+				where: eq(compose.composeId, input.serviceId),
+				columns: { env: true },
+			});
+		case "postgres":
+			return db.query.postgres.findFirst({
+				where: eq(postgres.postgresId, input.serviceId),
+				columns: { env: true },
+			});
+		case "mysql":
+			return db.query.mysql.findFirst({
+				where: eq(mysql.mysqlId, input.serviceId),
+				columns: { env: true },
+			});
+		case "mariadb":
+			return db.query.mariadb.findFirst({
+				where: eq(mariadb.mariadbId, input.serviceId),
+				columns: { env: true },
+			});
+		case "mongo":
+			return db.query.mongo.findFirst({
+				where: eq(mongo.mongoId, input.serviceId),
+				columns: { env: true },
+			});
+		case "redis":
+			return db.query.redis.findFirst({
+				where: eq(redis.redisId, input.serviceId),
+				columns: { env: true },
+			});
+		case "libsql":
+			return db.query.libsql.findFirst({
+				where: eq(libsql.libsqlId, input.serviceId),
+				columns: { env: true },
+			});
+	}
+};
+
+export const updateWorkspaceServiceEnv = async (input: {
+	serviceType: WorkspaceServiceType;
+	serviceId: string;
+	env: string;
+}) => {
+	switch (input.serviceType) {
 		case "application":
 			return db
 				.update(applications)
-				.set({ env })
-				.where(eq(applications.applicationId, connection.targetServiceId))
+				.set({ env: input.env })
+				.where(eq(applications.applicationId, input.serviceId))
 				.returning();
 		case "compose":
 			return db
 				.update(compose)
-				.set({ env })
-				.where(eq(compose.composeId, connection.targetServiceId))
+				.set({ env: input.env })
+				.where(eq(compose.composeId, input.serviceId))
 				.returning();
 		case "postgres":
 			return db
 				.update(postgres)
-				.set({ env })
-				.where(eq(postgres.postgresId, connection.targetServiceId))
+				.set({ env: input.env })
+				.where(eq(postgres.postgresId, input.serviceId))
 				.returning();
 		case "mysql":
 			return db
 				.update(mysql)
-				.set({ env })
-				.where(eq(mysql.mysqlId, connection.targetServiceId))
+				.set({ env: input.env })
+				.where(eq(mysql.mysqlId, input.serviceId))
 				.returning();
 		case "mariadb":
 			return db
 				.update(mariadb)
-				.set({ env })
-				.where(eq(mariadb.mariadbId, connection.targetServiceId))
+				.set({ env: input.env })
+				.where(eq(mariadb.mariadbId, input.serviceId))
 				.returning();
 		case "mongo":
 			return db
 				.update(mongo)
-				.set({ env })
-				.where(eq(mongo.mongoId, connection.targetServiceId))
+				.set({ env: input.env })
+				.where(eq(mongo.mongoId, input.serviceId))
 				.returning();
 		case "redis":
 			return db
 				.update(redis)
-				.set({ env })
-				.where(eq(redis.redisId, connection.targetServiceId))
+				.set({ env: input.env })
+				.where(eq(redis.redisId, input.serviceId))
 				.returning();
 		case "libsql":
 			return db
 				.update(libsql)
-				.set({ env })
-				.where(eq(libsql.libsqlId, connection.targetServiceId))
+				.set({ env: input.env })
+				.where(eq(libsql.libsqlId, input.serviceId))
 				.returning();
 	}
 };

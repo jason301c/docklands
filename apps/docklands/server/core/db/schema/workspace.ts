@@ -131,3 +131,13 @@ export const apiRemoveWorkspaceConnection = z.object({
 export const apiWorkspaceConnectionVariables = z.object({
 	connectionId: z.string().min(1),
 });
+
+export const apiWorkspaceServiceEnv = z.object({
+	environmentId: z.string().min(1),
+	serviceId: z.string().min(1),
+	serviceType: z.enum(workspaceServiceType.enumValues),
+});
+
+export const apiUpdateWorkspaceServiceEnv = apiWorkspaceServiceEnv.extend({
+	env: z.string(),
+});

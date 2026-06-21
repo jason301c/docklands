@@ -4,6 +4,7 @@ import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Textarea } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import {
@@ -199,9 +200,10 @@ export const EnvironmentCanvas = ({
 	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [commandOpen, setCommandOpen] = useState(false);
-	const [drawerTab, setDrawerTab] = useState<"overview" | "connections">(
-		"overview",
-	);
+	const [drawerTab, setDrawerTab] = useState<
+		"overview" | "variables" | "connections"
+	>("overview");
+	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
 	const dragState = useRef<DragState | null>(null);
 	const suppressClick = useRef(false);
 
@@ -210,6 +212,7 @@ export const EnvironmentCanvas = ({
 	const removeConnection = api.workspace.removeConnection.useMutation();
 	const applyConnectionVariables =
 		api.workspace.applyConnectionVariables.useMutation();
+	const updateServiceEnv = api.workspace.updateServiceEnv.useMutation();
 
 	const serviceActions = {
 		application: {
@@ -304,6 +307,30 @@ export const EnvironmentCanvas = ({
 				),
 			)
 		: null;
+
+	const serviceEnvQueryInput = selectedServiceModel
+		? {
+				environmentId,
+				serviceId: selectedServiceModel.id,
+				serviceType: selectedServiceModel.type,
+			}
+		: {
+				environmentId,
+				serviceId: "",
+				serviceType: "application" as const,
+			};
+	const serviceEnvQuery = api.workspace.serviceEnv.useQuery(
+		serviceEnvQueryInput,
+		{
+			enabled: !!selectedServiceModel && drawerTab === "variables",
+		},
+	);
+
+	useEffect(() => {
+		if (serviceEnvQuery.data) {
+			setServiceEnvDraft(serviceEnvQuery.data.env);
+		}
+	}, [serviceEnvQuery.data]);
 
 	const filteredServices = useMemo(() => {
 		const query = searchQuery.trim().toLowerCase();
@@ -523,6 +550,33 @@ export const EnvironmentCanvas = ({
 					`${result.entries.length} variable${result.entries.length === 1 ? "" : "s"} applied`,
 				error: (error) =>
 					`Could not apply variables: ${error instanceof Error ? error.message : "Unknown error"}`,
+			},
+		);
+		void utils.workspace.serviceEnv.invalidate(serviceEnvQueryInput);
+	};
+
+	const saveServiceEnv = async () => {
+		if (!selectedServiceModel) return;
+
+		toast.promise(
+			updateServiceEnv.mutateAsync({
+				environmentId,
+				serviceId: selectedServiceModel.id,
+				serviceType: selectedServiceModel.type,
+				env: serviceEnvDraft,
+			}),
+			{
+				loading: "Saving variables...",
+				success: async () => {
+					await utils.workspace.serviceEnv.invalidate({
+						environmentId,
+						serviceId: selectedServiceModel.id,
+						serviceType: selectedServiceModel.type,
+					});
+					return "Variables saved";
+				},
+				error: (error) =>
+					`Could not save variables: ${error instanceof Error ? error.message : "Unknown error"}`,
 			},
 		);
 	};
@@ -877,6 +931,7 @@ export const EnvironmentCanvas = ({
 							}
 							tabs={[
 								{ value: "overview", label: "Overview" },
+								{ value: "variables", label: "Variables" },
 								{ value: "connections", label: "Connections" },
 							]}
 						/>
@@ -968,6 +1023,38 @@ export const EnvironmentCanvas = ({
 										type={selectedServiceModel.type}
 									/>
 								</div>
+							</div>
+						)}
+
+						{drawerTab === "variables" && (
+							<div className="space-y-3">
+								{serviceEnvQuery.isPending ? (
+									<div className="flex items-center gap-2 text-sm text-muted-foreground">
+										<Loader2 className="size-4 animate-spin" />
+										<span>Loading variables...</span>
+									</div>
+								) : (
+									<>
+										<Textarea
+											value={serviceEnvDraft}
+											onChange={(event) =>
+												setServiceEnvDraft(event.target.value)
+											}
+											readOnly={!permissions?.envVars.write}
+											placeholder="KEY=value"
+											className="min-h-[22rem] resize-y font-mono text-sm"
+										/>
+										<div className="flex justify-end">
+											<Button
+												onClick={saveServiceEnv}
+												loading={updateServiceEnv.isPending}
+												disabled={!permissions?.envVars.write}
+											>
+												Save variables
+											</Button>
+										</div>
+									</>
+								)}
 							</div>
 						)}
 
