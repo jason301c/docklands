@@ -43,6 +43,7 @@ import {
 	useState,
 } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { AddApplication } from "@/components/dashboard/project/add-application";
@@ -102,6 +103,11 @@ type CommandItem = {
 	icon: ReactNode;
 	run: () => void;
 };
+
+const deploymentServiceTypes = new Set<WorkspaceServiceType>([
+	"application",
+	"compose",
+]);
 
 const serviceTypeLabels: Record<WorkspaceServiceType, string> = {
 	application: "Application",
@@ -225,7 +231,7 @@ export const EnvironmentCanvas = ({
 	const [searchQuery, setSearchQuery] = useState("");
 	const [commandOpen, setCommandOpen] = useState(false);
 	const [drawerTab, setDrawerTab] = useState<
-		"overview" | "variables" | "previews" | "connections"
+		"overview" | "variables" | "deployments" | "previews" | "connections"
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
 	const dragState = useRef<DragState | null>(null);
@@ -334,6 +340,11 @@ export const EnvironmentCanvas = ({
 	const drawerTabs = [
 		{ value: "overview", label: "Overview" },
 		{ value: "variables", label: "Variables" },
+		...(selectedServiceModel &&
+		deploymentServiceTypes.has(selectedServiceModel.type) &&
+		permissions?.deployment.read
+			? [{ value: "deployments", label: "Deployments" }]
+			: []),
 		...(selectedServiceModel?.type === "application"
 			? [{ value: "previews", label: "Previews" }]
 			: []),
@@ -371,7 +382,15 @@ export const EnvironmentCanvas = ({
 		) {
 			setDrawerTab("overview");
 		}
-	}, [drawerTab, selectedServiceModel?.type]);
+		if (
+			drawerTab === "deployments" &&
+			(!selectedServiceModel ||
+				!deploymentServiceTypes.has(selectedServiceModel.type) ||
+				!permissions?.deployment.read)
+		) {
+			setDrawerTab("overview");
+		}
+	}, [drawerTab, permissions?.deployment.read, selectedServiceModel]);
 
 	const filteredServices = useMemo(() => {
 		const query = searchQuery.trim().toLowerCase();
@@ -715,7 +734,9 @@ export const EnvironmentCanvas = ({
 					icon: <Settings2 className="size-5 text-muted-foreground" />,
 					run: () => {
 						setCommandOpen(false);
-						router.push(getServiceSettingsHref(projectId, environmentId, service));
+						router.push(
+							getServiceSettingsHref(projectId, environmentId, service),
+						);
 					},
 				},
 			];
@@ -1316,6 +1337,15 @@ export const EnvironmentCanvas = ({
 								)}
 							</div>
 						)}
+
+						{drawerTab === "deployments" &&
+							(selectedServiceModel.type === "application" ||
+								selectedServiceModel.type === "compose") && (
+								<ShowDeployments
+									id={selectedServiceModel.id}
+									type={selectedServiceModel.type}
+								/>
+							)}
 
 						{drawerTab === "previews" &&
 							selectedServiceModel.type === "application" && (
