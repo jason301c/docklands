@@ -158,6 +158,12 @@ export const SearchCommand = () => {
 
 		const applicationItems: SearchItem[] = [
 			{
+				id: "app-workspace",
+				title: "Workspace",
+				searchText: "workspace overview dashboard home",
+				onSelect: () => navigate("/dashboard/workspace"),
+			},
+			{
 				id: "app-projects",
 				title: "Projects",
 				searchText: "projects",

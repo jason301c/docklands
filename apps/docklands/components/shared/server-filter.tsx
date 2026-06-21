@@ -18,7 +18,7 @@ export const ServerFilter = ({ children }: Props) => {
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
-	const currentPathname = pathname ?? "/dashboard/home";
+	const currentPathname = pathname ?? "/dashboard/workspace";
 	const { data: servers, isLoading: isLoadingServers } =
 		api.server.withSSHKey.useQuery();
 	const { data: isCloud, isLoading: isLoadingCloud } =

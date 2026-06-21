@@ -1,5 +1,5 @@
-import ClientPage from "./_client";
+import { redirect } from "next/navigation";
 
 export default function Page() {
-	return <ClientPage />;
+	redirect("/dashboard/workspace");
 }

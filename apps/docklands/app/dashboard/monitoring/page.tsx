@@ -3,6 +3,6 @@ import ClientPage from "./_client";
 
 export default async function Page() {
 	requireSelfHosted();
-	await requirePermission("monitoring", "read", "/dashboard/home");
+	await requirePermission("monitoring", "read", "/dashboard/workspace");
 	return <ClientPage />;
 }

@@ -78,10 +78,10 @@ export const UserNav = () => {
 					<DropdownMenu.Item
 						className="cursor-pointer"
 						onClick={() => {
-							router.push("/dashboard/home");
+							router.push("/dashboard/workspace");
 						}}
 					>
-						Projects
+						Workspace
 					</DropdownMenu.Item>
 					{!isCloud ? (
 						<>

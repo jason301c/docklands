@@ -1,21 +1,16 @@
 "use client";
 
-
-
-
+import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Logo } from "@/components/shared/logo";
-import { Button, LinkButton } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -24,7 +19,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { Logo } from "@/components/shared/logo";
+import { toast } from "@/components/shared/toast";
 
 const registerSchema = z
 	.object({
@@ -139,7 +135,7 @@ const Invitation = ({
 			});
 
 			toast.success("Account created successfully");
-			router.push("/dashboard/home");
+			router.push("/dashboard/workspace");
 		} catch {
 			toast.error("An error occurred while creating your account");
 		}
@@ -173,9 +169,7 @@ const Invitation = ({
 						</div>
 					) : (
 						<>
-							<p>
-								Fill the form below to create your account
-							</p>
+							<p>Fill the form below to create your account</p>
 							<div className="w-full">
 								<div className="p-3" />
 

@@ -1,25 +1,20 @@
 "use client";
 
-
-
-
-
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
 import { SignInWithGithub } from "@/components/auth/sign-in-with-github";
 import { SignInWithGoogle } from "@/components/auth/sign-in-with-google";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Logo } from "@/components/shared/logo";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -28,9 +23,9 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
 import { InputOTP } from "@/components/shared/input-otp";
-import { Label } from "@cloudflare/kumo/components/label";
+import { Logo } from "@/components/shared/logo";
+import { toast } from "@/components/shared/toast";
 
 const LoginSchema = z.object({
 	email: z.string().email(),
@@ -96,7 +91,7 @@ export default function Home({ IS_CLOUD }: Props) {
 			}
 
 			toast.success("Logged in successfully");
-			router.push("/dashboard/home");
+			router.push("/dashboard/workspace");
 		} catch {
 			toast.error("An error occurred while logging in");
 		} finally {
@@ -123,7 +118,7 @@ export default function Home({ IS_CLOUD }: Props) {
 			}
 
 			toast.success("Logged in successfully");
-			router.push("/dashboard/home");
+			router.push("/dashboard/workspace");
 		} catch {
 			toast.error("An error occurred while verifying 2FA code");
 		} finally {
@@ -153,7 +148,7 @@ export default function Home({ IS_CLOUD }: Props) {
 			}
 
 			toast.success("Logged in successfully");
-			router.push("/dashboard/home");
+			router.push("/dashboard/workspace");
 		} catch {
 			toast.error("An error occurred while verifying backup code");
 		} finally {
@@ -250,9 +245,7 @@ export default function Home({ IS_CLOUD }: Props) {
 									pattern={REGEXP_ONLY_DIGITS}
 									autoFocus
 								/>
-								<p>
-									Enter the 6-digit code from your authenticator app
-								</p>
+								<p>Enter the 6-digit code from your authenticator app</p>
 								<button
 									type="button"
 									onClick={() => setIsBackupCodeModalOpen(true)}

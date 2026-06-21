@@ -128,8 +128,8 @@ const MENU: Menu = {
 	home: [
 		{
 			isSingle: true,
-			title: "Overview",
-			url: "/dashboard/home",
+			title: "Workspace",
+			url: "/dashboard/workspace",
 			icon: House,
 		},
 		{
