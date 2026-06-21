@@ -41,6 +41,7 @@ import { swarmRouter } from "./routers/swarm";
 import { tagRouter } from "./routers/tag";
 import { userRouter } from "./routers/user";
 import { volumeBackupsRouter } from "./routers/volume-backups";
+import { workspaceRouter } from "./routers/workspace";
 
 /**
  * This is the primary router for your server.
@@ -91,6 +92,7 @@ export const appRouter = createTRPCRouter({
 	environment: environmentRouter,
 	tag: tagRouter,
 	patch: patchRouter,
+	workspace: workspaceRouter,
 });
 
 // export type definition of API

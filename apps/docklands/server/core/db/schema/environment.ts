@@ -11,6 +11,10 @@ import { mysql } from "./mysql";
 import { postgres } from "./postgres";
 import { projects } from "./project";
 import { redis } from "./redis";
+import {
+	workspaceServiceConnections,
+	workspaceServiceLayouts,
+} from "./workspace";
 
 export const environments = pgTable("environment", {
 	environmentId: text("environmentId")
@@ -44,6 +48,8 @@ export const environmentRelations = relations(
 		mysql: many(mysql),
 		postgres: many(postgres),
 		redis: many(redis),
+		workspaceServiceLayouts: many(workspaceServiceLayouts),
+		workspaceServiceConnections: many(workspaceServiceConnections),
 	}),
 );
 

@@ -8,6 +8,13 @@
       "when": 1782059216241,
       "tag": "0000_docklands_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782070369682,
+      "tag": "0001_next_riptide",
+      "breakpoints": true
     }
   ]
 }
