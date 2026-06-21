@@ -26,7 +26,7 @@ export const requireUser = async () => {
 export const redirectAuthenticatedUser = async () => {
 	const { user } = await getAppSession();
 	if (user) {
-		redirect("/dashboard/home");
+		redirect("/dashboard/projects");
 	}
 };
 
