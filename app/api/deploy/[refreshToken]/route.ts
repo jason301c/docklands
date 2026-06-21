@@ -1,5 +1,4 @@
-import legacyHandler from "@/server/web/legacy-api/deploy/[refreshToken]";
-import { runNextApiHandler } from "@/server/web/next-api-compat";
+import { handleApplicationDeployWebhook } from "@/server/web/deploy/application-webhook";
 
 export const runtime = "nodejs";
 
@@ -8,6 +7,6 @@ type RouteContext = {
 };
 
 const handler = async (request: Request, context: RouteContext) =>
-	runNextApiHandler(request, legacyHandler, await context.params);
+	handleApplicationDeployWebhook(request, (await context.params).refreshToken);
 
 export { handler as GET, handler as POST };

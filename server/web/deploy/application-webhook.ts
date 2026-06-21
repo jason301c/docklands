@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import type { NextApiRequest, NextApiResponse } from "next";
 import { applications } from "@/server/db/schema";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
@@ -9,6 +8,11 @@ import { db } from "@/server-core/db";
 import type { Bitbucket } from "@/server-core/services/bitbucket";
 import { getBitbucketHeaders } from "@/server-core/utils/providers/bitbucket";
 import { shouldDeploy } from "@/server-core/utils/watch-paths/should-deploy";
+import {
+	jsonResponse,
+	parseRequestBody,
+	requestHeadersToObject,
+} from "@/server/web/request";
 
 /**
  * Log a webhook handler error server-side without leaking its shape to the HTTP
@@ -30,18 +34,19 @@ const getPackageVersion = (headers: any, body: any) => {
 	return null;
 };
 
-export default async function handler(
-	req: NextApiRequest,
-	res: NextApiResponse,
+export async function handleApplicationDeployWebhook(
+	request: Request,
+	refreshToken: string,
 ) {
-	const { refreshToken } = req.query;
+	const headers = requestHeadersToObject(request.headers);
+	const body = await parseRequestBody(request);
+
 	try {
-		if (req.headers["x-github-event"] === "ping") {
-			res.status(200).json({ message: "Ping received, webhook is active" });
-			return;
+		if (headers["x-github-event"] === "ping") {
+			return jsonResponse({ message: "Ping received, webhook is active" });
 		}
 		const application = await db.query.applications.findFirst({
-			where: eq(applications.refreshToken, refreshToken as string),
+			where: eq(applications.refreshToken, refreshToken),
 			with: {
 				environment: {
 					with: {
@@ -53,39 +58,36 @@ export default async function handler(
 		});
 
 		if (!application) {
-			res.status(404).json({ message: "Application Not Found" });
-			return;
+			return jsonResponse({ message: "Application Not Found" }, 404);
 		}
 		if (!application?.autoDeploy) {
-			res.status(400).json({
-				message: "Automatic deployments are disabled for this application",
-			});
-			return;
+			return jsonResponse(
+				{
+					message: "Automatic deployments are disabled for this application",
+				},
+				400,
+			);
 		}
 
-		const deploymentTitle = extractCommitMessage(req.headers, req.body);
+		const deploymentTitle = extractCommitMessage(headers, body);
 
-		const deploymentHash = extractHash(req.headers, req.body);
+		const deploymentHash = extractHash(headers, body);
 		const sourceType = application.sourceType;
 
 		if (sourceType === "docker") {
 			const applicationImageName = extractImageName(application.dockerImage);
 			const applicationDockerTag = extractImageTag(application.dockerImage);
 
-			const webhookImageName = extractImageNameFromRequest(
-				req.headers,
-				req.body,
-			);
-			const webhookDockerTag = extractImageTagFromRequest(
-				req.headers,
-				req.body,
-			);
+			const webhookImageName = extractImageNameFromRequest(headers, body);
+			const webhookDockerTag = extractImageTagFromRequest(headers, body);
 
 			if (!applicationImageName) {
-				res.status(301).json({
-					message: "Application Docker Image Name Not Found",
-				});
-				return;
+				return jsonResponse(
+					{
+						message: "Application Docker Image Name Not Found",
+					},
+					301,
+				);
 			}
 
 			// If webhook provides image information, validate it matches the configured image
@@ -93,31 +95,37 @@ export default async function handler(
 			if (webhookImageName) {
 				// Validate image name matches
 				if (webhookImageName !== applicationImageName) {
-					res.status(301).json({
-						message: `Application Image Name (${applicationImageName}) doesn't match request event payload Image Name (${webhookImageName}).`,
-					});
-					return;
+					return jsonResponse(
+						{
+							message: `Application Image Name (${applicationImageName}) doesn't match request event payload Image Name (${webhookImageName}).`,
+						},
+						301,
+					);
 				}
 
 				if (!applicationDockerTag) {
-					res.status(301).json({
-						message: "Application Docker Tag Not Found",
-					});
-					return;
+					return jsonResponse(
+						{
+							message: "Application Docker Tag Not Found",
+						},
+						301,
+					);
 				}
 
 				if (webhookDockerTag) {
 					if (webhookDockerTag !== applicationDockerTag) {
-						res.status(301).json({
-							message: `Application Image Tag (${applicationDockerTag}) doesn't match request event payload Image Tag (${webhookDockerTag}).`,
-						});
-						return;
+						return jsonResponse(
+							{
+								message: `Application Image Tag (${applicationDockerTag}) doesn't match request event payload Image Tag (${webhookDockerTag}).`,
+							},
+							301,
+						);
 					}
 				}
 			}
 			// If webhook doesn't provide image info, we'll use the configured image (old behavior)
 		} else if (sourceType === "github") {
-			const normalizedCommits = req.body?.commits?.flatMap(
+			const normalizedCommits = body?.commits?.flatMap(
 				(commit: any) => commit.modified,
 			);
 
@@ -127,40 +135,37 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 
-			const branchName = extractBranchName(req.headers, req.body);
+			const branchName = extractBranchName(headers, body);
 			if (!branchName || branchName !== application.branch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 		} else if (sourceType === "git") {
-			const branchName = extractBranchName(req.headers, req.body);
+			const branchName = extractBranchName(headers, body);
 
 			if (!branchName || branchName !== application.customGitBranch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 
-			const provider = getProviderByHeader(req.headers);
+			const provider = getProviderByHeader(headers);
 			let normalizedCommits: string[] = [];
 
 			if (provider === "github") {
-				normalizedCommits = req.body?.commits?.flatMap(
+				normalizedCommits = body?.commits?.flatMap(
 					(commit: any) => commit.modified,
 				);
 			} else if (provider === "gitlab") {
-				normalizedCommits = req.body?.commits?.flatMap(
+				normalizedCommits = body?.commits?.flatMap(
 					(commit: any) => commit.modified,
 				);
 			} else if (provider === "gitea") {
-				normalizedCommits = req.body?.commits?.flatMap(
+				normalizedCommits = body?.commits?.flatMap(
 					(commit: any) => commit.modified,
 				);
 			} else if (provider === "soft-serve") {
-				normalizedCommits = req.body?.commits?.flatMap(
+				normalizedCommits = body?.commits?.flatMap(
 					(commit: any) => commit.modified,
 				);
 			}
@@ -171,13 +176,12 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 		} else if (sourceType === "gitlab") {
-			const branchName = extractBranchName(req.headers, req.body);
+			const branchName = extractBranchName(headers, body);
 
-			const normalizedCommits = req.body?.commits?.flatMap(
+			const normalizedCommits = body?.commits?.flatMap(
 				(commit: any) => commit.modified,
 			);
 
@@ -187,24 +191,21 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 
 			if (!branchName || branchName !== application.gitlabBranch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 		} else if (sourceType === "bitbucket") {
-			const branchName = extractBranchName(req.headers, req.body);
+			const branchName = extractBranchName(headers, body);
 
 			if (!branchName || branchName !== application.bitbucketBranch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 
 			const committedPaths = await extractCommittedPaths(
-				req.body,
+				body,
 				application.bitbucket,
 				application.bitbucketRepositorySlug ||
 					application.bitbucketRepository ||
@@ -217,13 +218,12 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 		} else if (sourceType === "gitea") {
-			const branchName = extractBranchName(req.headers, req.body);
+			const branchName = extractBranchName(headers, body);
 
-			const normalizedCommits = req.body?.commits?.flatMap(
+			const normalizedCommits = body?.commits?.flatMap(
 				(commit: any) => commit.modified,
 			);
 
@@ -233,13 +233,11 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 
 			if (!branchName || branchName !== application.giteaBranch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 		}
 
@@ -270,14 +268,13 @@ export default async function handler(
 			}
 		} catch (error) {
 			logWebhookError("Error deploying Application:", error);
-			res.status(400).json({ message: "Error deploying Application" });
-			return;
+			return jsonResponse({ message: "Error deploying Application" }, 400);
 		}
 
-		res.status(200).json({ message: "Application deployed successfully" });
+		return jsonResponse({ message: "Application deployed successfully" });
 	} catch (error) {
 		logWebhookError("Error deploying Application:", error);
-		res.status(400).json({ message: "Error deploying Application" });
+		return jsonResponse({ message: "Error deploying Application" }, 400);
 	}
 }
 

@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import type { NextApiRequest, NextApiResponse } from "next";
 import { compose } from "@/server/db/schema";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
@@ -8,26 +7,32 @@ import { IS_CLOUD } from "@/server-core/constants/env";
 import { db } from "@/server-core/db";
 import { shouldDeploy } from "@/server-core/utils/watch-paths/should-deploy";
 import {
+	jsonResponse,
+	parseRequestBody,
+	requestHeadersToObject,
+} from "@/server/web/request";
+import {
 	extractBranchName,
 	extractCommitMessage,
 	extractCommittedPaths,
 	extractHash,
 	getProviderByHeader,
 	logWebhookError,
-} from "../[refreshToken]";
+} from "./application-webhook";
 
-export default async function handler(
-	req: NextApiRequest,
-	res: NextApiResponse,
+export async function handleComposeDeployWebhook(
+	request: Request,
+	refreshToken: string,
 ) {
-	const { refreshToken } = req.query;
+	const headers = requestHeadersToObject(request.headers);
+	const body = await parseRequestBody(request);
+
 	try {
-		if (req.headers["x-github-event"] === "ping") {
-			res.status(200).json({ message: "Ping received, webhook is active" });
-			return;
+		if (headers["x-github-event"] === "ping") {
+			return jsonResponse({ message: "Ping received, webhook is active" });
 		}
 		const composeResult = await db.query.compose.findFirst({
-			where: eq(compose.refreshToken, refreshToken as string),
+			where: eq(compose.refreshToken, refreshToken),
 			with: {
 				environment: {
 					with: {
@@ -39,23 +44,24 @@ export default async function handler(
 		});
 
 		if (!composeResult) {
-			res.status(404).json({ message: "Compose Not Found" });
-			return;
+			return jsonResponse({ message: "Compose Not Found" }, 404);
 		}
 		if (!composeResult?.autoDeploy) {
-			res.status(400).json({
-				message: "Automatic deployments are disabled for this compose",
-			});
-			return;
+			return jsonResponse(
+				{
+					message: "Automatic deployments are disabled for this compose",
+				},
+				400,
+			);
 		}
 
-		const deploymentTitle = extractCommitMessage(req.headers, req.body);
-		const deploymentHash = extractHash(req.headers, req.body);
+		const deploymentTitle = extractCommitMessage(headers, body);
+		const deploymentHash = extractHash(headers, body);
 		const sourceType = composeResult.sourceType;
 
 		if (sourceType === "github") {
-			const branchName = extractBranchName(req.headers, req.body);
-			const normalizedCommits = req.body?.commits?.flatMap(
+			const branchName = extractBranchName(headers, body);
+			const normalizedCommits = body?.commits?.flatMap(
 				(commit: any) => commit.modified,
 			);
 
@@ -65,17 +71,15 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 
 			if (!branchName || branchName !== composeResult.branch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 		} else if (sourceType === "gitlab") {
-			const branchName = extractBranchName(req.headers, req.body);
-			const normalizedCommits = req.body?.commits?.flatMap(
+			const branchName = extractBranchName(headers, body);
+			const normalizedCommits = body?.commits?.flatMap(
 				(commit: any) => commit.modified,
 			);
 
@@ -85,22 +89,19 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 			if (!branchName || branchName !== composeResult.gitlabBranch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 		} else if (sourceType === "bitbucket") {
-			const branchName = extractBranchName(req.headers, req.body);
+			const branchName = extractBranchName(headers, body);
 			if (!branchName || branchName !== composeResult.bitbucketBranch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 
 			const committedPaths = await extractCommittedPaths(
-				req.body,
+				body,
 				composeResult.bitbucket,
 				composeResult.bitbucketRepositorySlug ||
 					composeResult.bitbucketRepository ||
@@ -113,28 +114,26 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 		} else if (sourceType === "git") {
-			const branchName = extractBranchName(req.headers, req.body);
+			const branchName = extractBranchName(headers, body);
 			if (!branchName || branchName !== composeResult.customGitBranch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
-			const provider = getProviderByHeader(req.headers);
+			const provider = getProviderByHeader(headers);
 			let normalizedCommits: string[] = [];
 
 			if (provider === "github") {
-				normalizedCommits = req.body?.commits?.flatMap(
+				normalizedCommits = body?.commits?.flatMap(
 					(commit: any) => commit.modified,
 				);
 			} else if (provider === "gitlab") {
-				normalizedCommits = req.body?.commits?.flatMap(
+				normalizedCommits = body?.commits?.flatMap(
 					(commit: any) => commit.modified,
 				);
 			} else if (provider === "gitea") {
-				normalizedCommits = req.body?.commits?.flatMap(
+				normalizedCommits = body?.commits?.flatMap(
 					(commit: any) => commit.modified,
 				);
 			}
@@ -145,13 +144,12 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 		} else if (sourceType === "gitea") {
-			const branchName = extractBranchName(req.headers, req.body);
+			const branchName = extractBranchName(headers, body);
 
-			const normalizedCommits = req.body?.commits?.flatMap(
+			const normalizedCommits = body?.commits?.flatMap(
 				(commit: any) => commit.modified,
 			);
 
@@ -161,13 +159,11 @@ export default async function handler(
 			);
 
 			if (!shouldDeployPaths) {
-				res.status(301).json({ message: "Watch Paths Not Match" });
-				return;
+				return jsonResponse({ message: "Watch Paths Not Match" }, 301);
 			}
 
 			if (!branchName || branchName !== composeResult.giteaBranch) {
-				res.status(301).json({ message: "Branch Not Match" });
-				return;
+				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 		}
 
@@ -198,13 +194,12 @@ export default async function handler(
 			}
 		} catch (error) {
 			logWebhookError("Error deploying Compose:", error);
-			res.status(400).json({ message: "Error deploying Compose" });
-			return;
+			return jsonResponse({ message: "Error deploying Compose" }, 400);
 		}
 
-		res.status(200).json({ message: "Compose deployed successfully" });
+		return jsonResponse({ message: "Compose deployed successfully" });
 	} catch (error) {
 		logWebhookError("Error deploying Compose:", error);
-		res.status(400).json({ message: "Error deploying Compose" });
+		return jsonResponse({ message: "Error deploying Compose" }, 400);
 	}
 }

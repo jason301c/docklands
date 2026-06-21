@@ -1,17 +1,20 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import { findGitlabById, updateGitlab } from "@/server-core/services/gitlab";
+import {
+	getQueryParam,
+	jsonResponse,
+	redirectResponse,
+} from "@/server/web/request";
 
-export default async function handler(
-	req: NextApiRequest,
-	res: NextApiResponse,
-) {
-	const { code, gitlabId } = req.query;
+export async function handleGitlabCallback(request: Request) {
+	const urlParams = new URL(request.url);
+	const code = getQueryParam(urlParams, "code");
+	const gitlabId = getQueryParam(urlParams, "gitlabId");
 
-	if (!code || Array.isArray(code)) {
-		return res.status(400).json({ error: "Missing or invalid code" });
+	if (!code || !gitlabId) {
+		return jsonResponse({ error: "Missing or invalid code" }, 400);
 	}
 
-	const gitlab = await findGitlabById(gitlabId as string);
+	const gitlab = await findGitlabById(gitlabId);
 	// Use internal URL for token exchange when GitLab is on same instance as Docklands
 	const baseUrl = gitlab.gitlabInternalUrl || gitlab.gitlabUrl;
 	const gitlabUrl = new URL(baseUrl);
@@ -41,7 +44,7 @@ export default async function handler(
 		body: new URLSearchParams({
 			client_id: gitlab.applicationId as string,
 			client_secret: gitlab.secret as string,
-			code: code as string,
+			code,
 			grant_type: "authorization_code",
 			redirect_uri: `${gitlab.redirectUri}?gitlabId=${gitlabId}`,
 		}),
@@ -50,7 +53,7 @@ export default async function handler(
 	const result = await response.json();
 
 	if (!result.access_token || !result.refresh_token) {
-		return res.status(400).json({ error: "Missing or invalid code" });
+		return jsonResponse({ error: "Missing or invalid code" }, 400);
 	}
 
 	const expiresAt = Math.floor(Date.now() / 1000) + result.expires_in;
@@ -60,5 +63,5 @@ export default async function handler(
 		expiresAt,
 	});
 
-	return res.redirect(307, "/dashboard/settings/git-providers");
+	return redirectResponse(request, "/dashboard/settings/git-providers");
 }

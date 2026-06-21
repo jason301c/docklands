@@ -1,8 +1,7 @@
-import legacyHandler from "@/server/web/legacy-api/providers/gitlab/callback";
-import { runNextApiHandler } from "@/server/web/next-api-compat";
+import { handleGitlabCallback } from "@/server/web/providers/gitlab-callback";
 
 export const runtime = "nodejs";
 
-const handler = (request: Request) => runNextApiHandler(request, legacyHandler);
+const handler = (request: Request) => handleGitlabCallback(request);
 
 export { handler as GET };

@@ -7,10 +7,10 @@
  * need to use are documented accordingly near the end.
  */
 
+import type { IncomingHttpHeaders, IncomingMessage } from "node:http";
 import type { OpenApiMeta } from "@dokploy/trpc-openapi";
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
-import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import type { Session, User } from "better-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
@@ -29,7 +29,7 @@ type ActionOf<R extends Resource> = (typeof statements)[R][number];
 type RequestLike = {
 	headers: Record<string, string | string[] | undefined>;
 };
-type ResponseLike = CreateNextContextOptions["res"] | { headers: Headers };
+type ResponseLike = { headers: Headers };
 
 /**
  * 1. CONTEXT
@@ -75,6 +75,8 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
 	};
 };
 
+export type TRPCContext = ReturnType<typeof createInnerTRPCContext>;
+
 const normalizeContextUser = (
 	user: Awaited<ReturnType<typeof validateRequestHeaders>>["user"],
 ) =>
@@ -104,25 +106,11 @@ const requestHeadersToObject = (headers: Headers) =>
 		string | string[] | undefined
 	>;
 
-/**
- * This is the actual context you will use in your router. It will be used to process every request
- * that goes through your tRPC endpoint.
- *
- * @see https://trpc.io/docs/context
- */
-export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-	const { req, res } = opts;
-
-	// Get from the request
-	const { session, user } = await validateRequest(req);
-
-	return createInnerTRPCContext({
-		req,
-		res,
-		session: normalizeContextSession(session),
-		user: normalizeContextUser(user),
-	});
-};
+const nodeHeadersToObject = (headers: IncomingHttpHeaders) =>
+	Object.fromEntries(Object.entries(headers)) as Record<
+		string,
+		string | string[] | undefined
+	>;
 
 export const createFetchTRPCContext = async (
 	opts: FetchCreateContextFnOptions,
@@ -142,6 +130,23 @@ export const createFetchTRPCContext = async (
 	});
 };
 
+export const createWebSocketTRPCContext = async (opts: {
+	req: IncomingMessage;
+}) => {
+	const { session, user } = await validateRequest(opts.req);
+
+	return createInnerTRPCContext({
+		req: {
+			headers: nodeHeadersToObject(opts.req.headers),
+		},
+		res: {
+			headers: new Headers(),
+		},
+		session: normalizeContextSession(session),
+		user: normalizeContextUser(user),
+	});
+};
+
 /**
  * 2. INITIALIZATION
  *
@@ -152,7 +157,7 @@ export const createFetchTRPCContext = async (
 
 const t = initTRPC
 	.meta<OpenApiMeta>()
-	.context<typeof createTRPCContext>()
+	.context<TRPCContext>()
 	.create({
 		transformer: superjson,
 		errorFormatter({ shape, error }) {

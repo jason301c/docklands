@@ -1,8 +1,7 @@
-import legacyHandler from "@/server/web/legacy-api/providers/gitea/authorize";
-import { runNextApiHandler } from "@/server/web/next-api-compat";
+import { handleGiteaAuthorize } from "@/server/web/providers/gitea-authorize";
 
 export const runtime = "nodejs";
 
-const handler = (request: Request) => runNextApiHandler(request, legacyHandler);
+const handler = (request: Request) => handleGiteaAuthorize(request);
 
 export { handler as GET };

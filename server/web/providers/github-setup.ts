@@ -1,9 +1,13 @@
 import { eq } from "drizzle-orm";
-import type { NextApiRequest, NextApiResponse } from "next";
 import { Octokit } from "octokit";
 import { github } from "@/server/db/schema";
 import { db } from "@/server-core/db";
 import { createGithub } from "@/server-core/services/github";
+import {
+	getQueryParam,
+	jsonResponse,
+	redirectResponse,
+} from "@/server/web/request";
 
 type Query = {
 	code: string;
@@ -12,14 +16,18 @@ type Query = {
 	setup_action: string;
 };
 
-export default async function handler(
-	req: NextApiRequest,
-	res: NextApiResponse,
-) {
-	const { code, state, installation_id }: Query = req.query as Query;
+export async function handleGithubProviderSetup(request: Request) {
+	const url = new URL(request.url);
+	const query: Query = {
+		code: getQueryParam(url, "code") ?? "",
+		state: getQueryParam(url, "state") ?? "",
+		installation_id: getQueryParam(url, "installation_id") ?? "",
+		setup_action: getQueryParam(url, "setup_action") ?? "",
+	};
+	const { code, state, installation_id } = query;
 
 	if (!code) {
-		return res.status(400).json({ error: "Missing code parameter" });
+		return jsonResponse({ error: "Missing code parameter" }, 400);
 	}
 	const [action, ...rest] = state?.split(":");
 	// For gh_init: rest[0] = organizationId, rest[1] = userId
@@ -27,10 +35,10 @@ export default async function handler(
 
 	if (action === "gh_init") {
 		const organizationId = rest[0];
-		const userId = rest[1] || (req.query.userId as string);
+		const userId = rest[1] || getQueryParam(url, "userId");
 
 		if (!userId) {
-			return res.status(400).json({ error: "Missing userId parameter" });
+			return jsonResponse({ error: "Missing userId parameter" }, 400);
 		}
 
 		const octokit = new Octokit({});
@@ -64,5 +72,5 @@ export default async function handler(
 			.returning();
 	}
 
-	res.redirect(307, "/dashboard/settings/git-providers");
+	return redirectResponse(request, "/dashboard/settings/git-providers");
 }

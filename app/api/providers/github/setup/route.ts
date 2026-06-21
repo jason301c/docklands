@@ -1,8 +1,7 @@
-import legacyHandler from "@/server/web/legacy-api/providers/github/setup";
-import { runNextApiHandler } from "@/server/web/next-api-compat";
+import { handleGithubProviderSetup } from "@/server/web/providers/github-setup";
 
 export const runtime = "nodejs";
 
-const handler = (request: Request) => runNextApiHandler(request, legacyHandler);
+const handler = (request: Request) => handleGithubProviderSetup(request);
 
 export { handler as GET };

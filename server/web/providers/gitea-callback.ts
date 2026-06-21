@@ -1,6 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from "next";
 import { updateGitea } from "@/server-core/services/gitea";
-import { findGitea, type Gitea, redirectWithError } from "./helper";
+import { getQueryParam, redirectResponse } from "@/server/web/request";
+import { findGitea, type Gitea, redirectWithError } from "./gitea-helper";
 
 // Helper to parse the state parameter
 const parseState = (state: string): string | null => {
@@ -38,36 +38,37 @@ const fetchAccessToken = async (gitea: Gitea, code: string) => {
 		: { error: "Token exchange failed", responseText };
 };
 
-export default async function handler(
-	req: NextApiRequest,
-	res: NextApiResponse,
-) {
-	const { code, state } = req.query;
+export async function handleGiteaCallback(request: Request) {
+	const url = new URL(request.url);
+	const code = getQueryParam(url, "code");
+	const state = getQueryParam(url, "state");
 
-	if (!code || Array.isArray(code) || !state || Array.isArray(state)) {
+	if (!code || !state) {
 		return redirectWithError(
-			res,
+			request,
 			"Invalid authorization code or state parameter",
 		);
 	}
 
-	const giteaId = parseState(state as string);
-	if (!giteaId) return redirectWithError(res, "Invalid state format");
+	const giteaId = parseState(state);
+	if (!giteaId) return redirectWithError(request, "Invalid state format");
 
 	const gitea = await findGitea(giteaId);
-	if (!gitea) return redirectWithError(res, "Failed to find Gitea provider");
+	if (!gitea) {
+		return redirectWithError(request, "Failed to find Gitea provider");
+	}
 
 	// Fetch the access token from Gitea
-	const result = await fetchAccessToken(gitea, code as string);
+	const result = await fetchAccessToken(gitea, code);
 
 	if (result.error) {
 		console.error("Token exchange failed:", result);
-		return redirectWithError(res, result.error);
+		return redirectWithError(request, result.error);
 	}
 
 	if (!result.access_token) {
 		console.error("Missing access token:", result);
-		return redirectWithError(res, "No access token received");
+		return redirectWithError(request, "No access token received");
 	}
 
 	const expiresAt = result.expires_in
@@ -84,12 +85,12 @@ export default async function handler(
 				: {}),
 		});
 
-		return res.redirect(
-			307,
+		return redirectResponse(
+			request,
 			"/dashboard/settings/git-providers?connected=true",
 		);
 	} catch (updateError) {
 		console.error("Failed to update Gitea provider:", updateError);
-		return redirectWithError(res, "Failed to store access token");
+		return redirectWithError(request, "Failed to store access token");
 	}
 }

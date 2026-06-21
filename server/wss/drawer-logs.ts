@@ -3,7 +3,7 @@ import { applyWSSHandler } from "@trpc/server/adapters/ws";
 import { WebSocketServer } from "ws";
 import { validateRequest } from "@/server-core/lib/auth";
 import { appRouter } from "../api/root";
-import { createTRPCContext } from "../api/trpc";
+import { createWebSocketTRPCContext } from "../api/trpc";
 
 export const setupDrawerLogsWebSocketServer = (
 	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
@@ -17,7 +17,7 @@ export const setupDrawerLogsWebSocketServer = (
 	applyWSSHandler({
 		wss: wssTerm,
 		router: appRouter,
-		createContext: createTRPCContext as any,
+		createContext: createWebSocketTRPCContext,
 	});
 
 	server.on("upgrade", (req, socket, head) => {

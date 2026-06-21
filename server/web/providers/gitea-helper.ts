@@ -1,5 +1,5 @@
-import type { NextApiResponse } from "next";
 import { findGiteaById } from "@/server-core/services/gitea";
+import { redirectResponse } from "@/server/web/request";
 
 export interface Gitea {
 	giteaId: string;
@@ -32,11 +32,10 @@ export const findGitea = async (giteaId: string): Promise<Gitea | null> => {
 	}
 };
 
-export const redirectWithError = (res: NextApiResponse, error: string) => {
-	return res.redirect(
-		307,
+export const redirectWithError = (request: Request, error: string) =>
+	redirectResponse(
+		request,
 		`/dashboard/settings/git-providers?error=${encodeURIComponent(error)}`,
 	);
-};
 
 export default findGitea;

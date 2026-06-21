@@ -1,8 +1,7 @@
-import legacyHandler from "@/server/web/legacy-api/providers/github/webhook";
-import { runNextApiHandler } from "@/server/web/next-api-compat";
+import { handleGithubProviderWebhook } from "@/server/web/providers/github-webhook";
 
 export const runtime = "nodejs";
 
-const handler = (request: Request) => runNextApiHandler(request, legacyHandler);
+const handler = (request: Request) => handleGithubProviderWebhook(request);
 
 export { handler as POST };

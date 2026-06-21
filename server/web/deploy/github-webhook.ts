@@ -1,6 +1,5 @@
 import { Webhooks } from "@octokit/webhooks";
 import { and, eq } from "drizzle-orm";
-import type { NextApiRequest, NextApiResponse } from "next";
 import { applications, compose, github } from "@/server/db/schema";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
@@ -20,26 +19,27 @@ import {
 import { checkUserRepositoryPermissions } from "@/server-core/utils/providers/github";
 import { shouldDeploy } from "@/server-core/utils/watch-paths/should-deploy";
 import {
+	jsonResponse,
+	parseRequestBody,
+	requestHeadersToObject,
+} from "@/server/web/request";
+import {
 	extractCommitMessage,
 	extractHash,
 	logWebhookError,
-} from "./[refreshToken]";
+} from "./application-webhook";
 
-export default async function handler(
-	req: NextApiRequest,
-	res: NextApiResponse,
-) {
-	const signature = req.headers["x-hub-signature-256"];
+export async function handleGithubDeployWebhook(request: Request) {
+	const headers = requestHeadersToObject(request.headers);
+	const githubBody = await parseRequestBody(request);
+	const signature = headers["x-hub-signature-256"];
+
 	if (!signature) {
-		res.status(401).json({ message: "Missing signature header" });
-		return;
+		return jsonResponse({ message: "Missing signature header" }, 401);
 	}
 
-	const githubBody = req.body;
-
 	if (!githubBody?.installation?.id) {
-		res.status(400).json({ message: "Github Installation not found" });
-		return;
+		return jsonResponse({ message: "Github Installation not found" }, 400);
 	}
 
 	const githubResult = await db.query.github.findFirst({
@@ -47,13 +47,11 @@ export default async function handler(
 	});
 
 	if (!githubResult) {
-		res.status(400).json({ message: "Github Installation not found" });
-		return;
+		return jsonResponse({ message: "Github Installation not found" }, 400);
 	}
 
 	if (!githubResult.githubWebhookSecret) {
-		res.status(400).json({ message: "Github Webhook Secret not set" });
-		return;
+		return jsonResponse({ message: "Github Webhook Secret not set" }, 400);
 	}
 	const webhooks = new Webhooks({
 		secret: githubResult.githubWebhookSecret,
@@ -65,23 +63,21 @@ export default async function handler(
 	);
 
 	if (!verified) {
-		res.status(401).json({ message: "Unauthorized" });
-		return;
+		return jsonResponse({ message: "Unauthorized" }, 401);
 	}
 
-	if (req.headers["x-github-event"] === "ping") {
-		res.status(200).json({ message: "Ping received, webhook is active" });
-		return;
+	if (headers["x-github-event"] === "ping") {
+		return jsonResponse({ message: "Ping received, webhook is active" });
 	}
 
 	if (
-		req.headers["x-github-event"] !== "push" &&
-		req.headers["x-github-event"] !== "pull_request"
+		headers["x-github-event"] !== "push" &&
+		headers["x-github-event"] !== "pull_request"
 	) {
-		res
-			.status(400)
-			.json({ message: "We only accept push events or pull_request events" });
-		return;
+		return jsonResponse(
+			{ message: "We only accept push events or pull_request events" },
+			400,
+		);
 	}
 
 	// skip workflow runs use keywords
@@ -94,18 +90,17 @@ export default async function handler(
 			"[skip actions]",
 			"[actions skip]",
 		].find((keyword) =>
-			extractCommitMessage(req.headers, req.body).includes(keyword),
+			extractCommitMessage(headers, githubBody).includes(keyword),
 		)
 	) {
-		res.status(200).json({
+		return jsonResponse({
 			message: "Deployment skipped: commit message contains skip keyword",
 		});
-		return;
 	}
 
 	// Handle tag creation event
 	if (
-		req.headers["x-github-event"] === "push" &&
+		headers["x-github-event"] === "push" &&
 		githubBody?.ref?.startsWith("refs/tags/")
 	) {
 		try {
@@ -113,7 +108,7 @@ export default async function handler(
 			const repository = githubBody?.repository?.name;
 			const owner = githubBody?.repository?.owner?.name;
 			const deploymentTitle = `Tag created: ${tagName}`;
-			const deploymentHash = extractHash(req.headers, githubBody);
+			const deploymentHash = extractHash(headers, githubBody);
 
 			// Find applications configured to deploy on tag
 			const apps = await db.query.applications.findMany({
@@ -197,30 +192,30 @@ export default async function handler(
 			const totalApps = apps.length + composeApps.length;
 
 			if (totalApps === 0) {
-				res
-					.status(200)
-					.json({ message: "No apps configured to deploy on tag" });
-				return;
+				return jsonResponse({
+					message: "No apps configured to deploy on tag",
+				});
 			}
 
-			res.status(200).json({
+			return jsonResponse({
 				message: `Deployed ${totalApps} apps based on tag ${tagName}`,
 			});
-			return;
 		} catch (error) {
 			logWebhookError("Error deploying applications on tag:", error);
-			res.status(400).json({ message: "Error deploying applications on tag" });
-			return;
+			return jsonResponse(
+				{ message: "Error deploying applications on tag" },
+				400,
+			);
 		}
 	}
 
-	if (req.headers["x-github-event"] === "push") {
+	if (headers["x-github-event"] === "push") {
 		try {
 			const branchName = githubBody?.ref?.replace("refs/heads/", "");
 			const repository = githubBody?.repository?.name;
 
-			const deploymentTitle = extractCommitMessage(req.headers, req.body);
-			const deploymentHash = extractHash(req.headers, req.body);
+			const deploymentTitle = extractCommitMessage(headers, githubBody);
+			const deploymentHash = extractHash(headers, githubBody);
 			const owner = githubBody?.repository?.owner?.name;
 			const normalizedCommits = githubBody?.commits?.flatMap(
 				(commit: any) => commit.modified,
@@ -326,15 +321,14 @@ export default async function handler(
 			const emptyApps = totalApps === 0;
 
 			if (emptyApps) {
-				res.status(200).json({ message: "No apps to deploy" });
-				return;
+				return jsonResponse({ message: "No apps to deploy" });
 			}
-			res.status(200).json({ message: `Deployed ${totalApps} apps` });
+			return jsonResponse({ message: `Deployed ${totalApps} apps` });
 		} catch (error) {
 			logWebhookError("Error deploying Application:", error);
-			res.status(400).json({ message: "Error deploying Application" });
+			return jsonResponse({ message: "Error deploying Application" }, 400);
 		}
-	} else if (req.headers["x-github-event"] === "pull_request") {
+	} else if (headers["x-github-event"] === "pull_request") {
 		const prId = githubBody?.pull_request?.id;
 		const action = githubBody?.action;
 
@@ -353,8 +347,7 @@ export default async function handler(
 					}
 				}
 			}
-			res.status(200).json({ message: "Preview Deployment Closed" });
-			return;
+			return jsonResponse({ message: "Preview Deployment Closed" });
 		}
 
 		// opened or synchronize or reopened
@@ -382,10 +375,12 @@ export default async function handler(
 				console.warn(
 					"⚠️ SECURITY: PR author information missing in webhook payload",
 				);
-				res.status(400).json({
-					message: "PR author information missing",
-				});
-				return;
+				return jsonResponse(
+					{
+						message: "PR author information missing",
+					},
+					400,
+				);
 			}
 
 			const apps = await db.query.applications.findMany({
@@ -531,9 +526,9 @@ export default async function handler(
 					);
 				}
 			}
-			return res.status(200).json({ message: "Apps Deployed" });
+			return jsonResponse({ message: "Apps Deployed" });
 		}
 	}
 
-	return res.status(400).json({ message: "No Actions matched" });
+	return jsonResponse({ message: "No Actions matched" }, 400);
 }

@@ -1,8 +1,7 @@
-import legacyHandler from "@/server/web/legacy-api/providers/gitea/callback";
-import { runNextApiHandler } from "@/server/web/next-api-compat";
+import { handleGiteaCallback } from "@/server/web/providers/gitea-callback";
 
 export const runtime = "nodejs";
 
-const handler = (request: Request) => runNextApiHandler(request, legacyHandler);
+const handler = (request: Request) => handleGiteaCallback(request);
 
 export { handler as GET };

@@ -1,5 +1,4 @@
-import legacyHandler from "@/server/web/legacy-api/deploy/compose/[refreshToken]";
-import { runNextApiHandler } from "@/server/web/next-api-compat";
+import { handleComposeDeployWebhook } from "@/server/web/deploy/compose-webhook";
 
 export const runtime = "nodejs";
 
@@ -8,6 +7,6 @@ type RouteContext = {
 };
 
 const handler = async (request: Request, context: RouteContext) =>
-	runNextApiHandler(request, legacyHandler, await context.params);
+	handleComposeDeployWebhook(request, (await context.params).refreshToken);
 
 export { handler as GET, handler as POST };
