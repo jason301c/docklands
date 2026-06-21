@@ -24,6 +24,7 @@ import {
 	FileInput,
 	Folder,
 	FolderInput,
+	GitPullRequest,
 	GlobeIcon,
 	Grip,
 	Loader2,
@@ -32,6 +33,7 @@ import {
 	PlusIcon,
 	PuzzleIcon,
 	RefreshCw,
+	Rocket,
 	Search,
 	ServerIcon,
 	Settings2,
@@ -1819,6 +1821,85 @@ export const EnvironmentCanvas = ({
 							serviceType: service.type,
 						});
 						setDrawerTab("variables");
+						setCommandOpen(false);
+					},
+				},
+				...(deploymentServiceTypes.has(service.type) &&
+				permissions?.deployment.read
+					? [
+							{
+								id: `deployments:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Deployments for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · release history`,
+								search: `${baseSearch} deployments releases history builds`,
+								icon: <Rocket className="size-5 text-muted-foreground" />,
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("deployments");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(deploymentServiceTypes.has(service.type) && permissions?.domain.read
+					? [
+							{
+								id: `domains:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Domains for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · public ingress`,
+								search: `${baseSearch} domains ingress urls routes tls ssl`,
+								icon: <GlobeIcon className="size-5 text-muted-foreground" />,
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("domains");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(service.type === "application" && permissions?.deployment.read
+					? [
+							{
+								id: `previews:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Previews for ${service.name}`,
+								detail: "Application · pull request environments",
+								search: `${baseSearch} previews preview environments pull requests pr github`,
+								icon: (
+									<GitPullRequest className="size-5 text-muted-foreground" />
+								),
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("previews");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				{
+					id: `connections:${service.type}:${service.id}`,
+					group: "Actions" as const,
+					label: `Connections for ${service.name}`,
+					detail: `${serviceTypeLabels[service.type]} · service graph`,
+					search: `${baseSearch} connections links graph network variables`,
+					icon: <Cable className="size-5 text-muted-foreground" />,
+					run: () => {
+						setSelectedService({
+							serviceId: service.id,
+							serviceType: service.type,
+						});
+						setDrawerTab("connections");
 						setCommandOpen(false);
 					},
 				},

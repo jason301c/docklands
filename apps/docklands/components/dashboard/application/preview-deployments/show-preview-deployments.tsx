@@ -1,3 +1,8 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	ExternalLink,
 	FileText,
@@ -8,17 +13,12 @@ import {
 	RocketIcon,
 	Trash2,
 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { ShowModalLogs } from "../../settings/web-server/show-modal-logs";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { AddPreviewDomain } from "./add-preview-domain";
@@ -55,7 +55,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 		})
 			.then(() => {
 				refetchPreviewDeployments();
-				toast.success("Preview deployment deleted");
+				toast.success("Preview environment deleted");
 			})
 			.catch((error) => {
 				toast.error(error.message);
@@ -66,8 +66,8 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 		<LayerCard className="bg-background">
 			<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 				<div className="flex flex-col gap-2">
-					<h3 className="text-xl">Preview Deployments</h3>
-					<p>See all the preview deployments</p>
+					<h3 className="text-xl">Preview Environments</h3>
+					<p>Review pull request runtimes for this service.</p>
 				</div>
 				{data?.isPreviewDeploymentsActive && (
 					<ShowPreviewSettings applicationId={applicationId} />
@@ -78,23 +78,22 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 					<>
 						<div className="flex flex-col gap-2 text-sm">
 							<span>
-								Preview deployments are a way to test your application before it
-								is deployed to production. It will create a new deployment for
-								each pull request you create.
+								Every pull request can create an isolated runtime before changes
+								reach production.
 							</span>
 						</div>
 						{isLoadingPreviewDeployments ? (
 							<div className="flex w-full flex-row items-center justify-center gap-3 min-h-[35vh]">
 								<Loader2 className="size-5 text-muted-foreground animate-spin" />
 								<span className="text-base text-muted-foreground">
-									Loading preview deployments...
+									Loading preview environments...
 								</span>
 							</div>
 						) : !previewDeployments?.length ? (
 							<div className="flex w-full flex-col items-center justify-center gap-3 min-h-[35vh]">
 								<RocketIcon className="size-8 text-muted-foreground" />
 								<span className="text-base text-muted-foreground">
-									No preview deployments found
+									No preview environments found
 								</span>
 							</div>
 						) : (
@@ -195,7 +194,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 
 														<DialogAction
 															title="Rebuild Preview Deployment"
-															description="Are you sure you want to rebuild this preview deployment?"
+															description="Are you sure you want to rebuild this preview environment?"
 															type="default"
 															onClick={async () => {
 																await redeployPreviewDeployment({
@@ -204,13 +203,13 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 																})
 																	.then(() => {
 																		toast.success(
-																			"Preview deployment rebuild started",
+																			"Preview environment rebuild started",
 																		);
 																		refetchPreviewDeployments();
 																	})
 																	.catch(() => {
 																		toast.error(
-																			"Error rebuilding preview deployment",
+																			"Error rebuilding preview environment",
 																		);
 																	});
 															}}
@@ -222,17 +221,23 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 																className="gap-2"
 															>
 																<TooltipProvider>
-																	<Tooltip content={<>
+																	<Tooltip
+																		content={
+																			<>
 																				<p>
-																					Rebuild the preview deployment without
-																					downloading new code
+																					Rebuild the preview environment
+																					without downloading new code
 																				</p>
-																			</>} className="z-[60]"  asChild>
-																			<div className="flex items-center gap-2">
-																				<Hammer className="size-4" />
-																				Rebuild
-																			</div>
-																		</Tooltip>
+																			</>
+																		}
+																		className="z-[60]"
+																		asChild
+																	>
+																		<div className="flex items-center gap-2">
+																			<Hammer className="size-4" />
+																			Rebuild
+																		</div>
+																	</Tooltip>
 																</TooltipProvider>
 															</Button>
 														</DialogAction>
@@ -250,7 +255,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 															</Button>
 														</AddPreviewDomain>
 														<DialogAction
-															title="Delete Preview"
+															title="Delete Preview Environment"
 															description="Are you sure you want to delete this preview?"
 															onClick={() =>
 																handleDeletePreviewDeployment(
