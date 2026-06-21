@@ -1,17 +1,24 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
 import {
 	AlertTriangle,
 	ArrowUpDown,
 	BookIcon,
+	Boxes,
+	Database,
 	FolderInput,
 	Loader2,
 	MoreHorizontalIcon,
+	Rocket,
 	Search,
 	TrashIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { useDebounce } from "@/client/hooks/use-debounce";
 import { BreadcrumbSidebar } from "@/components/shared/breadcrumb-sidebar";
@@ -19,11 +26,7 @@ import { DateTooltip } from "@/components/shared/date-tooltip";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { TagBadge } from "@/components/shared/tag-badge";
 import { TagFilter } from "@/components/shared/tag-filter";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 import { HandleProject } from "./handle-project";
 import { ProjectEnvironment } from "./project-environment";
 
@@ -55,6 +58,25 @@ const countProjectServices = (project: {
 	project.environments.reduce(
 		(total, environment) => total + countEnvironmentServices(environment),
 		0,
+	);
+
+const countProjectServiceTypes = (project: {
+	environments: EnvironmentWithServices[];
+}) =>
+	project.environments.reduce(
+		(total, environment) => ({
+			applications: total.applications + environment.applications.length,
+			compose: total.compose + environment.compose.length,
+			databases:
+				total.databases +
+				environment.libsql.length +
+				environment.mariadb.length +
+				environment.mongo.length +
+				environment.mysql.length +
+				environment.postgres.length +
+				environment.redis.length,
+		}),
+		{ applications: 0, compose: 0, databases: 0 },
 	);
 
 export const ShowProjects = () => {
@@ -177,6 +199,21 @@ export const ShowProjects = () => {
 		(total, project) => total + countProjectServices(project),
 		0,
 	);
+	const visibleEnvironmentCount = filteredProjects.reduce(
+		(total, project) => total + project.environments.length,
+		0,
+	);
+	const visibleServiceCounts = filteredProjects.reduce(
+		(total, project) => {
+			const counts = countProjectServiceTypes(project);
+			return {
+				applications: total.applications + counts.applications,
+				compose: total.compose + counts.compose,
+				databases: total.databases + counts.databases,
+			};
+		},
+		{ applications: 0, compose: 0, databases: 0 },
+	);
 
 	return (
 		<>
@@ -212,6 +249,53 @@ export const ShowProjects = () => {
 								</div>
 							) : (
 								<>
+									<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+										<div className="rounded-md border bg-background p-4">
+											<p className="text-xs uppercase text-muted-foreground">
+												Visible projects
+											</p>
+											<p className="mt-2 text-2xl font-semibold tabular-nums">
+												{filteredProjects.length}
+											</p>
+											<p className="mt-2 text-xs text-muted-foreground">
+												{visibleEnvironmentCount} environments
+											</p>
+										</div>
+										<div className="rounded-md border bg-background p-4">
+											<p className="text-xs uppercase text-muted-foreground">
+												Applications
+											</p>
+											<p className="mt-2 text-2xl font-semibold tabular-nums">
+												{visibleServiceCounts.applications}
+											</p>
+											<p className="mt-2 text-xs text-muted-foreground">
+												Runtime services across visible projects
+											</p>
+										</div>
+										<div className="rounded-md border bg-background p-4">
+											<p className="text-xs uppercase text-muted-foreground">
+												Compose stacks
+											</p>
+											<p className="mt-2 text-2xl font-semibold tabular-nums">
+												{visibleServiceCounts.compose}
+											</p>
+											<p className="mt-2 text-xs text-muted-foreground">
+												Stack deployments ready for the canvas
+											</p>
+										</div>
+										<div className="rounded-md border bg-background p-4">
+											<p className="text-xs uppercase text-muted-foreground">
+												Data services
+											</p>
+											<p className="mt-2 text-2xl font-semibold tabular-nums">
+												{visibleServiceCounts.databases}
+											</p>
+											<p className="mt-2 text-xs text-muted-foreground">
+												Databases and caches available to link
+											</p>
+										</div>
+									</div>
+
 									<div className="flex max-sm:flex-col gap-4 items-center w-full">
 										<div className="flex-1 relative max-sm:w-full">
 											<FocusShortcutInput
@@ -277,10 +361,20 @@ export const ShowProjects = () => {
 									<div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 flex-wrap gap-5">
 										{filteredProjects?.map((project) => {
 											const totalServices = countProjectServices(project);
+											const serviceCounts = countProjectServiceTypes(project);
 											const emptyServices = totalServices === 0;
 											const accessibleEnvironment =
 												project?.environments.find((env) => env.isDefault) ||
 												project?.environments?.[0];
+											const visibleEnvironments = project.environments.slice(
+												0,
+												3,
+											);
+											const hiddenEnvironmentCount = Math.max(
+												0,
+												project.environments.length -
+													visibleEnvironments.length,
+											);
 											const hasNoEnvironments = !accessibleEnvironment;
 											const workspaceHref = hasNoEnvironments
 												? null
@@ -422,6 +516,24 @@ export const ShowProjects = () => {
 															</div>
 														)}
 
+													{visibleEnvironments.length > 0 && (
+														<div className="mt-4 flex flex-wrap gap-1.5">
+															{visibleEnvironments.map((environment) => (
+																<span
+																	key={environment.environmentId}
+																	className="rounded-md border bg-muted/20 px-2 py-1 text-xs text-muted-foreground"
+																>
+																	{environment.name}
+																</span>
+															))}
+															{hiddenEnvironmentCount > 0 && (
+																<span className="rounded-md border bg-muted/20 px-2 py-1 text-xs text-muted-foreground">
+																	+{hiddenEnvironmentCount} more
+																</span>
+															)}
+														</div>
+													)}
+
 													{hasNoEnvironments && (
 														<div className="mt-4 flex flex-row gap-2 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
 															<AlertTriangle className="size-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
@@ -432,18 +544,38 @@ export const ShowProjects = () => {
 													)}
 
 													<div className="mt-auto pt-5">
-														<div className="grid grid-cols-2 gap-3 rounded-md border bg-muted/20 p-3 text-xs">
+														<div className="grid grid-cols-4 gap-2 rounded-md border bg-muted/20 p-3 text-xs">
 															<div className="space-y-1">
+																<Rocket className="size-4 text-muted-foreground" />
 																<div className="text-muted-foreground">
-																	Services
+																	Apps
 																</div>
 																<div className="text-lg font-semibold tabular-nums">
-																	{totalServices}
+																	{serviceCounts.applications}
 																</div>
 															</div>
 															<div className="space-y-1">
+																<Boxes className="size-4 text-muted-foreground" />
 																<div className="text-muted-foreground">
-																	Environments
+																	Stacks
+																</div>
+																<div className="text-lg font-semibold tabular-nums">
+																	{serviceCounts.compose}
+																</div>
+															</div>
+															<div className="space-y-1">
+																<Database className="size-4 text-muted-foreground" />
+																<div className="text-muted-foreground">
+																	Data
+																</div>
+																<div className="text-lg font-semibold tabular-nums">
+																	{serviceCounts.databases}
+																</div>
+															</div>
+															<div className="space-y-1">
+																<FolderInput className="size-4 text-muted-foreground" />
+																<div className="text-muted-foreground">
+																	Envs
 																</div>
 																<div className="text-lg font-semibold tabular-nums">
 																	{project.environments.length}
