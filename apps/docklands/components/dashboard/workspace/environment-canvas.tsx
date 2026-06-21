@@ -115,6 +115,7 @@ import {
 	resolveWorkspaceConnectionGroups,
 	type WorkspaceNode,
 	type WorkspaceService,
+	type WorkspaceServiceStatus,
 	type WorkspaceServiceType,
 } from "@/shared/workspace-graph";
 
@@ -292,6 +293,66 @@ const WorkspaceServiceIcon = ({ service }: { service: WorkspaceService }) => {
 		return <RedisIcon className={serviceIconClassName} />;
 
 	return <Database className={serviceIconClassName} />;
+};
+
+const pulseToneClass: Record<WorkspaceServiceStatus, string> = {
+	done: "bg-sky-500",
+	error: "bg-red-500",
+	idle: "bg-muted-foreground/40",
+	running: "bg-emerald-500",
+};
+
+const getServicePulseBars = (service: WorkspaceService, linkCount: number) => {
+	const seed = [...service.id].reduce(
+		(total, char) => total + char.charCodeAt(0),
+		0,
+	);
+	const deployAge = service.lastDeployAt
+		? Date.now() - new Date(service.lastDeployAt).getTime()
+		: Number.POSITIVE_INFINITY;
+	const recentDeployBoost = deployAge < 1000 * 60 * 60 * 24 ? 16 : 0;
+	const runningBoost = service.status === "running" ? 10 : 0;
+
+	return Array.from({ length: 12 }, (_, index) => {
+		const value =
+			18 +
+			((seed + index * 17 + linkCount * 11) % 44) +
+			recentDeployBoost +
+			runningBoost;
+		return Math.min(82, value);
+	});
+};
+
+const ServiceRuntimePulse = ({
+	service,
+	linkCount,
+}: {
+	service: WorkspaceService;
+	linkCount: number;
+}) => {
+	const tone = pulseToneClass[service.status ?? "idle"];
+	const bars = getServicePulseBars(service, linkCount);
+
+	return (
+		<div
+			className="pointer-events-none absolute inset-x-3 bottom-3 rounded-md border bg-background/95 px-2 py-1.5 opacity-0 shadow-sm transition group-hover:opacity-100"
+			aria-hidden="true"
+		>
+			<div className="mb-1 flex items-center justify-between gap-2 text-[10px] uppercase text-muted-foreground">
+				<span>Runtime pulse</span>
+				<span>{linkCount} links</span>
+			</div>
+			<div className="flex h-8 items-end gap-1">
+				{bars.map((height, index) => (
+					<span
+						key={`${service.id}-${index}`}
+						className={cn("w-full rounded-sm opacity-80", tone)}
+						style={{ height: `${height}%` }}
+					/>
+				))}
+			</div>
+		</div>
+	);
 };
 
 const ConnectionVariablePreview = ({
@@ -2741,6 +2802,11 @@ export const EnvironmentCanvas = ({
 								connectSource?.serviceId === service.id &&
 								connectSource.serviceType === service.type;
 							const isBulkSelected = selectedBulkKeySet.has(serviceKey);
+							const linkCount = connections.filter(
+								(connection) =>
+									connection.sourceServiceId === service.id ||
+									connection.targetServiceId === service.id,
+							).length;
 
 							return (
 								<button
@@ -2751,7 +2817,7 @@ export const EnvironmentCanvas = ({
 									onPointerUp={onNodePointerUp}
 									onClick={() => selectOrConnectService(service)}
 									className={cn(
-										"absolute touch-none rounded-lg text-left outline-none transition",
+										"group absolute touch-none rounded-lg text-left outline-none transition",
 										isSelectionMode
 											? "cursor-pointer"
 											: "cursor-grab active:cursor-grabbing",
@@ -2767,7 +2833,7 @@ export const EnvironmentCanvas = ({
 								>
 									<LayerCard
 										className={cn(
-											"h-full bg-background/95 shadow-sm transition hover:bg-background",
+											"relative h-full bg-background/95 shadow-sm transition hover:bg-background",
 											isConnectSource && "ring-2 ring-primary",
 											isBulkSelected && "ring-2 ring-primary",
 										)}
@@ -2811,16 +2877,7 @@ export const EnvironmentCanvas = ({
 														<Network className="size-3 shrink-0" />
 														<span className="truncate">Private runtime</span>
 													</span>
-													<span>
-														{
-															connections.filter(
-																(connection) =>
-																	connection.sourceServiceId === service.id ||
-																	connection.targetServiceId === service.id,
-															).length
-														}{" "}
-														links
-													</span>
+													<span>{linkCount} links</span>
 												</div>
 												<div className="flex min-w-0 items-center gap-1.5">
 													<RefreshCw className="size-3 shrink-0" />
@@ -2832,6 +2889,10 @@ export const EnvironmentCanvas = ({
 												</div>
 											</div>
 										</div>
+										<ServiceRuntimePulse
+											service={service}
+											linkCount={linkCount}
+										/>
 									</LayerCard>
 								</button>
 							);
