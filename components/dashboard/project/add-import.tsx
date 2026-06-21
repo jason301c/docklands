@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { Button } from "@/components/ui/button";
@@ -43,9 +44,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { slugify } from "@/lib/slug";
-import { api } from "@/utils/api";
-import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/utils/schema";
+import { slugify } from "@/shared/slug";
+import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 
 const AddImportSchema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),

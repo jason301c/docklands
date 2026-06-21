@@ -1,10 +1,10 @@
 "use client";
 
+import { api } from "@/client/api/trpc";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
 import { WebDomain } from "@/components/dashboard/settings/web-domain";
 import { WebServer } from "@/components/dashboard/settings/web-server";
 import { Card } from "@/components/ui/card";
-import { api } from "@/utils/api";
 
 const Page = () => {
 	const { data: user } = api.user.get.useQuery();

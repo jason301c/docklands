@@ -1,4 +1,5 @@
 import { Settings } from "lucide-react";
+import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { api } from "@/utils/api";
 
 interface Props {
 	nodeId: string;

@@ -43,10 +43,6 @@ vi.mock("@/server/core/db", () => ({
 	},
 }));
 
-vi.mock("@/server/core/services/enterprise/license-key", () => ({
-	hasValidLicense: vi.fn(() => Promise.resolve(false)),
-}));
-
 const { checkPermission } = await import("@/server/core/services/permission");
 
 const ctx = {
@@ -58,7 +54,7 @@ beforeEach(() => {
 	vi.clearAllMocks();
 });
 
-describe("owner and admin bypass enterprise resources", () => {
+describe("owner and admin static permissions", () => {
 	it("owner bypasses deployment.read", async () => {
 		memberToReturn = mockMemberData("owner");
 		await expect(
@@ -73,7 +69,7 @@ describe("owner and admin bypass enterprise resources", () => {
 		).resolves.toBeUndefined();
 	});
 
-	it("owner bypasses multiple enterprise permissions at once", async () => {
+	it("owner allows multiple advanced permissions at once", async () => {
 		memberToReturn = mockMemberData("owner");
 		await expect(
 			checkPermission(ctx, {
@@ -85,7 +81,7 @@ describe("owner and admin bypass enterprise resources", () => {
 	});
 });
 
-describe("member is denied org-level enterprise resources (CVE: bypass via staticRoles)", () => {
+describe("member is denied org-level advanced resources", () => {
 	it("member is denied registry.read", async () => {
 		memberToReturn = mockMemberData("member");
 		await expect(

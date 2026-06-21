@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -11,7 +12,6 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { api } from "@/utils/api";
 
 interface Props {
 	containerId: string;

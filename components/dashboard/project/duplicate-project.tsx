@@ -2,6 +2,7 @@ import { Copy, Loader2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -22,7 +23,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { api } from "@/utils/api";
 
 export type Services = {
 	serverId?: string | null;

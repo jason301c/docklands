@@ -1,5 +1,6 @@
 import { Bell, Loader2, Mail, PenBoxIcon, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import {
 	DiscordIcon,
 	GotifyIcon,
@@ -20,7 +21,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/utils/api";
 import { HandleNotifications } from "./handle-notifications";
 
 export const ShowNotifications = () => {

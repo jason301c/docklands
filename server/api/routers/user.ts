@@ -4,25 +4,6 @@ import { and, asc, eq, gt, ne } from "drizzle-orm";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
 import { IS_CLOUD } from "@/server/core/constants/env";
-import {
-	findOrganizationById,
-	findUserById,
-	getDocklandsUrl,
-	getUserByToken,
-	removeUserById,
-} from "@/server/core/services/admin";
-import { findNotificationById } from "@/server/core/services/notification";
-import {
-	createApiKey,
-	createOrganizationUserWithCredentials,
-	updateUser,
-} from "@/server/core/services/user";
-import { getWebServerSettings } from "@/server/core/services/web-server-settings";
-import {
-	sendEmailNotification,
-	sendResendNotification,
-} from "@/server/core/utils/notifications/utils";
-import { renderInvitationEmail } from "@/server/core/verification/send-verification-email";
 import { db } from "@/server/core/db";
 import {
 	account,
@@ -35,11 +16,29 @@ import {
 	session,
 	user,
 } from "@/server/core/db/schema";
-import { hasValidLicense } from "@/server/core/services/enterprise/license-key";
+import {
+	findOrganizationById,
+	findUserById,
+	getDocklandsUrl,
+	getUserByToken,
+	removeUserById,
+} from "@/server/core/services/admin";
+import { findNotificationById } from "@/server/core/services/notification";
 import {
 	hasPermission,
 	resolvePermissions,
 } from "@/server/core/services/permission";
+import {
+	createApiKey,
+	createOrganizationUserWithCredentials,
+	updateUser,
+} from "@/server/core/services/user";
+import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import {
+	sendEmailNotification,
+	sendResendNotification,
+} from "@/server/core/utils/notifications/utils";
+import { renderInvitationEmail } from "@/server/core/verification/send-verification-email";
 import {
 	adminProcedure,
 	createTRPCRouter,
@@ -364,20 +363,14 @@ export const userRouter = createTRPCRouter({
 
 				const { id, accessedGitProviders, accessedServers, ...rest } = input;
 
-				const licensed = await hasValidLicense(
-					ctx.session?.activeOrganizationId || "",
-				);
-
 				await db
 					.update(member)
 					.set({
 						...rest,
-						...(licensed && accessedGitProviders !== undefined
+						...(accessedGitProviders !== undefined
 							? { accessedGitProviders }
 							: {}),
-						...(licensed && accessedServers !== undefined
-							? { accessedServers }
-							: {}),
+						...(accessedServers !== undefined ? { accessedServers } : {}),
 					})
 					.where(
 						and(

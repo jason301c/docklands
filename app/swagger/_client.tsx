@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { api } from "@/utils/api";
+import { api } from "@/client/api/trpc";
 import "swagger-ui-react/swagger-ui.css";
 import { useEffect, useState } from "react";
 

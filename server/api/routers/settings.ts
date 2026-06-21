@@ -5,6 +5,10 @@ import { scheduledJobs, scheduleJob } from "node-schedule";
 import { parse, stringify } from "yaml";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
+import { CLEANUP_CRON_JOB } from "@/server/core/constants/cleanup";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { paths } from "@/server/core/constants/paths";
+import { db } from "@/server/core/db";
 import {
 	apiAssignDomain,
 	apiEnableDashboard,
@@ -19,12 +23,8 @@ import {
 	projects,
 	server,
 } from "@/server/core/db/schema";
-import { assertBuildsConcurrencyAllowed } from "@/server/queues/concurrency";
-import { cleanAllDeploymentQueue } from "@/server/queues/queueSetup";
-import { removeJob, schedule } from "@/server/utils/backup";
-import { CLEANUP_CRON_JOB } from "@/server/core/constants/cleanup";
-import { IS_CLOUD } from "@/server/core/constants/env";
-import { paths } from "@/server/core/constants/paths";
+import { removeJob, schedule } from "@/server/core/runtime/backup";
+import { checkPermission } from "@/server/core/services/permission";
 import {
 	findServerById,
 	updateServerById,
@@ -85,14 +85,13 @@ import {
 	updateServerTraefik,
 	writeMainConfig,
 } from "@/server/core/utils/traefik/web-server";
-import { db } from "@/server/core/db";
-import { checkPermission } from "@/server/core/services/permission";
+import { assertBuildsConcurrencyAllowed } from "@/server/queues/concurrency";
+import { cleanAllDeploymentQueue } from "@/server/queues/queueSetup";
 import packageInfo from "../../../package.json";
 import { appRouter } from "../root";
 import {
 	adminProcedure,
 	createTRPCRouter,
-	enterpriseProcedure,
 	protectedProcedure,
 	publicProcedure,
 } from "../trpc";
@@ -463,7 +462,7 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 
-	updateRemoteServersOnly: enterpriseProcedure
+	updateRemoteServersOnly: adminProcedure
 		.input(z.object({ remoteServersOnly: z.boolean() }))
 		.mutation(async ({ input, ctx }) => {
 			if (IS_CLOUD) {
@@ -508,28 +507,6 @@ export const settingsRouter = createTRPCRouter({
 				action: "update",
 				resourceType: "settings",
 				resourceName: "builds-concurrency",
-			});
-			return true;
-		}),
-
-	updateEnforceSSO: enterpriseProcedure
-		.input(z.object({ enforceSSO: z.boolean() }))
-		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "This feature is only available for self-hosted instances",
-				});
-			}
-
-			await updateWebServerSettings({
-				enforceSSO: input.enforceSSO,
-			});
-
-			await audit(ctx, {
-				action: "update",
-				resourceType: "settings",
-				resourceName: "enforce-sso",
 			});
 			return true;
 		}),

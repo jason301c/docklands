@@ -18,7 +18,7 @@ vi.mock("@/server/core/constants/paths", async (importOriginal) => {
 });
 
 // Import after mock so paths() uses our BASE
-const { readValidDirectory } = await import("@/server/core/wss/utils");
+const { readValidDirectory } = await import("@/server/core/runtime/host");
 
 describe("readValidDirectory (path traversal)", () => {
 	it("returns true when directory is exactly BASE_PATH", () => {

@@ -12,7 +12,7 @@ import type { DeploymentJob } from "./queue-types";
  * Deployment queue.
  *
  * Self-hosted uses an in-memory, per-group FIFO queue with configurable
- * concurrency per server (enterprise-gated). Cloud does not use the queue at
+ * concurrency per server. Cloud does not use the queue at
  * all — deployments run directly in the background — so we expose a no-op.
  */
 

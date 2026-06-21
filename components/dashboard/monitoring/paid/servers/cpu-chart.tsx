@@ -13,7 +13,7 @@ import {
 	ChartLegendContent,
 	ChartTooltip,
 } from "@/components/ui/chart";
-import { formatTimestamp } from "@/lib/utils";
+import { formatTimestamp } from "@/shared/utils";
 
 interface CPUChartProps {
 	data: any[];

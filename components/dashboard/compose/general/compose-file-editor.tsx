@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +13,6 @@ import {
 	FormItem,
 	FormMessage,
 } from "@/components/ui/form";
-import { api } from "@/utils/api";
 import { validateAndFormatYAML } from "../../application/advanced/traefik/update-traefik-config";
 
 interface Props {

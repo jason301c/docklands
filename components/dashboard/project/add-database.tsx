@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "@/client/api/trpc";
 import {
 	LibsqlIcon,
 	MariadbIcon,
@@ -50,9 +51,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { slugify } from "@/lib/slug";
-import { api } from "@/utils/api";
-import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/utils/schema";
+import { slugify } from "@/shared/slug";
+import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 
 type DbType = z.infer<typeof mySchema>["type"];
 

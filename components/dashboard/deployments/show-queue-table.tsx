@@ -3,6 +3,7 @@
 import type { inferRouterOutputs } from "@trpc/server";
 import { ArrowRight, ListTodo, Loader2, XCircle } from "lucide-react";
 import Link from "next/link";
+import { api } from "@/client/api/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,6 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import type { AppRouter } from "@/server/api/root";
-import { api } from "@/utils/api";
 
 type QueueRow =
 	inferRouterOutputs<AppRouter>["deployment"]["queueList"][number];

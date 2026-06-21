@@ -6,6 +6,7 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { db } from "@/server/core/db";
 import {
 	apiCreateSshKey,
 	apiFindOneSshKey,
@@ -21,7 +22,6 @@ import {
 	updateSSHKeyById,
 } from "@/server/core/services/ssh-key";
 import { generateSSHKey } from "@/server/core/utils/filesystem/ssh";
-import { db } from "@/server/core/db";
 
 export const sshRouter = createTRPCRouter({
 	create: withPermission("sshKeys", "create")

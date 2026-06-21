@@ -1,6 +1,7 @@
 import copy from "copy-to-clipboard";
 import { CopyIcon, ServerIcon } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import {
 	Card,
 	CardContent,
@@ -8,7 +9,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/utils/api";
 import { ShowDocklandsActions } from "./servers/actions/show-dokploy-actions";
 import { ShowStorageActions } from "./servers/actions/show-storage-actions";
 import { ShowTraefikActions } from "./servers/actions/show-traefik-actions";

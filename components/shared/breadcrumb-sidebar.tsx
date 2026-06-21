@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { Fragment } from "react";
+import { api } from "@/client/api/trpc";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -18,7 +19,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TimeBadge } from "@/components/ui/time-badge";
-import { api } from "@/utils/api";
 
 interface BreadcrumbEntry {
 	name: string;

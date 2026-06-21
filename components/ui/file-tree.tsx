@@ -6,7 +6,7 @@ import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import React from "react";
 import useResizeObserver from "use-resize-observer";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { ScrollArea } from "./scroll-area";
 
 interface TreeDataItem {

@@ -1,9 +1,9 @@
 "use client";
 
+import { api } from "@/client/api/trpc";
 import { ShowApiKeys } from "@/components/dashboard/settings/api/show-api-keys";
 import { LinkingAccount } from "@/components/dashboard/settings/linking-account/linking-account";
 import { ProfileForm } from "@/components/dashboard/settings/profile/profile-form";
-import { api } from "@/utils/api";
 
 const Page = () => {
 	const { data: permissions } = api.user.getPermissions.useQuery();

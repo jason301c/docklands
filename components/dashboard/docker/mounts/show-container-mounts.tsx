@@ -1,3 +1,4 @@
+import { api } from "@/client/api/trpc";
 import { Badge } from "@/components/ui/badge";
 import {
 	Dialog,
@@ -16,7 +17,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { api } from "@/utils/api";
 
 interface Props {
 	containerId: string;

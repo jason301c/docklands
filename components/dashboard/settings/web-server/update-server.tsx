@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -24,7 +25,6 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { IUpdateData } from "@/server/core/services/settings";
-import { api } from "@/utils/api";
 import { ToggleAutoCheckUpdates } from "./toggle-auto-check-updates";
 import { UpdateWebServer } from "./update-webserver";
 

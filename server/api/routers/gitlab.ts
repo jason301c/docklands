@@ -5,6 +5,7 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { db } from "@/server/core/db";
 import {
 	apiCreateGitlab,
 	apiFindGitlabBranches,
@@ -27,7 +28,6 @@ import {
 	haveGitlabRequirements,
 	testGitlabConnection,
 } from "@/server/core/utils/providers/gitlab";
-import { db } from "@/server/core/db";
 
 export const gitlabRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")

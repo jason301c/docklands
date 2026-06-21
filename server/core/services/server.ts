@@ -8,7 +8,6 @@ import {
 	organization,
 	server,
 } from "@/server/core/db/schema";
-import { hasValidLicense } from "@/server/core/services/enterprise/license-key";
 
 export type Server = typeof server.$inferSelect;
 
@@ -155,12 +154,6 @@ export const getAccessibleServerIds = async (session: {
 	});
 
 	if (memberRecord?.role === "owner" || memberRecord?.role === "admin") {
-		return new Set(allOrgServers.map((s) => s.serverId));
-	}
-
-	const licensed = await hasValidLicense(activeOrganizationId);
-
-	if (!licensed) {
 		return new Set(allOrgServers.map((s) => s.serverId));
 	}
 

@@ -1,4 +1,5 @@
 import { AlertCircle, GitBranch, Unlink } from "lucide-react";
+import type { RouterOutputs } from "@/client/api/trpc";
 import {
 	BitbucketIcon,
 	GiteaIcon,
@@ -10,7 +11,6 @@ import { DialogAction } from "@/components/shared/dialog-action";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { RouterOutputs } from "@/utils/api";
 
 interface Props {
 	service:

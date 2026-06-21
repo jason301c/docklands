@@ -7,6 +7,8 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { db } from "@/server/core/db";
 import {
 	apiCreateCustom,
 	apiCreateDiscord,
@@ -48,7 +50,6 @@ import {
 	notifications,
 	server,
 } from "@/server/core/db/schema";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	createCustomNotification,
 	createDiscordNotification,
@@ -93,7 +94,6 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "@/server/core/utils/notifications/utils";
-import { db } from "@/server/core/db";
 
 export const notificationRouter = createTRPCRouter({
 	createSlack: withPermission("notification", "create")

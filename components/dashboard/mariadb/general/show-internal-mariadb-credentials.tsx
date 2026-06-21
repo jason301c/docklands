@@ -1,10 +1,10 @@
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import { UpdateDatabasePassword } from "@/components/shared/update-database-password";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api } from "@/utils/api";
 
 interface Props {
 	mariadbId: string;

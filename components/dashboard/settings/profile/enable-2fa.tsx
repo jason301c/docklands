@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "@/client/api/trpc";
+import { authClient } from "@/client/auth/client";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -32,8 +34,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { authClient } from "@/lib/auth-client";
-import { api } from "@/utils/api";
 
 const PasswordSchema = z.object({
 	password: z.string().min(8, {

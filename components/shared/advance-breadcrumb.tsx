@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { type ComponentType, useEffect, useMemo, useState } from "react";
+import { api, type RouterOutputs } from "@/client/api/trpc";
 import {
 	LibsqlIcon,
 	MariadbIcon,
@@ -35,7 +36,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import type { ServiceType } from "@/server/core/db/schema";
-import { api, type RouterOutputs } from "@/utils/api";
 
 type ProjectItem = RouterOutputs["project"]["all"][number];
 type ProjectEnvironment = ProjectItem["environments"][number];

@@ -7,7 +7,7 @@ Please describe in a short paragraph what this PR is about.
 Before submitting this PR, please make sure that:
 
 - [ ] You created a dedicated branch based on the `canary` branch.
-- [ ] You have read the local CONTRIBUTING.md guidance, if relevant.
+- [ ] You have read the relevant local `AGENTS.md` guidance, if applicable.
 - [ ] You have tested this PR in your local instance. If you have not tested it yet, please do so before submitting. This helps avoid wasting maintainers' time reviewing code that has not been verified by you.
 
 ## Issues related (if applicable)

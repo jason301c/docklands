@@ -3,6 +3,7 @@
 import { BookIcon, CircuitBoard, GlobeIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { api } from "@/client/api/trpc";
 import {
 	extractServices,
 	type Services,
@@ -23,7 +24,6 @@ import {
 	CommandList,
 	CommandSeparator,
 } from "@/components/ui/command";
-import { api } from "@/utils/api";
 import { StatusTooltip } from "../shared/status-tooltip";
 
 // Extended Services type to include environmentId and environmentName for search navigation

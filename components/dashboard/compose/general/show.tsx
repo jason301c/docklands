@@ -1,3 +1,4 @@
+import { api } from "@/client/api/trpc";
 import { Badge } from "@/components/ui/badge";
 import {
 	Card,
@@ -6,7 +7,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/utils/api";
 import { ComposeActions } from "./actions";
 import { ShowProviderFormCompose } from "./generic/show";
 

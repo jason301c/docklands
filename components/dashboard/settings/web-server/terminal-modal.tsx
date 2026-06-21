@@ -1,6 +1,7 @@
 import dynamic from "next/dynamic";
 import type React from "react";
 import { useState } from "react";
+import { api } from "@/client/api/trpc";
 import {
 	Dialog,
 	DialogContent,
@@ -10,7 +11,6 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { api } from "@/utils/api";
 import LocalServerConfig from "./local-server-config";
 
 const Terminal = dynamic(() => import("./terminal").then((e) => e.Terminal), {

@@ -1,20 +1,16 @@
 import { createTRPCRouter } from "../api/trpc";
 import { applicationRouter } from "./routers/application";
+import { auditLogRouter } from "./routers/audit-log";
 import { backupRouter } from "./routers/backup";
 import { bitbucketRouter } from "./routers/bitbucket";
 import { certificateRouter } from "./routers/certificate";
 import { clusterRouter } from "./routers/cluster";
 import { composeRouter } from "./routers/compose";
+import { customRoleRouter } from "./routers/custom-role";
 import { deploymentRouter } from "./routers/deployment";
 import { destinationRouter } from "./routers/destination";
 import { dockerRouter } from "./routers/docker";
 import { domainRouter } from "./routers/domain";
-import { auditLogRouter } from "./routers/enterprise/audit-log";
-import { customRoleRouter } from "./routers/enterprise/custom-role";
-import { forwardAuthRouter } from "./routers/enterprise/forward-auth";
-import { licenseKeyRouter } from "./routers/enterprise/license-key";
-import { ssoRouter } from "./routers/enterprise/sso";
-import { whitelabelingRouter } from "./routers/enterprise/whitelabeling";
 import { environmentRouter } from "./routers/environment";
 import { gitProviderRouter } from "./routers/git-provider";
 import { giteaRouter } from "./routers/gitea";
@@ -45,6 +41,7 @@ import { swarmRouter } from "./routers/swarm";
 import { tagRouter } from "./routers/tag";
 import { userRouter } from "./routers/user";
 import { volumeBackupsRouter } from "./routers/volume-backups";
+import { whitelabelingRouter } from "./routers/whitelabeling";
 /**
  * This is the primary router for your server.
  *
@@ -86,9 +83,6 @@ export const appRouter = createTRPCRouter({
 	swarm: swarmRouter,
 	user: userRouter,
 	organization: organizationRouter,
-	licenseKey: licenseKeyRouter,
-	sso: ssoRouter,
-	forwardAuth: forwardAuthRouter,
 	whitelabeling: whitelabelingRouter,
 	customRole: customRoleRouter,
 	auditLog: auditLogRouter,

@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { Octokit } from "octokit";
-import { github } from "@/server/core/db/schema";
 import { db } from "@/server/core/db";
+import { github } from "@/server/core/db/schema";
 import { createGithub } from "@/server/core/services/github";
 import {
 	getQueryParam,

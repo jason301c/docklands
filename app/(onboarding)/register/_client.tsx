@@ -8,8 +8,10 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { SignInWithGithub } from "@/components/enterprise/auth/sign-in-with-github";
-import { SignInWithGoogle } from "@/components/enterprise/auth/sign-in-with-google";
+import { authClient } from "@/client/auth/client";
+import { useWhitelabelingPublic } from "@/client/hooks/use-whitelabeling";
+import { SignInWithGithub } from "@/components/auth/sign-in-with-github";
+import { SignInWithGoogle } from "@/components/auth/sign-in-with-google";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Logo } from "@/components/shared/logo";
 import { Button } from "@/components/ui/button";
@@ -23,8 +25,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
-import { useWhitelabelingPublic } from "@/utils/hooks/use-whitelabeling";
 
 const registerSchema = z
 	.object({

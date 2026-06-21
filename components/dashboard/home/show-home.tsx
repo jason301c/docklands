@@ -2,9 +2,9 @@ import { formatDistanceToNow } from "date-fns";
 import { ArrowRight, Rocket, Server } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
+import { api } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { api } from "@/utils/api";
 
 type DeploymentStatus = "idle" | "running" | "done" | "error";
 

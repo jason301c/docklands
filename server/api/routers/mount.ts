@@ -8,6 +8,7 @@ import {
 	apiRemoveMount,
 	apiUpdateMount,
 } from "@/server/core/db/schema";
+import type { ServiceType } from "@/server/core/db/schema/mount";
 import { findApplicationById } from "@/server/core/services/application";
 import { findComposeById } from "@/server/core/services/compose";
 import { findLibsqlById } from "@/server/core/services/libsql";
@@ -21,14 +22,13 @@ import {
 	updateMount,
 } from "@/server/core/services/mount";
 import { findMySqlById } from "@/server/core/services/mysql";
-import { findPostgresById } from "@/server/core/services/postgres";
-import { findRedisById } from "@/server/core/services/redis";
-import { getServiceContainer } from "@/server/core/utils/docker/utils";
-import type { ServiceType } from "@/server/core/db/schema/mount";
 import {
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
 } from "@/server/core/services/permission";
+import { findPostgresById } from "@/server/core/services/postgres";
+import { findRedisById } from "@/server/core/services/redis";
+import { getServiceContainer } from "@/server/core/utils/docker/utils";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 async function getServiceOrganizationId(

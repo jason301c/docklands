@@ -18,7 +18,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 const Schema = z.object({
 	port: z.number().min(1, "Port must be higher than 0"),

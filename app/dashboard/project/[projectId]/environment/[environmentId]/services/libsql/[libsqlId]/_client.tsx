@@ -5,6 +5,8 @@ import { HelpCircle, ServerOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
+import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { ShowEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
@@ -35,15 +37,16 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { UseKeyboardNav } from "@/hooks/use-keyboard-nav";
-import { cn } from "@/lib/utils";
-import { api } from "@/utils/api";
+import { cn } from "@/shared/utils";
 
 type TabState = "projects" | "monitoring" | "settings" | "backups" | "advanced";
 
-const Libsql = (
-	props: { libsqlId: string; projectId: string; environmentId: string; activeTab: TabState },
-) => {
+const Libsql = (props: {
+	libsqlId: string;
+	projectId: string;
+	environmentId: string;
+	activeTab: TabState;
+}) => {
 	const [_toggleMonitoring, _setToggleMonitoring] = useState(false);
 
 	const { libsqlId, activeTab } = props;

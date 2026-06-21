@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type React from "react";
-import { cn } from "@/lib/utils";
-import { useWhitelabelingPublic } from "@/utils/hooks/use-whitelabeling";
+import { useWhitelabelingPublic } from "@/client/hooks/use-whitelabeling";
+import { cn } from "@/shared/utils";
 import { GithubIcon } from "../icons/data-tools-icons";
 import { Logo } from "../shared/logo";
 import { Button } from "../ui/button";

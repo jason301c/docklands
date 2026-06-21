@@ -6,13 +6,13 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { api } from "@/client/api/trpc";
 import {
 	type ChartConfig,
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
-import { api } from "@/utils/api";
 
 export interface RequestDistributionChartProps {
 	dateRange?: {

@@ -1,5 +1,6 @@
 "use client";
 
+import { api } from "@/client/api/trpc";
 import { BuildsConcurrency } from "@/components/dashboard/settings/servers/actions/builds-concurrency";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -9,7 +10,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/utils/api";
 
 const Page = () => {
 	const { data: servers } = api.server.all.useQuery();
@@ -24,8 +24,6 @@ const Page = () => {
 							<CardDescription>
 								Configure how many deployments can build at the same time on
 								each server. Builds of the same service are always serialized.
-								Free plan allows up to 2 concurrent builds; an enterprise
-								license unlocks more.
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="flex flex-col gap-6">

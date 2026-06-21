@@ -5,7 +5,8 @@ import { nanoid } from "nanoid";
 import { parse } from "toml";
 import { stringify } from "yaml";
 import { z } from "zod";
-import { slugify } from "@/lib/slug";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { db } from "@/server/core/db";
 import {
 	apiCreateCompose,
 	apiDeleteCompose,
@@ -20,14 +21,7 @@ import {
 	environments,
 	projects,
 } from "@/server/core/db/schema";
-import type { DeploymentJob } from "@/server/queues/queue-types";
-import {
-	cleanQueuesByCompose,
-	killDockerBuild,
-	myQueue,
-} from "@/server/queues/queueSetup";
-import { cancelDeployment, deploy } from "@/server/utils/deploy";
-import { IS_CLOUD } from "@/server/core/constants/env";
+import { cancelDeployment, deploy } from "@/server/core/runtime/deploy";
 import {
 	createCompose,
 	createComposeByTemplate,
@@ -50,13 +44,27 @@ import {
 	removeDomainById,
 } from "@/server/core/services/domain";
 import { findEnvironmentById } from "@/server/core/services/environment";
+import { canEditDeployGitSource } from "@/server/core/services/git-provider";
 import { createMount, deleteMount } from "@/server/core/services/mount";
+import {
+	addNewService,
+	checkServiceAccess,
+	checkServicePermissionAndAccess,
+	findMemberByUserId,
+} from "@/server/core/services/permission";
 import { findProjectById } from "@/server/core/services/project";
 import {
 	findServerById,
 	getAccessibleServerIds,
 } from "@/server/core/services/server";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { generatePassword } from "@/server/core/templates";
+import {
+	type CompleteTemplate,
+	fetchTemplateFiles,
+	fetchTemplatesList,
+} from "@/server/core/templates/github";
+import { processTemplate } from "@/server/core/templates/processors";
 import { createCommand } from "@/server/core/utils/builders/compose";
 import { randomizeIsolatedDeploymentComposeFile } from "@/server/core/utils/docker/collision";
 import { randomizeComposeFile } from "@/server/core/utils/docker/compose";
@@ -70,21 +78,13 @@ import {
 	execAsync,
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
-import { db } from "@/server/core/db";
-import { canEditDeployGitSource } from "@/server/core/services/git-provider";
+import type { DeploymentJob } from "@/server/queues/queue-types";
 import {
-	addNewService,
-	checkServiceAccess,
-	checkServicePermissionAndAccess,
-	findMemberByUserId,
-} from "@/server/core/services/permission";
-import {
-	type CompleteTemplate,
-	fetchTemplateFiles,
-	fetchTemplatesList,
-} from "@/server/core/templates/github";
-import { processTemplate } from "@/server/core/templates/processors";
-import { generatePassword } from "@/templates/utils";
+	cleanQueuesByCompose,
+	killDockerBuild,
+	myQueue,
+} from "@/server/queues/queueSetup";
+import { slugify } from "@/shared/slug";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { audit } from "../utils/audit";
 

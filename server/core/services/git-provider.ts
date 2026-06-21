@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { gitProvider, member } from "@/server/core/db/schema";
-import { hasValidLicense } from "@/server/core/services/enterprise/license-key";
 
 export type GitProvider = typeof gitProvider.$inferSelect;
 
@@ -102,10 +101,7 @@ export const getAccessibleGitProviderIds = async (session: {
 		return new Set(allOrgProviders.map((p) => p.gitProviderId));
 	}
 
-	const licensed = await hasValidLicense(activeOrganizationId);
-	const assignedSet = licensed
-		? new Set(memberRecord?.accessedGitProviders ?? [])
-		: new Set<string>();
+	const assignedSet = new Set(memberRecord?.accessedGitProviders ?? []);
 
 	const result = new Set<string>();
 	for (const p of allOrgProviders) {

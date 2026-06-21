@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "@/client/api/trpc";
 import { GitIcon } from "@/components/icons/data-tools-icons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,6 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
-import { api } from "@/utils/api";
 
 const GitProviderSchema = z.object({
 	composePath: z.string().min(1),

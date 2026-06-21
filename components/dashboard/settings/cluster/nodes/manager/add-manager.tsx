@@ -1,6 +1,7 @@
 import copy from "copy-to-clipboard";
 import { CopyIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CardContent } from "@/components/ui/card";
 import {
@@ -8,7 +9,6 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { api } from "@/utils/api";
 
 interface Props {
 	serverId?: string;

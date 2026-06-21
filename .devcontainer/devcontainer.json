@@ -48,6 +48,6 @@
 		}
 	},
 	"remoteUser": "node",
-	"workspaceFolder": "/workspaces/dokploy",
-	"runArgs": ["--name", "dokploy-devcontainer"]
+	"workspaceFolder": "/workspaces/docklands",
+	"runArgs": ["--name", "docklands-devcontainer"]
 }

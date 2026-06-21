@@ -11,7 +11,7 @@ import {
 	ChartContainer,
 	ChartTooltip,
 } from "@/components/ui/chart";
-import { formatTimestamp } from "@/lib/utils";
+import { formatTimestamp } from "@/shared/utils";
 
 interface MemoryChartProps {
 	data: any[];

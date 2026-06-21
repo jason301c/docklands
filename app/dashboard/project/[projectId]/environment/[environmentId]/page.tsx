@@ -1,5 +1,5 @@
-import ClientPage from "./_client";
 import { requireUser } from "@/server/web/app-auth";
+import ClientPage from "./_client";
 
 type PageProps = {
 	params: Promise<{ projectId: string; environmentId: string }>;

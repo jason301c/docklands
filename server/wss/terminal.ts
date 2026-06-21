@@ -3,8 +3,8 @@ import { Client, type ConnectConfig } from "ssh2";
 import { WebSocketServer } from "ws";
 import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
+import { getDockerHost } from "@/server/core/runtime/docker";
 import { findServerById } from "@/server/core/services/server";
-import { getDockerHost } from "../utils/docker";
 import { setupLocalServerSSHKey } from "./utils";
 
 const COMMAND_TO_ALLOW_LOCAL_ACCESS = `

@@ -16,7 +16,7 @@ import {
 	uploadFileToContainer,
 } from "@/server/core/services/docker";
 import { findServerById } from "@/server/core/services/server";
-import { uploadFileToContainerSchema } from "@/utils/schema";
+import { uploadFileToContainerSchema } from "@/shared/validation/schema";
 import { createTRPCRouter, withPermission } from "../trpc";
 
 export const containerIdRegex = /^[a-zA-Z0-9.\-_]+$/;

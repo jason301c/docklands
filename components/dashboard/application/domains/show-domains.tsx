@@ -27,6 +27,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,11 +59,9 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { api } from "@/utils/api";
 import { createColumns } from "./columns";
 import { DnsHelperModal } from "./dns-helper-modal";
 import { AddDomain } from "./handle-domain";
-import { HandleForwardAuth } from "./handle-forward-auth";
 
 export type ValidationState = {
 	isLoading: boolean;
@@ -453,12 +452,6 @@ export const ShowDomains = ({ id, type }: Props) => {
 																	<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
 																</Button>
 															</AddDomain>
-														)}
-														{canCreateDomain && type === "application" && (
-															<HandleForwardAuth
-																domainId={item.domainId}
-																applicationId={id}
-															/>
 														)}
 														{canDeleteDomain && (
 															<DialogAction

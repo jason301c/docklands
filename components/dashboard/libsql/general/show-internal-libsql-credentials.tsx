@@ -1,4 +1,5 @@
 import { SelectGroup } from "@radix-ui/react-select";
+import { api } from "@/client/api/trpc";
 import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { api } from "@/utils/api";
 
 interface Props {
 	libsqlId: string;

@@ -11,6 +11,7 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDown, Container } from "lucide-react";
 import * as React from "react";
+import { api, type RouterOutputs } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -34,7 +35,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { api, type RouterOutputs } from "@/utils/api";
 import { columns } from "./columns";
 export type Container = NonNullable<
 	RouterOutputs["docker"]["getContainers"]

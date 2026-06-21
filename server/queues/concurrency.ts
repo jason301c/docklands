@@ -1,23 +1,16 @@
-import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { server } from "@/server/core/db/schema";
-import { hasValidLicense } from "@/server/core/services/enterprise/license-key";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { LOCAL_PARTITION } from "./in-memory-queue";
 
 /**
  * Resolve the effective builds concurrency for a queue partition.
  *
- * Concurrent deployments (concurrency > 1) are an enterprise feature: without a
- * valid license the effective concurrency is always clamped to 1, so the
- * community experience is unchanged and an expired license degrades gracefully
- * back to sequential deployments instead of breaking anything.
- *
  * - `LOCAL_PARTITION` -> concurrency stored on the web server settings (the
- *   local Docklands web server), gated by the owner organization's license.
+ *   local Docklands web server).
  * - any other partition -> concurrency stored on the matching `server` row,
- *   gated by that server's organization license.
+ *   scoped to that remote server.
  */
 export const resolveBuildsConcurrency = async (
 	partition: string,
@@ -36,55 +29,34 @@ export const resolveBuildsConcurrency = async (
 	}
 };
 
-// Max concurrent builds allowed without an enterprise license. With a valid
-// license the value is unbounded (N) — only the free tier is capped.
-export const FREE_MAX_CONCURRENCY = 2;
-
-const clamp = (value: number, licensed: boolean): number => {
-	const min = Math.max(1, Math.floor(value));
-	return licensed ? min : Math.min(FREE_MAX_CONCURRENCY, min);
-};
+const normalizeConcurrency = (value: number): number =>
+	Math.max(1, Math.floor(value));
 
 /**
- * Validate a requested builds-concurrency value before persisting it. Free tier
- * may set up to FREE_MAX_CONCURRENCY; anything higher requires a valid
- * enterprise license. Throws a TRPCError when the value is not allowed.
+ * Validate a requested builds-concurrency value before persisting it.
+ * Docklands allows any positive integer; queue resolution floors values at 1.
  */
 export const assertBuildsConcurrencyAllowed = async (
-	value: number,
-	organizationId: string,
+	_value: number,
+	_organizationId: string,
 ): Promise<void> => {
-	if (value <= FREE_MAX_CONCURRENCY) return;
-	const licensed = await hasValidLicense(organizationId);
-	if (!licensed) {
-		throw new TRPCError({
-			code: "FORBIDDEN",
-			message: `A valid enterprise license is required to set more than ${FREE_MAX_CONCURRENCY} concurrent builds.`,
-		});
-	}
+	return;
 };
 
 const resolveLocalConcurrency = async (): Promise<number> => {
 	const settings = await getWebServerSettings();
 	const buildsConcurrency = settings?.buildsConcurrency ?? 1;
 
-	// Self-hosted is single-tenant; gate on any organization's license.
-	const anyOrg = await db.query.organization.findFirst({
-		columns: { id: true },
-	});
-	const licensed = anyOrg ? await hasValidLicense(anyOrg.id) : false;
-
-	return clamp(buildsConcurrency, licensed);
+	return normalizeConcurrency(buildsConcurrency);
 };
 
 const resolveServerConcurrency = async (serverId: string): Promise<number> => {
 	const currentServer = await db.query.server.findFirst({
 		where: eq(server.serverId, serverId),
-		columns: { buildsConcurrency: true, organizationId: true },
+		columns: { buildsConcurrency: true },
 	});
 
 	if (!currentServer) return 1;
 
-	const licensed = await hasValidLicense(currentServer.organizationId);
-	return clamp(currentServer.buildsConcurrency, licensed);
+	return normalizeConcurrency(currentServer.buildsConcurrency);
 };

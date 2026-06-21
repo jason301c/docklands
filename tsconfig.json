@@ -48,8 +48,6 @@
 		"dokploy",
 		"config",
 		"dist",
-		"webpack.config.server.js",
-		"migration.ts",
-		"setup.ts"
+		"webpack.config.server.js"
 	]
 }

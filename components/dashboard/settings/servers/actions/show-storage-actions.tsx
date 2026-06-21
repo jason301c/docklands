@@ -1,4 +1,5 @@
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -9,7 +10,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { api } from "@/utils/api";
 
 interface Props {
 	serverId?: string;

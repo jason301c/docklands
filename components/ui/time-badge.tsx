@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/utils/api";
+import { api } from "@/client/api/trpc";
 
 export function TimeBadge() {
 	const { data: serverTime } = api.server.getServerTime.useQuery(undefined);

@@ -23,7 +23,6 @@ describe("createDomainLabels", () => {
 		internalPath: "/",
 		stripPath: false,
 		middlewares: null,
-		forwardAuthEnabled: false,
 	};
 
 	it("should create basic labels for web entrypoint", async () => {

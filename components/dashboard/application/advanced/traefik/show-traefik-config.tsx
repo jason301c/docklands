@@ -1,4 +1,5 @@
 import { File, Loader2 } from "lucide-react";
+import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
 	Card,
@@ -7,7 +8,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/utils/api";
 import { UpdateTraefikConfig } from "./update-traefik-config";
 
 interface Props {

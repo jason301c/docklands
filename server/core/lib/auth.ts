@@ -1,6 +1,5 @@
 import type { IncomingMessage } from "node:http";
 import { apiKey } from "@better-auth/api-key";
-import { sso } from "@better-auth/sso";
 import * as bcrypt from "bcrypt";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -10,12 +9,13 @@ import { and, desc, eq } from "drizzle-orm";
 import { IS_CLOUD } from "../constants/env";
 import { db } from "../db";
 import * as schema from "../db/schema";
+import { getPublicIpWithFallback } from "../runtime/host";
 import {
 	getTrustedOrigins,
 	getTrustedProviders,
 	getUserByToken,
 } from "../services/admin";
-import { createAuditLog } from "../services/enterprise/audit-log";
+import { createAuditLog } from "../services/audit-log";
 import {
 	getWebServerSettings,
 	updateWebServerSettings,
@@ -24,7 +24,6 @@ import {
 	sendEmail,
 	sendVerificationEmail,
 } from "../verification/send-verification-email";
-import { getPublicIpWithFallback } from "../wss/utils";
 import { ac, adminRole, memberRole, ownerRole } from "./access-control";
 import { betterAuthSecret } from "./auth-secret";
 
@@ -34,7 +33,6 @@ const { handler, api } = betterAuth({
 		schema: schema,
 	}),
 	disabledPaths: [
-		"/sso/register",
 		"/organization/create",
 		"/organization/update",
 		"/organization/delete",
@@ -178,10 +176,6 @@ const { handler, api } = betterAuth({
 								});
 							}
 						} else {
-							const isSSORequest = context?.path.includes("/sso");
-							if (isSSORequest) {
-								return;
-							}
 							const isAdminPresent = await db.query.member.findFirst({
 								where: eq(schema.member.role, "owner"),
 							});
@@ -193,8 +187,7 @@ const { handler, api } = betterAuth({
 						}
 					}
 				},
-				after: async (user, context) => {
-					const isSSORequest = context?.path.includes("/sso");
+				after: async (user) => {
 					const isAdminPresent = await db.query.member.findFirst({
 						where: eq(schema.member.role, "owner"),
 					});
@@ -224,29 +217,6 @@ const { handler, api } = betterAuth({
 								createdAt: new Date(),
 								isDefault: true, // Mark first organization as default
 							});
-						});
-					} else if (isSSORequest) {
-						const providerId = context?.params?.providerId;
-						if (!providerId) {
-							throw new APIError("BAD_REQUEST", {
-								message: "Provider ID is required",
-							});
-						}
-						const provider = await db.query.ssoProvider.findFirst({
-							where: eq(schema.ssoProvider.providerId, providerId),
-						});
-
-						if (!provider) {
-							throw new APIError("BAD_REQUEST", {
-								message: "Provider not found",
-							});
-						}
-						await db.insert(schema.member).values({
-							userId: user.id,
-							organizationId: provider?.organizationId || "",
-							role: "member",
-							createdAt: new Date(),
-							isDefault: true,
 						});
 					}
 				},
@@ -355,16 +325,6 @@ const { handler, api } = betterAuth({
 				input: true,
 				defaultValue: "",
 			},
-			enableEnterpriseFeatures: {
-				type: "boolean",
-				required: false,
-				input: false,
-			},
-			isValidEnterpriseLicense: {
-				type: "boolean",
-				required: false,
-				input: false,
-			},
 		},
 	},
 	plugins: [
@@ -372,7 +332,6 @@ const { handler, api } = betterAuth({
 			enableMetadata: true,
 			references: "user",
 		}),
-		sso(),
 		twoFactor(),
 		organization({
 			ac,
@@ -399,8 +358,6 @@ const { handler, api } = betterAuth({
 const _auth = {
 	handler,
 	createApiKey: api.createApiKey,
-	registerSSOProvider: api.registerSSOProvider,
-	updateSSOProvider: api.updateSSOProvider,
 };
 
 export type AuthType = typeof _auth;
@@ -485,8 +442,6 @@ export const validateRequestHeaders = async (headers: Headers) => {
 					twoFactorEnabled: userFromDb.twoFactorEnabled,
 					role: member?.role || "member",
 					ownerId: member?.organization.ownerId || apiKeyRecord.user.id,
-					enableEnterpriseFeatures: userFromDb.enableEnterpriseFeatures,
-					isValidEnterpriseLicense: userFromDb.isValidEnterpriseLicense,
 				},
 			};
 
@@ -533,10 +488,6 @@ export const validateRequestHeaders = async (headers: Headers) => {
 		});
 
 		session.user.role = member?.role || "member";
-		session.user.enableEnterpriseFeatures =
-			member?.user.enableEnterpriseFeatures || false;
-		session.user.isValidEnterpriseLicense =
-			member?.user.isValidEnterpriseLicense || false;
 		session.session.activeOrganizationId = member?.organization.id || "";
 		if (member) {
 			session.user.ownerId = member.organization.ownerId;

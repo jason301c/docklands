@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "@/client/api/trpc";
+import { authClient } from "@/client/auth/client";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -40,8 +42,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { authClient } from "@/lib/auth-client";
-import { api } from "@/utils/api";
 import {
 	BACKUP_CODES_PLACEHOLDER,
 	backupCodeTemplate,

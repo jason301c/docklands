@@ -6,6 +6,7 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { db } from "@/server/core/db";
 import {
 	apiRemoveGitProvider,
 	apiToggleShareGitProvider,
@@ -17,8 +18,6 @@ import {
 	removeGitProvider,
 	updateGitProvider,
 } from "@/server/core/services/git-provider";
-import { db } from "@/server/core/db";
-import { hasValidLicense } from "@/server/core/services/enterprise/license-key";
 
 export const gitProviderRouter = createTRPCRouter({
 	getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -109,18 +108,8 @@ export const gitProviderRouter = createTRPCRouter({
 			});
 		}),
 
-	allForPermissions: withPermission("member", "update")
-		.use(async ({ ctx, next }) => {
-			const licensed = await hasValidLicense(ctx.session.activeOrganizationId);
-			if (!licensed) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Valid enterprise license required",
-				});
-			}
-			return next();
-		})
-		.query(async ({ ctx }) => {
+	allForPermissions: withPermission("member", "update").query(
+		async ({ ctx }) => {
 			return await db.query.gitProvider.findMany({
 				columns: {
 					gitProviderId: true,
@@ -130,7 +119,8 @@ export const gitProviderRouter = createTRPCRouter({
 				orderBy: desc(gitProvider.createdAt),
 				where: eq(gitProvider.organizationId, ctx.session.activeOrganizationId),
 			});
-		}),
+		},
+	),
 
 	remove: withPermission("gitProviders", "delete")
 		.input(apiRemoveGitProvider)

@@ -1,7 +1,7 @@
 import { useState } from "react";
+import type { RouterOutputs } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import type { RouterOutputs } from "@/utils/api";
 import { ShowDeployment } from "../deployments/show-deployment";
 import { ShowDeployments } from "./show-deployments";
 

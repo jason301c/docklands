@@ -3,6 +3,7 @@ import { TrashIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import { Dropzone } from "@/components/ui/dropzone";
 import {
@@ -14,8 +15,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { api } from "@/utils/api";
-import { type UploadFile, uploadFileSchema } from "@/utils/schema";
+import { type UploadFile, uploadFileSchema } from "@/shared/validation/schema";
 
 interface Props {
 	applicationId: string;

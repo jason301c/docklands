@@ -1,5 +1,6 @@
 import { LockKeyhole, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api } from "@/utils/api";
 import { HandleSecurity } from "./handle-security";
 
 interface Props {

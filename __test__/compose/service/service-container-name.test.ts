@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 import { parse } from "yaml";
-import type { ComposeSpecification } from "@/server/core/utils/docker/types";
 import { generateRandomHash } from "@/server/core/utils/docker/compose";
 import { addSuffixToServiceNames } from "@/server/core/utils/docker/compose/service";
+import type { ComposeSpecification } from "@/server/core/utils/docker/types";
 
 const composeFile = `
 version: "3.8"

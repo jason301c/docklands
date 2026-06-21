@@ -3,9 +3,9 @@ import "server-only";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { IS_CLOUD } from "@/server/core/constants/env";
+import type { statements } from "@/server/core/lib/access-control";
 import { validateRequestHeaders } from "@/server/core/lib/auth";
 import { hasPermission } from "@/server/core/services/permission";
-import type { statements } from "@/server/core/lib/access-control";
 
 type Resource = keyof typeof statements;
 type ActionOf<R extends Resource> = (typeof statements)[R][number];

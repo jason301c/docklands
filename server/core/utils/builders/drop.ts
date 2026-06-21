@@ -3,9 +3,9 @@ import path, { join } from "node:path";
 import AdmZip from "adm-zip";
 import { Client, type SFTPWrapper } from "ssh2";
 import { paths } from "@/server/core/constants/paths";
+import { readValidDirectory } from "@/server/core/runtime/host";
 import type { Application } from "@/server/core/services/application";
 import { findServerById } from "@/server/core/services/server";
-import { readValidDirectory } from "@/server/core/wss/utils";
 import {
 	recreateDirectory,
 	recreateDirectoryRemote,

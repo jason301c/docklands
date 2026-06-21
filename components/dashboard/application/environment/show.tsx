@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { Secrets } from "@/components/ui/secrets";
 import { Switch } from "@/components/ui/switch";
-import { api } from "@/utils/api";
 
 const addEnvironmentSchema = z.object({
 	env: z.string(),

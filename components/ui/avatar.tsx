@@ -1,7 +1,7 @@
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import * as React from "react";
-import { isSolidColorAvatar } from "@/lib/avatar-utils";
-import { cn } from "@/lib/utils";
+import { isSolidColorAvatar } from "@/shared/avatar-utils";
+import { cn } from "@/shared/utils";
 
 const Avatar = React.forwardRef<
 	React.ElementRef<typeof AvatarPrimitive.Root>,

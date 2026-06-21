@@ -1,5 +1,7 @@
 import { ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api } from "@/client/api/trpc";
+import { authClient } from "@/client/auth/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -10,9 +12,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { authClient } from "@/lib/auth-client";
-import { getFallbackAvatarInitials } from "@/lib/utils";
-import { api } from "@/utils/api";
+import { getFallbackAvatarInitials } from "@/shared/utils";
 import { ModeToggle } from "../ui/modeToggle";
 import { SidebarMenuButton } from "../ui/sidebar";
 

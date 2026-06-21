@@ -5,6 +5,7 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { db } from "@/server/core/db";
 import {
 	apiBitbucketTestConnection,
 	apiCreateBitbucket,
@@ -23,7 +24,6 @@ import {
 	getBitbucketRepositories,
 	testBitbucketConnection,
 } from "@/server/core/utils/providers/bitbucket";
-import { db } from "@/server/core/db";
 
 export const bitbucketRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")

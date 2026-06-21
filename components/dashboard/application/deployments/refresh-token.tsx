@@ -1,5 +1,6 @@
 import { RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -11,7 +12,6 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { api } from "@/utils/api";
 
 interface Props {
 	id: string;

@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "@/utils/api";
+import { api } from "@/client/api/trpc";
 import { ImpersonationBar } from "../dashboard/impersonation/impersonation-bar";
 import Page from "./side";
 

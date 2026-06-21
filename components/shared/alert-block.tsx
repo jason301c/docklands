@@ -1,5 +1,5 @@
 import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 interface Props extends React.ComponentPropsWithoutRef<"div"> {
 	icon?: React.ReactNode;

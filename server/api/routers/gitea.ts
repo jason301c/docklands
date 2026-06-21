@@ -5,6 +5,7 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { db } from "@/server/core/db";
 import {
 	apiCreateGitea,
 	apiFindGiteaBranches,
@@ -27,7 +28,6 @@ import {
 	haveGiteaRequirements,
 	testGiteaConnection,
 } from "@/server/core/utils/providers/gitea";
-import { db } from "@/server/core/db";
 
 export const giteaRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")

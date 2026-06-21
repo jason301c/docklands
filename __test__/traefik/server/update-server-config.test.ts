@@ -6,11 +6,11 @@ vi.mock("node:fs", () => ({
 }));
 
 import { beforeEach, expect, test, vi } from "vitest";
-import type { FileConfig } from "@/server/core/utils/traefik/file-types";
+import type { webServerSettings } from "@/server/core/db/schema";
 import { createDefaultServerTraefikConfig } from "@/server/core/setup/traefik-setup";
 import { loadOrCreateConfig } from "@/server/core/utils/traefik/application";
+import type { FileConfig } from "@/server/core/utils/traefik/file-types";
 import { updateServerTraefik } from "@/server/core/utils/traefik/web-server";
-import type { webServerSettings } from "@/server/core/db/schema";
 
 type WebServerSettings = typeof webServerSettings.$inferSelect;
 
@@ -65,7 +65,6 @@ const baseSettings: WebServerSettings = {
 	cleanupCacheOnCompose: false,
 	cleanupCacheOnPreviews: false,
 	remoteServersOnly: false,
-	enforceSSO: false,
 	createdAt: null,
 	updatedAt: new Date(),
 };

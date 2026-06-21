@@ -7,10 +7,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { api } from "@/client/api/trpc";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
-import { api } from "@/utils/api";
 import {
 	NoRunningContainers,
 	NoServices,

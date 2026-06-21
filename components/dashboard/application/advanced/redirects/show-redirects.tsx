@@ -1,5 +1,6 @@
 import { Split, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/utils/api";
 import { HandleRedirect } from "./handle-redirect";
 
 interface Props {

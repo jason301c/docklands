@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "@/client/api/trpc";
 import {
 	DiscordIcon,
 	GotifyIcon,
@@ -45,7 +46,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { api } from "@/utils/api";
 
 const notificationBaseSchema = z.object({
 	name: z.string().min(1, {

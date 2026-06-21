@@ -5,6 +5,7 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { db } from "@/server/core/db";
 import {
 	apiFindGithubBranches,
 	apiFindOneGithub,
@@ -20,7 +21,6 @@ import {
 	getGithubRepositories,
 	haveGithubRequirements,
 } from "@/server/core/utils/providers/github";
-import { db } from "@/server/core/db";
 
 export const githubRouter = createTRPCRouter({
 	one: protectedProcedure.input(apiFindOneGithub).query(async ({ input }) => {

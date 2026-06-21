@@ -21,6 +21,8 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { api, type RouterOutputs } from "@/client/api/trpc";
+import { useWhitelabeling } from "@/client/hooks/use-whitelabeling";
 import { AddApplication } from "@/components/dashboard/project/add-application";
 import { AddCompose } from "@/components/dashboard/project/add-compose";
 import { AddDatabase } from "@/components/dashboard/project/add-database";
@@ -97,9 +99,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { api, type RouterOutputs } from "@/utils/api";
-import { useWhitelabeling } from "@/utils/hooks/use-whitelabeling";
+import { cn } from "@/shared/utils";
 
 export type Services = {
 	serverId?: string | null;
@@ -283,9 +283,10 @@ export const extractServicesFromEnvironment = (
 	return allServices;
 };
 
-const EnvironmentPage = (
-	props: { projectId: string; environmentId: string },
-) => {
+const EnvironmentPage = (props: {
+	projectId: string;
+	environmentId: string;
+}) => {
 	const utils = api.useUtils();
 	const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 	const { projectId, environmentId } = props;

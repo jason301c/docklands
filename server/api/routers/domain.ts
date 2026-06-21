@@ -24,11 +24,11 @@ import {
 	updateDomainById,
 	validateDomain,
 } from "@/server/core/services/domain";
+import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 import { findPreviewDeploymentById } from "@/server/core/services/preview-deployment";
 import { findServerById } from "@/server/core/services/server";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { manageDomain, removeDomain } from "@/server/core/utils/traefik/domain";
-import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 
 export const domainRouter = createTRPCRouter({
 	create: protectedProcedure

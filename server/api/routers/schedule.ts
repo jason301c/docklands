@@ -2,12 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
-import { removeJob, schedule } from "@/server/utils/backup";
 import { IS_CLOUD } from "@/server/core/constants/env";
-import {
-	removeScheduleJob,
-	scheduleJob,
-} from "@/server/core/utils/schedules/utils";
 import { db } from "@/server/core/db";
 import { deployments } from "@/server/core/db/schema/deployment";
 import {
@@ -15,7 +10,7 @@ import {
 	schedules,
 	updateScheduleSchema,
 } from "@/server/core/db/schema/schedule";
-import { runCommand } from "@/server/core/utils/schedules/utils";
+import { removeJob, schedule } from "@/server/core/runtime/backup";
 import {
 	checkPermission,
 	checkServicePermissionAndAccess,
@@ -28,6 +23,11 @@ import {
 	updateSchedule,
 } from "@/server/core/services/schedule";
 import { findServerById } from "@/server/core/services/server";
+import {
+	removeScheduleJob,
+	runCommand,
+	scheduleJob,
+} from "@/server/core/utils/schedules/utils";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const scheduleRouter = createTRPCRouter({

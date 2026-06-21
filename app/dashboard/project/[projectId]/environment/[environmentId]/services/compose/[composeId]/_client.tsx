@@ -5,6 +5,9 @@ import { CircuitBoard, HelpCircle, ServerOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
+import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
+import { useWhitelabeling } from "@/client/hooks/use-whitelabeling";
 import { ShowImport } from "@/components/dashboard/application/advanced/import/show-import";
 import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
@@ -42,9 +45,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { UseKeyboardNav } from "@/hooks/use-keyboard-nav";
-import { api } from "@/utils/api";
-import { useWhitelabeling } from "@/utils/hooks/use-whitelabeling";
 
 type TabState =
 	| "projects"
@@ -56,9 +56,12 @@ type TabState =
 	| "monitoring"
 	| "volumeBackups";
 
-const Service = (
-	props: { composeId: string; projectId: string; environmentId: string; activeTab: TabState },
-) => {
+const Service = (props: {
+	composeId: string;
+	projectId: string;
+	environmentId: string;
+	activeTab: TabState;
+}) => {
 	const [_toggleMonitoring, _setToggleMonitoring] = useState(false);
 	const { composeId, activeTab } = props;
 	const router = useRouter();

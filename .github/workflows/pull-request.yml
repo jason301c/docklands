@@ -47,5 +47,5 @@ jobs:
           echo "✅ Docker Swarm initialized"
       
       - run: pnpm install --frozen-lockfile
-      - run: pnpm server:build
+      - run: pnpm build-server
       - run: pnpm ${{ matrix.job }}

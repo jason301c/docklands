@@ -1,6 +1,7 @@
 import { Loader2, RefreshCw } from "lucide-react";
 import { useMemo } from "react";
 import { Cell, Label, Pie, PieChart } from "recharts";
+import { api } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import {
 	type ChartConfig,
@@ -10,7 +11,6 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@/components/ui/chart";
-import { api } from "@/utils/api";
 
 const TYPE_TO_KEY: Record<string, string> = {
 	Images: "images",

@@ -45,12 +45,17 @@ pnpm typecheck
 pnpm test
 ```
 
-The upstream project currently declares Node `^24.4.0`, so use Node 24.x for CI-quality validation.
+Docklands targets Node `>=24.4.0 <26` and pnpm `>=10.22.0`.
 
 ### Layout
 
-- `pages/`, `components/`, `server/`, and `utils/` contain the Docklands web app.
-- `server/core/` contains the backend/domain code folded in from the old upstream server package.
+- `app/` contains the Next.js App Router UI and route handlers.
+- `components/` contains dashboard, shared, layout, auth, and primitive UI components.
+- `client/` contains browser-only app glue such as tRPC, auth client helpers, and hooks.
+- `shared/` contains cross-runtime validation and utility helpers.
+- `server/` contains the custom server, tRPC routers, queues, WebSocket glue, ops scripts, and backend runtime.
+- `server/core/` contains backend/domain code: database, services, Docker, Traefik, deployments, backups, auth, templates, and verification.
+- `tools/` contains development-only utilities such as OpenAPI generation.
 - `drizzle/` contains database migrations.
 - `__test__/` contains the Vitest suite.
 

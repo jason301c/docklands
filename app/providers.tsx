@@ -2,10 +2,9 @@
 
 import { ThemeProvider } from "next-themes";
 import NextTopLoader from "nextjs-toploader";
+import { TRPCReactProvider } from "@/client/providers/trpc-provider";
 import { SearchCommand } from "@/components/dashboard/search-command";
-import { WhitelabelingProvider } from "@/components/enterprise/whitelabeling/whitelabeling-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { TRPCReactProvider } from "@/utils/trpc-provider";
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
 	return (
@@ -17,7 +16,6 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
 				disableTransitionOnChange
 			>
 				<NextTopLoader color="hsl(var(--sidebar-ring))" />
-				<WhitelabelingProvider />
 				<Toaster richColors />
 				<SearchCommand />
 				{children}

@@ -1,5 +1,6 @@
 import { Clock, Cpu, HardDrive, Loader2, MemoryStick } from "lucide-react";
 import { useEffect, useState } from "react";
+import { api } from "@/client/api/trpc";
 import {
 	Select,
 	SelectContent,
@@ -7,7 +8,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { api } from "@/utils/api";
 import { CPUChart } from "./cpu-chart";
 import { DiskChart } from "./disk-chart";
 import { MemoryChart } from "./memory-chart";

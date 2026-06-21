@@ -9,6 +9,8 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { db } from "@/server/core/db";
 import {
 	apiCreateApplication,
 	apiDeployApplication,
@@ -29,14 +31,7 @@ import {
 	environments,
 	projects,
 } from "@/server/core/db/schema";
-import type { DeploymentJob } from "@/server/queues/queue-types";
-import {
-	cleanQueuesByApplication,
-	killDockerBuild,
-	myQueue,
-} from "@/server/queues/queueSetup";
-import { cancelDeployment, deploy } from "@/server/utils/deploy";
-import { IS_CLOUD } from "@/server/core/constants/env";
+import { cancelDeployment, deploy } from "@/server/core/runtime/deploy";
 import {
 	createApplication,
 	findApplicationById,
@@ -51,6 +46,13 @@ import {
 } from "@/server/core/services/deployment";
 import { getContainerLogs } from "@/server/core/services/docker";
 import { findEnvironmentById } from "@/server/core/services/environment";
+import { canEditDeployGitSource } from "@/server/core/services/git-provider";
+import {
+	addNewService,
+	checkServiceAccess,
+	checkServicePermissionAndAccess,
+	findMemberByUserId,
+} from "@/server/core/services/permission";
 import { findProjectById } from "@/server/core/services/project";
 import { getAccessibleServerIds } from "@/server/core/services/server";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
@@ -75,14 +77,12 @@ import {
 	writeConfigRemote,
 } from "@/server/core/utils/traefik/application";
 import { deleteAllMiddlewares } from "@/server/core/utils/traefik/middleware";
-import { db } from "@/server/core/db";
-import { canEditDeployGitSource } from "@/server/core/services/git-provider";
+import type { DeploymentJob } from "@/server/queues/queue-types";
 import {
-	addNewService,
-	checkServiceAccess,
-	checkServicePermissionAndAccess,
-	findMemberByUserId,
-} from "@/server/core/services/permission";
+	cleanQueuesByApplication,
+	killDockerBuild,
+	myQueue,
+} from "@/server/queues/queueSetup";
 
 export const applicationRouter = createTRPCRouter({
 	create: protectedProcedure

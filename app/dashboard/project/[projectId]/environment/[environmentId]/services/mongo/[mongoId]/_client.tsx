@@ -5,6 +5,9 @@ import { HelpCircle, ServerOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
+import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
+import { useWhitelabeling } from "@/client/hooks/use-whitelabeling";
 import { ShowEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
@@ -35,16 +38,16 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { UseKeyboardNav } from "@/hooks/use-keyboard-nav";
-import { cn } from "@/lib/utils";
-import { api } from "@/utils/api";
-import { useWhitelabeling } from "@/utils/hooks/use-whitelabeling";
+import { cn } from "@/shared/utils";
 
 type TabState = "projects" | "monitoring" | "settings" | "backups" | "advanced";
 
-const Mongo = (
-	props: { mongoId: string; projectId: string; environmentId: string; activeTab: TabState },
-) => {
+const Mongo = (props: {
+	mongoId: string;
+	projectId: string;
+	environmentId: string;
+	activeTab: TabState;
+}) => {
 	const [_toggleMonitoring, _setToggleMonitoring] = useState(false);
 	const { mongoId, activeTab } = props;
 	const router = useRouter();

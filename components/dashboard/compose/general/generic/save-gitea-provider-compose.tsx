@@ -5,6 +5,8 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { api } from "@/client/api/trpc";
+import type { Repository } from "@/client/git/gitea";
 import { GiteaIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Badge } from "@/components/ui/badge";
@@ -45,10 +47,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
-import { api } from "@/utils/api";
-import type { Repository } from "@/utils/gitea-utils";
+import { cn } from "@/shared/utils";
 
 const GiteaProviderSchema = z.object({
 	composePath: z.string().min(1),

@@ -35,6 +35,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
+import { authClient } from "@/client/auth/client";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -75,10 +77,8 @@ import {
 	SidebarTrigger,
 	useSidebar,
 } from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
 import type { AppRouter } from "@/server/api/root";
-import { api } from "@/utils/api";
+import { cn } from "@/shared/utils";
 import { AddOrganization } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
 import { Logo } from "../shared/logo";

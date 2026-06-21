@@ -10,7 +10,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 const lineCountOptions = [
 	{ label: "100 lines", value: 100 },

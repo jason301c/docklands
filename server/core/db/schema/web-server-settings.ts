@@ -73,7 +73,7 @@ export const webServerSettings = pgTable("webServerSettings", {
 				},
 			},
 		}),
-	// Whitelabeling Configuration (Enterprise / Proprietary)
+	// Brand customization
 	whitelabelingConfig: jsonb("whitelabelingConfig")
 		.$type<{
 			appName: string | null;
@@ -105,10 +105,8 @@ export const webServerSettings = pgTable("webServerSettings", {
 		}),
 	// Deployment Configuration (self-hosted only)
 	remoteServersOnly: boolean("remoteServersOnly").notNull().default(false),
-	// Concurrent builds on the local web server (enterprise-gated to > 1)
+	// Concurrent builds on the local web server
 	buildsConcurrency: integer("buildsConcurrency").notNull().default(1),
-	// Auth Configuration (self-hosted only)
-	enforceSSO: boolean("enforceSSO").notNull().default(false),
 	// Cache Cleanup Configuration
 	cleanupCacheApplications: boolean("cleanupCacheApplications")
 		.notNull()
@@ -169,7 +167,6 @@ export const apiUpdateWebServerSettings = createSchema.partial().extend({
 	cleanupCacheOnPreviews: z.boolean().optional(),
 	cleanupCacheOnCompose: z.boolean().optional(),
 	remoteServersOnly: z.boolean().optional(),
-	enforceSSO: z.boolean().optional(),
 	buildsConcurrency: z.number().int().min(1).max(100).optional(),
 });
 

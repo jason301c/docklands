@@ -6,6 +6,7 @@ import {
 	Settings,
 	WorkflowIcon,
 } from "lucide-react";
+import { api } from "@/client/api/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { api } from "@/utils/api";
 import { NodeCard } from "./details/details-card";
 
 interface Props {

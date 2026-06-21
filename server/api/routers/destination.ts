@@ -2,6 +2,8 @@ import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { createTRPCRouter, withPermission } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { db } from "@/server/core/db";
 import {
 	apiCreateDestination,
 	apiFindOneDestination,
@@ -9,7 +11,6 @@ import {
 	apiUpdateDestination,
 	destinations,
 } from "@/server/core/db/schema";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	createDestination,
 	findDestinationById,
@@ -20,7 +21,6 @@ import {
 	execAsync,
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
-import { db } from "@/server/core/db";
 
 export const destinationRouter = createTRPCRouter({
 	create: withPermission("destination", "create")

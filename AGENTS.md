@@ -6,8 +6,12 @@ This is Docklands: a fork of Dokploy focused on self-hosted deployment managemen
 
 - `app/` contains the Next.js App Router UI and API route handlers.
 - `components/` contains dashboard, shared, layout, and primitive UI components.
-- `server/` contains the custom server entrypoint, tRPC API wiring, queues, and WebSocket glue.
+- `client/` contains browser-only app glue: tRPC client, providers, auth client, client hooks, and OAuth UI helpers.
+- `shared/` contains cross-runtime validation and utility helpers. Keep it free of Node-only APIs unless the file is explicitly server-only.
+- `server/` contains the custom server entrypoint, tRPC API wiring, queues, WebSocket glue, ops scripts, and backend runtime helpers.
 - `server/core/` contains the shared backend/domain code: database schema, Drizzle config, services, auth, Docker/Traefik/deployment/backup utilities, monitoring, templates, and verification.
+- `server/ops/` contains runtime/admin entrypoints bundled into `dist`: DB migration, setup, wait-for-postgres, reset-password, reset-2fa, and auth-secret migration.
+- `tools/` contains development-only scripts such as OpenAPI generation.
 - `drizzle/` contains generated SQL migrations and snapshots. Do not hand-edit snapshots unless you are deliberately repairing a generated migration.
 - `__test__/` contains Vitest coverage for backend behavior, security fixes, templates, deployments, WebSockets, permissions, and utilities.
 - `styles/globals.css` is the Tailwind v4 entrypoint and explicitly loads `tailwind.config.ts` with `@config`.
@@ -15,7 +19,7 @@ This is Docklands: a fork of Dokploy focused on self-hosted deployment managemen
 
 ## Current Stack
 
-Use `pnpm`. The repo currently targets Node `^24.4.0` and pnpm `>=10.22.0`.
+Use `pnpm`. The repo currently targets Node `>=24.4.0 <26` and pnpm `>=10.22.0`.
 
 Key versions after the dependency refresh:
 
@@ -42,7 +46,7 @@ rg -n "Route Handlers|App Router|Server Actions" node_modules/next/dist/docs
 ## Hard Rules
 
 - Do not reintroduce AI features or AI dependencies. The AI router, schema, service, provider utilities, settings page, project assistant, and log analyzer were intentionally removed.
-- Do not reintroduce proprietary or hosted-only code paths unless the user explicitly asks and the licensing implications are reviewed.
+- Do not reintroduce proprietary, commercial-license, or hosted-only code paths unless the user explicitly asks and the licensing implications are reviewed.
 - Preserve the single-root app layout. Do not recreate `apps/` or package-scope splits unless the user explicitly asks for a larger architecture change.
 - Keep `server/core/` as the backend/domain library unless there is a real architectural reason to move code.
 - Be careful with security-sensitive areas: drop uploads, zip extraction, shell command building, Docker/Traefik config generation, authentication, secrets, SSH keys, Git webhooks, and deployment logs.
@@ -100,7 +104,7 @@ pnpm migration:generate
 - `styles/globals.css` uses `@import "tailwindcss";` and `@config "../tailwind.config.ts";`.
 - React Email now uses `render`, not `renderAsync`.
 - xterm uses `@xterm/addon-fit`, not the old `xterm-addon-fit`.
-- Node provides `File`; only a minimal server-side `FileList` shim lives in `utils/schema.ts`.
+- Node provides `File`; only a minimal server-side `FileList` shim lives in `shared/validation/schema.ts`.
 - If you remove a database table or field, generate a Drizzle migration and commit both the SQL and matching `drizzle/meta` snapshot/journal updates.
 
 ## Branding

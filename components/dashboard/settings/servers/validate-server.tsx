@@ -1,5 +1,6 @@
 import { Loader2, PcCase, RefreshCw } from "lucide-react";
 import { useState } from "react";
+import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +10,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/utils/api";
 import { StatusRow } from "./gpu-support";
 
 interface Props {

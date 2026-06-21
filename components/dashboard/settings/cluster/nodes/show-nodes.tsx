@@ -6,6 +6,7 @@ import {
 	MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +40,6 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { api } from "@/utils/api";
 import { AddNode } from "./add-node";
 import { ShowNodeData } from "./show-node-data";
 

@@ -2,6 +2,7 @@ import { Loader2, MoreHorizontal, RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { ShowContainerConfig } from "@/components/dashboard/docker/config/show-container-config";
 import { ShowContainerMounts } from "@/components/dashboard/docker/mounts/show-container-mounts";
 import { ShowContainerNetworks } from "@/components/dashboard/docker/networks/show-container-networks";
@@ -39,7 +40,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { api } from "@/utils/api";
 
 const DockerLogsId = dynamic(
 	() =>

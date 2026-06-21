@@ -2,6 +2,8 @@ import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { db } from "@/server/core/db";
 import {
 	apiFindAllByApplication,
 	apiFindAllByCompose,
@@ -9,8 +11,6 @@ import {
 	apiFindAllByType,
 	deployments,
 } from "@/server/core/db/schema";
-import { myQueue } from "@/server/queues/queueSetup";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	findAllDeploymentsByApplicationId,
 	findAllDeploymentsByComposeId,
@@ -22,15 +22,15 @@ import {
 	updateDeploymentStatus,
 } from "@/server/core/services/deployment";
 import {
-	execAsync,
-	execAsyncRemote,
-} from "@/server/core/utils/process/execAsync";
-import { db } from "@/server/core/db";
-import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
 import { findServerById } from "@/server/core/services/server";
+import {
+	execAsync,
+	execAsyncRemote,
+} from "@/server/core/utils/process/execAsync";
+import { myQueue } from "@/server/queues/queueSetup";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 
 export const deploymentRouter = createTRPCRouter({

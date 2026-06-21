@@ -1,7 +1,7 @@
 import { EyeIcon, EyeOffIcon, RefreshCcw } from "lucide-react";
 import * as React from "react";
-import { generateRandomPassword } from "@/lib/password-utils";
-import { cn } from "@/lib/utils";
+import { generateRandomPassword } from "@/shared/password-utils";
+import { cn } from "@/shared/utils";
 
 export interface InputProps
 	extends React.InputHTMLAttributes<HTMLInputElement> {

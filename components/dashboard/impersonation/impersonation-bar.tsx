@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
+import { authClient } from "@/client/auth/client";
+import { useWhitelabeling } from "@/client/hooks/use-whitelabeling";
 import { Logo } from "@/components/shared/logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -41,10 +44,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import { api } from "@/utils/api";
-import { useWhitelabeling } from "@/utils/hooks/use-whitelabeling";
+import { cn } from "@/shared/utils";
 
 type User = typeof authClient.$Infer.Session.user;
 

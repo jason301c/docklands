@@ -1,4 +1,5 @@
 import { Layers, Loader2 } from "lucide-react";
+import { api } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -8,7 +9,6 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { api } from "@/utils/api";
 import { type ApplicationList, columns } from "./columns";
 import { DataTable } from "./data-table";
 

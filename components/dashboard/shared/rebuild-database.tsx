@@ -1,5 +1,6 @@
 import { AlertTriangle, DatabaseIcon } from "lucide-react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { api } from "@/utils/api";
 
 interface Props {
 	id: string;

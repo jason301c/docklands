@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import ClientPage from "./_client";
 import { IS_CLOUD } from "@/server/core/constants/env";
 import { getUserByToken } from "@/server/core/services/admin";
+import ClientPage from "./_client";
 
 type PageProps = {
 	searchParams: Promise<{ token?: string | string[] }>;

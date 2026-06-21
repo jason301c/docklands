@@ -2,6 +2,7 @@ import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import type React from "react";
 import { useEffect, useState } from "react";
+import { api } from "@/client/api/trpc";
 import { Badge } from "@/components/ui/badge";
 import {
 	Dialog,
@@ -21,7 +22,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { api } from "@/utils/api";
 import { badgeStateColor } from "../../application/logs/show";
 
 export const DockerLogsId = dynamic(

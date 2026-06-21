@@ -5,13 +5,13 @@ import {
 	apiFindOneSecurity,
 	apiUpdateSecurity,
 } from "@/server/core/db/schema";
+import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 import {
 	createSecurity,
 	deleteSecurityById,
 	findSecurityById,
 	updateSecurityById,
 } from "@/server/core/services/security";
-import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 
 export const securityRouter = createTRPCRouter({
 	create: protectedProcedure

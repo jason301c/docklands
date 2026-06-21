@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { parse } from "yaml";
-import type { ComposeSpecification } from "@/server/core/utils/docker/types";
 import { addSuffixToAllSecrets } from "@/server/core/utils/docker/compose/secrets";
+import type { ComposeSpecification } from "@/server/core/utils/docker/types";
 
 const composeFileCombinedSecrets = `
 version: "3.8"

@@ -2,7 +2,7 @@ import { FolderIcon } from "lucide-react";
 import React, { type ChangeEvent, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 interface DropzoneProps
 	extends Omit<

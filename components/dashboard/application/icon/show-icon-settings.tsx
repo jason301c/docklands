@@ -2,6 +2,7 @@ import DOMPurify from "dompurify";
 import { GlobeIcon, Pencil, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { api } from "@/client/api/trpc";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -12,8 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Dropzone } from "@/components/ui/dropzone";
 import { Input } from "@/components/ui/input";
-import { type BundledIcon, bundledIcons } from "@/lib/bundled-icons";
-import { api } from "@/utils/api";
+import { type BundledIcon, bundledIcons } from "@/shared/bundled-icons";
 
 interface ShowIconSettingsProps {
 	applicationId: string;
