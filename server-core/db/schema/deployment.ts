@@ -120,11 +120,11 @@ const schema = createInsertSchema(deployments, {
 	title: z.string().min(1),
 	status: z.string().default("running"),
 	logPath: z.string().min(1),
-	applicationId: z.string(),
-	composeId: z.string(),
-	description: z.string().optional(),
-	previewDeploymentId: z.string(),
-	buildServerId: z.string(),
+	applicationId: z.string().nullish(),
+	composeId: z.string().nullish(),
+	description: z.string().nullish(),
+	previewDeploymentId: z.string().nullish(),
+	buildServerId: z.string().nullish(),
 });
 export const apiCreateDeployment = schema
 	.pick({

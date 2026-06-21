@@ -98,7 +98,6 @@ export default function Home({ IS_CLOUD, enforceSSO }: Props) {
 				return;
 			}
 
-			// @ts-ignore
 			if (data?.twoFactorRedirect as boolean) {
 				setTwoFactorCode("");
 				setIsTwoFactor(true);

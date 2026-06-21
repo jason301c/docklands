@@ -34,7 +34,6 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
 		const setRefs = React.useCallback(
 			(node: HTMLInputElement | null) => {
-				// @ts-ignore
 				inputRef.current = node;
 				if (typeof ref === "function") {
 					ref(node);

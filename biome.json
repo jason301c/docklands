@@ -10,14 +10,19 @@
 		"includes": [
 			"**",
 			"!**/.docker",
-			"!**/.next/**",
+			"!**/.next",
 			"!**/dist",
-			"!**/drizzle/**",
-			"!node_modules/**"
+			"!**/drizzle",
+			"!node_modules"
 		],
 		"maxSize": 2097152
 	},
 	"assist": { "actions": { "source": { "organizeImports": "on" } } },
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
 	"linter": {
 		"rules": {
 			"security": {
@@ -26,7 +31,8 @@
 			"complexity": {
 				"noUselessCatch": "off",
 				"noBannedTypes": "off",
-				"noUselessFragments": "off"
+				"noUselessFragments": "off",
+				"noImportantStyles": "off"
 			},
 			"correctness": {
 				"useExhaustiveDependencies": "off",
@@ -52,10 +58,12 @@
 			"suspicious": {
 				"noArrayIndexKey": "off",
 				"noExplicitAny": "off",
+				"noUnknownAtRules": "off",
 				"noRedeclare": "off",
 				"noTemplateCurlyInString": "off"
 			},
 			"a11y": {
+				"noAmbiguousAnchorText": "off",
 				"noSvgWithoutTitle": "off",
 				"useKeyWithClickEvents": "off",
 				"useAriaPropsForRole": "off",

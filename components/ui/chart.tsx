@@ -100,16 +100,39 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip;
 
+type ChartPayloadItem = {
+	name?: string | number;
+	dataKey?: string | number;
+	value?: string | number;
+	color?: string;
+	payload?: Record<string, any>;
+};
+
 const ChartTooltipContent = React.forwardRef<
 	HTMLDivElement,
-	React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-		React.ComponentProps<"div"> & {
-			hideLabel?: boolean;
-			hideIndicator?: boolean;
-			indicator?: "line" | "dot" | "dashed";
-			nameKey?: string;
-			labelKey?: string;
-		}
+	React.ComponentProps<"div"> & {
+		active?: boolean;
+		color?: string;
+		formatter?: (
+			value: string | number,
+			name: string | number,
+			item: ChartPayloadItem,
+			index: number,
+			payload?: Record<string, any>,
+		) => React.ReactNode;
+		hideLabel?: boolean;
+		hideIndicator?: boolean;
+		indicator?: "line" | "dot" | "dashed";
+		label?: string | number;
+		labelClassName?: string;
+		labelFormatter?: (
+			label: React.ReactNode,
+			payload: ChartPayloadItem[],
+		) => React.ReactNode;
+		nameKey?: string;
+		labelKey?: string;
+		payload?: ChartPayloadItem[];
+	}
 >(
 	(
 		{
@@ -186,7 +209,12 @@ const ChartTooltipContent = React.forwardRef<
 					{payload.map((item, index) => {
 						const key = `${nameKey || item.name || item.dataKey || "value"}`;
 						const itemConfig = getPayloadConfigFromPayload(config, item, key);
-						const indicatorColor = color || item.payload.fill || item.color;
+						const indicatorColor =
+							color ||
+							(typeof item.payload?.fill === "string"
+								? item.payload.fill
+								: undefined) ||
+							item.color;
 
 						return (
 							<div
@@ -259,9 +287,10 @@ const ChartLegend = RechartsPrimitive.Legend;
 const ChartLegendContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"div"> &
-		Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+		Partial<Pick<RechartsPrimitive.LegendProps, "verticalAlign">> & {
 			hideIcon?: boolean;
 			nameKey?: string;
+			payload?: ChartPayloadItem[];
 		}
 >(
 	(
@@ -355,9 +384,9 @@ function getPayloadConfigFromPayload(
 
 export {
 	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
 	ChartLegend,
 	ChartLegendContent,
 	ChartStyle,
+	ChartTooltip,
+	ChartTooltipContent,
 };

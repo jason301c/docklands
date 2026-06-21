@@ -135,8 +135,9 @@ export const serverRelations = relations(server, ({ one, many }) => ({
 const createSchema = createInsertSchema(server, {
 	serverId: z.string().min(1),
 	name: z.string().min(1),
-	description: z.string().optional(),
+	description: z.string().nullish(),
 	serverType: z.enum(["deploy", "build"]).optional(),
+	sshKeyId: z.string().nullish(),
 });
 
 export const apiCreateServer = createSchema

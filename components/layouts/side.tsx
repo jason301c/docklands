@@ -6,7 +6,6 @@ import {
 	Bell,
 	BlocksIcon,
 	BookIcon,
-	BotIcon,
 	Boxes,
 	ChevronRight,
 	ChevronsUpDown,
@@ -316,13 +315,6 @@ const MENU: Menu = {
 			url: "/dashboard/settings/ssh-keys",
 			// Only enabled for users with access to SSH keys
 			isEnabled: ({ permissions }) => !!permissions?.sshKeys.read,
-		},
-		{
-			title: "AI",
-			icon: BotIcon,
-			url: "/dashboard/settings/ai",
-			isSingle: true,
-			isEnabled: ({ permissions }) => !!permissions?.organization.update,
 		},
 		{
 			isSingle: true,

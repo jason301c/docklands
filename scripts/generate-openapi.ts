@@ -56,7 +56,6 @@ async function generateOpenAPI() {
 				"gitea",
 				"server",
 				"swarm",
-				"ai",
 				"organization",
 				"schedule",
 				"rollback",

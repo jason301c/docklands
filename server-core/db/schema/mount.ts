@@ -104,12 +104,12 @@ export const MountssRelations = relations(mounts, ({ one }) => ({
 const createSchema = createInsertSchema(mounts, {
 	applicationId: z.string(),
 	type: z.enum(["bind", "volume", "file"]),
-	hostPath: z.string().optional(),
-	volumeName: z.string().optional(),
-	content: z.string().optional(),
+	hostPath: z.string().nullish(),
+	volumeName: z.string().nullish(),
+	content: z.string().nullish(),
 	mountPath: z.string().min(1),
 	mountId: z.string().optional(),
-	filePath: z.string().optional(),
+	filePath: z.string().nullish(),
 	serviceType: z.enum([
 		"application",
 		"postgres",

@@ -1,13 +1,11 @@
 import { z } from "zod";
 import { zfd } from "zod-form-data";
 
-if (typeof window === "undefined") {
-	void (async () => {
-		const undici = await import("undici");
-		globalThis.File = undici.File as any;
-		// @ts-ignore
-		globalThis.FileList = undici.FileList as any;
-	})();
+if (
+	typeof window === "undefined" &&
+	typeof globalThis.FileList === "undefined"
+) {
+	globalThis.FileList = class FileList extends Array<File> {} as any;
 }
 
 export const APP_NAME_REGEX = /^[a-z](?!.*--)([a-z0-9-]*[a-z0-9])?$/;

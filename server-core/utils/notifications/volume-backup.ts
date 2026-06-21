@@ -1,4 +1,4 @@
-import { renderAsync } from "@react-email/components";
+import { render } from "@react-email/components";
 import { format } from "date-fns";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server-core/db";
@@ -88,7 +88,7 @@ export const sendVolumeBackupNotifications = async ({
 		try {
 			if (email || resend) {
 				const subject = `Volume Backup ${type === "success" ? "Successful" : "Failed"} - ${applicationName}`;
-				const htmlContent = await renderAsync(
+				const htmlContent = await render(
 					VolumeBackupEmail({
 						projectName,
 						applicationName,

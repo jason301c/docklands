@@ -1,4 +1,4 @@
-import { renderAsync } from "@react-email/components";
+import { render } from "@react-email/components";
 import { format } from "date-fns";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server-core/db";
@@ -79,7 +79,7 @@ export const sendBuildSuccessNotifications = async ({
 		} = notification;
 		try {
 			if (email || resend) {
-				const template = await renderAsync(
+				const template = await render(
 					BuildSuccessEmail({
 						projectName,
 						applicationName,

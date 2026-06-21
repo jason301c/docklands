@@ -155,11 +155,11 @@ const createSchema = createInsertSchema(compose, {
 		.max(63)
 		.regex(APP_NAME_REGEX, APP_NAME_MESSAGE)
 		.optional(),
-	description: z.string(),
-	env: z.string().optional(),
+	description: z.string().nullish(),
+	env: z.string().nullish(),
 	composeFile: z.string().optional(),
 	environmentId: z.string(),
-	customGitSSHKeyId: z.string().optional(),
+	customGitSSHKeyId: z.string().nullish(),
 	command: z.string().optional(),
 	composePath: z.string().min(1),
 	composeType: z.enum(["docker-compose", "stack"]).optional(),

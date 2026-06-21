@@ -1,4 +1,4 @@
-import { renderAsync } from "@react-email/components";
+import { render } from "@react-email/components";
 import { format } from "date-fns";
 import { eq } from "drizzle-orm";
 import { db } from "@/server-core/db";
@@ -66,7 +66,7 @@ export const sendDocklandsBackupNotifications = async ({
 
 		try {
 			if (email || resend) {
-				const template = await renderAsync(
+				const template = await render(
 					DocklandsBackupEmail({
 						type,
 						errorMessage,

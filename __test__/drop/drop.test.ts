@@ -1,3 +1,4 @@
+import { File as NodeFile } from "node:buffer";
 import fs from "node:fs/promises";
 import path from "node:path";
 import AdmZip from "adm-zip";
@@ -11,10 +12,10 @@ const { APPLICATIONS_PATH } = paths();
 vi.mock("@/server-core/constants", async (importOriginal) => {
 	const actual = await importOriginal();
 	return {
-		// @ts-ignore
+		// @ts-expect-error
 		...actual,
 		paths: () => ({
-			// @ts-ignore
+			// @ts-expect-error
 			...actual.paths(),
 			BASE_PATH: OUTPUT_BASE,
 			APPLICATIONS_PATH: OUTPUT_BASE,
@@ -23,9 +24,8 @@ vi.mock("@/server-core/constants", async (importOriginal) => {
 });
 
 if (typeof window === "undefined") {
-	const undici = require("undici");
-	globalThis.File = undici.File as any;
-	globalThis.FileList = undici.FileList as any;
+	globalThis.File = NodeFile as any;
+	globalThis.FileList = class FileList extends Array<NodeFile> {} as any;
 }
 
 const baseApp: ApplicationNested = {

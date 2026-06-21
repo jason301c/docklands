@@ -1,5 +1,4 @@
 import { createTRPCRouter } from "../api/trpc";
-import { aiRouter } from "./routers/ai";
 import { applicationRouter } from "./routers/application";
 import { backupRouter } from "./routers/backup";
 import { bitbucketRouter } from "./routers/bitbucket";
@@ -86,7 +85,6 @@ export const appRouter = createTRPCRouter({
 	sshKey: sshRouter,
 	swarm: swarmRouter,
 	user: userRouter,
-	ai: aiRouter,
 	organization: organizationRouter,
 	licenseKey: licenseKeyRouter,
 	sso: ssoRouter,
