@@ -128,7 +128,7 @@ const MENU: Menu = {
 	home: [
 		{
 			isSingle: true,
-			title: "Home",
+			title: "Overview",
 			url: "/dashboard/home",
 			icon: House,
 		},
@@ -162,94 +162,41 @@ const MENU: Menu = {
 			isEnabled: ({ permissions }) => !!permissions?.organization.update,
 		},
 		{
-			isSingle: true,
-			title: "Traefik File System",
-			url: "/dashboard/traefik",
-			icon: GalleryVerticalEnd,
-			// Only enabled for users with access to Traefik files
-			isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
-		},
-		{
-			isSingle: true,
-			title: "Docker",
-			url: "/dashboard/docker",
+			isSingle: false,
+			title: "Infrastructure",
 			icon: BlocksIcon,
-			// Only enabled for users with access to Docker
-			isEnabled: ({ permissions }) => !!permissions?.docker.read,
+			items: [
+				{
+					isSingle: true,
+					title: "Docker",
+					url: "/dashboard/docker",
+					icon: BlocksIcon,
+					isEnabled: ({ permissions }) => !!permissions?.docker.read,
+				},
+				{
+					isSingle: true,
+					title: "Swarm",
+					url: "/dashboard/swarm",
+					icon: PieChart,
+					isEnabled: ({ permissions }) => !!permissions?.docker.read,
+				},
+				{
+					isSingle: true,
+					title: "Requests",
+					url: "/dashboard/requests",
+					icon: Forward,
+					isEnabled: ({ permissions, isCloud }) =>
+						!!(permissions?.docker.read && !isCloud),
+				},
+				{
+					isSingle: true,
+					title: "Traefik Files",
+					url: "/dashboard/traefik",
+					icon: GalleryVerticalEnd,
+					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
+				},
+			],
 		},
-		{
-			isSingle: true,
-			title: "Swarm",
-			url: "/dashboard/swarm",
-			icon: PieChart,
-			// Only enabled for users with access to Docker
-			isEnabled: ({ permissions }) => !!permissions?.docker.read,
-		},
-		{
-			isSingle: true,
-			title: "Requests",
-			url: "/dashboard/requests",
-			icon: Forward,
-			// Only enabled for users with access to Docker in non-cloud environments
-			isEnabled: ({ permissions, isCloud }) =>
-				!!(permissions?.docker.read && !isCloud),
-		},
-
-		// Legacy unused menu, adjusted to the new structure
-		// {
-		// 	isSingle: true,
-		// 	title: "Projects",
-		// 	url: "/dashboard/projects",
-		// 	icon: Folder,
-		// },
-		// {
-		// 	isSingle: true,
-		// 	title: "Monitoring",
-		// 	icon: BarChartHorizontalBigIcon,
-		// 	url: "/dashboard/settings/monitoring",
-		// },
-		// {
-		//   isSingle: false,
-		//   title: "Settings",
-		//   icon: Settings2,
-		//   items: [
-		//     {
-		//       title: "Profile",
-		//       url: "/dashboard/settings/profile",
-		//     },
-		//     {
-		//       title: "Users",
-		//       url: "/dashboard/settings/users",
-		//     },
-		//     {
-		//       title: "SSH Key",
-		//       url: "/dashboard/settings/ssh-keys",
-		//     },
-		//     {
-		//       title: "Git",
-		//       url: "/dashboard/settings/git-providers",
-		//     },
-		//   ],
-		// },
-		// {
-		//   isSingle: false,
-		//   title: "Integrations",
-		//   icon: BlocksIcon,
-		//   items: [
-		//     {
-		//       title: "S3 Destinations",
-		//       url: "/dashboard/settings/destinations",
-		//     },
-		//     {
-		//       title: "Registry",
-		//       url: "/dashboard/settings/registry",
-		//     },
-		//     {
-		//       title: "Notifications",
-		//       url: "/dashboard/settings/notifications",
-		//     },
-		//   ],
-		// },
 	],
 
 	settings: [
@@ -377,26 +324,38 @@ function createMenuForAuthUser(opts: {
 	permissions?: PermissionsOutput;
 	isCloud: boolean;
 }): Menu {
+	const enabledOpts = {
+		auth: opts.auth,
+		permissions: opts.permissions,
+		isCloud: opts.isCloud,
+	};
+	const isEnabled = (item: { isEnabled?: (o: EnabledOpts) => boolean }) =>
+		!item.isEnabled || item.isEnabled(enabledOpts);
 	const filterEnabled = <
 		T extends {
 			isEnabled?: (o: EnabledOpts) => boolean;
 		},
 	>(
 		items: readonly T[],
-	): T[] =>
-		items.filter((item) =>
-			!item.isEnabled
-				? true
-				: item.isEnabled({
-						auth: opts.auth,
-						permissions: opts.permissions,
-						isCloud: opts.isCloud,
-					}),
-		) as T[];
+	): T[] => items.filter(isEnabled) as T[];
+	const filterNavItems = (items: readonly NavItem[]): NavItem[] =>
+		items.reduce<NavItem[]>((filtered, item) => {
+			if (!isEnabled(item)) return filtered;
+
+			if (item.isSingle === false) {
+				const nestedItems = filterEnabled(item.items);
+				if (nestedItems.length === 0) return filtered;
+				filtered.push({ ...item, items: nestedItems });
+				return filtered;
+			}
+
+			filtered.push(item);
+			return filtered;
+		}, []);
 
 	return {
-		home: filterEnabled(MENU.home),
-		settings: filterEnabled(MENU.settings),
+		home: filterNavItems(MENU.home),
+		settings: filterNavItems(MENU.settings),
 		help: filterEnabled(MENU.help),
 	};
 }
@@ -512,49 +471,49 @@ function SidebarLogo() {
 						<DropdownMenu>
 							<DropdownMenu.Trigger
 								render={
-								<SidebarMenuButton
-									size={isCollapsed ? "sm" : "base"}
-									className={cn(
-										"data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
-										isCollapsed &&
-											"flex justify-center items-center p-2 h-10 w-10 mx-auto",
-									)}
-								>
-									<div
+									<SidebarMenuButton
+										size={isCollapsed ? "sm" : "base"}
 										className={cn(
-											"flex items-center gap-2",
-											isCollapsed && "justify-center",
+											"data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
+											isCollapsed &&
+												"flex justify-center items-center p-2 h-10 w-10 mx-auto",
 										)}
 									>
 										<div
 											className={cn(
-												"flex items-center justify-center rounded-sm border",
-												"size-6",
+												"flex items-center gap-2",
+												isCollapsed && "justify-center",
 											)}
 										>
-											<Logo
+											<div
 												className={cn(
-													"transition-all",
-													isCollapsed ? "size-4" : "size-5",
+													"flex items-center justify-center rounded-sm border",
+													"size-6",
 												)}
-												logoUrl={activeOrganization?.logo || undefined}
-											/>
+											>
+												<Logo
+													className={cn(
+														"transition-all",
+														isCollapsed ? "size-4" : "size-5",
+													)}
+													logoUrl={activeOrganization?.logo || undefined}
+												/>
+											</div>
+											<div
+												className={cn(
+													"flex flex-col items-start",
+													isCollapsed && "hidden",
+												)}
+											>
+												<p className="text-sm font-medium leading-none">
+													{activeOrganization?.name ?? "Select Organization"}
+												</p>
+											</div>
 										</div>
-										<div
-											className={cn(
-												"flex flex-col items-start",
-												isCollapsed && "hidden",
-											)}
-										>
-											<p className="text-sm font-medium leading-none">
-												{activeOrganization?.name ?? "Select Organization"}
-											</p>
-										</div>
-									</div>
-									<ChevronsUpDown
-										className={cn("ml-auto", isCollapsed && "hidden")}
-									/>
-								</SidebarMenuButton>
+										<ChevronsUpDown
+											className={cn("ml-auto", isCollapsed && "hidden")}
+										/>
+									</SidebarMenuButton>
 								}
 							/>
 							<DropdownMenu.Content
@@ -712,22 +671,22 @@ function SidebarLogo() {
 						<DropdownMenu>
 							<DropdownMenu.Trigger
 								render={
-								<Button
-									variant="ghost"
-									shape="square"
-									aria-label="Open invitations"
-									className={cn(
-										"relative",
-										isCollapsed && "h-8 w-8 p-1.5 mx-auto",
-									)}
-								>
-									<Bell className="size-4" />
-									{invitations && invitations.length > 0 && (
-										<span className="absolute -top-0 -right-0 flex size-4 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
-										{invitations.length}
-									</span>
-								)}
-							</Button>
+									<Button
+										variant="ghost"
+										shape="square"
+										aria-label="Open invitations"
+										className={cn(
+											"relative",
+											isCollapsed && "h-8 w-8 p-1.5 mx-auto",
+										)}
+									>
+										<Bell className="size-4" />
+										{invitations && invitations.length > 0 && (
+											<span className="absolute -top-0 -right-0 flex size-4 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
+												{invitations.length}
+											</span>
+										)}
+									</Button>
 								}
 							/>
 							<DropdownMenu.Content
