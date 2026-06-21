@@ -15,6 +15,7 @@ import {
 	Cable,
 	CheckCircle2,
 	CircuitBoard,
+	Clock,
 	Command,
 	Database,
 	ExternalLink,
@@ -50,10 +51,13 @@ import { ShowDeployments } from "@/components/dashboard/application/deployments/
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
+import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
+import { ShowVolumeBackups } from "@/components/dashboard/application/volume-backups/show-volume-backups";
 import { ShowComposeContainers } from "@/components/dashboard/compose/containers/show-compose-containers";
+import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
-import { DeleteService } from "@/components/dashboard/compose/delete-service";
+import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
 import { ComposeFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-compose-monitoring";
 import { ContainerFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-container-monitoring";
 import { AddApplication } from "@/components/dashboard/project/add-application";
@@ -119,6 +123,14 @@ type CommandItem = {
 const deploymentServiceTypes = new Set<WorkspaceServiceType>([
 	"application",
 	"compose",
+]);
+
+const databaseBackupServiceTypes = new Set<WorkspaceServiceType>([
+	"libsql",
+	"mariadb",
+	"mongo",
+	"mysql",
+	"postgres",
 ]);
 
 const serviceTypeLabels: Record<WorkspaceServiceType, string> = {
@@ -260,6 +272,11 @@ const formatLastDeploy = (lastDeployAt?: string | null) =>
 		? formatDistanceToNow(new Date(lastDeployAt), { addSuffix: true })
 		: "No deploys yet";
 
+const getDatabaseBackupType = (service: WorkspaceService) =>
+	databaseBackupServiceTypes.has(service.type)
+		? (service.type as "libsql" | "mariadb" | "mongo" | "mysql" | "postgres")
+		: undefined;
+
 export const EnvironmentCanvas = ({
 	projectId,
 	environmentId,
@@ -295,6 +312,9 @@ export const EnvironmentCanvas = ({
 		| "logs"
 		| "containers"
 		| "metrics"
+		| "schedules"
+		| "backups"
+		| "volume-backups"
 		| "connections"
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
@@ -504,6 +524,20 @@ export const EnvironmentCanvas = ({
 		...(selectedServiceModel?.type === "application"
 			? [{ value: "previews", label: "Previews" }]
 			: []),
+		...(selectedServiceModel &&
+		deploymentServiceTypes.has(selectedServiceModel.type) &&
+		permissions?.schedule.read
+			? [{ value: "schedules", label: "Schedules" }]
+			: []),
+		...(selectedServiceModel?.type === "compose" ||
+		(selectedServiceModel && getDatabaseBackupType(selectedServiceModel))
+			? [{ value: "backups", label: "Backups" }]
+			: []),
+		...(selectedServiceModel &&
+		deploymentServiceTypes.has(selectedServiceModel.type) &&
+		permissions?.volumeBackup.read
+			? [{ value: "volume-backups", label: "Volume Backups" }]
+			: []),
 		...(selectedServiceModel?.appName && permissions?.logs.read
 			? [{ value: "logs", label: "Logs" }]
 			: []),
@@ -570,6 +604,30 @@ export const EnvironmentCanvas = ({
 			setDrawerTab("overview");
 		}
 		if (
+			drawerTab === "schedules" &&
+			(!selectedServiceModel ||
+				!deploymentServiceTypes.has(selectedServiceModel.type) ||
+				!permissions?.schedule.read)
+		) {
+			setDrawerTab("overview");
+		}
+		if (
+			drawerTab === "backups" &&
+			(!selectedServiceModel ||
+				(selectedServiceModel.type !== "compose" &&
+					!getDatabaseBackupType(selectedServiceModel)))
+		) {
+			setDrawerTab("overview");
+		}
+		if (
+			drawerTab === "volume-backups" &&
+			(!selectedServiceModel ||
+				!deploymentServiceTypes.has(selectedServiceModel.type) ||
+				!permissions?.volumeBackup.read)
+		) {
+			setDrawerTab("overview");
+		}
+		if (
 			drawerTab === "containers" &&
 			(selectedServiceModel?.type !== "compose" || !permissions?.service.read)
 		) {
@@ -587,7 +645,9 @@ export const EnvironmentCanvas = ({
 		permissions?.domain.read,
 		permissions?.logs.read,
 		permissions?.monitoring.read,
+		permissions?.schedule.read,
 		permissions?.service.read,
+		permissions?.volumeBackup.read,
 		selectedServiceModel,
 	]);
 
@@ -1147,6 +1207,68 @@ export const EnvironmentCanvas = ({
 										serviceType: service.type,
 									});
 									setDrawerTab("logs");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(deploymentServiceTypes.has(service.type) &&
+				permissions?.schedule.read
+					? [
+							{
+								id: `schedules:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Schedules for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · scheduled jobs`,
+								search: `${baseSearch} schedules cron jobs tasks automation`,
+								icon: <Clock className="size-5 text-muted-foreground" />,
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("schedules");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(service.type === "compose" || getDatabaseBackupType(service)
+					? [
+							{
+								id: `backups:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Backups for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · backup policies`,
+								search: `${baseSearch} backups restore database snapshot s3`,
+								icon: <Database className="size-5 text-muted-foreground" />,
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("backups");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(deploymentServiceTypes.has(service.type) &&
+				permissions?.volumeBackup.read
+					? [
+							{
+								id: `volume-backups:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Volume backups for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · persistent volume backups`,
+								search: `${baseSearch} volume backups restore persistent storage`,
+								icon: <Database className="size-5 text-muted-foreground" />,
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("volume-backups");
 									setCommandOpen(false);
 								},
 							},
@@ -1958,6 +2080,44 @@ export const EnvironmentCanvas = ({
 							selectedServiceModel.type === "application" && (
 								<ShowPreviewDeployments
 									applicationId={selectedServiceModel.id}
+								/>
+							)}
+
+						{drawerTab === "schedules" &&
+							(selectedServiceModel.type === "application" ||
+								selectedServiceModel.type === "compose") && (
+								<ShowSchedules
+									id={selectedServiceModel.id}
+									scheduleType={selectedServiceModel.type}
+								/>
+							)}
+
+						{drawerTab === "backups" && (
+							<>
+								{selectedServiceModel.type === "compose" ? (
+									<ShowBackups
+										id={selectedServiceModel.id}
+										backupType="compose"
+									/>
+								) : (
+									getDatabaseBackupType(selectedServiceModel) && (
+										<ShowBackups
+											id={selectedServiceModel.id}
+											databaseType={getDatabaseBackupType(selectedServiceModel)}
+											backupType="database"
+										/>
+									)
+								)}
+							</>
+						)}
+
+						{drawerTab === "volume-backups" &&
+							(selectedServiceModel.type === "application" ||
+								selectedServiceModel.type === "compose") && (
+								<ShowVolumeBackups
+									id={selectedServiceModel.id}
+									type={selectedServiceModel.type}
+									serverId={selectedServiceModel.serverId || ""}
 								/>
 							)}
 
