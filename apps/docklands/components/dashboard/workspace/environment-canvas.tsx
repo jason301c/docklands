@@ -5,7 +5,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Input, Textarea } from "@cloudflare/kumo/components/input";
+import { Input } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
@@ -49,6 +49,8 @@ import {
 	useState,
 } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { ShowEnvironment as ShowApplicationEnvironment } from "@/components/dashboard/application/environment/show";
+import { ShowEnvironment as ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
 import { ShowPorts } from "@/components/dashboard/application/advanced/ports/show-port";
@@ -465,7 +467,6 @@ export const EnvironmentCanvas = ({
 		| "resources"
 		| "connections"
 	>("overview");
-	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
 	const [isArranging, setIsArranging] = useState(false);
 	const [isSelectionMode, setIsSelectionMode] = useState(false);
 	const [selectedBulkKeys, setSelectedBulkKeys] = useState<string[]>([]);
@@ -506,7 +507,6 @@ export const EnvironmentCanvas = ({
 	const removeConnection = api.workspace.removeConnection.useMutation();
 	const applyConnectionVariables =
 		api.workspace.applyConnectionVariables.useMutation();
-	const updateServiceEnv = api.workspace.updateServiceEnv.useMutation();
 	const duplicateProject = api.project.duplicate.useMutation();
 
 	const serviceActions = {
@@ -767,30 +767,6 @@ export const EnvironmentCanvas = ({
 			: []),
 		{ value: "connections", label: "Connections" },
 	];
-
-	const serviceEnvQueryInput = selectedServiceModel
-		? {
-				environmentId,
-				serviceId: selectedServiceModel.id,
-				serviceType: selectedServiceModel.type,
-			}
-		: {
-				environmentId,
-				serviceId: "",
-				serviceType: "application" as const,
-			};
-	const serviceEnvQuery = api.workspace.serviceEnv.useQuery(
-		serviceEnvQueryInput,
-		{
-			enabled: !!selectedServiceModel && drawerTab === "variables",
-		},
-	);
-
-	useEffect(() => {
-		if (serviceEnvQuery.data) {
-			setServiceEnvDraft(serviceEnvQuery.data.env);
-		}
-	}, [serviceEnvQuery.data]);
 
 	useEffect(() => {
 		if (
@@ -1460,6 +1436,37 @@ export const EnvironmentCanvas = ({
 		toast.success("Connection removed");
 	};
 
+	const invalidateServiceEnvironment = async (service: SelectedServiceRef) => {
+		switch (service.serviceType) {
+			case "application":
+				await utils.application.one.invalidate({
+					applicationId: service.serviceId,
+				});
+				break;
+			case "compose":
+				await utils.compose.one.invalidate({ composeId: service.serviceId });
+				break;
+			case "postgres":
+				await utils.postgres.one.invalidate({ postgresId: service.serviceId });
+				break;
+			case "mysql":
+				await utils.mysql.one.invalidate({ mysqlId: service.serviceId });
+				break;
+			case "mariadb":
+				await utils.mariadb.one.invalidate({ mariadbId: service.serviceId });
+				break;
+			case "mongo":
+				await utils.mongo.one.invalidate({ mongoId: service.serviceId });
+				break;
+			case "redis":
+				await utils.redis.one.invalidate({ redisId: service.serviceId });
+				break;
+			case "libsql":
+				await utils.libsql.one.invalidate({ libsqlId: service.serviceId });
+				break;
+		}
+	};
+
 	const applyVariablesForConnection = async (
 		connection: WorkspaceConnection,
 	) => {
@@ -1470,37 +1477,14 @@ export const EnvironmentCanvas = ({
 			{
 				loading: "Applying variables...",
 				success: async (result) => {
-					await utils.workspace.serviceEnv.invalidate(serviceEnvQueryInput);
+					await invalidateServiceEnvironment({
+						serviceId: connection.targetServiceId,
+						serviceType: connection.targetServiceType,
+					});
 					return `${result.entries.length} variable${result.entries.length === 1 ? "" : "s"} applied`;
 				},
 				error: (error) =>
 					`Could not apply variables: ${error instanceof Error ? error.message : "Unknown error"}`,
-			},
-		);
-	};
-
-	const saveServiceEnv = async () => {
-		if (!selectedServiceModel) return;
-
-		toast.promise(
-			updateServiceEnv.mutateAsync({
-				environmentId,
-				serviceId: selectedServiceModel.id,
-				serviceType: selectedServiceModel.type,
-				env: serviceEnvDraft,
-			}),
-			{
-				loading: "Saving variables...",
-				success: async () => {
-					await utils.workspace.serviceEnv.invalidate({
-						environmentId,
-						serviceId: selectedServiceModel.id,
-						serviceType: selectedServiceModel.type,
-					});
-					return "Variables saved";
-				},
-				error: (error) =>
-					`Could not save variables: ${error instanceof Error ? error.message : "Unknown error"}`,
 			},
 		);
 	};
@@ -2617,35 +2601,18 @@ export const EnvironmentCanvas = ({
 						)}
 
 						{drawerTab === "variables" && (
-							<div className="space-y-3">
-								{serviceEnvQuery.isPending ? (
-									<div className="flex items-center gap-2 text-sm text-muted-foreground">
-										<Loader2 className="size-4 animate-spin" />
-										<span>Loading variables...</span>
-									</div>
+							<>
+								{selectedServiceModel.type === "application" ? (
+									<ShowApplicationEnvironment
+										applicationId={selectedServiceModel.id}
+									/>
 								) : (
-									<>
-										<Textarea
-											value={serviceEnvDraft}
-											onChange={(event) =>
-												setServiceEnvDraft(event.target.value)
-											}
-											readOnly={!permissions?.envVars.write}
-											placeholder="KEY=value"
-											className="min-h-[22rem] resize-y font-mono text-sm"
-										/>
-										<div className="flex justify-end">
-											<Button
-												onClick={saveServiceEnv}
-												loading={updateServiceEnv.isPending}
-												disabled={!permissions?.envVars.write}
-											>
-												Save variables
-											</Button>
-										</div>
-									</>
+									<ShowServiceEnvironment
+										id={selectedServiceModel.id}
+										type={selectedServiceModel.type}
+									/>
 								)}
-							</div>
+							</>
 						)}
 
 						{drawerTab === "deployments" &&
