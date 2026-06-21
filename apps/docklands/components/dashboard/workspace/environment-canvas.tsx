@@ -69,6 +69,7 @@ import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import {
+	getDefaultWorkspacePosition,
 	getWorkspaceServiceKey,
 	type WorkspaceNode,
 	type WorkspaceService,
@@ -240,6 +241,7 @@ export const EnvironmentCanvas = ({
 		| "connections"
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
+	const [isArranging, setIsArranging] = useState(false);
 	const dragState = useRef<DragState | null>(null);
 	const suppressClick = useRef(false);
 
@@ -666,6 +668,43 @@ export const EnvironmentCanvas = ({
 		);
 	};
 
+	const arrangeWorkspace = async () => {
+		if (services.length === 0) return;
+
+		const arrangedNodes = services.map((service, index) => ({
+			...getDefaultWorkspacePosition(index),
+			serviceId: service.id,
+			serviceType: service.type,
+		}));
+		setNodes(arrangedNodes);
+		setIsArranging(true);
+
+		toast.promise(
+			Promise.all(
+				arrangedNodes.map((node) =>
+					updateNode.mutateAsync({
+						environmentId,
+						serviceId: node.serviceId,
+						serviceType: node.serviceType,
+						x: node.x,
+						y: node.y,
+						width: node.width,
+						height: node.height,
+					}),
+				),
+			).finally(() => setIsArranging(false)),
+			{
+				loading: "Arranging workspace...",
+				success: async () => {
+					await utils.workspace.byEnvironment.invalidate({ environmentId });
+					return "Workspace arranged";
+				},
+				error: (error) =>
+					`Could not arrange workspace: ${error instanceof Error ? error.message : "Unknown error"}`,
+			},
+		);
+	};
+
 	const normalizedCommandQuery = searchQuery.trim().toLowerCase();
 	const commandItems: CommandItem[] = [
 		...services.flatMap((service) => {
@@ -765,6 +804,22 @@ export const EnvironmentCanvas = ({
 				},
 			];
 		}),
+		...(services.length > 0
+			? [
+					{
+						id: "workspace:arrange",
+						group: "System" as const,
+						label: "Arrange workspace",
+						detail: "Reset service card layout",
+						search: "arrange layout organize canvas workspace reset",
+						icon: <Grip className="size-5 text-muted-foreground" />,
+						run: () => {
+							setCommandOpen(false);
+							void arrangeWorkspace();
+						},
+					},
+				]
+			: []),
 		...[
 			{
 				id: "system:web-server",
@@ -903,6 +958,16 @@ export const EnvironmentCanvas = ({
 						<Button variant="outline" onClick={() => setCommandOpen(true)}>
 							<Command className="size-4" />
 							Cmd K
+						</Button>
+
+						<Button
+							variant="outline"
+							onClick={arrangeWorkspace}
+							loading={isArranging}
+							disabled={services.length === 0}
+						>
+							<Grip className="size-4" />
+							Arrange
 						</Button>
 
 						<DropdownMenu>
