@@ -1,3 +1,8 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Radio } from "@cloudflare/kumo/components/radio";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import {
 	AlertTriangle,
@@ -8,7 +13,6 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import {
@@ -23,8 +27,6 @@ import {
 	TeamsIcon,
 	TelegramIcon,
 } from "@/components/icons/notification-icons";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -34,11 +36,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Label } from "@cloudflare/kumo/components/label";
-import { Radio } from "@cloudflare/kumo/primitives/radio";
-import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 
 const notificationBaseSchema = z.object({
 	name: z.string().min(1, {
@@ -821,20 +819,28 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 	};
 	return (
 		<Dialog.Root open={visible} onOpenChange={setVisible}>
-			<Dialog.Trigger className="" render={notificationId ? (
-					<Button aria-label="Action"
-						variant="ghost"
-						shape="square"
-						className="group hover:bg-blue-500/10 "
-					>
-						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
-					</Button>
-				) : (
-					<Button className="cursor-pointer space-x-3">
-						<PlusIcon className="h-4 w-4" />
-						Add Notification
-					</Button>
-				) as never} />
+			<Dialog.Trigger
+				className=""
+				render={
+					notificationId ? (
+						<Button
+							aria-label="Action"
+							variant="ghost"
+							shape="square"
+							className="group hover:bg-blue-500/10 "
+						>
+							<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+						</Button>
+					) : (
+						((
+							<Button className="cursor-pointer space-x-3">
+								<PlusIcon className="h-4 w-4" />
+								Add Notification
+							</Button>
+						) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-3xl">
 				<div>
 					<Dialog.Title>
@@ -862,35 +868,30 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 										Select a provider
 									</FormLabel>
 									<FormControl>
-										<RadioGroup
+										<Radio.Group
 											onValueChange={field.onChange}
 											defaultValue={field.value}
-											className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"
+											orientation="horizontal"
+											appearance="card"
+											className="w-full"
 										>
+											<Radio.Legend className="sr-only">
+												Select a provider
+											</Radio.Legend>
 											{Object.entries(notificationsMap).map(([key, value]) => (
-												<FormItem
+												<Radio.Item
 													key={key}
-													className="flex w-full items-center space-x-3 space-y-0"
-												>
-													<FormControl className="w-full">
-														<div>
-															<Radio.Root
-																value={key}
-																id={key}
-																className="peer sr-only"
-															/>
-															<Label
-																htmlFor={key}
-																className="h-24 flex flex-col gap-2 items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-															>
-																{value.icon}
-																{value.label}
-															</Label>
-														</div>
-													</FormControl>
-												</FormItem>
+													value={key}
+													className="min-h-24"
+													label={
+														<span className="flex flex-col items-center gap-2 text-center">
+															{value.icon}
+															<span>{value.label}</span>
+														</span>
+													}
+												/>
 											))}
-										</RadioGroup>
+										</Radio.Group>
 									</FormControl>
 									<FormMessage />
 									{activeMutation[field.value].isError && (
@@ -1093,7 +1094,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 																	if (value === "") {
 																		field.onChange(undefined);
 																	} else {
-																		const port = Number.parseInt(value);
+																		const port = Number.parseInt(value, 10);
 																		if (port > 0 && port < 65536) {
 																			field.onChange(port);
 																		}
@@ -1353,7 +1354,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 															onChange={(e) => {
 																const value = e.target.value;
 																if (value) {
-																	const port = Number.parseInt(value);
+																	const port = Number.parseInt(value, 10);
 																	if (port > 0 && port < 10) {
 																		field.onChange(port);
 																	}
@@ -1455,7 +1456,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 															onChange={(e) => {
 																const value = e.target.value;
 																if (value) {
-																	const port = Number.parseInt(value);
+																	const port = Number.parseInt(value, 10);
 																	if (port > 0 && port <= 5) {
 																		field.onChange(port);
 																	}
@@ -1706,7 +1707,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 																if (value === "" || value === "-") {
 																	field.onChange(0);
 																} else {
-																	const priority = Number.parseInt(value);
+																	const priority = Number.parseInt(value, 10);
 																	if (
 																		!Number.isNaN(priority) &&
 																		priority >= -2 &&
@@ -1746,7 +1747,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 																		if (value === "") {
 																			field.onChange(undefined);
 																		} else {
-																			const retry = Number.parseInt(value);
+																			const retry = Number.parseInt(value, 10);
 																			if (!Number.isNaN(retry)) {
 																				field.onChange(retry);
 																			}
@@ -1780,7 +1781,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 																		if (value === "") {
 																			field.onChange(undefined);
 																		} else {
-																			const expire = Number.parseInt(value);
+																			const expire = Number.parseInt(value, 10);
 																			if (!Number.isNaN(expire)) {
 																				field.onChange(expire);
 																			}

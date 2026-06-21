@@ -1,14 +1,16 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Radio } from "@cloudflare/kumo/components/radio";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Loader2, Palette, User } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Avatar, AvatarFallback } from "@/components/shared/avatar";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -18,10 +20,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Radio } from "@cloudflare/kumo/primitives/radio";
-import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 import { getAvatarType, isSolidColorAvatar } from "@/shared/avatar-utils";
 import { generateSHA256Hash, getFallbackAvatarInitials } from "@/shared/utils";
 import { Configure2FA } from "./configure-2fa";
@@ -152,9 +151,7 @@ export const ProfileForm = () => {
 								<User className="size-6 text-muted-foreground self-center" />
 								Account
 							</h3>
-							<p>
-								Change the details of your profile here.
-							</p>
+							<p>Change the details of your profile here.</p>
 						</div>
 
 						{!data?.user.twoFactorEnabled ? <Enable2FA /> : <Configure2FA />}
@@ -258,24 +255,25 @@ export const ProfileForm = () => {
 													<FormItem>
 														<FormLabel>Avatar</FormLabel>
 														<FormControl>
-															<RadioGroup
+															<Radio.Group
 																onValueChange={(e) => {
 																	if (e === null) return;
 																	field.onChange(e);
 																}}
 																defaultValue={getAvatarType(field.value)}
 																value={getAvatarType(field.value)}
-																className="flex flex-row flex-wrap gap-2 max-xl:justify-center"
+																orientation="horizontal"
+																appearance="card"
+																className="w-full"
 															>
-																<FormItem key="no-avatar">
-																	<FormLabel className="[&:has([data-state=checked])>.default-avatar]:border-primary [&:has([data-state=checked])>.default-avatar]:border-1 [&:has([data-state=checked])>.default-avatar]:p-px cursor-pointer">
-																		<FormControl>
-																			<Radio.Root
-																				value=""
-																				className="sr-only"
-																			/>
-																		</FormControl>
-
+																<Radio.Legend className="sr-only">
+																	Avatar
+																</Radio.Legend>
+																<Radio.Item
+																	key="no-avatar"
+																	value=""
+																	className="p-2"
+																	label={
 																		<Avatar className="default-avatar h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-transform">
 																			<AvatarFallback className="rounded-lg">
 																				{getFallbackAvatarInitials(
@@ -283,129 +281,127 @@ export const ProfileForm = () => {
 																				)}
 																			</AvatarFallback>
 																		</Avatar>
-																	</FormLabel>
-																</FormItem>
-																<FormItem key="custom-upload">
-																	<FormLabel className="[&:has([data-state=checked])>.upload-avatar]:border-primary [&:has([data-state=checked])>.upload-avatar]:border-1 [&:has([data-state=checked])>.upload-avatar]:p-px cursor-pointer">
-																		<FormControl>
-																			<Radio.Root
-																				value="upload"
-																				className="sr-only"
-																			/>
-																		</FormControl>
-																		<div
-																			className="upload-avatar h-12 w-12 rounded-full border border-dashed border-muted-foreground hover:border-primary transition-colors flex items-center justify-center bg-muted/50 hover:bg-muted overflow-hidden"
-																			onClick={() =>
-																				document
-																					.getElementById("avatar-upload")
-																					?.click()
-																			}
-																		>
-																			{field.value?.startsWith("data:") ? (
-																				// biome-ignore lint/performance/noImgElement: this is an justified use of img element
-																				<img
-																					src={field.value}
-																					alt="Custom avatar"
-																					className="h-full w-full object-cover rounded-full"
-																				/>
-																			) : (
-																				<svg
-																					className="h-5 w-5 text-muted-foreground"
-																					fill="none"
-																					stroke="currentColor"
-																					viewBox="0 0 24 24"
-																				>
-																					<path
-																						strokeLinecap="round"
-																						strokeLinejoin="round"
-																						strokeWidth={2}
-																						d="M12 4v16m8-8H4"
-																					/>
-																				</svg>
-																			)}
-																		</div>
-																		<input
-																			id="avatar-upload"
-																			type="file"
-																			accept="image/*"
-																			className="hidden"
-																			onChange={async (e) => {
-																				const file = e.target.files?.[0];
-																				if (file) {
-																					// max file size 2mb
-																					if (file.size > 2 * 1024 * 1024) {
-																						toast.error(
-																							"Image size must be less than 2MB",
-																						);
-																						return;
-																					}
-																					const reader = new FileReader();
-																					reader.onload = (event) => {
-																						const result = event.target
-																							?.result as string;
-																						field.onChange(result);
-																					};
-																					reader.readAsDataURL(file);
+																	}
+																/>
+																<Radio.Item
+																	key="custom-upload"
+																	value="upload"
+																	className="p-2"
+																	label={
+																		<>
+																			<div
+																				className="upload-avatar h-12 w-12 rounded-full border border-dashed border-muted-foreground hover:border-primary transition-colors flex items-center justify-center bg-muted/50 hover:bg-muted overflow-hidden"
+																				onClick={() =>
+																					document
+																						.getElementById("avatar-upload")
+																						?.click()
 																				}
-																			}}
-																		/>
-																	</FormLabel>
-																</FormItem>
-																<FormItem key="color-avatar">
-																	<FormLabel className="[&:has([data-state=checked])>.color-avatar]:border-primary [&:has([data-state=checked])>.color-avatar]:border-1 [&:has([data-state=checked])>.color-avatar]:p-px cursor-pointer relative">
-																		<FormControl>
-																			<Radio.Root
-																				value="color"
-																				className="sr-only"
+																			>
+																				{field.value?.startsWith("data:") ? (
+																					<img
+																						src={field.value}
+																						alt="Custom avatar"
+																						className="h-full w-full object-cover rounded-full"
+																					/>
+																				) : (
+																					<svg
+																						className="h-5 w-5 text-muted-foreground"
+																						fill="none"
+																						stroke="currentColor"
+																						viewBox="0 0 24 24"
+																					>
+																						<path
+																							strokeLinecap="round"
+																							strokeLinejoin="round"
+																							strokeWidth={2}
+																							d="M12 4v16m8-8H4"
+																						/>
+																					</svg>
+																				)}
+																			</div>
+																			<input
+																				id="avatar-upload"
+																				type="file"
+																				accept="image/*"
+																				className="hidden"
+																				onChange={async (e) => {
+																					const file = e.target.files?.[0];
+																					if (file) {
+																						// max file size 2mb
+																						if (file.size > 2 * 1024 * 1024) {
+																							toast.error(
+																								"Image size must be less than 2MB",
+																							);
+																							return;
+																						}
+																						const reader = new FileReader();
+																						reader.onload = (event) => {
+																							const result = event.target
+																								?.result as string;
+																							field.onChange(result);
+																						};
+																						reader.readAsDataURL(file);
+																					}
+																				}}
 																			/>
-																		</FormControl>
-																		<div
-																			className="color-avatar h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-colors flex items-center justify-center overflow-hidden cursor-pointer"
-																			style={{
-																				backgroundColor: isSolidColorAvatar(
-																					field.value,
-																				)
-																					? field.value
-																					: undefined,
-																			}}
-																			onClick={() =>
-																				colorInputRef.current?.click()
-																			}
-																		>
-																			{!isSolidColorAvatar(field.value) && (
-																				<Palette className="h-5 w-5 text-muted-foreground" />
-																			)}
-																		</div>
-																		<input
-																			ref={colorInputRef}
-																			type="color"
-																			className="absolute opacity-0 pointer-events-none w-12 h-12 top-0 left-0"
-																			value={field.value}
-																			onChange={field.onChange}
-																		/>
-																	</FormLabel>
-																</FormItem>
+																		</>
+																	}
+																/>
+																<Radio.Item
+																	key="color-avatar"
+																	value="color"
+																	className="relative p-2"
+																	label={
+																		<>
+																			<div
+																				className="color-avatar h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-colors flex items-center justify-center overflow-hidden cursor-pointer"
+																				style={{
+																					backgroundColor: isSolidColorAvatar(
+																						field.value,
+																					)
+																						? field.value
+																						: undefined,
+																				}}
+																				onClick={() =>
+																					colorInputRef.current?.click()
+																				}
+																			>
+																				{!isSolidColorAvatar(field.value) && (
+																					<Palette className="h-5 w-5 text-muted-foreground" />
+																				)}
+																			</div>
+																			<input
+																				ref={colorInputRef}
+																				type="color"
+																				className="absolute opacity-0 pointer-events-none w-12 h-12 top-0 left-0"
+																				value={
+																					field.value?.startsWith("#")
+																						? field.value
+																						: "#6366f1"
+																				}
+																				onChange={field.onChange}
+																			/>
+																		</>
+																	}
+																/>
 																{availableAvatars.map((image) => (
-																	<FormItem key={image}>
-																		<FormLabel className="[&:has([data-state=checked])>img]:border-primary [&:has([data-state=checked])>img]:border-1 [&:has([data-state=checked])>img]:p-px cursor-pointer">
-																			<FormControl>
-																				<Radio.Root
-																					value={image}
-																					className="sr-only"
+																	<Radio.Item
+																		key={image}
+																		value={image}
+																		className="p-2"
+																		label={
+																			<>
+																				<img
+																					key={image}
+																					src={image}
+																					alt="avatar"
+																					className="h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-transform"
 																				/>
-																			</FormControl>
-
-																			{/* biome-ignore lint/performance/noImgElement: this is an justified use of img element */}
-																			<img
-																				key={image}
-																				src={image}
-																				alt="avatar"
-																				className="h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-transform"
-																			/>
-																		</FormLabel>
-																	</FormItem>
+																			</>
+																		}
+																	/>
 																))}
-															</RadioGroup>
+															</Radio.Group>
 														</FormControl>
 														<FormMessage />
 													</FormItem>

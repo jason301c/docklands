@@ -1,15 +1,17 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Radio } from "@cloudflare/kumo/components/radio";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Cog } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import {
 	Form,
 	FormControl,
@@ -19,10 +21,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Radio } from "@cloudflare/kumo/primitives/radio";
-import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 // Railpack versions from https://github.com/railwayapp/railpack/releases
 export const RAILPACK_VERSIONS = [
@@ -279,30 +278,31 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 								<FormItem className="space-y-3">
 									<FormLabel>Build Type</FormLabel>
 									<FormControl>
-										<RadioGroup
+										<Radio.Group
 											onValueChange={field.onChange}
 											value={field.value}
 											className="flex flex-col space-y-1"
 										>
+											<Radio.Legend className="sr-only">
+												Build type
+											</Radio.Legend>
 											{Object.entries(buildTypeDisplayMap).map(
 												([value, label]) => (
-													<FormItem
+													<Radio.Item
 														key={value}
-														className="flex items-center space-x-3 space-y-0"
-													>
-														<FormControl>
-															<Radio.Root value={value} />
-														</FormControl>
-														<FormLabel className="font-normal">
-															{label}
-															{value === BuildType.railpack && (
-																<Badge className="ml-2 px-1 text-xs">New</Badge>
-															)}
-														</FormLabel>
-													</FormItem>
+														value={value}
+														label={
+															<span className="flex items-center gap-2">
+																{label}
+																{value === BuildType.railpack && (
+																	<Badge className="px-1 text-xs">New</Badge>
+																)}
+															</span>
+														}
+													/>
 												),
 											)}
-										</RadioGroup>
+										</Radio.Group>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -465,7 +465,8 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 														</Button>
 													</div>
 												) : (
-													<Select aria-label="Select option"
+													<Select
+														aria-label="Select option"
 														onValueChange={(value) => {
 															if (value === null) return;
 															if (value === "manual") {
@@ -477,9 +478,7 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 														}}
 														value={field.value ?? "0.15.4"}
 													>
-														<>
-															
-														</>
+														<></>
 														<>
 															<Select.Option value="manual">
 																<span className="font-medium">

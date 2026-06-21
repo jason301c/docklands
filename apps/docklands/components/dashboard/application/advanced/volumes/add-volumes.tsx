@@ -1,15 +1,16 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Radio } from "@cloudflare/kumo/components/radio";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PlusIcon } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -18,10 +19,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Label } from "@cloudflare/kumo/components/label";
-import { Radio } from "@cloudflare/kumo/primitives/radio";
-import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
+import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 
 interface Props {
@@ -149,11 +147,7 @@ export const AddVolumes = ({
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger className="" render={(
-
-				<Button>{children}</Button>
-			
-)} />
+			<Dialog.Trigger className="" render={<Button>{children}</Button>} />
 			<Dialog className="sm:max-w-3xl">
 				<div>
 					<Dialog.Title>Volumes / Mounts</Dialog.Title>
@@ -200,74 +194,32 @@ export const AddVolumes = ({
 										Select the Mount Type
 									</FormLabel>
 									<FormControl>
-										<RadioGroup
+										<Radio.Group
 											onValueChange={field.onChange}
 											defaultValue={field.value}
-											className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+											orientation="horizontal"
+											appearance="card"
+											className="w-full"
 										>
+											<Radio.Legend className="sr-only">
+												Select the mount type
+											</Radio.Legend>
 											{serviceType !== "compose" && (
-												<FormItem className="flex items-center space-x-3 space-y-0">
-													<FormControl className="w-full">
-														<div>
-															<Radio.Root
-																value="bind"
-																id="bind"
-																className="peer sr-only"
-															/>
-															<Label
-																htmlFor="bind"
-																className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-															>
-																Bind Mount
-															</Label>
-														</div>
-													</FormControl>
-												</FormItem>
+												<Radio.Item value="bind" label="Bind Mount" />
 											)}
 
 											{serviceType !== "compose" && (
-												<FormItem className="flex items-center space-x-3 space-y-0">
-													<FormControl className="w-full">
-														<div>
-															<Radio.Root
-																value="volume"
-																id="volume"
-																className="peer sr-only"
-															/>
-															<Label
-																htmlFor="volume"
-																className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-															>
-																Volume Mount
-															</Label>
-														</div>
-													</FormControl>
-												</FormItem>
+												<Radio.Item value="volume" label="Volume Mount" />
 											)}
 
-											<FormItem
+											<Radio.Item
+												value="file"
+												label="File Mount"
 												className={cn(
-													serviceType === "compose" && "col-span-3",
-													"flex items-center space-x-3 space-y-0",
+													serviceType === "compose" && "sm:col-span-2",
 												)}
-											>
-												<FormControl className="w-full">
-													<div>
-														<Radio.Root
-															value="file"
-															id="file"
-															className="peer sr-only"
-														/>
-														<Label
-															htmlFor="file"
-															className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-														>
-															File Mount
-														</Label>
-													</div>
-												</FormControl>
-											</FormItem>
-										</RadioGroup>
+											/>
+										</Radio.Group>
 									</FormControl>
 									<FormMessage />
 								</FormItem>

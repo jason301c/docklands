@@ -1,8 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input, Textarea } from "@cloudflare/kumo/components/input";
+import { Radio } from "@cloudflare/kumo/components/radio";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { AlertTriangle, Database, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import {
@@ -13,9 +20,6 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -24,14 +28,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Label } from "@cloudflare/kumo/components/label";
-import { Radio } from "@cloudflare/kumo/primitives/radio";
-import { RadioGroup } from "@cloudflare/kumo/primitives/radio-group";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Textarea } from "@cloudflare/kumo/components/input";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 
@@ -374,35 +371,30 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 										Select a database
 									</FormLabel>
 									<FormControl>
-										<RadioGroup
+										<Radio.Group
 											onValueChange={field.onChange}
 											defaultValue={field.value}
-											className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+											orientation="horizontal"
+											appearance="card"
+											className="w-full"
 										>
+											<Radio.Legend className="sr-only">
+												Select a database
+											</Radio.Legend>
 											{Object.entries(databasesMap).map(([key, value]) => (
-												<FormItem
+												<Radio.Item
 													key={key}
-													className="flex w-full items-center space-x-3 space-y-0"
-												>
-													<FormControl className="w-full">
-														<div>
-															<Radio.Root
-																value={key}
-																id={key}
-																className="peer sr-only"
-															/>
-															<Label
-																htmlFor={key}
-																className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer"
-															>
-																{value.icon}
-																{value.label}
-															</Label>
-														</div>
-													</FormControl>
-												</FormItem>
+													value={key}
+													className="min-h-24"
+													label={
+														<span className="flex flex-col items-center gap-2 text-center">
+															{value.icon}
+															<span>{value.label}</span>
+														</span>
+													}
+												/>
 											))}
-										</RadioGroup>
+										</Radio.Group>
 									</FormControl>
 									<FormMessage />
 									{activeMutation[field.value].isError && (
@@ -451,16 +443,15 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Select a Server</FormLabel>
-												<Select aria-label="Select option"
+												<Select
+													aria-label="Select option"
 													onValueChange={field.onChange}
 													defaultValue={
 														field.value ||
 														(showLocalOption ? "docklands" : undefined)
 													}
 												>
-													<>
-														
-													</>
+													<></>
 													<>
 														<Select.Group>
 															{showLocalOption && (
@@ -501,14 +492,20 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 											<FormLabel className="flex items-center gap-2">
 												App Name
 												<TooltipProvider delay={0}>
-													<Tooltip content={<>
-															<p>
-																This will be the name of the Docker Swarm
-																service
-															</p>
-														</>} side="right"  asChild>
-															<HelpCircle className="size-4 text-muted-foreground" />
-														</Tooltip>
+													<Tooltip
+														content={
+															<>
+																<p>
+																	This will be the name of the Docker Swarm
+																	service
+																</p>
+															</>
+														}
+														side="right"
+														asChild
+													>
+														<HelpCircle className="size-4 text-muted-foreground" />
+													</Tooltip>
 												</TooltipProvider>
 											</FormLabel>
 											<FormControl>
@@ -564,13 +561,12 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Sqld Node</FormLabel>
-												<Select aria-label="Select option"
+												<Select
+													aria-label="Select option"
 													onValueChange={field.onChange}
 													defaultValue={field.value || "primary"}
 												>
-													<>
-														
-													</>
+													<></>
 													<>
 														<Select.Group>
 															{["primary", "replica"].map((node) => (
@@ -615,7 +611,8 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 												<FormItem>
 													<FormLabel>Enable Namespaces</FormLabel>
 													<FormControl>
-														<Select aria-label="Select option"
+														<Select
+															aria-label="Select option"
 															onValueChange={(value) =>
 																field.onChange(Boolean(value))
 															}
@@ -623,9 +620,7 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 																field.value ? String(field.value) : "false"
 															}
 														>
-															<>
-																
-															</>
+															<></>
 															<>
 																<Select.Group>
 																	{["false", "true"].map((node) => (
