@@ -35,7 +35,6 @@ export type WorkspaceService = {
 	createdAt?: string | null;
 	lastDeployAt?: string | null;
 	serverId?: string | null;
-	serverName?: string | null;
 	refreshToken?: string | null;
 	composeType?: "docker-compose" | "stack" | null;
 	icon?: string | null;
@@ -212,8 +211,6 @@ export const extractWorkspaceServicesFromEnvironment = (
 
 			if (!id || !name) continue;
 
-			const server = record.server as ServiceLike | undefined;
-
 			services.push({
 				id,
 				type,
@@ -226,7 +223,6 @@ export const extractWorkspaceServicesFromEnvironment = (
 				createdAt: asString(record.createdAt),
 				lastDeployAt: getLatestDeploymentDate(record),
 				serverId: asString(record.serverId),
-				serverName: server ? asString(server.name) : null,
 				refreshToken: asString(record.refreshToken),
 				composeType:
 					record.composeType === "docker-compose" ||

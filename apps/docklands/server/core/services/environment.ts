@@ -46,12 +46,6 @@ export const findEnvironmentById = async (environmentId: string) => {
 		with: {
 			applications: {
 				with: {
-					server: {
-						columns: {
-							name: true,
-							serverId: true,
-						},
-					},
 					deployments: {
 						columns: {
 							createdAt: true,
@@ -73,14 +67,6 @@ export const findEnvironmentById = async (environmentId: string) => {
 				},
 			},
 			mariadb: {
-				with: {
-					server: {
-						columns: {
-							name: true,
-							serverId: true,
-						},
-					},
-				},
 				columns: {
 					mariadbId: true,
 					name: true,
@@ -91,14 +77,6 @@ export const findEnvironmentById = async (environmentId: string) => {
 				},
 			},
 			mongo: {
-				with: {
-					server: {
-						columns: {
-							name: true,
-							serverId: true,
-						},
-					},
-				},
 				columns: {
 					mongoId: true,
 					name: true,
@@ -109,14 +87,6 @@ export const findEnvironmentById = async (environmentId: string) => {
 				},
 			},
 			mysql: {
-				with: {
-					server: {
-						columns: {
-							name: true,
-							serverId: true,
-						},
-					},
-				},
 				columns: {
 					mysqlId: true,
 					name: true,
@@ -127,14 +97,6 @@ export const findEnvironmentById = async (environmentId: string) => {
 				},
 			},
 			postgres: {
-				with: {
-					server: {
-						columns: {
-							name: true,
-							serverId: true,
-						},
-					},
-				},
 				columns: {
 					postgresId: true,
 					name: true,
@@ -145,14 +107,6 @@ export const findEnvironmentById = async (environmentId: string) => {
 				},
 			},
 			redis: {
-				with: {
-					server: {
-						columns: {
-							name: true,
-							serverId: true,
-						},
-					},
-				},
 				columns: {
 					redisId: true,
 					name: true,
@@ -164,12 +118,6 @@ export const findEnvironmentById = async (environmentId: string) => {
 			},
 			compose: {
 				with: {
-					server: {
-						columns: {
-							name: true,
-							serverId: true,
-						},
-					},
 					deployments: {
 						columns: {
 							createdAt: true,
@@ -190,14 +138,6 @@ export const findEnvironmentById = async (environmentId: string) => {
 				},
 			},
 			libsql: {
-				with: {
-					server: {
-						columns: {
-							name: true,
-							serverId: true,
-						},
-					},
-				},
 				columns: {
 					libsqlId: true,
 					name: true,

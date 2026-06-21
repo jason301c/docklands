@@ -21,7 +21,6 @@ describe("workspace graph helpers", () => {
 					createdAt: "2026-06-20T00:00:00.000Z",
 					serverId: "srv_1",
 					refreshToken: "app_refresh_token",
-					server: { name: "worker-a" },
 					deployments: [
 						{
 							createdAt: "2026-06-20T02:00:00.000Z",
@@ -68,7 +67,6 @@ describe("workspace graph helpers", () => {
 			appName: "docklands-web-abc123",
 			refreshToken: "app_refresh_token",
 			status: "running",
-			serverName: "worker-a",
 			lastDeployAt: "2026-06-20T02:03:00.000Z",
 		});
 		expect(services[2]).toMatchObject({
