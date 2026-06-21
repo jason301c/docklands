@@ -2,21 +2,30 @@ import { readSecret } from "../db/constants";
 
 const HARDCODED_LEGACY_SECRET = "better-auth-secret-123456789";
 
-const { BETTER_AUTH_SECRET, BETTER_AUTH_SECRET_FILE } = process.env;
+const isNextProductionBuild = (env: NodeJS.ProcessEnv) =>
+	env.NEXT_PHASE === "phase-production-build" ||
+	env.npm_lifecycle_event === "build-next";
 
-function resolveBetterAuthSecret(): string {
-	if (BETTER_AUTH_SECRET) {
-		return BETTER_AUTH_SECRET;
+export function resolveBetterAuthSecret(
+	env: NodeJS.ProcessEnv = process.env,
+): string {
+	if (env.BETTER_AUTH_SECRET) {
+		return env.BETTER_AUTH_SECRET;
 	}
-	if (BETTER_AUTH_SECRET_FILE) {
-		return readSecret(BETTER_AUTH_SECRET_FILE);
+	if (env.BETTER_AUTH_SECRET_FILE) {
+		return readSecret(env.BETTER_AUTH_SECRET_FILE);
 	}
-	if (process.env.NODE_ENV !== "test") {
+	if (env.NODE_ENV === "production" && !isNextProductionBuild(env)) {
+		throw new Error(
+			"BETTER_AUTH_SECRET or BETTER_AUTH_SECRET_FILE must be set in production.",
+		);
+	}
+	if (env.NODE_ENV !== "test" && !isNextProductionBuild(env)) {
 		console.warn(`
 ⚠️  [DEPRECATED AUTH CONFIG]
 BETTER_AUTH_SECRET is not set via environment variable or Docker secret.
 Falling back to the insecure hardcoded default — this is a CRITICAL SECURITY RISK.
-This mode WILL BE REMOVED in a future release.
+This fallback is only allowed in development and build-time compatibility paths.
 
 Please migrate to Docker Secrets:
   set BETTER_AUTH_SECRET_FILE to a Docker secret containing a generated value
