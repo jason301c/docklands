@@ -170,6 +170,43 @@ const WorkspaceServiceIcon = ({ service }: { service: WorkspaceService }) => {
 	return <Database className={serviceIconClassName} />;
 };
 
+const ConnectionVariablePreview = ({
+	connectionId,
+	enabled,
+}: {
+	connectionId: string;
+	enabled: boolean;
+}) => {
+	const variablesQuery = api.workspace.connectionVariables.useQuery(
+		{ connectionId },
+		{ enabled },
+	);
+
+	if (!enabled) return null;
+
+	if (variablesQuery.isPending) {
+		return (
+			<p className="text-xs text-muted-foreground">Loading variable keys...</p>
+		);
+	}
+
+	if (!variablesQuery.data?.length) {
+		return (
+			<p className="text-xs text-muted-foreground">
+				No generated variables for this source.
+			</p>
+		);
+	}
+
+	return (
+		<div className="flex flex-wrap gap-1.5">
+			{variablesQuery.data.map((variable) => (
+				<Badge key={variable.key}>{variable.key}</Badge>
+			))}
+		</div>
+	);
+};
+
 const nodeCenter = (node: WorkspaceNode) => ({
 	x: node.x + node.width / 2,
 	y: node.y + node.height / 2,
@@ -1569,7 +1606,7 @@ export const EnvironmentCanvas = ({
 												className="bg-muted/20"
 											>
 												<div className="flex items-center justify-between gap-3">
-													<div className="min-w-0 text-sm">
+													<div className="min-w-0 space-y-2 text-sm">
 														<div className="flex min-w-0 items-center gap-2">
 															<span className="truncate">
 																{source?.name || "Unknown"}
@@ -1582,6 +1619,10 @@ export const EnvironmentCanvas = ({
 														<p className="text-xs text-muted-foreground">
 															{connection.label || "Private network"}
 														</p>
+														<ConnectionVariablePreview
+															connectionId={connection.connectionId}
+															enabled={!!permissions?.envVars.read}
+														/>
 													</div>
 													<div className="flex shrink-0 items-center gap-1">
 														<Button
