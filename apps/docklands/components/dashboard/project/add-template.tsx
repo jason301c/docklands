@@ -1,3 +1,17 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	Bookmark,
 	BookText,
@@ -13,25 +27,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Label } from "@cloudflare/kumo/components/label";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
 import { ScrollArea } from "@/components/shared/scroll-area";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 
 const Command = Combobox;
@@ -46,11 +46,22 @@ const TEMPLATE_BASE_URL_KEY = "docklands_template_base_url";
 interface Props {
 	environmentId: string;
 	baseUrl?: string;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
+	hideTrigger?: boolean;
 }
 
-export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
+export const AddTemplate = ({
+	environmentId,
+	baseUrl,
+	open: controlledOpen,
+	onOpenChange,
+	hideTrigger = false,
+}: Props) => {
 	const [query, setQuery] = useState("");
-	const [open, setOpen] = useState(false);
+	const [internalOpen, setInternalOpen] = useState(false);
+	const open = controlledOpen ?? internalOpen;
+	const setOpen = onOpenChange ?? setInternalOpen;
 	const [viewMode, setViewMode] = useState<"detailed" | "icon">("detailed");
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
@@ -167,15 +178,17 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
-			<Dialog.Trigger className="w-full">
-				<DropdownMenu.Item
-					className="w-full cursor-pointer space-x-3"
-					onSelect={(e) => e.preventDefault()}
-				>
-					<PuzzleIcon className="size-4 text-muted-foreground" />
-					<span>Template</span>
-				</DropdownMenu.Item>
-			</Dialog.Trigger>
+			{!hideTrigger && (
+				<Dialog.Trigger className="w-full">
+					<DropdownMenu.Item
+						className="w-full cursor-pointer space-x-3"
+						onSelect={(e) => e.preventDefault()}
+					>
+						<PuzzleIcon className="size-4 text-muted-foreground" />
+						<span>Template</span>
+					</DropdownMenu.Item>
+				</Dialog.Trigger>
+			)}
 			<Dialog className="sm:max-w-[90vw] p-0">
 				<div className="sticky top-0 z-10 bg-background p-6 border-b">
 					<div className="flex flex-col space-y-6">
@@ -262,7 +275,8 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 										</Command>
 									</PopoverContent>
 								</Popover>
-								<Button aria-label="Action"
+								<Button
+									aria-label="Action"
 									variant={showBookmarksOnly ? "secondary" : "outline"}
 									shape="square"
 									onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
@@ -276,7 +290,8 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 										)}
 									/>
 								</Button>
-								<Button aria-label="Action"
+								<Button
+									aria-label="Action"
 									shape="square"
 									onClick={() =>
 										setViewMode(viewMode === "detailed" ? "icon" : "detailed")
@@ -367,7 +382,8 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 										)}
 									>
 										<div className="absolute top-2 left-2 z-10">
-											<Button aria-label="Action"
+											<Button
+												aria-label="Action"
 												variant="ghost"
 												shape="square"
 												className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"
@@ -391,7 +407,6 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 												viewMode === "detailed" && "border-b",
 											)}
 										>
-											{/** biome-ignore lint/performance/noImgElement: this is a valid use for img tag */}
 											<img
 												src={`${customBaseUrl || "https://templates.docklands.dev"}/blueprints/${template?.id}/${template?.logo}`}
 												className={cn(
@@ -499,24 +514,31 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 														{shouldShowServerDropdown && (
 															<div>
 																<TooltipProvider delay={0}>
-																	<Tooltip content={<>
-																			<span>
-																				If no server is selected, the
-																				application will be deployed on the
-																				server where the user is logged in.
-																			</span>
-																		</>} className="z-[999] w-[300px]"
-																			align="start"
-																			side="top"  asChild>
-																			<Label className="break-all w-fit flex flex-row gap-1 items-center pb-2 pt-3.5">
-																				Select a Server{" "}
-																				{!isCloud ? "(Optional)" : ""}
-																				<HelpCircle className="size-4 text-muted-foreground" />
-																			</Label>
-																		</Tooltip>
+																	<Tooltip
+																		content={
+																			<>
+																				<span>
+																					If no server is selected, the
+																					application will be deployed on the
+																					server where the user is logged in.
+																				</span>
+																			</>
+																		}
+																		className="z-[999] w-[300px]"
+																		align="start"
+																		side="top"
+																		asChild
+																	>
+																		<Label className="break-all w-fit flex flex-row gap-1 items-center pb-2 pt-3.5">
+																			Select a Server{" "}
+																			{!isCloud ? "(Optional)" : ""}
+																			<HelpCircle className="size-4 text-muted-foreground" />
+																		</Label>
+																	</Tooltip>
 																</TooltipProvider>
 
-																<Select aria-label="Select option"
+																<Select
+																	aria-label="Select option"
 																	onValueChange={(e) => {
 																		if (e === null) return;
 																		setServerId(e);
@@ -525,9 +547,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																		!isCloud ? "docklands" : undefined
 																	}
 																>
-																	<>
-																		
-																	</>
+																	<></>
 																	<>
 																		<Select.Group>
 																			{!isCloud && (
@@ -565,7 +585,9 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 													</div>
 													<div>
 														<Dialog.Close
-															render={<Button variant="secondary">Cancel</Button>}
+															render={
+																<Button variant="secondary">Cancel</Button>
+															}
 														/>
 														<Dialog.Close
 															render={

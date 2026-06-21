@@ -21,6 +21,8 @@ import {
 	Command,
 	Database,
 	ExternalLink,
+	FileInput,
+	Folder,
 	FolderInput,
 	GlobeIcon,
 	Grip,
@@ -28,6 +30,7 @@ import {
 	Network,
 	Play,
 	PlusIcon,
+	PuzzleIcon,
 	RefreshCw,
 	Search,
 	ServerIcon,
@@ -130,7 +133,7 @@ type DragState = {
 	moved: boolean;
 };
 
-type CommandGroup = "Services" | "Actions" | "System";
+type CommandGroup = "Create" | "Services" | "Actions" | "System";
 
 type CommandItem = {
 	id: string;
@@ -141,6 +144,13 @@ type CommandItem = {
 	icon: ReactNode;
 	run: () => void;
 };
+
+type CreateServiceDialog =
+	| "application"
+	| "database"
+	| "compose"
+	| "template"
+	| "import";
 
 type ServiceKindFilter =
 	| "all"
@@ -480,6 +490,9 @@ export const EnvironmentCanvas = ({
 		useState<ServiceStatusFilter>("all");
 	const [serviceSort, setServiceSort] = useState<ServiceSort>("manual");
 	const [commandOpen, setCommandOpen] = useState(false);
+	const [createDialog, setCreateDialog] = useState<CreateServiceDialog | null>(
+		null,
+	);
 	const [drawerTab, setDrawerTab] = useState<
 		| "overview"
 		| "variables"
@@ -613,6 +626,7 @@ export const EnvironmentCanvas = ({
 			if (event.key === "Escape") {
 				setConnectSource(null);
 				setCommandOpen(false);
+				setCreateDialog(null);
 				setIsMoveDialogOpen(false);
 				setIsBulkDeleteDialogOpen(false);
 				setIsDuplicateDialogOpen(false);
@@ -1616,7 +1630,67 @@ export const EnvironmentCanvas = ({
 	};
 
 	const normalizedCommandQuery = searchQuery.trim().toLowerCase();
+	const openCreateDialog = (dialog: CreateServiceDialog) => {
+		setCommandOpen(false);
+		setCreateDialog(dialog);
+	};
+	const getCreateDialogProps = (dialog: CreateServiceDialog) => ({
+		open: createDialog === dialog,
+		onOpenChange: (open: boolean) => setCreateDialog(open ? dialog : null),
+		hideTrigger: true,
+	});
 	const commandItems: CommandItem[] = [
+		...(permissions?.service.create
+			? [
+					{
+						id: "create:application",
+						group: "Create" as const,
+						label: "New application",
+						detail: "Create a deployable app service",
+						search:
+							"new create application app service deploy git docker image builder",
+						icon: <Folder className="size-5 text-muted-foreground" />,
+						run: () => openCreateDialog("application"),
+					},
+					{
+						id: "create:database",
+						group: "Create" as const,
+						label: "New database",
+						detail: "Provision Postgres, Redis, MySQL, and more",
+						search:
+							"new create database postgres redis mysql mariadb mongo libsql",
+						icon: <Database className="size-5 text-muted-foreground" />,
+						run: () => openCreateDialog("database"),
+					},
+					{
+						id: "create:compose",
+						group: "Create" as const,
+						label: "New compose stack",
+						detail: "Create a Docker Compose service group",
+						search: "new create compose stack docker compose",
+						icon: <CircuitBoard className="size-5 text-muted-foreground" />,
+						run: () => openCreateDialog("compose"),
+					},
+					{
+						id: "create:template",
+						group: "Create" as const,
+						label: "Deploy template",
+						detail: "Browse and deploy a template",
+						search: "new create deploy template catalog starter marketplace",
+						icon: <PuzzleIcon className="size-5 text-muted-foreground" />,
+						run: () => openCreateDialog("template"),
+					},
+					{
+						id: "create:import",
+						group: "Create" as const,
+						label: "Import compose",
+						detail: "Import a base64 compose export",
+						search: "new create import compose export base64 template",
+						icon: <FileInput className="size-5 text-muted-foreground" />,
+						run: () => openCreateDialog("import"),
+					},
+				]
+			: []),
 		...services.flatMap((service) => {
 			const baseSearch = [
 				service.name,
@@ -1987,7 +2061,12 @@ export const EnvironmentCanvas = ({
 						item.group !== "Actions" || item.id.startsWith("variables:"),
 				)
 	).slice(0, 48);
-	const commandGroups: CommandGroup[] = ["Services", "Actions", "System"];
+	const commandGroups: CommandGroup[] = [
+		"Create",
+		"Services",
+		"Actions",
+		"System",
+	];
 
 	if (workspaceQuery.isPending) {
 		return (
@@ -3349,6 +3428,35 @@ export const EnvironmentCanvas = ({
 					</div>
 				</Dialog>
 			</Dialog.Root>
+
+			{permissions?.service.create && workspace && (
+				<>
+					<AddApplication
+						projectName={workspace.project.name}
+						environmentId={environmentId}
+						{...getCreateDialogProps("application")}
+					/>
+					<AddDatabase
+						projectName={workspace.project.name}
+						environmentId={environmentId}
+						{...getCreateDialogProps("database")}
+					/>
+					<AddCompose
+						projectName={workspace.project.name}
+						environmentId={environmentId}
+						{...getCreateDialogProps("compose")}
+					/>
+					<AddTemplate
+						environmentId={environmentId}
+						{...getCreateDialogProps("template")}
+					/>
+					<AddImport
+						projectName={workspace.project.name}
+						environmentId={environmentId}
+						{...getCreateDialogProps("import")}
+					/>
+				</>
+			)}
 		</div>
 	);
 };

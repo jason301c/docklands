@@ -1,15 +1,17 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input, Textarea } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Code2, FileInput, Globe2, HardDrive, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -18,12 +20,9 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
 import { ScrollArea } from "@/components/shared/scroll-area";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Separator } from "@/components/shared/separator";
-import { Textarea } from "@cloudflare/kumo/components/input";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 
@@ -56,11 +55,22 @@ type TemplateInfo = {
 interface Props {
 	environmentId: string;
 	projectName?: string;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
+	hideTrigger?: boolean;
 }
 
-export const AddImport = ({ environmentId, projectName }: Props) => {
+export const AddImport = ({
+	environmentId,
+	projectName,
+	open: controlledOpen,
+	onOpenChange,
+	hideTrigger = false,
+}: Props) => {
 	const utils = api.useUtils();
-	const [visible, setVisible] = useState(false);
+	const [internalVisible, setInternalVisible] = useState(false);
+	const visible = controlledOpen ?? internalVisible;
+	const setVisible = onOpenChange ?? setInternalVisible;
 	const [previewOpen, setPreviewOpen] = useState(false);
 	const [mountOpen, setMountOpen] = useState(false);
 	const [selectedMount, setSelectedMount] = useState<{
@@ -148,15 +158,17 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 	return (
 		<>
 			<Dialog.Root open={visible} onOpenChange={handleOpenChange}>
-				<Dialog.Trigger className="w-full">
-					<DropdownMenu.Item
-						className="w-full cursor-pointer space-x-3"
-						onSelect={(e) => e.preventDefault()}
-					>
-						<FileInput className="size-4 text-muted-foreground" />
-						<span>Import</span>
-					</DropdownMenu.Item>
-				</Dialog.Trigger>
+				{!hideTrigger && (
+					<Dialog.Trigger className="w-full">
+						<DropdownMenu.Item
+							className="w-full cursor-pointer space-x-3"
+							onSelect={(e) => e.preventDefault()}
+						>
+							<FileInput className="size-4 text-muted-foreground" />
+							<span>Import</span>
+						</DropdownMenu.Item>
+					</Dialog.Trigger>
+				)}
 				<Dialog className="sm:max-w-xl">
 					<div>
 						<Dialog.Title>Import Compose</Dialog.Title>
@@ -203,30 +215,35 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 									render={({ field }) => (
 										<FormItem>
 											<TooltipProvider delay={0}>
-												<Tooltip content={<>
-														<span>
-															If no server is selected, the compose will be
-															deployed on the server where the user is logged
-															in.
-														</span>
-													</>} className="z-[999] w-[300px]"
-														align="start"
-														side="top"  asChild>
-														<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
-															Select a Server {!isCloud ? "(Optional)" : ""}
-															<HelpCircle className="size-4 text-muted-foreground" />
-														</FormLabel>
-													</Tooltip>
+												<Tooltip
+													content={
+														<>
+															<span>
+																If no server is selected, the compose will be
+																deployed on the server where the user is logged
+																in.
+															</span>
+														</>
+													}
+													className="z-[999] w-[300px]"
+													align="start"
+													side="top"
+													asChild
+												>
+													<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
+														Select a Server {!isCloud ? "(Optional)" : ""}
+														<HelpCircle className="size-4 text-muted-foreground" />
+													</FormLabel>
+												</Tooltip>
 											</TooltipProvider>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Select option"
 												onValueChange={field.onChange}
 												defaultValue={
 													field.value || (!isCloud ? "docklands" : undefined)
 												}
 											>
-												<>
-													
-												</>
+												<></>
 												<>
 													<Select.Group>
 														{!isCloud && (

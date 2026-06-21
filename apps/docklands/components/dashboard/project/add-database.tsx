@@ -190,11 +190,22 @@ type AddDatabase = z.infer<typeof mySchema>;
 interface Props {
 	environmentId: string;
 	projectName?: string;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
+	hideTrigger?: boolean;
 }
 
-export const AddDatabase = ({ environmentId, projectName }: Props) => {
+export const AddDatabase = ({
+	environmentId,
+	projectName,
+	open: controlledOpen,
+	onOpenChange,
+	hideTrigger = false,
+}: Props) => {
 	const utils = api.useUtils();
-	const [visible, setVisible] = useState(false);
+	const [internalVisible, setInternalVisible] = useState(false);
+	const visible = controlledOpen ?? internalVisible;
+	const setVisible = onOpenChange ?? setInternalVisible;
 	const slug = slugify(projectName);
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: webServerSettings } =
@@ -341,15 +352,17 @@ export const AddDatabase = ({ environmentId, projectName }: Props) => {
 
 	return (
 		<Dialog.Root open={visible} onOpenChange={setVisible}>
-			<Dialog.Trigger className="w-full">
-				<DropdownMenu.Item
-					className="w-full cursor-pointer space-x-3"
-					onSelect={(e) => e.preventDefault()}
-				>
-					<Database className="size-4 text-muted-foreground" />
-					<span>Database</span>
-				</DropdownMenu.Item>
-			</Dialog.Trigger>
+			{!hideTrigger && (
+				<Dialog.Trigger className="w-full">
+					<DropdownMenu.Item
+						className="w-full cursor-pointer space-x-3"
+						onSelect={(e) => e.preventDefault()}
+					>
+						<Database className="size-4 text-muted-foreground" />
+						<span>Database</span>
+					</DropdownMenu.Item>
+				</Dialog.Trigger>
+			)}
 			<Dialog className="md:max-h-[90vh]  sm:max-w-2xl">
 				<div>
 					<Dialog.Title>Databases</Dialog.Title>
