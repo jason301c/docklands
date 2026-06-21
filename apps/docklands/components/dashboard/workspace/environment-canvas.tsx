@@ -102,6 +102,7 @@ import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
+import { parseEnvironmentVariables } from "@/shared/env-string";
 import { cn } from "@/shared/utils";
 import {
 	canWorkspaceServiceExposeVariables,
@@ -1016,6 +1017,13 @@ export const EnvironmentCanvas = ({
 					connection.targetServiceType === selectedService.serviceType,
 			)
 		: [];
+	const projectVariableKeys = useMemo(
+		() =>
+			parseEnvironmentVariables(workspace?.environment.env)
+				.map((entry) => entry.key)
+				.sort((a, b) => a.localeCompare(b)),
+		[workspace?.environment.env],
+	);
 	const workspaceStats = useMemo(
 		() => ({
 			services: services.length,
@@ -2820,7 +2828,105 @@ export const EnvironmentCanvas = ({
 						)}
 
 						{drawerTab === "variables" && (
-							<>
+							<div className="space-y-3">
+								<LayerCard className="bg-muted/20">
+									<div className="space-y-4">
+										<div>
+											<p className="text-sm font-medium">Variable graph</p>
+											<p className="text-xs text-muted-foreground">
+												Project variables are inherited with{" "}
+												<code>{"{{project.KEY}}"}</code>. Incoming service links
+												can sync generated connection variables into this
+												service.
+											</p>
+										</div>
+
+										<div className="grid gap-3">
+											<div className="rounded-md border bg-background/60 p-3">
+												<div className="flex items-center justify-between gap-3">
+													<span className="text-sm font-medium">
+														Project scope
+													</span>
+													<Badge>
+														{permissions?.envVars.read
+															? `${projectVariableKeys.length} ${projectVariableKeys.length === 1 ? "key" : "keys"}`
+															: "Restricted"}
+													</Badge>
+												</div>
+												{permissions?.envVars.read &&
+													(projectVariableKeys.length > 0 ? (
+														<div className="mt-3 flex flex-wrap gap-1.5">
+															{projectVariableKeys.map((key) => (
+																<Badge key={key}>{key}</Badge>
+															))}
+														</div>
+													) : (
+														<p className="mt-3 text-xs text-muted-foreground">
+															No project variables defined.
+														</p>
+													))}
+												{!permissions?.envVars.read && (
+													<p className="mt-3 text-xs text-muted-foreground">
+														You need variable read access to see inherited keys.
+													</p>
+												)}
+											</div>
+
+											<div className="rounded-md border bg-background/60 p-3">
+												<div className="flex items-center justify-between gap-3">
+													<span className="text-sm font-medium">
+														Incoming links
+													</span>
+													<Badge>
+														{selectedIncomingConnections.length}{" "}
+														{selectedIncomingConnections.length === 1
+															? "source"
+															: "sources"}
+													</Badge>
+												</div>
+												{selectedIncomingConnections.length === 0 ? (
+													<p className="mt-3 text-xs text-muted-foreground">
+														No linked services are generating variables for this
+														service.
+													</p>
+												) : (
+													<div className="mt-3 space-y-3">
+														{selectedIncomingConnections.map((connection) => {
+															const source = servicesByKey.get(
+																getWorkspaceServiceKey(
+																	connection.sourceServiceType,
+																	connection.sourceServiceId,
+																),
+															);
+
+															return (
+																<div
+																	key={connection.connectionId}
+																	className="space-y-2 rounded-md border bg-background p-3"
+																>
+																	<div className="flex items-center justify-between gap-3">
+																		<span className="truncate text-sm">
+																			{source?.name ?? "Unknown service"}
+																		</span>
+																		<Badge>
+																			{serviceTypeLabels[
+																				connection.sourceServiceType
+																			] ?? connection.sourceServiceType}
+																		</Badge>
+																	</div>
+																	<ConnectionVariablePreview
+																		connectionId={connection.connectionId}
+																		enabled={!!permissions?.envVars.read}
+																	/>
+																</div>
+															);
+														})}
+													</div>
+												)}
+											</div>
+										</div>
+									</div>
+								</LayerCard>
 								{selectedServiceModel.type === "application" ? (
 									<ShowApplicationEnvironment
 										applicationId={selectedServiceModel.id}
@@ -2831,7 +2937,7 @@ export const EnvironmentCanvas = ({
 										type={selectedServiceModel.type}
 									/>
 								)}
-							</>
+							</div>
 						)}
 
 						{drawerTab === "deployments" &&

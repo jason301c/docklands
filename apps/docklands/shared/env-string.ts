@@ -3,8 +3,36 @@ export type EnvEntry = {
 	value: string;
 };
 
+const envKeyRegex = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const escapeRegExp = (value: string) =>
 	value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export const parseEnvironmentVariables = (
+	input: string | null | undefined,
+): EnvEntry[] => {
+	const entries: EnvEntry[] = [];
+
+	for (const rawLine of (input ?? "").split(/\r?\n/)) {
+		const line = rawLine.trim();
+		if (!line || line.startsWith("#")) continue;
+
+		const normalizedLine = line.startsWith("export ")
+			? line.slice("export ".length).trimStart()
+			: line;
+		const separatorIndex = normalizedLine.indexOf("=");
+		if (separatorIndex <= 0) continue;
+
+		const key = normalizedLine.slice(0, separatorIndex).trim();
+		if (!envKeyRegex.test(key)) continue;
+
+		entries.push({
+			key,
+			value: normalizedLine.slice(separatorIndex + 1),
+		});
+	}
+
+	return entries;
+};
 
 export const upsertEnvironmentVariables = (
 	input: string | null | undefined,

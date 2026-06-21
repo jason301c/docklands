@@ -1,5 +1,45 @@
 import { describe, expect, it } from "vitest";
-import { upsertEnvironmentVariables } from "@/shared/env-string";
+import {
+	parseEnvironmentVariables,
+	upsertEnvironmentVariables,
+} from "@/shared/env-string";
+
+describe("parseEnvironmentVariables", () => {
+	it("extracts valid keys without requiring values to be visible", () => {
+		expect(
+			parseEnvironmentVariables(
+				[
+					"# project",
+					"PORT=3000",
+					"export DATABASE_URL=postgres://user:password@db:5432/app",
+					'QUOTED="hello=world"',
+				].join("\n"),
+			),
+		).toEqual([
+			{ key: "PORT", value: "3000" },
+			{
+				key: "DATABASE_URL",
+				value: "postgres://user:password@db:5432/app",
+			},
+			{ key: "QUOTED", value: '"hello=world"' },
+		]);
+	});
+
+	it("ignores comments, blank lines, invalid keys, and malformed lines", () => {
+		expect(
+			parseEnvironmentVariables(
+				[
+					"",
+					" # comment",
+					"NOT_A_PAIR",
+					"1_BAD=value",
+					"BAD-KEY=value",
+					"GOOD_KEY=value",
+				].join("\n"),
+			),
+		).toEqual([{ key: "GOOD_KEY", value: "value" }]);
+	});
+});
 
 describe("upsertEnvironmentVariables", () => {
 	it("appends variables to an empty env string", () => {
