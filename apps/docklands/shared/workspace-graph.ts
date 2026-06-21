@@ -11,6 +11,18 @@ export const WORKSPACE_SERVICE_TYPES = [
 
 export type WorkspaceServiceType = (typeof WORKSPACE_SERVICE_TYPES)[number];
 
+export const WORKSPACE_VARIABLE_SOURCE_TYPES = [
+	"libsql",
+	"mariadb",
+	"mongo",
+	"mysql",
+	"postgres",
+	"redis",
+] as const satisfies readonly WorkspaceServiceType[];
+
+export type WorkspaceVariableSourceType =
+	(typeof WORKSPACE_VARIABLE_SOURCE_TYPES)[number];
+
 export type WorkspaceServiceStatus = "idle" | "running" | "done" | "error";
 
 export type WorkspaceService = {
@@ -110,6 +122,39 @@ export const isWorkspaceServiceType = (
 	value: string,
 ): value is WorkspaceServiceType =>
 	WORKSPACE_SERVICE_TYPES.includes(value as WorkspaceServiceType);
+
+export const canWorkspaceServiceExposeVariables = (
+	serviceType: WorkspaceServiceType,
+): serviceType is WorkspaceVariableSourceType =>
+	WORKSPACE_VARIABLE_SOURCE_TYPES.includes(
+		serviceType as WorkspaceVariableSourceType,
+	);
+
+type WorkspaceServiceRef = {
+	serviceType: WorkspaceServiceType;
+	serviceId: string;
+};
+
+export const normalizeWorkspaceConnectionEndpoints = <
+	TSource extends WorkspaceServiceRef,
+	TTarget extends WorkspaceServiceRef,
+>(
+	source: TSource,
+	target: TTarget,
+) => {
+	const sourceCanExposeVariables = canWorkspaceServiceExposeVariables(
+		source.serviceType,
+	);
+	const targetCanExposeVariables = canWorkspaceServiceExposeVariables(
+		target.serviceType,
+	);
+
+	if (!sourceCanExposeVariables && targetCanExposeVariables) {
+		return { source: target, target: source, flipped: true };
+	}
+
+	return { source, target, flipped: false };
+};
 
 const asString = (value: unknown) =>
 	typeof value === "string" && value.length > 0 ? value : null;

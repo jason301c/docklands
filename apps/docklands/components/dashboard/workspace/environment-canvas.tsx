@@ -11,8 +11,8 @@ import { Select } from "@cloudflare/kumo/components/select";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { formatDistanceToNow } from "date-fns";
 import {
-	ArrowUpDown,
 	ArrowRight,
+	ArrowUpDown,
 	Box,
 	Cable,
 	CheckCircle2,
@@ -48,13 +48,13 @@ import {
 	useState,
 } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
-import { ShowEnvironment as ShowApplicationEnvironment } from "@/components/dashboard/application/environment/show";
-import { ShowEnvironment as ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
-import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
-import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
 import { ShowPorts } from "@/components/dashboard/application/advanced/ports/show-port";
 import { ShowResources } from "@/components/dashboard/application/advanced/show-resources";
 import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
+import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
+import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
+import { ShowEnvironment as ShowApplicationEnvironment } from "@/components/dashboard/application/environment/show";
+import { ShowEnvironment as ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
 import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
@@ -68,10 +68,10 @@ import { ShowExternalLibsqlCredentials } from "@/components/dashboard/libsql/gen
 import { ShowInternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-internal-libsql-credentials";
 import { ShowExternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-external-mariadb-credentials";
 import { ShowInternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-internal-mariadb-credentials";
-import { ComposeFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-compose-monitoring";
-import { ContainerFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-container-monitoring";
 import { ShowExternalMongoCredentials } from "@/components/dashboard/mongo/general/show-external-mongo-credentials";
 import { ShowInternalMongoCredentials } from "@/components/dashboard/mongo/general/show-internal-mongo-credentials";
+import { ComposeFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-compose-monitoring";
+import { ContainerFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-container-monitoring";
 import { ShowExternalMysqlCredentials } from "@/components/dashboard/mysql/general/show-external-mysql-credentials";
 import { ShowInternalMysqlCredentials } from "@/components/dashboard/mysql/general/show-internal-mysql-credentials";
 import { ShowExternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-external-postgres-credentials";
@@ -101,9 +101,11 @@ import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import {
+	canWorkspaceServiceExposeVariables,
 	getDefaultWorkspacePosition,
 	getWorkspaceServiceKey,
 	isWorkspaceServiceType,
+	normalizeWorkspaceConnectionEndpoints,
 	type WorkspaceNode,
 	type WorkspaceService,
 	type WorkspaceServiceType,
@@ -139,7 +141,11 @@ type CommandItem = {
 	run: () => void;
 };
 
-type ServiceKindFilter = "all" | "runtimes" | "databases" | WorkspaceServiceType;
+type ServiceKindFilter =
+	| "all"
+	| "runtimes"
+	| "databases"
+	| WorkspaceServiceType;
 type ServiceStatusFilter = "all" | NonNullable<WorkspaceService["status"]>;
 type ServiceSort =
 	| "manual"
@@ -682,15 +688,15 @@ export const EnvironmentCanvas = ({
 			}
 		}
 
-		return [...options.values()].sort((a, b) =>
-			a.label.localeCompare(b.label),
-		);
+		return [...options.values()].sort((a, b) => a.label.localeCompare(b.label));
 	}, [services]);
 
 	useEffect(() => {
 		if (serviceServerFilter === "all") return;
 		if (
-			serviceServerOptions.some((option) => option.value === serviceServerFilter)
+			serviceServerOptions.some(
+				(option) => option.value === serviceServerFilter,
+			)
 		) {
 			return;
 		}
@@ -966,6 +972,8 @@ export const EnvironmentCanvas = ({
 							new Date(a.lastDeployAt || 0).getTime() ||
 						a.name.localeCompare(b.name)
 					);
+				default:
+					return 0;
 			}
 		});
 
@@ -1151,14 +1159,53 @@ export const EnvironmentCanvas = ({
 			}
 
 			try {
-				await connect.mutateAsync({
+				const normalized = normalizeWorkspaceConnectionEndpoints(
+					connectSource,
+					nextRef,
+				);
+				const normalizedSource = servicesByKey.get(
+					getWorkspaceServiceKey(
+						normalized.source.serviceType,
+						normalized.source.serviceId,
+					),
+				);
+				const normalizedTarget = servicesByKey.get(
+					getWorkspaceServiceKey(
+						normalized.target.serviceType,
+						normalized.target.serviceId,
+					),
+				);
+				const canApplyVariables =
+					canWorkspaceServiceExposeVariables(normalized.source.serviceType) &&
+					!!permissions?.envVars.write;
+
+				const result = await connect.mutateAsync({
 					environmentId,
-					source: connectSource,
-					target: nextRef,
-					label: "Private network",
+					source: normalized.source,
+					target: normalized.target,
+					label: canWorkspaceServiceExposeVariables(
+						normalized.source.serviceType,
+					)
+						? "Private network + variables"
+						: "Private network",
+					applyVariables: canApplyVariables,
 				});
 				await utils.workspace.byEnvironment.invalidate({ environmentId });
-				toast.success("Services connected");
+				if (result.variablesApplied > 0) {
+					await invalidateServiceEnvironment({
+						serviceId: result.connection.targetServiceId,
+						serviceType: result.connection.targetServiceType,
+					});
+				}
+				const edgeLabel =
+					normalizedSource && normalizedTarget
+						? `${normalizedSource.name} -> ${normalizedTarget.name}`
+						: "Services connected";
+				toast.success(
+					result.variablesApplied > 0
+						? `${edgeLabel}; ${result.variablesApplied} variable${result.variablesApplied === 1 ? "" : "s"} applied`
+						: edgeLabel,
+				);
 			} catch (error) {
 				toast.error(
 					`Could not connect services: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -2627,7 +2674,7 @@ export const EnvironmentCanvas = ({
 											});
 											closeSelectedService();
 											toast.info(
-												"Select another service on the canvas to connect it",
+												"Select another service on the canvas. Database links auto-apply variables when possible.",
 											);
 										}}
 									>
@@ -2876,6 +2923,7 @@ export const EnvironmentCanvas = ({
 													<div className="flex shrink-0 items-center gap-1">
 														<Button
 															variant="outline"
+															disabled={!permissions?.envVars.write}
 															onClick={() =>
 																applyVariablesForConnection(connection)
 															}
@@ -2927,7 +2975,7 @@ export const EnvironmentCanvas = ({
 
 					<div className="space-y-4">
 						<div className="space-y-2">
-							<label className="text-sm font-medium">Project</label>
+							<p className="text-sm font-medium">Project</p>
 							<Select
 								aria-label="Target project"
 								value={selectedTargetProject}
@@ -2949,7 +2997,7 @@ export const EnvironmentCanvas = ({
 						</div>
 
 						<div className="space-y-2">
-							<label className="text-sm font-medium">Environment</label>
+							<p className="text-sm font-medium">Environment</p>
 							<Select
 								aria-label="Target environment"
 								value={selectedTargetEnvironment}
@@ -3039,15 +3087,16 @@ export const EnvironmentCanvas = ({
 						{selectedBulkServices.some(
 							(service) => service.type === "compose",
 						) && (
-							<label className="flex items-center gap-2">
+							<div className="flex items-center gap-2">
 								<Checkbox
+									aria-label="Delete compose volumes too"
 									checked={deleteComposeVolumes}
 									onCheckedChange={(checked) =>
 										setDeleteComposeVolumes(checked === true)
 									}
 								/>
 								<span>Delete compose volumes too</span>
-							</label>
+							</div>
 						)}
 					</div>
 
@@ -3118,16 +3167,28 @@ export const EnvironmentCanvas = ({
 						{duplicateMode === "new-project" ? (
 							<div className="space-y-3">
 								<div className="space-y-2">
-									<label className="text-sm font-medium">Project name</label>
+									<label
+										className="text-sm font-medium"
+										htmlFor="duplicate-project-name"
+									>
+										Project name
+									</label>
 									<Input
+										id="duplicate-project-name"
 										value={duplicateName}
 										onChange={(event) => setDuplicateName(event.target.value)}
 										placeholder="New project"
 									/>
 								</div>
 								<div className="space-y-2">
-									<label className="text-sm font-medium">Description</label>
+									<label
+										className="text-sm font-medium"
+										htmlFor="duplicate-project-description"
+									>
+										Description
+									</label>
 									<Input
+										id="duplicate-project-description"
 										value={duplicateDescription}
 										onChange={(event) =>
 											setDuplicateDescription(event.target.value)
@@ -3139,7 +3200,7 @@ export const EnvironmentCanvas = ({
 						) : (
 							<div className="space-y-3">
 								<div className="space-y-2">
-									<label className="text-sm font-medium">Project</label>
+									<p className="text-sm font-medium">Project</p>
 									<Select
 										aria-label="Target project"
 										value={duplicateTargetProject}
@@ -3160,7 +3221,7 @@ export const EnvironmentCanvas = ({
 									</Select>
 								</div>
 								<div className="space-y-2">
-									<label className="text-sm font-medium">Environment</label>
+									<p className="text-sm font-medium">Environment</p>
 									<Select
 										aria-label="Target environment"
 										value={duplicateTargetEnvironment}

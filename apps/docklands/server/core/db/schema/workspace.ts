@@ -122,6 +122,7 @@ export const apiCreateWorkspaceConnection = z.object({
 	source: apiWorkspaceServiceRef,
 	target: apiWorkspaceServiceRef,
 	label: z.string().trim().max(120).optional(),
+	applyVariables: z.boolean().optional().default(false),
 });
 
 export const apiRemoveWorkspaceConnection = z.object({

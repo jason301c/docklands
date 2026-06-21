@@ -191,7 +191,11 @@ export const workspaceRouter = createTRPCRouter({
 				input.target.serviceId,
 			);
 
-			return createWorkspaceConnection({
+			if (input.applyVariables) {
+				await checkPermission(ctx, { envVars: ["write"] });
+			}
+
+			const connection = await createWorkspaceConnection({
 				environmentId: input.environmentId,
 				sourceServiceType: input.source.serviceType,
 				sourceServiceId: input.source.serviceId,
@@ -199,6 +203,30 @@ export const workspaceRouter = createTRPCRouter({
 				targetServiceId: input.target.serviceId,
 				label: input.label,
 			});
+
+			if (!input.applyVariables) {
+				return {
+					connection,
+					variablesApplied: 0,
+					variableKeys: [],
+				};
+			}
+
+			const entries = await getWorkspaceConnectionVariableEntries(connection);
+			if (entries.length === 0) {
+				return {
+					connection,
+					variablesApplied: 0,
+					variableKeys: [],
+				};
+			}
+
+			const result = await applyWorkspaceConnectionVariables(connection);
+			return {
+				connection,
+				variablesApplied: result.entries.length,
+				variableKeys: result.entries.map(({ key }) => key),
+			};
 		}),
 
 	removeConnection: protectedProcedure

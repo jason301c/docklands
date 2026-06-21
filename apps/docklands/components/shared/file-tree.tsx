@@ -2,8 +2,6 @@
 
 import { Collapsible } from "@cloudflare/kumo/components/collapsible";
 
-// import { ScrollArea } from "@acme/components/ui/scroll-area";
-// import { cn } from "@acme/components/lib/utils";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import React from "react";
 import useResizeObserver from "use-resize-observer";
@@ -140,7 +138,9 @@ const TreeItem = React.forwardRef<HTMLDivElement, TreeItemProps>(
 						data.map((item) => (
 							<li key={item.id}>
 								{item.children ? (
-									<Collapsible.Root defaultOpen={expandedItemIds.includes(item.id)}>
+									<Collapsible.Root
+										defaultOpen={expandedItemIds.includes(item.id)}
+									>
 										<TreeItemTrigger
 											className={cn(
 												"px-2 hover:before:opacity-100  before:absolute before:left-0 before:w-full before:opacity-0 before:bg-muted/80 before:h-[1.75rem] before:-z-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",

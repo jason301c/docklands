@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+	canWorkspaceServiceExposeVariables,
 	extractWorkspaceServicesFromEnvironment,
 	getDefaultWorkspacePosition,
+	normalizeWorkspaceConnectionEndpoints,
 	resolveWorkspaceNodes,
 } from "@/shared/workspace-graph";
 
@@ -114,6 +116,29 @@ describe("workspace graph helpers", () => {
 			serviceType: "postgres",
 			x: 480,
 			y: 80,
+		});
+	});
+
+	it("identifies services that can expose generated connection variables", () => {
+		expect(canWorkspaceServiceExposeVariables("postgres")).toBe(true);
+		expect(canWorkspaceServiceExposeVariables("redis")).toBe(true);
+		expect(canWorkspaceServiceExposeVariables("application")).toBe(false);
+		expect(canWorkspaceServiceExposeVariables("compose")).toBe(false);
+	});
+
+	it("normalizes connection direction toward variable sources", () => {
+		const app = { serviceId: "app_1", serviceType: "application" as const };
+		const database = { serviceId: "pg_1", serviceType: "postgres" as const };
+
+		expect(normalizeWorkspaceConnectionEndpoints(app, database)).toEqual({
+			source: database,
+			target: app,
+			flipped: true,
+		});
+		expect(normalizeWorkspaceConnectionEndpoints(database, app)).toEqual({
+			source: database,
+			target: app,
+			flipped: false,
 		});
 	});
 });

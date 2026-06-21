@@ -18,6 +18,7 @@ import { type EnvEntry, upsertEnvironmentVariables } from "@/shared/env-string";
 import {
 	extractWorkspaceServicesFromEnvironment,
 	getWorkspaceServiceKey,
+	normalizeWorkspaceConnectionEndpoints,
 	resolveWorkspaceNodes,
 	type WorkspaceServiceType,
 } from "@/shared/workspace-graph";
@@ -152,9 +153,24 @@ export const createWorkspaceConnection = async (input: {
 	targetServiceId: string;
 	label?: string | null;
 }) => {
+	const normalized = normalizeWorkspaceConnectionEndpoints(
+		{
+			serviceType: input.sourceServiceType,
+			serviceId: input.sourceServiceId,
+		},
+		{
+			serviceType: input.targetServiceType,
+			serviceId: input.targetServiceId,
+		},
+	);
+	const sourceServiceType = normalized.source.serviceType;
+	const sourceServiceId = normalized.source.serviceId;
+	const targetServiceType = normalized.target.serviceType;
+	const targetServiceId = normalized.target.serviceId;
+
 	if (
-		input.sourceServiceType === input.targetServiceType &&
-		input.sourceServiceId === input.targetServiceId
+		sourceServiceType === targetServiceType &&
+		sourceServiceId === targetServiceId
 	) {
 		throw new TRPCError({
 			code: "BAD_REQUEST",
@@ -167,7 +183,11 @@ export const createWorkspaceConnection = async (input: {
 	const result = await db
 		.insert(workspaceServiceConnections)
 		.values({
-			...input,
+			environmentId: input.environmentId,
+			sourceServiceType,
+			sourceServiceId,
+			targetServiceType,
+			targetServiceId,
 			label: input.label || null,
 			updatedAt: now,
 		})
