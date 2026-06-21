@@ -1,13 +1,14 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input, Textarea } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { HelpCircle, PlusIcon, SquarePen } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -16,9 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Textarea } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 
 const certificateDataHolder =
 	"-----BEGIN CERTIFICATE-----\nMIIFRDCCAyygAwIBAgIUEPOR47ys6VDwMVB9tYoeEka83uQwDQYJKoZIhvcNAQELBQAwGTEXMBUGA1UEAwwObWktZG9taW5pby5jb20wHhcNMjQwMzExMDQyNzU3WhcN\n------END CERTIFICATE-----";
@@ -123,20 +122,27 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
-			<Dialog.Trigger render={certificateId ? (
-					<Button aria-label="Action"
-						variant="ghost"
-						shape="square"
-						className="group hover:bg-blue-500/10"
-					>
-						<SquarePen className="size-3.5 text-primary group-hover:text-blue-500" />
-					</Button>
-				) : (
-					<Button>
-						<PlusIcon className="h-4 w-4" />
-						Add Certificate
-					</Button>
-				) as never} />
+			<Dialog.Trigger
+				render={
+					certificateId ? (
+						<Button
+							aria-label="Action"
+							variant="ghost"
+							shape="square"
+							className="group hover:bg-blue-500/10"
+						>
+							<SquarePen className="size-3.5 text-primary group-hover:text-blue-500" />
+						</Button>
+					) : (
+						((
+							<Button>
+								<PlusIcon className="h-4 w-4" />
+								Add Certificate
+							</Button>
+						) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title>
@@ -210,25 +216,24 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
-											Select a Server {!isCloud && "(Optional)"}
+											Placement {!isCloud && "(Optional)"}
 											<HelpCircle className="size-4 text-muted-foreground" />
 										</FormLabel>
 
-										<Select aria-label="Select option"
+										<Select
+											aria-label="Select option"
 											onValueChange={field.onChange}
 											defaultValue={
 												field.value || (!isCloud ? "docklands" : undefined)
 											}
 										>
-											<>
-												
-											</>
+											<></>
 											<>
 												<Select.Group>
 													{!isCloud && (
 														<Select.Option value="docklands">
 															<span className="flex items-center gap-2 justify-between w-full">
-																<span>Docklands</span>
+																<span>Automatic placement</span>
 																<span className="text-muted-foreground text-xs self-center">
 																	Default
 																</span>
@@ -249,7 +254,8 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 														</Select.Option>
 													))}
 													<Select.GroupLabel>
-														Servers ({servers?.length + (!isCloud ? 1 : 0)})
+														Runtime workers (
+														{servers?.length + (!isCloud ? 1 : 0)})
 													</Select.GroupLabel>
 												</Select.Group>
 											</>

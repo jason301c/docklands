@@ -1,3 +1,5 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	AlertCircle,
 	ChevronDown,
@@ -9,12 +11,10 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { toast } from "@/components/shared/toast";
 import { HandleCertificate } from "./handle-certificate";
 import {
 	extractLeafCommonName,
@@ -39,9 +39,7 @@ export const ShowCertificates = () => {
 							<ShieldCheck className="size-6 text-muted-foreground self-center" />
 							Certificates
 						</h3>
-						<p>
-							Create certificates in the Traefik directory
-						</p>
+						<p>Create certificates in the Traefik directory</p>
 
 						<AlertBlock type="warning">
 							Certificates are created in the Traefik directory. Traefik uses
@@ -120,7 +118,7 @@ export const ShowCertificates = () => {
 																		<Server className="size-3" />
 																		{certificate.server
 																			? `${certificate.server.name} (${certificate.server.ipAddress})`
-																			: "Docklands (Local)"}
+																			: "Automatic placement"}
 																	</span>
 																	{chainInfo.isChain && (
 																		<div className="flex flex-col gap-1.5 mt-1">
@@ -212,7 +210,8 @@ export const ShowCertificates = () => {
 																				});
 																		}}
 																	>
-																		<Button aria-label="Action"
+																		<Button
+																			aria-label="Action"
 																			variant="ghost"
 																			shape="square"
 																			className="group hover:bg-red-500/10"

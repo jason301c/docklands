@@ -1,3 +1,5 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	AlertTriangle,
 	CheckCircle2,
@@ -7,10 +9,8 @@ import {
 	XCircle,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { Button } from "@cloudflare/kumo/components/button";
+import { toast } from "@/components/shared/toast";
 
 type ServiceStatus = {
 	status: "healthy" | "unhealthy";
@@ -124,22 +124,22 @@ export const UpdateWebServer = () => {
 
 	return (
 		<Dialog.Root role="alertdialog" open={open}>
-			<Dialog.Trigger render={(
-
-				<Button
-					className="relative w-full"
-					variant="secondary"
-					onClick={() => setOpen(true)}
-				>
-					<HardDriveDownload className="h-4 w-4" />
-					<span className="absolute -right-1 -top-2 flex h-3 w-3">
-						<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-						<span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
-					</span>
-					Update Server
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button
+						className="relative w-full"
+						variant="secondary"
+						onClick={() => setOpen(true)}
+					>
+						<HardDriveDownload className="h-4 w-4" />
+						<span className="absolute -right-1 -top-2 flex h-3 w-3">
+							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+							<span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
+						</span>
+						Update Server
+					</Button>
+				}
+			/>
 			<Dialog>
 				<div>
 					<Dialog.Title>
@@ -153,9 +153,9 @@ export const UpdateWebServer = () => {
 						<div>
 							{modalState === "idle" && (
 								<span>
-									This will update the web server to the new version. You will
-									not be able to use the panel during the update process. The
-									page will be reloaded once the update is finished.
+									This will update the Docklands runtime to the new version. You
+									will not be able to use the panel during the update process.
+									The page will be reloaded once the update is finished.
 									<br />
 									<br />
 									We recommend verifying that all services are running before
@@ -231,9 +231,7 @@ export const UpdateWebServer = () => {
 							<RefreshCw className="h-4 w-4" />
 							Verify Status
 						</Button>
-						<Dialog.Close onClick={handleConfirm}>
-							Confirm
-						</Dialog.Close>
+						<Dialog.Close onClick={handleConfirm}>Confirm</Dialog.Close>
 					</div>
 				)}
 				{modalState === "results" && (
