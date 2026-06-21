@@ -50,9 +50,12 @@ import { ShowDeployments } from "@/components/dashboard/application/deployments/
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
+import { ShowComposeContainers } from "@/components/dashboard/compose/containers/show-compose-containers";
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
+import { ComposeFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-compose-monitoring";
+import { ContainerFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-container-monitoring";
 import { AddApplication } from "@/components/dashboard/project/add-application";
 import { AddCompose } from "@/components/dashboard/project/add-compose";
 import { AddDatabase } from "@/components/dashboard/project/add-database";
@@ -290,6 +293,8 @@ export const EnvironmentCanvas = ({
 		| "domains"
 		| "previews"
 		| "logs"
+		| "containers"
+		| "metrics"
 		| "connections"
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
@@ -502,6 +507,12 @@ export const EnvironmentCanvas = ({
 		...(selectedServiceModel?.appName && permissions?.logs.read
 			? [{ value: "logs", label: "Logs" }]
 			: []),
+		...(selectedServiceModel?.type === "compose" && permissions?.service.read
+			? [{ value: "containers", label: "Containers" }]
+			: []),
+		...(selectedServiceModel?.appName && permissions?.monitoring.read
+			? [{ value: "metrics", label: "Metrics" }]
+			: []),
 		{ value: "connections", label: "Connections" },
 	];
 
@@ -558,11 +569,25 @@ export const EnvironmentCanvas = ({
 		) {
 			setDrawerTab("overview");
 		}
+		if (
+			drawerTab === "containers" &&
+			(selectedServiceModel?.type !== "compose" || !permissions?.service.read)
+		) {
+			setDrawerTab("overview");
+		}
+		if (
+			drawerTab === "metrics" &&
+			(!selectedServiceModel?.appName || !permissions?.monitoring.read)
+		) {
+			setDrawerTab("overview");
+		}
 	}, [
 		drawerTab,
 		permissions?.deployment.read,
 		permissions?.domain.read,
 		permissions?.logs.read,
+		permissions?.monitoring.read,
+		permissions?.service.read,
 		selectedServiceModel,
 	]);
 
@@ -1122,6 +1147,46 @@ export const EnvironmentCanvas = ({
 										serviceType: service.type,
 									});
 									setDrawerTab("logs");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(service.type === "compose" && permissions?.service.read
+					? [
+							{
+								id: `containers:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Containers for ${service.name}`,
+								detail: "Compose · inspect containers",
+								search: `${baseSearch} containers docker tasks inspect terminal`,
+								icon: <Box className="size-5 text-muted-foreground" />,
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("containers");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(service.appName && permissions?.monitoring.read
+					? [
+							{
+								id: `metrics:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Metrics for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · live resource usage`,
+								search: `${baseSearch} metrics monitoring cpu memory network disk`,
+								icon: <RefreshCw className="size-5 text-muted-foreground" />,
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("metrics");
 									setCommandOpen(false);
 								},
 							},
@@ -1916,6 +1981,34 @@ export const EnvironmentCanvas = ({
 								) : (
 									<ShowDockerLogs
 										serverId={selectedServiceModel.serverId || ""}
+										appName={selectedServiceModel.appName}
+									/>
+								)}
+							</div>
+						)}
+
+						{drawerTab === "containers" &&
+							selectedServiceModel.type === "compose" &&
+							selectedServiceModel.appName && (
+								<ShowComposeContainers
+									serverId={selectedServiceModel.serverId || ""}
+									appName={selectedServiceModel.appName}
+									appType={selectedServiceModel.composeType || "docker-compose"}
+								/>
+							)}
+
+						{drawerTab === "metrics" && selectedServiceModel.appName && (
+							<div className="space-y-3">
+								{selectedServiceModel.type === "compose" ? (
+									<ComposeFreeMonitoring
+										serverId={selectedServiceModel.serverId || ""}
+										appName={selectedServiceModel.appName}
+										appType={
+											selectedServiceModel.composeType || "docker-compose"
+										}
+									/>
+								) : (
+									<ContainerFreeMonitoring
 										appName={selectedServiceModel.appName}
 									/>
 								)}
