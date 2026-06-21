@@ -40,6 +40,7 @@ import {
 	useState,
 } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { AddApplication } from "@/components/dashboard/project/add-application";
 import { AddCompose } from "@/components/dashboard/project/add-compose";
@@ -201,7 +202,7 @@ export const EnvironmentCanvas = ({
 	const [searchQuery, setSearchQuery] = useState("");
 	const [commandOpen, setCommandOpen] = useState(false);
 	const [drawerTab, setDrawerTab] = useState<
-		"overview" | "variables" | "connections"
+		"overview" | "variables" | "previews" | "connections"
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
 	const dragState = useRef<DragState | null>(null);
@@ -307,6 +308,14 @@ export const EnvironmentCanvas = ({
 				),
 			)
 		: null;
+	const drawerTabs = [
+		{ value: "overview", label: "Overview" },
+		{ value: "variables", label: "Variables" },
+		...(selectedServiceModel?.type === "application"
+			? [{ value: "previews", label: "Previews" }]
+			: []),
+		{ value: "connections", label: "Connections" },
+	];
 
 	const serviceEnvQueryInput = selectedServiceModel
 		? {
@@ -331,6 +340,15 @@ export const EnvironmentCanvas = ({
 			setServiceEnvDraft(serviceEnvQuery.data.env);
 		}
 	}, [serviceEnvQuery.data]);
+
+	useEffect(() => {
+		if (
+			drawerTab === "previews" &&
+			selectedServiceModel?.type !== "application"
+		) {
+			setDrawerTab("overview");
+		}
+	}, [drawerTab, selectedServiceModel?.type]);
 
 	const filteredServices = useMemo(() => {
 		const query = searchQuery.trim().toLowerCase();
@@ -929,11 +947,7 @@ export const EnvironmentCanvas = ({
 							onValueChange={(value) =>
 								value !== null && setDrawerTab(value as typeof drawerTab)
 							}
-							tabs={[
-								{ value: "overview", label: "Overview" },
-								{ value: "variables", label: "Variables" },
-								{ value: "connections", label: "Connections" },
-							]}
+							tabs={drawerTabs}
 						/>
 					</div>
 
@@ -1057,6 +1071,13 @@ export const EnvironmentCanvas = ({
 								)}
 							</div>
 						)}
+
+						{drawerTab === "previews" &&
+							selectedServiceModel.type === "application" && (
+								<ShowPreviewDeployments
+									applicationId={selectedServiceModel.id}
+								/>
+							)}
 
 						{drawerTab === "connections" && (
 							<div className="space-y-3">
