@@ -1,196 +1,54 @@
 # Contributing
 
-Hey, thanks for your interest in contributing to Docklands! We appreciate your help and taking your time to contribute.
+Thanks for helping shape Docklands.
 
-Before you start, please first discuss the feature/bug you want to add with the owners and community via github issues.
-
-We have a few guidelines to follow when contributing to this project:
-
-- [Commit Convention](#commit-convention)
-- [Setup](#setup)
-- [Development](#development)
-- [Build](#build)
-- [Pull Request](#pull-request)
-- [Important Considerations](#important-considerations-for-pull-requests)
-
-## Commit Convention
-
-Before you create a Pull Request, please make sure your commit message follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
-
-### Commit Message Format
-
-```
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-#### Type
-
-Must be one of the following:
-
-- **feat**: A new feature
-- **fix**: A bug fix
-- **docs**: Documentation only changes
-- **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
-- **refactor**: A code change that neither fixes a bug nor adds a feature
-- **perf**: A code change that improves performance
-- **test**: Adding missing tests or correcting existing tests
-- **build**: Changes that affect the build system or external dependencies (example scopes: gulp, broccoli, npm)
-- **ci**: Changes to our CI configuration files and scripts (example scopes: Travis, Circle, BrowserStack, SauceLabs)
-- **chore**: Other changes that don't modify `src` or `test` files
-- **revert**: Reverts a previous commit
-
-Example:
-
-```
-feat: add new feature
-```
+Docklands is a community fork of Dokploy focused on a self-hosted deployment
+control plane. Keep changes focused, test security-sensitive behavior carefully,
+and prefer small PRs over broad rewrites.
 
 ## Setup
 
-Before you start, please make the clone based on the `canary` branch, since the `main` branch is the source of truth and should always reflect the latest stable release, also the PRs will be merged to the `canary` branch.
-
-We use Node v24.4.0 and recommend this specific version. If you have nvm installed, you can run `nvm install 24.4.0 && nvm use` in the root directory.
+Use Node 24.x and pnpm 10.x.
 
 ```bash
-git clone https://github.com/dokploy/dokploy.git
-cd dokploy
-pnpm install
-cp apps/dokploy/.env.example apps/dokploy/.env
+git clone https://github.com/jason301c/docklands.git
+cd docklands
+pnpm install --frozen-lockfile
+cp .env.example .env
+pnpm setup
+pnpm dev
 ```
 
-## Requirements
+The app runs at http://localhost:3000.
 
-- [Docker](/GUIDES.md#docker)
+## Layout
 
-### Setup
+- `pages/`, `components/`, `server/`, and `utils/` are the web app.
+- `server-core/` is the folded-in backend/domain layer from upstream's old server package.
+- `drizzle/` contains migrations.
+- `__test__/` contains Vitest tests.
 
-Run the command that will spin up all the required services and files.
+The old upstream `apps/*` and `packages/*` workspace layout is intentionally
+gone in this fork.
+
+## Checks
+
+Run the relevant checks before opening a PR:
 
 ```bash
-pnpm run dokploy:setup
+pnpm typecheck
+pnpm test
+pnpm format-and-lint
 ```
 
-Run this script
+## Pull Requests
 
-```bash
-pnpm run server:script
-```
+- Branch from `canary`.
+- Use Conventional Commits where practical, for example `fix: redact deploy secrets`.
+- Include tests for behavior changes.
+- Update docs when commands, env vars, setup steps, or user-visible behavior changes.
+- Avoid drive-by formatting or unrelated cleanup in feature PRs.
 
-Now run the development server.
-
-```bash
-pnpm run dokploy:dev
-```
-
-Go to http://localhost:3000 to see the development server
-
-> [!NOTE]
-> This project uses Biome. If your editor is configured to use another formatter such as Prettier, it's recommended to either change it to use Biome or turn it off.
-
-## Build
-
-```bash
-pnpm run dokploy:build
-```
-
-## Docker
-
-To build the docker image first run commands to copy .env files
-
-```bash
-cp apps/dokploy/.env.production.example .env.production
-cp apps/dokploy/.env.production.example apps/dokploy/.env.production
-```
-
-then run build command
-
-```bash
-pnpm run docker:build
-```
-
-To push the docker image
-
-```bash
-pnpm run docker:push
-```
-
-## Password Reset
-
-In the case you lost your password, you can reset it using the following command
-
-```bash
-pnpm run reset-password
-```
-
-If you want to test the webhooks on development mode using localtunnel, make sure to install [`localtunnel`](https://localtunnel.app/)
-
-```bash
-pnpm dlx localtunnel --port 3000
-```
-
-If you run into permission issues of docker run the following command
-
-```bash
-sudo chown -R USERNAME dokploy or sudo chown -R $(whoami) ~/.docker
-```
-
-## Application deploy
-
-In case you want to deploy the application on your machine and you selected nixpacks or buildpacks, you need to install first.
-
-```bash
-# Install Nixpacks
-curl -sSL https://nixpacks.com/install.sh -o install.sh \
-    && chmod +x install.sh \
-    && ./install.sh
-```
-
-```bash
-# Install Railpack
-curl -sSL https://railpack.com/install.sh | sh
-```
-
-```bash
-# Install Buildpacks
-curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.39.1/pack-v0.39.1-linux.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack
-```
-
-## Pull Request
-
-- The `canary` branch is the source of truth and should always reflect the latest stable release.
-- Create a new branch for each feature or bug fix.
-- Make sure to add tests for your changes.
-- Make sure to update the documentation for any changes Go to the [docs.dokploy.com](https://docs.dokploy.com) website to see the changes.
-- When creating a pull request, please provide a clear and concise description of the changes made.
-- If you include a video or screenshot, would be awesome so we can see the changes in action.
-- If your pull request fixes an open issue, please reference the issue in the pull request description.
-- Once your pull request is merged, you will be automatically added as a contributor to the project.
-
-### Important Considerations for Pull Requests
-
-- **Testing is Mandatory:** All Pull Requests **must be tested** by the PR author before submission. You must verify that your changes work as expected in a local development environment (see [Setup](#setup)). **Pull Requests that have not been tested by their creator will be rejected.** This policy keeps the PR history clean and values contributors who submit verified, working code. Untested PRs are often recognizable by disproportionately large or scattered changes for simple tasks—please test first.
-- **Focus and Scope:** Each Pull Request should ideally address a single, well-defined problem or introduce one new feature. This greatly facilitates review and reduces the chances of introducing unintended side effects.
-- **Avoid Unfocused Changes:** Please avoid submitting Pull Requests that contain only minor changes such as whitespace adjustments, IDE-generated formatting, or removal of unused variables, unless these are part of a larger, clearly defined refactor or a dedicated "cleanup" Pull Request that addresses a specific `good first issue` or maintenance task.
-- **Issue Association:** For any significant change, it's highly recommended to open an issue first to discuss the proposed solution with the community and maintainers. This ensures alignment and avoids duplicated effort. If your PR resolves an existing issue, please link it in the description (e.g., `Fixes #123`, `Closes #456`).
-- **Large Features:** Pull Requests that introduce very large or broad features **will not be accepted** unless the idea is first outlined and discussed in a GitHub issue. Large features should be designed together with the Docklands team so the project stays coherent and moves in the same direction. Open an issue to propose and align on the design before implementing.
-
-Thank you for your contribution!
-
-## Templates
-
-To add a new template, go to `https://github.com/dokploy/templates` repository and read the README.md file.
-
-### Recommendations
-
-- Use the same name of the folder as the id of the template.
-- The logo should be in the public folder.
-- If you want to show a domain in the UI, please add the `_HOST` suffix at the end of the variable name.
-- Test first on a vps or a server to make sure the template works.
-
-## Docs & Website
-
-To contribute to the Docklands docs or website, please go to this [repository](https://github.com/dokploy/website).
+Auth, secrets, Docker/runtime execution, deployment commands, backups, domains,
+TLS, webhooks, provider integrations, dependencies, and build tooling all need
+focused security review.

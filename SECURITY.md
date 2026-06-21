@@ -6,7 +6,7 @@ At Docklands, security is a top priority. We appreciate the help of security res
 
 If you have discovered a security vulnerability in Docklands, we ask that you report it responsibly by following these guidelines:
 
-1.  **Contact us:** Send an email to [contact@dokploy.com](mailto:contact@dokploy.com).
+1.  **Contact us:** Use GitHub private vulnerability reporting for this fork when available, or open a minimal security issue that does not disclose exploit details.
 2.  **Provide clear details:** Include as much information as possible to help us understand and reproduce the vulnerability. This should include:
     *   A clear description of the vulnerability.
     *   Steps to reproduce the vulnerability.

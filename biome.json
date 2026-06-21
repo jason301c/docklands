@@ -13,8 +13,7 @@
 			"!**/.next/**",
 			"!**/dist",
 			"!**/drizzle/**",
-			"!node_modules/**",
-			"!packages/server/package.json"
+			"!node_modules/**"
 		],
 		"maxSize": 2097152
 	},

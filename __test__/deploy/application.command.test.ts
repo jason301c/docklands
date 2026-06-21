@@ -1,0 +1,291 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as adminService from "@/server-core/services/admin";
+import * as applicationService from "@/server-core/services/application";
+import { deployApplication } from "@/server-core/services/application";
+import * as deploymentService from "@/server-core/services/deployment";
+import * as builders from "@/server-core/utils/builders";
+import * as notifications from "@/server-core/utils/notifications/build-success";
+import * as execProcess from "@/server-core/utils/process/execAsync";
+import * as gitProvider from "@/server-core/utils/providers/git";
+
+vi.mock("@/server-core/db", () => {
+	const createChainableMock = (): any => {
+		const chain = {
+			set: vi.fn(() => chain),
+			where: vi.fn(() => chain),
+			returning: vi.fn().mockResolvedValue([{}] as any),
+			from: vi.fn(() => chain),
+			innerJoin: vi.fn(() => chain),
+			// biome-ignore lint/suspicious/noThenProperty: Test query mocks intentionally behave like thenables.
+			then: (resolve: (v: any) => void) => {
+				resolve([]);
+			},
+		} as any;
+		return chain;
+	};
+
+	return {
+		db: {
+			select: vi.fn(() => createChainableMock()),
+			insert: vi.fn(),
+			update: vi.fn(() => createChainableMock()),
+			delete: vi.fn(),
+			query: {
+				applications: {
+					findFirst: vi.fn(),
+				},
+				patch: {
+					findMany: vi.fn().mockResolvedValue([]),
+				},
+				member: {
+					findMany: vi.fn().mockResolvedValue([]),
+				},
+			},
+		},
+	};
+});
+
+vi.mock("@/server-core/services/application", async () => {
+	const actual = await vi.importActual<
+		typeof import("@/server-core/services/application")
+	>("@/server-core/services/application");
+	return {
+		...actual,
+		findApplicationById: vi.fn(),
+		updateApplicationStatus: vi.fn(),
+	};
+});
+
+vi.mock("@/server-core/services/admin", () => ({
+	getDocklandsUrl: vi.fn(),
+}));
+
+vi.mock("@/server-core/services/deployment", () => ({
+	createDeployment: vi.fn(),
+	updateDeploymentStatus: vi.fn(),
+	updateDeployment: vi.fn(),
+	getDeploymentErrorMessage: vi
+		.fn()
+		.mockResolvedValue("Error building, check the logs for details."),
+}));
+
+vi.mock("@/server-core/utils/providers/git", async () => {
+	const actual = await vi.importActual<
+		typeof import("@/server-core/utils/providers/git")
+	>("@/server-core/utils/providers/git");
+	return {
+		...actual,
+		getGitCommitInfo: vi.fn(),
+	};
+});
+
+vi.mock("@/server-core/utils/process/execAsync", () => ({
+	execAsync: vi.fn(),
+	ExecError: class ExecError extends Error {},
+}));
+
+vi.mock("@/server-core/utils/builders", async () => {
+	const actual = await vi.importActual<
+		typeof import("@/server-core/utils/builders")
+	>("@/server-core/utils/builders");
+	return {
+		...actual,
+		mechanizeDockerContainer: vi.fn(),
+		getBuildCommand: vi.fn(),
+	};
+});
+
+vi.mock("@/server-core/utils/notifications/build-success", () => ({
+	sendBuildSuccessNotifications: vi.fn(),
+}));
+
+vi.mock("@/server-core/utils/notifications/build-error", () => ({
+	sendBuildErrorNotifications: vi.fn(),
+}));
+
+vi.mock("@/server-core/services/rollbacks", () => ({
+	createRollback: vi.fn(),
+}));
+
+import { db } from "@/server-core/db";
+import { cloneGitRepository } from "@/server-core/utils/providers/git";
+
+const createMockApplication = (overrides = {}) => ({
+	applicationId: "test-app-id",
+	name: "Test App",
+	appName: "test-app",
+	sourceType: "git" as const,
+	customGitUrl: "https://github.com/dokploy/examples.git",
+	customGitBranch: "main",
+	customGitSSHKeyId: null,
+	buildType: "nixpacks" as const,
+	buildPath: "/astro",
+	env: "NODE_ENV=production",
+	serverId: null,
+	rollbackActive: false,
+	enableSubmodules: false,
+	environmentId: "env-id",
+	environment: {
+		projectId: "project-id",
+		env: "",
+		name: "production",
+		project: {
+			name: "Test Project",
+			organizationId: "org-id",
+			env: "",
+		},
+	},
+	domains: [],
+	...overrides,
+});
+
+const createMockDeployment = () => ({
+	deploymentId: "deployment-id",
+	logPath: "/tmp/test-deployment.log",
+});
+
+describe("deployApplication - Command Generation Tests", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		vi.mocked(db.query.applications.findFirst).mockResolvedValue(
+			createMockApplication() as any,
+		);
+		vi.mocked(applicationService.findApplicationById).mockResolvedValue(
+			createMockApplication() as any,
+		);
+		vi.mocked(adminService.getDocklandsUrl).mockResolvedValue(
+			"http://localhost:3000",
+		);
+		vi.mocked(deploymentService.createDeployment).mockResolvedValue(
+			createMockDeployment() as any,
+		);
+		vi.mocked(execProcess.execAsync).mockResolvedValue({
+			stdout: "",
+			stderr: "",
+		} as any);
+		vi.mocked(builders.mechanizeDockerContainer).mockResolvedValue(
+			undefined as any,
+		);
+		vi.mocked(deploymentService.updateDeploymentStatus).mockResolvedValue(
+			undefined as any,
+		);
+		vi.mocked(applicationService.updateApplicationStatus).mockResolvedValue(
+			{} as any,
+		);
+		vi.mocked(notifications.sendBuildSuccessNotifications).mockResolvedValue(
+			undefined as any,
+		);
+		vi.mocked(gitProvider.getGitCommitInfo).mockResolvedValue({
+			message: "test commit",
+			hash: "abc123",
+		});
+		vi.mocked(deploymentService.updateDeployment).mockResolvedValue({} as any);
+	});
+
+	it("should generate correct git clone command for astro example", async () => {
+		const app = createMockApplication();
+		const command = await cloneGitRepository(app);
+		console.log(command);
+
+		expect(command).toContain("https://github.com/dokploy/examples.git");
+		expect(command).not.toContain("--recurse-submodules");
+		expect(command).toContain("--branch main");
+		expect(command).toContain("--depth 1");
+		expect(command).toContain("git clone");
+	});
+
+	it("should generate git clone with submodules when enabled", async () => {
+		const app = createMockApplication({ enableSubmodules: true });
+		const command = await cloneGitRepository(app);
+
+		expect(command).toContain("--recurse-submodules");
+		expect(command).toContain("https://github.com/dokploy/examples.git");
+	});
+
+	it("should verify nixpacks command is called with correct app", async () => {
+		const mockNixpacksCommand = "nixpacks build /path/to/app --name test-app";
+		vi.mocked(builders.getBuildCommand).mockResolvedValue(mockNixpacksCommand);
+
+		await deployApplication({
+			applicationId: "test-app-id",
+			titleLog: "Test deployment",
+			descriptionLog: "",
+		});
+
+		expect(builders.getBuildCommand).toHaveBeenCalledWith(
+			expect.objectContaining({
+				buildType: "nixpacks",
+				customGitUrl: "https://github.com/dokploy/examples.git",
+				buildPath: "/astro",
+			}),
+		);
+
+		expect(execProcess.execAsync).toHaveBeenCalledWith(
+			expect.stringContaining("nixpacks build"),
+		);
+	});
+
+	it("should verify railpack command includes correct parameters", async () => {
+		const mockApp = createMockApplication({ buildType: "railpack" });
+		vi.mocked(db.query.applications.findFirst).mockResolvedValue(
+			mockApp as any,
+		);
+		vi.mocked(applicationService.findApplicationById).mockResolvedValue(
+			mockApp as any,
+		);
+
+		const mockRailpackCommand = "railpack prepare /path/to/app";
+		vi.mocked(builders.getBuildCommand).mockResolvedValue(mockRailpackCommand);
+
+		await deployApplication({
+			applicationId: "test-app-id",
+			titleLog: "Railpack test",
+			descriptionLog: "",
+		});
+
+		expect(builders.getBuildCommand).toHaveBeenCalledWith(
+			expect.objectContaining({
+				buildType: "railpack",
+			}),
+		);
+
+		expect(execProcess.execAsync).toHaveBeenCalledWith(
+			expect.stringContaining("railpack prepare"),
+		);
+	});
+
+	it("should execute commands in correct order", async () => {
+		const mockNixpacksCommand = "nixpacks build";
+		vi.mocked(builders.getBuildCommand).mockResolvedValue(mockNixpacksCommand);
+
+		await deployApplication({
+			applicationId: "test-app-id",
+			titleLog: "Test",
+			descriptionLog: "",
+		});
+
+		const execCalls = vi.mocked(execProcess.execAsync).mock.calls;
+		expect(execCalls.length).toBeGreaterThan(0);
+
+		const fullCommand = execCalls[0]?.[0];
+		expect(fullCommand).toContain("set -e");
+		expect(fullCommand).toContain("git clone");
+		expect(fullCommand).toContain("nixpacks build");
+	});
+
+	it("should include log redirection in command", async () => {
+		const mockCommand = "nixpacks build";
+		vi.mocked(builders.getBuildCommand).mockResolvedValue(mockCommand);
+
+		await deployApplication({
+			applicationId: "test-app-id",
+			titleLog: "Test",
+			descriptionLog: "",
+		});
+
+		const execCalls = vi.mocked(execProcess.execAsync).mock.calls;
+		const fullCommand = execCalls[0]?.[0];
+
+		expect(fullCommand).toContain(">> /tmp/test-deployment.log 2>&1");
+	});
+});

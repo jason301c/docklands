@@ -14,18 +14,15 @@ RUN apt-get update && apt-get install -y python3 make g++ git python3-pip pkg-co
 # Install dependencies
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
-# Deploy only the dokploy app
-
 ENV NODE_ENV=production
-RUN pnpm --filter=@dokploy/server build
-RUN pnpm --filter=./apps/dokploy run build
+RUN pnpm build
 
-RUN pnpm --filter=./apps/dokploy --prod deploy --legacy /prod/dokploy
+RUN pnpm --prod deploy --legacy /prod/docklands
 
-RUN cp -R /usr/src/app/apps/dokploy/.next /prod/dokploy/.next
-RUN cp -R /usr/src/app/apps/dokploy/dist /prod/dokploy/dist
+RUN cp -R /usr/src/app/.next /prod/docklands/.next
+RUN cp -R /usr/src/app/dist /prod/docklands/dist
 
-FROM base AS dokploy
+FROM base AS docklands
 WORKDIR /app
 
 # Set production
@@ -34,15 +31,15 @@ ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y curl unzip zip apache2-utils iproute2 rsync git-lfs && git lfs install && rm -rf /var/lib/apt/lists/*
 
 # Copy only the necessary files
-COPY --from=build /prod/dokploy/.next ./.next
-COPY --from=build /prod/dokploy/dist ./dist
-COPY --from=build /prod/dokploy/next.config.mjs ./next.config.mjs
-COPY --from=build /prod/dokploy/public ./public
-COPY --from=build /prod/dokploy/package.json ./package.json
-COPY --from=build /prod/dokploy/drizzle ./drizzle
+COPY --from=build /prod/docklands/.next ./.next
+COPY --from=build /prod/docklands/dist ./dist
+COPY --from=build /prod/docklands/next.config.mjs ./next.config.mjs
+COPY --from=build /prod/docklands/public ./public
+COPY --from=build /prod/docklands/package.json ./package.json
+COPY --from=build /prod/docklands/drizzle ./drizzle
 COPY .env.production ./.env
-COPY --from=build /prod/dokploy/components.json ./components.json
-COPY --from=build /prod/dokploy/node_modules ./node_modules
+COPY --from=build /prod/docklands/components.json ./components.json
+COPY --from=build /prod/docklands/node_modules ./node_modules
 
 
 # Install docker
@@ -69,4 +66,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 \
   CMD curl -fs http://localhost:3000/api/trpc/settings.health || exit 1
 
-  CMD ["sh", "-c", "pnpm run wait-for-postgres && exec pnpm start"]
+CMD ["sh", "-c", "pnpm run wait-for-postgres && exec pnpm start"]

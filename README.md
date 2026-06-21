@@ -27,15 +27,35 @@ Docklands inherits the upstream project's core capabilities:
 
 ## Development
 
-This repository uses `pnpm` workspaces.
+Docklands is currently a single root app. The old upstream workspace layout was
+collapsed so the Next.js app, backend runtime, tests, and Docker build all live
+from the repository root.
 
 ```bash
 pnpm install --frozen-lockfile
+cp .env.example .env
+pnpm setup
+pnpm dev
+```
+
+Useful checks:
+
+```bash
 pnpm typecheck
 pnpm test
 ```
 
 The upstream project currently declares Node `^24.4.0`, so use Node 24.x for CI-quality validation.
+
+### Layout
+
+- `pages/`, `components/`, `server/`, and `utils/` contain the Docklands web app.
+- `server-core/` contains the backend/domain code folded in from the old upstream server package.
+- `drizzle/` contains database migrations.
+- `__test__/` contains the Vitest suite.
+
+Cloud-only worker apps and source-available/proprietary upstream code have been
+removed from this fork.
 
 ## Security And PR Policy
 
