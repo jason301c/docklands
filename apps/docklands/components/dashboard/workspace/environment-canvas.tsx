@@ -12,6 +12,7 @@ import {
 	ArrowRight,
 	Box,
 	Cable,
+	CheckCircle2,
 	CircuitBoard,
 	Command,
 	Database,
@@ -288,6 +289,9 @@ export const EnvironmentCanvas = ({
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
 	const [isArranging, setIsArranging] = useState(false);
+	const [isSelectionMode, setIsSelectionMode] = useState(false);
+	const [selectedBulkKeys, setSelectedBulkKeys] = useState<string[]>([]);
+	const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 	const dragState = useRef<DragState | null>(null);
 	const suppressClick = useRef(false);
 
@@ -354,6 +358,8 @@ export const EnvironmentCanvas = ({
 			if (event.key === "Escape") {
 				setConnectSource(null);
 				setCommandOpen(false);
+				setIsSelectionMode(false);
+				setSelectedBulkKeys([]);
 			}
 		};
 
@@ -382,6 +388,25 @@ export const EnvironmentCanvas = ({
 			),
 		[nodes],
 	);
+	const selectedBulkKeySet = useMemo(
+		() => new Set(selectedBulkKeys),
+		[selectedBulkKeys],
+	);
+	const selectedBulkServices = useMemo(
+		() =>
+			services.filter((service) =>
+				selectedBulkKeySet.has(
+					getWorkspaceServiceKey(service.type, service.id),
+				),
+			),
+		[services, selectedBulkKeySet],
+	);
+
+	useEffect(() => {
+		setSelectedBulkKeys((current) =>
+			current.filter((key) => servicesByKey.has(key)),
+		);
+	}, [servicesByKey]);
 
 	const selectedServiceModel = selectedService
 		? servicesByKey.get(
@@ -575,6 +600,7 @@ export const EnvironmentCanvas = ({
 		event: PointerEvent<HTMLButtonElement>,
 		node: WorkspaceNode,
 	) => {
+		if (isSelectionMode) return;
 		if (event.button !== 0) return;
 		if ((event.target as HTMLElement).closest("[data-node-action]")) return;
 
@@ -647,6 +673,11 @@ export const EnvironmentCanvas = ({
 
 		const nextRef = { serviceId: service.id, serviceType: service.type };
 
+		if (isSelectionMode) {
+			toggleBulkService(service);
+			return;
+		}
+
 		if (connectSource) {
 			if (
 				connectSource.serviceId === service.id &&
@@ -679,6 +710,39 @@ export const EnvironmentCanvas = ({
 		setDrawerTab("overview");
 	};
 
+	const toggleSelectionMode = () => {
+		setIsSelectionMode((current) => {
+			const next = !current;
+			if (next) {
+				setConnectSource(null);
+				closeSelectedService();
+			} else {
+				setSelectedBulkKeys([]);
+			}
+			return next;
+		});
+	};
+
+	const toggleBulkService = (service: WorkspaceService) => {
+		const serviceKey = getWorkspaceServiceKey(service.type, service.id);
+		setSelectedBulkKeys((current) =>
+			current.includes(serviceKey)
+				? current.filter((key) => key !== serviceKey)
+				: [...current, serviceKey],
+		);
+	};
+
+	const selectVisibleServices = () => {
+		const nextKeys = filteredServices.map((service) =>
+			getWorkspaceServiceKey(service.type, service.id),
+		);
+		setSelectedBulkKeys((current) => [...new Set([...current, ...nextKeys])]);
+	};
+
+	const clearBulkSelection = () => {
+		setSelectedBulkKeys([]);
+	};
+
 	const runServiceAction = async (
 		service: WorkspaceService,
 		action: "start" | "stop" | "deploy",
@@ -703,6 +767,48 @@ export const EnvironmentCanvas = ({
 			error: (error) =>
 				`Could not ${action} ${service.name}: ${error instanceof Error ? error.message : "Unknown error"}`,
 		});
+	};
+
+	const runBulkServiceAction = async (action: "start" | "stop" | "deploy") => {
+		if (selectedBulkServices.length === 0) return;
+
+		const servicesToRun = [...selectedBulkServices];
+		let succeeded = 0;
+		let failed = 0;
+		setIsBulkActionLoading(true);
+
+		try {
+			for (const service of servicesToRun) {
+				const mutation = serviceActions[service.type][action];
+				const actionInput = getActionInput(service);
+
+				try {
+					await (mutation.mutateAsync as (input: never) => Promise<unknown>)(
+						actionInput as never,
+					);
+					succeeded++;
+				} catch {
+					failed++;
+				}
+			}
+
+			await utils.workspace.byEnvironment.invalidate({ environmentId });
+			if (succeeded > 0) {
+				toast.success(
+					action === "deploy"
+						? `${succeeded} services queued for deployment`
+						: `${succeeded} services ${action === "start" ? "started" : "stopped"}`,
+				);
+			}
+			if (failed > 0) {
+				toast.error(`${failed} services could not ${action}`);
+			}
+			if (failed === 0) {
+				setSelectedBulkKeys([]);
+			}
+		} finally {
+			setIsBulkActionLoading(false);
+		}
 	};
 
 	const removeSelectedConnection = async (connection: WorkspaceConnection) => {
@@ -1065,6 +1171,17 @@ export const EnvironmentCanvas = ({
 							{connectSource ? "Cancel connection" : "Connections"}
 						</Button>
 
+						<Button
+							variant={isSelectionMode ? "primary" : "outline"}
+							onClick={toggleSelectionMode}
+							disabled={services.length === 0}
+						>
+							<CheckCircle2 className="size-4" />
+							{isSelectionMode
+								? `Selecting${selectedBulkServices.length ? ` (${selectedBulkServices.length})` : ""}`
+								: "Select"}
+						</Button>
+
 						<Button variant="outline" onClick={() => setCommandOpen(true)}>
 							<Command className="size-4" />
 							Cmd K
@@ -1194,6 +1311,58 @@ export const EnvironmentCanvas = ({
 							</DropdownMenu>
 						)}
 					</div>
+					{isSelectionMode && (
+						<div className="flex basis-full flex-wrap items-center justify-between gap-3 rounded-md border bg-muted/20 px-3 py-2 text-sm">
+							<div className="flex min-w-0 flex-wrap items-center gap-2">
+								<Badge>{selectedBulkServices.length} selected</Badge>
+								<span className="text-muted-foreground">
+									Select services on the canvas, then run a bulk action.
+								</span>
+							</div>
+							<div className="flex flex-wrap items-center gap-2">
+								<Button
+									variant="outline"
+									onClick={selectVisibleServices}
+									disabled={filteredServices.length === 0}
+								>
+									Select visible
+								</Button>
+								<Button
+									variant="outline"
+									onClick={clearBulkSelection}
+									disabled={selectedBulkServices.length === 0}
+								>
+									Clear
+								</Button>
+								<Button
+									variant="outline"
+									onClick={() => void runBulkServiceAction("start")}
+									loading={isBulkActionLoading}
+									disabled={selectedBulkServices.length === 0}
+								>
+									<Play className="size-4" />
+									Start
+								</Button>
+								<Button
+									variant="outline"
+									onClick={() => void runBulkServiceAction("stop")}
+									loading={isBulkActionLoading}
+									disabled={selectedBulkServices.length === 0}
+								>
+									<X className="size-4" />
+									Stop
+								</Button>
+								<Button
+									onClick={() => void runBulkServiceAction("deploy")}
+									loading={isBulkActionLoading}
+									disabled={selectedBulkServices.length === 0}
+								>
+									<RefreshCw className="size-4" />
+									Deploy
+								</Button>
+							</div>
+						</div>
+					)}
 				</div>
 
 				<div className="relative overflow-auto bg-muted/20">
@@ -1284,29 +1453,33 @@ export const EnvironmentCanvas = ({
 						) : null}
 
 						{nodes.map((node) => {
-							const service = servicesByKey.get(
-								getWorkspaceServiceKey(node.serviceType, node.serviceId),
+							const serviceKey = getWorkspaceServiceKey(
+								node.serviceType,
+								node.serviceId,
 							);
+							const service = servicesByKey.get(serviceKey);
 							if (!service) return null;
 
-							const visible = visibleServiceKeys.has(
-								getWorkspaceServiceKey(service.type, service.id),
-							);
+							const visible = visibleServiceKeys.has(serviceKey);
 							const isConnectSource =
 								connectSource?.serviceId === service.id &&
 								connectSource.serviceType === service.type;
+							const isBulkSelected = selectedBulkKeySet.has(serviceKey);
 
 							return (
 								<button
-									key={getWorkspaceServiceKey(node.serviceType, node.serviceId)}
+									key={serviceKey}
 									type="button"
 									onPointerDown={(event) => onNodePointerDown(event, node)}
 									onPointerMove={onNodePointerMove}
 									onPointerUp={onNodePointerUp}
 									onClick={() => selectOrConnectService(service)}
 									className={cn(
-										"absolute cursor-grab touch-none rounded-lg text-left outline-none transition",
-										"focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing",
+										"absolute touch-none rounded-lg text-left outline-none transition",
+										isSelectionMode
+											? "cursor-pointer"
+											: "cursor-grab active:cursor-grabbing",
+										"focus-visible:ring-2 focus-visible:ring-ring",
 										!visible && "pointer-events-none opacity-20",
 									)}
 									style={{
@@ -1320,6 +1493,7 @@ export const EnvironmentCanvas = ({
 										className={cn(
 											"h-full bg-background/95 shadow-sm transition hover:bg-background",
 											isConnectSource && "ring-2 ring-primary",
+											isBulkSelected && "ring-2 ring-primary",
 										)}
 									>
 										<div className="flex h-full flex-col gap-4">
@@ -1340,7 +1514,14 @@ export const EnvironmentCanvas = ({
 														</p>
 													</div>
 												</div>
-												<StatusTooltip status={service.status ?? undefined} />
+												<div className="flex shrink-0 items-center gap-1.5">
+													{isSelectionMode && (
+														<Badge>
+															{isBulkSelected ? "Selected" : "Select"}
+														</Badge>
+													)}
+													<StatusTooltip status={service.status ?? undefined} />
+												</div>
 											</div>
 
 											<p className="line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
