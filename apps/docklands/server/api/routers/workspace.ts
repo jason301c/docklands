@@ -205,7 +205,20 @@ export const workspaceRouter = createTRPCRouter({
 		.input(apiRemoveWorkspaceConnection)
 		.mutation(async ({ input, ctx }) => {
 			const connection = await findWorkspaceConnectionById(input.connectionId);
-			await getAuthorizedEnvironment(ctx, connection.environmentId);
+			const environment = await getAuthorizedEnvironment(
+				ctx,
+				connection.environmentId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				connection.sourceServiceType,
+				connection.sourceServiceId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				connection.targetServiceType,
+				connection.targetServiceId,
+			);
 			return removeWorkspaceConnection(input.connectionId);
 		}),
 
