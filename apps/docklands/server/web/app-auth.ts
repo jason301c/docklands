@@ -26,7 +26,7 @@ export const requireUser = async () => {
 export const redirectAuthenticatedUser = async () => {
 	const { user } = await getAppSession();
 	if (user) {
-		redirect("/dashboard/projects");
+		redirect("/dashboard/workspace");
 	}
 };
 
@@ -41,7 +41,7 @@ export const requireAdmin = async () => {
 
 export const requireSelfHosted = () => {
 	if (IS_CLOUD) {
-		redirect("/dashboard/home");
+		redirect("/dashboard/workspace");
 	}
 };
 

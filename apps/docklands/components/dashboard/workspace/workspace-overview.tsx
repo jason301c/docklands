@@ -120,7 +120,7 @@ function StatusListCard({
 	);
 }
 
-export const ShowHome = () => {
+export const WorkspaceOverview = () => {
 	const { data: auth } = api.user.get.useQuery();
 	const { data: homeStats } = api.project.homeStats.useQuery();
 	const { data: projects } = api.project.all.useQuery();
