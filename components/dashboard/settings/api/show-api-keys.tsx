@@ -1,6 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { Clock, ExternalLinkIcon, KeyIcon, Tag, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { Clock, KeyIcon, Tag, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
@@ -33,19 +32,6 @@ export const ShowApiKeys = () => {
 							<CardDescription>
 								Generate and manage API keys to access the API/CLI
 							</CardDescription>
-						</div>
-						<div className="flex flex-row gap-2 max-sm:flex-wrap items-end">
-							<span className="text-sm font-medium text-muted-foreground">
-								Swagger API:
-							</span>
-							<Link
-								href="/swagger"
-								target="_blank"
-								className="flex flex-row gap-2 items-center"
-							>
-								<span className="text-sm font-medium">View</span>
-								<ExternalLinkIcon className="size-4" />
-							</Link>
 						</div>
 					</CardHeader>
 					<CardContent className="space-y-6">
