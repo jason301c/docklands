@@ -38,9 +38,9 @@ export const ShowServers = () => {
 					<div className="">
 						<h3 className="text-xl flex flex-row gap-2">
 							<ServerIcon className="size-6 text-muted-foreground self-center" />
-							Servers
+							Runtime Workers
 						</h3>
-						<p>Add servers to deploy your applications remotely.</p>
+						<p>Add workers to run deployments on remote machines.</p>
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
@@ -54,7 +54,7 @@ export const ShowServers = () => {
 									<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
 										<KeyIcon className="size-8" />
 										<span className="text-base text-muted-foreground">
-											No SSH Keys found. Add a SSH Key to start adding servers.{" "}
+											No SSH keys found. Add an SSH key to start adding workers.{" "}
 											<Link
 												href="/dashboard/settings/ssh-keys"
 												className="text-primary"
@@ -69,8 +69,8 @@ export const ShowServers = () => {
 											<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
 												<ServerIcon className="size-8 self-center text-muted-foreground" />
 												<span className="text-base text-muted-foreground">
-													Start adding servers to deploy your applications
-													remotely.
+													Start adding workers to deploy your applications
+													across remote machines.
 												</span>
 												{permissions?.server.create && <HandleServers />}
 											</div>
@@ -110,11 +110,11 @@ export const ShowServers = () => {
 																							className="max-w-xs"
 																							content={
 																								<p className="text-sm">
-																									This server is currently
-																									marked inactive. Update the
-																									server status or connection
-																									details before deploying
-																									services to it.
+																									This worker is currently
+																									marked inactive. Update its
+																									status or connection details
+																									before deploying services to
+																									it.
 																								</p>
 																							}
 																							render={
@@ -197,7 +197,7 @@ export const ShowServers = () => {
 																						<>
 																							<div className="space-y-1">
 																								<p className="font-semibold">
-																									Setup Server
+																									Set Up Worker
 																								</p>
 																								<p className="text-xs text-muted-foreground">
 																									Configure and initialize your
@@ -288,7 +288,7 @@ export const ShowServers = () => {
 																							<>
 																								<p>
 																									{canDelete
-																										? "Delete Server"
+																										? "Delete Worker"
 																										: "Cannot delete - has active services"}
 																								</p>
 																							</>
@@ -300,21 +300,21 @@ export const ShowServers = () => {
 																								disabled={!canDelete}
 																								title={
 																									canDelete
-																										? "Delete Server"
-																										: "Server has active services"
+																										? "Delete Worker"
+																										: "Worker has active services"
 																								}
 																								description={
 																									canDelete ? (
-																										"This will delete the server and all associated data"
+																										"This will delete the worker and all associated data"
 																									) : (
 																										<div className="flex flex-col gap-2">
 																											You can not delete this
-																											server because it has
+																											worker because it has
 																											active services.
 																											<AlertBlock type="warning">
 																												You have active services
 																												associated with this
-																												server, please delete
+																												worker, please delete
 																												them first.
 																											</AlertBlock>
 																										</div>
@@ -327,7 +327,7 @@ export const ShowServers = () => {
 																										.then(() => {
 																											refetch();
 																											toast.success(
-																												`Server ${server.name} deleted successfully`,
+																												`Worker ${server.name} deleted successfully`,
 																											);
 																										})
 																										.catch((err) => {

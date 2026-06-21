@@ -105,12 +105,12 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 			.then(async (_data) => {
 				await utils.server.all.invalidate();
 				refetchServer();
-				toast.success(serverId ? "Server Updated" : "Server Created");
+				toast.success(serverId ? "Worker updated" : "Worker created");
 				setIsOpen(false);
 			})
 			.catch(() => {
 				toast.error(
-					serverId ? "Error updating a server" : "Error creating a server",
+					serverId ? "Error updating a worker" : "Error creating a worker",
 				);
 			});
 	};
@@ -139,7 +139,7 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 							setIsOpen(true);
 						}}
 					>
-						Edit Server
+						Edit Worker
 					</DropdownMenu.Item>
 				)
 			) : (
@@ -147,17 +147,19 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 					render={
 						<Button className="cursor-pointer space-x-3">
 							<PlusIcon className="h-4 w-4" />
-							Create Server
+							Create Worker
 						</Button>
 					}
 				/>
 			)}
 			<Dialog className="sm:max-w-3xl ">
 				<div>
-					<Dialog.Title>{serverId ? "Edit" : "Create"} Server</Dialog.Title>
+					<Dialog.Title>
+						{serverId ? "Edit" : "Create"} Runtime Worker
+					</Dialog.Title>
 					<Dialog.Description>
-						{serverId ? "Edit" : "Create"} a server to deploy your applications
-						remotely.
+						{serverId ? "Edit" : "Create"} a worker to run deployments on a
+						remote machine.
 					</Dialog.Description>
 				</div>
 				<div>
@@ -167,7 +169,7 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 					</p>
 					<AlertBlock className="mt-4 px-4">
 						Docklands needs passwordless sudo for non-root SSH users when it
-						installs or updates server dependencies.
+						installs or updates worker dependencies.
 					</AlertBlock>
 				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
@@ -185,7 +187,7 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 									<FormItem>
 										<FormLabel>Name</FormLabel>
 										<FormControl>
-											<Input placeholder="Hostinger Server" {...field} />
+											<Input placeholder="Melbourne Worker" {...field} />
 										</FormControl>
 
 										<FormMessage />
@@ -201,7 +203,7 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 									<FormLabel>Description</FormLabel>
 									<FormControl>
 										<Textarea
-											placeholder="This server is for databases..."
+											placeholder="This worker is for databases..."
 											className="resize-none"
 											{...field}
 										/>
@@ -218,39 +220,36 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 								const serverTypeValue = form.watch("serverType");
 								return (
 									<FormItem>
-										<FormLabel>Server Type</FormLabel>
+										<FormLabel>Worker Role</FormLabel>
 										<Select
 											aria-label="Select option"
 											onValueChange={field.onChange}
 											defaultValue={field.value}
 										>
-											<></>
-											<>
-												<Select.Group>
-													<Select.Option value="deploy">
-														Deploy Server
-													</Select.Option>
-													<Select.Option value="build">
-														Build Server
-													</Select.Option>
-													<Select.GroupLabel>Server Type</Select.GroupLabel>
-												</Select.Group>
-											</>
+											<Select.Group>
+												<Select.Option value="deploy">
+													Deploy Worker
+												</Select.Option>
+												<Select.Option value="build">
+													Build Worker
+												</Select.Option>
+												<Select.GroupLabel>Worker Role</Select.GroupLabel>
+											</Select.Group>
 										</Select>
 										<FormMessage />
 										{serverTypeValue === "deploy" && (
 											<AlertBlock type="info" className="mt-2">
-												Deploy servers are used to run your applications,
+												Deploy workers are used to run your applications,
 												databases, and services. They handle the deployment and
 												execution of your projects.
 											</AlertBlock>
 										)}
 										{serverTypeValue === "build" && (
 											<AlertBlock type="info" className="mt-2">
-												Build servers are dedicated to building your
+												Build workers are dedicated to building your
 												applications. They handle the compilation and build
 												process, offloading this work from your deployment
-												servers. Build servers won't appear in deployment
+												workers. Build workers won't appear in deployment
 												options.
 											</AlertBlock>
 										)}

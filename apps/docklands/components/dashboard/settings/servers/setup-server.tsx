@@ -1,17 +1,17 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 import copy from "copy-to-clipboard";
 import { CopyIcon, ExternalLinkIcon, ServerIcon, Settings } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { Tabs } from "@cloudflare/kumo/components/tabs";
+import { toast } from "@/components/shared/toast";
 import { ShowDeployment } from "../../application/deployments/show-deployment";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
 import { EditScript } from "./edit-script";
@@ -96,18 +96,18 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 				<div>
 					<div className="flex flex-col gap-1.5">
 						<Dialog.Title className="flex items-center gap-2">
-							<ServerIcon className="size-5" /> Setup Server
+							<ServerIcon className="size-5" /> Set Up Worker
 						</Dialog.Title>
 						<p className="text-muted-foreground text-sm">
-							To setup a server, please click on the button below.
+							To set up this worker, click the button below.
 						</p>
 					</div>
 				</div>
 				{!server?.sshKeyId ? (
 					<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 						<AlertBlock type="warning">
-							Please add a SSH Key to your server before setting up the server.
-							you can assign a SSH Key to your server in Edit Server.
+							Please add an SSH key to this worker before setup. You can assign
+							an SSH key to this worker from Edit Worker.
 						</AlertBlock>
 					</div>
 				) : (
@@ -120,7 +120,9 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 
 						<Tabs
 							value={setupTab}
-							onValueChange={(value) => value !== null && setSetupTab(value as never)}
+							onValueChange={(value) =>
+								value !== null && setSetupTab(value as never)
+							}
 							className="w-full overflow-auto"
 							tabs={[
 								{ value: "ssh-keys", label: "SSH Keys" },
@@ -266,9 +268,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 											<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 												<div className="flex flex-row gap-2 justify-between w-full max-sm:flex-col">
 													<div className="flex flex-col gap-1">
-														<h3 className="text-xl">
-															Setup Server
-														</h3>
+														<h3 className="text-xl">Setup Server</h3>
 														<p>
 															To setup a server, please click on the button
 															below.
@@ -316,24 +316,24 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 								</div>
 							</div>
 						)}
-							{!isBuildServer && (
-								<>
-									{setupTab === "audit" && (
-										<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+						{!isBuildServer && (
+							<>
+								{setupTab === "audit" && (
+									<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 										<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 											<SecurityAudit serverId={serverId} />
 										</div>
-										</div>
-									)}
-									{setupTab === "gpu-setup" && (
-										<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+									</div>
+								)}
+								{setupTab === "gpu-setup" && (
+									<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 										<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 											<GPUSupport serverId={serverId} />
 										</div>
-										</div>
-									)}
-								</>
-							)}
+									</div>
+								)}
+							</>
+						)}
 					</div>
 				)}
 			</Dialog>

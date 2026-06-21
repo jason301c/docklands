@@ -951,14 +951,14 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 							render={() => (
 								<FormItem className="md:col-span-2">
 									<div className="mb-4">
-										<FormLabel className="text-base">Servers</FormLabel>
+										<FormLabel className="text-base">Runtime Workers</FormLabel>
 										<FormDescription>
-											Select the Servers that the user can access
+											Select the runtime workers that the user can access
 										</FormDescription>
 									</div>
 									{servers?.length === 0 && (
 										<p className="text-sm text-muted-foreground">
-											No servers found
+											No runtime workers found
 										</p>
 									)}
 									<div className="grid md:grid-cols-1 gap-2">
