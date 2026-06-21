@@ -2299,7 +2299,7 @@ export const EnvironmentCanvas = ({
 								<DropdownMenu.Separator />
 								<Link href="/dashboard/settings/server">
 									<DropdownMenu.Item className="cursor-pointer">
-										Web server
+										Ingress
 									</DropdownMenu.Item>
 								</Link>
 								<Link href="/dashboard/settings/servers">

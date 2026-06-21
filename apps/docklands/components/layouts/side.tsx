@@ -261,14 +261,14 @@ const MENU: Menu = {
 				},
 				{
 					isSingle: true,
-					title: "Docker",
+					title: "Containers",
 					url: "/dashboard/docker",
 					icon: BlocksIcon,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
 				},
 				{
 					isSingle: true,
-					title: "Swarm",
+					title: "Orchestration",
 					url: "/dashboard/swarm",
 					icon: PieChart,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
@@ -283,14 +283,14 @@ const MENU: Menu = {
 				},
 				{
 					isSingle: true,
-					title: "Traefik Files",
+					title: "Ingress Files",
 					url: "/dashboard/traefik",
 					icon: GalleryVerticalEnd,
 					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
 				},
 				{
 					isSingle: true,
-					title: "Monitoring",
+					title: "Runtime Metrics",
 					url: "/dashboard/monitoring",
 					icon: BarChartHorizontalBigIcon,
 					isEnabled: ({ isCloud, permissions }) =>

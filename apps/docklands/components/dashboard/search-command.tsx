@@ -173,26 +173,26 @@ export const SearchCommand = () => {
 				? [
 						{
 							id: "app-monitoring",
-							title: "Monitoring",
-							searchText: "monitoring",
+							title: "Runtime metrics",
+							searchText: "monitoring metrics runtime",
 							onSelect: () => navigate("/dashboard/monitoring"),
 						},
 						{
 							id: "app-traefik",
-							title: "Traefik",
-							searchText: "traefik",
+							title: "Ingress files",
+							searchText: "ingress files traefik proxy",
 							onSelect: () => navigate("/dashboard/traefik"),
 						},
 						{
 							id: "app-docker",
-							title: "Docker",
-							searchText: "docker",
+							title: "Runtime containers",
+							searchText: "runtime containers docker",
 							onSelect: () => navigate("/dashboard/docker"),
 						},
 						{
 							id: "app-requests",
-							title: "Requests",
-							searchText: "requests",
+							title: "Runtime requests",
+							searchText: "requests runtime",
 							onSelect: () => navigate("/dashboard/requests"),
 						},
 					]

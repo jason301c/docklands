@@ -1,6 +1,10 @@
 "use client";
 
-
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Table } from "@cloudflare/kumo/components/table";
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -21,16 +25,9 @@ import {
 	ExternalLink,
 	Loader2,
 	Rocket,
-	Server,
 } from "lucide-react";
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button, LinkButton } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Table } from "@cloudflare/kumo/components/table";
 import type { AppRouter } from "@/server/api/root";
 
 type DeploymentRow =
@@ -115,21 +112,12 @@ export function ShowDeploymentsTable() {
 			const q = globalFilter.toLowerCase();
 			list = list.filter((d) => {
 				const info = getServiceInfo(d);
-				const serverName =
-					d.server?.name ??
-					d.application?.server?.name ??
-					d.compose?.server?.name ??
-					"";
-				const buildServerName =
-					d.buildServer?.name ?? d.application?.buildServer?.name ?? "";
 				if (!info) return false;
 				return (
 					info.name.toLowerCase().includes(q) ||
 					info.projectName.toLowerCase().includes(q) ||
 					info.environmentName.toLowerCase().includes(q) ||
-					(d.title?.toLowerCase().includes(q) ?? false) ||
-					serverName.toLowerCase().includes(q) ||
-					buildServerName.toLowerCase().includes(q)
+					(d.title?.toLowerCase().includes(q) ?? false)
 				);
 			});
 		}
@@ -235,87 +223,6 @@ export function ShowDeploymentsTable() {
 						<span className="text-muted-foreground">
 							{info?.environmentName ?? "—"}
 						</span>
-					);
-				},
-			},
-			{
-				id: "serverName",
-				accessorFn: (row: DeploymentRow) =>
-					row.server?.name ??
-					row.application?.server?.name ??
-					row.compose?.server?.name ??
-					"",
-				header: ({
-					column,
-				}: {
-					column: {
-						getIsSorted: () => false | "asc" | "desc";
-						toggleSorting: (asc: boolean) => void;
-					};
-				}) => (
-					<Button
-						variant="ghost"
-						className="-ml-3 h-8"
-						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-					>
-						Server
-						<ArrowUpDown className="ml-2 size-4" />
-					</Button>
-				),
-				cell: ({ row }: { row: { original: DeploymentRow } }) => {
-					const d = row.original;
-					const serverName =
-						d.server?.name ??
-						d.application?.server?.name ??
-						d.compose?.server?.name ??
-						null;
-					const serverType =
-						d.server?.serverType ??
-						d.application?.server?.serverType ??
-						d.compose?.server?.serverType ??
-						null;
-					const buildServerName =
-						d.buildServer?.name ?? d.application?.buildServer?.name ?? null;
-					const buildServerType =
-						d.buildServer?.serverType ??
-						d.application?.buildServer?.serverType ??
-						null;
-					const showBuild =
-						buildServerName != null && buildServerName !== serverName;
-					if (!serverName && !showBuild) {
-						return <span className="text-muted-foreground">—</span>;
-					}
-					return (
-						<div className="flex flex-col gap-0.5 text-sm">
-							{serverName && (
-								<div className="flex items-center gap-1.5 flex-wrap">
-									<Server className="size-3.5 text-muted-foreground shrink-0" />
-									<span className="truncate">{serverName}</span>
-									{serverType && (
-										<Badge
-											variant="outline"
-											className="text-[10px] font-normal"
-										>
-											{serverType}
-										</Badge>
-									)}
-								</div>
-							)}
-							{showBuild && buildServerName && (
-								<div className="flex items-center gap-1.5 text-muted-foreground flex-wrap">
-									<span className="text-[10px]">Build:</span>
-									<span className="truncate text-xs">{buildServerName}</span>
-									{buildServerType && (
-										<Badge
-											variant="outline"
-											className="text-[10px] font-normal"
-										>
-											{buildServerType}
-										</Badge>
-									)}
-								</div>
-							)}
-						</div>
 					);
 				},
 			},
@@ -446,15 +353,19 @@ export function ShowDeploymentsTable() {
 		<div className="space-y-2">
 			<div className="flex flex-wrap items-center gap-2">
 				<Input
-					placeholder="Search by name, project, environment, server..."
+					placeholder="Search by name, project, environment, or title..."
 					value={globalFilter}
 					onChange={(e) => setGlobalFilter(e.target.value)}
 					className="max-w-xs"
 				/>
-				<Select aria-label="Select option" value={statusFilter} onValueChange={(value) => value !== null && setStatusFilter(value as never)}>
-					<>
-						
-					</>
+				<Select
+					aria-label="Select option"
+					value={statusFilter}
+					onValueChange={(value) =>
+						value !== null && setStatusFilter(value as never)
+					}
+				>
+					<></>
 					<>
 						<Select.Option value="all">All statuses</Select.Option>
 						<Select.Option value="running">Running</Select.Option>
@@ -463,10 +374,14 @@ export function ShowDeploymentsTable() {
 						<Select.Option value="cancelled">Cancelled</Select.Option>
 					</>
 				</Select>
-				<Select aria-label="Select option" value={typeFilter} onValueChange={(value) => value !== null && setTypeFilter(value as never)}>
-					<>
-						
-					</>
+				<Select
+					aria-label="Select option"
+					value={typeFilter}
+					onValueChange={(value) =>
+						value !== null && setTypeFilter(value as never)
+					}
+				>
+					<></>
 					<>
 						<Select.Option value="all">All types</Select.Option>
 						<Select.Option value="application">Application</Select.Option>
@@ -539,7 +454,8 @@ export function ShowDeploymentsTable() {
 								<span className="text-sm text-muted-foreground whitespace-nowrap">
 									Rows per page
 								</span>
-								<Select aria-label="Select option"
+								<Select
+									aria-label="Select option"
 									value={String(pagination.pageSize)}
 									onValueChange={(value) => {
 										if (value === null) return;
@@ -550,9 +466,7 @@ export function ShowDeploymentsTable() {
 										}));
 									}}
 								>
-									<>
-										
-									</>
+									<></>
 									<>
 										{[10, 25, 50, 100].map((size) => (
 											<Select.Option key={size} value={String(size)}>
