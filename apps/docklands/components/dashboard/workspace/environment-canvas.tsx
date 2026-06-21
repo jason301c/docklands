@@ -565,13 +565,14 @@ export const EnvironmentCanvas = ({
 			}),
 			{
 				loading: "Applying variables...",
-				success: (result) =>
-					`${result.entries.length} variable${result.entries.length === 1 ? "" : "s"} applied`,
+				success: async (result) => {
+					await utils.workspace.serviceEnv.invalidate(serviceEnvQueryInput);
+					return `${result.entries.length} variable${result.entries.length === 1 ? "" : "s"} applied`;
+				},
 				error: (error) =>
 					`Could not apply variables: ${error instanceof Error ? error.message : "Unknown error"}`,
 			},
 		);
-		void utils.workspace.serviceEnv.invalidate(serviceEnvQueryInput);
 	};
 
 	const saveServiceEnv = async () => {
