@@ -55,7 +55,9 @@ Docklands started as a fork of the upstream project. The original project, contr
 
 - [Original upstream](https://github.com/dokploy/dokploy)
 - [LICENSE.MD](LICENSE.MD)
-- [LICENSE_PROPRIETARY.md](LICENSE_PROPRIETARY.md)
+- [NOTICE](NOTICE)
+
+Docklands is intended to carry only Apache-2.0-compatible code. Upstream source-available/proprietary components have been removed rather than rebranded.
 
 ## Contributing
 

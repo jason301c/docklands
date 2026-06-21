@@ -19,7 +19,7 @@ const mockDb = vi.hoisted(() => ({
 vi.mock("@dokploy/server/db", () => ({ db: mockDb }));
 
 const mockHasValidLicense = vi.hoisted(() => vi.fn());
-vi.mock("@dokploy/server/services/proprietary/license-key", () => ({
+vi.mock("@dokploy/server/services/enterprise/license-key", () => ({
 	hasValidLicense: mockHasValidLicense,
 }));
 

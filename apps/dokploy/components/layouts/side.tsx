@@ -11,7 +11,6 @@ import {
 	ChevronRight,
 	ChevronsUpDown,
 	CircleHelp,
-	ClipboardList,
 	Clock,
 	CreditCard,
 	Database,
@@ -20,13 +19,10 @@ import {
 	GalleryVerticalEnd,
 	GitBranch,
 	House,
-	Key,
 	KeyRound,
 	Loader2,
-	LogIn,
 	type LucideIcon,
 	Package,
-	Palette,
 	PieChart,
 	Rocket,
 	Server,
@@ -314,15 +310,8 @@ const MENU: Menu = {
 			// Only enabled for users with member.read permission
 			isEnabled: ({ permissions }) => !!permissions?.member.read,
 		},
-		{
-			isSingle: true,
-			title: "Audit Logs",
-			icon: ClipboardList,
-			url: "/dashboard/settings/audit-logs",
-			isEnabled: ({ permissions }) => !!permissions?.auditLog.read,
-		},
-		{
-			isSingle: true,
+			{
+				isSingle: true,
 			title: "SSH Keys",
 			icon: KeyRound,
 			url: "/dashboard/settings/ssh-keys",
@@ -397,31 +386,7 @@ const MENU: Menu = {
 			// Only enabled for owners in cloud environments
 			isEnabled: ({ auth, isCloud }) => !!(auth?.role === "owner" && isCloud),
 		},
-		{
-			isSingle: true,
-			title: "License",
-			url: "/dashboard/settings/license",
-			icon: Key,
-			// Only enabled for owners
-			isEnabled: ({ auth }) => !!(auth?.role === "owner"),
-		},
-		{
-			isSingle: true,
-			title: "SSO",
-			url: "/dashboard/settings/sso",
-			icon: LogIn,
-			// Enabled for admins in both cloud and self-hosted (enterprise)
-			isEnabled: ({ permissions }) => !!permissions?.organization.update,
-		},
-		{
-			isSingle: true,
-			title: "Whitelabeling",
-			url: "/dashboard/settings/whitelabeling",
-			icon: Palette,
-			// Only enabled for owners in non-cloud environments (enterprise)
-			isEnabled: ({ auth, isCloud }) => !!(auth?.role === "owner" && !isCloud),
-		},
-	],
+		],
 
 	help: [
 		{

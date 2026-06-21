@@ -1,0 +1,13 @@
+Docklands
+
+Docklands is a community fork of the upstream project at:
+
+    https://github.com/dokploy/dokploy
+
+The original upstream project and its contributors retain copyright in their
+contributions. Docklands contributors retain copyright in their modifications.
+
+This repository is intended to contain Apache-2.0-compatible code only. Upstream
+source-available/proprietary components and commercial license-server plumbing
+have been removed. Minimal disabled compatibility shims may remain where needed
+to keep open application flows compiling while replacement features are designed.

@@ -743,12 +743,7 @@ export const settingsRouter = createTRPCRouter({
 					"server",
 					"volumeBackups",
 					"environment",
-					"auditLog",
-					"customRole",
-					"whitelabeling",
-					"sso",
-					"licenseKey",
-					"organization",
+						"organization",
 					"previewDeployment",
 				],
 			});

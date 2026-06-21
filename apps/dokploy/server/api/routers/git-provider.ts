@@ -5,7 +5,7 @@ import {
 	updateGitProvider,
 } from "@dokploy/server";
 import { db } from "@dokploy/server/db";
-import { hasValidLicense } from "@dokploy/server/services/proprietary/license-key";
+import { hasValidLicense } from "@dokploy/server/services/enterprise/license-key";
 import { TRPCError } from "@trpc/server";
 import { desc, eq, inArray } from "drizzle-orm";
 import {

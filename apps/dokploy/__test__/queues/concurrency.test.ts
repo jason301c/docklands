@@ -23,7 +23,7 @@ vi.mock("@dokploy/server/db/schema", () => ({
 	server: {},
 }));
 
-vi.mock("@dokploy/server/services/proprietary/license-key", () => ({
+vi.mock("@dokploy/server/services/enterprise/license-key", () => ({
 	hasValidLicense: (...args: unknown[]) => hasValidLicense(...args),
 }));
 

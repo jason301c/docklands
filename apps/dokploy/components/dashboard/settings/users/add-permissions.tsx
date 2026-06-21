@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { EnterpriseFeatureLocked } from "@/components/proprietary/enterprise-feature-gate";
+import { EnterpriseFeatureLocked } from "@/components/enterprise/enterprise-feature-gate";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -957,11 +957,11 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 							/>
 						) : (
 							<div className="md:col-span-2">
-								<EnterpriseFeatureLocked
-									compact
-									title="Git Provider Assignment"
-									description="Assign specific Git Providers to users with an Enterprise license."
-								/>
+									<EnterpriseFeatureLocked
+										compact
+										title="Git Provider Assignment"
+										description="Assigning specific Git providers is not included in Docklands."
+									/>
 							</div>
 						)}
 						{haveValidLicense ? (
@@ -1030,11 +1030,11 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 							/>
 						) : (
 							<div className="md:col-span-2">
-								<EnterpriseFeatureLocked
-									compact
-									title="Server Assignment"
-									description="Assign specific Servers to users with an Enterprise license."
-								/>
+									<EnterpriseFeatureLocked
+										compact
+										title="Server Assignment"
+										description="Assigning specific servers is not included in Docklands."
+									/>
 							</div>
 						)}
 						<DialogFooter className="flex w-full flex-row justify-end md:col-span-2">
