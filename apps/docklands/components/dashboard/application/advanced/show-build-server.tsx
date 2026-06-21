@@ -44,7 +44,7 @@ const schema = z
 		},
 		{
 			message:
-				"Both Build Server and Build Registry must be selected together, or both set to None",
+				"Both Build Worker and Build Registry must be selected together, or both set to None",
 			path: ["buildServerId"], // Show error on buildServerId field
 		},
 	);

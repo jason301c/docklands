@@ -398,7 +398,7 @@ export const HandleRegistry = ({ registryId }: Props) => {
 													{deployServers && deployServers.length > 0 && (
 														<Select.Group>
 															<Select.GroupLabel>
-																Deploy Servers
+																Deploy Workers
 															</Select.GroupLabel>
 															{deployServers.map((server) => (
 																<Select.Option
@@ -413,7 +413,7 @@ export const HandleRegistry = ({ registryId }: Props) => {
 													{buildServers && buildServers.length > 0 && (
 														<Select.Group>
 															<Select.GroupLabel>
-																Build Servers
+																Build Workers
 															</Select.GroupLabel>
 															{buildServers.map((server) => (
 																<Select.Option
