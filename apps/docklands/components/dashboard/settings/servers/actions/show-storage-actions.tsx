@@ -1,7 +1,7 @@
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
 import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { api } from "@/client/api/trpc";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	serverId?: string;
@@ -37,30 +37,31 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenu.Trigger disabled={
+			<DropdownMenu.Trigger
+				disabled={
 					cleanAllIsLoading ||
 					cleanDockerBuilderIsPending ||
 					cleanUnusedImagesIsPending ||
 					cleanUnusedVolumesIsPending ||
 					cleanStoppedContainersIsPending ||
 					cleanPatchReposIsLoading
-				} render={(
-
-				<Button
-					loading={
-						cleanAllIsLoading ||
-						cleanDockerBuilderIsPending ||
-						cleanUnusedImagesIsPending ||
-						cleanUnusedVolumesIsPending ||
-						cleanStoppedContainersIsPending ||
-						cleanPatchReposIsLoading
-					}
-					variant="outline"
-				>
-					Space
-				</Button>
-			
-)} />
+				}
+				render={
+					<Button
+						loading={
+							cleanAllIsLoading ||
+							cleanDockerBuilderIsPending ||
+							cleanUnusedImagesIsPending ||
+							cleanUnusedVolumesIsPending ||
+							cleanStoppedContainersIsPending ||
+							cleanPatchReposIsLoading
+						}
+						variant="outline"
+					>
+						Space
+					</Button>
+				}
+			/>
 			<DropdownMenu.Content className="w-64" align="start">
 				<DropdownMenu.Label>Actions</DropdownMenu.Label>
 				<DropdownMenu.Separator />
@@ -139,14 +140,14 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 								serverId: serverId,
 							})
 								.then(async () => {
-									toast.success("Cleaned Docker Builder");
+									toast.success("Cleaned build cache");
 								})
 								.catch(() => {
-									toast.error("Error cleaning Docker Builder");
+									toast.error("Error cleaning build cache");
 								});
 						}}
 					>
-						<span>Clean Docker Builder & System</span>
+						<span>Clean Build Cache & Runtime</span>
 					</DropdownMenu.Item>
 					{!serverId && (
 						<DropdownMenu.Item

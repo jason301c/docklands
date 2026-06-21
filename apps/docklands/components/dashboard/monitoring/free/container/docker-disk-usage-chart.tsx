@@ -1,8 +1,8 @@
+import { Button } from "@cloudflare/kumo/components/button";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useMemo } from "react";
 import { Cell, Label, Pie, PieChart } from "recharts";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
 import {
 	type ChartConfig,
 	ChartContainer,
@@ -87,7 +87,7 @@ export const DockerDiskUsageChart = () => {
 	if (chartData.length === 0) {
 		return (
 			<p className="text-xs text-muted-foreground mt-4">
-				No Docker disk usage data available.
+				No container disk usage data available.
 			</p>
 		);
 	}
@@ -98,7 +98,8 @@ export const DockerDiskUsageChart = () => {
 				<span className="text-sm text-muted-foreground">
 					Total: {formatSize(totalBytes)}
 				</span>
-				<Button aria-label="Action"
+				<Button
+					aria-label="Action"
 					variant="ghost"
 					shape="square"
 					className="h-7 w-7"
@@ -166,7 +167,7 @@ export const DockerDiskUsageChart = () => {
 												y={(viewBox.cy || 0) + 14}
 												className="fill-muted-foreground text-xs"
 											>
-												Docker Usage
+												Container Usage
 											</tspan>
 										</text>
 									);

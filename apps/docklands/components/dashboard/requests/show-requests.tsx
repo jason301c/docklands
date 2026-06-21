@@ -89,12 +89,12 @@ export const ShowRequests = () => {
 								<ArrowDownUp className="size-6 text-muted-foreground self-center" />
 								Requests
 							</h3>
-							<p>See all the incoming requests that pass trough Traefik</p>
+							<p>See incoming requests handled by the ingress runtime.</p>
 
 							{shouldShowWarning && (
 								<AlertBlock type="warning">
-									When you activate, you need to reload traefik to apply the
-									changes, you can reload traefik in{" "}
+									When you activate request logs, reload the ingress runtime to
+									apply the changes. You can reload it in{" "}
 									<Link
 										href="/dashboard/settings/ingress"
 										className="text-primary"
@@ -118,7 +118,7 @@ export const ShowRequests = () => {
 														<p className="max-w-80">
 															At the scheduled time, the cleanup job will keep
 															only the last 1000 entries in the access log file
-															and signal Traefik to reopen its log files. The
+															and signal ingress to reopen its log files. The
 															default schedule is daily at midnight (0 0 * * *).
 														</p>
 													</>
@@ -162,7 +162,7 @@ export const ShowRequests = () => {
 								</div>
 								<DialogAction
 									title={isActive ? "Deactivate Requests" : "Activate Requests"}
-									description="You will also need to restart Traefik to apply the changes"
+									description="You will also need to reload the ingress runtime to apply the changes"
 									type={isActive ? "destructive" : "secondary"}
 									onClick={async () => {
 										await toggleRequests({ enable: !isActive })
@@ -244,7 +244,7 @@ export const ShowRequests = () => {
 										<p className="text-sm max-w-md">
 											Activate requests to see incoming traffic statistics and
 											monitor your application's usage. After activation, you'll
-											need to reload Traefik for the changes to take effect.
+											need to reload ingress for the changes to take effect.
 										</p>
 									</div>
 								</div>

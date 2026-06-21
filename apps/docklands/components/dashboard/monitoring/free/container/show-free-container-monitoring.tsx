@@ -294,7 +294,7 @@ export const ContainerFreeMonitoring = ({
 				{appName === "docklands" && (
 					<LayerCard className="bg-background">
 						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<h3 className="text-sm font-medium">Docker Disk Usage</h3>
+							<h3 className="text-sm font-medium">Container Disk Usage</h3>
 						</div>
 						<div>
 							<DockerDiskUsageChart />
