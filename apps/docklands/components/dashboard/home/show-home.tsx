@@ -1,12 +1,43 @@
 import { formatDistanceToNow } from "date-fns";
-import { ArrowRight, Rocket, Server } from "lucide-react";
+import { ArrowRight, BookIcon, FolderInput, Rocket, Server } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { api } from "@/client/api/trpc";
-import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { LinkButton } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { HandleProject } from "@/components/dashboard/projects/handle-project";
 
 type DeploymentStatus = "idle" | "running" | "done" | "error";
+
+const serviceCollections = [
+	"applications",
+	"compose",
+	"libsql",
+	"mariadb",
+	"mongo",
+	"mysql",
+	"postgres",
+	"redis",
+] as const;
+
+type EnvironmentWithServices = Record<
+	(typeof serviceCollections)[number],
+	unknown[]
+>;
+
+const countEnvironmentServices = (environment: EnvironmentWithServices) =>
+	serviceCollections.reduce(
+		(total, collection) => total + environment[collection].length,
+		0,
+	);
+
+const countProjectServices = (project: {
+	environments: EnvironmentWithServices[];
+}) =>
+	project.environments.reduce(
+		(total, environment) => total + countEnvironmentServices(environment),
+		0,
+	);
 
 const statusDotClass: Record<string, string> = {
 	done: "bg-emerald-500",
@@ -96,7 +127,9 @@ function StatusListCard({
 export const ShowHome = () => {
 	const { data: auth } = api.user.get.useQuery();
 	const { data: homeStats } = api.project.homeStats.useQuery();
+	const { data: projects } = api.project.all.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
+	const canCreateProjects = !!permissions?.project.create;
 	const canReadDeployments = !!permissions?.deployment.read;
 	const { data: deployments } = api.deployment.allCentralized.useQuery(
 		undefined,
@@ -161,6 +194,28 @@ export const ShowHome = () => {
 		return { value: String(lastCount), delta };
 	}, [deployments]);
 
+	const recentProjects = useMemo(() => {
+		if (!projects) return [];
+
+		return [...projects]
+			.sort(
+				(a, b) =>
+					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+			)
+			.slice(0, 6)
+			.map((project) => {
+				const environment =
+					project.environments.find((item) => item.isDefault) ||
+					project.environments[0];
+
+				return {
+					project,
+					environment,
+					services: countProjectServices(project),
+				};
+			});
+	}, [projects]);
+
 	return (
 		<div className="w-full">
 			<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl min-h-[85vh]">
@@ -169,14 +224,17 @@ export const ShowHome = () => {
 						<h1 className="text-3xl font-semibold tracking-tight">
 							{firstName ? `Welcome back, ${firstName}` : "Welcome back"}
 						</h1>
-						<LinkButton
-							href="/dashboard/projects"
-							variant="secondary"
-							className="w-fit"
-						>
-							Go to projects
-							<ArrowRight className="size-4" />
-						</LinkButton>
+						<div className="flex flex-wrap items-center gap-2">
+							<LinkButton
+								href="/dashboard/projects"
+								variant="secondary"
+								className="w-fit"
+							>
+								Go to projects
+								<ArrowRight className="size-4" />
+							</LinkButton>
+							{canCreateProjects && <HandleProject />}
+						</div>
 					</div>
 
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -217,74 +275,131 @@ export const ShowHome = () => {
 						/>
 					</div>
 
-					<div className="rounded-xl border bg-background">
-						<div className="flex items-center justify-between px-5 py-4 border-b">
-							<div className="flex items-center gap-2">
-								<Rocket className="size-4 text-muted-foreground" />
-								<h2 className="text-sm font-semibold">Recent deployments</h2>
+					<div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
+						<div className="rounded-xl border bg-background">
+							<div className="flex items-center justify-between px-5 py-4 border-b">
+								<div className="flex items-center gap-2">
+									<Rocket className="size-4 text-muted-foreground" />
+									<h2 className="text-sm font-semibold">Recent deployments</h2>
+								</div>
+								{canReadDeployments && (
+									<Link
+										href="/dashboard/deployments"
+										className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+									>
+										view all →
+									</Link>
+								)}
 							</div>
-							{canReadDeployments && (
+							{!canReadDeployments ? (
+								<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+									<Rocket className="size-8 opacity-40" />
+									<span>You do not have permission to view deployments.</span>
+								</div>
+							) : recentDeployments.length === 0 ? (
+								<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+									<Rocket className="size-8 opacity-40" />
+									<span>No deployments yet.</span>
+								</div>
+							) : (
+								<ul className="divide-y">
+									{recentDeployments.map((d) => {
+										const info = getServiceInfo(d);
+										if (!info) return null;
+										const status = (d.status ?? "idle") as DeploymentStatus;
+										return (
+											<li key={d.deploymentId}>
+												<Link
+													href={info.href}
+													className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
+												>
+													<span
+														className={`size-2 rounded-full shrink-0 ${statusDotClass[status] ?? statusDotClass.idle}`}
+														aria-hidden
+													/>
+													<div className="flex flex-col min-w-0 flex-1">
+														<span className="text-sm truncate">
+															{info.name}
+														</span>
+														<span className="text-xs text-muted-foreground truncate">
+															{info.projectName} · {info.environment}
+														</span>
+													</div>
+													<span className="text-xs text-muted-foreground w-36 hidden lg:flex items-center justify-end gap-1.5 truncate">
+														<Server className="size-3 shrink-0" />
+														<span className="truncate">
+															{info.serverName}
+														</span>
+													</span>
+													<span className="text-xs text-muted-foreground w-20 text-right hidden sm:inline">
+														{status}
+													</span>
+													<span className="text-xs text-muted-foreground w-24 text-right hidden md:inline">
+														{formatDistanceToNow(new Date(d.createdAt), {
+															addSuffix: true,
+														})}
+													</span>
+													<span className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+														logs →
+													</span>
+												</Link>
+											</li>
+										);
+									})}
+								</ul>
+							)}
+						</div>
+
+						<div className="rounded-xl border bg-background">
+							<div className="flex items-center justify-between px-5 py-4 border-b">
+								<div className="flex items-center gap-2">
+									<FolderInput className="size-4 text-muted-foreground" />
+									<h2 className="text-sm font-semibold">Workspaces</h2>
+								</div>
 								<Link
-									href="/dashboard/deployments"
+									href="/dashboard/projects"
 									className="text-xs text-muted-foreground hover:text-foreground transition-colors"
 								>
 									view all →
 								</Link>
-							)}
-						</div>
-						{!canReadDeployments ? (
-							<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
-								<Rocket className="size-8 opacity-40" />
-								<span>You do not have permission to view deployments.</span>
 							</div>
-						) : recentDeployments.length === 0 ? (
-							<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
-								<Rocket className="size-8 opacity-40" />
-								<span>No deployments yet.</span>
-							</div>
-						) : (
-							<ul className="divide-y">
-								{recentDeployments.map((d) => {
-									const info = getServiceInfo(d);
-									if (!info) return null;
-									const status = (d.status ?? "idle") as DeploymentStatus;
-									return (
-										<li key={d.deploymentId}>
+
+							{recentProjects.length === 0 ? (
+								<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+									<FolderInput className="size-8 opacity-40" />
+									<span>No projects yet.</span>
+								</div>
+							) : (
+								<ul className="divide-y">
+									{recentProjects.map(({ project, environment, services }) => (
+										<li key={project.projectId}>
 											<Link
-												href={info.href}
+												href={
+													environment
+														? `/dashboard/project/${project.projectId}/environment/${environment.environmentId}`
+														: "/dashboard/projects"
+												}
 												className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
 											>
-												<span
-													className={`size-2 rounded-full shrink-0 ${statusDotClass[status] ?? statusDotClass.idle}`}
-													aria-hidden
-												/>
+												<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-muted/30">
+													<BookIcon className="size-4 text-muted-foreground" />
+												</span>
 												<div className="flex flex-col min-w-0 flex-1">
-													<span className="text-sm truncate">{info.name}</span>
+													<span className="text-sm truncate">
+														{project.name}
+													</span>
 													<span className="text-xs text-muted-foreground truncate">
-														{info.projectName} · {info.environment}
+														{environment?.name ?? "No environment"} · {services}{" "}
+														{services === 1 ? "service" : "services"}
 													</span>
 												</div>
-												<span className="text-xs text-muted-foreground w-36 hidden lg:flex items-center justify-end gap-1.5 truncate">
-													<Server className="size-3 shrink-0" />
-													<span className="truncate">{info.serverName}</span>
-												</span>
-												<span className="text-xs text-muted-foreground w-20 text-right hidden sm:inline">
-													{status}
-												</span>
-												<span className="text-xs text-muted-foreground w-24 text-right hidden md:inline">
-													{formatDistanceToNow(new Date(d.createdAt), {
-														addSuffix: true,
-													})}
-												</span>
-												<span className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-													logs →
-												</span>
+												<ArrowRight className="size-4 shrink-0 text-muted-foreground" />
 											</Link>
 										</li>
-									);
-								})}
-							</ul>
-						)}
+									))}
+								</ul>
+							)}
+						</div>
 					</div>
 				</div>
 			</LayerCard>
