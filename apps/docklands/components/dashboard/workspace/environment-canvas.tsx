@@ -32,8 +32,10 @@ import {
 	X,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
 	type PointerEvent,
+	type ReactNode,
 	useCallback,
 	useEffect,
 	useMemo,
@@ -87,6 +89,18 @@ type DragState = {
 	originX: number;
 	originY: number;
 	moved: boolean;
+};
+
+type CommandGroup = "Services" | "Actions" | "System";
+
+type CommandItem = {
+	id: string;
+	group: CommandGroup;
+	label: string;
+	detail: string;
+	search: string;
+	icon: ReactNode;
+	run: () => void;
 };
 
 const serviceTypeLabels: Record<WorkspaceServiceType, string> = {
@@ -179,6 +193,13 @@ const getActionInput = (service: WorkspaceService) => {
 	}
 };
 
+const getServiceSettingsHref = (
+	projectId: string,
+	environmentId: string,
+	service: WorkspaceService,
+) =>
+	`/dashboard/project/${projectId}/environment/${environmentId}/services/${service.type}/${service.id}`;
+
 export const EnvironmentCanvas = ({
 	projectId,
 	environmentId,
@@ -188,6 +209,7 @@ export const EnvironmentCanvas = ({
 	environmentId: string;
 	onOpenListView?: () => void;
 }) => {
+	const router = useRouter();
 	const utils = api.useUtils();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const workspaceQuery = api.workspace.byEnvironment.useQuery({
@@ -600,6 +622,175 @@ export const EnvironmentCanvas = ({
 			},
 		);
 	};
+
+	const normalizedCommandQuery = searchQuery.trim().toLowerCase();
+	const commandItems: CommandItem[] = [
+		...services.flatMap((service) => {
+			const baseSearch = [
+				service.name,
+				service.type,
+				service.description,
+				serviceTypeLabels[service.type],
+				service.serverName,
+			]
+				.filter(Boolean)
+				.join(" ")
+				.toLowerCase();
+
+			return [
+				{
+					id: `open:${service.type}:${service.id}`,
+					group: "Services" as const,
+					label: service.name,
+					detail: `${serviceTypeLabels[service.type]} · open panel`,
+					search: `${baseSearch} open panel overview`,
+					icon: <WorkspaceServiceIcon service={service} />,
+					run: () => {
+						setSelectedService({
+							serviceId: service.id,
+							serviceType: service.type,
+						});
+						setDrawerTab("overview");
+						setCommandOpen(false);
+					},
+				},
+				{
+					id: `deploy:${service.type}:${service.id}`,
+					group: "Actions" as const,
+					label: `Deploy ${service.name}`,
+					detail: `${serviceTypeLabels[service.type]} · queue deployment`,
+					search: `${baseSearch} deploy redeploy build release`,
+					icon: <RefreshCw className="size-5 text-muted-foreground" />,
+					run: () => {
+						setCommandOpen(false);
+						void runServiceAction(service, "deploy");
+					},
+				},
+				{
+					id: `start:${service.type}:${service.id}`,
+					group: "Actions" as const,
+					label: `Start ${service.name}`,
+					detail: `${serviceTypeLabels[service.type]} · start runtime`,
+					search: `${baseSearch} start run up`,
+					icon: <Play className="size-5 text-muted-foreground" />,
+					run: () => {
+						setCommandOpen(false);
+						void runServiceAction(service, "start");
+					},
+				},
+				{
+					id: `stop:${service.type}:${service.id}`,
+					group: "Actions" as const,
+					label: `Stop ${service.name}`,
+					detail: `${serviceTypeLabels[service.type]} · stop runtime`,
+					search: `${baseSearch} stop down pause`,
+					icon: <X className="size-5 text-muted-foreground" />,
+					run: () => {
+						setCommandOpen(false);
+						void runServiceAction(service, "stop");
+					},
+				},
+				{
+					id: `variables:${service.type}:${service.id}`,
+					group: "Actions" as const,
+					label: `Variables for ${service.name}`,
+					detail: `${serviceTypeLabels[service.type]} · edit env`,
+					search: `${baseSearch} variables env secrets config`,
+					icon: <SquareTerminal className="size-5 text-muted-foreground" />,
+					run: () => {
+						setSelectedService({
+							serviceId: service.id,
+							serviceType: service.type,
+						});
+						setDrawerTab("variables");
+						setCommandOpen(false);
+					},
+				},
+				{
+					id: `settings:${service.type}:${service.id}`,
+					group: "Actions" as const,
+					label: `Settings for ${service.name}`,
+					detail: `${serviceTypeLabels[service.type]} · advanced settings`,
+					search: `${baseSearch} settings full advanced configure`,
+					icon: <Settings2 className="size-5 text-muted-foreground" />,
+					run: () => {
+						setCommandOpen(false);
+						router.push(getServiceSettingsHref(projectId, environmentId, service));
+					},
+				},
+			];
+		}),
+		...[
+			{
+				id: "system:web-server",
+				label: "Web server",
+				detail: "Domains, TLS, cleanup, and proxy",
+				path: "/dashboard/settings/server",
+				search: "web server domain tls ssl proxy traefik cleanup",
+				icon: <ServerIcon className="size-5 text-muted-foreground" />,
+			},
+			{
+				id: "system:remote-servers",
+				label: "Remote servers",
+				detail: "Connected Docker hosts",
+				path: "/dashboard/settings/servers",
+				search: "remote servers docker hosts nodes machines",
+				icon: <Network className="size-5 text-muted-foreground" />,
+			},
+			{
+				id: "system:git-providers",
+				label: "Git providers",
+				detail: "GitHub, GitLab, and Gitea",
+				path: "/dashboard/settings/git-providers",
+				search: "git providers github gitlab gitea oauth",
+				icon: <FolderInput className="size-5 text-muted-foreground" />,
+			},
+			{
+				id: "system:registry",
+				label: "Registry",
+				detail: "Container image registries",
+				path: "/dashboard/settings/registry",
+				search: "registry docker image container credentials",
+				icon: <Box className="size-5 text-muted-foreground" />,
+			},
+			{
+				id: "system:ssh-keys",
+				label: "SSH keys",
+				detail: "Deploy keys and private keys",
+				path: "/dashboard/settings/ssh-keys",
+				search: "ssh keys private deploy git",
+				icon: <SquareTerminal className="size-5 text-muted-foreground" />,
+			},
+			{
+				id: "system:notifications",
+				label: "Notifications",
+				detail: "Alerts and integrations",
+				path: "/dashboard/settings/notifications",
+				search: "notifications alerts discord slack webhook",
+				icon: <Command className="size-5 text-muted-foreground" />,
+			},
+		].map((item) => ({
+			...item,
+			group: "System" as const,
+			run: () => {
+				setCommandOpen(false);
+				router.push(item.path);
+			},
+		})),
+	];
+	const filteredCommandItems = (
+		normalizedCommandQuery
+			? commandItems.filter((item) =>
+					`${item.label} ${item.detail} ${item.search}`
+						.toLowerCase()
+						.includes(normalizedCommandQuery),
+				)
+			: commandItems.filter(
+					(item) =>
+						item.group !== "Actions" || item.id.startsWith("variables:"),
+				)
+	).slice(0, 48);
+	const commandGroups: CommandGroup[] = ["Services", "Actions", "System"];
 
 	if (workspaceQuery.isPending) {
 		return (
@@ -1211,14 +1402,11 @@ export const EnvironmentCanvas = ({
 				<Dialog className="sm:max-w-2xl">
 					<div>
 						<Dialog.Title>Command Bar</Dialog.Title>
-						<Dialog.Description>
-							Search services, jump into settings, or start a connection.
-						</Dialog.Description>
 					</div>
 					<div className="relative">
 						<FocusShortcutInput
 							autoFocus
-							placeholder="Search services..."
+							placeholder="Search services or actions..."
 							value={searchQuery}
 							onChange={(event) => setSearchQuery(event.target.value)}
 							className="pr-9"
@@ -1226,38 +1414,48 @@ export const EnvironmentCanvas = ({
 						<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 					</div>
 					<div className="max-h-[22rem] space-y-2 overflow-auto">
-						{filteredServices.length === 0 ? (
+						{filteredCommandItems.length === 0 ? (
 							<div className="rounded-lg border border-dashed p-5 text-center text-sm text-muted-foreground">
-								No services found.
+								No commands found.
 							</div>
 						) : (
-							filteredServices.map((service) => (
-								<button
-									key={getWorkspaceServiceKey(service.type, service.id)}
-									type="button"
-									className="flex w-full items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-left hover:bg-muted/40"
-									onClick={() => {
-										setSelectedService({
-											serviceId: service.id,
-											serviceType: service.type,
-										});
-										setCommandOpen(false);
-									}}
-								>
-									<span className="flex min-w-0 items-center gap-3">
-										<WorkspaceServiceIcon service={service} />
-										<span className="min-w-0">
-											<span className="block truncate text-sm font-medium">
-												{service.name}
-											</span>
-											<span className="block truncate text-xs text-muted-foreground">
-												{serviceTypeLabels[service.type]}
-											</span>
-										</span>
-									</span>
-									<ArrowRight className="size-4 text-muted-foreground" />
-								</button>
-							))
+							commandGroups.map((group) => {
+								const items = filteredCommandItems.filter(
+									(item) => item.group === group,
+								);
+								if (items.length === 0) return null;
+
+								return (
+									<div key={group} className="space-y-1">
+										<div className="px-1 text-xs font-medium uppercase text-muted-foreground">
+											{group}
+										</div>
+										{items.map((item) => (
+											<button
+												key={item.id}
+												type="button"
+												className="flex w-full items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-left hover:bg-muted/40"
+												onClick={item.run}
+											>
+												<span className="flex min-w-0 items-center gap-3">
+													<span className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/30">
+														{item.icon}
+													</span>
+													<span className="min-w-0">
+														<span className="block truncate text-sm font-medium">
+															{item.label}
+														</span>
+														<span className="block truncate text-xs text-muted-foreground">
+															{item.detail}
+														</span>
+													</span>
+												</span>
+												<ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+											</button>
+										))}
+									</div>
+								);
+							})
 						)}
 					</div>
 				</Dialog>
