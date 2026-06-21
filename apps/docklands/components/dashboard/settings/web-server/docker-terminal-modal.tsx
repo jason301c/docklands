@@ -1,12 +1,12 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Select } from "@cloudflare/kumo/components/select";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { Select } from "@cloudflare/kumo/components/select";
 import { badgeStateColor } from "../../application/logs/show";
 
 const Terminal = dynamic(
@@ -71,16 +71,25 @@ export const DockerTerminalModal = ({
 	}, [data]);
 
 	return (
-		<Dialog.Root open={mainDialogOpen} onOpenChange={handleMainDialogOpenChange}>
+		<Dialog.Root
+			open={mainDialogOpen}
+			onOpenChange={handleMainDialogOpenChange}
+		>
 			<Dialog.Trigger render={children as never} />
 			<Dialog className="max-h-[85vh] sm:max-w-7xl">
 				<div>
-					<Dialog.Title>Docker Terminal</Dialog.Title>
+					<Dialog.Title>Container Terminal</Dialog.Title>
 					<Dialog.Description>
-						Easy way to access to docker container
+						Open an interactive shell inside one of this service's containers.
 					</Dialog.Description>
 				</div>
-				<Select aria-label="Select option" onValueChange={(value) => value !== null && setContainerId(value as never)} value={containerId}>
+				<Select
+					aria-label="Select option"
+					onValueChange={(value) =>
+						value !== null && setContainerId(value as never)
+					}
+					value={containerId}
+				>
 					<>
 						{isPending ? (
 							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
@@ -111,7 +120,10 @@ export const DockerTerminalModal = ({
 					id="terminal"
 					containerId={containerId || "select-a-container"}
 				/>
-				<Dialog.Root open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+				<Dialog.Root
+					open={confirmDialogOpen}
+					onOpenChange={setConfirmDialogOpen}
+				>
 					<Dialog>
 						<div>
 							<Dialog.Title>

@@ -1,14 +1,14 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Label } from "@cloudflare/kumo/components/label";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import {
 	Form,
 	FormControl,
@@ -18,7 +18,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Label } from "@cloudflare/kumo/components/label";
+import { toast } from "@/components/shared/toast";
 import { validateAndFormatYAML } from "../application/advanced/traefik/update-traefik-config";
 
 const UpdateServerMiddlewareConfigSchema = z.object({
@@ -86,11 +86,11 @@ export const ShowTraefikFile = ({ path, serverId }: Props) => {
 			serverId,
 		})
 			.then(async () => {
-				toast.success("Traefik config Updated");
+				toast.success("Ingress config updated");
 				refetch();
 			})
 			.catch(() => {
-				toast.error("Error updating the Traefik config");
+				toast.error("Error updating ingress config");
 			});
 	};
 
@@ -116,7 +116,7 @@ export const ShowTraefikFile = ({ path, serverId }: Props) => {
 								name="traefikConfig"
 								render={({ field }) => (
 									<FormItem className="relative">
-										<FormLabel>Traefik config</FormLabel>
+										<FormLabel>Ingress config</FormLabel>
 										<FormDescription className="break-all">
 											{path}
 										</FormDescription>

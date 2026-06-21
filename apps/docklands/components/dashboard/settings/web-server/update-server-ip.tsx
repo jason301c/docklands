@@ -1,13 +1,14 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -16,8 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 
 const schema = z.object({
 	serverIp: z.string(),
@@ -64,12 +64,12 @@ export const UpdateServerIp = ({ children }: Props) => {
 			serverIp: data.serverIp,
 		})
 			.then(async () => {
-				toast.success("Server IP Updated");
+				toast.success("Public IP updated");
 				await refetch();
 				setIsOpen(false);
 			})
 			.catch(() => {
-				toast.error("Error updating the IP of the server");
+				toast.error("Error updating public IP");
 			});
 	};
 
@@ -78,8 +78,10 @@ export const UpdateServerIp = ({ children }: Props) => {
 			<Dialog.Trigger render={children as never} />
 			<Dialog>
 				<div>
-					<Dialog.Title>Update Server IP</Dialog.Title>
-					<Dialog.Description>Update the IP of the server</Dialog.Description>
+					<Dialog.Title>Update Public IP</Dialog.Title>
+					<Dialog.Description>
+						Set the public IP used by this Docklands runtime.
+					</Dialog.Description>
 				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
@@ -93,24 +95,30 @@ export const UpdateServerIp = ({ children }: Props) => {
 							name="serverIp"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Server IP</FormLabel>
+									<FormLabel>Public IP</FormLabel>
 									<FormControl className="flex gap-2">
 										<div>
 											<Input {...field} />
 
 											<TooltipProvider delay={0}>
-												<Tooltip content={<>
-														<p>Set current public IP</p>
-													</>} side="left"
-														className="max-w-[11rem]"  asChild>
-														<Button
-															variant="secondary"
-															type="button"
-															onClick={setCurrentIp}
-														>
-															<RefreshCw className="size-4 text-muted-foreground" />
-														</Button>
-													</Tooltip>
+												<Tooltip
+													content={
+														<>
+															<p>Set current public IP</p>
+														</>
+													}
+													side="left"
+													className="max-w-[11rem]"
+													asChild
+												>
+													<Button
+														variant="secondary"
+														type="button"
+														onClick={setCurrentIp}
+													>
+														<RefreshCw className="size-4 text-muted-foreground" />
+													</Button>
+												</Tooltip>
 											</TooltipProvider>
 										</div>
 									</FormControl>

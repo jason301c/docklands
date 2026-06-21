@@ -1,3 +1,4 @@
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	FileIcon,
 	Folder,
@@ -9,7 +10,6 @@ import {
 import React from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tree } from "@/components/shared/file-tree";
 import { ShowTraefikFile } from "./show-traefik-file";
 
@@ -40,16 +40,12 @@ export const ShowTraefikSystem = ({ serverId }: Props) => {
 					<div className="">
 						<h3 className="text-xl flex flex-row gap-2">
 							<FileIcon className="size-6 text-muted-foreground self-center" />
-							Traefik File System
+							Ingress Files
 						</h3>
-						<p>
-							Manage all the files and directories in{" "}
-							{"'/etc/docklands/traefik'"}.
-						</p>
+						<p>Manage generated and custom ingress files.</p>
 
 						<AlertBlock type="warning">
-							Adding invalid configuration to existing files, can break your
-							Traefik instance, preventing access to your applications.
+							Invalid proxy configuration can break access to your applications.
 						</AlertBlock>
 					</div>
 					<div className="space-y-2 py-8 border-t">
@@ -78,11 +74,11 @@ export const ShowTraefikSystem = ({ serverId }: Props) => {
 												No configuration files found
 											</span>
 											<span className="text-sm text-muted-foreground">
-												There are no directories or files in{" "}
+												There are no ingress files in{" "}
 												<code className="bg-muted px-1.5 py-0.5 rounded text-xs">
 													/etc/docklands/traefik
 												</code>{" "}
-												on this server yet.
+												on this runtime yet.
 											</span>
 										</div>
 									</div>

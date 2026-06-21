@@ -1,8 +1,8 @@
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { UpdateServerIp } from "@/components/dashboard/settings/web-server/update-server-ip";
 import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { api } from "@/client/api/trpc";
+import { UpdateServerIp } from "@/components/dashboard/settings/web-server/update-server-ip";
+import { toast } from "@/components/shared/toast";
 import { ShowModalLogs } from "../../web-server/show-modal-logs";
 import { TerminalModal } from "../../web-server/terminal-modal";
 import { GPUSupportModal } from "../gpu-support-modal";
@@ -18,13 +18,14 @@ export const ShowDocklandsActions = () => {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenu.Trigger disabled={isPending} render={(
-
-				<Button loading={isPending} variant="outline">
-					Server
-				</Button>
-			
-)} />
+			<DropdownMenu.Trigger
+				disabled={isPending}
+				render={
+					<Button loading={isPending} variant="outline">
+						Runtime
+					</Button>
+				}
+			/>
 			<DropdownMenu.Content className="w-56" align="start">
 				<DropdownMenu.Label>Actions</DropdownMenu.Label>
 				<DropdownMenu.Separator />
@@ -33,10 +34,10 @@ export const ShowDocklandsActions = () => {
 						onClick={async () => {
 							await reloadServer()
 								.then(async () => {
-									toast.success("Server Reloaded");
+									toast.success("Runtime reloaded");
 								})
 								.catch(() => {
-									toast.success("Server Reloaded");
+									toast.success("Runtime reloaded");
 								});
 						}}
 						className="cursor-pointer"
@@ -60,7 +61,7 @@ export const ShowDocklandsActions = () => {
 							className="cursor-pointer"
 							onSelect={(e) => e.preventDefault()}
 						>
-							Update Server IP
+							Update public IP
 						</DropdownMenu.Item>
 					</UpdateServerIp>
 

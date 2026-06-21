@@ -30,7 +30,7 @@ export const ServerFilter = ({ children }: Props) => {
 	const selectedServer = servers?.find(
 		(server) => server.serverId === queryServerId,
 	);
-	// Cloud has no local Docklands server, so fall back to the first remote server
+	// Cloud has no local runtime, so fall back to the first remote runtime.
 	const serverId = selectedServer
 		? selectedServer.serverId
 		: isCloud
@@ -71,17 +71,17 @@ export const ServerFilter = ({ children }: Props) => {
 						<ServerIcon className="size-8 text-muted-foreground" />
 					</div>
 					<div className="flex flex-col items-center gap-1.5 text-center max-w-md">
-						<span className="text-lg font-medium">No servers yet</span>
+						<span className="text-lg font-medium">No runtime capacity yet</span>
 						<span className="text-sm text-muted-foreground">
 							{permissions?.server.create
-								? "This section works on your remote servers. Add your first server to start managing it from here."
-								: "This section works on your remote servers. Ask an administrator to add a server to your organization."}
+								? "This section works on remote runtime capacity. Add your first worker to start managing it from here."
+								: "This section works on remote runtime capacity. Ask an administrator to add a worker to your organization."}
 						</span>
 					</div>
 					{permissions?.server.create && (
 						<LinkButton href="/dashboard/settings/servers">
 							<PlusIcon className="size-4" />
-							Add Server
+							Add Worker
 						</LinkButton>
 					)}
 				</div>
@@ -97,7 +97,7 @@ export const ServerFilter = ({ children }: Props) => {
 						htmlFor="server-filter"
 						className="text-sm text-muted-foreground whitespace-nowrap"
 					>
-						Viewing server
+						Runtime
 					</Label>
 					<Select
 						aria-label="Select option"

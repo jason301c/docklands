@@ -1,8 +1,8 @@
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import copy from "copy-to-clipboard";
 import { CopyIcon, ServerIcon } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { toast } from "@/components/shared/toast";
 import { ShowDocklandsActions } from "./servers/actions/show-docklands-actions";
 import { ShowStorageActions } from "./servers/actions/show-storage-actions";
 import { ShowTraefikActions } from "./servers/actions/show-traefik-actions";
@@ -24,18 +24,12 @@ export const WebServer = () => {
 					<div className="">
 						<h3 className="text-xl flex flex-row gap-2">
 							<ServerIcon className="size-6 text-muted-foreground self-center" />
-							Web Server
-						</h3>
-						<p>Reload or clean the web server.</p>
-					</div>
-					{/* <div>
-						<h3 className="text-xl">
-							Web Server
+							Ingress Runtime
 						</h3>
 						<p>
-							Reload or clean the web server.
+							Reload the edge proxy, clean runtime state, and inspect updates.
 						</p>
-					</div> */}
+					</div>
 					<div className="space-y-6 py-6 border-t">
 						<div className="grid md:grid-cols-2 gap-4">
 							<ShowDocklandsActions />
@@ -47,7 +41,7 @@ export const WebServer = () => {
 
 						<div className="flex items-center flex-wrap justify-between gap-4">
 							<span className="text-sm text-muted-foreground flex items-center gap-1.5">
-								Server IP: {webServerSettings?.serverIp}
+								Public IP: {webServerSettings?.serverIp}
 								{webServerSettings?.serverIp && (
 									<CopyIcon
 										className="size-3.5 cursor-pointer hover:text-foreground transition-colors"

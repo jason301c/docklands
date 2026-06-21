@@ -1,8 +1,8 @@
-import dynamic from "next/dynamic";
-import { useState } from "react";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import dynamic from "next/dynamic";
+import { useState } from "react";
 
 const Terminal = dynamic(
 	() => import("./docker-terminal").then((e) => e.DockerTerminal),
@@ -42,22 +42,25 @@ export const DockerTerminalModal = ({
 		setConfirmDialogOpen(false);
 	};
 	return (
-		<Dialog.Root open={mainDialogOpen} onOpenChange={handleMainDialogOpenChange}>
-			<Dialog.Trigger render={(
-
-				<DropdownMenu.Item
-					className="w-full cursor-pointer space-x-3"
-					onSelect={(e) => e.preventDefault()}
-				>
-					{children}
-				</DropdownMenu.Item>
-			
-)} />
+		<Dialog.Root
+			open={mainDialogOpen}
+			onOpenChange={handleMainDialogOpenChange}
+		>
+			<Dialog.Trigger
+				render={
+					<DropdownMenu.Item
+						className="w-full cursor-pointer space-x-3"
+						onSelect={(e) => e.preventDefault()}
+					>
+						{children}
+					</DropdownMenu.Item>
+				}
+			/>
 			<Dialog className="sm:max-w-7xl">
 				<div>
-					<Dialog.Title>Docker Terminal</Dialog.Title>
+					<Dialog.Title>Container Terminal</Dialog.Title>
 					<Dialog.Description>
-						Easy way to access to docker container
+						Open an interactive shell inside this container.
 					</Dialog.Description>
 				</div>
 
@@ -66,7 +69,10 @@ export const DockerTerminalModal = ({
 					containerId={containerId}
 					serverId={serverId || ""}
 				/>
-				<Dialog.Root open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+				<Dialog.Root
+					open={confirmDialogOpen}
+					onOpenChange={setConfirmDialogOpen}
+				>
 					<Dialog>
 						<div>
 							<Dialog.Title>

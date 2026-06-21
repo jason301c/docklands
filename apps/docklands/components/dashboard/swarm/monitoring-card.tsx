@@ -1,3 +1,7 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	Activity,
 	Loader2,
@@ -7,10 +11,6 @@ import {
 	WorkflowIcon,
 } from "lucide-react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { NodeCard } from "./details/details-card";
 
 interface Props {
@@ -71,10 +71,10 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 					<div className="space-y-1">
 						<h3 className="text-xl flex flex-row gap-2">
 							<WorkflowIcon className="size-6 text-muted-foreground self-center" />
-							Docker Swarm Overview
+							Orchestration Overview
 						</h3>
 						<p className="text-sm text-muted-foreground">
-							Monitor and manage your Docker Swarm cluster
+							Monitor runtime capacity and node health across the cluster.
 						</p>
 					</div>
 					{!serverId && (
@@ -84,7 +84,7 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 							}
 						>
 							<Settings className="mr-2 h-4 w-4" />
-							Manage Cluster
+							Manage Orchestration
 						</Button>
 					)}
 				</header>
@@ -92,7 +92,7 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 				<div className="grid gap-6 lg:grid-cols-3">
 					<LayerCard className="bg-background">
 						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<h3 className="text-sm font-medium">Total Nodes</h3>
+							<h3 className="text-sm font-medium">Total Workers</h3>
 							<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
 								<Server className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
 							</div>
@@ -105,9 +105,7 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 					<LayerCard className="bg-background">
 						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 							<div className="flex items-center gap-2">
-								<h3 className="text-sm font-medium">
-									Active Nodes
-								</h3>
+								<h3 className="text-sm font-medium">Active Workers</h3>
 								<Badge variant="green">Online</Badge>
 							</div>
 							<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
@@ -116,19 +114,26 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 						</div>
 						<div>
 							<TooltipProvider>
-								<Tooltip content={<>
-										<div className="max-h-48 overflow-y-auto">
-											{activeNodes.map((node) => (
-												<div key={node.ID} className="flex items-center gap-2">
-													{node.Hostname}
-												</div>
-											))}
-										</div>
-									</>}>
-										<div className="text-2xl font-bold">
-											{activeNodesCount} / {totalNodes}
-										</div>
-									</Tooltip>
+								<Tooltip
+									content={
+										<>
+											<div className="max-h-48 overflow-y-auto">
+												{activeNodes.map((node) => (
+													<div
+														key={node.ID}
+														className="flex items-center gap-2"
+													>
+														{node.Hostname}
+													</div>
+												))}
+											</div>
+										</>
+									}
+								>
+									<div className="text-2xl font-bold">
+										{activeNodesCount} / {totalNodes}
+									</div>
+								</Tooltip>
 							</TooltipProvider>
 						</div>
 					</LayerCard>
@@ -136,9 +141,7 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 					<LayerCard className="bg-background">
 						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 							<div className="flex items-center gap-2">
-								<h3 className="text-sm font-medium">
-									Manager Nodes
-								</h3>
+								<h3 className="text-sm font-medium">Managers</h3>
 								<Badge variant="green">Online</Badge>
 							</div>
 							<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
@@ -147,19 +150,26 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 						</div>
 						<div>
 							<TooltipProvider>
-								<Tooltip content={<>
-										<div className="max-h-48 overflow-y-auto">
-											{managerNodes.map((node) => (
-												<div key={node.ID} className="flex items-center gap-2">
-													{node.Hostname}
-												</div>
-											))}
-										</div>
-									</>}>
-										<div className="text-2xl font-bold">
-											{managerNodesCount} / {totalNodes}
-										</div>
-									</Tooltip>
+								<Tooltip
+									content={
+										<>
+											<div className="max-h-48 overflow-y-auto">
+												{managerNodes.map((node) => (
+													<div
+														key={node.ID}
+														className="flex items-center gap-2"
+													>
+														{node.Hostname}
+													</div>
+												))}
+											</div>
+										</>
+									}
+								>
+									<div className="text-2xl font-bold">
+										{managerNodesCount} / {totalNodes}
+									</div>
+								</Tooltip>
 							</TooltipProvider>
 						</div>
 					</LayerCard>

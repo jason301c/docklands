@@ -1,3 +1,6 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	Bug,
 	Download,
@@ -9,11 +12,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import type { IUpdateData } from "@/server/core/services/settings";
 import { ToggleAutoCheckUpdates } from "./toggle-auto-check-updates";
 import { UpdateWebServer } from "./update-webserver";
@@ -78,46 +78,48 @@ export const UpdateServer = ({
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
-			<Dialog.Trigger render={(children ? (
-					children
-				) : (
-					<TooltipProvider delay={0}>
-						<Tooltip side="right" content={(
-
-									<p>Update Available</p>
-								
-)} render={(
-
-								<Button
-									variant={updateData ? "outline" : "secondary"}
-									size="sm"
-									onClick={() => onOpenChange?.(true)}
-								>
-									<Download className="h-4 w-4 flex-shrink-0" />
-									{updateData ? (
-										<span className="font-medium truncate group-data-[collapsible=icon]:hidden">
-											Update Available
-										</span>
-									) : (
-										<span className="font-medium truncate group-data-[collapsible=icon]:hidden">
-											Check for updates
-										</span>
-									)}
-									{updateData && (
-										<span className="absolute right-2 flex h-2 w-2 group-data-[collapsible=icon]:hidden">
-											<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-											<span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-										</span>
-									)}
-								</Button>
-							
-)} />
-					</TooltipProvider>
-				)) as never} />
+			<Dialog.Trigger
+				render={
+					(children ? (
+						children
+					) : (
+						<TooltipProvider delay={0}>
+							<Tooltip
+								side="right"
+								content={<p>Update Available</p>}
+								render={
+									<Button
+										variant={updateData ? "outline" : "secondary"}
+										size="sm"
+										onClick={() => onOpenChange?.(true)}
+									>
+										<Download className="h-4 w-4 flex-shrink-0" />
+										{updateData ? (
+											<span className="font-medium truncate group-data-[collapsible=icon]:hidden">
+												Update Available
+											</span>
+										) : (
+											<span className="font-medium truncate group-data-[collapsible=icon]:hidden">
+												Check for updates
+											</span>
+										)}
+										{updateData && (
+											<span className="absolute right-2 flex h-2 w-2 group-data-[collapsible=icon]:hidden">
+												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+												<span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+											</span>
+										)}
+									</Button>
+								}
+							/>
+						</TooltipProvider>
+					)) as never
+				}
+			/>
 			<Dialog className="max-w-lg">
 				<div className="flex items-center justify-between mb-8">
 					<Dialog.Title className="text-2xl font-semibold">
-						Web Server Update
+						Runtime Update
 					</Dialog.Title>
 					{docklandsVersion && (
 						<div className="flex items-center gap-1.5 rounded-full px-3 py-1 mr-2 bg-muted">

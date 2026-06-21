@@ -1,3 +1,8 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Table } from "@cloudflare/kumo/components/table";
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -12,11 +17,6 @@ import {
 import { ChevronDown, Container } from "lucide-react";
 import * as React from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Table } from "@cloudflare/kumo/components/table";
 import { columns } from "./columns";
 
 export type Container = NonNullable<
@@ -66,11 +66,9 @@ export const ShowContainers = ({ serverId }: Props) => {
 					<div className="">
 						<h3 className="text-xl flex flex-row gap-2">
 							<Container className="size-6 text-muted-foreground self-center" />
-							Docker Containers
+							Runtime Containers
 						</h3>
-						<p>
-							See all the containers on this Docklands server
-						</p>
+						<p>Inspect the containers running on this Docklands runtime.</p>
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						<div className="gap-4 pb-20 w-full">
@@ -90,16 +88,16 @@ export const ShowContainers = ({ serverId }: Props) => {
 										className="md:max-w-sm"
 									/>
 									<DropdownMenu>
-										<DropdownMenu.Trigger render={(
-
-											<Button
-												variant="outline"
-												className="sm:ml-auto max-sm:w-full"
-											>
-												Columns <ChevronDown className="ml-2 h-4 w-4" />
-											</Button>
-										
-)} />
+										<DropdownMenu.Trigger
+											render={
+												<Button
+													variant="outline"
+													className="sm:ml-auto max-sm:w-full"
+												>
+													Columns <ChevronDown className="ml-2 h-4 w-4" />
+												</Button>
+											}
+										/>
 										<DropdownMenu.Content align="end">
 											{table
 												.getAllColumns()

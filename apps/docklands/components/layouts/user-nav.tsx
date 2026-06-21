@@ -1,12 +1,16 @@
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { SidebarMenuButton } from "@cloudflare/kumo/components/sidebar";
 import { ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/shared/avatar";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { getFallbackAvatarInitials } from "@/shared/utils";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/components/shared/avatar";
 import { ModeToggle } from "@/components/shared/mode-toggle";
-import { SidebarMenuButton } from "@cloudflare/kumo/components/sidebar";
+import { getFallbackAvatarInitials } from "@/shared/utils";
 
 const _AUTO_CHECK_UPDATES_INTERVAL_MINUTES = 7;
 
@@ -22,28 +26,28 @@ export const UserNav = () => {
 		<DropdownMenu>
 			<DropdownMenu.Trigger
 				render={
-				<SidebarMenuButton
-					size="base"
-					className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-				>
-					<Avatar className="h-8 w-8 rounded-lg">
-						<AvatarImage
-							className="object-cover"
-							src={data?.user?.image || ""}
-							alt={data?.user?.image || ""}
-						/>
-						<AvatarFallback className="rounded-lg">
-							{getFallbackAvatarInitials(
-								`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
-							)}
-						</AvatarFallback>
-					</Avatar>
-					<div className="grid flex-1 text-left text-sm leading-tight">
-						<span className="truncate font-semibold">Account</span>
-						<span className="truncate text-xs">{data?.user?.email}</span>
-					</div>
-					<ChevronsUpDown className="ml-auto size-4" />
-				</SidebarMenuButton>
+					<SidebarMenuButton
+						size="base"
+						className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+					>
+						<Avatar className="h-8 w-8 rounded-lg">
+							<AvatarImage
+								className="object-cover"
+								src={data?.user?.image || ""}
+								alt={data?.user?.image || ""}
+							/>
+							<AvatarFallback className="rounded-lg">
+								{getFallbackAvatarInitials(
+									`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
+								)}
+							</AvatarFallback>
+						</Avatar>
+						<div className="grid flex-1 text-left text-sm leading-tight">
+							<span className="truncate font-semibold">Account</span>
+							<span className="truncate text-xs">{data?.user?.email}</span>
+						</div>
+						<ChevronsUpDown className="ml-auto size-4" />
+					</SidebarMenuButton>
 				}
 			/>
 			<DropdownMenu.Content
@@ -96,7 +100,7 @@ export const UserNav = () => {
 										router.push("/dashboard/traefik");
 									}}
 								>
-									Traefik
+									Ingress files
 								</DropdownMenu.Item>
 							)}
 							{permissions?.docker.read && (
@@ -106,7 +110,7 @@ export const UserNav = () => {
 										router.push("/dashboard/docker");
 									}}
 								>
-									Docker
+									Runtime containers
 								</DropdownMenu.Item>
 							)}
 						</>
@@ -118,7 +122,7 @@ export const UserNav = () => {
 									router.push("/dashboard/settings/servers");
 								}}
 							>
-								Servers
+								Runtime capacity
 							</DropdownMenu.Item>
 						)
 					)}
