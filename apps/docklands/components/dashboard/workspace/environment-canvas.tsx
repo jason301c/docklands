@@ -2,6 +2,7 @@
 
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Textarea } from "@cloudflare/kumo/components/input";
@@ -281,6 +282,14 @@ const getActionInput = (service: WorkspaceService) => {
 	}
 };
 
+const getDeleteInput = (service: WorkspaceService, deleteVolumes: boolean) => {
+	if (service.type === "compose") {
+		return { composeId: service.id, deleteVolumes };
+	}
+
+	return getActionInput(service);
+};
+
 const getServiceSettingsHref = (
 	projectId: string,
 	environmentId: string,
@@ -406,6 +415,8 @@ export const EnvironmentCanvas = ({
 	const [selectedBulkKeys, setSelectedBulkKeys] = useState<string[]>([]);
 	const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+	const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+	const [deleteComposeVolumes, setDeleteComposeVolumes] = useState(false);
 	const [selectedTargetProject, setSelectedTargetProject] = useState("");
 	const [selectedTargetEnvironment, setSelectedTargetEnvironment] =
 		useState("");
@@ -433,48 +444,56 @@ export const EnvironmentCanvas = ({
 			stop: api.application.stop.useMutation(),
 			deploy: api.application.deploy.useMutation(),
 			move: api.application.move.useMutation(),
+			delete: api.application.delete.useMutation(),
 		},
 		compose: {
 			start: api.compose.start.useMutation(),
 			stop: api.compose.stop.useMutation(),
 			deploy: api.compose.deploy.useMutation(),
 			move: api.compose.move.useMutation(),
+			delete: api.compose.delete.useMutation(),
 		},
 		postgres: {
 			start: api.postgres.start.useMutation(),
 			stop: api.postgres.stop.useMutation(),
 			deploy: api.postgres.deploy.useMutation(),
 			move: api.postgres.move.useMutation(),
+			delete: api.postgres.remove.useMutation(),
 		},
 		mysql: {
 			start: api.mysql.start.useMutation(),
 			stop: api.mysql.stop.useMutation(),
 			deploy: api.mysql.deploy.useMutation(),
 			move: api.mysql.move.useMutation(),
+			delete: api.mysql.remove.useMutation(),
 		},
 		mariadb: {
 			start: api.mariadb.start.useMutation(),
 			stop: api.mariadb.stop.useMutation(),
 			deploy: api.mariadb.deploy.useMutation(),
 			move: api.mariadb.move.useMutation(),
+			delete: api.mariadb.remove.useMutation(),
 		},
 		redis: {
 			start: api.redis.start.useMutation(),
 			stop: api.redis.stop.useMutation(),
 			deploy: api.redis.deploy.useMutation(),
 			move: api.redis.move.useMutation(),
+			delete: api.redis.remove.useMutation(),
 		},
 		mongo: {
 			start: api.mongo.start.useMutation(),
 			stop: api.mongo.stop.useMutation(),
 			deploy: api.mongo.deploy.useMutation(),
 			move: api.mongo.move.useMutation(),
+			delete: api.mongo.remove.useMutation(),
 		},
 		libsql: {
 			start: api.libsql.start.useMutation(),
 			stop: api.libsql.stop.useMutation(),
 			deploy: api.libsql.deploy.useMutation(),
 			move: api.libsql.move.useMutation(),
+			delete: api.libsql.remove.useMutation(),
 		},
 	};
 
@@ -492,6 +511,7 @@ export const EnvironmentCanvas = ({
 				setConnectSource(null);
 				setCommandOpen(false);
 				setIsMoveDialogOpen(false);
+				setIsBulkDeleteDialogOpen(false);
 				setIsSelectionMode(false);
 				setSelectedBulkKeys([]);
 			}
@@ -534,6 +554,11 @@ export const EnvironmentCanvas = ({
 				),
 			),
 		[services, selectedBulkKeySet],
+	);
+	const selectedBulkRunningServices = useMemo(
+		() =>
+			selectedBulkServices.filter((service) => service.status === "running"),
+		[selectedBulkServices],
 	);
 	const targetEnvironments = useMemo(
 		() =>
@@ -939,6 +964,7 @@ export const EnvironmentCanvas = ({
 			} else {
 				setSelectedBulkKeys([]);
 				setIsMoveDialogOpen(false);
+				setIsBulkDeleteDialogOpen(false);
 			}
 			return next;
 		});
@@ -968,6 +994,11 @@ export const EnvironmentCanvas = ({
 		setIsMoveDialogOpen(false);
 		setSelectedTargetProject("");
 		setSelectedTargetEnvironment("");
+	};
+
+	const resetBulkDeleteDialog = () => {
+		setIsBulkDeleteDialogOpen(false);
+		setDeleteComposeVolumes(false);
 	};
 
 	const openMoveDialog = () => {
@@ -1089,6 +1120,50 @@ export const EnvironmentCanvas = ({
 			if (failed === 0) {
 				setSelectedBulkKeys([]);
 				resetMoveDialog();
+			}
+		} finally {
+			setIsBulkActionLoading(false);
+		}
+	};
+
+	const runBulkDelete = async () => {
+		if (selectedBulkServices.length === 0) return;
+		if (selectedBulkRunningServices.length > 0) {
+			toast.error("Stop running services before deleting them");
+			return;
+		}
+
+		const servicesToDelete = [...selectedBulkServices];
+		let succeeded = 0;
+		let failed = 0;
+		setIsBulkActionLoading(true);
+
+		try {
+			for (const service of servicesToDelete) {
+				const mutation = serviceActions[service.type].delete;
+				const actionInput = getDeleteInput(service, deleteComposeVolumes);
+
+				try {
+					await (mutation.mutateAsync as (input: never) => Promise<unknown>)(
+						actionInput as never,
+					);
+					succeeded++;
+				} catch {
+					failed++;
+				}
+			}
+
+			await utils.workspace.byEnvironment.invalidate({ environmentId });
+			await utils.project.all.invalidate();
+			if (succeeded > 0) {
+				toast.success(`${succeeded} services deleted`);
+			}
+			if (failed > 0) {
+				toast.error(`${failed} services could not be deleted`);
+			}
+			if (failed === 0) {
+				setSelectedBulkKeys([]);
+				resetBulkDeleteDialog();
 			}
 		} finally {
 			setIsBulkActionLoading(false);
@@ -1748,6 +1823,11 @@ export const EnvironmentCanvas = ({
 								<span className="text-muted-foreground">
 									Select services on the canvas, then run a bulk action.
 								</span>
+								{selectedBulkRunningServices.length > 0 && (
+									<span className="text-destructive">
+										Stop running services before deleting.
+									</span>
+								)}
 							</div>
 							<div className="flex flex-wrap items-center gap-2">
 								<Button
@@ -1772,6 +1852,19 @@ export const EnvironmentCanvas = ({
 									<ArrowRight className="size-4" />
 									Move
 								</Button>
+								{permissions?.service.delete && (
+									<Button
+										variant="outline"
+										onClick={() => setIsBulkDeleteDialogOpen(true)}
+										disabled={
+											selectedBulkServices.length === 0 ||
+											selectedBulkRunningServices.length > 0
+										}
+									>
+										<Trash2 className="size-4" />
+										Delete
+									</Button>
+								)}
 								<Button
 									variant="outline"
 									onClick={() => void runBulkServiceAction("start")}
@@ -2459,6 +2552,81 @@ export const EnvironmentCanvas = ({
 							}
 						>
 							Move services
+						</Button>
+					</div>
+				</Dialog>
+			</Dialog.Root>
+
+			<Dialog.Root
+				open={isBulkDeleteDialogOpen}
+				onOpenChange={(open) => {
+					if (open) {
+						setIsBulkDeleteDialogOpen(true);
+						return;
+					}
+					resetBulkDeleteDialog();
+				}}
+			>
+				<Dialog className="sm:max-w-lg">
+					<div>
+						<Dialog.Title>Delete Services</Dialog.Title>
+						<Dialog.Description>
+							Delete {selectedBulkServices.length} selected service
+							{selectedBulkServices.length === 1 ? "" : "s"}. This cannot be
+							undone.
+						</Dialog.Description>
+					</div>
+
+					<div className="space-y-4 text-sm">
+						{selectedBulkRunningServices.length > 0 ? (
+							<div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-destructive">
+								Stop {selectedBulkRunningServices.length} running service
+								{selectedBulkRunningServices.length === 1 ? "" : "s"} before
+								deleting.
+							</div>
+						) : (
+							<div className="rounded-md border bg-muted/30 p-3">
+								{selectedBulkServices.map((service) => (
+									<div
+										key={getWorkspaceServiceKey(service.type, service.id)}
+										className="flex items-center justify-between gap-3 py-1"
+									>
+										<span className="truncate">{service.name}</span>
+										<Badge>{serviceTypeLabels[service.type]}</Badge>
+									</div>
+								))}
+							</div>
+						)}
+
+						{selectedBulkServices.some(
+							(service) => service.type === "compose",
+						) && (
+							<label className="flex items-center gap-2">
+								<Checkbox
+									checked={deleteComposeVolumes}
+									onCheckedChange={(checked) =>
+										setDeleteComposeVolumes(checked === true)
+									}
+								/>
+								<span>Delete compose volumes too</span>
+							</label>
+						)}
+					</div>
+
+					<div className="flex justify-end gap-2">
+						<Button variant="outline" onClick={resetBulkDeleteDialog}>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onClick={() => void runBulkDelete()}
+							loading={isBulkActionLoading}
+							disabled={
+								selectedBulkServices.length === 0 ||
+								selectedBulkRunningServices.length > 0
+							}
+						>
+							Delete services
 						</Button>
 					</div>
 				</Dialog>
