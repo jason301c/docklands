@@ -133,7 +133,12 @@ type DragState = {
 	moved: boolean;
 };
 
-type CommandGroup = "Create" | "Services" | "Actions" | "System";
+type CommandGroup =
+	| "Create"
+	| "Environments"
+	| "Services"
+	| "Actions"
+	| "System";
 
 type CommandItem = {
 	id: string;
@@ -484,6 +489,7 @@ export const EnvironmentCanvas = ({
 		null,
 	);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [commandQuery, setCommandQuery] = useState("");
 	const [serviceKindFilter, setServiceKindFilter] =
 		useState<ServiceKindFilter>("all");
 	const [serviceStatusFilter, setServiceStatusFilter] =
@@ -534,6 +540,10 @@ export const EnvironmentCanvas = ({
 	const { data: allProjects } = api.project.all.useQuery(undefined, {
 		enabled: isSelectionMode,
 	});
+	const { data: projectEnvironments } = api.environment.byProjectId.useQuery(
+		{ projectId },
+		{ enabled: commandOpen },
+	);
 	const { data: selectedProjectEnvironments } =
 		api.environment.byProjectId.useQuery(
 			{ projectId: selectedTargetProject },
@@ -621,11 +631,13 @@ export const EnvironmentCanvas = ({
 		const onKeyDown = (event: KeyboardEvent) => {
 			if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
 				event.preventDefault();
+				setCommandQuery("");
 				setCommandOpen(true);
 			}
 			if (event.key === "Escape") {
 				setConnectSource(null);
 				setCommandOpen(false);
+				setCommandQuery("");
 				setCreateDialog(null);
 				setIsMoveDialogOpen(false);
 				setIsBulkDeleteDialogOpen(false);
@@ -1629,9 +1641,10 @@ export const EnvironmentCanvas = ({
 		);
 	};
 
-	const normalizedCommandQuery = searchQuery.trim().toLowerCase();
+	const normalizedCommandQuery = commandQuery.trim().toLowerCase();
 	const openCreateDialog = (dialog: CreateServiceDialog) => {
 		setCommandOpen(false);
+		setCommandQuery("");
 		setCreateDialog(dialog);
 	};
 	const getCreateDialogProps = (dialog: CreateServiceDialog) => ({
@@ -1691,6 +1704,36 @@ export const EnvironmentCanvas = ({
 					},
 				]
 			: []),
+		...(projectEnvironments?.map((environment) => {
+			const serviceCount =
+				environment.applications.length +
+				environment.compose.length +
+				environment.libsql.length +
+				environment.mariadb.length +
+				environment.mongo.length +
+				environment.mysql.length +
+				environment.postgres.length +
+				environment.redis.length;
+
+			return {
+				id: `environment:${environment.environmentId}`,
+				group: "Environments" as const,
+				label: environment.name,
+				detail:
+					environment.environmentId === environmentId
+						? "Current environment"
+						: `${serviceCount} ${serviceCount === 1 ? "service" : "services"}`,
+				search: `${environment.name} environment switch open ${environment.description ?? ""}`,
+				icon: <GlobeIcon className="size-5 text-muted-foreground" />,
+				run: () => {
+					setCommandOpen(false);
+					setCommandQuery("");
+					router.push(
+						`/dashboard/project/${projectId}/environment/${environment.environmentId}`,
+					);
+				},
+			};
+		}) ?? []),
 		...services.flatMap((service) => {
 			const baseSearch = [
 				service.name,
@@ -2063,6 +2106,7 @@ export const EnvironmentCanvas = ({
 	).slice(0, 48);
 	const commandGroups: CommandGroup[] = [
 		"Create",
+		"Environments",
 		"Services",
 		"Actions",
 		"System",
@@ -2205,7 +2249,13 @@ export const EnvironmentCanvas = ({
 								: "Select"}
 						</Button>
 
-						<Button variant="outline" onClick={() => setCommandOpen(true)}>
+						<Button
+							variant="outline"
+							onClick={() => {
+								setCommandQuery("");
+								setCommandOpen(true);
+							}}
+						>
 							<Command className="size-4" />
 							Cmd K
 						</Button>
@@ -3366,7 +3416,13 @@ export const EnvironmentCanvas = ({
 				</Dialog>
 			</Dialog.Root>
 
-			<Dialog.Root open={commandOpen} onOpenChange={setCommandOpen}>
+			<Dialog.Root
+				open={commandOpen}
+				onOpenChange={(open) => {
+					setCommandOpen(open);
+					if (!open) setCommandQuery("");
+				}}
+			>
 				<Dialog className="sm:max-w-2xl">
 					<div>
 						<Dialog.Title>Command Bar</Dialog.Title>
@@ -3374,9 +3430,9 @@ export const EnvironmentCanvas = ({
 					<div className="relative">
 						<FocusShortcutInput
 							autoFocus
-							placeholder="Search services or actions..."
-							value={searchQuery}
-							onChange={(event) => setSearchQuery(event.target.value)}
+							placeholder="Search commands..."
+							value={commandQuery}
+							onChange={(event) => setCommandQuery(event.target.value)}
 							className="pr-9"
 						/>
 						<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
