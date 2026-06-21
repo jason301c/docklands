@@ -27,13 +27,13 @@ Docklands inherits the upstream project's core capabilities:
 
 ## Development
 
-Docklands is currently a single root app. The old upstream workspace layout was
-collapsed so the Next.js app, backend runtime, tests, and Docker build all live
-from the repository root.
+Docklands is now organized as a small pnpm workspace. The only app today is the
+self-hosted Docklands control plane in `apps/docklands`; future public landing
+and docs sites can be added as separate deployables under `apps/`.
 
 ```bash
 pnpm install --frozen-lockfile
-cp .env.example .env
+cp apps/docklands/.env.example apps/docklands/.env
 pnpm setup
 pnpm dev
 ```
@@ -49,15 +49,17 @@ Docklands targets Node `>=24.4.0 <26` and pnpm `>=10.22.0`.
 
 ### Layout
 
-- `app/` contains the Next.js App Router UI and route handlers.
-- `components/` contains dashboard, shared, layout, auth, and primitive UI components.
-- `client/` contains browser-only app glue such as tRPC, auth client helpers, and hooks.
-- `shared/` contains cross-runtime validation and utility helpers.
-- `server/` contains the custom server, tRPC routers, queues, WebSocket glue, ops scripts, and backend runtime.
-- `server/core/` contains backend/domain code: database, services, Docker, Traefik, deployments, backups, auth, templates, and verification.
-- `tools/` contains development-only utilities such as OpenAPI generation.
-- `drizzle/` contains database migrations.
-- `__test__/` contains the Vitest suite.
+- `apps/docklands/` contains the installable Next.js app users run on their own VM.
+- `apps/docklands/app/` contains the Next.js App Router UI and route handlers.
+- `apps/docklands/components/` contains dashboard, shared, layout, auth, and primitive UI components.
+- `apps/docklands/client/` contains browser-only app glue such as tRPC, auth client helpers, and hooks.
+- `apps/docklands/shared/` contains cross-runtime validation and utility helpers.
+- `apps/docklands/server/` contains the custom server, tRPC routers, queues, WebSocket glue, ops scripts, and backend runtime.
+- `apps/docklands/server/core/` contains backend/domain code: database, services, Docker, Traefik, deployments, backups, auth, templates, and verification.
+- `apps/docklands/tools/` contains app-coupled utilities such as OpenAPI generation.
+- `apps/docklands/drizzle/` contains database migrations.
+- `apps/docklands/__test__/` contains the Vitest suite.
+- `tools/` contains repository-level release/build helpers such as Docker image scripts.
 
 Cloud-only worker apps and source-available/proprietary upstream code have been
 removed from this fork.

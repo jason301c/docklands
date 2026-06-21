@@ -1,1 +1,0 @@
-ALTER TABLE "notification" ADD COLUMN "docklandsBackup" boolean DEFAULT false NOT NULL;

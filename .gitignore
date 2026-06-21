@@ -2,6 +2,7 @@
 
 # Dependencies
 node_modules
+**/node_modules
 .pnp
 .pnp.js
 .docker
@@ -26,8 +27,10 @@ coverage
 
 # Build Outputs
 .next/
+**/.next/
 out/
 dist
+**/dist
 *.tsbuildinfo
 
 

@@ -13,7 +13,7 @@
 			"!**/.next",
 			"!**/dist",
 			"!**/drizzle",
-			"!server/core/openapi",
+			"!apps/docklands/server/core/openapi",
 			"!node_modules"
 		],
 		"maxSize": 2097152
