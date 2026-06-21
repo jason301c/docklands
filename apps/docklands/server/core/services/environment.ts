@@ -1,10 +1,11 @@
 import { TRPCError } from "@trpc/server";
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
 import {
 	type apiCreateEnvironment,
 	type apiDuplicateEnvironment,
+	deployments,
 	environments,
 } from "@/server/core/db/schema";
 
@@ -50,6 +51,15 @@ export const findEnvironmentById = async (environmentId: string) => {
 							name: true,
 							serverId: true,
 						},
+					},
+					deployments: {
+						columns: {
+							createdAt: true,
+							startedAt: true,
+							finishedAt: true,
+						},
+						orderBy: [desc(deployments.createdAt)],
+						limit: 1,
 					},
 				},
 				columns: {
@@ -159,6 +169,15 @@ export const findEnvironmentById = async (environmentId: string) => {
 							name: true,
 							serverId: true,
 						},
+					},
+					deployments: {
+						columns: {
+							createdAt: true,
+							startedAt: true,
+							finishedAt: true,
+						},
+						orderBy: [desc(deployments.createdAt)],
+						limit: 1,
 					},
 				},
 				columns: {

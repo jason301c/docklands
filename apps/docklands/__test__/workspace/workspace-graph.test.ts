@@ -17,6 +17,17 @@ describe("workspace graph helpers", () => {
 					createdAt: "2026-06-20T00:00:00.000Z",
 					serverId: "srv_1",
 					server: { name: "worker-a" },
+					deployments: [
+						{
+							createdAt: "2026-06-20T02:00:00.000Z",
+							startedAt: "2026-06-20T02:01:00.000Z",
+							finishedAt: "2026-06-20T02:03:00.000Z",
+						},
+						{
+							createdAt: "2026-06-20T01:00:00.000Z",
+							startedAt: "2026-06-20T01:01:00.000Z",
+						},
+					],
 				},
 			],
 			postgres: [
@@ -48,6 +59,7 @@ describe("workspace graph helpers", () => {
 			name: "web",
 			status: "running",
 			serverName: "worker-a",
+			lastDeployAt: "2026-06-20T02:03:00.000Z",
 		});
 	});
 

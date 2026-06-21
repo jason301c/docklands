@@ -7,6 +7,7 @@ import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Textarea } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
+import { formatDistanceToNow } from "date-fns";
 import {
 	ArrowRight,
 	Box,
@@ -207,6 +208,11 @@ const getServiceSettingsHref = (
 	service: WorkspaceService,
 ) =>
 	`/dashboard/project/${projectId}/environment/${environmentId}/services/${service.type}/${service.id}`;
+
+const formatLastDeploy = (lastDeployAt?: string | null) =>
+	lastDeployAt
+		? formatDistanceToNow(new Date(lastDeployAt), { addSuffix: true })
+		: "No deploys yet";
 
 export const EnvironmentCanvas = ({
 	projectId,
@@ -1254,23 +1260,33 @@ export const EnvironmentCanvas = ({
 													serviceTypeDescriptions[service.type]}
 											</p>
 
-											<div className="mt-auto flex items-center justify-between gap-3 text-xs text-muted-foreground">
-												<span className="flex min-w-0 items-center gap-1.5">
-													<ServerIcon className="size-3 shrink-0" />
-													<span className="truncate">
-														{service.serverName || "Docklands host"}
+											<div className="mt-auto space-y-1 text-xs text-muted-foreground">
+												<div className="flex items-center justify-between gap-3">
+													<span className="flex min-w-0 items-center gap-1.5">
+														<ServerIcon className="size-3 shrink-0" />
+														<span className="truncate">
+															{service.serverName || "Docklands host"}
+														</span>
 													</span>
-												</span>
-												<span>
-													{
-														connections.filter(
-															(connection) =>
-																connection.sourceServiceId === service.id ||
-																connection.targetServiceId === service.id,
-														).length
-													}{" "}
-													links
-												</span>
+													<span>
+														{
+															connections.filter(
+																(connection) =>
+																	connection.sourceServiceId === service.id ||
+																	connection.targetServiceId === service.id,
+															).length
+														}{" "}
+														links
+													</span>
+												</div>
+												<div className="flex min-w-0 items-center gap-1.5">
+													<RefreshCw className="size-3 shrink-0" />
+													<span className="truncate">
+														{service.lastDeployAt
+															? `Deployed ${formatLastDeploy(service.lastDeployAt)}`
+															: "No deploys yet"}
+													</span>
+												</div>
 											</div>
 										</div>
 									</LayerCard>
@@ -1372,6 +1388,12 @@ export const EnvironmentCanvas = ({
 												<span>Type</span>
 												<span>
 													{serviceTypeLabels[selectedServiceModel.type]}
+												</span>
+											</div>
+											<div className="flex items-center justify-between gap-4">
+												<span>Last deploy</span>
+												<span className="truncate">
+													{formatLastDeploy(selectedServiceModel.lastDeployAt)}
 												</span>
 											</div>
 										</div>

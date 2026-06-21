@@ -20,6 +20,7 @@ export type WorkspaceService = {
 	description?: string | null;
 	status?: WorkspaceServiceStatus | null;
 	createdAt?: string | null;
+	lastDeployAt?: string | null;
 	serverId?: string | null;
 	serverName?: string | null;
 	icon?: string | null;
@@ -110,6 +111,27 @@ export const isWorkspaceServiceType = (
 const asString = (value: unknown) =>
 	typeof value === "string" && value.length > 0 ? value : null;
 
+const getLatestDeploymentDate = (record: ServiceLike) => {
+	const deployments = record.deployments;
+	if (!Array.isArray(deployments)) return null;
+
+	let latest: string | null = null;
+	for (const deployment of deployments) {
+		const deploymentRecord = deployment as ServiceLike;
+		const candidate =
+			asString(deploymentRecord.finishedAt) ||
+			asString(deploymentRecord.startedAt) ||
+			asString(deploymentRecord.createdAt);
+		if (!candidate) continue;
+
+		if (!latest || new Date(candidate).getTime() > new Date(latest).getTime()) {
+			latest = candidate;
+		}
+	}
+
+	return latest;
+};
+
 export const extractWorkspaceServicesFromEnvironment = (
 	environment: EnvironmentLike | null | undefined,
 ): WorkspaceService[] => {
@@ -141,6 +163,7 @@ export const extractWorkspaceServicesFromEnvironment = (
 					record[descriptor.statusKey],
 				) as WorkspaceServiceStatus | null,
 				createdAt: asString(record.createdAt),
+				lastDeployAt: getLatestDeploymentDate(record),
 				serverId: asString(record.serverId),
 				serverName: server ? asString(server.name) : null,
 				icon: asString(record.icon),
