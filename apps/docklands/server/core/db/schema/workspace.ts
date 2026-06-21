@@ -127,3 +127,7 @@ export const apiCreateWorkspaceConnection = z.object({
 export const apiRemoveWorkspaceConnection = z.object({
 	connectionId: z.string().min(1),
 });
+
+export const apiWorkspaceConnectionVariables = z.object({
+	connectionId: z.string().min(1),
+});

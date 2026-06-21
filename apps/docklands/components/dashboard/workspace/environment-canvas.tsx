@@ -208,6 +208,8 @@ export const EnvironmentCanvas = ({
 	const updateNode = api.workspace.updateNode.useMutation();
 	const connect = api.workspace.connect.useMutation();
 	const removeConnection = api.workspace.removeConnection.useMutation();
+	const applyConnectionVariables =
+		api.workspace.applyConnectionVariables.useMutation();
 
 	const serviceActions = {
 		application: {
@@ -506,6 +508,23 @@ export const EnvironmentCanvas = ({
 		});
 		await utils.workspace.byEnvironment.invalidate({ environmentId });
 		toast.success("Connection removed");
+	};
+
+	const applyVariablesForConnection = async (
+		connection: WorkspaceConnection,
+	) => {
+		toast.promise(
+			applyConnectionVariables.mutateAsync({
+				connectionId: connection.connectionId,
+			}),
+			{
+				loading: "Applying variables...",
+				success: (result) =>
+					`${result.entries.length} variable${result.entries.length === 1 ? "" : "s"} applied`,
+				error: (error) =>
+					`Could not apply variables: ${error instanceof Error ? error.message : "Unknown error"}`,
+			},
+		);
 	};
 
 	if (workspaceQuery.isPending) {
@@ -994,14 +1013,27 @@ export const EnvironmentCanvas = ({
 															{connection.label || "Private network"}
 														</p>
 													</div>
-													<Button
-														aria-label="Remove connection"
-														variant="ghost"
-														shape="square"
-														onClick={() => removeSelectedConnection(connection)}
-													>
-														<Trash2 className="size-4" />
-													</Button>
+													<div className="flex shrink-0 items-center gap-1">
+														<Button
+															variant="outline"
+															onClick={() =>
+																applyVariablesForConnection(connection)
+															}
+														>
+															<SquareTerminal className="size-4" />
+															Apply vars
+														</Button>
+														<Button
+															aria-label="Remove connection"
+															variant="ghost"
+															shape="square"
+															onClick={() =>
+																removeSelectedConnection(connection)
+															}
+														>
+															<Trash2 className="size-4" />
+														</Button>
+													</div>
 												</div>
 											</LayerCard>
 										);

@@ -5,17 +5,21 @@ import {
 	apiFindWorkspace,
 	apiRemoveWorkspaceConnection,
 	apiUpdateWorkspaceNode,
+	apiWorkspaceConnectionVariables,
 } from "@/server/core/db/schema";
 import { findEnvironmentById } from "@/server/core/services/environment";
 import {
 	checkEnvironmentAccess,
+	checkPermission,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
 import {
+	applyWorkspaceConnectionVariables,
 	assertWorkspaceServiceExists,
 	createWorkspaceConnection,
 	findWorkspaceConnectionById,
 	getEnvironmentWorkspace,
+	getWorkspaceConnectionVariableEntries,
 	removeWorkspaceConnection,
 	upsertWorkspaceNode,
 } from "@/server/core/services/workspace";
@@ -152,5 +156,52 @@ export const workspaceRouter = createTRPCRouter({
 			const connection = await findWorkspaceConnectionById(input.connectionId);
 			await getAuthorizedEnvironment(ctx, connection.environmentId);
 			return removeWorkspaceConnection(input.connectionId);
+		}),
+
+	connectionVariables: protectedProcedure
+		.input(apiWorkspaceConnectionVariables)
+		.query(async ({ input, ctx }) => {
+			await checkPermission(ctx, { envVars: ["read"] });
+			const connection = await findWorkspaceConnectionById(input.connectionId);
+			const environment = await getAuthorizedEnvironment(
+				ctx,
+				connection.environmentId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				connection.sourceServiceType,
+				connection.sourceServiceId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				connection.targetServiceType,
+				connection.targetServiceId,
+			);
+
+			const entries = await getWorkspaceConnectionVariableEntries(connection);
+			return entries.map(({ key }) => ({ key }));
+		}),
+
+	applyConnectionVariables: protectedProcedure
+		.input(apiWorkspaceConnectionVariables)
+		.mutation(async ({ input, ctx }) => {
+			await checkPermission(ctx, { envVars: ["write"] });
+			const connection = await findWorkspaceConnectionById(input.connectionId);
+			const environment = await getAuthorizedEnvironment(
+				ctx,
+				connection.environmentId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				connection.sourceServiceType,
+				connection.sourceServiceId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				connection.targetServiceType,
+				connection.targetServiceId,
+			);
+
+			return applyWorkspaceConnectionVariables(connection);
 		}),
 });

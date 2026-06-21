@@ -2,10 +2,19 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import {
+	applications,
+	compose,
+	libsql,
+	mariadb,
+	mongo,
+	mysql,
+	postgres,
+	redis,
 	workspaceServiceConnections,
 	workspaceServiceLayouts,
 } from "@/server/core/db/schema";
 import type { findEnvironmentById } from "@/server/core/services/environment";
+import { type EnvEntry, upsertEnvironmentVariables } from "@/shared/env-string";
 import {
 	extractWorkspaceServicesFromEnvironment,
 	getWorkspaceServiceKey,
@@ -14,6 +23,7 @@ import {
 } from "@/shared/workspace-graph";
 
 type Environment = Awaited<ReturnType<typeof findEnvironmentById>>;
+type WorkspaceConnection = typeof workspaceServiceConnections.$inferSelect;
 
 export const getWorkspaceServiceSet = (environment: Environment) =>
 	new Set(
@@ -208,6 +218,287 @@ export const removeWorkspaceConnection = async (connectionId: string) =>
 		.where(eq(workspaceServiceConnections.connectionId, connectionId))
 		.returning()
 		.then((rows) => rows[0]);
+
+const encodeUrlPart = (value: string) => encodeURIComponent(value);
+
+const getConnectionVariableEntriesFromSource = async (
+	connection: WorkspaceConnection,
+): Promise<EnvEntry[]> => {
+	switch (connection.sourceServiceType) {
+		case "postgres": {
+			const source = await db.query.postgres.findFirst({
+				where: eq(postgres.postgresId, connection.sourceServiceId),
+				columns: {
+					appName: true,
+					databaseName: true,
+					databaseUser: true,
+					databasePassword: true,
+				},
+			});
+			if (!source) return [];
+
+			const user = encodeUrlPart(source.databaseUser);
+			const password = encodeUrlPart(source.databasePassword);
+			const database = encodeUrlPart(source.databaseName);
+			return [
+				{
+					key: "DATABASE_URL",
+					value: `postgresql://${user}:${password}@${source.appName}:5432/${database}`,
+				},
+				{ key: "POSTGRES_HOST", value: source.appName },
+				{ key: "POSTGRES_DB", value: source.databaseName },
+				{ key: "POSTGRES_USER", value: source.databaseUser },
+				{ key: "POSTGRES_PASSWORD", value: source.databasePassword },
+			];
+		}
+		case "mysql": {
+			const source = await db.query.mysql.findFirst({
+				where: eq(mysql.mysqlId, connection.sourceServiceId),
+				columns: {
+					appName: true,
+					databaseName: true,
+					databaseUser: true,
+					databasePassword: true,
+				},
+			});
+			if (!source) return [];
+
+			const user = encodeUrlPart(source.databaseUser);
+			const password = encodeUrlPart(source.databasePassword);
+			const database = encodeUrlPart(source.databaseName);
+			return [
+				{
+					key: "DATABASE_URL",
+					value: `mysql://${user}:${password}@${source.appName}:3306/${database}`,
+				},
+				{ key: "MYSQL_HOST", value: source.appName },
+				{ key: "MYSQL_DATABASE", value: source.databaseName },
+				{ key: "MYSQL_USER", value: source.databaseUser },
+				{ key: "MYSQL_PASSWORD", value: source.databasePassword },
+			];
+		}
+		case "mariadb": {
+			const source = await db.query.mariadb.findFirst({
+				where: eq(mariadb.mariadbId, connection.sourceServiceId),
+				columns: {
+					appName: true,
+					databaseName: true,
+					databaseUser: true,
+					databasePassword: true,
+				},
+			});
+			if (!source) return [];
+
+			const user = encodeUrlPart(source.databaseUser);
+			const password = encodeUrlPart(source.databasePassword);
+			const database = encodeUrlPart(source.databaseName);
+			return [
+				{
+					key: "DATABASE_URL",
+					value: `mariadb://${user}:${password}@${source.appName}:3306/${database}`,
+				},
+				{ key: "MARIADB_HOST", value: source.appName },
+				{ key: "MARIADB_DATABASE", value: source.databaseName },
+				{ key: "MARIADB_USER", value: source.databaseUser },
+				{ key: "MARIADB_PASSWORD", value: source.databasePassword },
+			];
+		}
+		case "mongo": {
+			const source = await db.query.mongo.findFirst({
+				where: eq(mongo.mongoId, connection.sourceServiceId),
+				columns: {
+					appName: true,
+					databaseUser: true,
+					databasePassword: true,
+				},
+			});
+			if (!source) return [];
+
+			const user = encodeUrlPart(source.databaseUser);
+			const password = encodeUrlPart(source.databasePassword);
+			return [
+				{
+					key: "MONGO_URL",
+					value: `mongodb://${user}:${password}@${source.appName}:27017/?authSource=admin`,
+				},
+				{ key: "MONGO_HOST", value: source.appName },
+				{ key: "MONGO_USER", value: source.databaseUser },
+				{ key: "MONGO_PASSWORD", value: source.databasePassword },
+			];
+		}
+		case "redis": {
+			const source = await db.query.redis.findFirst({
+				where: eq(redis.redisId, connection.sourceServiceId),
+				columns: {
+					appName: true,
+					databasePassword: true,
+				},
+			});
+			if (!source) return [];
+
+			const password = encodeUrlPart(source.databasePassword);
+			return [
+				{
+					key: "REDIS_URL",
+					value: `redis://:${password}@${source.appName}:6379`,
+				},
+				{ key: "REDIS_HOST", value: source.appName },
+				{ key: "REDIS_PASSWORD", value: source.databasePassword },
+			];
+		}
+		case "libsql": {
+			const source = await db.query.libsql.findFirst({
+				where: eq(libsql.libsqlId, connection.sourceServiceId),
+				columns: {
+					appName: true,
+					databasePassword: true,
+				},
+			});
+			if (!source) return [];
+
+			return [
+				{ key: "LIBSQL_URL", value: `http://${source.appName}:8080` },
+				{ key: "LIBSQL_AUTH_TOKEN", value: source.databasePassword },
+			];
+		}
+		default:
+			return [];
+	}
+};
+
+const readTargetEnv = async (connection: WorkspaceConnection) => {
+	switch (connection.targetServiceType) {
+		case "application":
+			return db.query.applications.findFirst({
+				where: eq(applications.applicationId, connection.targetServiceId),
+				columns: { env: true },
+			});
+		case "compose":
+			return db.query.compose.findFirst({
+				where: eq(compose.composeId, connection.targetServiceId),
+				columns: { env: true },
+			});
+		case "postgres":
+			return db.query.postgres.findFirst({
+				where: eq(postgres.postgresId, connection.targetServiceId),
+				columns: { env: true },
+			});
+		case "mysql":
+			return db.query.mysql.findFirst({
+				where: eq(mysql.mysqlId, connection.targetServiceId),
+				columns: { env: true },
+			});
+		case "mariadb":
+			return db.query.mariadb.findFirst({
+				where: eq(mariadb.mariadbId, connection.targetServiceId),
+				columns: { env: true },
+			});
+		case "mongo":
+			return db.query.mongo.findFirst({
+				where: eq(mongo.mongoId, connection.targetServiceId),
+				columns: { env: true },
+			});
+		case "redis":
+			return db.query.redis.findFirst({
+				where: eq(redis.redisId, connection.targetServiceId),
+				columns: { env: true },
+			});
+		case "libsql":
+			return db.query.libsql.findFirst({
+				where: eq(libsql.libsqlId, connection.targetServiceId),
+				columns: { env: true },
+			});
+	}
+};
+
+const updateTargetEnv = async (
+	connection: WorkspaceConnection,
+	env: string,
+) => {
+	switch (connection.targetServiceType) {
+		case "application":
+			return db
+				.update(applications)
+				.set({ env })
+				.where(eq(applications.applicationId, connection.targetServiceId))
+				.returning();
+		case "compose":
+			return db
+				.update(compose)
+				.set({ env })
+				.where(eq(compose.composeId, connection.targetServiceId))
+				.returning();
+		case "postgres":
+			return db
+				.update(postgres)
+				.set({ env })
+				.where(eq(postgres.postgresId, connection.targetServiceId))
+				.returning();
+		case "mysql":
+			return db
+				.update(mysql)
+				.set({ env })
+				.where(eq(mysql.mysqlId, connection.targetServiceId))
+				.returning();
+		case "mariadb":
+			return db
+				.update(mariadb)
+				.set({ env })
+				.where(eq(mariadb.mariadbId, connection.targetServiceId))
+				.returning();
+		case "mongo":
+			return db
+				.update(mongo)
+				.set({ env })
+				.where(eq(mongo.mongoId, connection.targetServiceId))
+				.returning();
+		case "redis":
+			return db
+				.update(redis)
+				.set({ env })
+				.where(eq(redis.redisId, connection.targetServiceId))
+				.returning();
+		case "libsql":
+			return db
+				.update(libsql)
+				.set({ env })
+				.where(eq(libsql.libsqlId, connection.targetServiceId))
+				.returning();
+	}
+};
+
+export const getWorkspaceConnectionVariableEntries = async (
+	connection: WorkspaceConnection,
+) => getConnectionVariableEntriesFromSource(connection);
+
+export const applyWorkspaceConnectionVariables = async (
+	connection: WorkspaceConnection,
+) => {
+	const entries = await getConnectionVariableEntriesFromSource(connection);
+
+	if (entries.length === 0) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "This connection does not expose generated variables yet",
+		});
+	}
+
+	const target = await readTargetEnv(connection);
+	if (!target) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Target service not found",
+		});
+	}
+
+	const env = upsertEnvironmentVariables(target.env, entries);
+	await updateTargetEnv(connection, env);
+
+	return {
+		env,
+		entries: entries.map(({ key }) => ({ key })),
+	};
+};
 
 export const deleteWorkspaceNodesForMissingServices = async (
 	environment: Environment,
