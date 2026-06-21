@@ -24,6 +24,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { format } from "date-fns";
 import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
+import { quote } from "shell-quote";
 import type { z } from "zod";
 import {
 	type Application,
@@ -57,18 +58,22 @@ export const getDeploymentErrorMessage = async ({
 }): Promise<string> => {
 	try {
 		if (!logPath || logPath === ".") return fallback;
+		const safeMaxLines =
+			Number.isFinite(maxLines) && maxLines > 0
+				? Math.min(Math.trunc(maxLines), 1000)
+				: 50;
 
 		let content = "";
 		if (serverId) {
 			const { stdout } = await execAsyncRemote(
 				serverId,
-				`tail -n ${maxLines} ${logPath}`,
+				`tail -n ${safeMaxLines} ${quote([logPath])}`,
 			);
 			content = stdout;
 		} else {
 			if (!existsSync(logPath)) return fallback;
 			const fileContent = await fsPromises.readFile(logPath, "utf-8");
-			content = fileContent.trim().split("\n").slice(-maxLines).join("\n");
+			content = fileContent.trim().split("\n").slice(-safeMaxLines).join("\n");
 		}
 
 		const trimmed = content.trim();

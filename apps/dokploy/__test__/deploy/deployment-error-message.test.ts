@@ -157,6 +157,25 @@ describe("getDeploymentErrorMessage", () => {
 			);
 		});
 
+		it("quotes remote log paths before shelling out", async () => {
+			vi.mocked(execProcess.execAsyncRemote).mockResolvedValue({
+				stdout: "#5 ERROR: failed to build on remote server\n",
+				stderr: "",
+			});
+
+			const logPath = "/etc/dokploy/logs/test/build;touch /tmp/leak.log";
+			await getDeploymentErrorMessage({
+				logPath,
+				serverId: "server-1",
+				fallback: FALLBACK,
+			});
+
+			const command = vi.mocked(execProcess.execAsyncRemote).mock.calls[0]?.[1];
+			expect(command).toContain("tail -n 50 ");
+			expect(command).not.toBe(`tail -n 50 ${logPath}`);
+			expect(command).toContain("/etc/dokploy/logs/test/build");
+		});
+
 		it("returns the fallback when the remote read fails", async () => {
 			vi.mocked(execProcess.execAsyncRemote).mockRejectedValue(
 				new Error("ssh connection refused"),

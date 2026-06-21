@@ -1,4 +1,7 @@
-import { redactSecrets } from "@dokploy/server/utils/process/redactSecrets";
+import {
+	redactErrorSecrets,
+	redactSecrets,
+} from "@dokploy/server/utils/process/redactSecrets";
 import { describe, expect, it } from "vitest";
 
 // All key material below is synthetic: these base64 strings decode to the
@@ -34,5 +37,22 @@ describe("redactSecrets", () => {
 			"git clone --branch main --depth 1 git@github.com:org/repo.git /tmp/code";
 
 		expect(redactSecrets(command)).toBe(command);
+	});
+
+	it("redacts secrets from original exec error output properties", () => {
+		const secret = "c3ludGhldGljLXRlc3Qtbm90LWEtcmVhbC1vdXRwdXQta2V5";
+		const command = `echo "${secret}" | base64 -d > "/etc/dokploy/cert.key";`;
+		const error = Object.assign(new Error(`Command failed: ${command}`), {
+			cmd: command,
+			stdout: `stdout private key leaked: ${secret}`,
+			stderr: Buffer.from(`stderr secret leaked: ${secret}`),
+		});
+
+		const redacted = redactErrorSecrets(error);
+
+		expect(redacted.message).not.toContain(secret);
+		expect(redacted.cmd).not.toContain(secret);
+		expect(redacted.stdout).not.toContain(secret);
+		expect(redacted.stderr?.toString()).not.toContain(secret);
 	});
 });

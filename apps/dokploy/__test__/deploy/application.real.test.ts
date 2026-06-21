@@ -64,6 +64,9 @@ vi.mock("@dokploy/server/services/deployment", () => ({
 	createDeployment: vi.fn(),
 	updateDeploymentStatus: vi.fn(),
 	updateDeployment: vi.fn(),
+	getDeploymentErrorMessage: vi
+		.fn()
+		.mockResolvedValue("Error building, check the logs for details."),
 }));
 
 vi.mock("@dokploy/server/utils/notifications/build-success", () => ({
