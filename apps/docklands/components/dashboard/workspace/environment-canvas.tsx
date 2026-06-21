@@ -1075,6 +1075,58 @@ export const EnvironmentCanvas = ({
 		() => resolveWorkspaceConnectionGroups(nodes, connections),
 		[nodes, connections],
 	);
+	const connectionGroupSummaries = useMemo(
+		() =>
+			connectionGroups.map((group, index) => {
+				const groupServices = group.nodeKeys
+					.map((nodeKey) => servicesByKey.get(nodeKey))
+					.filter((service): service is WorkspaceService => Boolean(service));
+				const groupNodeKeySet = new Set(group.nodeKeys);
+				const runtimeServices = groupServices.filter((service) =>
+					deploymentServiceTypes.has(service.type),
+				);
+				const dataServices = groupServices.filter((service) =>
+					canWorkspaceServiceExposeVariables(service.type),
+				);
+				const leadRuntimeService = runtimeServices[0];
+				const leadService = leadRuntimeService ?? groupServices[0];
+				const title =
+					leadRuntimeService && dataServices.length > 0
+						? `${leadRuntimeService.name} stack`
+						: groupServices.length <= 2
+							? groupServices.map((service) => service.name).join(" + ")
+							: `${leadService?.name ?? "Service"} group`;
+				const connectionCount = connections.filter((connection) => {
+					const sourceKey = getWorkspaceServiceKey(
+						connection.sourceServiceType,
+						connection.sourceServiceId,
+					);
+					const targetKey = getWorkspaceServiceKey(
+						connection.targetServiceType,
+						connection.targetServiceId,
+					);
+					return (
+						groupNodeKeySet.has(sourceKey) && groupNodeKeySet.has(targetKey)
+					);
+				}).length;
+
+				return {
+					...group,
+					index,
+					title,
+					connectionCount,
+					serviceCount: groupServices.length,
+					runtimeCount: runtimeServices.length,
+					dataCount: dataServices.length,
+					searchText: groupServices
+						.map(
+							(service) => `${service.name} ${serviceTypeLabels[service.type]}`,
+						)
+						.join(" "),
+				};
+			}),
+		[connectionGroups, connections, servicesByKey],
+	);
 	const selectedConnections = selectedService
 		? connections.filter(
 				(connection) =>
@@ -1327,6 +1379,18 @@ export const EnvironmentCanvas = ({
 
 	const clearBulkSelection = () => {
 		setSelectedBulkKeys([]);
+	};
+
+	const selectServiceGroup = (nodeKeys: string[]) => {
+		const selectableKeys = nodeKeys.filter((nodeKey) =>
+			servicesByKey.has(nodeKey),
+		);
+		if (selectableKeys.length === 0) return;
+
+		setConnectSource(null);
+		setIsSelectionMode(true);
+		setSelectedBulkKeys(selectableKeys);
+		closeSelectedService();
 	};
 
 	const resetCanvasFilters = () => {
@@ -2254,6 +2318,18 @@ export const EnvironmentCanvas = ({
 					},
 				]
 			: []),
+		...connectionGroupSummaries.map((group) => ({
+			id: `group:${group.id}`,
+			group: "Actions" as const,
+			label: `Select ${group.title}`,
+			detail: `${group.serviceCount} services · ${group.connectionCount} links`,
+			search: `${group.title} ${group.searchText} service group stack connected graph select bulk`,
+			icon: <CircuitBoard className="size-5 text-muted-foreground" />,
+			run: () => {
+				setCommandOpen(false);
+				selectServiceGroup(group.nodeKeys);
+			},
+		})),
 		...[
 			{
 				id: "system:web-server",
@@ -2696,22 +2772,54 @@ export const EnvironmentCanvas = ({
 							backgroundSize: "32px 32px",
 						}}
 					>
-						{connectionGroups.map((group, index) => (
-							<div
-								key={group.id}
-								className="pointer-events-none absolute rounded-xl border border-dashed border-kumo-line bg-background/35"
-								style={{
-									left: group.x,
-									top: group.y,
-									width: group.width,
-									height: group.height,
-								}}
-							>
-								<div className="absolute left-3 top-3 rounded-md border bg-background/80 px-2 py-1 text-xs font-medium text-muted-foreground shadow-sm">
-									Service group {index + 1} · {group.nodeKeys.length} services
+						{connectionGroupSummaries.map((group) => {
+							const groupSelected = group.nodeKeys.every((nodeKey) =>
+								selectedBulkKeySet.has(nodeKey),
+							);
+
+							return (
+								<div
+									key={group.id}
+									className={cn(
+										"pointer-events-none absolute rounded-xl border border-dashed bg-background/35",
+										groupSelected
+											? "border-primary/80 bg-primary/5"
+											: "border-kumo-line",
+									)}
+									style={{
+										left: group.x,
+										top: group.y,
+										width: group.width,
+										height: group.height,
+									}}
+								>
+									<div className="pointer-events-auto absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-md border bg-background/90 px-2 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
+										<div className="min-w-0">
+											<p className="truncate font-medium text-foreground">
+												{group.title || `Service group ${group.index + 1}`}
+											</p>
+											<div className="flex flex-wrap gap-x-2 gap-y-0.5">
+												<span>{group.serviceCount} services</span>
+												<span>{group.connectionCount} links</span>
+												{group.runtimeCount > 0 && (
+													<span>{group.runtimeCount} runtimes</span>
+												)}
+												{group.dataCount > 0 && (
+													<span>{group.dataCount} data stores</span>
+												)}
+											</div>
+										</div>
+										<button
+											type="button"
+											className="shrink-0 rounded border px-2 py-1 font-medium text-foreground transition hover:bg-muted"
+											onClick={() => selectServiceGroup(group.nodeKeys)}
+										>
+											{groupSelected ? "Selected" : "Select group"}
+										</button>
+									</div>
 								</div>
-							</div>
-						))}
+							);
+						})}
 
 						<svg
 							className="pointer-events-none absolute inset-0"
