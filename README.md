@@ -1,64 +1,62 @@
-<div align="center">
-  <a href="https://dokploy.com">
-    <img src=".github/sponsors/logo.png" alt="Dokploy - Open Source Alternative to Vercel, Heroku and Netlify." width="100%"  />
-  </a>
-  </br>
-  </br>
-  <p>Join us on Discord for help, feedback, and discussions!</p>
-  <a href="https://discord.gg/2tBnJ3jDJc">
-    <img src="https://discordapp.com/api/guilds/1234073262418563112/widget.png?style=banner2" alt="Discord Shield"/>
-  </a>
-</div>
-<br />
+# Docklands
 
+Docklands is a community fork of [Dokploy](https://github.com/Dokploy/dokploy), focused on a cleaner self-hosted deployment control plane with a more deliberate product direction.
 
-Dokploy is a free, self-hostable Platform as a Service (PaaS) that simplifies the deployment and management of applications and databases.
+The current branch starts from Dokploy `canary`, keeps the useful upstream base, and adds a small curated set of reviewed fixes. The next major workstream is the Docklands identity and UI refresh.
 
-## ✨ Features
+## Status
 
-Dokploy includes multiple features to make your life easier.
+Docklands is early and should be treated as a fork-in-progress.
 
-- **Applications**: Deploy any type of application (Node.js, PHP, Python, Go, Ruby, etc.).
-- **Databases**: Create and manage databases with support for MySQL, PostgreSQL, MongoDB, MariaDB, libsql, and Redis.
-- **Backups**: Automate backups for databases to an external storage destination.
-- **Docker Compose**: Native support for Docker Compose to manage complex applications.
-- **Multi Node**: Scale applications to multiple nodes using Docker Swarm to manage the cluster.
-- **Templates**: Deploy open-source templates (Plausible, Pocketbase, Calcom, etc.) with a single click.
-- **Traefik Integration**: Automatically integrates with Traefik for routing and load balancing.
-- **Real-time Monitoring**: Monitor CPU, memory, storage, and network usage for every resource.
-- **Docker Management**: Easily deploy and manage Docker containers.
-- **CLI/API**: Manage your applications and databases using the command line or through the API.
-- **Notifications**: Get notified when your deployments succeed or fail (via Slack, Discord, Telegram, Email, etc.).
-- **Multi Server**: Deploy and manage your applications remotely to external servers.
-- **Self-Hosted**: Self-host Dokploy on your VPS.
+- Forked from Dokploy and kept on `canary`.
+- Extra upstream branches were removed from this fork; only `canary` and `main` are kept.
+- A first batch of security-positive upstream PRs was merged after review.
+- Remaining upstream PRs are intentionally not mass-merged. Most need dedicated security or product review.
 
-## 🚀 Getting Started
+## What It Does
 
-To get started, run the following command on a VPS:
+Docklands inherits Dokploy's core capabilities:
 
-Want to skip the installation process? [Try the Dokploy Cloud](https://app.dokploy.com).
+- Deploy applications from Git, Docker images, and Docker Compose.
+- Manage PostgreSQL, MySQL, MariaDB, MongoDB, Redis, and libSQL services.
+- Route traffic through Traefik.
+- Run database and volume backups.
+- Manage multi-server Docker deployments.
+- Monitor deployments, logs, resources, and service state.
+- Send deployment notifications through configured providers.
+
+## Development
+
+This repository uses `pnpm` workspaces.
 
 ```bash
-curl -sSL https://dokploy.com/install.sh | bash
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm test
 ```
 
-For detailed documentation, visit [docs.dokploy.com](https://docs.dokploy.com).
+The upstream project currently declares Node `^24.4.0`, so use Node 24.x for CI-quality validation.
 
+## Security And PR Policy
 
-[Github Sponsors](https://github.com/sponsors/Siumauricio)
+Docklands does not blindly merge the upstream PR backlog.
 
-### Contributors 🤝
+PRs that touch auth, secrets, Docker/runtime execution, deployment commands, backups, domains, TLS, webhooks, cloud providers, or dependency/toolchain behavior require a focused security review before merge.
 
-<a href="https://github.com/dokploy/dokploy/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=dokploy/dokploy" alt="Contributors" />
-</a>
+The first backlog audit is stored outside the repository in the Codex workspace output:
 
-## 📺 Video Tutorial
+```text
+outputs/docklands-pr-security-audit.md
+```
 
-<a href="https://youtu.be/mznYKPvhcfw">
-  <img src="https://dokploy.com/banner.png" alt="Watch the video" width="400"/>
-</a>
+## Attribution
 
-## 🤝 Contributing
+Docklands is based on Dokploy. The original project, contributors, and licensing remain important context. See:
 
-Check out the [Contributing Guide](CONTRIBUTING.md) for more information.
+- [Dokploy upstream](https://github.com/Dokploy/dokploy)
+- [LICENSE.MD](LICENSE.MD)
+- [LICENSE_PROPRIETARY.md](LICENSE_PROPRIETARY.md)
+
+## Contributing
+
+This fork is still being shaped. For now, keep changes small, review security-sensitive behavior carefully, and prefer focused PRs over broad rewrites.

@@ -7,7 +7,7 @@ body:
       value: |
         Before opening a new issue, please do a search of existing issues.
 
-        If you need help with your own project, you can start a discussion in the [Q&A Section](https://github.com/Dokploy/dokploy/discussions).
+        If you need help with your own project, open a separate issue in this repository.
   - type: textarea
     attributes:
       label: To Reproduce
@@ -17,7 +17,7 @@ body:
 
         If possible, provide a link to a repository or project where the issue can be reproduced.
       placeholder: |
-        1. Create a application
+        1. Create an application
         2. Click X
         3. Y will happen
 
@@ -43,10 +43,10 @@ body:
         Operating System:
           OS: Ubuntu 20.04
           Arch: arm64
-        Dokploy version: 0.2.2'
+        Docklands commit/version:
         VPS Provider: DigitalOcean, Hetzner, Linode, etc.
-        What applications/services are you tying to deploy?
-         eg - Database, Nextjs App, laravel, etc.
+        What applications/services are you trying to deploy?
+         eg - Database, Next.js app, Laravel, etc.
     validations:
       required: true
   - type: dropdown
@@ -62,14 +62,14 @@ body:
         - "Docker"
         - "Remote server"
         - "Local Development"
-        - "Cloud Version"
+        - "Fork/branding"
     validations:
       required: true
   - type: dropdown
     attributes:
-      label: Are you deploying the applications where Dokploy is installed or on a remote server?
+      label: Are you deploying applications where Docklands is installed or on a remote server?
       options:
-        - "Same server where Dokploy is installed"
+        - "Same server where Docklands is installed"
         - "Remote server"
         - "Both"
     validations:
