@@ -1,14 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Server } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -17,8 +18,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 import { AddSwarmSettings } from "./modify-swarm-settings";
 
 interface Props {
@@ -108,11 +108,11 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 			replicas: data?.replicas,
 		})
 			.then(async () => {
-				toast.success("Command Updated");
+				toast.success("Orchestration settings updated");
 				await refetch();
 			})
 			.catch(() => {
-				toast.error("Error updating the command");
+				toast.error("Error updating orchestration settings");
 			});
 	};
 
@@ -120,17 +120,15 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 		<LayerCard className="bg-background">
 			<div className="flex flex-row justify-between">
 				<div>
-					<h3 className="text-xl">Cluster Settings</h3>
-					<p>
-						Modify swarm settings for the service.
-					</p>
+					<h3 className="text-xl">Orchestration Settings</h3>
+					<p>Control how this service is scheduled across runtime workers.</p>
 				</div>
 				<AddSwarmSettings id={id} type={type} />
 			</div>
 			<div className="flex flex-col gap-4">
 				<AlertBlock type="info">
-					Please remember to click Redeploy after modify the cluster settings to
-					apply the changes.
+					Click Redeploy after modifying orchestration settings to apply the
+					changes.
 				</AlertBlock>
 				<Form {...form}>
 					<form
@@ -170,13 +168,13 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 										<div className="flex flex-col items-center gap-3">
 											<Server className="size-8 text-muted-foreground" />
 											<span className="text-base text-muted-foreground">
-												To use a cluster feature, you need to configure at least
-												a registry first. Please, go to{" "}
+												To use multi-worker orchestration, configure at least
+												one registry first. Go to{" "}
 												<Link
 													href="/dashboard/settings/cluster"
 													className="text-foreground"
 												>
-													Settings
+													Orchestration Settings
 												</Link>{" "}
 												to do so.
 											</span>
@@ -190,29 +188,25 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel>Select a registry</FormLabel>
-													<Select aria-label="Select option"
+													<Select
+														aria-label="Select option"
 														onValueChange={field.onChange}
 														defaultValue={field.value}
 													>
-														<>
-															
-														</>
-														<>
-															<Select.Group>
-																{registries?.map((registry) => (
-																	<Select.Option
-																		key={registry.registryId}
-																		value={registry.registryId}
-																	>
-																		{registry.registryName}
-																	</Select.Option>
-																))}
-																<Select.Option value={"none"}>None</Select.Option>
-																<Select.GroupLabel>
-																	Registries ({registries?.length})
-																</Select.GroupLabel>
-															</Select.Group>
-														</>
+														<Select.Group>
+															{registries?.map((registry) => (
+																<Select.Option
+																	key={registry.registryId}
+																	value={registry.registryId}
+																>
+																	{registry.registryName}
+																</Select.Option>
+															))}
+															<Select.Option value={"none"}>None</Select.Option>
+															<Select.GroupLabel>
+																Registries ({registries?.length})
+															</Select.GroupLabel>
+														</Select.Group>
 													</Select>
 												</FormItem>
 											)}

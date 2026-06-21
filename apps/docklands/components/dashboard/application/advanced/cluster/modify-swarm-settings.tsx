@@ -1,9 +1,9 @@
-import { Settings } from "lucide-react";
-import { useState } from "react";
-import { AlertBlock } from "@/components/shared/alert-block";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { Settings } from "lucide-react";
+import { useState } from "react";
+import { AlertBlock } from "@/components/shared/alert-block";
 import { cn } from "@/shared/utils";
 import {
 	EndpointSpecForm,
@@ -45,7 +45,7 @@ const menuItems: MenuItem[] = [
 		label: "Placement",
 		description: "Configure placement constraints",
 		docDescription:
-			"Control which nodes service tasks can be scheduled on. Constraints (node.id==xyz), Preferences (spread.node.labels.zone), MaxReplicas, and Platforms specify task placement rules.",
+			"Control which workers service tasks can be scheduled on. Constraints (node.id==xyz), Preferences (spread.node.labels.zone), MaxReplicas, and Platforms specify task placement rules.",
 	},
 	{
 		id: "update-config",
@@ -66,7 +66,7 @@ const menuItems: MenuItem[] = [
 		label: "Mode",
 		description: "Configure service mode",
 		docDescription:
-			"Set service mode to either 'Replicated' with a specified number of tasks (Replicas), or 'Global' (one task per node).",
+			"Set service mode to either 'Replicated' with a specified number of tasks (Replicas), or 'Global' (one task per worker).",
 	},
 	{
 		id: "network",
@@ -122,19 +122,19 @@ export const AddSwarmSettings = ({ id, type }: Props) => {
 	const [open, setOpen] = useState(false);
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
-			<Dialog.Trigger render={(
-
-				<Button variant="secondary" className="cursor-pointer w-fit">
-					<Settings className="size-4 text-muted-foreground" />
-					Swarm Settings
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button variant="secondary" className="cursor-pointer w-fit">
+						<Settings className="size-4 text-muted-foreground" />
+						Advanced Orchestration
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-6xl max-h-[85vh]">
 				<div>
-					<Dialog.Title>Swarm Settings</Dialog.Title>
+					<Dialog.Title>Advanced Orchestration</Dialog.Title>
 					<Dialog.Description>
-						Configure swarm settings for your service.
+						Configure the lower-level scheduling settings for this service.
 					</Dialog.Description>
 				</div>
 				<div>
@@ -150,12 +150,12 @@ export const AddSwarmSettings = ({ id, type }: Props) => {
 						<nav className="space-y-1">
 							<TooltipProvider>
 								{menuItems.map((item) => (
-									<Tooltip key={item.id} side="right" className="max-w-xs" content={(
-
-											<p className="text-xs">{item.docDescription}</p>
-										
-)} render={(
-
+									<Tooltip
+										key={item.id}
+										side="right"
+										className="max-w-xs"
+										content={<p className="text-xs">{item.docDescription}</p>}
+										render={
 											<button
 												type="button"
 												onClick={() => setActiveMenu(item.id)}
@@ -171,8 +171,8 @@ export const AddSwarmSettings = ({ id, type }: Props) => {
 													{item.description}
 												</div>
 											</button>
-										
-)} />
+										}
+									/>
 								))}
 							</TooltipProvider>
 						</nav>

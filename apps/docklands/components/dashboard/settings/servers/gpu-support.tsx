@@ -1,11 +1,11 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { CheckCircle2, Cpu, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { toast } from "@/components/shared/toast";
 
 interface GPUSupportProps {
 	serverId?: string;
@@ -39,7 +39,7 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 		onError: (error) => {
 			toast.error(
 				error.message ||
-					"Failed to enable GPU support. Please check server logs.",
+					"Failed to enable GPU support. Please check runtime logs.",
 			);
 			setIsLoading(false);
 		},
@@ -62,7 +62,7 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 
 	const handleEnableGPU = async () => {
 		if (serverId === undefined) {
-			toast.error("No server selected");
+			toast.error("No runtime selected");
 			return;
 		}
 
@@ -84,14 +84,12 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 									<Cpu className="size-5" />
 									<h3 className="text-xl">GPU Configuration</h3>
 								</div>
-								<p>
-									Configure and monitor GPU support
-								</p>
+								<p>Configure and monitor GPU support</p>
 							</div>
 							<div className="flex items-center gap-2">
 								<DialogAction
 									title="Enable GPU Support?"
-									description="This will enable GPU support for Docker Swarm on this server. Make sure you have the required hardware and drivers installed."
+									description="This will enable GPU support for orchestration on this runtime worker. Make sure you have the required hardware and drivers installed."
 									onClick={handleEnableGPU}
 								>
 									<Button
@@ -105,7 +103,8 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 												: "Enable GPU"}
 									</Button>
 								</DialogAction>
-								<Button aria-label="Refresh"
+								<Button
+									aria-label="Refresh"
 									shape="square"
 									onClick={handleRefresh}
 									disabled={isChecking || isRefreshing}
@@ -198,7 +197,7 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 								{/* Configuration Status */}
 								<div className="border rounded-lg p-4">
 									<h3 className="text-lg font-semibold mb-1">
-										Docker Swarm GPU Status
+										Orchestration GPU Status
 									</h3>
 									<p className="text-sm text-muted-foreground mb-4">
 										Shows the configuration state that changes with the Enable
@@ -215,7 +214,7 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 											}
 										/>
 										<StatusRow
-											label="Swarm GPU Support"
+											label="Orchestration GPU Support"
 											isEnabled={gpuStatus?.swarmEnabled}
 											description={
 												gpuStatus?.swarmEnabled
