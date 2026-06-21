@@ -208,27 +208,27 @@ export const addDomainToCompose = async (
 			labels.unshift(...httpLabels);
 			if (!compose.isolatedDeployment) {
 				if (compose.composeType === "docker-compose") {
-					if (!labels.includes("traefik.docker.network=dokploy-network")) {
-						labels.unshift("traefik.docker.network=dokploy-network");
+					if (!labels.includes("traefik.docker.network=docklands-network")) {
+						labels.unshift("traefik.docker.network=docklands-network");
 					}
 				} else {
 					// Stack Case
-					if (!labels.includes("traefik.swarm.network=dokploy-network")) {
-						labels.unshift("traefik.swarm.network=dokploy-network");
+					if (!labels.includes("traefik.swarm.network=docklands-network")) {
+						labels.unshift("traefik.swarm.network=docklands-network");
 					}
 				}
 			}
 		}
 
 		if (!compose.isolatedDeployment) {
-			// Add the dokploy-network to the service
+			// Add the docklands-network to the service
 			result.services[serviceName].networks = addDocklandsNetworkToService(
 				result.services[serviceName].networks,
 			);
 		}
 	}
 
-	// Add dokploy-network to the root of the compose file
+	// Add docklands-network to the root of the compose file
 	if (!compose.isolatedDeployment) {
 		result.networks = addDocklandsNetworkToRoot(result.networks);
 	}
@@ -351,7 +351,7 @@ export const addDocklandsNetworkToService = (
 	networkService: DefinitionsService["networks"],
 ) => {
 	let networks = networkService;
-	const network = "dokploy-network";
+	const network = "docklands-network";
 	const defaultNetwork = "default";
 	if (!networks) {
 		networks = [];
@@ -380,7 +380,7 @@ export const addDocklandsNetworkToRoot = (
 	networkRoot: PropertiesNetworks | undefined,
 ) => {
 	let networks = networkRoot;
-	const network = "dokploy-network";
+	const network = "docklands-network";
 
 	if (!networks) {
 		networks = {};

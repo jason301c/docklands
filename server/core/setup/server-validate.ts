@@ -64,7 +64,7 @@ export const validateBuildpacks = () => `
 `;
 
 export const validateMainDirectory = () => `
-  if [ -d "/etc/dokploy" ]; then
+  if [ -d "/etc/docklands" ]; then
 	echo true
   else
 	echo false
@@ -72,7 +72,7 @@ export const validateMainDirectory = () => `
 `;
 
 export const validateDocklandsNetwork = () => `
-  if docker network ls | grep -q 'dokploy-network'; then
+  if docker network ls | grep -q 'docklands-network'; then
 	echo true
   else
 	echo false

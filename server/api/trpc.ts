@@ -8,7 +8,6 @@
  */
 
 import type { IncomingHttpHeaders, IncomingMessage } from "node:http";
-import type { OpenApiMeta } from "@dokploy/trpc-openapi";
 import { initTRPC, TRPCError } from "@trpc/server";
 import type { FetchCreateContextFnOptions } from "@trpc/server/adapters/fetch";
 import type { Session, User } from "better-auth";
@@ -21,6 +20,7 @@ import {
 	validateRequest,
 	validateRequestHeaders,
 } from "@/server/core/lib/auth";
+import type { OpenApiMeta } from "@/server/core/openapi/types";
 import { checkPermission } from "@/server/core/services/permission";
 
 type Resource = keyof typeof statements;

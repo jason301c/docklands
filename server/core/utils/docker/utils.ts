@@ -150,7 +150,7 @@ export const getContainerByName = (name: string): Promise<ContainerInfo> => {
 /**
  * Docker commands sent using this method are held in a hold when Docker is busy.
  *
- * https://github.com/dokploy/dokploy/pull/3064
+ * This avoids racing Docker while another Docker command is already active.
  */
 export const dockerSafeExec = (exec: string) => `
 CHECK_INTERVAL=10
@@ -305,7 +305,7 @@ export const getDockerDiskUsage = async (): Promise<DockerDiskUsageItem[]> => {
 /**
  * Volume cleanup should always be performed manually by the user. The reason is that during automatic cleanup, a volume may be deleted due to a stopped container, which is a dangerous situation.
  *
- * https://github.com/dokploy/dokploy/pull/3267
+ * Automatic cleanup can delete volumes from stopped containers.
  */
 const excludedCleanupAllCommands: (keyof typeof cleanupCommands)[] = [
 	"volumes",
@@ -617,7 +617,7 @@ export const generateConfigContainer = (
 					Networks: networkSwarm,
 				}
 			: {
-					Networks: [{ Target: "dokploy-network" }],
+					Networks: [{ Target: "docklands-network" }],
 				}),
 		...(endpointSpecSwarm && {
 			EndpointSpec: {
@@ -856,20 +856,20 @@ const getSwarmServiceContainerId = async (
 };
 
 export const checkPostgresHealth = async (): Promise<ServiceHealthStatus> => {
-	const serviceCheck = await checkSwarmServiceRunning("dokploy-postgres");
+	const serviceCheck = await checkSwarmServiceRunning("docklands-postgres");
 	if (serviceCheck.status === "unhealthy") {
 		return serviceCheck;
 	}
 
 	// Verify PostgreSQL actually accepts connections
-	const containerId = await getSwarmServiceContainerId("dokploy-postgres");
+	const containerId = await getSwarmServiceContainerId("docklands-postgres");
 	if (!containerId) {
 		return { status: "unhealthy", message: "Could not find running container" };
 	}
 
 	try {
 		const exec = await docker.getContainer(containerId).exec({
-			Cmd: ["pg_isready", "-U", "dokploy"],
+			Cmd: ["pg_isready", "-U", "docklands"],
 			AttachStdout: true,
 			AttachStderr: true,
 		});
@@ -902,13 +902,13 @@ export const checkPostgresHealth = async (): Promise<ServiceHealthStatus> => {
 };
 
 export const checkRedisHealth = async (): Promise<ServiceHealthStatus> => {
-	const serviceCheck = await checkSwarmServiceRunning("dokploy-redis");
+	const serviceCheck = await checkSwarmServiceRunning("docklands-redis");
 	if (serviceCheck.status === "unhealthy") {
 		return serviceCheck;
 	}
 
 	// Verify Redis actually responds to PING
-	const containerId = await getSwarmServiceContainerId("dokploy-redis");
+	const containerId = await getSwarmServiceContainerId("docklands-redis");
 	if (!containerId) {
 		return { status: "unhealthy", message: "Could not find running container" };
 	}
@@ -948,7 +948,7 @@ export const checkRedisHealth = async (): Promise<ServiceHealthStatus> => {
 export const checkTraefikHealth = async (): Promise<ServiceHealthStatus> => {
 	// Traefik can run as a standalone container or a swarm service
 	try {
-		const container = docker.getContainer("dokploy-traefik");
+		const container = docker.getContainer("docklands-traefik");
 		const info = await container.inspect();
 		if (!info.State.Running) {
 			return {
@@ -959,6 +959,6 @@ export const checkTraefikHealth = async (): Promise<ServiceHealthStatus> => {
 		return { status: "healthy" };
 	} catch {
 		// Not a standalone container, check as swarm service
-		return checkSwarmServiceRunning("dokploy-traefik");
+		return checkSwarmServiceRunning("docklands-traefik");
 	}
 };

@@ -33,11 +33,11 @@ export const startLogCleanup = async (
 					`tail -n 1000 ${accessLogPath} > ${accessLogPath}.tmp && mv ${accessLogPath}.tmp ${accessLogPath}`,
 				);
 
-				// Traefik can run as a standalone container ("dokploy-traefik") or a
-				// swarm service task ("dokploy-traefik.1.<task-id>"), so resolve the
+				// Traefik can run as a standalone container ("docklands-traefik") or a
+				// swarm service task ("docklands-traefik.1.<task-id>"), so resolve the
 				// running container id dynamically instead of assuming the name.
 				const { stdout: containerId } = await execAsync(
-					'docker ps -q --filter "name=dokploy-traefik" --filter "status=running" | head -n 1',
+					'docker ps -q --filter "name=docklands-traefik" --filter "status=running" | head -n 1',
 				);
 				const traefikContainerId = containerId.trim();
 				if (!traefikContainerId) {

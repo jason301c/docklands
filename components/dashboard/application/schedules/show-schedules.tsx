@@ -30,7 +30,7 @@ import { HandleSchedules } from "./handle-schedules";
 
 interface Props {
 	id: string;
-	scheduleType?: "application" | "compose" | "server" | "dokploy-server";
+	scheduleType?: "application" | "compose" | "server" | "docklands-server";
 }
 
 export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
@@ -138,7 +138,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 													Cron: {schedule.cronExpression}
 												</Badge>
 												{schedule.scheduleType !== "server" &&
-													schedule.scheduleType !== "dokploy-server" && (
+													schedule.scheduleType !== "docklands-server" && (
 														<>
 															<span className="text-xs text-muted-foreground/50">
 																•

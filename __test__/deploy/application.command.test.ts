@@ -115,7 +115,7 @@ const createMockApplication = (overrides = {}) => ({
 	name: "Test App",
 	appName: "test-app",
 	sourceType: "git" as const,
-	customGitUrl: "https://github.com/dokploy/examples.git",
+	customGitUrl: "https://github.com/jason301c/docklands.git",
 	customGitBranch: "main",
 	customGitSSHKeyId: null,
 	buildType: "nixpacks" as const,
@@ -187,7 +187,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		const command = await cloneGitRepository(app);
 		console.log(command);
 
-		expect(command).toContain("https://github.com/dokploy/examples.git");
+		expect(command).toContain("https://github.com/jason301c/docklands.git");
 		expect(command).not.toContain("--recurse-submodules");
 		expect(command).toContain("--branch main");
 		expect(command).toContain("--depth 1");
@@ -199,7 +199,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		const command = await cloneGitRepository(app);
 
 		expect(command).toContain("--recurse-submodules");
-		expect(command).toContain("https://github.com/dokploy/examples.git");
+		expect(command).toContain("https://github.com/jason301c/docklands.git");
 	});
 
 	it("should verify nixpacks command is called with correct app", async () => {
@@ -215,7 +215,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		expect(builders.getBuildCommand).toHaveBeenCalledWith(
 			expect.objectContaining({
 				buildType: "nixpacks",
-				customGitUrl: "https://github.com/dokploy/examples.git",
+				customGitUrl: "https://github.com/jason301c/docklands.git",
 				buildPath: "/astro",
 			}),
 		);

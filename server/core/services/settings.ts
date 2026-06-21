@@ -19,6 +19,9 @@ export interface IUpdateData {
 }
 
 const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || "jason301c/docklands";
+const DOCKLANDS_DOCKER_HUB_TAGS_URL =
+	process.env.DOCKLANDS_DOCKER_HUB_TAGS_URL ||
+	"https://hub.docker.com/v2/repositories/jason301c/docklands/tags";
 
 export const DEFAULT_UPDATE_DATA: IUpdateData = {
 	latestVersion: null,
@@ -33,7 +36,7 @@ export const getDocklandsImageTag = () => {
 /** Returns Docklands docker service image digest */
 export const getServiceImageDigest = async () => {
 	const { stdout } = await execAsync(
-		"docker service inspect dokploy --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}'",
+		"docker service inspect docklands --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}'",
 	);
 
 	const currentDigest = stdout.trim().split("@")[1];
@@ -50,9 +53,7 @@ export const getUpdateData = async (
 	currentVersion: string,
 ): Promise<IUpdateData> => {
 	try {
-		const baseUrl =
-			"https://hub.docker.com/v2/repositories/dokploy/dokploy/tags";
-		let url: string | null = `${baseUrl}?page_size=100`;
+		let url: string | null = `${DOCKLANDS_DOCKER_HUB_TAGS_URL}?page_size=100`;
 		let allResults: { digest: string; name: string }[] = [];
 
 		// Fetch all tags from Docker Hub
@@ -289,7 +290,7 @@ export const reloadDockerResource = async (
 	const resourceType = await getDockerResourceType(resourceName, serverId);
 	let command = "";
 	if (resourceType === "service") {
-		if (resourceName === "dokploy") {
+		if (resourceName === "docklands") {
 			const currentImageTag = getDocklandsImageTag();
 			let imageTag = version;
 			if (currentImageTag === "canary" || currentImageTag === "feature") {
@@ -415,7 +416,7 @@ export const checkPortInUse = async (
 ): Promise<{ isInUse: boolean; conflictingContainer?: string }> => {
 	try {
 		// Check if port is in use by a Docker container
-		const dockerCommand = `docker ps -a --format '{{.Names}}' | grep -v '^dokploy-traefik$' | while read name; do docker port "$name" 2>/dev/null | grep -q ':${port}' && echo "$name" && break; done || true`;
+		const dockerCommand = `docker ps -a --format '{{.Names}}' | grep -v '^docklands-traefik$' | while read name; do docker port "$name" 2>/dev/null | grep -q ':${port}' && echo "$name" && break; done || true`;
 		const { stdout: dockerOut } = serverId
 			? await execAsyncRemote(serverId, dockerCommand)
 			: await execAsync(dockerCommand);
@@ -454,7 +455,7 @@ export const checkPortInUse = async (
 
 export const writeTraefikSetup = async (input: TraefikOptions) => {
 	const resourceType = await getDockerResourceType(
-		"dokploy-traefik",
+		"docklands-traefik",
 		input.serverId,
 	);
 
@@ -492,7 +493,7 @@ export const reconnectServicesToTraefik = async (serverId?: string) => {
 	let commands = "";
 
 	for (const compose of composeResult) {
-		commands += `docker network connect ${compose.appName} $(docker ps --filter "name=dokploy-traefik" -q) >/dev/null 2>&1\n`;
+		commands += `docker network connect ${compose.appName} $(docker ps --filter "name=docklands-traefik" -q) >/dev/null 2>&1\n`;
 	}
 
 	if (serverId) {

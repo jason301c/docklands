@@ -3,9 +3,9 @@ import fs from "node:fs";
 export const {
 	DATABASE_URL,
 	POSTGRES_PASSWORD_FILE,
-	POSTGRES_USER = "dokploy",
-	POSTGRES_DB = "dokploy",
-	POSTGRES_HOST = "dokploy-postgres",
+	POSTGRES_USER = "docklands",
+	POSTGRES_DB = "docklands",
+	POSTGRES_HOST = "docklands-postgres",
 	POSTGRES_PORT = "5432",
 } = process.env;
 
@@ -39,9 +39,9 @@ if (DATABASE_URL) {
 
 	if (process.env.NODE_ENV === "production") {
 		dbUrl =
-			"postgres://docklands:amukds4wi9001583845717ad2@dokploy-postgres:5432/dokploy";
+			"postgres://docklands:amukds4wi9001583845717ad2@docklands-postgres:5432/docklands";
 	} else {
 		dbUrl =
-			"postgres://docklands:amukds4wi9001583845717ad2@localhost:5432/dokploy";
+			"postgres://docklands:amukds4wi9001583845717ad2@localhost:5432/docklands";
 	}
 }

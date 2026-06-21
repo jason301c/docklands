@@ -22,7 +22,7 @@ export const restoreWebServerBackup = async (
 		const { BASE_PATH } = paths();
 
 		// Create a temporary directory outside of BASE_PATH
-		const tempDir = await mkdtemp(join(tmpdir(), "dokploy-restore-"));
+		const tempDir = await mkdtemp(join(tmpdir(), "docklands-restore-"));
 
 		try {
 			emit("Starting restore...");
@@ -85,7 +85,7 @@ export const restoreWebServerBackup = async (
 			}
 
 			const { stdout: postgresContainer } = await execAsync(
-				`docker ps --filter "name=dokploy-postgres" --filter "status=running" -q | head -n 1`,
+				`docker ps --filter "name=docklands-postgres" --filter "status=running" -q | head -n 1`,
 			);
 
 			if (!postgresContainer) {
@@ -97,17 +97,17 @@ export const restoreWebServerBackup = async (
 			// Drop and recreate database
 			emit("Disconnecting all users from database...");
 			await execAsync(
-				`docker exec ${postgresContainerId} psql -U dokploy postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'dokploy' AND pid <> pg_backend_pid();"`,
+				`docker exec ${postgresContainerId} psql -U docklands postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'docklands' AND pid <> pg_backend_pid();"`,
 			);
 
 			emit("Dropping existing database...");
 			await execAsync(
-				`docker exec ${postgresContainerId} psql -U dokploy postgres -c "DROP DATABASE IF EXISTS dokploy;"`,
+				`docker exec ${postgresContainerId} psql -U docklands postgres -c "DROP DATABASE IF EXISTS docklands;"`,
 			);
 
 			emit("Creating fresh database...");
 			await execAsync(
-				`docker exec ${postgresContainerId} psql -U dokploy postgres -c "CREATE DATABASE dokploy;"`,
+				`docker exec ${postgresContainerId} psql -U docklands postgres -c "CREATE DATABASE docklands;"`,
 			);
 
 			// Copy the backup file into the container
@@ -125,7 +125,7 @@ export const restoreWebServerBackup = async (
 			// Restore from the copied file
 			emit("Running database restore...");
 			await execAsync(
-				`docker exec ${postgresContainerId} pg_restore -v -U dokploy -d dokploy /tmp/database.sql`,
+				`docker exec ${postgresContainerId} pg_restore -v -U docklands -d docklands /tmp/database.sql`,
 			);
 
 			// Cleanup the temporary file in the container

@@ -99,7 +99,7 @@ export const sendBuildErrorNotifications = async ({
 				if (email) {
 					await sendEmailNotification(
 						email,
-						"Build failed for dokploy",
+						"Build failed for docklands",
 						template,
 					);
 				}
@@ -107,7 +107,7 @@ export const sendBuildErrorNotifications = async ({
 				if (resend) {
 					await sendResendNotification(
 						resend,
-						"Build failed for dokploy",
+						"Build failed for docklands",
 						template,
 					);
 				}

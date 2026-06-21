@@ -24,7 +24,7 @@ describe("redactSecrets", () => {
 
 	it("redacts a base64 key piped to base64 -d", () => {
 		const secret = "c3ludGhldGljLXRlc3Qtbm90LWEtcmVhbC1jZXJ0LWtleQ==";
-		const command = `echo "${secret}" | base64 -d > "/etc/dokploy/cert.key";`;
+		const command = `echo "${secret}" | base64 -d > "/etc/docklands/cert.key";`;
 
 		const redacted = redactSecrets(command);
 
@@ -41,7 +41,7 @@ describe("redactSecrets", () => {
 
 	it("redacts secrets from original exec error output properties", () => {
 		const secret = "c3ludGhldGljLXRlc3Qtbm90LWEtcmVhbC1vdXRwdXQta2V5";
-		const command = `echo "${secret}" | base64 -d > "/etc/dokploy/cert.key";`;
+		const command = `echo "${secret}" | base64 -d > "/etc/docklands/cert.key";`;
 		const error = Object.assign(new Error(`Command failed: ${command}`), {
 			cmd: command,
 			stdout: `stdout private key leaked: ${secret}`,

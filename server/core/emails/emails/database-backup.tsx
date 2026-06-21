@@ -21,7 +21,7 @@ export type TemplateProps = {
 };
 
 export const DatabaseBackupEmail = ({
-	projectName = "dokploy",
+	projectName = "docklands",
 	applicationName = "frontend",
 	databaseType = "postgres",
 	type = "success",

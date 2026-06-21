@@ -60,8 +60,8 @@ export const getContainers = async (serverId?: string | null) => {
 			})
 			.filter(
 				(container) =>
-					!container.name.includes("dokploy") ||
-					container.name.includes("dokploy-monitoring"),
+					!container.name.includes("docklands") ||
+					container.name.includes("docklands-monitoring"),
 			);
 
 		return containers;
@@ -573,7 +573,7 @@ export const getNodeApplications = async (serverId?: string) => {
 			.trim()
 			.split("\n")
 			.map((line) => JSON.parse(line))
-			.filter((service) => !service.Name.startsWith("dokploy-"));
+			.filter((service) => !service.Name.startsWith("docklands-"));
 
 		return appArray;
 	} catch (error) {
@@ -680,7 +680,7 @@ export const uploadFileToContainer = async (
 		: `/${destinationPath}`;
 
 	const base64Content = fileBuffer.toString("base64");
-	const tempFileName = `dokploy-upload-${Date.now()}-${fileName.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+	const tempFileName = `docklands-upload-${Date.now()}-${fileName.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 	const tempPath = `/tmp/${tempFileName}`;
 
 	const command = `echo '${base64Content}' | base64 -d > "${tempPath}" && docker cp "${tempPath}" "${containerId}:${normalizedPath}" ; rm -f "${tempPath}"`;

@@ -95,7 +95,7 @@ export function generateJwt(options: GenerateJWTOptions = {}): string {
 		typ: "JWT",
 	});
 	if (!payload.iss) {
-		payload.iss = "dokploy";
+		payload.iss = "docklands";
 	}
 	if (!payload.iat) {
 		payload.iat = Math.floor(Date.now() / 1000);

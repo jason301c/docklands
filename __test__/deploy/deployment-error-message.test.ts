@@ -29,7 +29,7 @@ describe("getDeploymentErrorMessage", () => {
 	beforeEach(async () => {
 		vi.clearAllMocks();
 		tmpDir = await fsPromises.mkdtemp(
-			path.join(os.tmpdir(), "dokploy-log-test-"),
+			path.join(os.tmpdir(), "docklands-log-test-"),
 		);
 	});
 
@@ -145,7 +145,7 @@ describe("getDeploymentErrorMessage", () => {
 			});
 
 			const result = await getDeploymentErrorMessage({
-				logPath: "/etc/dokploy/logs/test/build.log",
+				logPath: "/etc/docklands/logs/test/build.log",
 				serverId: "server-1",
 				fallback: FALLBACK,
 			});
@@ -153,7 +153,9 @@ describe("getDeploymentErrorMessage", () => {
 			expect(result).toBe("#5 ERROR: failed to build on remote server");
 			expect(execProcess.execAsyncRemote).toHaveBeenCalledWith(
 				"server-1",
-				expect.stringContaining("tail -n 50 /etc/dokploy/logs/test/build.log"),
+				expect.stringContaining(
+					"tail -n 50 /etc/docklands/logs/test/build.log",
+				),
 			);
 		});
 
@@ -163,7 +165,7 @@ describe("getDeploymentErrorMessage", () => {
 				stderr: "",
 			});
 
-			const logPath = "/etc/dokploy/logs/test/build;touch /tmp/leak.log";
+			const logPath = "/etc/docklands/logs/test/build;touch /tmp/leak.log";
 			await getDeploymentErrorMessage({
 				logPath,
 				serverId: "server-1",
@@ -173,7 +175,7 @@ describe("getDeploymentErrorMessage", () => {
 			const command = vi.mocked(execProcess.execAsyncRemote).mock.calls[0]?.[1];
 			expect(command).toContain("tail -n 50 ");
 			expect(command).not.toBe(`tail -n 50 ${logPath}`);
-			expect(command).toContain("/etc/dokploy/logs/test/build");
+			expect(command).toContain("/etc/docklands/logs/test/build");
 		});
 
 		it("returns the fallback when the remote read fails", async () => {
@@ -182,7 +184,7 @@ describe("getDeploymentErrorMessage", () => {
 			);
 
 			const result = await getDeploymentErrorMessage({
-				logPath: "/etc/dokploy/logs/test/build.log",
+				logPath: "/etc/docklands/logs/test/build.log",
 				serverId: "server-1",
 				fallback: FALLBACK,
 			});
@@ -197,7 +199,7 @@ describe("getDeploymentErrorMessage", () => {
 			});
 
 			const result = await getDeploymentErrorMessage({
-				logPath: "/etc/dokploy/logs/test/build.log",
+				logPath: "/etc/docklands/logs/test/build.log",
 				serverId: "server-1",
 				fallback: FALLBACK,
 			});

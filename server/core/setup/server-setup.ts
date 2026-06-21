@@ -339,17 +339,17 @@ const setupDirectories = () => {
 };
 
 const setupMainDirectory = () => `
-	# Check if the /etc/dokploy directory exists
-	if [ -d /etc/dokploy ]; then
-		echo "/etc/dokploy already exists ✅"
+	# Check if the /etc/docklands directory exists
+	if [ -d /etc/docklands ]; then
+		echo "/etc/docklands already exists ✅"
 	else
-		# Create the /etc/dokploy directory
-		$SUDO_CMD mkdir -p /etc/dokploy
-		echo "Directory /etc/dokploy created ✅"
+		# Create the /etc/docklands directory
+		$SUDO_CMD mkdir -p /etc/docklands
+		echo "Directory /etc/docklands created ✅"
 	fi
 	# Ensure the current user owns the directory
 	if [ -n "$SUDO_CMD" ]; then
-		$SUDO_CMD chown -R $CURRENT_USER:$CURRENT_USER /etc/dokploy
+		$SUDO_CMD chown -R $CURRENT_USER:$CURRENT_USER /etc/docklands
 	fi
 `;
 
@@ -411,15 +411,15 @@ export const setupSwarm = () => `
 	`;
 
 const setupNetwork = () => `
-	# Check if the dokploy-network already exists
-	if $SUDO_CMD docker network ls | grep -q 'dokploy-network'; then
-		echo "Network dokploy-network already exists ✅"
+	# Check if the docklands-network already exists
+	if $SUDO_CMD docker network ls | grep -q 'docklands-network'; then
+		echo "Network docklands-network already exists ✅"
 	else
-		# Create the dokploy-network if it doesn't exist
-		if $SUDO_CMD docker network create --driver overlay --attachable dokploy-network; then
+		# Create the docklands-network if it doesn't exist
+		if $SUDO_CMD docker network create --driver overlay --attachable docklands-network; then
 			echo "Network created ✅"
 		else
-			echo "Failed to create dokploy-network ❌" >&2
+			echo "Failed to create docklands-network ❌" >&2
 			exit 1
 		fi
 	fi
@@ -613,13 +613,13 @@ const createTraefikConfig = () => {
 	const config = getDefaultServerTraefikConfig();
 
 	const command = `
-	if [ -f "/etc/dokploy/traefik/dynamic/acme.json" ]; then
-		chmod 600 "/etc/dokploy/traefik/dynamic/acme.json"
+	if [ -f "/etc/docklands/traefik/dynamic/acme.json" ]; then
+		chmod 600 "/etc/docklands/traefik/dynamic/acme.json"
 	fi
-	if [ -f "/etc/dokploy/traefik/traefik.yml" ]; then
+	if [ -f "/etc/docklands/traefik/traefik.yml" ]; then
 		echo "Traefik config already exists ✅"
 	else
-		echo "${config}" > /etc/dokploy/traefik/traefik.yml
+		echo "${config}" > /etc/docklands/traefik/traefik.yml
 	fi
 	`;
 
@@ -629,10 +629,10 @@ const createTraefikConfig = () => {
 const createDefaultMiddlewares = () => {
 	const config = getDefaultMiddlewares();
 	const command = `
-	if [ -f "/etc/dokploy/traefik/dynamic/middlewares.yml" ]; then
+	if [ -f "/etc/docklands/traefik/dynamic/middlewares.yml" ]; then
 		echo "Middlewares config already exists ✅"
 	else
-		echo "${config}" > /etc/dokploy/traefik/dynamic/middlewares.yml
+		echo "${config}" > /etc/docklands/traefik/dynamic/middlewares.yml
 	fi
 	`;
 	return command;
@@ -651,30 +651,30 @@ export const installRClone = () => `
 export const createTraefikInstance = () => {
 	const command = `
 	    # Check if dokpyloy-traefik exists
-		if $SUDO_CMD docker service inspect dokploy-traefik > /dev/null 2>&1; then
+		if $SUDO_CMD docker service inspect docklands-traefik > /dev/null 2>&1; then
 			echo "Migrating Traefik to Standalone..."
-			$SUDO_CMD docker service rm dokploy-traefik
+			$SUDO_CMD docker service rm docklands-traefik
 			sleep 8
 			echo "Traefik migrated to Standalone ✅"
 		fi
 
-		if $SUDO_CMD docker inspect dokploy-traefik > /dev/null 2>&1; then
+		if $SUDO_CMD docker inspect docklands-traefik > /dev/null 2>&1; then
 			echo "Traefik already exists ✅"
 		else
-			# Create the dokploy-traefik container
+			# Create the docklands-traefik container
 			TRAEFIK_VERSION=${TRAEFIK_VERSION}
 			$SUDO_CMD docker run -d \
-				--name dokploy-traefik \
+				--name docklands-traefik \
 				--restart always \
-				-v /etc/dokploy/traefik/traefik.yml:/etc/traefik/traefik.yml \
-				-v /etc/dokploy/traefik/dynamic:/etc/dokploy/traefik/dynamic \
+				-v /etc/docklands/traefik/traefik.yml:/etc/traefik/traefik.yml \
+				-v /etc/docklands/traefik/dynamic:/etc/docklands/traefik/dynamic \
 				-v /var/run/docker.sock:/var/run/docker.sock \
 				-p ${TRAEFIK_SSL_PORT}:${TRAEFIK_SSL_PORT} \
 				-p ${TRAEFIK_PORT}:${TRAEFIK_PORT} \
 				-p ${TRAEFIK_HTTP3_PORT}:${TRAEFIK_HTTP3_PORT}/udp \
 				traefik:v$TRAEFIK_VERSION
 
-			$SUDO_CMD docker network connect dokploy-network dokploy-traefik;
+			$SUDO_CMD docker network connect docklands-network docklands-traefik;
 			echo "Traefik version $TRAEFIK_VERSION installed ✅"
 		fi
 	`;
@@ -711,8 +711,8 @@ const setupPermissions = () => `
 		else
 			echo "User $CURRENT_USER already in docker group ✅"
 		fi
-		# Ensure the user owns the dokploy directory
-		$SUDO_CMD chown -R $CURRENT_USER:$CURRENT_USER /etc/dokploy
+		# Ensure the user owns the docklands directory
+		$SUDO_CMD chown -R $CURRENT_USER:$CURRENT_USER /etc/docklands
 		echo "Permissions configured for $CURRENT_USER ✅"
 	else
 		echo "Running as root, no extra permissions needed ✅"

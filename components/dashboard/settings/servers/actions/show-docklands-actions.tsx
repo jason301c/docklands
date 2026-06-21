@@ -52,7 +52,7 @@ export const ShowDocklandsActions = () => {
 					<TerminalModal serverId="local">
 						<span>Terminal</span>
 					</TerminalModal>
-					<ShowModalLogs appName="dokploy">
+					<ShowModalLogs appName="docklands">
 						<DropdownMenuItem
 							className="cursor-pointer"
 							onSelect={(e) => e.preventDefault()}

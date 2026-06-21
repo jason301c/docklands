@@ -11,3 +11,6 @@ This repository is intended to contain Apache-2.0-compatible code only. Upstream
 source-available/proprietary components and commercial license-server plumbing
 have been removed. Minimal disabled compatibility shims may remain where needed
 to keep open application flows compiling while replacement features are designed.
+
+This product also vendors MIT-licensed OpenAPI helper code originally published
+as @dokploy/trpc-openapi, copyright 2024 Mario Campa.

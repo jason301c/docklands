@@ -190,10 +190,10 @@ services:
   web:
     image: nginx:latest
     networks:
-      - dokploy-network
+      - docklands-network
 `;
 
-test("It shouldn't add suffix to dokploy-network in services", () => {
+test("It shouldn't add suffix to docklands-network in services", () => {
 	const composeData = parse(composeFile7) as ComposeSpecification;
 
 	const suffix = generateRandomHash();
@@ -205,7 +205,7 @@ test("It shouldn't add suffix to dokploy-network in services", () => {
 	const service = networks.web;
 
 	expect(service).toBeDefined();
-	expect(service?.networks).toContain("dokploy-network");
+	expect(service?.networks).toContain("docklands-network");
 });
 
 const composeFile8 = `
@@ -217,7 +217,7 @@ services:
     networks:
       - frontend
       - backend
-      - dokploy-network
+      - docklands-network
 
 
   api:
@@ -226,23 +226,23 @@ services:
       frontend:
         aliases:
           - api
-      dokploy-network:
+      docklands-network:
         aliases:
           - api
   redis:
     image: redis:alpine
     networks:
-      dokploy-network:
+      docklands-network:
   db:
     image: myapi:latest
     networks:
-      dokploy-network:
+      docklands-network:
         aliases:
           - apid
 
 `;
 
-test("It shouldn't add suffix to dokploy-network in services multiples cases", () => {
+test("It shouldn't add suffix to docklands-network in services multiples cases", () => {
 	const composeData = parse(composeFile8) as ComposeSpecification;
 
 	const suffix = generateRandomHash();
@@ -265,9 +265,9 @@ test("It shouldn't add suffix to dokploy-network in services multiples cases", (
 	};
 
 	expect(service).toBeDefined();
-	expect(service?.networks).toContain("dokploy-network");
+	expect(service?.networks).toContain("docklands-network");
 
-	expect(redis?.networks).toHaveProperty("dokploy-network");
-	expect(dbNetworks["dokploy-network"]).toBeDefined();
-	expect(apiNetworks["dokploy-network"]).toBeDefined();
+	expect(redis?.networks).toHaveProperty("docklands-network");
+	expect(dbNetworks["docklands-network"]).toBeDefined();
+	expect(apiNetworks["docklands-network"]).toBeDefined();
 });

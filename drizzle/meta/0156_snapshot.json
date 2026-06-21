@@ -5072,15 +5072,15 @@
           "notNull": true,
           "default": false
         },
-        "dokployRestart": {
-          "name": "dokployRestart",
+        "docklandsRestart": {
+          "name": "docklandsRestart",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "dokployBackup": {
-          "name": "dokployBackup",
+        "docklandsBackup": {
+          "name": "docklandsBackup",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -8174,7 +8174,7 @@
         "application",
         "compose",
         "server",
-        "dokploy-server"
+        "docklands-server"
       ]
     },
     "public.shellType": {

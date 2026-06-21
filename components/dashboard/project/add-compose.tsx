@@ -108,7 +108,7 @@ export const AddCompose = ({ environmentId, projectName }: Props) => {
 			environmentId,
 			composeType: data.composeType,
 			appName: data.appName,
-			serverId: data.serverId === "dokploy" ? undefined : data.serverId,
+			serverId: data.serverId === "docklands" ? undefined : data.serverId,
 		})
 			.then(async () => {
 				toast.success("Compose Created");
@@ -206,7 +206,8 @@ export const AddCompose = ({ environmentId, projectName }: Props) => {
 										<Select
 											onValueChange={field.onChange}
 											defaultValue={
-												field.value || (showLocalOption ? "dokploy" : undefined)
+												field.value ||
+												(showLocalOption ? "docklands" : undefined)
 											}
 										>
 											<SelectTrigger>
@@ -219,7 +220,7 @@ export const AddCompose = ({ environmentId, projectName }: Props) => {
 											<SelectContent>
 												<SelectGroup>
 													{showLocalOption && (
-														<SelectItem value="dokploy">
+														<SelectItem value="docklands">
 															<span className="flex items-center gap-2 justify-between w-full">
 																<span>Docklands</span>
 																<span className="text-muted-foreground text-xs self-center">

@@ -54,9 +54,9 @@ const notificationBaseSchema = z.object({
 	appDeploy: z.boolean().default(false),
 	appBuildError: z.boolean().default(false),
 	databaseBackup: z.boolean().default(false),
-	dokployBackup: z.boolean().default(false),
+	docklandsBackup: z.boolean().default(false),
 	volumeBackup: z.boolean().default(false),
-	dokployRestart: z.boolean().default(false),
+	docklandsRestart: z.boolean().default(false),
 	dockerCleanup: z.boolean().default(false),
 	serverThreshold: z.boolean().default(false),
 });
@@ -354,9 +354,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					dockerCleanup: notification.dockerCleanup,
 					webhookUrl: notification.slack?.webhookUrl,
@@ -369,9 +369,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					botToken: notification.telegram?.botToken,
 					messageThreadId: notification.telegram?.messageThreadId || "",
@@ -385,9 +385,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					webhookUrl: notification.discord?.webhookUrl,
@@ -400,9 +400,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					smtpServer: notification.email?.smtpServer,
@@ -419,9 +419,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					apiKey: notification.resend?.apiKey,
@@ -435,9 +435,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					appToken: notification.gotify?.appToken,
@@ -451,9 +451,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					accessToken: notification.ntfy?.accessToken || "",
@@ -468,9 +468,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					webhookUrl: notification.mattermost?.webhookUrl,
@@ -484,9 +484,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					type: notification.notificationType,
 					webhookUrl: notification.lark?.webhookUrl,
 					name: notification.name,
@@ -498,9 +498,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					webhookUrl: notification.teams?.webhookUrl,
@@ -512,9 +512,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					type: notification.notificationType,
 					endpoint: notification.custom?.endpoint || "",
 					headers: notification.custom?.headers
@@ -534,9 +534,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				form.reset({
 					appBuildError: notification.appBuildError,
 					appDeploy: notification.appDeploy,
-					dokployRestart: notification.dokployRestart,
+					docklandsRestart: notification.docklandsRestart,
 					databaseBackup: notification.databaseBackup,
-					dokployBackup: notification.dokployBackup,
+					docklandsBackup: notification.docklandsBackup,
 					volumeBackup: notification.volumeBackup,
 					type: notification.notificationType,
 					userKey: notification.pushover?.userKey,
@@ -573,9 +573,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 		const {
 			appBuildError,
 			appDeploy,
-			dokployRestart,
+			docklandsRestart,
 			databaseBackup,
-			dokployBackup,
+			docklandsBackup,
 			volumeBackup,
 			dockerCleanup,
 			serverThreshold,
@@ -585,9 +585,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = slackMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				channel: data.channel,
@@ -601,9 +601,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = telegramMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				botToken: data.botToken,
 				messageThreadId: data.messageThreadId || "",
@@ -618,9 +618,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = discordMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				decoration: data.decoration,
@@ -634,9 +634,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = emailMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				smtpServer: data.smtpServer,
 				smtpPort: data.smtpPort,
@@ -654,9 +654,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = resendMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				apiKey: data.apiKey,
 				fromAddress: data.fromAddress,
@@ -671,9 +671,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = gotifyMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				serverUrl: data.serverUrl,
 				appToken: data.appToken,
@@ -688,9 +688,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = ntfyMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				serverUrl: data.serverUrl,
 				accessToken: data.accessToken || "",
@@ -705,9 +705,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = mattermostMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				channel: data.channel || undefined,
@@ -722,9 +722,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = larkMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				name: data.name,
@@ -737,9 +737,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = teamsMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				webhookUrl: data.webhookUrl,
 				name: data.name,
@@ -764,9 +764,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = customMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				endpoint: data.endpoint,
 				headers: headersRecord,
@@ -784,9 +784,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 			promise = pushoverMutation.mutateAsync({
 				appBuildError: appBuildError,
 				appDeploy: appDeploy,
-				dokployRestart: dokployRestart,
+				docklandsRestart: docklandsRestart,
 				databaseBackup: databaseBackup,
-				dokployBackup: dokployBackup,
+				docklandsBackup: docklandsBackup,
 				volumeBackup: volumeBackup,
 				userKey: data.userKey,
 				apiToken: data.apiToken,
@@ -1884,7 +1884,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 
 								<FormField
 									control={form.control}
-									name="dokployBackup"
+									name="docklandsBackup"
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
 											<div className="space-y-0.5">
@@ -1949,7 +1949,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 								{!isCloud && (
 									<FormField
 										control={form.control}
-										name="dokployRestart"
+										name="docklandsRestart"
 										render={({ field }) => (
 											<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
 												<div className="space-y-0.5">

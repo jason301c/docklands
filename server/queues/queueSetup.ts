@@ -62,16 +62,16 @@ const createInMemoryQueue = (): DeploymentQueue => {
 // (relative import in server.ts vs `@/` alias in the routers); without this the
 // worker and the `add()` calls would land on different queue instances.
 const globalForQueue = globalThis as unknown as {
-	__dokployDeploymentQueue?: DeploymentQueue;
+	__docklandsDeploymentQueue?: DeploymentQueue;
 };
 
-if (!globalForQueue.__dokployDeploymentQueue) {
-	globalForQueue.__dokployDeploymentQueue = !IS_CLOUD
+if (!globalForQueue.__docklandsDeploymentQueue) {
+	globalForQueue.__docklandsDeploymentQueue = !IS_CLOUD
 		? createInMemoryQueue()
 		: createNoopQueue();
 }
 
-const myQueue: DeploymentQueue = globalForQueue.__dokployDeploymentQueue;
+const myQueue: DeploymentQueue = globalForQueue.__docklandsDeploymentQueue;
 
 /** Start processing jobs. Called once on server startup (self-hosted). */
 export const startDeploymentWorker = () => myQueue.run();

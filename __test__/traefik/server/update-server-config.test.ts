@@ -75,9 +75,9 @@ beforeEach(() => {
 });
 
 test("Should read the configuration file", () => {
-	const config: FileConfig = loadOrCreateConfig("dokploy");
-	expect(config.http?.routers?.["dokploy-router-app"]?.service).toBe(
-		"dokploy-service-app",
+	const config: FileConfig = loadOrCreateConfig("docklands");
+	expect(config.http?.routers?.["docklands-router-app"]?.service).toBe(
+		"docklands-service-app",
 	);
 });
 
@@ -91,9 +91,9 @@ test("Should apply redirect-to-https", () => {
 		"example.com",
 	);
 
-	const config: FileConfig = loadOrCreateConfig("dokploy");
+	const config: FileConfig = loadOrCreateConfig("docklands");
 
-	expect(config.http?.routers?.["dokploy-router-app"]?.middlewares).toContain(
+	expect(config.http?.routers?.["docklands-router-app"]?.middlewares).toContain(
 		"redirect-to-https",
 	);
 });
@@ -101,17 +101,17 @@ test("Should apply redirect-to-https", () => {
 test("Should change only host when no certificate", () => {
 	updateServerTraefik(baseSettings, "example.com");
 
-	const config: FileConfig = loadOrCreateConfig("dokploy");
+	const config: FileConfig = loadOrCreateConfig("docklands");
 
-	expect(config.http?.routers?.["dokploy-router-app-secure"]).toBeUndefined();
+	expect(config.http?.routers?.["docklands-router-app-secure"]).toBeUndefined();
 });
 
 test("Should not touch config without host", () => {
-	const originalConfig: FileConfig = loadOrCreateConfig("dokploy");
+	const originalConfig: FileConfig = loadOrCreateConfig("docklands");
 
 	updateServerTraefik(baseSettings, null);
 
-	const config: FileConfig = loadOrCreateConfig("dokploy");
+	const config: FileConfig = loadOrCreateConfig("docklands");
 
 	expect(originalConfig).toEqual(config);
 });
@@ -127,10 +127,10 @@ test("Should remove websecure if https rollback to http", () => {
 		"example.com",
 	);
 
-	const config: FileConfig = loadOrCreateConfig("dokploy");
+	const config: FileConfig = loadOrCreateConfig("docklands");
 
-	expect(config.http?.routers?.["dokploy-router-app-secure"]).toBeUndefined();
+	expect(config.http?.routers?.["docklands-router-app-secure"]).toBeUndefined();
 	expect(
-		config.http?.routers?.["dokploy-router-app"]?.middlewares,
+		config.http?.routers?.["docklands-router-app"]?.middlewares,
 	).not.toContain("redirect-to-https");
 });

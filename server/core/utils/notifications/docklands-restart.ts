@@ -3,7 +3,7 @@ import { format } from "date-fns";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { notifications } from "@/server/core/db/schema";
-import DocklandsRestartEmail from "@/server/core/emails/emails/dokploy-restart";
+import DocklandsRestartEmail from "@/server/core/emails/emails/docklands-restart";
 import {
 	sendCustomNotification,
 	sendDiscordNotification,
@@ -24,7 +24,7 @@ export const sendDocklandsRestartNotifications = async () => {
 		const date = new Date();
 		const unixDate = ~~(Number(date) / 1000);
 		const notificationList = await db.query.notifications.findMany({
-			where: eq(notifications.dokployRestart, true),
+			where: eq(notifications.docklandsRestart, true),
 			with: {
 				email: true,
 				discord: true,
@@ -177,7 +177,7 @@ export const sendDocklandsRestartNotifications = async () => {
 							timestamp: date.toISOString(),
 							date: date.toLocaleString(),
 							status: "success",
-							type: "dokploy-restart",
+							type: "docklands-restart",
 						});
 					} catch (error) {
 						console.log(error);

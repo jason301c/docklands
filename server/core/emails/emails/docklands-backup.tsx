@@ -73,7 +73,7 @@ export const DocklandsBackupEmail = ({
 								Backup Type: <strong>Complete Docklands Instance</strong>
 							</Text>
 							<Text className="!leading-3">
-								Content: <strong>/etc/dokploy + PostgreSQL Database</strong>
+								Content: <strong>/etc/docklands + PostgreSQL Database</strong>
 							</Text>
 							{backupSize && (
 								<Text className="!leading-3">

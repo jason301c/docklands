@@ -1,4 +1,3 @@
-import { generateOpenApiDocument } from "@dokploy/trpc-openapi";
 import { TRPCError } from "@trpc/server";
 import { eq, sql } from "drizzle-orm";
 import { scheduledJobs, scheduleJob } from "node-schedule";
@@ -23,6 +22,7 @@ import {
 	projects,
 	server,
 } from "@/server/core/db/schema";
+import { generateOpenApiDocument } from "@/server/core/openapi/generator/index.mjs";
 import { removeJob, schedule } from "@/server/core/runtime/backup";
 import { checkPermission } from "@/server/core/services/permission";
 import {
@@ -110,11 +110,11 @@ export const settingsRouter = createTRPCRouter({
 		if (IS_CLOUD) {
 			return true;
 		}
-		await reloadDockerResource("dokploy", undefined, packageInfo.version);
+		await reloadDockerResource("docklands", undefined, packageInfo.version);
 		await audit(ctx, {
 			action: "reload",
 			resourceType: "settings",
-			resourceName: "dokploy",
+			resourceName: "docklands",
 		});
 		return true;
 	}),
@@ -124,7 +124,7 @@ export const settingsRouter = createTRPCRouter({
 		}
 
 		const { stdout: containerId } = await execAsync(
-			`docker ps --filter "name=dokploy-redis" --filter "status=running" -q | head -n 1`,
+			`docker ps --filter "name=docklands-redis" --filter "status=running" -q | head -n 1`,
 		);
 
 		if (!containerId) {
@@ -145,11 +145,11 @@ export const settingsRouter = createTRPCRouter({
 		if (IS_CLOUD) {
 			return true;
 		}
-		await reloadDockerResource("dokploy-redis");
+		await reloadDockerResource("docklands-redis");
 		await audit(ctx, {
 			action: "reload",
 			resourceType: "settings",
-			resourceName: "dokploy-redis",
+			resourceName: "docklands-redis",
 		});
 		return true;
 	}),
@@ -169,7 +169,7 @@ export const settingsRouter = createTRPCRouter({
 		.input(apiServerSchema)
 		.mutation(async ({ input, ctx }) => {
 			// Run in background so the request returns immediately; avoids proxy timeouts.
-			void reloadDockerResource("dokploy-traefik", input?.serverId).catch(
+			void reloadDockerResource("docklands-traefik", input?.serverId).catch(
 				(err) => {
 					console.error("reloadTraefik background:", err);
 				},
@@ -177,16 +177,16 @@ export const settingsRouter = createTRPCRouter({
 			await audit(ctx, {
 				action: "reload",
 				resourceType: "settings",
-				resourceName: "dokploy-traefik",
+				resourceName: "docklands-traefik",
 			});
 			return true;
 		}),
 	toggleDashboard: adminProcedure
 		.input(apiEnableDashboard)
 		.mutation(async ({ input, ctx }) => {
-			const ports = await readPorts("dokploy-traefik", input.serverId);
+			const ports = await readPorts("docklands-traefik", input.serverId);
 			const env = await readEnvironmentVariables(
-				"dokploy-traefik",
+				"docklands-traefik",
 				input.serverId,
 			);
 			const preparedEnv = prepareEnvironmentVariables(env);
@@ -538,7 +538,7 @@ export const settingsRouter = createTRPCRouter({
 		if (IS_CLOUD) {
 			return true;
 		}
-		const traefikConfig = readConfig("dokploy");
+		const traefikConfig = readConfig("docklands");
 		return traefikConfig;
 	}),
 	updateWebServerTraefikConfig: adminProcedure
@@ -547,7 +547,7 @@ export const settingsRouter = createTRPCRouter({
 			if (IS_CLOUD) {
 				return true;
 			}
-			writeConfig("dokploy", input.traefikConfig);
+			writeConfig("docklands", input.traefikConfig);
 			await audit(ctx, {
 				action: "update",
 				resourceType: "settings",
@@ -598,12 +598,12 @@ export const settingsRouter = createTRPCRouter({
 				"--force",
 				"--image",
 				`${DOCKLANDS_IMAGE}:${data.latestVersion}`,
-				"dokploy",
+				"docklands",
 			]);
 			await audit(ctx, {
 				action: "update",
 				resourceType: "settings",
-				resourceName: "dokploy-version",
+				resourceName: "docklands-version",
 			});
 		}
 
@@ -741,7 +741,7 @@ export const settingsRouter = createTRPCRouter({
 
 			openApiDocument.info = {
 				title: "Docklands API",
-				description: "Endpoints for dokploy",
+				description: "Endpoints for docklands",
 				version: packageInfo.version,
 			};
 
@@ -771,7 +771,7 @@ export const settingsRouter = createTRPCRouter({
 		.input(apiServerSchema)
 		.query(async ({ input }) => {
 			const envVars = await readEnvironmentVariables(
-				"dokploy-traefik",
+				"docklands-traefik",
 				input?.serverId,
 			);
 			return envVars;
@@ -781,7 +781,7 @@ export const settingsRouter = createTRPCRouter({
 		.input(z.object({ env: z.string(), serverId: z.string().optional() }))
 		.mutation(async ({ input, ctx }) => {
 			const envs = prepareEnvironmentVariables(input.env);
-			const ports = await readPorts("dokploy-traefik", input?.serverId);
+			const ports = await readPorts("docklands-traefik", input?.serverId);
 
 			// Run in background so the request returns immediately; client polls /api/health.
 			void writeTraefikSetup({
@@ -801,7 +801,7 @@ export const settingsRouter = createTRPCRouter({
 	haveTraefikDashboardPortEnabled: adminProcedure
 		.input(apiServerSchema)
 		.query(async ({ input }) => {
-			const ports = await readPorts("dokploy-traefik", input?.serverId);
+			const ports = await readPorts("docklands-traefik", input?.serverId);
 			return ports.some((port) => port.targetPort === 8080);
 		}),
 
@@ -905,7 +905,7 @@ export const settingsRouter = createTRPCRouter({
 			if (input.enable) {
 				const config = {
 					accessLog: {
-						filePath: "/etc/dokploy/traefik/dynamic/access.log",
+						filePath: "/etc/docklands/traefik/dynamic/access.log",
 						format: "json",
 						bufferingSize: 100,
 					},
@@ -1044,7 +1044,7 @@ export const settingsRouter = createTRPCRouter({
 					});
 				}
 				const env = await readEnvironmentVariables(
-					"dokploy-traefik",
+					"docklands-traefik",
 					input?.serverId,
 				);
 
@@ -1093,7 +1093,7 @@ export const settingsRouter = createTRPCRouter({
 	getTraefikPorts: adminProcedure
 		.input(apiServerSchema)
 		.query(async ({ input }) => {
-			const ports = await readPorts("dokploy-traefik", input?.serverId);
+			const ports = await readPorts("docklands-traefik", input?.serverId);
 			return ports;
 		}),
 	updateLogCleanup: protectedProcedure

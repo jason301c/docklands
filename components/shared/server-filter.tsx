@@ -17,7 +17,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
-const DOKPLOY_SERVER = "dokploy-server";
+const DOCKLANDS_SERVER = "docklands-server";
 
 interface Props {
 	children: (serverId?: string) => ReactNode;
@@ -48,7 +48,7 @@ export const ServerFilter = ({ children }: Props) => {
 
 	const setServerId = (value: string) => {
 		const query = new URLSearchParams(searchParams?.toString() ?? "");
-		if (value === DOKPLOY_SERVER) {
+		if (value === DOCKLANDS_SERVER) {
 			query.delete("serverId");
 		} else {
 			query.set("serverId", value);
@@ -111,7 +111,7 @@ export const ServerFilter = ({ children }: Props) => {
 						Viewing server
 					</Label>
 					<Select
-						value={serverId ?? DOKPLOY_SERVER}
+						value={serverId ?? DOCKLANDS_SERVER}
 						onValueChange={setServerId}
 					>
 						<SelectTrigger id="server-filter" className="w-fit min-w-[220px]">
@@ -124,7 +124,7 @@ export const ServerFilter = ({ children }: Props) => {
 							<SelectGroup>
 								<SelectLabel>Servers</SelectLabel>
 								{!isCloud && (
-									<SelectItem value={DOKPLOY_SERVER}>
+									<SelectItem value={DOCKLANDS_SERVER}>
 										<div className="flex items-center gap-2">
 											<span>Docklands Server</span>
 											<Badge
@@ -151,7 +151,9 @@ export const ServerFilter = ({ children }: Props) => {
 					</Select>
 				</div>
 			)}
-			<Fragment key={serverId ?? DOKPLOY_SERVER}>{children(serverId)}</Fragment>
+			<Fragment key={serverId ?? DOCKLANDS_SERVER}>
+				{children(serverId)}
+			</Fragment>
 		</div>
 	);
 };

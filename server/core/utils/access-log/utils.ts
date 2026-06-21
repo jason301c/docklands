@@ -24,7 +24,7 @@ export function processLogs(
 		.map((entry) => {
 			try {
 				const log: LogEntry = JSON.parse(entry);
-				if (log.ServiceName === "dokploy-service-app@file") {
+				if (log.ServiceName === "docklands-service-app@file") {
 					return null;
 				}
 				const date = new Date(log.StartUTC);
@@ -101,7 +101,7 @@ export function parseRawConfig(
 
 		// Filter out Docklands dashboard requests
 		parsedLogs = parsedLogs.filter(
-			(log) => log.ServiceName !== "dokploy-service-app@file",
+			(log) => log.ServiceName !== "docklands-service-app@file",
 		);
 
 		// Apply date range filter if provided

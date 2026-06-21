@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This is Docklands: a fork of Dokploy focused on self-hosted deployment management. Treat it as a single-root Next.js app with a colocated backend, not as a multi-package monorepo.
+This is Docklands: a fork focused on self-hosted deployment management. Treat it as a single-root Next.js app with a colocated backend, not as a multi-package monorepo.
 
 ## AGENTS.md Scope
 
@@ -44,9 +44,9 @@ Key versions after the dependency refresh:
 Docklands is a deployment control plane, so full local development is closer to a disposable Linux VM/devbox than a normal Next-only app. It can initialize Docker Swarm, create Docker networks/services/containers/volumes, bind common ports, and mount the Docker socket.
 
 - For UI or light backend work, use a normal Node environment plus a reachable Postgres, then run `pnpm install`, copy `.env.example` to `.env`, run `pnpm migration:run`, and start `pnpm dev`. Docker-heavy deployment flows will not be representative in this mode.
-- For full local behavior, use a Docker Engine you are comfortable mutating. The setup path initializes Swarm, `dokploy-network`, Traefik, Redis, Postgres, local runtime directories, and migrations. Use `NODE_ENV=development pnpm setup` when you need Postgres and Redis published on local ports, then run `pnpm dev`.
+- For full local behavior, use a Docker Engine you are comfortable mutating. The setup path initializes Swarm, `docklands-network`, Traefik, Redis, Postgres, local runtime directories, and migrations. Use `NODE_ENV=development pnpm setup` when you need Postgres and Redis published on local ports, then run `pnpm dev`.
 - The best practical full-dev target is a disposable Linux VM/devbox with Docker Engine, Node 24, and pnpm. Avoid running full setup against a laptop Docker daemon that has important containers, networks, or port bindings.
-- Development runtime files use `.docker/`; production/server-mode paths still use `/etc/dokploy` and several Docker resources still keep Dokploy-compatible names such as `dokploy-network`, `dokploy-postgres`, `dokploy-redis`, and `dokploy-traefik`.
+- Development runtime files use `.docker/`; production/server-mode paths use `/etc/docklands` and Docker resources now use Docklands names such as `docklands-network`, `docklands-postgres`, `docklands-redis`, and `docklands-traefik`.
 - Expect possible conflicts on ports `80`, `443`, `5432`, `6379`, `3000`, and any app ports created by deployment tests or manual experiments.
 
 ## Local Documentation
@@ -125,7 +125,7 @@ pnpm migration:generate
 
 ## Branding
 
-The product name is Docklands. If user-facing copy, docs, or package names still mention Dokploy, treat that as legacy fork residue unless it is part of an upstream package name or historical migration data.
+The product name is Docklands. Active code, user-facing copy, package names, Docker resources, and runtime paths should use Docklands naming. README, NOTICE, and other historical/legal docs may still mention the upstream project where attribution requires it.
 
 ## Before Finishing
 

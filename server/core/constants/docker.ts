@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import Docker from "dockerode";
 
-export const DOKPLOY_DOCKER_API_VERSION =
-	process.env.DOKPLOY_DOCKER_API_VERSION;
-export const DOKPLOY_DOCKER_HOST = process.env.DOKPLOY_DOCKER_HOST;
-export const DOKPLOY_DOCKER_PORT = process.env.DOKPLOY_DOCKER_PORT
-	? Number(process.env.DOKPLOY_DOCKER_PORT)
+export const DOCKLANDS_DOCKER_API_VERSION =
+	process.env.DOCKLANDS_DOCKER_API_VERSION;
+export const DOCKLANDS_DOCKER_HOST = process.env.DOCKLANDS_DOCKER_HOST;
+export const DOCKLANDS_DOCKER_PORT = process.env.DOCKLANDS_DOCKER_PORT
+	? Number(process.env.DOCKLANDS_DOCKER_PORT)
 	: undefined;
 
 type DockerSocketCandidate = {
@@ -14,17 +14,17 @@ type DockerSocketCandidate = {
 };
 
 const getDockerConfig = (): Docker => {
-	const versionOption = DOKPLOY_DOCKER_API_VERSION
-		? { version: DOKPLOY_DOCKER_API_VERSION }
+	const versionOption = DOCKLANDS_DOCKER_API_VERSION
+		? { version: DOCKLANDS_DOCKER_API_VERSION }
 		: {};
 
-	if (DOKPLOY_DOCKER_HOST) {
+	if (DOCKLANDS_DOCKER_HOST) {
 		console.info(
-			`Using remote Docker host: ${DOKPLOY_DOCKER_HOST}${DOKPLOY_DOCKER_PORT ? `:${DOKPLOY_DOCKER_PORT}` : ""}`,
+			`Using remote Docker host: ${DOCKLANDS_DOCKER_HOST}${DOCKLANDS_DOCKER_PORT ? `:${DOCKLANDS_DOCKER_PORT}` : ""}`,
 		);
 		return new Docker({
-			host: DOKPLOY_DOCKER_HOST,
-			...(DOKPLOY_DOCKER_PORT && { port: DOKPLOY_DOCKER_PORT }),
+			host: DOCKLANDS_DOCKER_HOST,
+			...(DOCKLANDS_DOCKER_PORT && { port: DOCKLANDS_DOCKER_PORT }),
 			...versionOption,
 		});
 	}

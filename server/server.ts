@@ -10,7 +10,7 @@ import {
 	createDefaultTraefikConfig,
 } from "@/server/core/setup/traefik-setup";
 import { initCronJobs } from "@/server/core/utils/backups/index";
-import { sendDocklandsRestartNotifications } from "@/server/core/utils/notifications/dokploy-restart";
+import { sendDocklandsRestartNotifications } from "@/server/core/utils/notifications/docklands-restart";
 import { initSchedules } from "@/server/core/utils/schedules/index";
 import { initCancelDeployments } from "@/server/core/utils/startup/cancel-deployments";
 import { initVolumeBackupsCronJobs } from "@/server/core/utils/volume-backups/index";

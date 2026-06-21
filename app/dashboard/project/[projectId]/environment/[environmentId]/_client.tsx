@@ -983,7 +983,7 @@ const EnvironmentPage = (props: {
 				(selectedTypes.length === 0 || selectedTypes.includes(service.type)) &&
 				(selectedServerId === "" ||
 					selectedServerId === "all" ||
-					(selectedServerId === "dokploy-server" && !service.serverId) ||
+					(selectedServerId === "docklands-server" && !service.serverId) ||
 					service.serverId === selectedServerId),
 		);
 		return sortServices(filtered);
@@ -1557,7 +1557,7 @@ const EnvironmentPage = (props: {
 												<SelectContent>
 													<SelectItem value="all">All servers</SelectItem>
 													{hasServicesWithoutServer && (
-														<SelectItem value="dokploy-server">
+														<SelectItem value="docklands-server">
 															<div className="flex items-center gap-2">
 																<ServerIcon className="size-4" />
 																<span>Docklands server</span>

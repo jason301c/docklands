@@ -3,7 +3,7 @@ import path from "node:path";
 export const paths = (isServer = false) => {
 	const BASE_PATH =
 		isServer || process.env.NODE_ENV === "production"
-			? "/etc/dokploy"
+			? "/etc/docklands"
 			: path.join(process.cwd(), ".docker");
 	const MAIN_TRAEFIK_PATH = `${BASE_PATH}/traefik`;
 	const DYNAMIC_TRAEFIK_PATH = `${MAIN_TRAEFIK_PATH}/dynamic`;

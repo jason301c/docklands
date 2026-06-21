@@ -102,7 +102,7 @@ const createMockApplication = (
 		name: "Real Test App",
 		appName: `real-test-${Date.now()}`,
 		sourceType: "git" as const,
-		customGitUrl: "https://github.com/dokploy/examples.git",
+		customGitUrl: "https://github.com/jason301c/docklands.git",
 		customGitBranch: "main",
 		customGitSSHKeyId: null,
 		customGitBuildPath: "/astro",

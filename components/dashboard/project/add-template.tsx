@@ -71,7 +71,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/shared/utils";
 
-const TEMPLATE_BASE_URL_KEY = "dokploy_template_base_url";
+const TEMPLATE_BASE_URL_KEY = "docklands_template_base_url";
 
 interface Props {
 	environmentId: string;
@@ -421,7 +421,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 										>
 											{/** biome-ignore lint/performance/noImgElement: this is a valid use for img tag */}
 											<img
-												src={`${customBaseUrl || "https://templates.dokploy.com/"}/blueprints/${template?.id}/${template?.logo}`}
+												src={`${customBaseUrl || "https://templates.docklands.dev"}/blueprints/${template?.id}/${template?.logo}`}
 												className={cn(
 													"object-contain",
 													viewMode === "detailed" ? "size-24" : "size-16",
@@ -552,7 +552,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																		setServerId(e);
 																	}}
 																	defaultValue={
-																		!isCloud ? "dokploy" : undefined
+																		!isCloud ? "docklands" : undefined
 																	}
 																>
 																	<SelectTrigger>
@@ -567,7 +567,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 																	<SelectContent>
 																		<SelectGroup>
 																			{!isCloud && (
-																				<SelectItem value="dokploy">
+																				<SelectItem value="docklands">
 																					<span className="flex items-center gap-2 justify-between w-full">
 																						<span>Docklands</span>
 																						<span className="text-muted-foreground text-xs self-center">
@@ -606,7 +606,7 @@ export const AddTemplate = ({ environmentId, baseUrl }: Props) => {
 															onClick={async () => {
 																const promise = mutateAsync({
 																	serverId:
-																		serverId === "dokploy"
+																		serverId === "docklands"
 																			? undefined
 																			: serverId,
 																	environmentId,

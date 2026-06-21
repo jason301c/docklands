@@ -850,7 +850,8 @@ export default function Page({ children }: Props) {
 	const pathname = usePathname() ?? "";
 	const { data: auth } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
-	const { data: dokployVersion } = api.settings.getDocklandsVersion.useQuery();
+	const { data: docklandsVersion } =
+		api.settings.getDocklandsVersion.useQuery();
 	const { data: whitelabeling } = api.whitelabeling.get.useQuery(undefined, {
 		staleTime: 5 * 60 * 1000,
 		refetchOnWindowFocus: false,
@@ -1123,9 +1124,9 @@ export default function Page({ children }: Props) {
 								{whitelabeling.footerText}
 							</div>
 						)}
-						{dokployVersion && (
+						{docklandsVersion && (
 							<div className="px-3 text-xs text-muted-foreground text-center group-data-[collapsible=icon]:hidden">
-								Version {dokployVersion}
+								Version {docklandsVersion}
 							</div>
 						)}
 					</SidebarMenu>

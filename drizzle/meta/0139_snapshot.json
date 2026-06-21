@@ -4441,8 +4441,8 @@
           "notNull": true,
           "default": false
         },
-        "dokployRestart": {
-          "name": "dokployRestart",
+        "docklandsRestart": {
+          "name": "docklandsRestart",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -7168,7 +7168,7 @@
         "application",
         "compose",
         "server",
-        "dokploy-server"
+        "docklands-server"
       ]
     },
     "public.shellType": {

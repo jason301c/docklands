@@ -124,7 +124,7 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 			const result = await previewTemplate({
 				appName: data.appName,
 				base64: data.base64.trim(),
-				serverId: data.serverId === "dokploy" ? undefined : data.serverId,
+				serverId: data.serverId === "docklands" ? undefined : data.serverId,
 			});
 			setTemplateInfo(result);
 			setPreviewOpen(true);
@@ -143,7 +143,7 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 				appName: data.appName,
 				environmentId,
 				composeType: "docker-compose",
-				serverId: data.serverId === "dokploy" ? undefined : data.serverId,
+				serverId: data.serverId === "docklands" ? undefined : data.serverId,
 			});
 			await importCompose({
 				composeId: compose.composeId,
@@ -246,7 +246,7 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 											<Select
 												onValueChange={field.onChange}
 												defaultValue={
-													field.value || (!isCloud ? "dokploy" : undefined)
+													field.value || (!isCloud ? "docklands" : undefined)
 												}
 											>
 												<SelectTrigger>
@@ -259,7 +259,7 @@ export const AddImport = ({ environmentId, projectName }: Props) => {
 												<SelectContent>
 													<SelectGroup>
 														{!isCloud && (
-															<SelectItem value="dokploy">
+															<SelectItem value="docklands">
 																<span className="flex items-center gap-2 justify-between w-full">
 																	<span>Docklands</span>
 																	<span className="text-muted-foreground text-xs self-center">

@@ -1,8 +1,8 @@
 export { CLEANUP_CRON_JOB } from "./cleanup";
 export {
-	DOKPLOY_DOCKER_API_VERSION,
-	DOKPLOY_DOCKER_HOST,
-	DOKPLOY_DOCKER_PORT,
+	DOCKLANDS_DOCKER_API_VERSION,
+	DOCKLANDS_DOCKER_HOST,
+	DOCKLANDS_DOCKER_PORT,
 	docker,
 } from "./docker";
 export { IS_CLOUD } from "./env";

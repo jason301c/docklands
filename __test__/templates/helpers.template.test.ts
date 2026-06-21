@@ -208,7 +208,7 @@ describe("helpers functions", () => {
 			expect(decodedPayload).toHaveProperty("iat");
 			expect(decodedPayload).toHaveProperty("iss");
 			expect(decodedPayload).toHaveProperty("exp");
-			expect(decodedPayload.iss).toEqual("dokploy");
+			expect(decodedPayload.iss).toEqual("docklands");
 		});
 		it.each([
 			6, 8, 12, 16, 32,
@@ -233,7 +233,7 @@ describe("helpers functions", () => {
 			expect(decodedPayload).toHaveProperty("iat");
 			expect(decodedPayload).toHaveProperty("iss");
 			expect(decodedPayload).toHaveProperty("exp");
-			expect(decodedPayload.iss).toEqual("dokploy");
+			expect(decodedPayload.iss).toEqual("docklands");
 		});
 	});
 	describe("${jwt:secret:payload}", () => {

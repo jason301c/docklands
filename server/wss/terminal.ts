@@ -13,13 +13,13 @@ mkdir -p $HOME/.ssh && \\
 chmod 700 $HOME/.ssh && \\
 touch $HOME/.ssh/authorized_keys && \\
 chmod 600 $HOME/.ssh/authorized_keys && \\
-cat /etc/dokploy/ssh/auto_generated-dokploy-local.pub >> $HOME/.ssh/authorized_keys && \\
+cat /etc/docklands/ssh/auto_generated-docklands-local.pub >> $HOME/.ssh/authorized_keys && \\
 echo "✓ Docklands SSH key added successfully. Reopen the terminal in Docklands to reconnect."
 # ----------------------------------------`;
 
 const COMMAND_TO_GRANT_PERMISSION_ACCESS = `
 # ----------------------------------------
-sudo chown -R $USER:$USER /etc/dokploy/ssh
+sudo chown -R $USER:$USER /etc/docklands/ssh
 # ----------------------------------------
 `;
 

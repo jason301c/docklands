@@ -16,7 +16,7 @@ export const updateServerTraefik = (
 	newHost: string | null,
 ) => {
 	const { https, certificateType } = settings || {};
-	const appName = "dokploy";
+	const appName = "docklands";
 	const config: FileConfig = loadOrCreateConfig(appName);
 
 	config.http = config.http || { routers: {}, services: {} };

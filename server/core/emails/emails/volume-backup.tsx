@@ -31,7 +31,7 @@ export type TemplateProps = {
 };
 
 export const VolumeBackupEmail = ({
-	projectName = "dokploy",
+	projectName = "docklands",
 	applicationName = "frontend",
 	volumeName = "app-data",
 	serviceType = "application",

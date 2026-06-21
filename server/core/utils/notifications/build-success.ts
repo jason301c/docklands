@@ -93,7 +93,7 @@ export const sendBuildSuccessNotifications = async ({
 				if (email) {
 					await sendEmailNotification(
 						email,
-						"Build success for dokploy",
+						"Build success for docklands",
 						template,
 					);
 				}
@@ -101,7 +101,7 @@ export const sendBuildSuccessNotifications = async ({
 				if (resend) {
 					await sendResendNotification(
 						resend,
-						"Build success for dokploy",
+						"Build success for docklands",
 						template,
 					);
 				}

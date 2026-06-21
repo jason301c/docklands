@@ -40,7 +40,7 @@ export const scheduleRouter = createTRPCRouter({
 					schedule: ["create"],
 				});
 			} else {
-				if (input.scheduleType === "dokploy-server" && IS_CLOUD) {
+				if (input.scheduleType === "docklands-server" && IS_CLOUD) {
 					throw new TRPCError({
 						code: "FORBIDDEN",
 						message:
@@ -52,7 +52,7 @@ export const scheduleRouter = createTRPCRouter({
 
 				if (
 					input.scheduleType === "server" ||
-					input.scheduleType === "dokploy-server"
+					input.scheduleType === "docklands-server"
 				) {
 					const member = await findMemberByUserId(
 						ctx.user.id,
@@ -81,7 +81,7 @@ export const scheduleRouter = createTRPCRouter({
 			}
 			const newSchedule = await createSchedule({
 				...input,
-				...(input.scheduleType === "dokploy-server" && {
+				...(input.scheduleType === "docklands-server" && {
 					organizationId: ctx.session.activeOrganizationId,
 				}),
 			});
@@ -130,7 +130,7 @@ export const scheduleRouter = createTRPCRouter({
 					schedule: ["update"],
 				});
 			} else {
-				if (existingSchedule.scheduleType === "dokploy-server" && IS_CLOUD) {
+				if (existingSchedule.scheduleType === "docklands-server" && IS_CLOUD) {
 					throw new TRPCError({
 						code: "FORBIDDEN",
 						message:
@@ -142,7 +142,7 @@ export const scheduleRouter = createTRPCRouter({
 
 				if (
 					existingSchedule.scheduleType === "server" ||
-					existingSchedule.scheduleType === "dokploy-server"
+					existingSchedule.scheduleType === "docklands-server"
 				) {
 					const member = await findMemberByUserId(
 						ctx.user.id,
@@ -216,7 +216,7 @@ export const scheduleRouter = createTRPCRouter({
 					schedule: ["delete"],
 				});
 			} else {
-				if (scheduleItem.scheduleType === "dokploy-server" && IS_CLOUD) {
+				if (scheduleItem.scheduleType === "docklands-server" && IS_CLOUD) {
 					throw new TRPCError({
 						code: "FORBIDDEN",
 						message:
@@ -228,7 +228,7 @@ export const scheduleRouter = createTRPCRouter({
 
 				if (
 					scheduleItem.scheduleType === "server" ||
-					scheduleItem.scheduleType === "dokploy-server"
+					scheduleItem.scheduleType === "docklands-server"
 				) {
 					const member = await findMemberByUserId(
 						ctx.user.id,
@@ -283,7 +283,7 @@ export const scheduleRouter = createTRPCRouter({
 					"application",
 					"compose",
 					"server",
-					"dokploy-server",
+					"docklands-server",
 				]),
 			}),
 		)
@@ -310,7 +310,7 @@ export const scheduleRouter = createTRPCRouter({
 					}
 				}
 
-				if (input.scheduleType === "dokploy-server") {
+				if (input.scheduleType === "docklands-server") {
 					const member = await findMemberByUserId(
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
@@ -327,7 +327,7 @@ export const scheduleRouter = createTRPCRouter({
 				application: eq(schedules.applicationId, input.id),
 				compose: eq(schedules.composeId, input.id),
 				server: eq(schedules.serverId, input.id),
-				"dokploy-server": eq(
+				"docklands-server": eq(
 					schedules.organizationId,
 					ctx.session.activeOrganizationId,
 				),
@@ -383,7 +383,7 @@ export const scheduleRouter = createTRPCRouter({
 					schedule: ["create"],
 				});
 			} else {
-				if (scheduleItem.scheduleType === "dokploy-server" && IS_CLOUD) {
+				if (scheduleItem.scheduleType === "docklands-server" && IS_CLOUD) {
 					throw new TRPCError({
 						code: "FORBIDDEN",
 						message:
@@ -395,7 +395,7 @@ export const scheduleRouter = createTRPCRouter({
 
 				if (
 					scheduleItem.scheduleType === "server" ||
-					scheduleItem.scheduleType === "dokploy-server"
+					scheduleItem.scheduleType === "docklands-server"
 				) {
 					const member = await findMemberByUserId(
 						ctx.user.id,

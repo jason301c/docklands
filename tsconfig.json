@@ -45,9 +45,10 @@
 	],
 	"exclude": [
 		"node_modules",
-		"dokploy",
+		"docklands",
 		"config",
 		"dist",
+		"server/core/openapi/**/*.js",
 		"webpack.config.server.js"
 	]
 }

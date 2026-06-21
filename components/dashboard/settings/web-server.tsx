@@ -9,7 +9,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { ShowDocklandsActions } from "./servers/actions/show-dokploy-actions";
+import { ShowDocklandsActions } from "./servers/actions/show-docklands-actions";
 import { ShowStorageActions } from "./servers/actions/show-storage-actions";
 import { ShowTraefikActions } from "./servers/actions/show-traefik-actions";
 import { ToggleDockerCleanup } from "./servers/actions/toggle-docker-cleanup";
@@ -19,7 +19,8 @@ export const WebServer = () => {
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
 
-	const { data: dokployVersion } = api.settings.getDocklandsVersion.useQuery();
+	const { data: docklandsVersion } =
+		api.settings.getDocklandsVersion.useQuery();
 
 	return (
 		<div className="w-full">
@@ -64,7 +65,7 @@ export const WebServer = () => {
 								)}
 							</span>
 							<span className="text-sm text-muted-foreground">
-								Version: {dokployVersion}
+								Version: {docklandsVersion}
 							</span>
 
 							<ToggleDockerCleanup />

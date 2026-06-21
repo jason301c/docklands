@@ -90,7 +90,7 @@ export const sendDatabaseBackupNotifications = async ({
 				if (email) {
 					await sendEmailNotification(
 						email,
-						"Database backup for dokploy",
+						"Database backup for docklands",
 						template,
 					);
 				}
@@ -98,7 +98,7 @@ export const sendDatabaseBackupNotifications = async ({
 				if (resend) {
 					await sendResendNotification(
 						resend,
-						"Database backup for dokploy",
+						"Database backup for docklands",
 						template,
 					);
 				}

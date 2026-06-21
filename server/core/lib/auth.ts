@@ -147,7 +147,7 @@ const { handler, api } = betterAuth({
 				before: async (_user, context) => {
 					if (!IS_CLOUD) {
 						const xDocklandsToken =
-							context?.request?.headers?.get("x-dokploy-token");
+							context?.request?.headers?.get("x-docklands-token");
 						if (xDocklandsToken) {
 							let invitation: Awaited<ReturnType<typeof getUserByToken>>;
 							try {

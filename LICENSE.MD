@@ -1,5 +1,4 @@
-Copyright 2026-present Dokploy Technology, Inc.
-Modifications copyright 2026-present Docklands contributors.
+Copyright 2026-present Docklands contributors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this repository except in compliance with the License.

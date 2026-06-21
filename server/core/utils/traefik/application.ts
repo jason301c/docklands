@@ -166,7 +166,7 @@ export const readMonitoringConfig = async (readAll = false) => {
 					) {
 						const log = JSON.parse(trimmed);
 						// Exclude Docklands service app and Dashboard requests
-						if (log.ServiceName !== "dokploy-service-app@file") {
+						if (log.ServiceName !== "docklands-service-app@file") {
 							content += `${line}\n`;
 							validCount++;
 							if (validCount >= 500) {

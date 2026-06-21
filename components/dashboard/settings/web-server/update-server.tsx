@@ -47,7 +47,8 @@ export const UpdateServer = ({
 	);
 	const { mutateAsync: getUpdateData, isPending } =
 		api.settings.getUpdateData.useMutation();
-	const { data: dokployVersion } = api.settings.getDocklandsVersion.useQuery();
+	const { data: docklandsVersion } =
+		api.settings.getDocklandsVersion.useQuery();
 	const { data: releaseTag } = api.settings.getReleaseTag.useQuery();
 	const [latestVersion, setLatestVersion] = useState(
 		updateData?.latestVersion ?? "",
@@ -131,11 +132,11 @@ export const UpdateServer = ({
 					<DialogTitle className="text-2xl font-semibold">
 						Web Server Update
 					</DialogTitle>
-					{dokployVersion && (
+					{docklandsVersion && (
 						<div className="flex items-center gap-1.5 rounded-full px-3 py-1 mr-2 bg-muted">
 							<Server className="h-4 w-4 text-muted-foreground" />
 							<span className="text-sm text-muted-foreground">
-								{dokployVersion}{" "}
+								{docklandsVersion}{" "}
 								{(releaseTag === "canary" || releaseTag === "feature") &&
 									`(${releaseTag})`}
 							</span>

@@ -118,7 +118,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 				})
 			: createMutation.mutateAsync({
 					...basePayload,
-					serverId: data.serverId === "dokploy" ? undefined : data.serverId,
+					serverId: data.serverId === "docklands" ? undefined : data.serverId,
 					organizationId: "",
 				});
 
@@ -246,7 +246,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 										<Select
 											onValueChange={field.onChange}
 											defaultValue={
-												field.value || (!isCloud ? "dokploy" : undefined)
+												field.value || (!isCloud ? "docklands" : undefined)
 											}
 										>
 											<SelectTrigger>
@@ -259,7 +259,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 											<SelectContent>
 												<SelectGroup>
 													{!isCloud && (
-														<SelectItem value="dokploy">
+														<SelectItem value="docklands">
 															<span className="flex items-center gap-2 justify-between w-full">
 																<span>Docklands</span>
 																<span className="text-muted-foreground text-xs self-center">

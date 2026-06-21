@@ -1,5 +1,8 @@
 import { parse } from "toml";
 
+export const DEFAULT_TEMPLATES_BASE_URL =
+	process.env.DOCKLANDS_TEMPLATES_URL || "https://templates.docklands.dev";
+
 /**
  * Complete template interface that includes both metadata and configuration
  */
@@ -54,7 +57,7 @@ interface TemplateMetadata {
  * Fetches the list of available templates from meta.json
  */
 export async function fetchTemplatesList(
-	baseUrl = "https://templates.dokploy.com",
+	baseUrl = DEFAULT_TEMPLATES_BASE_URL,
 ): Promise<TemplateMetadata[]> {
 	const response = await fetch(`${baseUrl}/meta.json`, {
 		signal: AbortSignal.timeout(10000),
@@ -79,7 +82,7 @@ export async function fetchTemplatesList(
  */
 export async function fetchTemplateFiles(
 	templateId: string,
-	baseUrl = "https://templates.dokploy.com",
+	baseUrl = DEFAULT_TEMPLATES_BASE_URL,
 ): Promise<{ config: CompleteTemplate; dockerCompose: string }> {
 	const timeout = AbortSignal.timeout(10000);
 	const [templateYmlResponse, dockerComposeResponse] = await Promise.all([

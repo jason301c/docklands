@@ -287,13 +287,13 @@ services:
   web:
     image: nginx:latest
     networks:
-      - dokploy-network
+      - docklands-network
 
 networks:
-  dokploy-network:
+  docklands-network:
 `;
 
-test("It shouldn't add suffix to dokploy-network", () => {
+test("It shouldn't add suffix to docklands-network", () => {
 	const composeData = parse(composeFile7) as ComposeSpecification;
 
 	const suffix = generateRandomHash();
@@ -305,6 +305,6 @@ test("It shouldn't add suffix to dokploy-network", () => {
 
 	expect(networks).toBeDefined();
 	for (const networkKey of Object.keys(networks)) {
-		expect(networkKey).toContain("dokploy-network");
+		expect(networkKey).toContain("docklands-network");
 	}
 });
