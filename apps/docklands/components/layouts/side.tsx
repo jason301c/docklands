@@ -1,4 +1,26 @@
 "use client";
+import { Breadcrumbs } from "@cloudflare/kumo/components/breadcrumbs";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Collapsible } from "@cloudflare/kumo/components/collapsible";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import {
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarGroup,
+	SidebarGroupLabel,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarMenuSub,
+	SidebarMenuSubButton,
+	SidebarMenuSubItem,
+	SidebarProvider,
+	SidebarRail,
+	SidebarTrigger,
+	useSidebar,
+} from "@cloudflare/kumo/components/sidebar";
 import type { inferRouterOutputs } from "@trpc/server";
 import {
 	Activity,
@@ -33,38 +55,16 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { Breadcrumbs } from "@cloudflare/kumo/components/breadcrumbs";
-import { Collapsible } from "@cloudflare/kumo/components/collapsible";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Separator } from "@/components/shared/separator";
-import {
-	Sidebar,
-	SidebarContent,
-	SidebarFooter,
-	SidebarGroup,
-	SidebarGroupLabel,
-	SidebarHeader,
-	SidebarMenu,
-	SidebarMenuButton,
-	SidebarMenuItem,
-	SidebarMenuSub,
-	SidebarMenuSubButton,
-	SidebarMenuSubItem,
-	SidebarProvider,
-	SidebarRail,
-	SidebarTrigger,
-	useSidebar,
-} from "@cloudflare/kumo/components/sidebar";
+import { TimeBadge } from "@/components/shared/time-badge";
+import { toast } from "@/components/shared/toast";
 import type { AppRouter } from "@/server/api/root";
 import { cn } from "@/shared/utils";
 import { AddOrganization } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
 import { Logo } from "../shared/logo";
-import { Button } from "@cloudflare/kumo/components/button";
-import { TimeBadge } from "@/components/shared/time-badge";
 import { UpdateServerButton } from "./update-server";
 import { UserNav } from "./user-nav";
 
@@ -147,62 +147,17 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Monitoring",
-			url: "/dashboard/monitoring",
-			icon: BarChartHorizontalBigIcon,
-			// Only enabled in non-cloud environments and if user has monitoring.read
-			isEnabled: ({ isCloud, permissions }) =>
-				!isCloud && !!permissions?.monitoring.read,
-		},
-		{
-			isSingle: true,
 			title: "Schedules",
 			url: "/dashboard/schedules",
 			icon: Clock,
 			isEnabled: ({ permissions }) => !!permissions?.organization.update,
-		},
-		{
-			isSingle: false,
-			title: "Infrastructure",
-			icon: BlocksIcon,
-			items: [
-				{
-					isSingle: true,
-					title: "Docker",
-					url: "/dashboard/docker",
-					icon: BlocksIcon,
-					isEnabled: ({ permissions }) => !!permissions?.docker.read,
-				},
-				{
-					isSingle: true,
-					title: "Swarm",
-					url: "/dashboard/swarm",
-					icon: PieChart,
-					isEnabled: ({ permissions }) => !!permissions?.docker.read,
-				},
-				{
-					isSingle: true,
-					title: "Requests",
-					url: "/dashboard/requests",
-					icon: Forward,
-					isEnabled: ({ permissions, isCloud }) =>
-						!!(permissions?.docker.read && !isCloud),
-				},
-				{
-					isSingle: true,
-					title: "Traefik Files",
-					url: "/dashboard/traefik",
-					icon: GalleryVerticalEnd,
-					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
-				},
-			],
 		},
 	],
 
 	settings: [
 		{
 			isSingle: true,
-			title: "Web Server",
+			title: "Ingress",
 			url: "/dashboard/settings/server",
 			icon: Activity,
 			// Only enabled for admins in non-cloud environments
@@ -214,13 +169,6 @@ const MENU: Menu = {
 			title: "Profile",
 			url: "/dashboard/settings/profile",
 			icon: User,
-		},
-		{
-			isSingle: true,
-			title: "Remote Servers",
-			url: "/dashboard/settings/servers",
-			icon: Server,
-			isEnabled: ({ permissions }) => !!permissions?.server.read,
 		},
 		{
 			isSingle: true,
@@ -270,7 +218,7 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "S3 Destinations",
+			title: "Storage",
 			url: "/dashboard/settings/destinations",
 			icon: Database,
 			isEnabled: ({ permissions }) => !!permissions?.destination.read,
@@ -298,6 +246,57 @@ const MENU: Menu = {
 			icon: Bell,
 			// Only enabled for users with access to notifications
 			isEnabled: ({ permissions }) => !!permissions?.notification.read,
+		},
+		{
+			isSingle: false,
+			title: "System",
+			icon: BlocksIcon,
+			items: [
+				{
+					isSingle: true,
+					title: "Runtime Capacity",
+					url: "/dashboard/settings/servers",
+					icon: Server,
+					isEnabled: ({ permissions }) => !!permissions?.server.read,
+				},
+				{
+					isSingle: true,
+					title: "Docker",
+					url: "/dashboard/docker",
+					icon: BlocksIcon,
+					isEnabled: ({ permissions }) => !!permissions?.docker.read,
+				},
+				{
+					isSingle: true,
+					title: "Swarm",
+					url: "/dashboard/swarm",
+					icon: PieChart,
+					isEnabled: ({ permissions }) => !!permissions?.docker.read,
+				},
+				{
+					isSingle: true,
+					title: "Requests",
+					url: "/dashboard/requests",
+					icon: Forward,
+					isEnabled: ({ permissions, isCloud }) =>
+						!!(permissions?.docker.read && !isCloud),
+				},
+				{
+					isSingle: true,
+					title: "Traefik Files",
+					url: "/dashboard/traefik",
+					icon: GalleryVerticalEnd,
+					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
+				},
+				{
+					isSingle: true,
+					title: "Monitoring",
+					url: "/dashboard/monitoring",
+					icon: BarChartHorizontalBigIcon,
+					isEnabled: ({ isCloud, permissions }) =>
+						!isCloud && !!permissions?.monitoring.read,
+				},
+			],
 		},
 	],
 
