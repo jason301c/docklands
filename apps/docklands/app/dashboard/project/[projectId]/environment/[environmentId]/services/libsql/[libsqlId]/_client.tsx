@@ -1,10 +1,14 @@
 "use client";
 
+import { Button } from "@cloudflare/kumo/components/button";
+import { Label } from "@cloudflare/kumo/components/label";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import copy from "copy-to-clipboard";
 import { HelpCircle, ServerOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { ShowEnvironment } from "@/components/dashboard/application/environment/show-environment";
@@ -21,14 +25,15 @@ import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/shared/show
 import { LibsqlIcon } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Label } from "@cloudflare/kumo/components/label";
-import { Tabs } from "@cloudflare/kumo/components/tabs";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 
-type TabState = "general" | "environment" | "logs" | "monitoring" | "backups" | "advanced";
+type TabState =
+	| "general"
+	| "environment"
+	| "logs"
+	| "monitoring"
+	| "backups"
+	| "advanced";
 
 const Libsql = (props: {
 	libsqlId: string;
@@ -77,9 +82,7 @@ const Libsql = (props: {
 									</div>
 									{data?.name}
 								</h3>
-								{data?.description && (
-									<p>{data?.description}</p>
-								)}
+								{data?.description && <p>{data?.description}</p>}
 
 								<span className="text-sm text-muted-foreground">
 									{data?.appName}
@@ -87,13 +90,15 @@ const Libsql = (props: {
 							</div>
 							<div className="flex flex-col h-fit w-fit gap-2">
 								<div className="flex flex-row h-fit w-fit gap-2">
-									<Button type="button" size="xs"
+									<Button
+										type="button"
+										size="xs"
 										className="cursor-pointer"
 										onClick={() => {
 											const ip = data?.server?.ipAddress || serverIp;
 											if (ip) {
 												copy(ip);
-												toast.success("IP Address Copied!");
+												toast.success("Runtime address copied");
 											}
 										}}
 										variant={
@@ -104,23 +109,28 @@ const Libsql = (props: {
 													: "destructive"
 										}
 									>
-										{data?.server?.name || "Docklands Server"}
+										Runtime
 									</Button>
 									{data?.server?.serverStatus === "inactive" && (
 										<TooltipProvider delay={0}>
-											<Tooltip content={<>
-													<span>
-														You cannot, deploy this application because the
-														server is inactive, please upgrade your plan to add
-														more servers.
-													</span>
-												</>} className="z-[999] w-[300px]"
-													align="start"
-													side="top"  asChild>
-													<Label className="break-all w-fit flex flex-row gap-1 items-center">
-														<HelpCircle className="size-4 text-muted-foreground" />
-													</Label>
-												</Tooltip>
+											<Tooltip
+												content={
+													<>
+														<span>
+															This runtime is inactive. Re-enable runtime
+															capacity from Settings to deploy this service.
+														</span>
+													</>
+												}
+												className="z-[999] w-[300px]"
+												align="start"
+												side="top"
+												asChild
+											>
+												<Label className="break-all w-fit flex flex-row gap-1 items-center">
+													<HelpCircle className="size-4 text-muted-foreground" />
+												</Label>
+											</Tooltip>
 										</TooltipProvider>
 									)}
 								</div>
@@ -138,15 +148,14 @@ const Libsql = (props: {
 									<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
 										<ServerOff className="size-10 text-muted-foreground self-center" />
 										<span className="text-center text-base text-muted-foreground">
-											This service is hosted on the server {data.server.name},
-											but the server is currently marked inactive. Re-enable or
-											update the server from Settings to regain access to this
-											service.
+											This service's runtime is currently marked inactive.
+											Re-enable runtime capacity from Settings to regain access
+											to this service.
 										</span>
 									</div>
 								</div>
 							) : (
-																<div className="w-full">
+								<div className="w-full">
 									<Tabs
 										value={tab}
 										className="w-full overflow-auto"
@@ -157,52 +166,57 @@ const Libsql = (props: {
 
 											router.push(newPath);
 										}}
-										tabs={[
-											{ value: "general", label: "General" },
-											permissions?.envVars.read ? { value: "environment", label: "Environment" } : null,
-											permissions?.logs.read ? { value: "logs", label: "Logs" } : null,
-											permissions?.monitoring.read &&
-											((data?.serverId && isCloud) || !data?.server)
-											? { value: "monitoring", label: "Monitoring" }
-											: null,
-											{ value: "backups", label: "Backups" },
-											permissions?.service.create ? { value: "advanced", label: "Advanced" } : null,
-										].filter(Boolean) as { value: string; label: string }[]}
+										tabs={
+											[
+												{ value: "general", label: "General" },
+												permissions?.envVars.read
+													? { value: "environment", label: "Environment" }
+													: null,
+												permissions?.logs.read
+													? { value: "logs", label: "Logs" }
+													: null,
+												permissions?.monitoring.read &&
+												((data?.serverId && isCloud) || !data?.server)
+													? { value: "monitoring", label: "Monitoring" }
+													: null,
+												{ value: "backups", label: "Backups" },
+												permissions?.service.create
+													? { value: "advanced", label: "Advanced" }
+													: null,
+											].filter(Boolean) as { value: string; label: string }[]
+										}
 									/>
 									{tab === "general" && (
 										<div>
-
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowGeneralLibsql libsqlId={libsqlId} />
-											<ShowInternalLibsqlCredentials libsqlId={libsqlId} />
-											<ShowExternalLibsqlCredentials libsqlId={libsqlId} />
-										</div>
+											<div className="flex flex-col gap-4 pt-2.5">
+												<ShowGeneralLibsql libsqlId={libsqlId} />
+												<ShowInternalLibsqlCredentials libsqlId={libsqlId} />
+												<ShowExternalLibsqlCredentials libsqlId={libsqlId} />
+											</div>
 										</div>
 									)}
 									{permissions?.envVars.read && tab === "environment" && (
 										<div>
-
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowEnvironment id={libsqlId} type="libsql" />
-										</div>
+											<div className="flex flex-col gap-4 pt-2.5">
+												<ShowEnvironment id={libsqlId} type="libsql" />
+											</div>
 										</div>
 									)}
 									{permissions?.monitoring.read && tab === "monitoring" && (
 										<div>
-
-										<div className="pt-2.5">
-											<div className="flex flex-col gap-4 border rounded-lg p-6">
-												{data?.serverId && isCloud ? (
-													<ContainerPaidMonitoring
-														appName={data?.appName || ""}
-														baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
-														token={
-															data?.server?.metricsConfig?.server?.token || ""
-														}
-													/>
-												) : (
-													<>
-														{/* {monitoring?.enabledFeatures && (
+											<div className="pt-2.5">
+												<div className="flex flex-col gap-4 border rounded-lg p-6">
+													{data?.serverId && isCloud ? (
+														<ContainerPaidMonitoring
+															appName={data?.appName || ""}
+															baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
+															token={
+																data?.server?.metricsConfig?.server?.token || ""
+															}
+														/>
+													) : (
+														<>
+															{/* {monitoring?.enabledFeatures && (
 															<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2">
 																<Label className="text-muted-foreground">
 																	Change Monitoring
@@ -224,49 +238,46 @@ const Libsql = (props: {
 															/>
 														) : (
 															<div> */}
-														<ContainerFreeMonitoring
-															appName={data?.appName || ""}
-														/>
-														{/* </div> */}
-														{/* )} */}
-													</>
-												)}
+															<ContainerFreeMonitoring
+																appName={data?.appName || ""}
+															/>
+															{/* </div> */}
+															{/* )} */}
+														</>
+													)}
+												</div>
 											</div>
-										</div>
 										</div>
 									)}
 									{permissions?.logs.read && tab === "logs" && (
 										<div>
-
-										<div className="flex flex-col gap-4  pt-2.5">
-											<ShowDockerLogs
-												serverId={data?.serverId || ""}
-												appName={data?.appName || ""}
-											/>
-										</div>
+											<div className="flex flex-col gap-4  pt-2.5">
+												<ShowDockerLogs
+													serverId={data?.serverId || ""}
+													appName={data?.appName || ""}
+												/>
+											</div>
 										</div>
 									)}
 									{tab === "backups" && (
 										<div>
-
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowBackups
-												id={libsqlId}
-												databaseType="libsql"
-												backupType="database"
-											/>
-										</div>
+											<div className="flex flex-col gap-4 pt-2.5">
+												<ShowBackups
+													id={libsqlId}
+													databaseType="libsql"
+													backupType="database"
+												/>
+											</div>
 										</div>
 									)}
 									{permissions?.service.create && tab === "advanced" && (
 										<div>
-
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowDatabaseAdvancedSettings
-												id={libsqlId}
-												type="libsql"
-											/>
-										</div>
+											<div className="flex flex-col gap-4 pt-2.5">
+												<ShowDatabaseAdvancedSettings
+													id={libsqlId}
+													type="libsql"
+												/>
+											</div>
 										</div>
 									)}
 								</div>

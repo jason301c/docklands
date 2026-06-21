@@ -1,10 +1,14 @@
 "use client";
 
+import { Button } from "@cloudflare/kumo/components/button";
+import { Label } from "@cloudflare/kumo/components/label";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import copy from "copy-to-clipboard";
 import { CircuitBoard, HelpCircle, ServerOff } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { ShowImport } from "@/components/dashboard/application/advanced/import/show-import";
@@ -28,12 +32,7 @@ import { ComposeFreeMonitoring } from "@/components/dashboard/monitoring/free/co
 import { ComposePaidMonitoring } from "@/components/dashboard/monitoring/paid/container/show-paid-compose-monitoring";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Label } from "@cloudflare/kumo/components/label";
-import { Tabs } from "@cloudflare/kumo/components/tabs";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 
 type TabState =
 	| "general"
@@ -85,12 +84,20 @@ const Service = (props: {
 		})) || [];
 	const serviceTabs = [
 		{ value: "general", label: "General" },
-		permissions?.envVars.read ? { value: "environment", label: "Environment" } : null,
+		permissions?.envVars.read
+			? { value: "environment", label: "Environment" }
+			: null,
 		permissions?.domain.read ? { value: "domains", label: "Domains" } : null,
-		permissions?.deployment.read ? { value: "deployments", label: "Deployments" } : null,
-		permissions?.service.read ? { value: "containers", label: "Containers" } : null,
+		permissions?.deployment.read
+			? { value: "deployments", label: "Deployments" }
+			: null,
+		permissions?.service.read
+			? { value: "containers", label: "Containers" }
+			: null,
 		permissions?.service.create ? { value: "backups", label: "Backups" } : null,
-		permissions?.schedule.read ? { value: "schedules", label: "Schedules" } : null,
+		permissions?.schedule.read
+			? { value: "schedules", label: "Schedules" }
+			: null,
 		permissions?.volumeBackup.read
 			? { value: "volumeBackups", label: "Volume Backups" }
 			: null,
@@ -100,7 +107,9 @@ const Service = (props: {
 		((data?.serverId && isCloud) || !data?.server)
 			? { value: "monitoring", label: "Monitoring" }
 			: null,
-		permissions?.service.create ? { value: "advanced", label: "Advanced" } : null,
+		permissions?.service.create
+			? { value: "advanced", label: "Advanced" }
+			: null,
 	].filter(Boolean) as { value: string; label: string }[];
 
 	return (
@@ -123,9 +132,7 @@ const Service = (props: {
 										</div>
 										{data?.name}
 									</h3>
-									{data?.description && (
-										<p>{data?.description}</p>
-									)}
+									{data?.description && <p>{data?.description}</p>}
 
 									<span className="text-sm text-muted-foreground">
 										{data?.appName}
@@ -133,13 +140,15 @@ const Service = (props: {
 								</div>
 								<div className="flex flex-col h-fit w-fit gap-2">
 									<div className="flex flex-row h-fit w-fit gap-2">
-										<Button type="button" size="xs"
+										<Button
+											type="button"
+											size="xs"
 											className="cursor-pointer"
 											onClick={() => {
 												const ip = data?.server?.ipAddress || serverIp;
 												if (ip) {
 													copy(ip);
-													toast.success("IP Address Copied!");
+													toast.success("Runtime address copied");
 												}
 											}}
 											variant={
@@ -150,23 +159,28 @@ const Service = (props: {
 														: "destructive"
 											}
 										>
-											{data?.server?.name || "Docklands Server"}
+											Runtime
 										</Button>
 										{data?.server?.serverStatus === "inactive" && (
 											<TooltipProvider>
-												<Tooltip content={<>
-														<span>
-															You cannot, deploy this application because the
-															server is inactive, please upgrade your plan to
-															add more servers.
-														</span>
-													</>} className="z-[999] w-[300px]"
-														align="start"
-														side="top"  asChild>
-														<Label className="break-all w-fit flex flex-row gap-1 items-center">
-															<HelpCircle className="size-4 text-muted-foreground" />
-														</Label>
-													</Tooltip>
+												<Tooltip
+													content={
+														<>
+															<span>
+																This runtime is inactive. Re-enable runtime
+																capacity from Settings to deploy this service.
+															</span>
+														</>
+													}
+													className="z-[999] w-[300px]"
+													align="start"
+													side="top"
+													asChild
+												>
+													<Label className="break-all w-fit flex flex-row gap-1 items-center">
+														<HelpCircle className="size-4 text-muted-foreground" />
+													</Label>
+												</Tooltip>
 											</TooltipProvider>
 										)}
 									</div>
@@ -188,10 +202,9 @@ const Service = (props: {
 									<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
 										<ServerOff className="size-10 text-muted-foreground self-center" />
 										<span className="text-center text-base text-muted-foreground">
-											This service is hosted on the server {data.server.name},
-											but the server is currently marked inactive. Re-enable or
-											update the server from Settings to regain access to this
-											service.
+											This service's runtime is currently marked inactive.
+											Re-enable runtime capacity from Settings to regain access
+											to this service.
 										</span>
 									</div>
 								</div>
@@ -211,55 +224,47 @@ const Service = (props: {
 
 									{tab === "general" && (
 										<div>
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowGeneralCompose composeId={composeId} />
-										</div>
+											<div className="flex flex-col gap-4 pt-2.5">
+												<ShowGeneralCompose composeId={composeId} />
+											</div>
 										</div>
 									)}
-									{permissions?.envVars.read && (
-										tab === "environment" && (
-											<div>
+									{permissions?.envVars.read && tab === "environment" && (
+										<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowEnvironment id={composeId} type="compose" />
 											</div>
-											</div>
-										)
+										</div>
 									)}
-									{permissions?.service.create && (
-										tab === "backups" && (
-											<div>
+									{permissions?.service.create && tab === "backups" && (
+										<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowBackups id={composeId} backupType="compose" />
 											</div>
-											</div>
-										)
+										</div>
 									)}
 
-									{permissions?.schedule.read && (
-										tab === "schedules" && (
-											<div>
+									{permissions?.schedule.read && tab === "schedules" && (
+										<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowSchedules id={composeId} scheduleType="compose" />
 											</div>
-											</div>
-										)
+										</div>
 									)}
-									{permissions?.volumeBackup.read && (
+									{permissions?.volumeBackup.read &&
 										tab === "volumeBackups" && (
 											<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowVolumeBackups
-													id={composeId}
-													type="compose"
-													serverId={data?.serverId || ""}
-												/>
+												<div className="flex flex-col gap-4 pt-2.5">
+													<ShowVolumeBackups
+														id={composeId}
+														type="compose"
+														serverId={data?.serverId || ""}
+													/>
+												</div>
 											</div>
-											</div>
-										)
-									)}
-									{permissions?.service.read && (
-										tab === "containers" && (
-											<div>
+										)}
+									{permissions?.service.read && tab === "containers" && (
+										<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowComposeContainers
 													serverId={data?.serverId || undefined}
@@ -267,13 +272,11 @@ const Service = (props: {
 													appType={data?.composeType || "docker-compose"}
 												/>
 											</div>
-											</div>
-										)
+										</div>
 									)}
 
-									{permissions?.monitoring.read && (
-										tab === "monitoring" && (
-											<div>
+									{permissions?.monitoring.read && tab === "monitoring" && (
+										<div>
 											<div className="pt-2.5">
 												<div className="flex flex-col border rounded-lg ">
 													{data?.serverId && isCloud ? (
@@ -324,13 +327,11 @@ const Service = (props: {
 													)}
 												</div>
 											</div>
-											</div>
-										)
+										</div>
 									)}
 
-									{permissions?.logs.read && (
-										tab === "logs" && (
-											<div>
+									{permissions?.logs.read && tab === "logs" && (
+										<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												{data?.composeType === "docker-compose" ? (
 													<ShowDockerLogsCompose
@@ -345,13 +346,11 @@ const Service = (props: {
 													/>
 												)}
 											</div>
-											</div>
-										)
+										</div>
 									)}
 
-									{permissions?.deployment.read && (
-										tab === "deployments" && (
-											<div className="w-full pt-2.5">
+									{permissions?.deployment.read && tab === "deployments" && (
+										<div className="w-full pt-2.5">
 											<div className="flex flex-col gap-4 border rounded-lg">
 												<ShowDeployments
 													id={composeId}
@@ -360,39 +359,34 @@ const Service = (props: {
 													refreshToken={data?.refreshToken || ""}
 												/>
 											</div>
-											</div>
-										)
+										</div>
 									)}
 
-									{permissions?.domain.read && (
-										tab === "domains" && (
-											<div>
+									{permissions?.domain.read && tab === "domains" && (
+										<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<ShowDomains id={composeId} type="compose" />
 											</div>
-											</div>
-										)
+										</div>
 									)}
 
 									{tab === "patches" && (
 										<div className="w-full">
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowPatches id={composeId} type="compose" />
-										</div>
+											<div className="flex flex-col gap-4 pt-2.5">
+												<ShowPatches id={composeId} type="compose" />
+											</div>
 										</div>
 									)}
 
-									{permissions?.service.create && (
-										tab === "advanced" && (
-											<div>
+									{permissions?.service.create && tab === "advanced" && (
+										<div>
 											<div className="flex flex-col gap-4 pt-2.5">
 												<AddCommandCompose composeId={composeId} />
 												<ShowVolumes id={composeId} type="compose" />
 												<ShowImport composeId={composeId} />
 												<IsolatedDeploymentTab composeId={composeId} />
 											</div>
-											</div>
-										)
+										</div>
 									)}
 								</div>
 							)}
