@@ -20,6 +20,10 @@ const AvatarImage = React.forwardRef<
 	HTMLImageElement,
 	React.ImgHTMLAttributes<HTMLImageElement> & { src?: string | null }
 >(({ className, src, ...props }, ref) => {
+	if (!src) {
+		return null;
+	}
+
 	if (isSolidColorAvatar(src)) {
 		return (
 			<div
@@ -33,7 +37,7 @@ const AvatarImage = React.forwardRef<
 		<img
 			ref={ref}
 			className={cn("aspect-square h-full w-full object-cover", className)}
-			src={src ?? ""}
+			src={src}
 			alt={props.alt ?? ""}
 			{...props}
 		/>

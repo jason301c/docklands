@@ -14,7 +14,12 @@ export const dynamic = "force-dynamic";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
-		<html lang="en" className="font-sans" suppressHydrationWarning>
+		<html
+			lang="en"
+			className="font-sans"
+			data-theme="kumo"
+			suppressHydrationWarning
+		>
 			<body className="flex h-full w-full flex-col font-sans">
 				<Providers>{children}</Providers>
 			</body>

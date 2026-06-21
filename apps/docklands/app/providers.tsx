@@ -18,7 +18,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
 	return (
 		<TRPCReactProvider>
 			<ThemeProvider
-				attribute="class"
+				attribute="data-mode"
 				defaultTheme="system"
 				enableSystem
 				disableTransitionOnChange

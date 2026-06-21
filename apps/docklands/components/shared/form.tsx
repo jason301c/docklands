@@ -52,6 +52,7 @@ const useFormField = () => {
 	return {
 		id,
 		name: fieldContext.name,
+		formLabelId: `${id}-form-item-label`,
 		formItemId: `${id}-form-item`,
 		formDescriptionId: `${id}-form-item-description`,
 		formMessageId: `${id}-form-item-message`,
@@ -85,14 +86,12 @@ const FormLabel = React.forwardRef<
 	HTMLLabelElement,
 	React.ComponentPropsWithoutRef<typeof Label>
 >(({ className, ...props }, _ref) => {
-	const { formItemId } = useFormField();
+	const { formItemId, formLabelId } = useFormField();
 
 	return (
-		<Label
-			className={cn(className)}
-			htmlFor={formItemId}
-			{...props}
-		/>
+		<span id={formLabelId} className="contents">
+			<Label className={cn(className)} htmlFor={formItemId} {...props} />
+		</span>
 	);
 });
 FormLabel.displayName = "FormLabel";
@@ -101,10 +100,11 @@ const FormControl = React.forwardRef<
 	HTMLElement,
 	React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }
 >(({ children, ...props }, ref) => {
-	const { error, formItemId, formDescriptionId, formMessageId } =
+	const { error, formItemId, formLabelId, formDescriptionId, formMessageId } =
 		useFormField();
 	const controlProps = {
 		id: formItemId,
+		"aria-labelledby": formLabelId,
 		"aria-describedby": !error
 			? `${formDescriptionId}`
 			: `${formDescriptionId} ${formMessageId}`,

@@ -36,7 +36,12 @@ if (process.env.NODE_ENV === "production" && !IS_CLOUD) {
 	console.log("✅ initialization complete");
 }
 
-const app = next({ dev, turbopack: process.env.TURBOPACK === "1" });
+const app = next({
+	dev,
+	hostname: HOST,
+	port: PORT,
+	turbopack: process.env.TURBOPACK === "1",
+});
 const handle = app.getRequestHandler();
 void app.prepare().then(async () => {
 	try {
