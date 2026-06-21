@@ -11,6 +11,7 @@ import { Select } from "@cloudflare/kumo/components/select";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { formatDistanceToNow } from "date-fns";
 import {
+	ArrowUpDown,
 	ArrowRight,
 	Box,
 	Cable,
@@ -136,6 +137,16 @@ type CommandItem = {
 	run: () => void;
 };
 
+type ServiceKindFilter = "all" | "runtimes" | "databases" | WorkspaceServiceType;
+type ServiceStatusFilter = "all" | NonNullable<WorkspaceService["status"]>;
+type ServiceSort =
+	| "manual"
+	| "name-asc"
+	| "type-asc"
+	| "status-asc"
+	| "server-asc"
+	| "last-deploy-desc";
+
 const deploymentServiceTypes = new Set<WorkspaceServiceType>([
 	"application",
 	"compose",
@@ -168,6 +179,41 @@ const serviceTypeLabels: Record<WorkspaceServiceType, string> = {
 	postgres: "PostgreSQL",
 	redis: "Redis",
 };
+
+const serviceKindFilterOptions: { value: ServiceKindFilter; label: string }[] =
+	[
+		{ value: "all", label: "All types" },
+		{ value: "runtimes", label: "Apps & stacks" },
+		{ value: "databases", label: "Databases" },
+		{ value: "application", label: "Applications" },
+		{ value: "compose", label: "Compose" },
+		{ value: "postgres", label: "PostgreSQL" },
+		{ value: "mysql", label: "MySQL" },
+		{ value: "mariadb", label: "MariaDB" },
+		{ value: "mongo", label: "MongoDB" },
+		{ value: "redis", label: "Redis" },
+		{ value: "libsql", label: "LibSQL" },
+	];
+
+const serviceStatusFilterOptions: {
+	value: ServiceStatusFilter;
+	label: string;
+}[] = [
+	{ value: "all", label: "All statuses" },
+	{ value: "running", label: "Running" },
+	{ value: "error", label: "Errors" },
+	{ value: "done", label: "Done" },
+	{ value: "idle", label: "Idle" },
+];
+
+const serviceSortOptions: { value: ServiceSort; label: string }[] = [
+	{ value: "manual", label: "Manual layout" },
+	{ value: "name-asc", label: "Name" },
+	{ value: "type-asc", label: "Type" },
+	{ value: "status-asc", label: "Status" },
+	{ value: "server-asc", label: "Host" },
+	{ value: "last-deploy-desc", label: "Recent deploy" },
+];
 
 const serviceTypeDescriptions: Record<WorkspaceServiceType, string> = {
 	application: "Code service",
@@ -396,6 +442,12 @@ export const EnvironmentCanvas = ({
 		null,
 	);
 	const [searchQuery, setSearchQuery] = useState("");
+	const [serviceKindFilter, setServiceKindFilter] =
+		useState<ServiceKindFilter>("all");
+	const [serviceStatusFilter, setServiceStatusFilter] =
+		useState<ServiceStatusFilter>("all");
+	const [serviceServerFilter, setServiceServerFilter] = useState("all");
+	const [serviceSort, setServiceSort] = useState<ServiceSort>("manual");
 	const [commandOpen, setCommandOpen] = useState(false);
 	const [drawerTab, setDrawerTab] = useState<
 		| "overview"
@@ -587,6 +639,37 @@ export const EnvironmentCanvas = ({
 			),
 		[selectedProjectEnvironments, environmentId],
 	);
+	const serviceServerOptions = useMemo(() => {
+		const options = new Map<
+			string,
+			{ value: string; label: string; count: number }
+		>();
+
+		for (const service of services) {
+			const value = service.serverId || "local";
+			const label = service.serverName || "Docklands host";
+			const existing = options.get(value);
+			if (existing) {
+				existing.count++;
+			} else {
+				options.set(value, { value, label, count: 1 });
+			}
+		}
+
+		return [...options.values()].sort((a, b) =>
+			a.label.localeCompare(b.label),
+		);
+	}, [services]);
+
+	useEffect(() => {
+		if (serviceServerFilter === "all") return;
+		if (
+			serviceServerOptions.some((option) => option.value === serviceServerFilter)
+		) {
+			return;
+		}
+		setServiceServerFilter("all");
+	}, [serviceServerFilter, serviceServerOptions]);
 
 	useEffect(() => {
 		setSelectedBulkKeys((current) =>
@@ -801,16 +884,107 @@ export const EnvironmentCanvas = ({
 		selectedServiceModel,
 	]);
 
+	const hasCanvasFilters =
+		searchQuery.trim().length > 0 ||
+		serviceKindFilter !== "all" ||
+		serviceStatusFilter !== "all" ||
+		serviceServerFilter !== "all";
+	const canvasFilterCount = [
+		searchQuery.trim().length > 0,
+		serviceKindFilter !== "all",
+		serviceStatusFilter !== "all",
+		serviceServerFilter !== "all",
+	].filter(Boolean).length;
+
 	const filteredServices = useMemo(() => {
 		const query = searchQuery.trim().toLowerCase();
-		if (!query) return services;
-		return services.filter(
-			(service) =>
+		let nextServices = services.filter((service) => {
+			const matchesSearch =
+				!query ||
 				service.name.toLowerCase().includes(query) ||
 				service.type.toLowerCase().includes(query) ||
-				service.description?.toLowerCase().includes(query),
+				service.description?.toLowerCase().includes(query) ||
+				service.serverName?.toLowerCase().includes(query) ||
+				service.status?.toLowerCase().includes(query);
+
+			const matchesKind =
+				serviceKindFilter === "all" ||
+				(serviceKindFilter === "runtimes" &&
+					deploymentServiceTypes.has(service.type)) ||
+				(serviceKindFilter === "databases" &&
+					databaseCredentialServiceTypes.has(service.type)) ||
+				service.type === serviceKindFilter;
+
+			const matchesStatus =
+				serviceStatusFilter === "all" ||
+				(service.status ?? "idle") === serviceStatusFilter;
+
+			const matchesServer =
+				serviceServerFilter === "all" ||
+				(service.serverId || "local") === serviceServerFilter;
+
+			return matchesSearch && matchesKind && matchesStatus && matchesServer;
+		});
+
+		if (serviceSort === "manual") return nextServices;
+
+		nextServices = [...nextServices].sort((a, b) => {
+			switch (serviceSort) {
+				case "name-asc":
+					return a.name.localeCompare(b.name);
+				case "type-asc":
+					return serviceTypeLabels[a.type].localeCompare(
+						serviceTypeLabels[b.type],
+					);
+				case "status-asc": {
+					const statusRank = { error: 0, running: 1, done: 2, idle: 3 };
+					return (
+						statusRank[a.status ?? "idle"] - statusRank[b.status ?? "idle"] ||
+						a.name.localeCompare(b.name)
+					);
+				}
+				case "server-asc":
+					return (
+						(a.serverName || "Docklands host").localeCompare(
+							b.serverName || "Docklands host",
+						) || a.name.localeCompare(b.name)
+					);
+				case "last-deploy-desc":
+					return (
+						new Date(b.lastDeployAt || 0).getTime() -
+							new Date(a.lastDeployAt || 0).getTime() ||
+						a.name.localeCompare(b.name)
+					);
+			}
+		});
+
+		return nextServices;
+	}, [
+		services,
+		searchQuery,
+		serviceKindFilter,
+		serviceServerFilter,
+		serviceSort,
+		serviceStatusFilter,
+	]);
+
+	const arrangedServices = useMemo(() => {
+		if (serviceSort === "manual" && !hasCanvasFilters) return services;
+
+		const filteredKeys = new Set(
+			filteredServices.map((service) =>
+				getWorkspaceServiceKey(service.type, service.id),
+			),
 		);
-	}, [services, searchQuery]);
+
+		return [
+			...filteredServices,
+			...services.filter(
+				(service) =>
+					!filteredKeys.has(getWorkspaceServiceKey(service.type, service.id)),
+			),
+		];
+	}, [filteredServices, hasCanvasFilters, serviceSort, services]);
 
 	const visibleServiceKeys = useMemo(
 		() =>
@@ -1022,6 +1196,13 @@ export const EnvironmentCanvas = ({
 
 	const clearBulkSelection = () => {
 		setSelectedBulkKeys([]);
+	};
+
+	const resetCanvasFilters = () => {
+		setSearchQuery("");
+		setServiceKindFilter("all");
+		setServiceStatusFilter("all");
+		setServiceServerFilter("all");
 	};
 
 	const resetMoveDialog = () => {
@@ -1341,7 +1522,7 @@ export const EnvironmentCanvas = ({
 	const arrangeWorkspace = async () => {
 		if (services.length === 0) return;
 
-		const arrangedNodes = services.map((service, index) => ({
+		const arrangedNodes = arrangedServices.map((service, index) => ({
 			...getDefaultWorkspacePosition(index),
 			serviceId: service.id,
 			serviceType: service.type,
@@ -1774,6 +1955,9 @@ export const EnvironmentCanvas = ({
 								<Badge>{workspaceStats.running} running</Badge>
 								<Badge>{workspaceStats.errors} errors</Badge>
 								<Badge>{workspaceStats.connections} links</Badge>
+								{hasCanvasFilters && (
+									<Badge>{filteredServices.length} visible</Badge>
+								)}
 							</div>
 						</div>
 					</div>
@@ -1788,6 +1972,76 @@ export const EnvironmentCanvas = ({
 							/>
 							<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 						</div>
+						<div className="w-[150px]">
+							<Select
+								aria-label="Service type filter"
+								value={serviceKindFilter}
+								onValueChange={(value) =>
+									value !== null &&
+									setServiceKindFilter(value as ServiceKindFilter)
+								}
+							>
+								{serviceKindFilterOptions.map((option) => (
+									<Select.Option key={option.value} value={option.value}>
+										{option.label}
+									</Select.Option>
+								))}
+							</Select>
+						</div>
+						<div className="w-[140px]">
+							<Select
+								aria-label="Service status filter"
+								value={serviceStatusFilter}
+								onValueChange={(value) =>
+									value !== null &&
+									setServiceStatusFilter(value as ServiceStatusFilter)
+								}
+							>
+								{serviceStatusFilterOptions.map((option) => (
+									<Select.Option key={option.value} value={option.value}>
+										{option.label}
+									</Select.Option>
+								))}
+							</Select>
+						</div>
+						<div className="w-[170px]">
+							<Select
+								aria-label="Service host filter"
+								value={serviceServerFilter}
+								onValueChange={(value) =>
+									value !== null && setServiceServerFilter(value as string)
+								}
+							>
+								<Select.Option value="all">All hosts</Select.Option>
+								{serviceServerOptions.map((option) => (
+									<Select.Option key={option.value} value={option.value}>
+										{option.label} ({option.count})
+									</Select.Option>
+								))}
+							</Select>
+						</div>
+						<div className="flex w-[170px] items-center gap-2">
+							<ArrowUpDown className="size-4 shrink-0 text-muted-foreground" />
+							<Select
+								aria-label="Service sort"
+								value={serviceSort}
+								onValueChange={(value) =>
+									value !== null && setServiceSort(value as ServiceSort)
+								}
+							>
+								{serviceSortOptions.map((option) => (
+									<Select.Option key={option.value} value={option.value}>
+										{option.label}
+									</Select.Option>
+								))}
+							</Select>
+						</div>
+						{hasCanvasFilters && (
+							<Button variant="outline" onClick={resetCanvasFilters}>
+								<X className="size-4" />
+								Reset {canvasFilterCount}
+							</Button>
+						)}
 
 						<Button
 							variant={connectSource ? "primary" : "outline"}
