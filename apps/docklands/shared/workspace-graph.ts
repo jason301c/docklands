@@ -17,12 +17,14 @@ export type WorkspaceService = {
 	id: string;
 	type: WorkspaceServiceType;
 	name: string;
+	appName?: string | null;
 	description?: string | null;
 	status?: WorkspaceServiceStatus | null;
 	createdAt?: string | null;
 	lastDeployAt?: string | null;
 	serverId?: string | null;
 	serverName?: string | null;
+	composeType?: "docker-compose" | "stack" | null;
 	icon?: string | null;
 };
 
@@ -158,6 +160,7 @@ export const extractWorkspaceServicesFromEnvironment = (
 				id,
 				type,
 				name,
+				appName: asString(record.appName),
 				description: asString(record.description),
 				status: asString(
 					record[descriptor.statusKey],
@@ -166,6 +169,11 @@ export const extractWorkspaceServicesFromEnvironment = (
 				lastDeployAt: getLatestDeploymentDate(record),
 				serverId: asString(record.serverId),
 				serverName: server ? asString(server.name) : null,
+				composeType:
+					record.composeType === "docker-compose" ||
+					record.composeType === "stack"
+						? record.composeType
+						: null,
 				icon: asString(record.icon),
 			});
 		}

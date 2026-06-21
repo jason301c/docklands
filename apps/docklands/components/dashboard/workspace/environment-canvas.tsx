@@ -48,7 +48,10 @@ import {
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
+import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
+import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
+import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { AddApplication } from "@/components/dashboard/project/add-application";
 import { AddCompose } from "@/components/dashboard/project/add-compose";
@@ -286,6 +289,7 @@ export const EnvironmentCanvas = ({
 		| "deployments"
 		| "domains"
 		| "previews"
+		| "logs"
 		| "connections"
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
@@ -495,6 +499,9 @@ export const EnvironmentCanvas = ({
 		...(selectedServiceModel?.type === "application"
 			? [{ value: "previews", label: "Previews" }]
 			: []),
+		...(selectedServiceModel?.appName && permissions?.logs.read
+			? [{ value: "logs", label: "Logs" }]
+			: []),
 		{ value: "connections", label: "Connections" },
 	];
 
@@ -545,10 +552,17 @@ export const EnvironmentCanvas = ({
 		) {
 			setDrawerTab("overview");
 		}
+		if (
+			drawerTab === "logs" &&
+			(!selectedServiceModel?.appName || !permissions?.logs.read)
+		) {
+			setDrawerTab("overview");
+		}
 	}, [
 		drawerTab,
 		permissions?.deployment.read,
 		permissions?.domain.read,
+		permissions?.logs.read,
 		selectedServiceModel,
 	]);
 
@@ -1091,6 +1105,28 @@ export const EnvironmentCanvas = ({
 						setCommandOpen(false);
 					},
 				},
+				...(service.appName && permissions?.logs.read
+					? [
+							{
+								id: `logs:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Logs for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · live runtime logs`,
+								search: `${baseSearch} logs console runtime stdout stderr`,
+								icon: (
+									<SquareTerminal className="size-5 text-muted-foreground" />
+								),
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("logs");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
 				{
 					id: `settings:${service.type}:${service.id}`,
 					group: "Actions" as const,
@@ -1859,6 +1895,32 @@ export const EnvironmentCanvas = ({
 									applicationId={selectedServiceModel.id}
 								/>
 							)}
+
+						{drawerTab === "logs" && selectedServiceModel.appName && (
+							<div className="space-y-3">
+								{selectedServiceModel.type === "compose" ? (
+									selectedServiceModel.composeType === "stack" ? (
+										<ShowDockerLogsStack
+											serverId={selectedServiceModel.serverId || ""}
+											appName={selectedServiceModel.appName}
+										/>
+									) : (
+										<ShowDockerLogsCompose
+											serverId={selectedServiceModel.serverId || ""}
+											appName={selectedServiceModel.appName}
+											appType={
+												selectedServiceModel.composeType || "docker-compose"
+											}
+										/>
+									)
+								) : (
+									<ShowDockerLogs
+										serverId={selectedServiceModel.serverId || ""}
+										appName={selectedServiceModel.appName}
+									/>
+								)}
+							</div>
+						)}
 
 						{drawerTab === "connections" && (
 							<div className="space-y-3">

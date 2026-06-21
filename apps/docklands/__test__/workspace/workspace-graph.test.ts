@@ -12,6 +12,7 @@ describe("workspace graph helpers", () => {
 				{
 					applicationId: "app_1",
 					name: "web",
+					appName: "docklands-web-abc123",
 					description: "frontend",
 					applicationStatus: "running",
 					createdAt: "2026-06-20T00:00:00.000Z",
@@ -42,6 +43,8 @@ describe("workspace graph helpers", () => {
 				{
 					composeId: "compose_1",
 					name: "stack",
+					appName: "docklands-stack-def456",
+					composeType: "stack",
 					composeStatus: "idle",
 					createdAt: "2026-06-19T00:00:00.000Z",
 				},
@@ -57,9 +60,16 @@ describe("workspace graph helpers", () => {
 			id: "app_1",
 			type: "application",
 			name: "web",
+			appName: "docklands-web-abc123",
 			status: "running",
 			serverName: "worker-a",
 			lastDeployAt: "2026-06-20T02:03:00.000Z",
+		});
+		expect(services[2]).toMatchObject({
+			id: "compose_1",
+			type: "compose",
+			appName: "docklands-stack-def456",
+			composeType: "stack",
 		});
 	});
 
