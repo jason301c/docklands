@@ -58,8 +58,18 @@ import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
+import { ShowExternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-external-libsql-credentials";
+import { ShowInternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-internal-libsql-credentials";
+import { ShowExternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-external-mariadb-credentials";
+import { ShowInternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-internal-mariadb-credentials";
 import { ComposeFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-compose-monitoring";
 import { ContainerFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-container-monitoring";
+import { ShowExternalMongoCredentials } from "@/components/dashboard/mongo/general/show-external-mongo-credentials";
+import { ShowInternalMongoCredentials } from "@/components/dashboard/mongo/general/show-internal-mongo-credentials";
+import { ShowExternalMysqlCredentials } from "@/components/dashboard/mysql/general/show-external-mysql-credentials";
+import { ShowInternalMysqlCredentials } from "@/components/dashboard/mysql/general/show-internal-mysql-credentials";
+import { ShowExternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-external-postgres-credentials";
+import { ShowInternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-internal-postgres-credentials";
 import { AddApplication } from "@/components/dashboard/project/add-application";
 import { AddCompose } from "@/components/dashboard/project/add-compose";
 import { AddDatabase } from "@/components/dashboard/project/add-database";
@@ -68,6 +78,8 @@ import { AddTemplate } from "@/components/dashboard/project/add-template";
 import { AdvancedEnvironmentSelector } from "@/components/dashboard/project/advanced-environment-selector";
 import { EnvironmentVariables } from "@/components/dashboard/project/environment-variables";
 import { ProjectEnvironment } from "@/components/dashboard/projects/project-environment";
+import { ShowExternalRedisCredentials } from "@/components/dashboard/redis/general/show-external-redis-credentials";
+import { ShowInternalRedisCredentials } from "@/components/dashboard/redis/general/show-internal-redis-credentials";
 import {
 	LibsqlIcon,
 	MariadbIcon,
@@ -131,6 +143,15 @@ const databaseBackupServiceTypes = new Set<WorkspaceServiceType>([
 	"mongo",
 	"mysql",
 	"postgres",
+]);
+
+const databaseCredentialServiceTypes = new Set<WorkspaceServiceType>([
+	"libsql",
+	"mariadb",
+	"mongo",
+	"mysql",
+	"postgres",
+	"redis",
 ]);
 
 const serviceTypeLabels: Record<WorkspaceServiceType, string> = {
@@ -277,6 +298,67 @@ const getDatabaseBackupType = (service: WorkspaceService) =>
 		? (service.type as "libsql" | "mariadb" | "mongo" | "mysql" | "postgres")
 		: undefined;
 
+const hasDatabaseCredentials = (service: WorkspaceService) =>
+	databaseCredentialServiceTypes.has(service.type);
+
+const DatabaseCredentials = ({ service }: { service: WorkspaceService }) => {
+	if (service.type === "postgres") {
+		return (
+			<div className="space-y-4">
+				<ShowInternalPostgresCredentials postgresId={service.id} />
+				<ShowExternalPostgresCredentials postgresId={service.id} />
+			</div>
+		);
+	}
+
+	if (service.type === "mysql") {
+		return (
+			<div className="space-y-4">
+				<ShowInternalMysqlCredentials mysqlId={service.id} />
+				<ShowExternalMysqlCredentials mysqlId={service.id} />
+			</div>
+		);
+	}
+
+	if (service.type === "mariadb") {
+		return (
+			<div className="space-y-4">
+				<ShowInternalMariadbCredentials mariadbId={service.id} />
+				<ShowExternalMariadbCredentials mariadbId={service.id} />
+			</div>
+		);
+	}
+
+	if (service.type === "mongo") {
+		return (
+			<div className="space-y-4">
+				<ShowInternalMongoCredentials mongoId={service.id} />
+				<ShowExternalMongoCredentials mongoId={service.id} />
+			</div>
+		);
+	}
+
+	if (service.type === "redis") {
+		return (
+			<div className="space-y-4">
+				<ShowInternalRedisCredentials redisId={service.id} />
+				<ShowExternalRedisCredentials redisId={service.id} />
+			</div>
+		);
+	}
+
+	if (service.type === "libsql") {
+		return (
+			<div className="space-y-4">
+				<ShowInternalLibsqlCredentials libsqlId={service.id} />
+				<ShowExternalLibsqlCredentials libsqlId={service.id} />
+			</div>
+		);
+	}
+
+	return null;
+};
+
 export const EnvironmentCanvas = ({
 	projectId,
 	environmentId,
@@ -315,6 +397,7 @@ export const EnvironmentCanvas = ({
 		| "schedules"
 		| "backups"
 		| "volume-backups"
+		| "credentials"
 		| "connections"
 	>("overview");
 	const [serviceEnvDraft, setServiceEnvDraft] = useState("");
@@ -533,6 +616,9 @@ export const EnvironmentCanvas = ({
 		(selectedServiceModel && getDatabaseBackupType(selectedServiceModel))
 			? [{ value: "backups", label: "Backups" }]
 			: []),
+		...(selectedServiceModel && hasDatabaseCredentials(selectedServiceModel)
+			? [{ value: "credentials", label: "Credentials" }]
+			: []),
 		...(selectedServiceModel &&
 		deploymentServiceTypes.has(selectedServiceModel.type) &&
 		permissions?.volumeBackup.read
@@ -616,6 +702,12 @@ export const EnvironmentCanvas = ({
 			(!selectedServiceModel ||
 				(selectedServiceModel.type !== "compose" &&
 					!getDatabaseBackupType(selectedServiceModel)))
+		) {
+			setDrawerTab("overview");
+		}
+		if (
+			drawerTab === "credentials" &&
+			(!selectedServiceModel || !hasDatabaseCredentials(selectedServiceModel))
 		) {
 			setDrawerTab("overview");
 		}
@@ -1248,6 +1340,28 @@ export const EnvironmentCanvas = ({
 										serviceType: service.type,
 									});
 									setDrawerTab("backups");
+									setCommandOpen(false);
+								},
+							},
+						]
+					: []),
+				...(hasDatabaseCredentials(service)
+					? [
+							{
+								id: `credentials:${service.type}:${service.id}`,
+								group: "Actions" as const,
+								label: `Credentials for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · connection strings`,
+								search: `${baseSearch} credentials connection string password port external internal`,
+								icon: (
+									<SquareTerminal className="size-5 text-muted-foreground" />
+								),
+								run: () => {
+									setSelectedService({
+										serviceId: service.id,
+										serviceType: service.type,
+									});
+									setDrawerTab("credentials");
 									setCommandOpen(false);
 								},
 							},
@@ -2112,6 +2226,11 @@ export const EnvironmentCanvas = ({
 								)}
 							</>
 						)}
+
+						{drawerTab === "credentials" &&
+							hasDatabaseCredentials(selectedServiceModel) && (
+								<DatabaseCredentials service={selectedServiceModel} />
+							)}
 
 						{drawerTab === "volume-backups" &&
 							(selectedServiceModel.type === "application" ||
