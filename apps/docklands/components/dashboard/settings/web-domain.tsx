@@ -1,13 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { GlobeIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -17,9 +19,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 
 const addServerDomain = z
 	.object({
@@ -105,11 +105,9 @@ export const WebDomain = () => {
 						<div className="flex flex-col gap-1">
 							<h3 className="text-xl flex flex-row gap-2">
 								<GlobeIcon className="size-6 text-muted-foreground self-center" />
-								Server Domain
+								Ingress Domain
 							</h3>
-							<p>
-								Add a domain to your server application.
-							</p>
+							<p>Add a domain to the Docklands ingress.</p>
 						</div>
 					</div>
 					<div className="space-y-2 py-6 border-t">
@@ -119,7 +117,7 @@ export const WebDomain = () => {
 								<div className="space-y-2">
 									<p className="font-medium">⚠️ Important: URL Change Impact</p>
 									<p>
-										If you change the Docklands Server URL make sure to update
+										If you change the Docklands ingress URL make sure to update
 										your Github Apps to keep the auto-deploy working and preview
 										deployments working.
 									</p>
@@ -199,14 +197,13 @@ export const WebDomain = () => {
 											return (
 												<FormItem className="col-span-2">
 													<FormLabel>Certificate Provider</FormLabel>
-													<Select aria-label="Select option"
+													<Select
+														aria-label="Select option"
 														onValueChange={field.onChange}
 														value={field.value}
 													>
 														<FormControl>
-															<>
-																
-															</>
+															<></>
 														</FormControl>
 														<>
 															<Select.Option value={"none"}>None</Select.Option>

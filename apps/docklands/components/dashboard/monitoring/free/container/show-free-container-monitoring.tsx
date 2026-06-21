@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { api } from "@/client/api/trpc";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Meter } from "@cloudflare/kumo/components/meter";
+import { useEffect, useState } from "react";
+import { api } from "@/client/api/trpc";
 import { DockerBlockChart } from "./docker-block-chart";
 import { DockerCpuChart } from "./docker-cpu-chart";
 import { DockerDiskChart } from "./docker-disk-chart";
@@ -207,7 +207,7 @@ export const ContainerFreeMonitoring = ({
 				<div className="space-y-1">
 					<h1 className="text-2xl font-semibold tracking-tight">Monitoring</h1>
 					<p className="text-sm text-muted-foreground">
-						Watch the usage of your server in the current app
+						Watch runtime usage for this service
 					</p>
 				</div>
 			</header>
@@ -294,9 +294,7 @@ export const ContainerFreeMonitoring = ({
 				{appName === "docklands" && (
 					<LayerCard className="bg-background">
 						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<h3 className="text-sm font-medium">
-								Docker Disk Usage
-							</h3>
+							<h3 className="text-sm font-medium">Docker Disk Usage</h3>
 						</div>
 						<div>
 							<DockerDiskUsageChart />

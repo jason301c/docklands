@@ -1,9 +1,9 @@
-import { Database, FolderUp, Loader2, Trash2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { DialogAction } from "@/components/shared/dialog-action";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Database, FolderUp, Loader2, Trash2 } from "lucide-react";
+import { api } from "@/client/api/trpc";
+import { DialogAction } from "@/components/shared/dialog-action";
+import { toast } from "@/components/shared/toast";
 import { HandleDestinations } from "./handle-destinations";
 
 export const ShowDestinations = () => {
@@ -18,7 +18,7 @@ export const ShowDestinations = () => {
 					<div className="">
 						<h3 className="text-xl flex flex-row gap-2">
 							<Database className="size-6 text-muted-foreground self-center" />
-							S3 Destinations
+							Storage providers
 						</h3>
 						<p>
 							Add your providers like AWS S3, Cloudflare R2, Wasabi,
@@ -88,7 +88,8 @@ export const ShowDestinations = () => {
 																			});
 																	}}
 																>
-																	<Button aria-label="Action"
+																	<Button
+																		aria-label="Action"
 																		variant="ghost"
 																		shape="square"
 																		className="group hover:bg-red-500/10 "

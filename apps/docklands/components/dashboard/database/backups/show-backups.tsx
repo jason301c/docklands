@@ -1,3 +1,6 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	ClipboardList,
 	Database,
@@ -7,7 +10,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import {
 	MariadbIcon,
@@ -17,9 +19,7 @@ import {
 } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
 import { ShowDeploymentsModal } from "../../application/deployments/show-deployments-modal";
@@ -132,7 +132,7 @@ export const ShowBackups = ({
 								href="/dashboard/settings/destinations"
 								className="text-foreground"
 							>
-								S3 Destinations
+								Storage providers
 							</Link>{" "}
 							to do so.
 						</span>
@@ -276,7 +276,8 @@ export const ShowBackups = ({
 															type="backup"
 															serverId={serverId || undefined}
 														>
-															<Button aria-label="Action"
+															<Button
+																aria-label="Action"
 																variant="ghost"
 																shape="square"
 																className="size-8"
@@ -285,39 +286,38 @@ export const ShowBackups = ({
 															</Button>
 														</ShowDeploymentsModal>
 														<TooltipProvider delay={0}>
-															<Tooltip content={<>
-																	Run Manual Backup
-																</>}  asChild>
-																	<Button aria-label="Action"
-																		type="button"
-																		variant="ghost"
-																		shape="square"
-																		className="size-8"
-																		loading={
-																			isManualBackup &&
-																			activeManualBackup === backup.backupId
-																		}
-																		onClick={async () => {
-																			setActiveManualBackup(backup.backupId);
-																			await manualBackup({
-																				backupId: backup.backupId as string,
+															<Tooltip content={<>Run Manual Backup</>} asChild>
+																<Button
+																	aria-label="Action"
+																	type="button"
+																	variant="ghost"
+																	shape="square"
+																	className="size-8"
+																	loading={
+																		isManualBackup &&
+																		activeManualBackup === backup.backupId
+																	}
+																	onClick={async () => {
+																		setActiveManualBackup(backup.backupId);
+																		await manualBackup({
+																			backupId: backup.backupId as string,
+																		})
+																			.then(async () => {
+																				toast.success(
+																					"Manual Backup Successful",
+																				);
 																			})
-																				.then(async () => {
-																					toast.success(
-																						"Manual Backup Successful",
-																					);
-																				})
-																				.catch(() => {
-																					toast.error(
-																						"Error creating the manual backup",
-																					);
-																				});
-																			setActiveManualBackup(undefined);
-																		}}
-																	>
-																		<Play className="size-4 " />
-																	</Button>
-																</Tooltip>
+																			.catch(() => {
+																				toast.error(
+																					"Error creating the manual backup",
+																				);
+																			});
+																		setActiveManualBackup(undefined);
+																	}}
+																>
+																	<Play className="size-4 " />
+																</Button>
+															</Tooltip>
 														</TooltipProvider>
 
 														<HandleBackup
@@ -345,7 +345,8 @@ export const ShowBackups = ({
 																	});
 															}}
 														>
-															<Button aria-label="Action"
+															<Button
+																aria-label="Action"
 																variant="ghost"
 																shape="square"
 																className="group hover:bg-red-500/10 size-8"

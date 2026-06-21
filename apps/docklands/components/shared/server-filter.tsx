@@ -1,13 +1,12 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { LinkButton } from "@cloudflare/kumo/components/button";
+import { Label } from "@cloudflare/kumo/components/label";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
 import { Loader2, PlusIcon, ServerIcon } from "lucide-react";
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button, LinkButton } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Label } from "@cloudflare/kumo/components/label";
-import { Select } from "@cloudflare/kumo/components/select";
 
 const DOCKLANDS_SERVER = "docklands-server";
 
@@ -100,23 +99,25 @@ export const ServerFilter = ({ children }: Props) => {
 					>
 						Viewing server
 					</Label>
-					<Select aria-label="Select option"
+					<Select
+						aria-label="Select option"
 						value={serverId ?? DOCKLANDS_SERVER}
-						onValueChange={(value) => value !== null && setServerId(value as never)}
+						onValueChange={(value) =>
+							value !== null && setServerId(value as never)
+						}
 					>
 						<>
 							<div className="flex items-center gap-2">
 								<ServerIcon className="size-4 text-muted-foreground" />
-								
 							</div>
 						</>
 						<>
 							<Select.Group>
-								<Select.GroupLabel>Servers</Select.GroupLabel>
+								<Select.GroupLabel>Runtime capacity</Select.GroupLabel>
 								{!isCloud && (
 									<Select.Option value={DOCKLANDS_SERVER}>
 										<div className="flex items-center gap-2">
-											<span>Docklands Server</span>
+											<span>Local runtime</span>
 											<Badge
 												variant="secondary"
 												className="text-[10px] px-1.5 py-0"

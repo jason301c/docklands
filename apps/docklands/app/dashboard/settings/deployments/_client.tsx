@@ -1,9 +1,9 @@
 "use client";
 
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { api } from "@/client/api/trpc";
 import { BuildsConcurrency } from "@/components/dashboard/settings/servers/actions/builds-concurrency";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 
 const Page = () => {
 	const { data: servers } = api.server.all.useQuery();
@@ -23,21 +23,21 @@ const Page = () => {
 						<div className="flex flex-col gap-6">
 							<AlertBlock type="warning">
 								Running multiple builds at once increases CPU, memory and disk
-								usage on each server. Each concurrent build runs its own builder
-								and image build, so set this based on the resources the machine
-								can handle — too high a value can exhaust memory and make
+								usage on each runtime. Each concurrent build runs its own
+								builder and image build, so set this based on the resources the
+								runtime can handle. Too high a value can exhaust memory and make
 								deployments fail.
 							</AlertBlock>
 							<div className="flex flex-col gap-2">
 								<p className="text-sm font-medium text-muted-foreground">
-									Docklands Server
+									Local runtime
 								</p>
 								<BuildsConcurrency />
 							</div>
 
 							<div className="flex flex-col gap-2">
 								<p className="text-sm font-medium text-muted-foreground">
-									Remote Servers
+									Remote capacity
 								</p>
 								{servers && servers.length > 0 ? (
 									<div className="flex flex-col gap-3">

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
+import { useEffect, useState } from "react";
+import { api } from "@/client/api/trpc";
+import { toast } from "@/components/shared/toast";
 
 const MAX_BUILDS_CONCURRENCY = 100;
 
@@ -80,12 +80,12 @@ export const BuildsConcurrency = ({ serverId, label }: Props) => {
 				<div className="space-y-0.5">
 					<div className="flex items-center gap-2">
 						<p className="text-sm font-medium">
-							{label ?? serverQuery.data?.name ?? "Docklands Server"}
+							{label ?? serverQuery.data?.name ?? "Local runtime"}
 						</p>
 						<span className="text-xs text-muted-foreground rounded border px-1.5 py-0.5">
 							{serverId
 								? (serverQuery.data?.ipAddress ?? "remote server")
-								: "local host"}
+								: "local runtime"}
 						</span>
 					</div>
 				</div>

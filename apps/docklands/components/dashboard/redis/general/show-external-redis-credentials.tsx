@@ -1,14 +1,14 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -17,8 +17,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Label } from "@cloudflare/kumo/components/label";
+import { toast } from "@/components/shared/toast";
+import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 
 const DockerProviderSchema = z.object({
 	externalPort: z.preprocess((a) => {
@@ -103,9 +103,7 @@ export const ShowExternalRedisCredentials = ({ redisId }: Props) => {
 									href="/dashboard/settings/server"
 									className="text-primary"
 								>
-									{data?.serverId
-										? "Remote Servers -> Server -> Edit Server -> Update IP Address"
-										: "Web Server -> Server -> Update Server IP"}
+									Runtime network settings
 								</Link>{" "}
 								to fix the database url connection.
 							</AlertBlock>
