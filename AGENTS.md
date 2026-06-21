@@ -30,6 +30,16 @@ Key versions after the dependency refresh:
 - Better Auth
 - Vitest 4
 
+## Local Documentation
+
+- The installed Next.js package includes bundled docs at `node_modules/next/dist/docs`.
+- This repo currently has Next `16.2.9`; check those local docs before relying on memory or web search for Next behavior.
+- Search them with `rg`, for example:
+
+```sh
+rg -n "Route Handlers|App Router|Server Actions" node_modules/next/dist/docs
+```
+
 ## Hard Rules
 
 - Do not reintroduce AI features or AI dependencies. The AI router, schema, service, provider utilities, settings page, project assistant, and log analyzer were intentionally removed.
