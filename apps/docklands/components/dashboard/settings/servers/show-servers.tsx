@@ -201,8 +201,9 @@ export const ShowServers = () => {
 																								</p>
 																								<p className="text-xs text-muted-foreground">
 																									Configure and initialize your
-																									server with Docker, Traefik,
-																									and other essential services
+																									runtime worker with Docker,
+																									ingress, and other essential
+																									services
 																								</p>
 																							</div>
 																						</>

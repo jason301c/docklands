@@ -1,16 +1,17 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { useHealthCheckAfterMutation } from "@/client/hooks/use-health-check-after-mutation";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -19,9 +20,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
 import { ScrollArea } from "@/components/shared/scroll-area";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	children: React.ReactNode;
@@ -100,7 +100,7 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 			);
 			setOpen(false);
 		} catch (error) {
-			toast.error((error as Error).message || "Error updating Traefik ports");
+			toast.error((error as Error).message || "Error updating ingress ports");
 		}
 	};
 
@@ -118,7 +118,7 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 						<Dialog.Description className="text-base w-full">
 							<div className="flex items-center justify-between">
 								<div className="flex flex-col gap-1">
-									Add or remove additional ports for Traefik
+									Add or remove additional ports for the ingress runtime
 									<span className="text-sm text-muted-foreground">
 										{fields.length} port mapping{fields.length !== 1 ? "s" : ""}{" "}
 										configured
@@ -221,13 +221,12 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 																		Protocol
 																	</FormLabel>
 																	<FormControl>
-																		<Select aria-label="Select option"
+																		<Select
+																			aria-label="Select option"
 																			onValueChange={field.onChange}
 																			defaultValue={field.value}
 																		>
-																			<>
-																				
-																			</>
+																			<></>
 																			<>
 																				<Select.Group>
 																					{["tcp", "udp", "sctp"].map(
@@ -273,7 +272,7 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 											<span className="text-sm">
 												<strong>
 													Each port mapping defines how external traffic reaches
-													your containers through Traefik.
+													your containers through ingress.
 												</strong>
 												<ul className="pt-2">
 													<li>
@@ -287,7 +286,7 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 												</ul>
 												<p className="mt-2">
 													All ports are bound directly to the host machine,
-													allowing Traefik to handle incoming traffic and route
+													allowing ingress to handle incoming traffic and route
 													it appropriately to your services.
 												</p>
 											</span>
@@ -296,9 +295,9 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 								)}
 
 								<AlertBlock type="warning">
-									The Traefik container will be recreated from scratch. This
-									means the container will be deleted and created again, which
-									may cause downtime in your applications.
+									The ingress runtime container will be recreated from scratch.
+									This means the container will be deleted and created again,
+									which may cause downtime in your applications.
 								</AlertBlock>
 							</div>
 							<div>

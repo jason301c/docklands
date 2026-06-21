@@ -2260,7 +2260,7 @@ export const EnvironmentCanvas = ({
 				label: "Ingress",
 				detail: "Domains, TLS, cleanup, and proxy",
 				path: "/dashboard/settings/ingress",
-				search: "ingress web server domain tls ssl proxy traefik cleanup",
+				search: "ingress runtime domain tls ssl proxy cleanup",
 				icon: <ServerIcon className="size-5 text-muted-foreground" />,
 			},
 			{

@@ -8,8 +8,8 @@ const MAX_BUILDS_CONCURRENCY = 100;
 
 interface Props {
 	/**
-	 * When provided, configures concurrency for that remote server. When
-	 * omitted, configures the local Docklands web server.
+	 * When provided, configures concurrency for that remote worker. When
+	 * omitted, configures the local Docklands runtime.
 	 */
 	serverId?: string;
 	/** Optional title override (e.g. the server name in a list). */
@@ -17,8 +17,8 @@ interface Props {
 }
 
 /**
- * Control to set the number of concurrent builds, either for a remote server
- * (`serverId` provided) or the local web server (omitted). Available to
+ * Control to set the number of concurrent builds, either for a remote worker
+ * (`serverId` provided) or the local runtime (omitted). Available to
  * self-hosted instances.
  */
 export const BuildsConcurrency = ({ serverId, label }: Props) => {
@@ -84,7 +84,7 @@ export const BuildsConcurrency = ({ serverId, label }: Props) => {
 						</p>
 						<span className="text-xs text-muted-foreground rounded border px-1.5 py-0.5">
 							{serverId
-								? (serverQuery.data?.ipAddress ?? "remote server")
+								? (serverQuery.data?.ipAddress ?? "remote worker")
 								: "local runtime"}
 						</span>
 					</div>

@@ -1,14 +1,13 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { useHealthCheckAfterMutation } from "@/client/hooks/use-health-check-after-mutation";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -17,6 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { toast } from "@/components/shared/toast";
 
 const schema = z.object({
 	env: z.string(),
@@ -44,7 +44,7 @@ export const EditTraefikEnv = ({ children, serverId }: Props) => {
 		isExecuting: isHealthCheckExecuting,
 	} = useHealthCheckAfterMutation({
 		initialDelay: 5000,
-		successMessage: "Traefik Env Updated",
+		successMessage: "Ingress environment updated",
 	});
 
 	const form = useForm<Schema>({
@@ -72,7 +72,7 @@ export const EditTraefikEnv = ({ children, serverId }: Props) => {
 				}),
 			);
 		} catch {
-			toast.error("Error updating the Traefik env");
+			toast.error("Error updating the ingress environment");
 		}
 	};
 
@@ -101,9 +101,9 @@ export const EditTraefikEnv = ({ children, serverId }: Props) => {
 			<Dialog.Trigger render={children as never} />
 			<Dialog className="sm:max-w-4xl">
 				<div>
-					<Dialog.Title>Update Traefik Environment</Dialog.Title>
+					<Dialog.Title>Update Ingress Environment</Dialog.Title>
 					<Dialog.Description>
-						Update the traefik environment variables
+						Update ingress runtime environment variables
 					</Dialog.Description>
 				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
