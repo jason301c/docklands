@@ -106,6 +106,7 @@ import {
 	getWorkspaceServiceKey,
 	isWorkspaceServiceType,
 	normalizeWorkspaceConnectionEndpoints,
+	resolveWorkspaceConnectionGroups,
 	type WorkspaceNode,
 	type WorkspaceService,
 	type WorkspaceServiceType,
@@ -969,6 +970,10 @@ export const EnvironmentCanvas = ({
 	);
 
 	const connections = workspace?.connections ?? [];
+	const connectionGroups = useMemo(
+		() => resolveWorkspaceConnectionGroups(nodes, connections),
+		[nodes, connections],
+	);
 	const selectedConnections = selectedService
 		? connections.filter(
 				(connection) =>
@@ -2342,6 +2347,23 @@ export const EnvironmentCanvas = ({
 							backgroundSize: "32px 32px",
 						}}
 					>
+						{connectionGroups.map((group, index) => (
+							<div
+								key={group.id}
+								className="pointer-events-none absolute rounded-xl border border-dashed border-kumo-line bg-background/35"
+								style={{
+									left: group.x,
+									top: group.y,
+									width: group.width,
+									height: group.height,
+								}}
+							>
+								<div className="absolute left-3 top-3 rounded-md border bg-background/80 px-2 py-1 text-xs font-medium text-muted-foreground shadow-sm">
+									Service group {index + 1} · {group.nodeKeys.length} services
+								</div>
+							</div>
+						))}
+
 						<svg
 							className="pointer-events-none absolute inset-0"
 							width={canvasBounds.width}

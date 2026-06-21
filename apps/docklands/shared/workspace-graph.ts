@@ -53,6 +53,18 @@ export type WorkspaceNode = WorkspaceNodePosition & {
 	serviceType: WorkspaceServiceType;
 };
 
+export type WorkspaceConnectionLike = {
+	sourceServiceType: WorkspaceServiceType;
+	sourceServiceId: string;
+	targetServiceType: WorkspaceServiceType;
+	targetServiceId: string;
+};
+
+export type WorkspaceConnectionGroup = WorkspaceNodePosition & {
+	id: string;
+	nodeKeys: string[];
+};
+
 export type PersistedWorkspaceNode = Partial<WorkspaceNodePosition> & {
 	serviceId: string;
 	serviceType: WorkspaceServiceType;
@@ -278,4 +290,82 @@ export const resolveWorkspaceNodes = (
 			height: persisted?.height ?? fallback.height,
 		};
 	});
+};
+
+export const resolveWorkspaceConnectionGroups = (
+	nodes: WorkspaceNode[],
+	connections: WorkspaceConnectionLike[] = [],
+	padding = 48,
+): WorkspaceConnectionGroup[] => {
+	const nodesByKey = new Map(
+		nodes.map((node) => [
+			getWorkspaceServiceKey(node.serviceType, node.serviceId),
+			node,
+		]),
+	);
+	const adjacency = new Map<string, Set<string>>();
+
+	for (const connection of connections) {
+		const sourceKey = getWorkspaceServiceKey(
+			connection.sourceServiceType,
+			connection.sourceServiceId,
+		);
+		const targetKey = getWorkspaceServiceKey(
+			connection.targetServiceType,
+			connection.targetServiceId,
+		);
+
+		if (!nodesByKey.has(sourceKey) || !nodesByKey.has(targetKey)) continue;
+
+		if (!adjacency.has(sourceKey)) adjacency.set(sourceKey, new Set());
+		if (!adjacency.has(targetKey)) adjacency.set(targetKey, new Set());
+		adjacency.get(sourceKey)?.add(targetKey);
+		adjacency.get(targetKey)?.add(sourceKey);
+	}
+
+	const visited = new Set<string>();
+	const groups: WorkspaceConnectionGroup[] = [];
+
+	for (const key of adjacency.keys()) {
+		if (visited.has(key)) continue;
+
+		const nodeKeys: string[] = [];
+		const stack = [key];
+		visited.add(key);
+
+		while (stack.length > 0) {
+			const current = stack.pop();
+			if (!current) continue;
+			nodeKeys.push(current);
+
+			for (const next of adjacency.get(current) ?? []) {
+				if (visited.has(next)) continue;
+				visited.add(next);
+				stack.push(next);
+			}
+		}
+
+		if (nodeKeys.length < 2) continue;
+
+		const groupNodes = nodeKeys
+			.map((nodeKey) => nodesByKey.get(nodeKey))
+			.filter((node): node is WorkspaceNode => Boolean(node));
+		const minX = Math.min(...groupNodes.map((node) => node.x));
+		const minY = Math.min(...groupNodes.map((node) => node.y));
+		const maxX = Math.max(...groupNodes.map((node) => node.x + node.width));
+		const maxY = Math.max(...groupNodes.map((node) => node.y + node.height));
+		const x = Math.max(24, minX - padding);
+		const y = Math.max(24, minY - padding);
+
+		groups.push({
+			id: nodeKeys.sort().join("|"),
+			nodeKeys,
+			x,
+			y,
+			width: maxX + padding - x,
+			height: maxY + padding - y,
+		});
+	}
+
+	return groups.sort((a, b) => a.y - b.y || a.x - b.x);
 };

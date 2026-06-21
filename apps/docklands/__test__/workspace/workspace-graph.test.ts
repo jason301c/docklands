@@ -4,6 +4,7 @@ import {
 	extractWorkspaceServicesFromEnvironment,
 	getDefaultWorkspacePosition,
 	normalizeWorkspaceConnectionEndpoints,
+	resolveWorkspaceConnectionGroups,
 	resolveWorkspaceNodes,
 } from "@/shared/workspace-graph";
 
@@ -139,6 +140,77 @@ describe("workspace graph helpers", () => {
 			source: database,
 			target: app,
 			flipped: false,
+		});
+	});
+
+	it("groups connected workspace nodes into visual bounds", () => {
+		const nodes = [
+			{
+				serviceId: "app_1",
+				serviceType: "application" as const,
+				x: 100,
+				y: 120,
+				width: 280,
+				height: 164,
+			},
+			{
+				serviceId: "pg_1",
+				serviceType: "postgres" as const,
+				x: 520,
+				y: 160,
+				width: 280,
+				height: 164,
+			},
+			{
+				serviceId: "redis_1",
+				serviceType: "redis" as const,
+				x: 520,
+				y: 420,
+				width: 280,
+				height: 164,
+			},
+			{
+				serviceId: "worker_1",
+				serviceType: "application" as const,
+				x: 1000,
+				y: 120,
+				width: 280,
+				height: 164,
+			},
+		];
+
+		const groups = resolveWorkspaceConnectionGroups(nodes, [
+			{
+				sourceServiceId: "pg_1",
+				sourceServiceType: "postgres",
+				targetServiceId: "app_1",
+				targetServiceType: "application",
+			},
+			{
+				sourceServiceId: "redis_1",
+				sourceServiceType: "redis",
+				targetServiceId: "app_1",
+				targetServiceType: "application",
+			},
+			{
+				sourceServiceId: "missing",
+				sourceServiceType: "postgres",
+				targetServiceId: "worker_1",
+				targetServiceType: "application",
+			},
+		]);
+
+		expect(groups).toHaveLength(1);
+		expect(groups[0]?.nodeKeys).toEqual([
+			"application:app_1",
+			"postgres:pg_1",
+			"redis:redis_1",
+		]);
+		expect(groups[0]).toMatchObject({
+			x: 52,
+			y: 72,
+			width: 796,
+			height: 560,
 		});
 	});
 });
