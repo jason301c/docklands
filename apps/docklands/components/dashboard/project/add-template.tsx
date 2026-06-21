@@ -518,9 +518,9 @@ export const AddTemplate = ({
 																		content={
 																			<>
 																				<span>
-																					If no server is selected, the
-																					application will be deployed on the
-																					server where the user is logged in.
+																					Docklands uses automatic placement by
+																					default. Choose a worker only when
+																					this template needs manual placement.
 																				</span>
 																			</>
 																		}
@@ -530,8 +530,7 @@ export const AddTemplate = ({
 																		asChild
 																	>
 																		<Label className="break-all w-fit flex flex-row gap-1 items-center pb-2 pt-3.5">
-																			Select a Server{" "}
-																			{!isCloud ? "(Optional)" : ""}
+																			Placement {!isCloud ? "(Optional)" : ""}
 																			<HelpCircle className="size-4 text-muted-foreground" />
 																		</Label>
 																	</Tooltip>
@@ -553,7 +552,7 @@ export const AddTemplate = ({
 																			{!isCloud && (
 																				<Select.Option value="docklands">
 																					<span className="flex items-center gap-2 justify-between w-full">
-																						<span>Docklands</span>
+																						<span>Automatic placement</span>
 																						<span className="text-muted-foreground text-xs self-center">
 																							Default
 																						</span>
@@ -574,7 +573,7 @@ export const AddTemplate = ({
 																				</Select.Option>
 																			))}
 																			<Select.GroupLabel>
-																				Servers (
+																				Runtime workers (
 																				{servers?.length + (!isCloud ? 1 : 0)})
 																			</Select.GroupLabel>
 																		</Select.Group>

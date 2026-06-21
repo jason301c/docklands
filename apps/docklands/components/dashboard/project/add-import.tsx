@@ -219,9 +219,9 @@ export const AddImport = ({
 													content={
 														<>
 															<span>
-																If no server is selected, the compose will be
-																deployed on the server where the user is logged
-																in.
+																Docklands uses automatic placement by default.
+																Choose a worker only when this import needs
+																manual placement.
 															</span>
 														</>
 													}
@@ -231,7 +231,7 @@ export const AddImport = ({
 													asChild
 												>
 													<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
-														Select a Server {!isCloud ? "(Optional)" : ""}
+														Placement {!isCloud ? "(Optional)" : ""}
 														<HelpCircle className="size-4 text-muted-foreground" />
 													</FormLabel>
 												</Tooltip>
@@ -249,7 +249,7 @@ export const AddImport = ({
 														{!isCloud && (
 															<Select.Option value="docklands">
 																<span className="flex items-center gap-2 justify-between w-full">
-																	<span>Docklands</span>
+																	<span>Automatic placement</span>
 																	<span className="text-muted-foreground text-xs self-center">
 																		Default
 																	</span>
@@ -270,7 +270,7 @@ export const AddImport = ({
 															</Select.Option>
 														))}
 														<Select.GroupLabel>
-															Servers (
+															Runtime workers (
 															{(servers?.length ?? 0) + (!isCloud ? 1 : 0)})
 														</Select.GroupLabel>
 													</Select.Group>
