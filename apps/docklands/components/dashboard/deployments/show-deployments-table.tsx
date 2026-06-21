@@ -17,16 +17,21 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import type { inferRouterOutputs } from "@trpc/server";
+import { formatDistanceToNow } from "date-fns";
 import {
+	Activity,
+	AlertCircle,
 	ArrowUpDown,
 	Boxes,
+	CheckCircle2,
 	ChevronLeft,
 	ChevronRight,
+	Clock,
 	ExternalLink,
 	Loader2,
 	Rocket,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
 import type { AppRouter } from "@/server/api/root";
 
@@ -47,6 +52,13 @@ const statusVariants: Record<
 	done: "green",
 	error: "red",
 	cancelled: "outline",
+};
+
+const statusDotClass: Record<string, string> = {
+	running: "bg-amber-500",
+	done: "bg-emerald-500",
+	error: "bg-red-500",
+	cancelled: "bg-muted-foreground/50",
 };
 
 function getServiceInfo(d: DeploymentRow) {
@@ -77,6 +89,33 @@ function getServiceInfo(d: DeploymentRow) {
 		};
 	}
 	return null;
+}
+
+function DeploymentMetricCard({
+	label,
+	value,
+	detail,
+	icon,
+}: {
+	label: string;
+	value: number | string;
+	detail: string;
+	icon: ReactNode;
+}) {
+	return (
+		<div className="rounded-md border bg-background p-4">
+			<div className="flex items-start justify-between gap-3">
+				<div className="space-y-1">
+					<p className="text-xs uppercase text-muted-foreground">{label}</p>
+					<p className="text-2xl font-semibold tabular-nums">{value}</p>
+				</div>
+				<div className="flex size-9 items-center justify-center rounded-md border bg-muted/30 text-muted-foreground">
+					{icon}
+				</div>
+			</div>
+			<p className="mt-3 text-xs text-muted-foreground">{detail}</p>
+		</div>
+	);
 }
 
 export function ShowDeploymentsTable() {
@@ -123,6 +162,38 @@ export function ShowDeploymentsTable() {
 		}
 		return list;
 	}, [deploymentsList, statusFilter, typeFilter, globalFilter]);
+
+	const deploymentStats = useMemo(() => {
+		const list = deploymentsList ?? [];
+		const active = list.filter((deployment) => deployment.status === "running");
+		const failed = list.filter((deployment) => deployment.status === "error");
+		const successful = list.filter(
+			(deployment) => deployment.status === "done",
+		);
+		const latest = [...list].sort(
+			(a, b) =>
+				new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+		)[0];
+
+		return {
+			active: active.length,
+			failed: failed.length,
+			successful: successful.length,
+			total: list.length,
+			latest,
+		};
+	}, [deploymentsList]);
+
+	const recentDeploymentStream = useMemo(
+		() =>
+			[...filteredData]
+				.sort(
+					(a, b) =>
+						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+				)
+				.slice(0, 5),
+		[filteredData],
+	);
 
 	const columns = useMemo(
 		() => [
@@ -351,6 +422,125 @@ export function ShowDeploymentsTable() {
 
 	return (
 		<div className="space-y-2">
+			{!isLoading && (
+				<>
+					<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+						<DeploymentMetricCard
+							label="Active builds"
+							value={deploymentStats.active}
+							detail="Deployments currently moving through the worker."
+							icon={<Activity className="size-4" />}
+						/>
+						<DeploymentMetricCard
+							label="Successful"
+							value={deploymentStats.successful}
+							detail="Completed deploys retained in the central timeline."
+							icon={<CheckCircle2 className="size-4" />}
+						/>
+						<DeploymentMetricCard
+							label="Failed"
+							value={deploymentStats.failed}
+							detail="Deploys that need attention before the next release."
+							icon={<AlertCircle className="size-4" />}
+						/>
+						<DeploymentMetricCard
+							label="Latest"
+							value={
+								deploymentStats.latest?.createdAt
+									? formatDistanceToNow(
+											new Date(deploymentStats.latest.createdAt),
+											{ addSuffix: true },
+										)
+									: "—"
+							}
+							detail={`${deploymentStats.total} total deployment records`}
+							icon={<Clock className="size-4" />}
+						/>
+					</div>
+
+					<div className="rounded-md border bg-background">
+						<div className="flex items-center justify-between gap-3 border-b px-4 py-3">
+							<div>
+								<p className="text-sm font-medium">Build stream</p>
+								<p className="text-xs text-muted-foreground">
+									Latest runtime changes across every project and environment.
+								</p>
+							</div>
+							<Badge variant="outline">{filteredData.length} visible</Badge>
+						</div>
+						{recentDeploymentStream.length === 0 ? (
+							<div className="flex min-h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
+								<Rocket className="size-6" />
+								<p className="text-sm">
+									No deployment activity matches this view.
+								</p>
+							</div>
+						) : (
+							<div className="divide-y">
+								{recentDeploymentStream.map((deployment) => {
+									const info = getServiceInfo(deployment);
+									const status = deployment.status ?? "running";
+									return (
+										<div
+											key={deployment.deploymentId}
+											className="grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_auto]"
+										>
+											<div className="flex min-w-0 items-start gap-3">
+												<span
+													className={`mt-2 size-2 shrink-0 rounded-full ${statusDotClass[status] ?? statusDotClass.cancelled}`}
+													aria-hidden="true"
+												/>
+												<div className="min-w-0">
+													<div className="flex flex-wrap items-center gap-2">
+														<p className="truncate text-sm font-medium">
+															{info?.name ?? "Unknown service"}
+														</p>
+														<Badge
+															variant={statusVariants[status] ?? "secondary"}
+														>
+															{status}
+														</Badge>
+														{info && (
+															<Badge variant="outline">{info.type}</Badge>
+														)}
+													</div>
+													<p className="mt-1 truncate text-xs text-muted-foreground">
+														{info
+															? `${info.projectName} / ${info.environmentName}`
+															: "Service metadata unavailable"}
+														{deployment.title ? ` · ${deployment.title}` : ""}
+													</p>
+												</div>
+											</div>
+											<div className="flex items-center gap-3 md:justify-end">
+												<span className="text-xs text-muted-foreground">
+													{deployment.createdAt
+														? formatDistanceToNow(
+																new Date(deployment.createdAt),
+																{ addSuffix: true },
+															)
+														: "—"}
+												</span>
+												{info && (
+													<LinkButton
+														href={info.href}
+														variant="ghost"
+														size="sm"
+													>
+														<ExternalLink className="size-4" />
+														Open
+													</LinkButton>
+												)}
+											</div>
+										</div>
+									);
+								})}
+							</div>
+						)}
+					</div>
+				</>
+			)}
+
 			<div className="flex flex-wrap items-center gap-2">
 				<Input
 					placeholder="Search by name, project, environment, or title..."
