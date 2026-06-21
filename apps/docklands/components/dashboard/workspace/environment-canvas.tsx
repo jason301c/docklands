@@ -1261,6 +1261,17 @@ export const EnvironmentCanvas = ({
 		}
 	};
 
+	const startConnectionFromService = (service: WorkspaceService) => {
+		setConnectSource({
+			serviceId: service.id,
+			serviceType: service.type,
+		});
+		closeSelectedService();
+		toast.info(
+			"Select another service on the canvas. Database links auto-apply variables when possible.",
+		);
+	};
+
 	const selectOrConnectService = async (service: WorkspaceService) => {
 		if (suppressClick.current) {
 			suppressClick.current = false;
@@ -1391,6 +1402,15 @@ export const EnvironmentCanvas = ({
 		setIsSelectionMode(true);
 		setSelectedBulkKeys(selectableKeys);
 		closeSelectedService();
+	};
+
+	const handleConnectionHandleClick = (service: WorkspaceService) => {
+		if (connectSource) {
+			void selectOrConnectService(service);
+			return;
+		}
+
+		startConnectionFromService(service);
 	};
 
 	const resetCanvasFilters = () => {
@@ -2917,19 +2937,10 @@ export const EnvironmentCanvas = ({
 							).length;
 
 							return (
-								<button
+								<div
 									key={serviceKey}
-									type="button"
-									onPointerDown={(event) => onNodePointerDown(event, node)}
-									onPointerMove={onNodePointerMove}
-									onPointerUp={onNodePointerUp}
-									onClick={() => selectOrConnectService(service)}
 									className={cn(
-										"group absolute touch-none rounded-lg text-left outline-none transition",
-										isSelectionMode
-											? "cursor-pointer"
-											: "cursor-grab active:cursor-grabbing",
-										"focus-visible:ring-2 focus-visible:ring-ring",
+										"group absolute rounded-lg transition",
 										!visible && "pointer-events-none opacity-20",
 									)}
 									style={{
@@ -2939,70 +2950,114 @@ export const EnvironmentCanvas = ({
 										height: node.height,
 									}}
 								>
-									<LayerCard
+									<button
+										type="button"
+										onPointerDown={(event) => onNodePointerDown(event, node)}
+										onPointerMove={onNodePointerMove}
+										onPointerUp={onNodePointerUp}
+										onClick={() => selectOrConnectService(service)}
 										className={cn(
-											"relative h-full bg-background/95 shadow-sm transition hover:bg-background",
-											isConnectSource && "ring-2 ring-primary",
-											isBulkSelected && "ring-2 ring-primary",
+											"h-full w-full touch-none rounded-lg text-left outline-none transition",
+											isSelectionMode
+												? "cursor-pointer"
+												: "cursor-grab active:cursor-grabbing",
+											"focus-visible:ring-2 focus-visible:ring-ring",
 										)}
 									>
-										<div className="flex h-full flex-col gap-4">
-											<div className="flex items-start justify-between gap-4">
-												<div className="flex min-w-0 items-start gap-3">
-													<div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
-														<WorkspaceServiceIcon service={service} />
-													</div>
-													<div className="min-w-0">
-														<div className="flex items-center gap-2">
-															<span className="truncate font-medium">
-																{service.name}
-															</span>
-															<Grip className="size-3 shrink-0 text-muted-foreground" />
+										<LayerCard
+											className={cn(
+												"relative h-full bg-background/95 shadow-sm transition hover:bg-background",
+												isConnectSource && "ring-2 ring-primary",
+												isBulkSelected && "ring-2 ring-primary",
+											)}
+										>
+											<div className="flex h-full flex-col gap-4">
+												<div className="flex items-start justify-between gap-4">
+													<div className="flex min-w-0 items-start gap-3">
+														<div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
+															<WorkspaceServiceIcon service={service} />
 														</div>
-														<p className="truncate text-xs text-muted-foreground">
-															{serviceTypeLabels[service.type]}
-														</p>
+														<div className="min-w-0">
+															<div className="flex items-center gap-2">
+																<span className="truncate font-medium">
+																	{service.name}
+																</span>
+																<Grip className="size-3 shrink-0 text-muted-foreground" />
+															</div>
+															<p className="truncate text-xs text-muted-foreground">
+																{serviceTypeLabels[service.type]}
+															</p>
+														</div>
+													</div>
+													<div className="flex shrink-0 items-center gap-1.5">
+														{isSelectionMode && (
+															<Badge>
+																{isBulkSelected ? "Selected" : "Select"}
+															</Badge>
+														)}
+														<StatusTooltip
+															status={service.status ?? undefined}
+														/>
 													</div>
 												</div>
-												<div className="flex shrink-0 items-center gap-1.5">
-													{isSelectionMode && (
-														<Badge>
-															{isBulkSelected ? "Selected" : "Select"}
-														</Badge>
-													)}
-													<StatusTooltip status={service.status ?? undefined} />
+
+												<p className="line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
+													{service.description ||
+														serviceTypeDescriptions[service.type]}
+												</p>
+
+												<div className="mt-auto space-y-1 text-xs text-muted-foreground">
+													<div className="flex items-center justify-between gap-3">
+														<span className="flex min-w-0 items-center gap-1.5">
+															<Network className="size-3 shrink-0" />
+															<span className="truncate">Private runtime</span>
+														</span>
+														<span>{linkCount} links</span>
+													</div>
+													<div className="flex min-w-0 items-center gap-1.5">
+														<RefreshCw className="size-3 shrink-0" />
+														<span className="truncate">
+															{service.lastDeployAt
+																? `Deployed ${formatLastDeploy(service.lastDeployAt)}`
+																: "No deploys yet"}
+														</span>
+													</div>
 												</div>
 											</div>
-
-											<p className="line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
-												{service.description ||
-													serviceTypeDescriptions[service.type]}
-											</p>
-
-											<div className="mt-auto space-y-1 text-xs text-muted-foreground">
-												<div className="flex items-center justify-between gap-3">
-													<span className="flex min-w-0 items-center gap-1.5">
-														<Network className="size-3 shrink-0" />
-														<span className="truncate">Private runtime</span>
-													</span>
-													<span>{linkCount} links</span>
-												</div>
-												<div className="flex min-w-0 items-center gap-1.5">
-													<RefreshCw className="size-3 shrink-0" />
-													<span className="truncate">
-														{service.lastDeployAt
-															? `Deployed ${formatLastDeploy(service.lastDeployAt)}`
-															: "No deploys yet"}
-													</span>
-												</div>
-											</div>
-										</div>
-										<ServiceRuntimePulse
-											service={service}
-											linkCount={linkCount}
-										/>
-									</LayerCard>
-								</button>
+											<ServiceRuntimePulse
+												service={service}
+												linkCount={linkCount}
+											/>
+										</LayerCard>
+									</button>
+									{!isSelectionMode && (
+										<button
+											type="button"
+											aria-label={
+												isConnectSource
+													? `Cancel connection from ${service.name}`
+													: connectSource
+														? `Connect to ${service.name}`
+														: `Start connection from ${service.name}`
+											}
+											className={cn(
+												"absolute -right-4 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground opacity-0 shadow-sm transition hover:text-foreground group-hover:opacity-100",
+												connectSource && "opacity-100",
+												isConnectSource && "border-primary text-primary",
+											)}
+											onClick={(event) => {
+												event.stopPropagation();
+												handleConnectionHandleClick(service);
+											}}
+										>
+											{isConnectSource ? (
+												<X className="size-4" />
+											) : (
+												<Cable className="size-4" />
+											)}
+										</button>
+									)}
+								</div>
 							);
 						})}
 					</div>
@@ -3113,16 +3168,9 @@ export const EnvironmentCanvas = ({
 								<div className="flex flex-wrap gap-2">
 									<Button
 										variant="outline"
-										onClick={() => {
-											setConnectSource({
-												serviceId: selectedServiceModel.id,
-												serviceType: selectedServiceModel.type,
-											});
-											closeSelectedService();
-											toast.info(
-												"Select another service on the canvas. Database links auto-apply variables when possible.",
-											);
-										}}
+										onClick={() =>
+											startConnectionFromService(selectedServiceModel)
+										}
 									>
 										<Cable className="size-4" />
 										Connect
