@@ -71,9 +71,7 @@ export const AddCompose = ({
 		api.compose.create.useMutation();
 
 	const hasServers = servers && servers.length > 0;
-	// Show dropdown logic based on cloud environment
-	// Cloud: show only if there are remote servers (no Docklands option)
-	// Self-hosted: show only if there are remote servers (Docklands is default, hide if no remote servers)
+	// Show placement only when there is more than the local runtime to choose.
 	const shouldShowServerDropdown = hasServers;
 
 	const form = useForm<AddCompose>({
@@ -177,9 +175,9 @@ export const AddCompose = ({
 												content={
 													<>
 														<span>
-															If no server is selected, the application will be
-															deployed on the server where the user is logged
-															in.
+															Docklands uses automatic placement by default.
+															Choose a worker only when this stack needs manual
+															placement.
 														</span>
 													</>
 												}
@@ -189,7 +187,7 @@ export const AddCompose = ({
 												asChild
 											>
 												<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
-													Select a Server {showLocalOption ? "(Optional)" : ""}
+													Placement {showLocalOption ? "(Optional)" : ""}
 													<HelpCircle className="size-4 text-muted-foreground" />
 												</FormLabel>
 											</Tooltip>
@@ -209,7 +207,7 @@ export const AddCompose = ({
 													{showLocalOption && (
 														<Select.Option value="docklands">
 															<span className="flex items-center gap-2 justify-between w-full">
-																<span>Docklands</span>
+																<span>Automatic placement</span>
 																<span className="text-muted-foreground text-xs self-center">
 																	Default
 																</span>
@@ -230,7 +228,7 @@ export const AddCompose = ({
 														</Select.Option>
 													))}
 													<Select.GroupLabel>
-														Servers (
+														Runtime workers (
 														{servers?.length + (showLocalOption ? 1 : 0)})
 													</Select.GroupLabel>
 												</Select.Group>
@@ -246,7 +244,7 @@ export const AddCompose = ({
 							name="appName"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>App Name</FormLabel>
+									<FormLabel>Service Name</FormLabel>
 									<FormControl>
 										<Input placeholder="my-app" {...field} />
 									</FormControl>

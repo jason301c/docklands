@@ -68,9 +68,7 @@ export const AddApplication = ({
 	const { data: servers } = api.server.withSSHKey.useQuery();
 
 	const hasServers = servers && servers.length > 0;
-	// Show dropdown logic based on cloud environment
-	// Cloud: show only if there are remote servers (no Docklands option)
-	// Self-hosted: show only if there are remote servers (Docklands is default, hide if no remote servers)
+	// Show placement only when there is more than the local runtime to choose.
 	const shouldShowServerDropdown = hasServers;
 
 	const { mutateAsync, isPending, error, isError } =
@@ -166,9 +164,9 @@ export const AddApplication = ({
 												content={
 													<>
 														<span>
-															If no server is selected, the application will be
-															deployed on the server where the user is logged
-															in.
+															Docklands uses automatic placement by default.
+															Choose a worker only when this service needs
+															manual placement.
 														</span>
 													</>
 												}
@@ -178,7 +176,7 @@ export const AddApplication = ({
 												asChild
 											>
 												<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
-													Select a Server {showLocalOption ? "(Optional)" : ""}
+													Placement {showLocalOption ? "(Optional)" : ""}
 													<HelpCircle className="size-4 text-muted-foreground" />
 												</FormLabel>
 											</Tooltip>
@@ -198,7 +196,7 @@ export const AddApplication = ({
 													{showLocalOption && (
 														<Select.Option value="docklands">
 															<span className="flex items-center gap-2 justify-between w-full">
-																<span>Docklands</span>
+																<span>Automatic placement</span>
 																<span className="text-muted-foreground text-xs self-center">
 																	Default
 																</span>
@@ -219,7 +217,7 @@ export const AddApplication = ({
 														</Select.Option>
 													))}
 													<Select.GroupLabel>
-														Servers (
+														Runtime workers (
 														{servers?.length + (showLocalOption ? 1 : 0)})
 													</Select.GroupLabel>
 												</Select.Group>
@@ -236,14 +234,12 @@ export const AddApplication = ({
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel className="flex items-center gap-2">
-										App Name
+										Service Name
 										<TooltipProvider delay={0}>
 											<Tooltip
 												content={
 													<>
-														<p>
-															This will be the name of the Docker Swarm service
-														</p>
+														<p>Internal runtime service name.</p>
 													</>
 												}
 												side="right"

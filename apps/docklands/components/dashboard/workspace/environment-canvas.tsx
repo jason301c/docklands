@@ -1759,7 +1759,7 @@ export const EnvironmentCanvas = ({
 						id: "create:compose",
 						group: "Create" as const,
 						label: "New compose stack",
-						detail: "Create a Docker Compose service group",
+						detail: "Create a compose service group",
 						search: "new create compose stack docker compose",
 						icon: <CircuitBoard className="size-5 text-muted-foreground" />,
 						run: () => openCreateDialog("compose"),

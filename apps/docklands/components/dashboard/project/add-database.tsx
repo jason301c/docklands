@@ -226,9 +226,7 @@ export const AddDatabase = ({
 	const { data: environment } = api.environment.one.useQuery({ environmentId });
 
 	const hasServers = servers && servers.length > 0;
-	// Show dropdown logic based on cloud environment
-	// Cloud: show only if there are remote servers (no Docklands option)
-	// Self-hosted: show only if there are remote servers (Docklands is default, hide if no remote servers)
+	// Show placement only when there is more than the local runtime to choose.
 	const shouldShowServerDropdown = hasServers;
 
 	const form = useForm({
@@ -519,7 +517,7 @@ export const AddDatabase = ({
 										name="serverId"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>Runtime capacity</FormLabel>
+												<FormLabel>Placement</FormLabel>
 												<Select
 													aria-label="Select option"
 													onValueChange={field.onChange}
@@ -534,7 +532,7 @@ export const AddDatabase = ({
 															{showLocalOption && (
 																<Select.Option value="docklands">
 																	<span className="flex items-center gap-2 justify-between w-full">
-																		<span>Local runtime</span>
+																		<span>Automatic placement</span>
 																		<span className="text-muted-foreground text-xs self-center">
 																			Default
 																		</span>
@@ -550,7 +548,7 @@ export const AddDatabase = ({
 																</Select.Option>
 															))}
 															<Select.GroupLabel>
-																Runtime capacity (
+																Runtime workers (
 																{servers?.length + (showLocalOption ? 1 : 0)})
 															</Select.GroupLabel>
 														</Select.Group>
