@@ -17,6 +17,7 @@ describe("workspace graph helpers", () => {
 					applicationStatus: "running",
 					createdAt: "2026-06-20T00:00:00.000Z",
 					serverId: "srv_1",
+					refreshToken: "app_refresh_token",
 					server: { name: "worker-a" },
 					deployments: [
 						{
@@ -45,6 +46,7 @@ describe("workspace graph helpers", () => {
 					name: "stack",
 					appName: "docklands-stack-def456",
 					composeType: "stack",
+					refreshToken: "compose_refresh_token",
 					composeStatus: "idle",
 					createdAt: "2026-06-19T00:00:00.000Z",
 				},
@@ -61,6 +63,7 @@ describe("workspace graph helpers", () => {
 			type: "application",
 			name: "web",
 			appName: "docklands-web-abc123",
+			refreshToken: "app_refresh_token",
 			status: "running",
 			serverName: "worker-a",
 			lastDeployAt: "2026-06-20T02:03:00.000Z",
@@ -70,6 +73,7 @@ describe("workspace graph helpers", () => {
 			type: "compose",
 			appName: "docklands-stack-def456",
 			composeType: "stack",
+			refreshToken: "compose_refresh_token",
 		});
 	});
 

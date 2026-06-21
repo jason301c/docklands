@@ -2064,6 +2064,8 @@ export const EnvironmentCanvas = ({
 								<ShowDeployments
 									id={selectedServiceModel.id}
 									type={selectedServiceModel.type}
+									serverId={selectedServiceModel.serverId || ""}
+									refreshToken={selectedServiceModel.refreshToken || ""}
 								/>
 							)}
 

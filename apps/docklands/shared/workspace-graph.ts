@@ -24,6 +24,7 @@ export type WorkspaceService = {
 	lastDeployAt?: string | null;
 	serverId?: string | null;
 	serverName?: string | null;
+	refreshToken?: string | null;
 	composeType?: "docker-compose" | "stack" | null;
 	icon?: string | null;
 };
@@ -169,6 +170,7 @@ export const extractWorkspaceServicesFromEnvironment = (
 				lastDeployAt: getLatestDeploymentDate(record),
 				serverId: asString(record.serverId),
 				serverName: server ? asString(server.name) : null,
+				refreshToken: asString(record.refreshToken),
 				composeType:
 					record.composeType === "docker-compose" ||
 					record.composeType === "stack"
