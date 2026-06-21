@@ -404,6 +404,15 @@ const connectionPath = (source: WorkspaceNode, target: WorkspaceNode) => {
 	return `M ${from.x} ${from.y} C ${from.x + distance} ${from.y}, ${to.x - distance} ${to.y}, ${to.x} ${to.y}`;
 };
 
+const connectionPreviewPath = (
+	source: WorkspaceNode,
+	pointer: { x: number; y: number },
+) => {
+	const from = nodeCenter(source);
+	const distance = Math.max(80, Math.abs(pointer.x - from.x) / 2);
+	return `M ${from.x} ${from.y} C ${from.x + distance} ${from.y}, ${pointer.x - distance} ${pointer.y}, ${pointer.x} ${pointer.y}`;
+};
+
 const getActionInput = (service: WorkspaceService) => {
 	switch (service.type) {
 		case "application":
@@ -609,6 +618,10 @@ export const EnvironmentCanvas = ({
 	const [selectedTargetProject, setSelectedTargetProject] = useState("");
 	const [selectedTargetEnvironment, setSelectedTargetEnvironment] =
 		useState("");
+	const [connectionPointer, setConnectionPointer] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
 	const dragState = useRef<DragState | null>(null);
 	const suppressClick = useRef(false);
 	const { data: allProjects } = api.project.all.useQuery(undefined, {
@@ -710,6 +723,7 @@ export const EnvironmentCanvas = ({
 			}
 			if (event.key === "Escape") {
 				setConnectSource(null);
+				setConnectionPointer(null);
 				setCommandOpen(false);
 				setCommandQuery("");
 				setCreateDialog(null);
@@ -1143,6 +1157,26 @@ export const EnvironmentCanvas = ({
 					connection.targetServiceType === selectedService.serviceType,
 			)
 		: [];
+	const connectSourceNode = connectSource
+		? nodesByKey.get(
+				getWorkspaceServiceKey(
+					connectSource.serviceType,
+					connectSource.serviceId,
+				),
+			)
+		: undefined;
+	const connectSourceService = connectSource
+		? servicesByKey.get(
+				getWorkspaceServiceKey(
+					connectSource.serviceType,
+					connectSource.serviceId,
+				),
+			)
+		: undefined;
+	const connectionPreview =
+		connectSourceNode && connectionPointer
+			? connectionPreviewPath(connectSourceNode, connectionPointer)
+			: null;
 	const projectVariableKeys = useMemo(
 		() =>
 			parseEnvironmentVariables(workspace?.environment.env)
@@ -1266,6 +1300,10 @@ export const EnvironmentCanvas = ({
 			serviceId: service.id,
 			serviceType: service.type,
 		});
+		const node = nodesByKey.get(
+			getWorkspaceServiceKey(service.type, service.id),
+		);
+		setConnectionPointer(node ? nodeCenter(node) : null);
 		closeSelectedService();
 		toast.info(
 			"Select another service on the canvas. Database links auto-apply variables when possible.",
@@ -1291,6 +1329,7 @@ export const EnvironmentCanvas = ({
 				connectSource.serviceType === service.type
 			) {
 				setConnectSource(null);
+				setConnectionPointer(null);
 				return;
 			}
 
@@ -1348,6 +1387,7 @@ export const EnvironmentCanvas = ({
 				);
 			} finally {
 				setConnectSource(null);
+				setConnectionPointer(null);
 			}
 			return;
 		}
@@ -1361,6 +1401,7 @@ export const EnvironmentCanvas = ({
 			const next = !current;
 			if (next) {
 				setConnectSource(null);
+				setConnectionPointer(null);
 				closeSelectedService();
 			} else {
 				setSelectedBulkKeys([]);
@@ -1399,6 +1440,7 @@ export const EnvironmentCanvas = ({
 		if (selectableKeys.length === 0) return;
 
 		setConnectSource(null);
+		setConnectionPointer(null);
 		setIsSelectionMode(true);
 		setSelectedBulkKeys(selectableKeys);
 		closeSelectedService();
@@ -1411,6 +1453,16 @@ export const EnvironmentCanvas = ({
 		}
 
 		startConnectionFromService(service);
+	};
+
+	const updateConnectionPointer = (event: PointerEvent<HTMLDivElement>) => {
+		if (!connectSource) return;
+
+		const rect = event.currentTarget.getBoundingClientRect();
+		setConnectionPointer({
+			x: Math.max(0, event.clientX - rect.left),
+			y: Math.max(0, event.clientY - rect.top),
+		});
 	};
 
 	const resetCanvasFilters = () => {
@@ -2784,6 +2836,8 @@ export const EnvironmentCanvas = ({
 				<div className="relative overflow-auto bg-muted/20">
 					<div
 						className="relative"
+						onPointerMove={updateConnectionPointer}
+						onPointerLeave={() => connectSource && setConnectionPointer(null)}
 						style={{
 							width: canvasBounds.width,
 							height: canvasBounds.height,
@@ -2862,6 +2916,16 @@ export const EnvironmentCanvas = ({
 										className="fill-muted-foreground"
 									/>
 								</marker>
+								<marker
+									id="workspace-preview-dot"
+									viewBox="0 0 10 10"
+									refX="5"
+									refY="5"
+									markerWidth="5"
+									markerHeight="5"
+								>
+									<circle cx="5" cy="5" r="4" className="fill-primary" />
+								</marker>
 							</defs>
 							{connections.map((connection) => {
 								const source = nodesByKey.get(
@@ -2903,7 +2967,30 @@ export const EnvironmentCanvas = ({
 									/>
 								);
 							})}
+							{connectionPreview && (
+								<path
+									d={connectionPreview}
+									className="fill-none stroke-primary stroke-2 opacity-80"
+									strokeDasharray="8 8"
+									markerEnd="url(#workspace-preview-dot)"
+								/>
+							)}
 						</svg>
+
+						{connectSourceService && (
+							<div className="pointer-events-none absolute left-1/2 top-6 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-background/95 px-3 py-2 text-xs shadow-sm backdrop-blur">
+								<Cable className="size-4 text-primary" />
+								<span>
+									Connecting from{" "}
+									<strong className="font-medium">
+										{connectSourceService.name}
+									</strong>
+								</span>
+								<span className="text-muted-foreground">
+									Select a target service
+								</span>
+							</div>
+						)}
 
 						{services.length === 0 ? (
 							<div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-3 text-center text-muted-foreground">
@@ -2968,6 +3055,9 @@ export const EnvironmentCanvas = ({
 											className={cn(
 												"relative h-full bg-background/95 shadow-sm transition hover:bg-background",
 												isConnectSource && "ring-2 ring-primary",
+												connectSource &&
+													!isConnectSource &&
+													"ring-1 ring-primary/30",
 												isBulkSelected && "ring-2 ring-primary",
 											)}
 										>
