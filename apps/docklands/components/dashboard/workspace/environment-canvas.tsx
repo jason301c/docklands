@@ -1920,10 +1920,10 @@ export const EnvironmentCanvas = ({
 		...[
 			{
 				id: "system:web-server",
-				label: "Web server",
+				label: "Ingress",
 				detail: "Domains, TLS, cleanup, and proxy",
 				path: "/dashboard/settings/server",
-				search: "web server domain tls ssl proxy traefik cleanup",
+				search: "ingress web server domain tls ssl proxy traefik cleanup",
 				icon: <ServerIcon className="size-5 text-muted-foreground" />,
 			},
 			{

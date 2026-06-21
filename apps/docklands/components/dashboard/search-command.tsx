@@ -199,8 +199,8 @@ export const SearchCommand = () => {
 				: []),
 			{
 				id: "app-settings",
-				title: "Settings",
-				searchText: "settings",
+				title: "Ingress settings",
+				searchText: "settings ingress domains tls proxy",
 				onSelect: () => navigate("/dashboard/settings/server"),
 			},
 		];
