@@ -48,7 +48,6 @@
 		"docklands",
 		"config",
 		"dist",
-		"server/core/openapi/**/*.js",
-		"webpack.config.server.js"
+		"server/core/openapi/**/*.js"
 	]
 }

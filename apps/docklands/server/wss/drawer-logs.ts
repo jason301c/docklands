@@ -23,9 +23,6 @@ export const setupDrawerLogsWebSocketServer = (
 	server.on("upgrade", (req, socket, head) => {
 		const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
 
-		if (pathname === "/_next/webpack-hmr") {
-			return;
-		}
 		if (pathname === "/drawer-logs") {
 			wssTerm.handleUpgrade(req, socket, head, function done(ws) {
 				wssTerm.emit("connection", ws, req);

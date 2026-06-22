@@ -51,18 +51,18 @@ Preferred route names in docs, navigation, and new links:
 
 ## Development
 
-Docklands is now organized as a small pnpm workspace. The only app today is the
+Docklands is now organized as a small Bun workspace. The only app today is the
 self-hosted Docklands control plane in `apps/docklands`; future public landing
 and docs sites can be added as separate deployables under `apps/`.
 
 ```bash
-pnpm install --frozen-lockfile
+bun install --frozen-lockfile
 cp apps/docklands/.env.example apps/docklands/.env
-NODE_ENV=development pnpm setup
-pnpm dev
+NODE_ENV=development bun run setup
+bun run dev
 ```
 
-`pnpm setup` waits for the configured `DATABASE_URL` to accept a real
+`bun run setup` waits for the configured `DATABASE_URL` to accept a real
 connection before running migrations. If it reports that the `docklands` role or
 database does not exist, another local Postgres is probably already using port
 `5432`; stop it or update `DATABASE_URL` before rerunning setup.
@@ -70,12 +70,12 @@ database does not exist, another local Postgres is probably already using port
 Useful checks:
 
 ```bash
-pnpm typecheck
-pnpm --filter docklands exec vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts
-pnpm build
+bun run typecheck
+bun run test:ci
+bun run build
 ```
 
-Docklands targets Node `>=24.4.0 <26` and pnpm `>=10.22.0`.
+Docklands targets Node `>=24.4.0 <26` and Bun `>=1.3.14`.
 
 ### Layout
 

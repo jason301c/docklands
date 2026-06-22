@@ -24,9 +24,6 @@ export const setupDockerContainerLogsWebSocketServer = (
 	server.on("upgrade", (req, socket, head) => {
 		const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
 
-		if (pathname === "/_next/webpack-hmr") {
-			return;
-		}
 		if (pathname === "/docker-container-logs") {
 			wssTerm.handleUpgrade(req, socket, head, function done(ws) {
 				wssTerm.emit("connection", ws, req);

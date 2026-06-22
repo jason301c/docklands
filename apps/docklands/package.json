@@ -5,11 +5,11 @@
 	"license": "Apache-2.0",
 	"type": "module",
 	"scripts": {
-		"build": "pnpm build-server && pnpm build-next",
+		"build": "bun run build-server && bun run build-next",
 		"start": "node -r dotenv/config dist/migrate-db.mjs && node -r dotenv/config dist/server.mjs",
 		"build-server": "tsx esbuild.config.ts",
-		"build-next": "next build --webpack",
-		"setup": "tsx -r dotenv/config server/ops/ensure-auth-secret.ts && tsx -r dotenv/config server/ops/setup-instance.ts && pnpm run wait-for-postgres-dev && pnpm run migration:run",
+		"build-next": "next build",
+		"setup": "tsx -r dotenv/config server/ops/ensure-auth-secret.ts && tsx -r dotenv/config server/ops/setup-instance.ts && bun run wait-for-postgres-dev && bun run migration:run",
 		"wait-for-postgres": "node -r dotenv/config dist/wait-for-postgres.mjs",
 		"wait-for-postgres-dev": "tsx -r dotenv/config server/ops/wait-for-postgres.ts",
 		"reset-password": "node -r dotenv/config dist/reset-password.mjs",
@@ -27,6 +27,7 @@
 		"typecheck": "tsc --noEmit",
 		"db:clean": "tsx -r dotenv/config ./server/core/db/reset.ts",
 		"test": "vitest --config __test__/vitest.config.ts",
+		"test:ci": "vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts",
 		"generate:openapi": "tsx -r dotenv/config tools/generate-openapi.ts",
 		"format-and-lint": "biome check .",
 		"format-and-lint:fix": "biome check . --write"
@@ -112,6 +113,7 @@
 		"tailwind-merge": "^3.6.0",
 		"tailwindcss-animate": "^1.0.7",
 		"toml": "4.1.1",
+		"tsx": "^4.22.4",
 		"undici": "^8.5.0",
 		"use-resize-observer": "9.1.0",
 		"ws": "8.21.0",
@@ -146,17 +148,16 @@
 		"memfs": "^4.57.8",
 		"simple-icons": "^16.24.0",
 		"tailwindcss": "^4.3.1",
-		"tsx": "^4.22.4",
 		"typescript": "^6.0.3",
 		"vitest": "^4.1.9"
 	},
 	"ct3aMetadata": {
 		"initVersion": "7.25.2"
 	},
-	"packageManager": "pnpm@10.22.0",
+	"packageManager": "bun@1.3.14",
 	"engines": {
 		"node": ">=24.4.0 <26",
-		"pnpm": ">=10.22.0"
+		"bun": ">=1.3.14"
 	},
 	"lint-staged": {
 		"*": [

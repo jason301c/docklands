@@ -3,10 +3,19 @@
  * for Docker builds.
  */
 
+const configuredBuildCpus = Number.parseInt(
+	process.env.NEXT_BUILD_CPUS ?? "4",
+	10,
+);
+const buildCpus = configuredBuildCpus > 0 ? configuredBuildCpus : 4;
+
 /** @type {import("next").NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
 	allowedDevOrigins: ["0.0.0.0", "127.0.0.1"],
+	experimental: {
+		cpus: buildCpus,
+	},
 	serverExternalPackages: ["cpu-features", "node-pty", "ssh2"],
 	async headers() {
 		return [

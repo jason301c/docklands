@@ -1,5 +1,10 @@
 import { randomBytes } from "node:crypto";
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import {
+	appendFileSync,
+	existsSync,
+	readFileSync,
+	writeFileSync,
+} from "node:fs";
 import { resolve } from "node:path";
 
 const envPath = resolve(process.cwd(), ".env");

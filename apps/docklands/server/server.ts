@@ -40,14 +40,22 @@ const app = next({
 	dev,
 	hostname: HOST,
 	port: PORT,
-	turbopack: process.env.TURBOPACK === "1",
 });
 const handle = app.getRequestHandler();
+const handleUpgrade = app.getUpgradeHandler();
 void app.prepare().then(async () => {
 	try {
 		console.log("Running DocklandsVersion: ", packageInfo.version);
 		const server = http.createServer((req, res) => {
 			handle(req, res);
+		});
+
+		server.on("upgrade", (req, socket, head) => {
+			const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
+
+			if (pathname.startsWith("/_next/")) {
+				void handleUpgrade(req, socket, head);
+			}
 		});
 
 		// WEBSOCKET

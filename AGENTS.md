@@ -3,7 +3,7 @@
 @README.md
 @TRACKING.md
 
-This is Docklands: a fork focused on self-hosted deployment management. Treat the repository as a pnpm workspace with separate deployable surfaces. Today only `apps/docklands` exists; later `apps/site` and `apps/docs` can be added as independent Astro deployables.
+This is Docklands: a fork focused on self-hosted deployment management. Treat the repository as a Bun workspace with separate deployable surfaces. Today only `apps/docklands` exists; later `apps/site` and `apps/docs` can be added as independent Astro deployables.
 
 ## AGENTS.md Scope
 
@@ -39,7 +39,7 @@ This is Docklands: a fork focused on self-hosted deployment management. Treat th
 
 ## Current Stack
 
-Use `pnpm`. The repo currently targets Node `>=24.4.0 <26` and pnpm `>=10.22.0`.
+Use Bun. The repo currently targets Node `>=24.4.0 <26` and Bun `>=1.3.14`.
 
 Key Docklands app versions after the dependency refresh:
 
@@ -57,9 +57,9 @@ Key Docklands app versions after the dependency refresh:
 
 Docklands is a deployment control plane, so full local development is closer to a disposable Linux VM/devbox than a normal Next-only app. It can initialize Docker Swarm, create Docker networks/services/containers/volumes, bind common ports, and mount the Docker socket.
 
-- For UI or light backend work, use a normal Node environment plus a reachable Postgres, then run `pnpm install`, copy `apps/docklands/.env.example` to `apps/docklands/.env`, run `pnpm migration:run`, and start `pnpm dev`. Docker-heavy deployment flows will not be representative in this mode.
-- For full local behavior, use a Docker Engine you are comfortable mutating. The setup path initializes Swarm, `docklands-network`, Traefik, Redis, Postgres, local runtime directories, and migrations. Use `NODE_ENV=development pnpm setup` when you need Postgres and Redis published on local ports, then run `pnpm dev`.
-- The best practical full-dev target is a disposable Linux VM/devbox with Docker Engine, Node 24, and pnpm. Avoid running full setup against a laptop Docker daemon that has important containers, networks, or port bindings.
+- For UI or light backend work, use a normal Node environment plus a reachable Postgres, then run `bun install`, copy `apps/docklands/.env.example` to `apps/docklands/.env`, run `bun run migration:run`, and start `bun run dev`. Docker-heavy deployment flows will not be representative in this mode.
+- For full local behavior, use a Docker Engine you are comfortable mutating. The setup path initializes Swarm, `docklands-network`, Traefik, Redis, Postgres, local runtime directories, and migrations. Use `NODE_ENV=development bun run setup` when you need Postgres and Redis published on local ports, then run `bun run dev`.
+- The best practical full-dev target is a disposable Linux VM/devbox with Docker Engine, Node 24, and Bun. Avoid running full setup against a laptop Docker daemon that has important containers, networks, or port bindings.
 - Development runtime files use `.docker/`; production/server-mode paths use `/etc/docklands` and Docker resources now use Docklands names such as `docklands-network`, `docklands-postgres`, `docklands-redis`, and `docklands-traefik`.
 - Expect possible conflicts on ports `80`, `443`, `5432`, `6379`, `3000`, and any app ports created by deployment tests or manual experiments.
 
@@ -89,51 +89,51 @@ rg -n "Route Handlers|App Router|Server Actions" apps/docklands/node_modules/nex
 Install dependencies:
 
 ```sh
-pnpm install
+bun install --frozen-lockfile
 ```
 
 Format and lint:
 
 ```sh
-pnpm format-and-lint:fix
+bun run format-and-lint:fix
 ```
 
 Typecheck:
 
 ```sh
-pnpm typecheck
+bun run typecheck
 ```
 
 Run the usual non-real test suite:
 
 ```sh
-pnpm --filter docklands exec vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts
+bun run test:ci
 ```
 
 Build:
 
 ```sh
-pnpm build
+bun run build
 ```
 
 Generate a migration after schema changes:
 
 ```sh
-pnpm migration:generate
+bun run migration:generate
 ```
 
 Build a Docker image:
 
 ```sh
-pnpm docker:build
+bun run docker:build
 ```
 
 ## Verification Notes
 
-- `pnpm build` may need permissions to create a local `tsx` IPC pipe.
+- `bun run build` may need permissions to create a local `tsx` IPC pipe.
 - Build output can be noisy if local Postgres/Docker secrets are not configured. The important part is whether the build exits successfully.
 - The full real deployment tests may need Docker socket access, nixpacks/build tooling, and a more complete local runtime. Prefer the non-real Vitest command above for routine changes.
-- `pnpm format-and-lint:fix` currently passes but reports Biome warnings such as optional-chain suggestions, radix suggestions, and unused suppressions.
+- `bun run format-and-lint:fix` currently passes but may report Biome warnings such as optional-chain suggestions, radix suggestions, and unused suppressions.
 
 ## Dependency And Migration Notes
 
@@ -153,10 +153,10 @@ The product name is Docklands. Active code, user-facing copy, package names, Doc
 For code changes, aim to run:
 
 ```sh
-pnpm format-and-lint:fix
-pnpm typecheck
-pnpm --filter docklands exec vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts
-pnpm build
+bun run format-and-lint:fix
+bun run typecheck
+bun run test:ci
+bun run build
 ```
 
 For docs-only changes, at minimum run `git diff --check`.

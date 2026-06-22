@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest pushed checkpoint: `28741e05d Add canonical workspace routes`
+- Latest checkpoint: Migrate tooling to Bun and Turbopack
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -21,6 +21,10 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Moved to a single `apps/docklands` app layout with no `packages/` split.
 - Added nested `AGENTS.md` files and clarified app/server/tools boundaries.
 - Updated dependencies to the current major stack, including Next 16, React 19, TypeScript 6, Tailwind 4, Biome 2, tRPC 11, and Vitest 4.
+- Converted the workspace to Bun 1.3.14 with an isolated linker, `bun.lock`, Bun-first scripts, and trusted dependency controls.
+- Removed Webpack opt-out paths; Next 16 builds now use the default Turbopack path in local and Docker builds.
+- Hardened Docker packaging around Bun/Node 24 native dependency builds, runtime env injection, and `.env` exclusion from the build context.
+- Baseline before the Bun migration: typecheck passed in 14.65s, non-real Vitest passed in 6.39s, and production build passed in 30.45s.
 - Converted the API surface to App Router route handlers, with old webhook/deploy callback logic wrapped through compatibility helpers where risky.
 - Flattened Kumo-based dashboard/settings/service shells and removed most card-in-card surfaces.
 - Made `/dashboard/deployments` the canonical deployment history route; `/dashboard/builds` is only a compatibility alias.
@@ -45,10 +49,10 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 For code changes, aim to run:
 
 ```sh
-pnpm --filter docklands exec biome check --write <touched app-relative paths>
-pnpm --filter docklands typecheck
-pnpm --filter docklands exec vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts
-pnpm --filter docklands build
+bun --filter docklands format-and-lint:fix
+bun --filter docklands typecheck
+bun --filter docklands test:ci
+bun --filter docklands build
 ```
 
 For docs-only changes, at minimum run:
@@ -60,13 +64,22 @@ git diff --check
 ## Recent Verified Checkpoints
 
 - `28741e05d Add canonical workspace routes`
-  - `pnpm --filter docklands typecheck`
-  - `pnpm --filter docklands exec vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts`
-  - `pnpm --filter docklands build`
+  - Historical pre-Bun checkpoint: typecheck, non-real Vitest, and production build passed.
+- `32d87243 Track Docklands transformation work`
+  - `git diff --check`
 - `c2232220e Use database readiness check during setup`
   - Setup path now waits on the configured database connection before migrations.
 - `2b1c78fcd Validate DATABASE_URL while waiting for Postgres`
   - Added unit coverage for Postgres wait diagnostics.
+- Current Bun/Turbopack tooling checkpoint
+  - `bun install --frozen-lockfile`
+  - `bun pm untrusted`
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
+  - `docker build --target build -f apps/docklands/Dockerfile .`
+  - `docker build --target docklands -f apps/docklands/Dockerfile .`
 
 ## Open Questions
 

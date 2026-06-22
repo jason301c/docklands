@@ -56,7 +56,7 @@ export function formatPostgresConnectionFailure(
 	if (isFatalPostgresConfigError(error)) {
 		lines.push(
 			"[wait-for-postgres] This usually means an unrelated Postgres is already using the port, or apps/docklands/.env points at a role/database that has not been created.",
-			"[wait-for-postgres] For the bundled local runtime, stop conflicting Postgres services and run `NODE_ENV=development pnpm setup` so docklands-postgres owns the configured port.",
+			"[wait-for-postgres] For the bundled local runtime, stop conflicting Postgres services and run `NODE_ENV=development bun run setup` so docklands-postgres owns the configured port.",
 			"[wait-for-postgres] Alternatively, update DATABASE_URL to a database/user that already exists.",
 		);
 	}

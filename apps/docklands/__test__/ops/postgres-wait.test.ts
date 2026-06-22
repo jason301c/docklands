@@ -53,7 +53,7 @@ describe("postgres wait diagnostics", () => {
 		);
 
 		expect(message).toContain("DATABASE_URL could not connect as docklands");
-		expect(message).toContain("NODE_ENV=development pnpm setup");
+		expect(message).toContain("NODE_ENV=development bun run setup");
 		expect(message).not.toContain("secret");
 	});
 });
