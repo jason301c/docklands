@@ -28,12 +28,12 @@ export const bitbucketProviderRelations = relations(bitbucket, ({ one }) => ({
 }));
 
 const createSchema = createInsertSchema(bitbucket);
+const activeBitbucketSchema = createSchema.omit({ appPassword: true });
 
-export const apiCreateBitbucket = createSchema.extend({
+export const apiCreateBitbucket = activeBitbucketSchema.extend({
 	bitbucketUsername: z.string().optional(),
-	bitbucketEmail: z.string().email().optional(),
-	appPassword: z.string().optional(),
-	apiToken: z.string().optional(),
+	bitbucketEmail: z.string().email(),
+	apiToken: z.string().min(1),
 	bitbucketWorkspaceName: z.string().optional(),
 	gitProviderId: z.string().optional(),
 	authId: z.string().min(1),
@@ -46,14 +46,13 @@ export const apiFindOneBitbucket = createSchema
 	})
 	.pick({ bitbucketId: true });
 
-export const apiBitbucketTestConnection = createSchema
+export const apiBitbucketTestConnection = activeBitbucketSchema
 	.extend({
 		bitbucketId: z.string().min(1),
 		bitbucketUsername: z.string().optional(),
-		bitbucketEmail: z.string().email().optional(),
+		bitbucketEmail: z.string().email(),
 		workspaceName: z.string().optional(),
-		apiToken: z.string().optional(),
-		appPassword: z.string().optional(),
+		apiToken: z.string().min(1),
 	})
 	.pick({
 		bitbucketId: true,
@@ -61,7 +60,6 @@ export const apiBitbucketTestConnection = createSchema
 		bitbucketEmail: true,
 		workspaceName: true,
 		apiToken: true,
-		appPassword: true,
 	});
 
 export const apiFindBitbucketBranches = z.object({
@@ -70,13 +68,12 @@ export const apiFindBitbucketBranches = z.object({
 	bitbucketId: z.string().optional(),
 });
 
-export const apiUpdateBitbucket = createSchema.extend({
+export const apiUpdateBitbucket = activeBitbucketSchema.extend({
 	bitbucketId: z.string().min(1),
 	name: z.string().min(1),
 	bitbucketUsername: z.string().optional(),
-	bitbucketEmail: z.string().email().optional(),
-	appPassword: z.string().optional(),
-	apiToken: z.string().optional(),
+	bitbucketEmail: z.string().email(),
+	apiToken: z.string().min(1),
 	bitbucketWorkspaceName: z.string().optional(),
 	organizationId: z.string().optional(),
 });

@@ -138,7 +138,7 @@ describe("static roles validate free-tier resources", () => {
 		).resolves.toBeUndefined();
 	});
 
-	it("member fails project.create (no legacy override)", async () => {
+	it("member fails project.create without the member permission flag", async () => {
 		memberToReturn = mockMemberData("member");
 		await expect(
 			checkPermission(ctx, { project: ["create"] }),
@@ -160,7 +160,7 @@ describe("static roles validate free-tier resources", () => {
 	});
 });
 
-describe("legacy boolean overrides for member", () => {
+describe("member permission flags", () => {
 	it("member passes project.create with canCreateProjects=true", async () => {
 		memberToReturn = mockMemberData("member", { canCreateProjects: true });
 		await expect(

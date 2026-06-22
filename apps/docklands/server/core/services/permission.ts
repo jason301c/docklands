@@ -89,14 +89,16 @@ export const checkPermission = async (
 	}
 
 	if (memberRecord.role === "member") {
-		const overrides = getLegacyOverrides(memberRecord);
+		const memberPermissionFlags = getMemberPermissionFlags(memberRecord);
 		const allGranted = Object.entries(permissions).every(
 			([resource, actions]) =>
 				(actions as string[]).every(
 					(action) =>
-						!!(overrides[resource] as Record<string, boolean> | undefined)?.[
-							action
-						],
+						!!(
+							memberPermissionFlags[resource] as
+								| Record<string, boolean>
+								| undefined
+						)?.[action],
 				),
 		);
 		if (allGranted) {
@@ -122,7 +124,7 @@ export const hasPermission = async (
 	}
 };
 
-const getLegacyOverrides = (
+const getMemberPermissionFlags = (
 	memberRecord: Awaited<ReturnType<typeof findMemberByUserId>>,
 ): Partial<Record<string, Record<string, boolean>>> => {
 	return {
@@ -166,8 +168,10 @@ export const resolvePermissions = async (
 	const memberRecord = await findMemberByUserId(userId, organizationId);
 	const role = await resolveRole(memberRecord.role, organizationId);
 
-	const legacyOverrides =
-		memberRecord.role === "member" ? getLegacyOverrides(memberRecord) : {};
+	const memberPermissionFlags =
+		memberRecord.role === "member"
+			? getMemberPermissionFlags(memberRecord)
+			: {};
 
 	const result = {} as ResolvedPermissions;
 
@@ -181,9 +185,9 @@ export const resolvePermissions = async (
 			const check = role.authorize({ [resource]: [action] });
 			resourcePerms[action] =
 				check.success ||
-				!!(legacyOverrides[resource] as Record<string, boolean> | undefined)?.[
-					action
-				];
+				!!(
+					memberPermissionFlags[resource] as Record<string, boolean> | undefined
+				)?.[action];
 		}
 		(result as any)[resource] = resourcePerms;
 	}

@@ -67,7 +67,6 @@ export const gitProviderRouter = createTRPCRouter({
 						bitbucketId: r.bitbucket.bitbucketId,
 						bitbucketUsername: r.bitbucket.bitbucketUsername,
 						isConfigured: false,
-						isDeprecated: !!(r.bitbucket.appPassword && !r.bitbucket.apiToken),
 					}
 				: null,
 			gitea: r.gitea

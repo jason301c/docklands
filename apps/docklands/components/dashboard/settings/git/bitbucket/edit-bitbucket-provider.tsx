@@ -26,10 +26,9 @@ const Schema = z.object({
 	username: z.string().min(1, {
 		message: "Username is required",
 	}),
-	email: z.string().email().optional(),
+	email: z.string().email({ message: "Email is required" }),
 	workspaceName: z.string().optional(),
-	apiToken: z.string().optional(),
-	appPassword: z.string().optional(),
+	apiToken: z.string().min(1, { message: "API Token is required" }),
 });
 
 type Schema = z.infer<typeof Schema>;
@@ -59,7 +58,6 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 			email: "",
 			workspaceName: "",
 			apiToken: "",
-			appPassword: "",
 		},
 		resolver: zodResolver(Schema),
 	});
@@ -68,7 +66,6 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 	const email = form.watch("email");
 	const workspaceName = form.watch("workspaceName");
 	const apiToken = form.watch("apiToken");
-	const appPassword = form.watch("appPassword");
 
 	useEffect(() => {
 		form.reset({
@@ -77,7 +74,6 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 			workspaceName: bitbucket?.bitbucketWorkspaceName || "",
 			name: bitbucket?.gitProvider.name || "",
 			apiToken: bitbucket?.apiToken || "",
-			appPassword: bitbucket?.appPassword || "",
 		});
 	}, [form, isOpen, bitbucket]);
 
@@ -90,7 +86,6 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 			bitbucketWorkspaceName: data.workspaceName || "",
 			name: data.name || "",
 			apiToken: data.apiToken || "",
-			appPassword: data.appPassword || "",
 		})
 			.then(async () => {
 				await utils.gitProvider.getAll.invalidate();
@@ -133,9 +128,7 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 						<div className="p-0">
 							<div className="flex flex-col gap-4">
 								<p className="text-muted-foreground text-sm">
-									Update your Bitbucket authentication. Use API Token for
-									enhanced security (recommended) or App Password for legacy
-									support.
+									Update your Bitbucket authentication with an API token.
 								</p>
 
 								<FormField
@@ -207,39 +200,17 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 								/>
 
 								<div className="flex flex-col gap-2 border-t pt-4">
-									<h3 className="text-sm font-medium mb-2">
-										Authentication (Update to use API Token)
-									</h3>
+									<h3 className="text-sm font-medium mb-2">Authentication</h3>
 									<FormField
 										control={form.control}
 										name="apiToken"
 										render={({ field }) => (
 											<FormItem>
-												<FormLabel>API Token (Recommended)</FormLabel>
+												<FormLabel>API Token</FormLabel>
 												<FormControl>
 													<Input
 														type="password"
 														placeholder="Enter your Bitbucket API Token"
-														{...field}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<FormField
-										control={form.control}
-										name="appPassword"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>
-													App Password (Legacy - will be deprecated June 2026)
-												</FormLabel>
-												<FormControl>
-													<Input
-														type="password"
-														placeholder="Enter your Bitbucket App Password"
 														{...field}
 													/>
 												</FormControl>
@@ -261,7 +232,6 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 												bitbucketEmail: email,
 												workspaceName: workspaceName,
 												apiToken: apiToken,
-												appPassword: appPassword,
 											})
 												.then(async (message) => {
 													toast.info(`Message: ${message}`);

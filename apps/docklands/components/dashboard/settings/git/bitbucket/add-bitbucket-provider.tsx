@@ -23,7 +23,7 @@ import { toast } from "@/components/shared/toast";
 const Schema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),
 	username: z.string().min(1, { message: "Username is required" }),
-	email: z.string().email().optional(),
+	email: z.string().email({ message: "Email is required" }),
 	apiToken: z.string().min(1, { message: "API Token is required" }),
 	workspaceName: z.string().optional(),
 });
@@ -101,10 +101,9 @@ export const AddBitbucketProvider = () => {
 					>
 						<div className="p-0">
 							<div className="flex flex-col gap-4">
-								<AlertBlock type="warning">
-									Bitbucket App Passwords are deprecated for new providers. Use
-									an API Token instead. Existing providers with App Passwords
-									will continue to work until 9th June 2026.
+								<AlertBlock type="info">
+									Use a Bitbucket API token with repository, pull request,
+									webhook, and workspace scopes.
 								</AlertBlock>
 
 								<div className="mt-1 text-sm">

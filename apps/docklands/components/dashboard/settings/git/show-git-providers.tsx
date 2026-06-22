@@ -203,11 +203,6 @@ export const ShowGitProviders = () => {
 																</TooltipProvider>
 															)}
 
-															{isBitbucket &&
-															gitProvider.bitbucket?.isDeprecated ? (
-																<Badge variant="warning">Deprecated</Badge>
-															) : null}
-
 															{!haveGithubRequirements && isGithub && (
 																<div className="flex flex-row gap-1 items-center">
 																	<Badge variant="outline" className="text-xs">

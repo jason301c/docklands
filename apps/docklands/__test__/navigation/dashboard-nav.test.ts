@@ -129,12 +129,6 @@ describe("dashboard nav", () => {
 				pathname: "/dashboard/workspace/project_1/env_1",
 			}),
 		).toBe(false);
-		expect(
-			isActiveRoute({
-				itemUrl: "/dashboard/workspace",
-				pathname: "/dashboard/project/project_1/environment/env_1",
-			}),
-		).toBe(false);
 	});
 
 	it("finds active nested runtime items for breadcrumbs", () => {

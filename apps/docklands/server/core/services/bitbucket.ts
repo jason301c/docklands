@@ -86,7 +86,6 @@ export const updateBitbucket = async (
 			.set({
 				bitbucketUsername: input.bitbucketUsername,
 				bitbucketEmail: input.bitbucketEmail,
-				appPassword: input.appPassword,
 				apiToken: input.apiToken,
 				bitbucketWorkspaceName: input.bitbucketWorkspaceName,
 			})

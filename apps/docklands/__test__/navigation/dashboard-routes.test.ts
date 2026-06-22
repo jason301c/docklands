@@ -36,9 +36,6 @@ describe("dashboard route helpers", () => {
 			isEnvironmentCanvasPath("/dashboard/workspace/project_1/env_1"),
 		).toBe(true);
 		expect(
-			isEnvironmentCanvasPath("/dashboard/project/project_1/environment/env_1"),
-		).toBe(false);
-		expect(
 			isEnvironmentCanvasPath(
 				"/dashboard/workspace/project_1/env_1/service/application/app_1",
 			),
@@ -54,11 +51,6 @@ describe("dashboard route helpers", () => {
 				"/dashboard/workspace/project_1/env_1/service/application/app_1",
 			),
 		).toBe(true);
-		expect(
-			isWorkspaceDetailPath(
-				"/dashboard/project/project_1/environment/env_1/services/application/app_1",
-			),
-		).toBe(false);
 		expect(isWorkspaceDetailPath("/dashboard/workspace")).toBe(false);
 	});
 });

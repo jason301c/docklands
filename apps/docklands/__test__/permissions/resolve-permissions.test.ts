@@ -102,8 +102,8 @@ describe("static roles", () => {
 	});
 });
 
-describe("legacy member overrides", () => {
-	it("member gets project.create=false without legacy override", async () => {
+describe("member permission flags", () => {
+	it("member gets project.create=false without a permission flag", async () => {
 		const perms = await resolvePermissions(ctx);
 		expect(perms.project.create).toBe(false);
 	});

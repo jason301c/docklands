@@ -256,7 +256,7 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
  * Verifies the caller has the required resource+action permission before the
  * handler runs. Works for all role types:
  * - owner/admin use static full-access roles
- * - member uses static read defaults plus legacy boolean overrides
+ * - member uses static read defaults plus member permission flags
  * - custom roles use organization-defined permissions
  *
  * Usage:

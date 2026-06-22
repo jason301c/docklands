@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Runtime-worker filter copy
+- Latest checkpoint: Legacy-route and Bitbucket App Password cleanup
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -53,6 +53,8 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Replaced duplicated service-detail runtime placement chips with a shared runtime-worker status surface and explicit automatic-placement/inactive-worker copy.
 - Replaced visible domain DNS "server IP" guidance with ingress-address copy while leaving backend validation contracts intact.
 - Renamed the shared runtime page filter from server-filter to runtime-worker-filter, tightened worker copy across runtime navigation/settings, and left the `serverId` URL/API contract intact until a backend migration is worth the churn.
+- Removed stale old `/dashboard/project/...` route assertions from navigation tests now that compatibility aliases are gone.
+- Removed active Bitbucket App Password support from API inputs, edit/test UI, provider auth helpers, and deprecated provider badges; the nullable DB column remains until a dedicated schema migration removes it.
 - Centralized the workspace service creation placement selector so application, compose, database, import, and template flows all use the same automatic-placement/runtime-worker UI and copy.
 - Replaced the workspace overview's zero-workspace placeholder with a canvas-first launch state and loading-aware recent panels.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
@@ -203,6 +205,12 @@ git diff --check
   - `bun --filter docklands build`
 - Current runtime-worker filter copy checkpoint
   - `bun --filter docklands test --run __test__/runtime/runtime-worker-filter-copy.test.ts`
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
+- Current legacy-route and Bitbucket API-token checkpoint
+  - `bun --filter docklands test --run __test__/navigation/dashboard-routes.test.ts __test__/navigation/dashboard-nav.test.ts __test__/permissions/check-permission.test.ts __test__/permissions/resolve-permissions.test.ts __test__/git-provider/bitbucket-auth.test.ts`
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`

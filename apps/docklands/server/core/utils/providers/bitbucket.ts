@@ -27,7 +27,6 @@ export const getBitbucketCloneUrl = (
 	bitbucketProvider: {
 		apiToken?: string | null;
 		bitbucketUsername?: string | null;
-		appPassword?: string | null;
 		bitbucketEmail?: string | null;
 		bitbucketWorkspaceName?: string | null;
 	} | null,
@@ -41,13 +40,7 @@ export const getBitbucketCloneUrl = (
 		return `https://x-bitbucket-api-token-auth:${bitbucketProvider.apiToken}@${repoClone}`;
 	}
 
-	// For app passwords, use username:app_password format
-	if (!bitbucketProvider.bitbucketUsername || !bitbucketProvider.appPassword) {
-		throw new Error(
-			"Username and app password are required when not using API token",
-		);
-	}
-	return `https://${bitbucketProvider.bitbucketUsername}:${bitbucketProvider.appPassword}@${repoClone}`;
+	throw new Error("Bitbucket API token is required");
 };
 
 export const getBitbucketHeaders = (bitbucketProvider: Bitbucket) => {
@@ -67,15 +60,7 @@ export const getBitbucketHeaders = (bitbucketProvider: Bitbucket) => {
 		};
 	}
 
-	// For app passwords, use HTTP Basic auth with username and app password
-	if (!bitbucketProvider.bitbucketUsername || !bitbucketProvider.appPassword) {
-		throw new Error(
-			"Username and app password are required when not using API token",
-		);
-	}
-	return {
-		Authorization: `Basic ${Buffer.from(`${bitbucketProvider.bitbucketUsername}:${bitbucketProvider.appPassword}`).toString("base64")}`,
-	};
+	throw new Error("Bitbucket API token is required");
 };
 
 interface CloneBitbucketRepository {
