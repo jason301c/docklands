@@ -1,6 +1,12 @@
 import net from "node:net";
-import { URL } from "node:url";
+import postgres from "postgres";
 import { dbUrl } from "@/server/core/db/constants";
+import {
+	formatPostgresConnectionFailure,
+	isFatalPostgresConfigError,
+	type PostgresTarget,
+	resolvePostgresTargetFromUrl,
+} from "./postgres-wait";
 
 const TIMEOUT_MS = Number(process.env.POSTGRES_WAIT_TIMEOUT || 120_000);
 const RETRY_DELAY_MS = Number(process.env.POSTGRES_WAIT_RETRY || 2000);
@@ -9,7 +15,7 @@ function sleep(ms: number) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function resolvePostgresTarget(): { host: string; port: number } {
+function resolvePostgresTarget(): PostgresTarget {
 	const databaseUrl = dbUrl;
 
 	if (!databaseUrl) {
@@ -18,16 +24,7 @@ function resolvePostgresTarget(): { host: string; port: number } {
 	}
 
 	try {
-		const url = new URL(databaseUrl);
-
-		const host = url.hostname;
-		const port = Number(url.port || 5432);
-
-		if (!host) {
-			throw new Error("DATABASE_URL has no hostname");
-		}
-
-		return { host, port };
+		return resolvePostgresTargetFromUrl(databaseUrl);
 	} catch (err) {
 		console.error("[wait-for-postgres] Invalid DATABASE_URL:", databaseUrl);
 		process.exit(1);
@@ -54,26 +51,54 @@ function checkTcpConnection(host: string, port: number): Promise<void> {
 	});
 }
 
+async function checkDatabaseConnection(databaseUrl: string): Promise<void> {
+	const sql = postgres(databaseUrl, {
+		max: 1,
+		connect_timeout: 3,
+	});
+
+	try {
+		await sql`select 1`;
+	} finally {
+		await sql.end({ timeout: 1 });
+	}
+}
+
 async function waitForPostgres() {
-	const { host, port } = resolvePostgresTarget();
+	const target = resolvePostgresTarget();
 	const start = Date.now();
+	let lastDatabaseError: unknown;
 
 	console.log(
-		`[wait-for-postgres] Waiting for postgres at ${host}:${port} (timeout ${TIMEOUT_MS}ms)`,
+		`[wait-for-postgres] Waiting for postgres at ${target.host}:${target.port} (timeout ${TIMEOUT_MS}ms)`,
 	);
 
 	while (true) {
 		try {
-			await checkTcpConnection(host, port);
-			console.log("[wait-for-postgres] Postgres is reachable ✅");
+			await checkTcpConnection(target.host, target.port);
+			await checkDatabaseConnection(dbUrl);
+			console.log(
+				"[wait-for-postgres] Postgres is reachable and accepts DATABASE_URL ✅",
+			);
 			return;
-		} catch {
+		} catch (error) {
+			lastDatabaseError = error;
+			if (isFatalPostgresConfigError(error)) {
+				console.error(formatPostgresConnectionFailure(error, target));
+				process.exit(1);
+			}
+
 			const elapsed = Date.now() - start;
 
 			if (elapsed > TIMEOUT_MS) {
 				console.error(
 					`[wait-for-postgres] Timeout after ${elapsed}ms. Postgres not reachable ❌`,
 				);
+				if (lastDatabaseError) {
+					console.error(
+						formatPostgresConnectionFailure(lastDatabaseError, target),
+					);
+				}
 				process.exit(1);
 			}
 
