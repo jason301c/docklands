@@ -1,14 +1,14 @@
 import { notFound } from "next/navigation";
-import ApplicationClient from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/application/[applicationId]/_client";
-import ComposeClient from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/compose/[composeId]/_client";
-import LibsqlClient from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/libsql/[libsqlId]/_client";
-import MariadbClient from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/mariadb/[mariadbId]/_client";
-import MongoClient from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/mongo/[mongoId]/_client";
-import MysqlClient from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/mysql/[mysqlId]/_client";
-import PostgresClient from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/postgres/[postgresId]/_client";
-import RedisClient from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/redis/[redisId]/_client";
 import { requireUser } from "@/server/web/app-auth";
 import type { WorkspaceServiceType } from "@/shared/workspace-graph";
+import ApplicationClient from "./_clients/application-client";
+import ComposeClient from "./_clients/compose-client";
+import LibsqlClient from "./_clients/libsql-client";
+import MariadbClient from "./_clients/mariadb-client";
+import MongoClient from "./_clients/mongo-client";
+import MysqlClient from "./_clients/mysql-client";
+import PostgresClient from "./_clients/postgres-client";
+import RedisClient from "./_clients/redis-client";
 
 type PageProps = {
 	params: Promise<{

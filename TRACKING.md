@@ -31,13 +31,14 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Extracted the dashboard navigation model and tests.
 - Reworked the environment view into a workspace canvas with service layout, search, filters, sort, command palette, topology groups, service drawer tabs, connection modeling, generated connection variables, and bulk actions.
 - Added canonical workspace route helpers, tests, and new App Router pages for canonical environment/service URLs.
+- Converted old `/dashboard/project/...` pages into redirect-only compatibility routes that preserve service tabs and send users to canonical `/dashboard/workspace/...` URLs.
+- Moved workspace service route client modules out of the legacy project route tree and into the canonical workspace service route.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
 - Recorded the first upstream PR security audit under `outputs/docklands-pr-security-audit.md` outside the repo.
 
 ## Next High-Impact Work
 
-- Convert old `/dashboard/project/...` pages into redirects to canonical `/dashboard/workspace/...` URLs.
-- Rename or reorganize remaining source folders whose names now fight the product model, especially `components/dashboard/project/*`, once route compatibility is stable.
+- Rename or reorganize remaining source folders whose names now fight the product model, especially `components/dashboard/project/*`.
 - Audit visible copy for old mental models: "project list", "builds", "server", "Docker", "Traefik", "Swarm", and "Dokploy". Keep engine names only where they are literal engine concepts.
 - Continue polishing the canvas as the primary app surface: first-run empty state, service card density, connection affordances, command palette actions, service drawer hierarchy, and mobile behavior.
 - Reduce legacy route aliases once docs, navigation, search, notifications, and internal links no longer depend on them.
@@ -80,10 +81,15 @@ git diff --check
   - `bun --filter docklands build`
   - `docker build --target build -f apps/docklands/Dockerfile .`
   - `docker build --target docklands -f apps/docklands/Dockerfile .`
+- Current legacy-route redirect checkpoint
+  - `bun --filter docklands test --run __test__/navigation/legacy-route-redirects.test.ts`
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
 
 ## Open Questions
 
-- How long should old compatibility routes stay available after canonical workspace routes are stable?
-- Should the old project/service source folder names be renamed mechanically now, or only after route redirects and visual QA?
+- Should `components/dashboard/project/*` be renamed mechanically now, or wait until the next visual QA pass over the workspace create/import flows?
 - Which settings surfaces should remain top-level for self-hosted users versus move into a lower-level runtime/admin area?
 - Which, if any, upstream PRs after the first audit deserve a second focused security review?

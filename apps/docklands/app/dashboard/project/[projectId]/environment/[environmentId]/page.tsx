@@ -1,12 +1,11 @@
-import { requireUser } from "@/server/web/app-auth";
-import ClientPage from "./_client";
+import { redirect } from "next/navigation";
+import { workspaceEnvironmentPath } from "@/shared/routes";
 
 type PageProps = {
 	params: Promise<{ projectId: string; environmentId: string }>;
 };
 
 export default async function Page({ params }: PageProps) {
-	await requireUser();
 	const { projectId, environmentId } = await params;
-	return <ClientPage projectId={projectId} environmentId={environmentId} />;
+	redirect(workspaceEnvironmentPath({ projectId, environmentId }));
 }

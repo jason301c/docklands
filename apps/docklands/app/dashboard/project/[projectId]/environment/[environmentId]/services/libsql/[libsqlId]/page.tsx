@@ -1,5 +1,5 @@
-import { requireUser } from "@/server/web/app-auth";
-import ClientPage from "./_client";
+import { redirect } from "next/navigation";
+import { workspaceServicePath } from "@/shared/routes";
 
 type PageProps = {
 	params: Promise<{
@@ -11,20 +11,20 @@ type PageProps = {
 };
 
 export default async function Page({ params, searchParams }: PageProps) {
-	await requireUser();
 	const resolvedParams = await params;
 	const resolvedSearchParams = await searchParams;
 	const activeTab =
 		typeof resolvedSearchParams.tab === "string"
 			? resolvedSearchParams.tab
-			: "general";
+			: null;
 
-	return (
-		<ClientPage
-			projectId={resolvedParams.projectId}
-			environmentId={resolvedParams.environmentId}
-			libsqlId={resolvedParams.libsqlId}
-			activeTab={activeTab as never}
-		/>
+	redirect(
+		workspaceServicePath({
+			projectId: resolvedParams.projectId,
+			environmentId: resolvedParams.environmentId,
+			serviceType: "libsql",
+			serviceId: resolvedParams.libsqlId,
+			tab: activeTab,
+		}),
 	);
 }
