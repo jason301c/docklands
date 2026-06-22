@@ -1,27 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockMemberData = (
-	role: string,
-	overrides: Record<string, boolean> = {},
-) => ({
+const mockMemberData = (role: string) => ({
 	id: "member-1",
 	role,
 	userId: "user-1",
 	organizationId: "org-1",
-	accessedWorkspaces: [] as string[],
-	accessedServices: [] as string[],
-	accessedEnvironments: [] as string[],
-	canCreateWorkspaces: overrides.canCreateWorkspaces ?? false,
-	canDeleteWorkspaces: overrides.canDeleteWorkspaces ?? false,
-	canCreateServices: overrides.canCreateServices ?? false,
-	canDeleteServices: overrides.canDeleteServices ?? false,
-	canCreateEnvironments: overrides.canCreateEnvironments ?? false,
-	canDeleteEnvironments: overrides.canDeleteEnvironments ?? false,
-	canAccessToTraefikFiles: overrides.canAccessToTraefikFiles ?? false,
-	canAccessToDocker: overrides.canAccessToDocker ?? false,
-	canAccessToAPI: overrides.canAccessToAPI ?? false,
-	canAccessToSSHKeys: overrides.canAccessToSSHKeys ?? false,
-	canAccessToGitProviders: overrides.canAccessToGitProviders ?? false,
 	user: { id: "user-1", email: "test@test.com" },
 });
 
@@ -104,21 +87,31 @@ describe("static roles", () => {
 	});
 });
 
-describe("member permission flags", () => {
-	it("member gets workspace.create=false without a permission flag", async () => {
+describe("base member role has no elevated capabilities", () => {
+	// Capabilities now come solely from the role; a plain member cannot create
+	// workspaces or read docker unless a custom role grants it.
+	it("member gets workspace.create=false", async () => {
 		const perms = await resolvePermissions(ctx);
 		expect(perms.workspace.create).toBe(false);
 	});
 
-	it("member gets workspace.create=true with canCreateWorkspaces", async () => {
-		memberToReturn = mockMemberData("member", { canCreateWorkspaces: true });
+	it("member gets docker.read=false", async () => {
 		const perms = await resolvePermissions(ctx);
-		expect(perms.workspace.create).toBe(true);
+		expect(perms.docker.read).toBe(false);
 	});
 
-	it("member gets docker.read=true with canAccessToDocker", async () => {
-		memberToReturn = mockMemberData("member", { canAccessToDocker: true });
+	it("a custom role grants workspace.create and docker.read", async () => {
+		memberToReturn = mockMemberData("builder");
+		organizationRolesToReturn = [
+			{
+				permission: JSON.stringify({
+					workspace: ["create"],
+					docker: ["read"],
+				}),
+			},
+		];
 		const perms = await resolvePermissions(ctx);
+		expect(perms.workspace.create).toBe(true);
 		expect(perms.docker.read).toBe(true);
 	});
 });

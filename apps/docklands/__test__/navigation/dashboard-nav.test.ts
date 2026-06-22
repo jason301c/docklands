@@ -47,6 +47,7 @@ describe("dashboard nav", () => {
 				"Profile",
 				"Build Workers",
 				"Users",
+				"Roles",
 				"SSH Keys",
 				"Tags",
 				"Git Providers",

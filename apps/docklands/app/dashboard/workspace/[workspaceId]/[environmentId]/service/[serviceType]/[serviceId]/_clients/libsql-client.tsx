@@ -98,7 +98,7 @@ const Libsql = (props: {
 
 							<div className="flex flex-row gap-2 justify-end">
 								<UpdateLibsql libsqlId={libsqlId} />
-								{(auth?.role === "owner" || auth?.canDeleteServices) && (
+								{(auth?.role === "owner" || auth?.role === "admin") && (
 									<DeleteService id={libsqlId} type="libsql" />
 								)}
 							</div>

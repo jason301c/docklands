@@ -124,6 +124,13 @@ export const DASHBOARD_MENU: Menu = {
 		},
 		{
 			isSingle: true,
+			title: "Roles",
+			icon: ShieldCheck,
+			url: "/dashboard/settings/roles",
+			isEnabled: ({ permissions }) => !!permissions?.member.read,
+		},
+		{
+			isSingle: true,
 			title: "SSH Keys",
 			icon: KeyRound,
 			url: "/dashboard/settings/ssh-keys",

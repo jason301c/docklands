@@ -129,28 +129,9 @@ export const member = pgTable("member", {
 	createdAt: timestamp("created_at").notNull(),
 	teamId: text("team_id"),
 	isDefault: boolean("is_default").notNull().default(false),
-	// Permissions
-	canCreateWorkspaces: boolean("canCreateWorkspaces").notNull().default(false),
-	canAccessToSSHKeys: boolean("canAccessToSSHKeys").notNull().default(false),
-	canCreateServices: boolean("canCreateServices").notNull().default(false),
-	canDeleteWorkspaces: boolean("canDeleteWorkspaces").notNull().default(false),
-	canDeleteServices: boolean("canDeleteServices").notNull().default(false),
-	canAccessToDocker: boolean("canAccessToDocker").notNull().default(false),
-	canAccessToAPI: boolean("canAccessToAPI").notNull().default(false),
-	canAccessToGitProviders: boolean("canAccessToGitProviders")
-		.notNull()
-		.default(false),
-	canAccessToTraefikFiles: boolean("canAccessToTraefikFiles")
-		.notNull()
-		.default(false),
-	canDeleteEnvironments: boolean("canDeleteEnvironments")
-		.notNull()
-		.default(false),
-	canCreateEnvironments: boolean("canCreateEnvironments")
-		.notNull()
-		.default(false),
-	// Per-resource access scoping now lives in the normalized
-	// `member_resource_access` table (see member-resource-access.ts).
+	// Capabilities are governed entirely by the member's role (static
+	// owner/admin/member or a custom organization_role). Per-resource access
+	// scoping lives in the normalized `member_resource_access` table.
 });
 
 export const memberRelations = relations(member, ({ one }) => ({

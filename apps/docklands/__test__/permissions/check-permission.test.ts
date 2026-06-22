@@ -1,27 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockMemberData = (
-	role: string,
-	overrides: Record<string, boolean> = {},
-) => ({
+const mockMemberData = (role: string) => ({
 	id: "member-1",
 	role,
 	userId: "user-1",
 	organizationId: "org-1",
-	accessedWorkspaces: [] as string[],
-	accessedServices: [] as string[],
-	accessedEnvironments: [] as string[],
-	canCreateWorkspaces: overrides.canCreateWorkspaces ?? false,
-	canDeleteWorkspaces: overrides.canDeleteWorkspaces ?? false,
-	canCreateServices: overrides.canCreateServices ?? false,
-	canDeleteServices: overrides.canDeleteServices ?? false,
-	canCreateEnvironments: overrides.canCreateEnvironments ?? false,
-	canDeleteEnvironments: overrides.canDeleteEnvironments ?? false,
-	canAccessToTraefikFiles: overrides.canAccessToTraefikFiles ?? false,
-	canAccessToDocker: overrides.canAccessToDocker ?? false,
-	canAccessToAPI: overrides.canAccessToAPI ?? false,
-	canAccessToSSHKeys: overrides.canAccessToSSHKeys ?? false,
-	canAccessToGitProviders: overrides.canAccessToGitProviders ?? false,
 	user: { id: "user-1", email: "test@test.com" },
 });
 
@@ -168,24 +151,27 @@ describe("static roles validate free-tier resources", () => {
 	});
 });
 
-describe("member permission flags", () => {
-	it("member passes workspace.create with canCreateWorkspaces=true", async () => {
-		memberToReturn = mockMemberData("member", { canCreateWorkspaces: true });
+describe("base member role has no elevated capabilities", () => {
+	// Legacy per-member boolean flags were removed; capabilities now come only
+	// from the role (static or custom). A plain member cannot create or reach
+	// privileged resources without a granting role.
+	it("member cannot create workspaces", async () => {
+		memberToReturn = mockMemberData("member");
 		await expect(
 			checkPermission(ctx, { workspace: ["create"] }),
-		).resolves.toBeUndefined();
+		).rejects.toThrow();
 	});
 
-	it("member passes docker.read with canAccessToDocker=true", async () => {
-		memberToReturn = mockMemberData("member", { canAccessToDocker: true });
-		await expect(
-			checkPermission(ctx, { docker: ["read"] }),
-		).resolves.toBeUndefined();
-	});
-
-	it("member fails docker.read with canAccessToDocker=false", async () => {
+	it("member cannot read docker", async () => {
 		memberToReturn = mockMemberData("member");
 		await expect(checkPermission(ctx, { docker: ["read"] })).rejects.toThrow();
+	});
+
+	it("member can still read services (static member default)", async () => {
+		memberToReturn = mockMemberData("member");
+		await expect(
+			checkPermission(ctx, { service: ["read"] }),
+		).resolves.toBeUndefined();
 	});
 });
 
@@ -221,10 +207,9 @@ describe("custom roles (organization_role)", () => {
 		).resolves.toBeUndefined();
 	});
 
-	it("does not fall back to member permission flags for a custom role", async () => {
-		// canAccessToDocker is true, but the role is custom (not "member"),
-		// so the legacy member-flag fallback must not apply.
-		memberToReturn = mockMemberData("deployer", { canAccessToDocker: true });
+	it("grants only what the custom role declares, nothing more", async () => {
+		// The role grants registry:read but not docker:read, so docker is denied.
+		memberToReturn = mockMemberData("deployer");
 		organizationRolesToReturn = [
 			{ permission: JSON.stringify({ registry: ["read"] }) },
 		];

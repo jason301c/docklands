@@ -102,17 +102,6 @@ export const apiFindOneToken = createSchema
 export const apiAssignPermissions = createSchema
 	.pick({
 		id: true,
-		// canCreateWorkspaces: true,
-		// canCreateServices: true,
-		// canDeleteWorkspaces: true,
-		// canDeleteServices: true,
-		// accessedWorkspaces: true,
-		// accessedServices: true,
-		// canAccessToTraefikFiles: true,
-		// canAccessToDocker: true,
-		// canAccessToAPI: true,
-		// canAccessToSSHKeys: true,
-		// canAccessToGitProviders: true,
 	})
 	.extend({
 		accessedWorkspaces: z.array(z.string()).optional(),
@@ -120,17 +109,6 @@ export const apiAssignPermissions = createSchema
 		accessedServices: z.array(z.string()).optional(),
 		accessedGitProviders: z.array(z.string()).optional(),
 		accessedRuntimeWorkers: z.array(z.string()).optional(),
-		canCreateWorkspaces: z.boolean().optional(),
-		canCreateServices: z.boolean().optional(),
-		canDeleteWorkspaces: z.boolean().optional(),
-		canDeleteServices: z.boolean().optional(),
-		canAccessToDocker: z.boolean().optional(),
-		canAccessToTraefikFiles: z.boolean().optional(),
-		canAccessToAPI: z.boolean().optional(),
-		canAccessToSSHKeys: z.boolean().optional(),
-		canAccessToGitProviders: z.boolean().optional(),
-		canDeleteEnvironments: z.boolean().optional(),
-		canCreateEnvironments: z.boolean().optional(),
 	})
 	.required();
 

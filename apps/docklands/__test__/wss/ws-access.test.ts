@@ -1,28 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockMember = (role: string, overrides: Record<string, boolean> = {}) => ({
+const mockMember = (role: string) => ({
 	id: "member-1",
 	role,
 	userId: "user-1",
 	organizationId: "org-1",
-	accessedWorkspaces: [] as string[],
-	accessedServices: [] as string[],
-	accessedEnvironments: [] as string[],
-	canCreateWorkspaces: false,
-	canDeleteWorkspaces: false,
-	canCreateServices: false,
-	canDeleteServices: false,
-	canCreateEnvironments: false,
-	canDeleteEnvironments: false,
-	canAccessToTraefikFiles: false,
-	canAccessToDocker: overrides.canAccessToDocker ?? false,
-	canAccessToAPI: false,
-	canAccessToSSHKeys: false,
-	canAccessToGitProviders: false,
 	user: { id: "user-1", email: "test@test.com" },
 });
 
 let memberToReturn: ReturnType<typeof mockMember> = mockMember("member");
+let organizationRolesToReturn: { permission: string }[] = [];
 
 vi.mock("@/server/core/db", () => ({
 	db: {
@@ -31,7 +18,7 @@ vi.mock("@/server/core/db", () => ({
 				findFirst: vi.fn(() => Promise.resolve(memberToReturn)),
 			},
 			organizationRole: {
-				findMany: vi.fn(() => Promise.resolve([])),
+				findMany: vi.fn(() => Promise.resolve(organizationRolesToReturn)),
 			},
 			memberResourceAccess: {
 				findMany: vi.fn(() => Promise.resolve([])),
@@ -48,6 +35,7 @@ const session = { activeOrganizationId: "org-1" };
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	organizationRolesToReturn = [];
 });
 
 describe("canAccessDockerWs (container log/stat/terminal streams)", () => {
@@ -66,8 +54,11 @@ describe("canAccessDockerWs (container log/stat/terminal streams)", () => {
 		expect(await canAccessDockerWs({ id: "user-1" }, session)).toBe(false);
 	});
 
-	it("allows a member granted canAccessToDocker", async () => {
-		memberToReturn = mockMember("member", { canAccessToDocker: true });
+	it("allows a member whose custom role grants docker:read", async () => {
+		memberToReturn = mockMember("observer");
+		organizationRolesToReturn = [
+			{ permission: JSON.stringify({ docker: ["read"] }) },
+		];
 		expect(await canAccessDockerWs({ id: "user-1" }, session)).toBe(true);
 	});
 

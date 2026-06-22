@@ -5,17 +5,6 @@ const mockMemberData = (role: string) => ({
 	role,
 	userId: "user-1",
 	organizationId: "org-1",
-	canCreateWorkspaces: false,
-	canDeleteWorkspaces: false,
-	canCreateServices: false,
-	canDeleteServices: false,
-	canCreateEnvironments: false,
-	canDeleteEnvironments: false,
-	canAccessToTraefikFiles: false,
-	canAccessToDocker: false,
-	canAccessToAPI: false,
-	canAccessToSSHKeys: false,
-	canAccessToGitProviders: false,
 	user: { id: "user-1", email: "test@test.com" },
 });
 

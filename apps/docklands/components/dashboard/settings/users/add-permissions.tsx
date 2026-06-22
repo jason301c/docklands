@@ -2,7 +2,6 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -164,17 +163,6 @@ const addPermissions = z.object({
 	accessedServices: z.array(z.string()).optional(),
 	accessedGitProviders: z.array(z.string()).optional(),
 	accessedRuntimeWorkers: z.array(z.string()).optional(),
-	canCreateWorkspaces: z.boolean().optional().default(false),
-	canCreateServices: z.boolean().optional().default(false),
-	canDeleteWorkspaces: z.boolean().optional().default(false),
-	canDeleteServices: z.boolean().optional().default(false),
-	canDeleteEnvironments: z.boolean().optional().default(false),
-	canAccessToTraefikFiles: z.boolean().optional().default(false),
-	canAccessToDocker: z.boolean().optional().default(false),
-	canAccessToAPI: z.boolean().optional().default(false),
-	canAccessToSSHKeys: z.boolean().optional().default(false),
-	canAccessToGitProviders: z.boolean().optional().default(false),
-	canCreateEnvironments: z.boolean().optional().default(false),
 });
 
 type AddPermissions = z.infer<typeof addPermissions>;
@@ -184,8 +172,7 @@ interface Props {
 	role?: string;
 }
 
-export const AddUserPermissions = ({ userId, role }: Props) => {
-	const isCustomRole = !!role && !["owner", "admin", "member"].includes(role);
+export const AddUserPermissions = ({ userId }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const { data: workspaces } = api.workspaces.allForPermissions.useQuery(
 		undefined,
@@ -226,17 +213,6 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 			accessedServices: [],
 			accessedGitProviders: [],
 			accessedRuntimeWorkers: [],
-			canDeleteEnvironments: false,
-			canCreateWorkspaces: false,
-			canCreateServices: false,
-			canDeleteWorkspaces: false,
-			canDeleteServices: false,
-			canAccessToTraefikFiles: false,
-			canAccessToDocker: false,
-			canAccessToAPI: false,
-			canAccessToSSHKeys: false,
-			canAccessToGitProviders: false,
-			canCreateEnvironments: false,
 		},
 		resolver: zodResolver(addPermissions),
 	});
@@ -249,17 +225,6 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 				accessedServices: data.accessedServices || [],
 				accessedGitProviders: data.accessedGitProviders || [],
 				accessedRuntimeWorkers: data.accessedRuntimeWorkers || [],
-				canCreateWorkspaces: data.canCreateWorkspaces,
-				canCreateServices: data.canCreateServices,
-				canDeleteWorkspaces: data.canDeleteWorkspaces,
-				canDeleteServices: data.canDeleteServices,
-				canDeleteEnvironments: data.canDeleteEnvironments || false,
-				canAccessToTraefikFiles: data.canAccessToTraefikFiles,
-				canAccessToDocker: data.canAccessToDocker,
-				canAccessToAPI: data.canAccessToAPI,
-				canAccessToSSHKeys: data.canAccessToSSHKeys,
-				canAccessToGitProviders: data.canAccessToGitProviders,
-				canCreateEnvironments: data.canCreateEnvironments,
 			});
 		}
 	}, [form, form.reset, data, isOpen]);
@@ -267,22 +232,11 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 	const onSubmit = async (data: AddPermissions) => {
 		await mutateAsync({
 			id: userId,
-			canCreateServices: data.canCreateServices,
-			canCreateWorkspaces: data.canCreateWorkspaces,
-			canDeleteServices: data.canDeleteServices,
-			canDeleteWorkspaces: data.canDeleteWorkspaces,
-			canDeleteEnvironments: data.canDeleteEnvironments,
-			canAccessToTraefikFiles: data.canAccessToTraefikFiles,
 			accessedWorkspaces: data.accessedWorkspaces || [],
 			accessedEnvironments: data.accessedEnvironments || [],
 			accessedServices: data.accessedServices || [],
 			accessedGitProviders: data.accessedGitProviders || [],
 			accessedRuntimeWorkers: data.accessedRuntimeWorkers || [],
-			canAccessToDocker: data.canAccessToDocker,
-			canAccessToAPI: data.canAccessToAPI,
-			canAccessToSSHKeys: data.canAccessToSSHKeys,
-			canAccessToGitProviders: data.canAccessToGitProviders,
-			canCreateEnvironments: data.canCreateEnvironments,
 		})
 			.then(async () => {
 				toast.success("Permissions updated");
@@ -319,237 +273,12 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="grid  grid-cols-1 md:grid-cols-2  w-full gap-4"
 					>
-						{isCustomRole && (
-							<div className="md:col-span-2 rounded-lg border p-3 bg-kumo-fill/50 text-sm text-kumo-subtle">
-								This user has a custom role assigned. Capabilities are defined
-								by the role. You can still manage which workspaces,
-								environments, and services they can access below.
-							</div>
-						)}
-						{!isCustomRole && (
-							<>
-								<FormField
-									control={form.control}
-									name="canCreateWorkspaces"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Create workspaces</FormLabel>
-												<FormDescription>
-													Allow the user to create workspaces
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canDeleteWorkspaces"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Delete workspaces</FormLabel>
-												<FormDescription>
-													Allow the user to delete workspaces
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canCreateServices"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Create Services</FormLabel>
-												<FormDescription>
-													Allow the user to create services
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canDeleteServices"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Delete Services</FormLabel>
-												<FormDescription>
-													Allow the user to delete services
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canCreateEnvironments"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Create Environments</FormLabel>
-												<FormDescription>
-													Allow the user to create environments
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canDeleteEnvironments"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Delete Environments</FormLabel>
-												<FormDescription>
-													Allow the user to delete environments
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canAccessToTraefikFiles"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Access to Ingress Files</FormLabel>
-												<FormDescription>
-													Allow the user to access the ingress file view
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canAccessToDocker"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Access to Container Runtime</FormLabel>
-												<FormDescription>
-													Allow the user to access the container runtime view
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canAccessToAPI"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Access to API/CLI</FormLabel>
-												<FormDescription>
-													Allow the user to access to the API/CLI
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canAccessToSSHKeys"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Access to SSH Keys</FormLabel>
-												<FormDescription>
-													Allow to users to access to the SSH Keys section
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="canAccessToGitProviders"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>Access to Git Providers</FormLabel>
-												<FormDescription>
-													Allow to users to access to the Git Providers section
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-							</>
-						)}
+						<div className="md:col-span-2 rounded-lg border p-3 bg-kumo-fill/50 text-sm text-kumo-subtle">
+							Capabilities (what a user can do) are defined by their role —
+							assign or create roles under Settings → Roles. This dialog
+							controls which specific workspaces, environments, and services a
+							non-admin user can access.
+						</div>
 						<FormField
 							control={form.control}
 							name="accessedWorkspaces"

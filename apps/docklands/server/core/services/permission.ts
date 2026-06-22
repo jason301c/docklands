@@ -93,24 +93,6 @@ export const checkPermission = async (
 		return;
 	}
 
-	if (memberRecord.role === "member") {
-		const memberPermissionFlags = getMemberPermissionFlags(memberRecord);
-		const allGranted = Object.entries(permissions).every(
-			([resource, actions]) =>
-				(actions as string[]).every(
-					(action) =>
-						!!(
-							memberPermissionFlags[resource] as
-								| Record<string, boolean>
-								| undefined
-						)?.[action],
-				),
-		);
-		if (allGranted) {
-			return;
-		}
-	}
-
 	throw new TRPCError({
 		code: "UNAUTHORIZED",
 		message: result.error || "Permission denied",
@@ -129,42 +111,6 @@ export const hasPermission = async (
 	}
 };
 
-const getMemberPermissionFlags = (
-	memberRecord: Awaited<ReturnType<typeof findMemberByUserId>>,
-): Partial<Record<string, Record<string, boolean>>> => {
-	return {
-		workspace: {
-			create: !!memberRecord.canCreateWorkspaces,
-			delete: !!memberRecord.canDeleteWorkspaces,
-		},
-		service: {
-			create: !!memberRecord.canCreateServices,
-			delete: !!memberRecord.canDeleteServices,
-		},
-		environment: {
-			create: !!memberRecord.canCreateEnvironments,
-			delete: !!memberRecord.canDeleteEnvironments,
-		},
-		traefikFiles: {
-			read: !!memberRecord.canAccessToTraefikFiles,
-		},
-		docker: {
-			read: !!memberRecord.canAccessToDocker,
-		},
-		api: {
-			read: !!memberRecord.canAccessToAPI,
-		},
-		sshKeys: {
-			read: !!memberRecord.canAccessToSSHKeys,
-			create: !!memberRecord.canAccessToSSHKeys,
-			delete: !!memberRecord.canAccessToSSHKeys,
-		},
-		gitProviders: {
-			read: !!memberRecord.canAccessToGitProviders,
-		},
-	};
-};
-
 export const resolvePermissions = async (
 	ctx: PermissionCtx,
 ): Promise<ResolvedPermissions> => {
@@ -173,26 +119,14 @@ export const resolvePermissions = async (
 	const memberRecord = await findMemberByUserId(userId, organizationId);
 	const role = await resolveRole(memberRecord.role, organizationId);
 
-	const memberPermissionFlags =
-		memberRecord.role === "member"
-			? getMemberPermissionFlags(memberRecord)
-			: {};
-
 	const result = {} as ResolvedPermissions;
 
 	for (const [resource, actions] of Object.entries(statements)) {
 		const resourcePerms = {} as Record<string, boolean>;
 		for (const action of actions) {
-			if (!role) {
-				resourcePerms[action] = false;
-				continue;
-			}
-			const check = role.authorize({ [resource]: [action] });
-			resourcePerms[action] =
-				check.success ||
-				!!(
-					memberPermissionFlags[resource] as Record<string, boolean> | undefined
-				)?.[action];
+			resourcePerms[action] = role
+				? role.authorize({ [resource]: [action] }).success
+				: false;
 		}
 		(result as any)[resource] = resourcePerms;
 	}

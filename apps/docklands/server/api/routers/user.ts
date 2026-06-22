@@ -375,22 +375,9 @@ export const userRouter = createTRPCRouter({
 					accessedServices,
 					accessedGitProviders,
 					accessedRuntimeWorkers,
-					...flags
 				} = input;
 
 				const memberRecord = await findMemberByUserId(id, organizationId);
-
-				if (Object.keys(flags).length > 0) {
-					await db
-						.update(member)
-						.set(flags)
-						.where(
-							and(
-								eq(member.userId, id),
-								eq(member.organizationId, organizationId),
-							),
-						);
-				}
 
 				await syncMemberResourceAccess(memberRecord.id, organizationId, {
 					workspace: accessedWorkspaces,
@@ -404,7 +391,13 @@ export const userRouter = createTRPCRouter({
 					action: "update",
 					resourceType: "user",
 					resourceId: input.id,
-					metadata: { permissions: flags },
+					metadata: {
+						accessedWorkspaces,
+						accessedEnvironments,
+						accessedServices,
+						accessedGitProviders,
+						accessedRuntimeWorkers,
+					},
 				});
 			} catch (error) {
 				throw error;
