@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Canvas deployment action language
+- Latest checkpoint: Workspace dialog product copy
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -48,6 +48,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Added a bundler guard so Docklands fails fast if workspace scripts, manifests, lockfile entries, Next config, or the custom server opt back into Webpack instead of Turbopack.
 - Tightened the sidebar and command palette vocabulary around Docklands product nouns: Ingress, Build Workers, Image Registry, Cluster Nodes, Runtime Workers, Container Runtime, Cluster Runtime, Ingress Requests, and Host Metrics.
 - Replaced visible canvas "run build" action copy with Deploy/Deployment language while keeping old keywords searchable.
+- Replaced remaining visible project wording in workspace move/create-environment dialogs with workspace language while leaving `projectId` compatibility internals intact.
 - Centralized the workspace service creation placement selector so application, compose, database, import, and template flows all use the same automatic-placement/runtime-worker UI and copy.
 - Replaced the workspace overview's zero-workspace placeholder with a canvas-first launch state and loading-aware recent panels.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
@@ -186,6 +187,12 @@ git diff --check
   - `bun --filter docklands build`
 - Current canvas deployment action language checkpoint
   - `bun --filter docklands test --run __test__/workspace/environment-canvas-copy.test.ts`
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
+- Current workspace dialog product copy checkpoint
+  - `bun --filter docklands test --run __test__/workspace/workspace-visible-copy.test.ts`
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`

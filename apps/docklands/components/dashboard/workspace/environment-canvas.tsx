@@ -1696,7 +1696,7 @@ export const EnvironmentCanvas = ({
 	const runBulkMove = async () => {
 		if (selectedBulkServices.length === 0) return;
 		if (!selectedTargetProject) {
-			toast.error("Select a target project");
+			toast.error("Select a target workspace");
 			return;
 		}
 		if (!selectedTargetEnvironment) {

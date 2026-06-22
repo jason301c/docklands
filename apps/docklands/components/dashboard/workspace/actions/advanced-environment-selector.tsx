@@ -292,7 +292,7 @@ export const AdvancedEnvironmentSelector = ({
 					<div>
 						<Dialog.Title>Create Environment</Dialog.Title>
 						<Dialog.Description>
-							Create a new environment for your project.
+							Create a new environment for this workspace.
 						</Dialog.Description>
 					</div>
 
