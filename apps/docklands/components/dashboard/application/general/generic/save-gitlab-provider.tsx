@@ -183,9 +183,9 @@ export const SaveGitlabProvider = ({ applicationId }: Props) => {
 							name="gitlabId"
 							render={({ field }) => (
 								<FormItem className="md:col-span-2 flex flex-col">
-									<FormLabel>Gitlab Account</FormLabel>
+									<FormLabel>GitLab Account</FormLabel>
 									<Select
-										aria-label="Select option"
+										aria-label="GitLab account"
 										onValueChange={(value) => {
 											if (value === null) return;
 											field.onChange(value);

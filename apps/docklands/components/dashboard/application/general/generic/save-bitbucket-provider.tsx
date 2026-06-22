@@ -1,16 +1,24 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Input } from "@cloudflare/kumo/components/input";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { CheckIcon, ChevronsUpDown, HelpCircle, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { BitbucketIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import {
 	Form,
 	FormControl,
@@ -19,16 +27,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
 import { ScrollArea } from "@/components/shared/scroll-area";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
 import { cn } from "@/shared/utils";
 
@@ -176,7 +176,8 @@ export const SaveBitbucketProvider = ({ applicationId }: Props) => {
 							render={({ field }) => (
 								<FormItem className="md:col-span-2 flex flex-col">
 									<FormLabel>Bitbucket Account</FormLabel>
-									<Select aria-label="Select option"
+									<Select
+										aria-label="Bitbucket account"
 										onValueChange={(value) => {
 											if (value === null) return;
 											field.onChange(value);
@@ -191,9 +192,7 @@ export const SaveBitbucketProvider = ({ applicationId }: Props) => {
 										value={field.value}
 									>
 										<FormControl>
-											<>
-												
-											</>
+											<></>
 										</FormControl>
 										<>
 											{bitbucketProviders?.map((bitbucketProvider) => (
@@ -410,14 +409,20 @@ export const SaveBitbucketProvider = ({ applicationId }: Props) => {
 									<div className="flex items-center gap-2">
 										<FormLabel>Watch Paths</FormLabel>
 										<TooltipProvider>
-											<Tooltip content={<>
-													<p>
-														Add paths to watch for changes. When files in these
-														paths change, a new deployment will be triggered.
-													</p>
-												</>}  asChild>
-													<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
-												</Tooltip>
+											<Tooltip
+												content={
+													<>
+														<p>
+															Add paths to watch for changes. When files in
+															these paths change, a new deployment will be
+															triggered.
+														</p>
+													</>
+												}
+												asChild
+											>
+												<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+											</Tooltip>
 										</TooltipProvider>
 									</div>
 									<div className="flex flex-wrap gap-2 mb-2">

@@ -1,8 +1,8 @@
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
 import { Cpu, HardDrive, Loader2, MemoryStick, Network } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Select } from "@cloudflare/kumo/components/select";
 import { ContainerBlockChart } from "./container-block-chart";
 import { ContainerCPUChart } from "./container-cpu-chart";
 import { ContainerMemoryChart } from "./container-memory-chart";
@@ -82,7 +82,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 		},
 		{
 			refetchInterval:
-				dataPoints === "all" ? undefined : Number.parseInt(refreshInterval),
+				dataPoints === "all" ? undefined : Number.parseInt(refreshInterval, 10),
 			enabled: !!appName,
 		},
 	);
@@ -132,16 +132,15 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 				<div className="flex items-center gap-4 flex-wrap">
 					<div>
 						<span className="text-sm text-muted-foreground">Data points:</span>
-						<Select aria-label="Select option"
+						<Select
+							aria-label="Container metric data point range"
 							value={dataPoints}
 							onValueChange={(value) =>
 								value !== null &&
 								setDataPoints(value as keyof typeof DATA_POINTS_OPTIONS)
 							}
 						>
-							<>
-								
-							</>
+							<></>
 							<>
 								{Object.entries(DATA_POINTS_OPTIONS).map(([value, label]) => (
 									<Select.Option key={value} value={value}>
@@ -156,16 +155,15 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 						<span className="text-sm text-muted-foreground">
 							Refresh interval:
 						</span>
-						<Select aria-label="Select option"
+						<Select
+							aria-label="Container metric refresh interval"
 							value={refreshInterval}
 							onValueChange={(value) =>
 								value !== null &&
 								setRefreshInterval(value as keyof typeof REFRESH_INTERVALS)
 							}
 						>
-							<>
-								
-							</>
+							<></>
 							<>
 								{Object.entries(REFRESH_INTERVALS).map(([value, label]) => (
 									<Select.Option key={value} value={value}>

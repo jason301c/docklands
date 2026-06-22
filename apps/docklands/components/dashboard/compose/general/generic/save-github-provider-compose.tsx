@@ -1,15 +1,23 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Input } from "@cloudflare/kumo/components/input";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { CheckIcon, ChevronsUpDown, HelpCircle, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import {
 	Form,
 	FormControl,
@@ -18,16 +26,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
 import { ScrollArea } from "@/components/shared/scroll-area";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
 import { cn } from "@/shared/utils";
 
@@ -166,8 +166,9 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 							name="githubId"
 							render={({ field }) => (
 								<FormItem className="md:col-span-2 flex flex-col">
-									<FormLabel>Github Account</FormLabel>
-									<Select aria-label="Select option"
+									<FormLabel>GitHub Account</FormLabel>
+									<Select
+										aria-label="Compose GitHub account"
 										onValueChange={(value) => {
 											if (value === null) return;
 											field.onChange(value);
@@ -181,9 +182,7 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 										value={field.value}
 									>
 										<FormControl>
-											<>
-												
-											</>
+											<></>
 										</FormControl>
 										<>
 											{githubProviders?.map((githubProvider) => (
@@ -398,25 +397,29 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 									<div className="flex items-center gap-2">
 										<FormLabel>Trigger Type</FormLabel>
 										<TooltipProvider>
-											<Tooltip content={<>
-													<p>
-														Choose when to trigger deployments: on push to the
-														selected branch or when a new tag is created.
-													</p>
-												</>}  asChild>
-													<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
-												</Tooltip>
+											<Tooltip
+												content={
+													<>
+														<p>
+															Choose when to trigger deployments: on push to the
+															selected branch or when a new tag is created.
+														</p>
+													</>
+												}
+												asChild
+											>
+												<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+											</Tooltip>
 										</TooltipProvider>
 									</div>
-									<Select aria-label="Select option"
+									<Select
+										aria-label="Compose GitHub trigger type"
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 										value={field.value}
 									>
 										<FormControl>
-											<>
-												
-											</>
+											<></>
 										</FormControl>
 										<>
 											<Select.Option value="push">On Push</Select.Option>
@@ -436,17 +439,21 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 										<div className="flex items-center gap-2">
 											<FormLabel>Watch Paths</FormLabel>
 											<TooltipProvider>
-												<Tooltip content={<>
-														<p>
-															Add paths to watch for changes. When files in
-															these paths change, a new deployment will be
-															triggered.
-														</p>
-													</>}>
-														<div className="size-4 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
-															?
-														</div>
-													</Tooltip>
+												<Tooltip
+													content={
+														<>
+															<p>
+																Add paths to watch for changes. When files in
+																these paths change, a new deployment will be
+																triggered.
+															</p>
+														</>
+													}
+												>
+													<div className="size-4 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+														?
+													</div>
+												</Tooltip>
 											</TooltipProvider>
 										</div>
 										<div className="flex flex-wrap gap-2 mb-2">

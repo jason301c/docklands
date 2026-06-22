@@ -1,8 +1,9 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -12,8 +13,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 interface ModeFormProps {
 	id: string;
@@ -151,11 +151,13 @@ export const ModeForm = ({ id, type }: ModeFormProps) => {
 							<FormDescription>
 								Choose between replicated or global service mode
 							</FormDescription>
-							<Select aria-label="Select option" onValueChange={field.onChange} value={field.value}>
+							<Select
+								aria-label="Service mode"
+								onValueChange={field.onChange}
+								value={field.value}
+							>
 								<FormControl>
-									<>
-										
-									</>
+									<></>
 								</FormControl>
 								<>
 									<Select.Option value="Replicated">Replicated</Select.Option>

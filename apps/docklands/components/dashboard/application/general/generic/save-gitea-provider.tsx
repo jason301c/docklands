@@ -190,7 +190,7 @@ export const SaveGiteaProvider = ({ applicationId }: Props) => {
 								<FormItem className="md:col-span-2 flex flex-col">
 									<FormLabel>Gitea Account</FormLabel>
 									<Select
-										aria-label="Select option"
+										aria-label="Gitea account"
 										onValueChange={(value) => {
 											if (value === null) return;
 											field.onChange(value);

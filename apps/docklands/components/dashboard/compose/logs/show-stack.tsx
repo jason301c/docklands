@@ -90,7 +90,7 @@ export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
 					</div>
 				</div>
 				<Select
-					aria-label="Select option"
+					aria-label="Compose stack log container"
 					onValueChange={(value) =>
 						value !== null && setContainerId(value as never)
 					}

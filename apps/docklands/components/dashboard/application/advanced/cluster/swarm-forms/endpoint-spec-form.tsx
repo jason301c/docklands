@@ -1,10 +1,10 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -14,7 +14,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 export const endpointSpecFormSchema = z.object({
 	Mode: z.string().optional(),
@@ -120,11 +120,13 @@ export const EndpointSpecForm = ({ id, type }: EndpointSpecFormProps) => {
 						<FormItem>
 							<FormLabel>Mode</FormLabel>
 							<FormDescription>Endpoint mode (vip or dnsrr)</FormDescription>
-							<Select aria-label="Select option" onValueChange={field.onChange} value={field.value}>
+							<Select
+								aria-label="Endpoint mode"
+								onValueChange={field.onChange}
+								value={field.value}
+							>
 								<FormControl>
-									<>
-										
-									</>
+									<></>
 								</FormControl>
 								<>
 									<Select.Option value="vip">VIP (Virtual IP)</Select.Option>

@@ -1,7 +1,7 @@
+import { Select } from "@cloudflare/kumo/components/select";
 import { Clock, Cpu, HardDrive, Loader2, MemoryStick } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Select } from "@cloudflare/kumo/components/select";
 import { CPUChart } from "./cpu-chart";
 import { DiskChart } from "./disk-chart";
 import { MemoryChart } from "./memory-chart";
@@ -74,7 +74,7 @@ export const ShowPaidMonitoring = ({
 		},
 		{
 			refetchInterval:
-				dataPoints === "all" ? undefined : Number.parseInt(refreshInterval),
+				dataPoints === "all" ? undefined : Number.parseInt(refreshInterval, 10),
 			enabled: true,
 		},
 	);
@@ -150,16 +150,15 @@ export const ShowPaidMonitoring = ({
 				<div className="flex items-center gap-4 flex-wrap">
 					<div>
 						<span className="text-sm text-muted-foreground">Data points:</span>
-						<Select aria-label="Select option"
+						<Select
+							aria-label="Metric data point range"
 							value={dataPoints}
 							onValueChange={(value) =>
 								value !== null &&
 								setDataPoints(value as keyof typeof DATA_POINTS_OPTIONS)
 							}
 						>
-							<>
-								
-							</>
+							<></>
 							<>
 								{Object.entries(DATA_POINTS_OPTIONS).map(([value, label]) => (
 									<Select.Option key={value} value={value}>
@@ -174,16 +173,15 @@ export const ShowPaidMonitoring = ({
 						<span className="text-sm text-muted-foreground">
 							Refresh interval:
 						</span>
-						<Select aria-label="Select option"
+						<Select
+							aria-label="Metric refresh interval"
 							value={refreshInterval}
 							onValueChange={(value) =>
 								value !== null &&
 								setRefreshInterval(value as keyof typeof REFRESH_INTERVALS)
 							}
 						>
-							<>
-								
-							</>
+							<></>
 							<>
 								{Object.entries(REFRESH_INTERVALS).map(([value, label]) => (
 									<Select.Option key={value} value={value}>

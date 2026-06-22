@@ -167,7 +167,7 @@ export const HandlePorts = ({
 										<FormItem className="md:col-span-2">
 											<FormLabel>Published Port Mode</FormLabel>
 											<Select
-												aria-label="Select option"
+												aria-label="Published port mode"
 												onValueChange={field.onChange}
 												value={field.value}
 											>
@@ -223,7 +223,7 @@ export const HandlePorts = ({
 										<FormItem className="md:col-span-2">
 											<FormLabel>Protocol</FormLabel>
 											<Select
-												aria-label="Select option"
+												aria-label="Port protocol"
 												onValueChange={field.onChange}
 												value={field.value}
 											>

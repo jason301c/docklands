@@ -1,15 +1,18 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { HelpCircle, KeyRoundIcon, LockIcon, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { GitIcon } from "@/components/icons/data-tools-icons";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -18,10 +21,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
 
 const GitProviderSchema = z.object({
@@ -144,15 +144,14 @@ export const SaveGitProviderCompose = ({ composeId }: Props) => {
 											<LockIcon className="size-4 text-muted-foreground" />
 										</FormLabel>
 										<FormControl>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Compose Git provider"
 												key={field.value}
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 												value={field.value}
 											>
-												<>
-													
-												</>
+												<></>
 												<>
 													<Select.Group>
 														{sshKeys?.map((sshKey) => (
@@ -164,7 +163,9 @@ export const SaveGitProviderCompose = ({ composeId }: Props) => {
 															</Select.Option>
 														))}
 														<Select.Option value="none">None</Select.Option>
-														<Select.GroupLabel>Keys ({sshKeys?.length})</Select.GroupLabel>
+														<Select.GroupLabel>
+															Keys ({sshKeys?.length})
+														</Select.GroupLabel>
 													</Select.Group>
 												</>
 											</Select>
@@ -220,15 +221,21 @@ export const SaveGitProviderCompose = ({ composeId }: Props) => {
 								<div className="flex items-center gap-2">
 									<FormLabel>Watch Paths</FormLabel>
 									<TooltipProvider>
-										<Tooltip content={<>
-												<p>
-													Add paths to watch for changes. When files in these
-													paths change, a new deployment will be triggered. This
-													will work only when manual webhook is setup.
-												</p>
-											</>} className="max-w-[300px]"  asChild>
-												<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
-											</Tooltip>
+										<Tooltip
+											content={
+												<>
+													<p>
+														Add paths to watch for changes. When files in these
+														paths change, a new deployment will be triggered.
+														This will work only when manual webhook is setup.
+													</p>
+												</>
+											}
+											className="max-w-[300px]"
+											asChild
+										>
+											<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+										</Tooltip>
 									</TooltipProvider>
 								</div>
 								<div className="flex flex-wrap gap-2 mb-2">

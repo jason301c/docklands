@@ -408,7 +408,7 @@ export const ShowResources = ({ id, type }: Props) => {
 													<FormItem className="flex-1">
 														<FormLabel className="text-xs">Type</FormLabel>
 														<Select
-															aria-label="Select option"
+															aria-label="Ulimit type"
 															onValueChange={field.onChange}
 															value={field.value}
 														>

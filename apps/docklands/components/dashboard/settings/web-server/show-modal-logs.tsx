@@ -1,12 +1,12 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Select } from "@cloudflare/kumo/components/select";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { Label } from "@cloudflare/kumo/components/label";
-import { Select } from "@cloudflare/kumo/components/select";
 import { badgeStateColor } from "../../application/logs/show";
 
 export const DockerLogsId = dynamic(
@@ -59,7 +59,13 @@ export const ShowModalLogs = ({
 				</div>
 				<div className="flex flex-col gap-4 pt-2.5">
 					<Label>Select a container to view logs</Label>
-					<Select aria-label="Select option" onValueChange={(value) => value !== null && setContainerId(value as never)} value={containerId}>
+					<Select
+						aria-label="Service log container"
+						onValueChange={(value) =>
+							value !== null && setContainerId(value as never)
+						}
+						value={containerId}
+					>
 						<>
 							{isPending ? (
 								<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
@@ -81,7 +87,9 @@ export const ShowModalLogs = ({
 										</Badge>
 									</Select.Option>
 								))}
-								<Select.GroupLabel>Containers ({data?.length})</Select.GroupLabel>
+								<Select.GroupLabel>
+									Containers ({data?.length})
+								</Select.GroupLabel>
 							</Select.Group>
 						</>
 					</Select>

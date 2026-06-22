@@ -1,13 +1,13 @@
-import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { badgeStateColor } from "@/components/dashboard/application/logs/show";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Label } from "@cloudflare/kumo/components/label";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { api } from "@/client/api/trpc";
+import { badgeStateColor } from "@/components/dashboard/application/logs/show";
+import { toast } from "@/components/shared/toast";
 import { ContainerPaidMonitoring } from "./show-paid-container-monitoring";
 
 interface Props {
@@ -62,7 +62,8 @@ export const ComposePaidMonitoring = ({
 				<div className="flex flex-col gap-4">
 					<Label>Select a container to watch the monitoring</Label>
 					<div className="flex flex-row gap-4">
-						<Select aria-label="Select option"
+						<Select
+							aria-label="Compose monitoring container"
 							onValueChange={(value) => {
 								if (value === null) return;
 								setContainerAppName(value);
@@ -94,7 +95,9 @@ export const ComposePaidMonitoring = ({
 											</Badge>
 										</Select.Option>
 									))}
-									<Select.GroupLabel>Containers ({data?.length})</Select.GroupLabel>
+									<Select.GroupLabel>
+										Containers ({data?.length})
+									</Select.GroupLabel>
 								</Select.Group>
 							</>
 						</Select>

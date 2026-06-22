@@ -138,7 +138,7 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 							href="/dashboard/settings/image-registry"
 							className="text-primary underline"
 						>
-							Settings
+							Image Registry
 						</Link>{" "}
 						to add a registry.
 					</AlertBlock>
@@ -156,7 +156,7 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 								<FormItem>
 									<FormLabel>Build Worker</FormLabel>
 									<Select
-										aria-label="Select option"
+										aria-label="Build worker"
 										onValueChange={(value) => {
 											if (value === null) return;
 											field.onChange(value);
@@ -206,7 +206,7 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 								<FormItem>
 									<FormLabel>Build Registry</FormLabel>
 									<Select
-										aria-label="Select option"
+										aria-label="Build registry"
 										onValueChange={(value) => {
 											if (value === null) return;
 											field.onChange(value);

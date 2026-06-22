@@ -100,7 +100,7 @@ export const ServerFilter = ({ children }: Props) => {
 						Runtime
 					</Label>
 					<Select
-						aria-label="Select option"
+						aria-label="Runtime filter"
 						value={serverId ?? DOCKLANDS_SERVER}
 						onValueChange={(value) =>
 							value !== null && setServerId(value as never)

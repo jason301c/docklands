@@ -189,7 +189,7 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 												<FormItem>
 													<FormLabel>Select a registry</FormLabel>
 													<Select
-														aria-label="Select option"
+														aria-label="Cluster image registry"
 														onValueChange={field.onChange}
 														defaultValue={field.value}
 													>

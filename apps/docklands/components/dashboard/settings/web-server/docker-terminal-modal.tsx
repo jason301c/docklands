@@ -84,7 +84,7 @@ export const DockerTerminalModal = ({
 					</Dialog.Description>
 				</div>
 				<Select
-					aria-label="Select option"
+					aria-label="Terminal container"
 					onValueChange={(value) =>
 						value !== null && setContainerId(value as never)
 					}

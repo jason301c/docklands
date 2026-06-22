@@ -1,10 +1,11 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -14,8 +15,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 export const rollbackConfigFormSchema = z.object({
 	Parallelism: z.coerce.number().optional(),
@@ -161,11 +161,13 @@ export const RollbackConfigForm = ({ id, type }: RollbackConfigFormProps) => {
 						<FormItem>
 							<FormLabel>Failure Action</FormLabel>
 							<FormDescription>Action on rollback failure</FormDescription>
-							<Select aria-label="Select option" onValueChange={field.onChange} value={field.value}>
+							<Select
+								aria-label="Rollback failure action"
+								onValueChange={field.onChange}
+								value={field.value}
+							>
 								<FormControl>
-									<>
-										
-									</>
+									<></>
 								</FormControl>
 								<>
 									<Select.Option value="pause">Pause</Select.Option>
@@ -218,11 +220,13 @@ export const RollbackConfigForm = ({ id, type }: RollbackConfigFormProps) => {
 						<FormItem>
 							<FormLabel>Order</FormLabel>
 							<FormDescription>Rollback order strategy</FormDescription>
-							<Select aria-label="Select option" onValueChange={field.onChange} value={field.value}>
+							<Select
+								aria-label="Rollback order"
+								onValueChange={field.onChange}
+								value={field.value}
+							>
 								<FormControl>
-									<>
-										
-									</>
+									<></>
 								</FormControl>
 								<>
 									<Select.Option value="stop-first">Stop First</Select.Option>

@@ -146,7 +146,7 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 									<FormItem>
 										<FormLabel>Rollback Registry</FormLabel>
 										<Select
-											aria-label="Select option"
+											aria-label="Rollback registry"
 											onValueChange={field.onChange}
 											value={field.value || "none"}
 										>

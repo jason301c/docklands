@@ -164,9 +164,9 @@ export const SaveGithubProvider = ({ applicationId }: Props) => {
 							name="githubId"
 							render={({ field }) => (
 								<FormItem className="md:col-span-2 flex flex-col">
-									<FormLabel>Github Account</FormLabel>
+									<FormLabel>GitHub Account</FormLabel>
 									<Select
-										aria-label="Select option"
+										aria-label="GitHub account"
 										onValueChange={(value) => {
 											if (value === null) return;
 											field.onChange(value);
@@ -411,7 +411,7 @@ export const SaveGithubProvider = ({ applicationId }: Props) => {
 										</TooltipProvider>
 									</div>
 									<Select
-										aria-label="Select option"
+										aria-label="GitHub trigger type"
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 										value={field.value}

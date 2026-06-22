@@ -180,7 +180,7 @@ export const HandleRedirect = ({
 				<div className="md:col-span-2">
 					<Label>Presets</Label>
 					<Select
-						aria-label="Select option"
+						aria-label="Redirect preset"
 						onValueChange={(value) => value !== null && onPresetSelect(value)}
 						value={presetSelected}
 					>
