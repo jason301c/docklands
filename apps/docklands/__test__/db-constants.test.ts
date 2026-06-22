@@ -11,22 +11,26 @@ describe("resolveDbUrl", () => {
 		).toBe("postgres://user:pass@example.com:5432/app");
 	});
 
-	it("rejects missing database credentials in production runtime", () => {
+	it("rejects missing database credentials in production", () => {
 		expect(() =>
 			resolveDbUrl({
 				NODE_ENV: "production",
 			}),
-		).toThrow("DATABASE_URL or POSTGRES_PASSWORD_FILE must be set");
+		).toThrow("DATABASE_URL or POSTGRES_PASSWORD_FILE must be set.");
 	});
 
-	it("keeps build-time compatibility for Next production builds", () => {
-		expect(
+	it("rejects missing database credentials during Next production builds", () => {
+		expect(() =>
 			resolveDbUrl({
 				NODE_ENV: "production",
 				NEXT_PHASE: "phase-production-build",
 			}),
-		).toBe(
-			"postgres://docklands:amukds4wi9001583845717ad2@docklands-postgres:5432/docklands",
+		).toThrow("DATABASE_URL or POSTGRES_PASSWORD_FILE must be set.");
+	});
+
+	it("uses a deterministic test-only database URL", () => {
+		expect(resolveDbUrl({ NODE_ENV: "test" })).toBe(
+			"postgres://docklands:test@localhost:5432/docklands_test",
 		);
 	});
 });

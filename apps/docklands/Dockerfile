@@ -23,7 +23,9 @@ RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache bun install --froz
 
 COPY . .
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    DATABASE_URL=postgres://docklands_build:docklands_build@127.0.0.1:5432/docklands_build \
+    BETTER_AUTH_SECRET=docklands-build-secret-000000000000000000
 RUN bun --filter docklands build
 
 FROM deps-base AS prod-deps

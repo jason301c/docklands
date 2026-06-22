@@ -11,20 +11,26 @@ describe("resolveBetterAuthSecret", () => {
 		).toBe("x".repeat(48));
 	});
 
-	it("rejects missing secrets in production runtime", () => {
+	it("rejects missing secrets in production", () => {
 		expect(() =>
 			resolveBetterAuthSecret({
 				NODE_ENV: "production",
 			}),
-		).toThrow("BETTER_AUTH_SECRET or BETTER_AUTH_SECRET_FILE must be set");
+		).toThrow("BETTER_AUTH_SECRET or BETTER_AUTH_SECRET_FILE must be set.");
 	});
 
-	it("keeps build-time compatibility for Next production builds", () => {
-		expect(
+	it("rejects missing secrets during Next production builds", () => {
+		expect(() =>
 			resolveBetterAuthSecret({
 				NODE_ENV: "production",
 				NEXT_PHASE: "phase-production-build",
 			}),
-		).toBe("better-auth-secret-123456789");
+		).toThrow("BETTER_AUTH_SECRET or BETTER_AUTH_SECRET_FILE must be set.");
+	});
+
+	it("uses a deterministic test-only secret", () => {
+		expect(resolveBetterAuthSecret({ NODE_ENV: "test" })).toBe(
+			"docklands-test-secret-00000000000000000000",
+		);
 	});
 });

@@ -27,6 +27,9 @@ import {
 import { ac, adminRole, memberRole, ownerRole } from "./access-control";
 import { betterAuthSecret } from "./auth-secret";
 
+const isNextProductionBuild = () =>
+	process.env.NEXT_PHASE === "phase-production-build";
+
 const { handler, api } = betterAuth({
 	database: drizzleAdapter(db, {
 		provider: "pg",
@@ -57,6 +60,9 @@ const { handler, api } = betterAuth({
 		accountLinking: {
 			enabled: true,
 			async trustedProviders() {
+				if (isNextProductionBuild()) {
+					return ["github", "google"];
+				}
 				const fromDb = await getTrustedProviders();
 				return ["github", "google", ...fromDb];
 			},
@@ -78,6 +84,9 @@ const { handler, api } = betterAuth({
 		disabled: process.env.NODE_ENV === "production",
 	},
 	async trustedOrigins() {
+		if (isNextProductionBuild()) {
+			return [];
+		}
 		try {
 			if (IS_CLOUD) {
 				return await getTrustedOrigins();

@@ -17,9 +17,8 @@ export function readSecret(path: string): string {
 	}
 }
 
-const isNextProductionBuild = (env: NodeJS.ProcessEnv) =>
-	env.NEXT_PHASE === "phase-production-build" ||
-	env.npm_lifecycle_event === "build-next";
+const TEST_DATABASE_URL =
+	"postgres://docklands:test@localhost:5432/docklands_test";
 
 export function resolveDbUrl(env: NodeJS.ProcessEnv = process.env): string {
 	const {
@@ -42,28 +41,11 @@ export function resolveDbUrl(env: NodeJS.ProcessEnv = process.env): string {
 		)}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}`;
 	}
 
-	if (env.NODE_ENV === "production" && !isNextProductionBuild(env)) {
-		throw new Error(
-			"DATABASE_URL or POSTGRES_PASSWORD_FILE must be set in production.",
-		);
+	if (env.NODE_ENV === "test") {
+		return TEST_DATABASE_URL;
 	}
 
-	if (env.NODE_ENV !== "test" && !isNextProductionBuild(env)) {
-		console.warn(`
-		⚠️  [DEPRECATED DATABASE CONFIG]
-		You are using the legacy hardcoded database credentials.
-		This fallback is only allowed in development and build-time compatibility paths.
-		
-		Please migrate to Docker Secrets using POSTGRES_PASSWORD_FILE.
-		Generate a strong password, store it as a Docker secret, and set POSTGRES_PASSWORD_FILE.
-		`);
-	}
-
-	if (env.NODE_ENV === "production") {
-		return "postgres://docklands:amukds4wi9001583845717ad2@docklands-postgres:5432/docklands";
-	}
-
-	return "postgres://docklands:amukds4wi9001583845717ad2@localhost:5432/docklands";
+	throw new Error("DATABASE_URL or POSTGRES_PASSWORD_FILE must be set.");
 }
 
 export const dbUrl = resolveDbUrl();
