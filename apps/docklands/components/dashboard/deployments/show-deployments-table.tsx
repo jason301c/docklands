@@ -69,9 +69,9 @@ function getServiceInfo(d: DeploymentRow) {
 		return {
 			type: "Application" as const,
 			name: app.name,
-			projectId: app.environment.project.projectId,
+			workspaceId: app.environment.project.projectId,
 			environmentId: app.environment.environmentId,
-			projectName: app.environment.project.name,
+			workspaceName: app.environment.project.name,
 			environmentName: app.environment.name,
 			serviceId: app.applicationId,
 			href: workspaceServicePath({
@@ -86,9 +86,9 @@ function getServiceInfo(d: DeploymentRow) {
 		return {
 			type: "Compose" as const,
 			name: comp.name,
-			projectId: comp.environment.project.projectId,
+			workspaceId: comp.environment.project.projectId,
 			environmentId: comp.environment.environmentId,
-			projectName: comp.environment.project.name,
+			workspaceName: comp.environment.project.name,
 			environmentName: comp.environment.name,
 			serviceId: comp.composeId,
 			href: workspaceServicePath({
@@ -165,7 +165,7 @@ export function ShowDeploymentsTable() {
 				if (!info) return false;
 				return (
 					info.name.toLowerCase().includes(q) ||
-					info.projectName.toLowerCase().includes(q) ||
+					info.workspaceName.toLowerCase().includes(q) ||
 					info.environmentName.toLowerCase().includes(q) ||
 					(d.title?.toLowerCase().includes(q) ?? false)
 				);
@@ -249,9 +249,9 @@ export function ShowDeploymentsTable() {
 				},
 			},
 			{
-				id: "projectName",
+				id: "workspaceName",
 				accessorFn: (row: DeploymentRow) =>
-					getServiceInfo(row)?.projectName ?? "",
+					getServiceInfo(row)?.workspaceName ?? "",
 				header: ({
 					column,
 				}: {
@@ -273,7 +273,7 @@ export function ShowDeploymentsTable() {
 					const info = getServiceInfo(row.original);
 					return (
 						<span className="text-muted-foreground">
-							{info?.projectName ?? "—"}
+							{info?.workspaceName ?? "—"}
 						</span>
 					);
 				},
@@ -476,7 +476,7 @@ export function ShowDeploymentsTable() {
 							<div>
 								<p className="text-sm font-medium">Deployment stream</p>
 								<p className="text-xs text-muted-foreground">
-									Latest runtime changes across every project and environment.
+									Latest runtime changes across every workspace and environment.
 								</p>
 							</div>
 							<Badge variant="outline">{filteredData.length} visible</Badge>
@@ -519,7 +519,7 @@ export function ShowDeploymentsTable() {
 													</div>
 													<p className="mt-1 truncate text-xs text-muted-foreground">
 														{info
-															? `${info.projectName} / ${info.environmentName}`
+															? `${info.workspaceName} / ${info.environmentName}`
 															: "Service metadata unavailable"}
 														{deployment.title ? ` · ${deployment.title}` : ""}
 													</p>
@@ -558,7 +558,7 @@ export function ShowDeploymentsTable() {
 
 			<div className="flex flex-wrap items-center gap-2">
 				<Input
-					placeholder="Search by name, project, environment, or title..."
+					placeholder="Search by name, workspace, environment, or title..."
 					value={globalFilter}
 					onChange={(e) => setGlobalFilter(e.target.value)}
 					className="max-w-xs"
