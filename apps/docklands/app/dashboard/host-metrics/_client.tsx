@@ -1,6 +1,5 @@
 "use client";
 
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { useLocalStorage } from "@/client/hooks/useLocalStorage";
@@ -21,12 +20,10 @@ const Dashboard = () => {
 	return (
 		<div className="space-y-4 pb-10">
 			{isPending ? (
-				<LayerCard className="bg-sidebar  p-2.5 rounded-xl  mx-auto  items-center">
-					<div className="rounded-xl bg-background flex shadow-md px-4 min-h-[50vh] justify-center items-center text-muted-foreground">
-						Loading...
-						<Loader2 className="h-4 w-4 animate-spin" />
-					</div>
-				</LayerCard>
+				<div className="flex min-h-[50vh] items-center justify-center rounded-lg border bg-background px-4 text-muted-foreground">
+					Loading...
+					<Loader2 className="h-4 w-4 animate-spin" />
+				</div>
 			) : (
 				<>
 					{/* {monitoring?.enabledFeatures && (
@@ -39,28 +36,24 @@ const Dashboard = () => {
 						</div>
 					)} */}
 					{toggleMonitoring ? (
-						<LayerCard className="bg-sidebar  p-2.5 rounded-xl  mx-auto">
-							<div className="rounded-xl bg-background shadow-md">
-								<ShowPaidMonitoring
-									BASE_URL={
-										process.env.NODE_ENV === "production"
-											? `http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.server?.port}/metrics`
-											: BASE_URL
-									}
-									token={
-										process.env.NODE_ENV === "production"
-											? monitoring?.metricsConfig?.server?.token
-											: DEFAULT_TOKEN
-									}
-								/>
-							</div>
-						</LayerCard>
+						<div className="rounded-lg border bg-background">
+							<ShowPaidMonitoring
+								BASE_URL={
+									process.env.NODE_ENV === "production"
+										? `http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.server?.port}/metrics`
+										: BASE_URL
+								}
+								token={
+									process.env.NODE_ENV === "production"
+										? monitoring?.metricsConfig?.server?.token
+										: DEFAULT_TOKEN
+								}
+							/>
+						</div>
 					) : (
-						<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl">
-							<div className="rounded-xl bg-background shadow-md p-6">
-								<ContainerFreeMonitoring appName="docklands" />
-							</div>
-						</LayerCard>
+						<div className="rounded-lg border bg-background p-6">
+							<ContainerFreeMonitoring appName="docklands" />
+						</div>
 					)}
 				</>
 			)}

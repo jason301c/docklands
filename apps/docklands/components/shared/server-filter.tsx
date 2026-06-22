@@ -1,7 +1,6 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { LinkButton } from "@cloudflare/kumo/components/button";
 import { Label } from "@cloudflare/kumo/components/label";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Loader2, PlusIcon, ServerIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -52,50 +51,46 @@ export const ServerFilter = ({ children }: Props) => {
 
 	if (isLoadingServers || isLoadingCloud) {
 		return (
-			<LayerCard className="bg-sidebar p-2.5 rounded-xl w-full">
-				<div className="rounded-xl bg-background shadow-md flex flex-col gap-2 items-center justify-center min-h-[60vh]">
-					<span className="text-muted-foreground text-lg font-medium">
-						Loading...
-					</span>
-					<Loader2 className="animate-spin size-8 text-muted-foreground" />
-				</div>
-			</LayerCard>
+			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-2 rounded-lg border bg-background">
+				<span className="text-lg font-medium text-muted-foreground">
+					Loading...
+				</span>
+				<Loader2 className="size-8 animate-spin text-muted-foreground" />
+			</div>
 		);
 	}
 
 	if (isCloud && !servers?.length) {
 		return (
-			<LayerCard className="bg-sidebar p-2.5 rounded-xl w-full">
-				<div className="rounded-xl bg-background shadow-md flex flex-col items-center justify-center gap-5 min-h-[60vh] border border-dashed px-4">
-					<div className="flex items-center justify-center size-16 rounded-full bg-muted">
-						<ServerIcon className="size-8 text-muted-foreground" />
-					</div>
-					<div className="flex flex-col items-center gap-1.5 text-center max-w-md">
-						<span className="text-lg font-medium">No runtime capacity yet</span>
-						<span className="text-sm text-muted-foreground">
-							{permissions?.server.create
-								? "This section works on remote runtime capacity. Add your first worker to start managing it from here."
-								: "This section works on remote runtime capacity. Ask an administrator to add a worker to your organization."}
-						</span>
-					</div>
-					{permissions?.server.create && (
-						<LinkButton href="/dashboard/settings/runtime">
-							<PlusIcon className="size-4" />
-							Add Worker
-						</LinkButton>
-					)}
+			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-5 rounded-lg border border-dashed bg-background px-4">
+				<div className="flex size-16 items-center justify-center rounded-full bg-muted">
+					<ServerIcon className="size-8 text-muted-foreground" />
 				</div>
-			</LayerCard>
+				<div className="flex max-w-md flex-col items-center gap-1.5 text-center">
+					<span className="text-lg font-medium">No runtime capacity yet</span>
+					<span className="text-sm text-muted-foreground">
+						{permissions?.server.create
+							? "This section works on remote runtime capacity. Add your first worker to start managing it from here."
+							: "This section works on remote runtime capacity. Ask an administrator to add a worker to your organization."}
+					</span>
+				</div>
+				{permissions?.server.create && (
+					<LinkButton href="/dashboard/settings/runtime">
+						<PlusIcon className="size-4" />
+						Add Worker
+					</LinkButton>
+				)}
+			</div>
 		);
 	}
 
 	return (
-		<div className="flex flex-col gap-4 w-full">
+		<div className="flex w-full flex-col gap-4">
 			{!!servers?.length && (
 				<div className="flex w-full items-center justify-end gap-3">
 					<Label
 						htmlFor="server-filter"
-						className="text-sm text-muted-foreground whitespace-nowrap"
+						className="whitespace-nowrap text-sm text-muted-foreground"
 					>
 						Runtime
 					</Label>

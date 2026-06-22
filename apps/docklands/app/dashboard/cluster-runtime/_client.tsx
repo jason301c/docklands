@@ -1,6 +1,5 @@
 "use client";
 
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { useState } from "react";
 import { ShowSwarmContainers } from "@/components/dashboard/swarm/containers/show-swarm-containers";
@@ -30,12 +29,8 @@ const Dashboard = () => {
 						</div>
 					)}
 					{activeTab === "containers" && (
-						<div>
-							<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl mx-auto w-full">
-								<div className="rounded-xl bg-background shadow-md p-6">
-									<ShowSwarmContainers serverId={serverId} />
-								</div>
-							</LayerCard>
+						<div className="rounded-lg border bg-background p-6">
+							<ShowSwarmContainers serverId={serverId} />
 						</div>
 					)}
 				</div>
