@@ -316,8 +316,8 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 						{isCustomRole && (
 							<div className="md:col-span-2 rounded-lg border p-3 bg-muted/50 text-sm text-muted-foreground">
 								This user has a custom role assigned. Capabilities are defined
-								by the role. You can still manage which projects, environments,
-								and services they can access below.
+								by the role. You can still manage which workspaces,
+								environments, and services they can access below.
 							</div>
 						)}
 						{!isCustomRole && (

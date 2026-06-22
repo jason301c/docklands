@@ -241,7 +241,7 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 											<AlertBlock type="info" className="mt-2">
 												Runtime workers run your applications, databases, and
 												services. They handle runtime execution for your
-												projects.
+												workspaces.
 											</AlertBlock>
 										)}
 										{serverTypeValue === "build" && (

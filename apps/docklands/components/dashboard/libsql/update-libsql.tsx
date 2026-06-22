@@ -128,7 +128,7 @@ export const UpdateLibsql = ({ libsqlId }: Props) => {
 											<FormLabel>Description</FormLabel>
 											<FormControl>
 												<Textarea
-													placeholder="Description about your project..."
+													placeholder="Description for this service..."
 													className="resize-none"
 													{...field}
 												/>

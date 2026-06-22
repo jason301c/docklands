@@ -135,7 +135,7 @@ export const HandleTag = ({ tagId }: HandleTagProps) => {
 					<Dialog.Description>
 						{tagId
 							? "Update the tag name and color"
-							: "Create a new tag to organize your projects"}
+							: "Create a new tag to organize your workspaces"}
 					</Dialog.Description>
 				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}

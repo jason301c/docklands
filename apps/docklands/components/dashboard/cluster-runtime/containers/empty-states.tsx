@@ -171,7 +171,8 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 			<ol className="list-decimal list-inside space-y-2 ml-1">
 				<li>
 					<strong>Deployed as cluster services</strong> &mdash; Docklands
-					deploys applications this way by default. Compose projects need to use{" "}
+					deploys applications this way by default. Compose workloads need to
+					use{" "}
 					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">Stack</code>{" "}
 					type (not{" "}
 					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">
@@ -192,8 +193,8 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 					.
 				</li>
 				<li>
-					<strong>Successfully built and started</strong> &mdash; Check your
-					project&apos;s build logs for errors.
+					<strong>Successfully built and started</strong> &mdash; Check the
+					workspace build logs for errors.
 				</li>
 			</ol>
 			<DocLinks />

@@ -21,7 +21,7 @@ export const TagManager = () => {
 						<TagIcon className="size-6 text-muted-foreground self-center" />
 						Tags
 					</h3>
-					<p>Create and manage tags to organize your projects</p>
+					<p>Create and manage tags to organize your workspaces</p>
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
@@ -36,7 +36,7 @@ export const TagManager = () => {
 									<TagIcon className="size-6 text-muted-foreground" />
 									<span className="text-base text-muted-foreground text-center">
 										No tags yet. Create your first tag to start organizing
-										projects.
+										workspaces.
 									</span>
 									{permissions?.tag.create && <HandleTag />}
 								</div>
@@ -64,7 +64,7 @@ export const TagManager = () => {
 														{permissions?.tag.delete && (
 															<DialogAction
 																title="Delete Tag"
-																description={`Are you sure you want to delete the tag "${tag.name}"? This will remove the tag from all projects. This action cannot be undone.`}
+																description={`Are you sure you want to delete the tag "${tag.name}"? This will remove the tag from all workspaces. This action cannot be undone.`}
 																type="destructive"
 																onClick={async () => {
 																	await deleteTag({

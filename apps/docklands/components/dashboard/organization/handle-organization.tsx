@@ -126,7 +126,7 @@ export function AddOrganization({ organizationId }: Props) {
 					<Dialog.Description>
 						{organizationId
 							? "Update the organization name and logo"
-							: "Create a new organization to manage your projects."}
+							: "Create a new organization to manage your workspaces."}
 					</Dialog.Description>
 				</div>
 				<Form {...form}>

@@ -204,7 +204,7 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 									<FormItem>
 										<FormLabel>Name</FormLabel>
 										<FormControl>
-											<Input placeholder={"Personal projects"} {...field} />
+											<Input placeholder={"Personal workloads"} {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
