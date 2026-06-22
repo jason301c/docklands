@@ -328,9 +328,9 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 											<div className="space-y-0.5">
-												<FormLabel>Create Projects</FormLabel>
+												<FormLabel>Create workspaces</FormLabel>
 												<FormDescription>
-													Allow the user to create projects
+													Allow the user to create workspaces
 												</FormDescription>
 											</div>
 											<FormControl>
@@ -348,9 +348,9 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 											<div className="space-y-0.5">
-												<FormLabel>Delete Projects</FormLabel>
+												<FormLabel>Delete workspaces</FormLabel>
 												<FormDescription>
-													Allow the user to delete projects
+													Allow the user to delete workspaces
 												</FormDescription>
 											</div>
 											<FormControl>
@@ -550,14 +550,14 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 							render={() => (
 								<FormItem className="md:col-span-2">
 									<div className="mb-4">
-										<FormLabel className="text-base">Projects</FormLabel>
+										<FormLabel className="text-base">Workspaces</FormLabel>
 										<FormDescription>
-											Select the Projects that the user can access
+											Select the workspaces that the user can access
 										</FormDescription>
 									</div>
 									{projects?.length === 0 && (
 										<p className="text-sm text-muted-foreground">
-											No projects found
+											No workspaces found
 										</p>
 									)}
 									<div className="grid md:grid-cols-1 gap-4">
@@ -573,7 +573,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																key={project.projectId}
 																className="flex flex-col items-start rounded-lg p-4 border"
 															>
-																{/* Project Header */}
+																{/* Workspace header */}
 																<div className="flex flex-row gap-4 items-center w-full">
 																	<FormControl>
 																		<Checkbox

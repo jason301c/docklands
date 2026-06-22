@@ -22,10 +22,10 @@ import { TagSelector } from "@/components/shared/tag-selector";
 import { toast } from "@/components/shared/toast";
 import { workspaceEnvironmentPath } from "@/shared/routes";
 
-const AddProjectSchema = z.object({
+const WorkspaceSchema = z.object({
 	name: z
 		.string()
-		.min(1, "Project name is required")
+		.min(1, "Workspace name is required")
 		.refine(
 			(name) => {
 				const trimmedName = name.trim();
@@ -35,23 +35,23 @@ const AddProjectSchema = z.object({
 			},
 			{
 				message:
-					"Project name must start and end with a letter, number, hyphen or underscore. Spaces are allowed in between.",
+					"Workspace name must start and end with a letter, number, hyphen or underscore. Spaces are allowed in between.",
 			},
 		)
 		.refine((name) => !/^\d/.test(name.trim()), {
-			message: "Project name cannot start with a number",
+			message: "Workspace name cannot start with a number",
 		})
 		.transform((name) => name.trim()),
 	description: z.string().optional(),
 });
 
-type AddProject = z.infer<typeof AddProjectSchema>;
+type WorkspaceForm = z.infer<typeof WorkspaceSchema>;
 
 interface Props {
 	projectId?: string;
 }
 
-export const HandleProject = ({ projectId }: Props) => {
+export const HandleWorkspace = ({ projectId }: Props) => {
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
 	const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
@@ -73,12 +73,12 @@ export const HandleProject = ({ projectId }: Props) => {
 	const bulkAssignMutation = api.tag.bulkAssign.useMutation();
 
 	const router = useRouter();
-	const form = useForm<AddProject>({
+	const form = useForm<WorkspaceForm>({
 		defaultValues: {
 			description: "",
 			name: "",
 		},
-		resolver: standardSchemaResolver(AddProjectSchema),
+		resolver: standardSchemaResolver(WorkspaceSchema),
 	});
 
 	useEffect(() => {
@@ -95,14 +95,14 @@ export const HandleProject = ({ projectId }: Props) => {
 		}
 	}, [form, form.reset, form.formState.isSubmitSuccessful, data]);
 
-	const onSubmit = async (data: AddProject) => {
+	const onSubmit = async (data: WorkspaceForm) => {
 		await mutateAsync({
 			name: data.name,
 			description: data.description,
 			projectId: projectId || "",
 		})
 			.then(async (data) => {
-				// Assign tags to the project (both create and update)
+				// Assign tags to the workspace (both create and update).
 				const projectIdToUse =
 					projectId ||
 					(data && "project" in data ? data.project.projectId : undefined);
@@ -114,12 +114,12 @@ export const HandleProject = ({ projectId }: Props) => {
 							tagIds: selectedTagIds,
 						});
 					} catch (error) {
-						toast.error("Failed to assign tags to project");
+						toast.error("Failed to assign tags to workspace");
 					}
 				}
 
 				await utils.project.all.invalidate();
-				toast.success(projectId ? "Project Updated" : "Project Created");
+				toast.success(projectId ? "Workspace updated" : "Workspace created");
 				setIsOpen(false);
 				if (!projectId) {
 					const environmentIdToUse =
@@ -141,7 +141,9 @@ export const HandleProject = ({ projectId }: Props) => {
 			})
 			.catch(() => {
 				toast.error(
-					projectId ? "Error updating a project" : "Error creating a project",
+					projectId
+						? "Error updating this workspace"
+						: "Error creating this workspace",
 				);
 			});
 	};
@@ -162,7 +164,7 @@ export const HandleProject = ({ projectId }: Props) => {
 						((
 							<Button>
 								<PlusIcon className="h-4 w-4" />
-								Create Project
+								Create workspace
 							</Button>
 						) as never)
 					)
@@ -170,8 +172,12 @@ export const HandleProject = ({ projectId }: Props) => {
 			/>
 			<Dialog className="sm:m:max-w-lg ">
 				<div>
-					<Dialog.Title>{projectId ? "Update" : "Add a"} project</Dialog.Title>
-					<Dialog.Description>The home of something big!</Dialog.Description>
+					<Dialog.Title>
+						{projectId ? "Update workspace" : "Create workspace"}
+					</Dialog.Title>
+					<Dialog.Description>
+						Group services, environments, and shared variables in one canvas.
+					</Dialog.Description>
 				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
@@ -205,7 +211,7 @@ export const HandleProject = ({ projectId }: Props) => {
 									<FormLabel>Description</FormLabel>
 									<FormControl>
 										<Textarea
-											placeholder="Description about your project..."
+											placeholder="Description about this workspace..."
 											className="resize-none"
 											{...field}
 										/>

@@ -41,7 +41,7 @@ describe("dashboard nav", () => {
 		});
 
 		expect(menuTitles(menu)).toEqual({
-			home: ["Canvas", "Projects", "Deployments", "Automations"],
+			home: ["Canvas", "Deployments", "Automations"],
 			settings: [
 				"Networking",
 				"Profile",
@@ -93,16 +93,22 @@ describe("dashboard nav", () => {
 		]);
 	});
 
-	it("treats project list and project detail routes as one active area", () => {
+	it("treats legacy project routes as part of the Canvas area", () => {
 		expect(
 			isActiveRoute({
-				itemUrl: "/dashboard/projects",
+				itemUrl: "/dashboard/workspace",
+				pathname: "/dashboard/projects",
+			}),
+		).toBe(true);
+		expect(
+			isActiveRoute({
+				itemUrl: "/dashboard/workspace",
 				pathname: "/dashboard/project/project_1/environment/env_1",
 			}),
 		).toBe(true);
 		expect(
 			isActiveRoute({
-				itemUrl: "/dashboard/projects",
+				itemUrl: "/dashboard/workspace",
 				pathname: "/dashboard/projector",
 			}),
 		).toBe(false);
@@ -117,7 +123,7 @@ describe("dashboard nav", () => {
 		).toBe(true);
 		expect(
 			isActiveRoute({
-				itemUrl: "/dashboard/projects",
+				itemUrl: "/dashboard/deployments",
 				pathname: "/dashboard/workspace/project_1/env_1",
 			}),
 		).toBe(false);

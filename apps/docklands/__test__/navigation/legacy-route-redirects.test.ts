@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import EnvironmentLegacyPage from "@/app/dashboard/project/[projectId]/environment/[environmentId]/page";
 import ApplicationLegacyPage from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/application/[applicationId]/page";
 import ComposeLegacyPage from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/compose/[composeId]/page";
+import ProjectsLegacyPage from "@/app/dashboard/projects/page";
 
 vi.mock("next/navigation", () => ({
 	redirect: vi.fn((href: string) => {
@@ -67,6 +68,18 @@ describe("legacy project route redirects", () => {
 
 		expect(mockedRedirect).toHaveBeenCalledWith(
 			"/dashboard/workspace/project_1/env_1/service/compose/compose_1",
+		);
+	});
+
+	it("redirects the old project list to the workspace list mode", async () => {
+		await expect(
+			ProjectsLegacyPage({
+				searchParams: Promise.resolve({ q: "api" }),
+			}),
+		).rejects.toThrow("redirect:/dashboard/workspace?view=workspaces&q=api");
+
+		expect(mockedRedirect).toHaveBeenCalledWith(
+			"/dashboard/workspace?view=workspaces&q=api",
 		);
 	});
 });

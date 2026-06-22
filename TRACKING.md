@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Rehome workspace action components
+- Latest checkpoint: Fold project list into workspace
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -34,12 +34,12 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Converted old `/dashboard/project/...` pages into redirect-only compatibility routes that preserve service tabs and send users to canonical `/dashboard/workspace/...` URLs.
 - Moved workspace service route client modules out of the legacy project route tree and into the canonical workspace service route.
 - Rehomed the remaining workspace creation/environment action components from `components/dashboard/project/*` into `components/dashboard/workspace/actions/*`.
+- Folded the old `/dashboard/projects` bulk management surface into `/dashboard/workspace?view=workspaces`, moved the list/create/variables components under `components/dashboard/workspace/manage/*`, and left `/dashboard/projects` as a redirect-only compatibility route.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
 - Recorded the first upstream PR security audit under `outputs/docklands-pr-security-audit.md` outside the repo.
 
 ## Next High-Impact Work
 
-- Audit and rename remaining project-list surfaces where they conflict with the workspace model, especially `components/dashboard/projects/*` and `/dashboard/projects` copy.
 - Audit visible copy for old mental models: "project list", "builds", "server", "Docker", "Traefik", "Swarm", and "Dokploy". Keep engine names only where they are literal engine concepts.
 - Continue polishing the canvas as the primary app surface: first-run empty state, service card density, connection affordances, command palette actions, service drawer hierarchy, and mobile behavior.
 - Reduce legacy route aliases once docs, navigation, search, notifications, and internal links no longer depend on them.
@@ -93,9 +93,14 @@ git diff --check
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`
   - `bun --filter docklands build`
+- Current workspace-list route checkpoint
+  - `bun --filter docklands test --run __test__/navigation/dashboard-routes.test.ts __test__/navigation/dashboard-nav.test.ts __test__/navigation/legacy-route-redirects.test.ts`
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
 
 ## Open Questions
 
-- Should `/dashboard/projects` remain as an advanced list view, or become a compatibility alias into `/dashboard/workspace` once workspace overview covers bulk project management?
 - Which settings surfaces should remain top-level for self-hosted users versus move into a lower-level runtime/admin area?
 - Which, if any, upstream PRs after the first audit deserve a second focused security review?

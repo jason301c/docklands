@@ -41,8 +41,8 @@ const CommandGroup = Combobox.Group;
 const CommandItem = Combobox.Item;
 const CommandEmpty = Combobox.Empty;
 
-type ProjectItem = RouterOutputs["project"]["all"][number];
-type ProjectEnvironment = ProjectItem["environments"][number];
+type WorkspaceItem = RouterOutputs["project"]["all"][number];
+type WorkspaceEnvironment = WorkspaceItem["environments"][number];
 type EnvironmentDetails = RouterOutputs["environment"]["one"];
 
 type ServiceItem = {
@@ -67,7 +67,7 @@ type EnvironmentServiceCollections = {
 };
 
 type ServiceCollections = Pick<
-	ProjectEnvironment,
+	WorkspaceEnvironment,
 	| "applications"
 	| "compose"
 	| "postgres"
@@ -171,7 +171,7 @@ const extractServicesFromEnvironment = (
 };
 
 const getTargetEnvironmentId = (
-	project: ProjectItem,
+	project: WorkspaceItem,
 	selectedEnvironmentId?: string,
 ) => {
 	if (selectedEnvironmentId) return selectedEnvironmentId;
@@ -335,7 +335,7 @@ export const AdvanceBreadcrumb = () => {
 					<Separator orientation="vertical" className="mr-2 h-4" />
 					<div className="flex items-center gap-2">
 						<FolderInput className="size-4 text-muted-foreground" />
-						<span className="font-medium">Projects</span>
+						<span className="font-medium">Workspaces</span>
 					</div>
 				</div>
 			</header>
@@ -349,7 +349,7 @@ export const AdvanceBreadcrumb = () => {
 				<Separator orientation="vertical" className="mr-2 h-4" />
 
 				<div className="flex items-center">
-					{/* Project Selector */}
+					{/* Workspace selector */}
 					<Popover open={projectOpen} onOpenChange={setProjectOpen}>
 						<PopoverTrigger asChild>
 							<Button
@@ -359,7 +359,7 @@ export const AdvanceBreadcrumb = () => {
 							>
 								<FolderInput className="size-4 text-muted-foreground" />
 								<span className="font-medium max-w-[50px] md:max-w-[150px] truncate">
-									{currentProject?.name || "Select Project"}
+									{currentProject?.name || "Select workspace"}
 								</span>
 								<ChevronDown className="size-4 text-muted-foreground" />
 							</Button>
@@ -372,7 +372,7 @@ export const AdvanceBreadcrumb = () => {
 							<Command items={[]}>
 								<div className="relative">
 									<CommandInput
-										placeholder="Find Project..."
+										placeholder="Find workspace..."
 										value={projectSearch}
 										onChange={(event) => setProjectSearch(event.target.value)}
 										className="w-full focus-visible:ring-0"
@@ -382,7 +382,7 @@ export const AdvanceBreadcrumb = () => {
 									</kbd>
 								</div>
 								<CommandList>
-									<CommandEmpty>No projects found.</CommandEmpty>
+									<CommandEmpty>No workspaces found.</CommandEmpty>
 									<CommandGroup>
 										<ScrollArea className="h-[300px]">
 											{filteredProjects.map((project) => {

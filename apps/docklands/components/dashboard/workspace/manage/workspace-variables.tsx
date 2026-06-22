@@ -19,18 +19,18 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 
-const updateProjectSchema = z.object({
+const updateWorkspaceSchema = z.object({
 	env: z.string().optional(),
 });
 
-type UpdateProject = z.infer<typeof updateProjectSchema>;
+type UpdateWorkspace = z.infer<typeof updateWorkspaceSchema>;
 
 interface Props {
 	projectId: string;
 	children?: React.ReactNode;
 }
 
-export const ProjectEnvironment = ({ projectId, children }: Props) => {
+export const WorkspaceVariables = ({ projectId, children }: Props) => {
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const canRead = permissions?.projectEnvVars.read ?? false;
 	const canWrite = permissions?.projectEnvVars.write ?? false;
@@ -47,11 +47,11 @@ export const ProjectEnvironment = ({ projectId, children }: Props) => {
 		},
 	);
 
-	const form = useForm<UpdateProject>({
+	const form = useForm<UpdateWorkspace>({
 		defaultValues: {
 			env: data?.env ?? "",
 		},
-		resolver: zodResolver(updateProjectSchema),
+		resolver: zodResolver(updateWorkspaceSchema),
 	});
 	useEffect(() => {
 		if (data) {
@@ -61,17 +61,17 @@ export const ProjectEnvironment = ({ projectId, children }: Props) => {
 		}
 	}, [data, form, form.reset]);
 
-	const onSubmit = async (formData: UpdateProject) => {
+	const onSubmit = async (formData: UpdateWorkspace) => {
 		await mutateAsync({
 			env: formData.env || "",
 			projectId: projectId,
 		})
 			.then(() => {
-				toast.success("Project env updated successfully");
+				toast.success("Workspace variables updated");
 				utils.project.all.invalidate();
 			})
 			.catch(() => {
-				toast.error("Error updating the env");
+				toast.error("Error updating workspace variables");
 			})
 			.finally(() => {});
 	};
@@ -110,22 +110,22 @@ export const ProjectEnvironment = ({ projectId, children }: Props) => {
 							onSelect={(e) => e.preventDefault()}
 						>
 							<FileIcon className="size-4" />
-							<span>Project Variables</span>
+							<span>Workspace variables</span>
 						</DropdownMenu.Item>
 					)) as never
 				}
 			/>
 			<Dialog className="sm:max-w-6xl">
 				<div>
-					<Dialog.Title>Project Variables</Dialog.Title>
+					<Dialog.Title>Workspace variables</Dialog.Title>
 					<Dialog.Description>
 						Update variables that are accessible to every service in this
-						project.
+						workspace.
 					</Dialog.Description>
 				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<AlertBlock type="info">
-					Use this syntax to reference project-level variables in your service
+					Use this syntax to reference workspace-level variables in your service
 					environments: <code>DATABASE_URL=${"{{project.DATABASE_URL}}"}</code>
 				</AlertBlock>
 				<div className="grid gap-4">

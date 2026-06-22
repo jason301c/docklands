@@ -9,7 +9,6 @@ import {
 	CircleHelp,
 	Clock,
 	Database,
-	Folder,
 	Forward,
 	GalleryVerticalEnd,
 	GitBranch,
@@ -76,12 +75,6 @@ export const DASHBOARD_MENU: Menu = {
 			title: "Canvas",
 			url: "/dashboard/workspace",
 			icon: House,
-		},
-		{
-			isSingle: true,
-			title: "Projects",
-			url: "/dashboard/projects",
-			icon: Folder,
 		},
 		{
 			isSingle: true,
@@ -297,8 +290,16 @@ export function isActiveRoute(opts: {
 	itemUrl: string;
 	pathname: string;
 }): boolean {
-	const normalizedItemUrl = opts.itemUrl?.replace("/projects", "/project");
-	const normalizedPathname = opts.pathname?.replace("/projects", "/project");
+	if (
+		opts.itemUrl === "/dashboard/workspace" &&
+		(opts.pathname === "/dashboard/projects" ||
+			opts.pathname.startsWith("/dashboard/project/"))
+	) {
+		return true;
+	}
+
+	const normalizedItemUrl = opts.itemUrl;
+	const normalizedPathname = opts.pathname;
 
 	if (!normalizedPathname) return false;
 

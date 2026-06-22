@@ -17,7 +17,10 @@ const tabQuery = (tab?: string | null) =>
 	tab ? `?tab=${encodeURIComponent(tab)}` : "";
 
 export const workspaceOverviewPath = "/dashboard/workspace";
-export const projectsPath = "/dashboard/projects";
+export const workspaceListView = "workspaces";
+export const workspaceListPath = `${workspaceOverviewPath}?view=${workspaceListView}`;
+export const projectsPath = workspaceListPath;
+export const legacyProjectsPath = "/dashboard/projects";
 
 export function workspaceEnvironmentPath({
 	projectId,

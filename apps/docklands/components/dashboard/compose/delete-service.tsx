@@ -117,7 +117,7 @@ export const DeleteService = ({ id, type }: Props) => {
 				});
 		} else {
 			form.setError("projectName", {
-				message: `Project name must match "${expectedName}"`,
+				message: `Workspace name must match "${expectedName}"`,
 			});
 		}
 	};

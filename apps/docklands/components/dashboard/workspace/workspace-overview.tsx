@@ -4,9 +4,10 @@ import { ArrowRight, BookIcon, FolderInput, Rocket } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { api } from "@/client/api/trpc";
-import { HandleProject } from "@/components/dashboard/projects/handle-project";
+import { HandleWorkspace } from "@/components/dashboard/workspace/manage/handle-workspace";
 import {
 	workspaceEnvironmentPath,
+	workspaceListPath,
 	workspaceServicePath,
 } from "@/shared/routes";
 
@@ -138,7 +139,7 @@ export const WorkspaceOverview = () => {
 	const { data: homeStats } = api.project.homeStats.useQuery();
 	const { data: projects } = api.project.all.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
-	const canCreateProjects = !!permissions?.project.create;
+	const canCreateWorkspaces = !!permissions?.project.create;
 	const canReadDeployments = !!permissions?.deployment.read;
 	const { data: deployments } = api.deployment.allCentralized.useQuery(
 		undefined,
@@ -234,20 +235,20 @@ export const WorkspaceOverview = () => {
 					</h1>
 					<div className="flex flex-wrap items-center gap-2">
 						<LinkButton
-							href="/dashboard/projects"
+							href={workspaceListPath}
 							variant="secondary"
 							className="w-fit"
 						>
-							Go to projects
+							Manage workspaces
 							<ArrowRight className="size-4" />
 						</LinkButton>
-						{canCreateProjects && <HandleProject />}
+						{canCreateWorkspaces && <HandleWorkspace />}
 					</div>
 				</div>
 
 				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 					<StatCard
-						label="Projects"
+						label="Workspaces"
 						value={String(totals.projects)}
 						delta={`${totals.environments} ${totals.environments === 1 ? "environment" : "environments"}`}
 					/>
@@ -361,7 +362,7 @@ export const WorkspaceOverview = () => {
 								<h2 className="text-sm font-semibold">Workspaces</h2>
 							</div>
 							<Link
-								href="/dashboard/projects"
+								href={workspaceListPath}
 								className="text-xs text-muted-foreground hover:text-foreground transition-colors"
 							>
 								view all →
@@ -371,7 +372,7 @@ export const WorkspaceOverview = () => {
 						{recentProjects.length === 0 ? (
 							<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
 								<FolderInput className="size-8 opacity-40" />
-								<span>No projects yet.</span>
+								<span>No workspaces yet.</span>
 							</div>
 						) : (
 							<ul className="divide-y">
@@ -384,7 +385,7 @@ export const WorkspaceOverview = () => {
 															projectId: project.projectId,
 															environmentId: environment.environmentId,
 														})
-													: "/dashboard/projects"
+													: workspaceListPath
 											}
 											className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
 										>

@@ -81,7 +81,6 @@ import { ShowExternalMysqlCredentials } from "@/components/dashboard/mysql/gener
 import { ShowInternalMysqlCredentials } from "@/components/dashboard/mysql/general/show-internal-mysql-credentials";
 import { ShowExternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-external-postgres-credentials";
 import { ShowInternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-internal-postgres-credentials";
-import { ProjectEnvironment } from "@/components/dashboard/projects/project-environment";
 import { ShowExternalRedisCredentials } from "@/components/dashboard/redis/general/show-external-redis-credentials";
 import { ShowInternalRedisCredentials } from "@/components/dashboard/redis/general/show-internal-redis-credentials";
 import { DockerTerminalModal } from "@/components/dashboard/settings/web-server/docker-terminal-modal";
@@ -92,6 +91,7 @@ import { AddImport } from "@/components/dashboard/workspace/actions/add-import";
 import { AddTemplate } from "@/components/dashboard/workspace/actions/add-template";
 import { AdvancedEnvironmentSelector } from "@/components/dashboard/workspace/actions/advanced-environment-selector";
 import { EnvironmentVariables } from "@/components/dashboard/workspace/actions/environment-variables";
+import { WorkspaceVariables } from "@/components/dashboard/workspace/manage/workspace-variables";
 import {
 	LibsqlIcon,
 	MariadbIcon,
@@ -1789,7 +1789,7 @@ export const EnvironmentCanvas = ({
 	const runBulkDuplicate = async () => {
 		if (selectedBulkServices.length === 0) return;
 		if (duplicateMode === "new-project" && !duplicateName.trim()) {
-			toast.error("Project name is required");
+			toast.error("Workspace name is required");
 			return;
 		}
 		if (
@@ -1827,7 +1827,7 @@ export const EnvironmentCanvas = ({
 			}
 			toast.success(
 				duplicateMode === "new-project"
-					? "Services duplicated to a new project"
+					? "Services duplicated to a new workspace"
 					: "Services duplicated",
 			);
 			resetDuplicateDialog();
@@ -2928,12 +2928,12 @@ export const EnvironmentCanvas = ({
 							</DropdownMenu.Content>
 						</DropdownMenu>
 
-						<ProjectEnvironment projectId={projectId}>
+						<WorkspaceVariables projectId={projectId}>
 							<Button variant="outline">
 								<Box className="size-4" />
-								Project vars
+								Workspace vars
 							</Button>
-						</ProjectEnvironment>
+						</WorkspaceVariables>
 
 						<EnvironmentVariables environmentId={environmentId}>
 							<Button aria-label="Environment variables" variant="outline">
@@ -3679,7 +3679,7 @@ export const EnvironmentCanvas = ({
 										<div>
 											<p className="text-sm font-medium">Variable graph</p>
 											<p className="text-xs text-muted-foreground">
-												Project variables are inherited with{" "}
+												Workspace variables are inherited with{" "}
 												<code>{"{{project.KEY}}"}</code>. Incoming service links
 												can sync generated connection variables into this
 												service.
@@ -3690,7 +3690,7 @@ export const EnvironmentCanvas = ({
 											<div className="rounded-md border bg-background/60 p-3">
 												<div className="flex items-center justify-between gap-3">
 													<span className="text-sm font-medium">
-														Project scope
+														Workspace scope
 													</span>
 													<Badge>
 														{permissions?.envVars.read
@@ -3707,7 +3707,7 @@ export const EnvironmentCanvas = ({
 														</div>
 													) : (
 														<p className="mt-3 text-xs text-muted-foreground">
-															No project variables defined.
+															No workspace variables defined.
 														</p>
 													))}
 												{!permissions?.envVars.read && (
@@ -4039,9 +4039,9 @@ export const EnvironmentCanvas = ({
 
 					<div className="space-y-4">
 						<div className="space-y-2">
-							<p className="text-sm font-medium">Project</p>
+							<p className="text-sm font-medium">Workspace</p>
 							<Select
-								aria-label="Target project"
+								aria-label="Target workspace"
 								value={selectedTargetProject}
 								onValueChange={(value) => {
 									if (value === null) return;
@@ -4082,7 +4082,7 @@ export const EnvironmentCanvas = ({
 							</Select>
 							{selectedTargetProject && targetEnvironments.length === 0 && (
 								<p className="text-xs text-muted-foreground">
-									This project has no other environments.
+									This workspace has no other environments.
 								</p>
 							)}
 						</div>
@@ -4214,7 +4214,7 @@ export const EnvironmentCanvas = ({
 									setDuplicateTargetEnvironment("");
 								}}
 							>
-								New project
+								New workspace
 							</Button>
 							<Button
 								variant={
@@ -4235,13 +4235,13 @@ export const EnvironmentCanvas = ({
 										className="text-sm font-medium"
 										htmlFor="duplicate-project-name"
 									>
-										Project name
+										Workspace name
 									</label>
 									<Input
 										id="duplicate-project-name"
 										value={duplicateName}
 										onChange={(event) => setDuplicateName(event.target.value)}
-										placeholder="New project"
+										placeholder="New workspace"
 									/>
 								</div>
 								<div className="space-y-2">
@@ -4264,9 +4264,9 @@ export const EnvironmentCanvas = ({
 						) : (
 							<div className="space-y-3">
 								<div className="space-y-2">
-									<p className="text-sm font-medium">Project</p>
+									<p className="text-sm font-medium">Workspace</p>
 									<Select
-										aria-label="Target project"
+										aria-label="Target workspace"
 										value={duplicateTargetProject}
 										onValueChange={(value) => {
 											if (value === null) return;

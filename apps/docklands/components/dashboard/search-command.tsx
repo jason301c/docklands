@@ -19,6 +19,8 @@ import {
 import {
 	isEnvironmentCanvasPath,
 	workspaceEnvironmentPath,
+	workspaceListPath,
+	workspaceOverviewPath,
 	workspaceServicePath,
 } from "@/shared/routes";
 import { StatusTooltip } from "../shared/status-tooltip";
@@ -173,13 +175,13 @@ export const SearchCommand = () => {
 				id: "app-workspace",
 				title: "Workspace",
 				searchText: "workspace overview dashboard home",
-				onSelect: () => navigate("/dashboard/workspace"),
+				onSelect: () => navigate(workspaceOverviewPath),
 			},
 			{
-				id: "app-projects",
-				title: "Projects",
-				searchText: "projects",
-				onSelect: () => navigate("/dashboard/projects"),
+				id: "app-workspaces",
+				title: "Workspaces",
+				searchText: "workspaces projects list",
+				onSelect: () => navigate(workspaceListPath),
 			},
 			{
 				id: "app-deployments",
@@ -260,7 +262,7 @@ export const SearchCommand = () => {
 		];
 
 		return [
-			{ label: "Projects", items: projects },
+			{ label: "Workspaces", items: projects },
 			{ label: "Services", items: services },
 			{ label: "Application", items: applicationItems },
 		].filter((group) => group.items.length > 0);
@@ -291,7 +293,7 @@ export const SearchCommand = () => {
 			}
 			onSelect={(item: SearchItem) => item.onSelect()}
 		>
-			<CommandPalette.Input placeholder="Search projects, services, or settings" />
+			<CommandPalette.Input placeholder="Search workspaces, services, or settings" />
 			<CommandPalette.List>
 				<CommandPalette.Results>
 					{(group: SearchGroup) => (

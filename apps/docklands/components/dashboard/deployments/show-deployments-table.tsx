@@ -265,7 +265,7 @@ export function ShowDeploymentsTable() {
 						className="-ml-3 h-8"
 						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 					>
-						Project
+						Workspace
 						<ArrowUpDown className="ml-2 size-4" />
 					</Button>
 				),

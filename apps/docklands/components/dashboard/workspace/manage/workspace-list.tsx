@@ -27,9 +27,13 @@ import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { TagBadge } from "@/components/shared/tag-badge";
 import { TagFilter } from "@/components/shared/tag-filter";
 import { toast } from "@/components/shared/toast";
-import { workspaceEnvironmentPath } from "@/shared/routes";
-import { HandleProject } from "./handle-project";
-import { ProjectEnvironment } from "./project-environment";
+import {
+	workspaceEnvironmentPath,
+	workspaceListPath,
+	workspaceOverviewPath,
+} from "@/shared/routes";
+import { HandleWorkspace } from "./handle-workspace";
+import { WorkspaceVariables } from "./workspace-variables";
 
 const serviceCollections = [
 	"applications",
@@ -80,15 +84,13 @@ const countProjectServiceTypes = (project: {
 		{ applications: 0, compose: 0, databases: 0 },
 	);
 
-export const ShowProjects = () => {
+export const WorkspaceList = () => {
 	const utils = api.useUtils();
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
-	const currentPathname = pathname ?? "/dashboard/projects";
-	const { data: isCloud } = api.settings.isCloud.useQuery();
+	const currentPathname = pathname ?? workspaceOverviewPath;
 	const { data, isPending } = api.project.all.useQuery();
-	const { data: auth } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const { mutateAsync } = api.project.remove.useMutation();
 	const { data: availableTags } = api.tag.all.useQuery();
@@ -98,25 +100,28 @@ export const ShowProjects = () => {
 
 	const [sortBy, setSortBy] = useState<string>(() => {
 		if (typeof window !== "undefined") {
-			return localStorage.getItem("projectsSort") || "createdAt-desc";
+			return localStorage.getItem("workspaceListSort") || "createdAt-desc";
 		}
 		return "createdAt-desc";
 	});
 
 	const [selectedTagIds, setSelectedTagIds] = useState<string[]>(() => {
 		if (typeof window !== "undefined") {
-			const saved = localStorage.getItem("projectsTagFilter");
+			const saved = localStorage.getItem("workspaceListTagFilter");
 			return saved ? JSON.parse(saved) : [];
 		}
 		return [];
 	});
 
 	useEffect(() => {
-		localStorage.setItem("projectsSort", sortBy);
+		localStorage.setItem("workspaceListSort", sortBy);
 	}, [sortBy]);
 
 	useEffect(() => {
-		localStorage.setItem("projectsTagFilter", JSON.stringify(selectedTagIds));
+		localStorage.setItem(
+			"workspaceListTagFilter",
+			JSON.stringify(selectedTagIds),
+		);
 	}, [selectedTagIds]);
 
 	useEffect(() => {
@@ -164,7 +169,7 @@ export const ShowProjects = () => {
 					.includes(debouncedSearchQuery.toLowerCase()),
 		);
 
-		// Filter by selected tags (OR logic: show projects with ANY selected tag)
+		// Filter by selected tags (OR logic: show workspaces with ANY selected tag).
 		if (selectedTagIds.length > 0) {
 			filtered = filtered.filter((project) =>
 				project.projectTags?.some((pt) =>
@@ -219,7 +224,10 @@ export const ShowProjects = () => {
 	return (
 		<>
 			<BreadcrumbSidebar
-				list={[{ name: "Projects", href: "/dashboard/projects" }]}
+				list={[
+					{ name: "Canvas", href: workspaceOverviewPath },
+					{ name: "Workspaces", href: workspaceListPath },
+				]}
 			/>
 			<div className="w-full">
 				<div className="rounded-lg border bg-background">
@@ -227,7 +235,7 @@ export const ShowProjects = () => {
 						<div className="p-0">
 							<h3 className="text-xl flex flex-row gap-2">
 								<FolderInput className="size-6 text-muted-foreground self-center" />
-								Projects
+								Workspaces
 							</h3>
 							<p className="text-sm text-muted-foreground">
 								{filteredProjects.length} visible · {visibleServicesCount}{" "}
@@ -236,7 +244,7 @@ export const ShowProjects = () => {
 						</div>
 						{permissions?.project.create && (
 							<div className="">
-								<HandleProject />
+								<HandleWorkspace />
 							</div>
 						)}
 					</div>
@@ -252,7 +260,7 @@ export const ShowProjects = () => {
 								<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 									<div className="rounded-md border bg-background p-4">
 										<p className="text-xs uppercase text-muted-foreground">
-											Visible projects
+											Visible workspaces
 										</p>
 										<p className="mt-2 text-2xl font-semibold tabular-nums">
 											{filteredProjects.length}
@@ -269,7 +277,7 @@ export const ShowProjects = () => {
 											{visibleServiceCounts.applications}
 										</p>
 										<p className="mt-2 text-xs text-muted-foreground">
-											Runtime services across visible projects
+											Runtime services across visible workspaces
 										</p>
 									</div>
 									<div className="rounded-md border bg-background p-4">
@@ -299,7 +307,7 @@ export const ShowProjects = () => {
 								<div className="flex max-sm:flex-col gap-4 items-center w-full">
 									<div className="flex-1 relative max-sm:w-full">
 										<FocusShortcutInput
-											placeholder="Filter projects..."
+											placeholder="Filter workspaces..."
 											value={searchQuery}
 											onChange={(e) => setSearchQuery(e.target.value)}
 											className="pr-10"
@@ -322,7 +330,7 @@ export const ShowProjects = () => {
 										<div className="flex items-center gap-2 min-w-48 max-sm:w-full">
 											<ArrowUpDown className="size-4 text-muted-foreground" />
 											<Select
-												aria-label="Project sort order"
+												aria-label="Workspace sort order"
 												value={sortBy}
 												onValueChange={(value) =>
 													value !== null && setSortBy(value as never)
@@ -354,7 +362,7 @@ export const ShowProjects = () => {
 									<div className="mt-6 flex h-[50vh] w-full flex-col items-center justify-center space-y-4">
 										<FolderInput className="size-8 self-center text-muted-foreground" />
 										<span className="text-center font-medium text-muted-foreground">
-											No projects found
+											No workspaces found
 										</span>
 									</div>
 								)}
@@ -416,7 +424,7 @@ export const ShowProjects = () => {
 															render={
 																(
 																	<Button
-																		aria-label="Project actions"
+																		aria-label="Workspace actions"
 																		variant="ghost"
 																		shape="square"
 																	>
@@ -433,12 +441,14 @@ export const ShowProjects = () => {
 																Actions
 															</DropdownMenu.Label>
 															<div onClick={(e) => e.stopPropagation()}>
-																<ProjectEnvironment
+																<WorkspaceVariables
 																	projectId={project.projectId}
 																/>
 															</div>
 															<div onClick={(e) => e.stopPropagation()}>
-																<HandleProject projectId={project.projectId} />
+																<HandleWorkspace
+																	projectId={project.projectId}
+																/>
 															</div>
 
 															<div onClick={(e) => e.stopPropagation()}>
@@ -456,7 +466,7 @@ export const ShowProjects = () => {
 																		<Dialog>
 																			<div>
 																				<Dialog.Title>
-																					Delete project?
+																					Delete workspace?
 																				</Dialog.Title>
 																				{!emptyServices ? (
 																					<div className="flex flex-row gap-4 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
@@ -481,11 +491,11 @@ export const ShowProjects = () => {
 																								projectId: project.projectId,
 																							});
 																							toast.success(
-																								"Project deleted successfully",
+																								"Workspace deleted",
 																							);
 																						} catch {
 																							toast.error(
-																								"Error deleting this project",
+																								"Error deleting this workspace",
 																							);
 																						} finally {
 																							await utils.project.all.invalidate();
