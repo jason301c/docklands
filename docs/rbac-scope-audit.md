@@ -30,11 +30,16 @@ cleanup, and **org-RBAC coherence + project-level RBAC become the main work**.
 - **Phase 2 — DONE.** `custom-role.ts` CRUD implemented against `organization_role`
   with permission validation against the AC statements. Enforcement covered by the
   new "custom roles" cases in `__test__/permissions/check-permission.test.ts`.
-- **Phase 3 — NOT STARTED (next dedicated piece).** The `accessedServices[]` arrays
-  still back project access and already enforce the boundary; normalizing them into
-  a project-membership table + UI + data migration is its own change.
-- **F5 legacy-flag removal — deferred.** Kept as a working fallback; removing it
-  needs the member-permissions UI reworked onto custom roles first.
+- **Phase 3 — DONE.** Per-member resource access normalized into the
+  `member_resource_access` table (migration 0001 with backfill). `permission.ts`
+  projects it back to the legacy array shape via `loadResourceAccess` so all call
+  sites are unchanged; writers and the two direct readers
+  (git-provider/runtime-worker) go through the join table. Behavior-preserving.
+- **F5 — DONE.** The 11 per-member boolean flags removed (migration 0002); the
+  dual permission path is gone, so capabilities come only from the role. The
+  member-permissions editor now manages resource access only, and a full role
+  manager at `/dashboard/settings/roles` (resource × action matrix) lets admins
+  create/edit/delete custom roles. Members default to read-only.
 
 ---
 
