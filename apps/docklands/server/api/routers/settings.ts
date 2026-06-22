@@ -104,7 +104,12 @@ export const settingsRouter = createTRPCRouter({
 			return null;
 		}
 		const settings = await getWebServerSettings();
-		return settings;
+		if (!settings) {
+			return settings;
+		}
+		// Never expose the host SSH private key to clients. It is only consumed
+		// server-side; the UI only needs to know whether one is configured.
+		return { ...settings, sshPrivateKey: null };
 	}),
 	reloadServer: adminProcedure.mutation(async ({ ctx }) => {
 		if (IS_CLOUD) {
@@ -911,7 +916,7 @@ export const settingsRouter = createTRPCRouter({
 
 		return !!parsedConfig?.accessLog?.filePath;
 	}),
-	toggleRequests: protectedProcedure
+	toggleRequests: adminProcedure
 		.input(
 			z.object({
 				enable: z.boolean(),
@@ -1130,7 +1135,7 @@ export const settingsRouter = createTRPCRouter({
 			);
 			return ports;
 		}),
-	updateLogCleanup: protectedProcedure
+	updateLogCleanup: adminProcedure
 		.input(
 			z.object({
 				cronExpression: z.string().nullable(),

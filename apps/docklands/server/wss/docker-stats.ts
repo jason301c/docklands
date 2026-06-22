@@ -9,6 +9,7 @@ import {
 	recordAdvancedStats,
 } from "@/server/core/monitoring/utils";
 import { execAsync } from "@/server/core/utils/process/execAsync";
+import { canAccessDockerWs } from "./utils";
 
 export const setupDockerStatsMonitoringSocketServer = (
 	runtimeWorker: http.Server<
@@ -52,6 +53,11 @@ export const setupDockerStatsMonitoringSocketServer = (
 		}
 
 		if (!user || !session) {
+			ws.close();
+			return;
+		}
+
+		if (!(await canAccessDockerWs(user, session))) {
 			ws.close();
 			return;
 		}

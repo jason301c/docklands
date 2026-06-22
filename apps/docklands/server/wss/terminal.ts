@@ -5,7 +5,11 @@ import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { getDockerHost } from "@/server/core/runtime/docker";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
-import { getRuntimeWorkerIdParam, setupLocalServerSSHKey } from "./utils";
+import {
+	canAccessHostTerminalWs,
+	getRuntimeWorkerIdParam,
+	setupLocalServerSSHKey,
+} from "./utils";
 
 const COMMAND_TO_ALLOW_LOCAL_ACCESS = `
 # ----------------------------------------
@@ -48,6 +52,12 @@ export const setupTerminalWebSocketServer = (
 		const runtimeWorkerId = getRuntimeWorkerIdParam(url);
 		const { user, session } = await validateRequest(req);
 		if (!user || !session || !runtimeWorkerId) {
+			ws.close();
+			return;
+		}
+
+		// Host/runtime-worker shell access is owner/admin only.
+		if (!canAccessHostTerminalWs(user)) {
 			ws.close();
 			return;
 		}

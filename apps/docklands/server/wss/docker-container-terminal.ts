@@ -6,6 +6,7 @@ import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
+	canAccessDockerWs,
 	getRuntimeWorkerIdParam,
 	isValidContainerId,
 	isValidShell,
@@ -61,6 +62,11 @@ export const setupDockerContainerTerminalWebSocketServer = (
 		const shell = activeWay || "sh";
 
 		if (!user || !session) {
+			ws.close();
+			return;
+		}
+
+		if (!(await canAccessDockerWs(user, session))) {
 			ws.close();
 			return;
 		}

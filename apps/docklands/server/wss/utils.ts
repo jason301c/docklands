@@ -3,7 +3,47 @@ import os from "node:os";
 import path from "node:path";
 import { IS_CLOUD } from "@/server/core/constants/env";
 import { paths } from "@/server/core/constants/paths";
+import { checkPermission } from "@/server/core/services/permission";
 import { execAsync } from "@/server/core/utils/process/execAsync";
+
+type WsUser = { id: string; role?: string | null } | null;
+type WsSession = { activeOrganizationId: string } | null;
+
+/**
+ * WebSocket handlers run outside tRPC, so they must replicate the procedure-level
+ * authorization checks themselves. Container log/stat/terminal streams expose raw
+ * Docker access, so they require the `docker:read` permission (owner/admin always
+ * pass; members need the grant). Returns false when the caller is unauthorized so
+ * the handler can close the socket.
+ */
+export const canAccessDockerWs = async (
+	user: WsUser,
+	session: WsSession,
+): Promise<boolean> => {
+	if (!user || !session) {
+		return false;
+	}
+	try {
+		await checkPermission(
+			{
+				user: { id: user.id },
+				session: { activeOrganizationId: session.activeOrganizationId },
+			},
+			{ docker: ["read"] },
+		);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+/**
+ * Host/runtime-worker shell access is strictly more privileged than container
+ * access (it is a shell on the machine itself), so it is restricted to org
+ * owners and admins.
+ */
+export const canAccessHostTerminalWs = (user: WsUser): boolean =>
+	!!user && (user.role === "owner" || user.role === "admin");
 
 /**
  * Validates that the container ID matches Docker's expected format.

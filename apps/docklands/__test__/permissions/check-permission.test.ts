@@ -28,6 +28,8 @@ const mockMemberData = (
 let memberToReturn: ReturnType<typeof mockMemberData> =
 	mockMemberData("member");
 
+let organizationRolesToReturn: { permission: string }[] = [];
+
 vi.mock("@/server/core/db", () => ({
 	db: {
 		query: {
@@ -37,7 +39,7 @@ vi.mock("@/server/core/db", () => ({
 			},
 			organizationRole: {
 				findFirst: vi.fn(),
-				findMany: vi.fn(() => Promise.resolve([])),
+				findMany: vi.fn(() => Promise.resolve(organizationRolesToReturn)),
 			},
 		},
 	},
@@ -52,6 +54,7 @@ const ctx = {
 
 beforeEach(() => {
 	vi.clearAllMocks();
+	organizationRolesToReturn = [];
 });
 
 describe("owner and admin static permissions", () => {
@@ -180,5 +183,54 @@ describe("member permission flags", () => {
 	it("member fails docker.read with canAccessToDocker=false", async () => {
 		memberToReturn = mockMemberData("member");
 		await expect(checkPermission(ctx, { docker: ["read"] })).rejects.toThrow();
+	});
+});
+
+describe("custom roles (organization_role)", () => {
+	it("authorizes exactly the granted resource/action", async () => {
+		memberToReturn = mockMemberData("deployer");
+		organizationRolesToReturn = [
+			{ permission: JSON.stringify({ registry: ["read"] }) },
+		];
+		await expect(
+			checkPermission(ctx, { registry: ["read"] }),
+		).resolves.toBeUndefined();
+	});
+
+	it("denies an action the custom role was not granted", async () => {
+		memberToReturn = mockMemberData("deployer");
+		organizationRolesToReturn = [
+			{ permission: JSON.stringify({ registry: ["read"] }) },
+		];
+		await expect(
+			checkPermission(ctx, { registry: ["create"] }),
+		).rejects.toThrow();
+	});
+
+	it("merges permissions across multiple rows for the same role", async () => {
+		memberToReturn = mockMemberData("deployer");
+		organizationRolesToReturn = [
+			{ permission: JSON.stringify({ registry: ["read"] }) },
+			{ permission: JSON.stringify({ certificate: ["read", "create"] }) },
+		];
+		await expect(
+			checkPermission(ctx, { registry: ["read"], certificate: ["create"] }),
+		).resolves.toBeUndefined();
+	});
+
+	it("does not fall back to member permission flags for a custom role", async () => {
+		// canAccessToDocker is true, but the role is custom (not "member"),
+		// so the legacy member-flag fallback must not apply.
+		memberToReturn = mockMemberData("deployer", { canAccessToDocker: true });
+		organizationRolesToReturn = [
+			{ permission: JSON.stringify({ registry: ["read"] }) },
+		];
+		await expect(checkPermission(ctx, { docker: ["read"] })).rejects.toThrow();
+	});
+
+	it("rejects when the custom role has no backing rows", async () => {
+		memberToReturn = mockMemberData("ghost-role");
+		organizationRolesToReturn = [];
+		await expect(checkPermission(ctx, { service: ["read"] })).rejects.toThrow();
 	});
 });
