@@ -23,6 +23,25 @@ describe("prepareEnvironmentVariables", () => {
 		]);
 	});
 
+	it("resolves workspace variables as the canonical project-scope alias", () => {
+		const workspaceServiceEnv = `
+ENVIRONMENT=\${{workspace.ENVIRONMENT}}
+DATABASE_URL=\${{workspace.DATABASE_URL}}
+SERVICE_PORT=4000
+`;
+
+		const resolved = prepareEnvironmentVariables(
+			workspaceServiceEnv,
+			projectEnv,
+		);
+
+		expect(resolved).toEqual([
+			"ENVIRONMENT=staging",
+			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db",
+			"SERVICE_PORT=4000",
+		]);
+	});
+
 	it("handles undefined project variables", () => {
 		const incompleteProjectEnv = `
 		NODE_ENV=production
@@ -37,6 +56,23 @@ describe("prepareEnvironmentVariables", () => {
 				prepareEnvironmentVariables(invalidServiceEnv, incompleteProjectEnv), // Cambiado el orden
 		).toThrow("Invalid project environment variable: project.UNDEFINED_VAR");
 	});
+
+	it("reports missing workspace variables with workspace language", () => {
+		const incompleteProjectEnv = `
+		NODE_ENV=production
+		`;
+
+		const invalidServiceEnv = `
+		UNDEFINED_VAR=\${{workspace.UNDEFINED_VAR}}
+		`;
+
+		expect(() =>
+			prepareEnvironmentVariables(invalidServiceEnv, incompleteProjectEnv),
+		).toThrow(
+			"Invalid workspace environment variable: workspace.UNDEFINED_VAR",
+		);
+	});
+
 	it("allows service-specific variables to override project variables", () => {
 		const serviceSpecificEnv = `
 		ENVIRONMENT=production

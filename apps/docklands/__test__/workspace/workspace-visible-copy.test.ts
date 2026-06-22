@@ -26,4 +26,18 @@ describe("workspace visible product copy", () => {
 			"Create a new environment for your project.",
 		);
 	});
+
+	it("teaches workspace variable references with the workspace namespace", () => {
+		const canvas = workspaceSource(
+			"components/dashboard/workspace/environment-canvas.tsx",
+		);
+		const workspaceVariables = workspaceSource(
+			"components/dashboard/workspace/manage/workspace-variables.tsx",
+		);
+
+		expect(canvas).toContain("{{workspace.KEY}}");
+		expect(canvas).not.toContain("{{project.KEY}}");
+		expect(workspaceVariables).toContain("{{workspace.DATABASE_URL}}");
+		expect(workspaceVariables).not.toContain("{{project.DATABASE_URL}}");
+	});
 });

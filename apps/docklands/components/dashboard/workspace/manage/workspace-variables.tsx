@@ -126,7 +126,8 @@ export const WorkspaceVariables = ({ projectId, children }: Props) => {
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<AlertBlock type="info">
 					Use this syntax to reference workspace-level variables in your service
-					environments: <code>DATABASE_URL=${"{{project.DATABASE_URL}}"}</code>
+					environments:{" "}
+					<code>DATABASE_URL=${"{{workspace.DATABASE_URL}}"}</code>
 				</AlertBlock>
 				<div className="grid gap-4">
 					<div className="grid items-center gap-4">

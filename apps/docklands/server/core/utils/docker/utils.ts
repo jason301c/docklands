@@ -409,16 +409,19 @@ export const prepareEnvironmentVariables = (
 	const resolvedVars = Object.entries(serviceVars).map(([key, value]) => {
 		let resolvedValue = value;
 
-		// Replace project variables
+		// Replace workspace variables. The project namespace remains supported for
+		// compatibility with existing service environment strings.
 		if (projectVars) {
 			resolvedValue = resolvedValue.replace(
-				/\$\{\{project\.(.*?)\}\}/g,
-				(_, ref) => {
+				/\$\{\{(project|workspace)\.(.*?)\}\}/g,
+				(_, namespace, ref) => {
 					if (projectVars[ref] !== undefined) {
 						return projectVars[ref];
 					}
 					throw new Error(
-						`Invalid project environment variable: project.${ref}`,
+						namespace === "workspace"
+							? `Invalid workspace environment variable: workspace.${ref}`
+							: `Invalid project environment variable: project.${ref}`,
 					);
 				},
 			);

@@ -3682,8 +3682,8 @@ export const EnvironmentCanvas = ({
 											<p className="text-sm font-medium">Variable graph</p>
 											<p className="text-xs text-muted-foreground">
 												Workspace variables are inherited with{" "}
-												<code>{"{{project.KEY}}"}</code>. Incoming service links
-												can sync generated connection variables into this
+												<code>{"{{workspace.KEY}}"}</code>. Incoming service
+												links can sync generated connection variables into this
 												service.
 											</p>
 										</div>
