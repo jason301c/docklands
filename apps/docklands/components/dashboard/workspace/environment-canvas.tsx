@@ -728,6 +728,7 @@ export const EnvironmentCanvas = ({
 	const syncConnectionVariables =
 		api.workspace.syncServiceConnectionVariables.useMutation();
 	const duplicateProject = api.project.duplicate.useMutation();
+	const duplicateEnvironment = api.environment.duplicate.useMutation();
 
 	const serviceActions = {
 		application: {
@@ -1937,6 +1938,50 @@ export const EnvironmentCanvas = ({
 		);
 	};
 
+	const duplicateCurrentEnvironment = async () => {
+		if (!workspace) {
+			toast.error("Workspace is still loading");
+			return;
+		}
+
+		const now = new Date();
+		const dateSlug = [
+			now.getFullYear(),
+			String(now.getMonth() + 1).padStart(2, "0"),
+			String(now.getDate()).padStart(2, "0"),
+			String(now.getHours()).padStart(2, "0"),
+			String(now.getMinutes()).padStart(2, "0"),
+		].join("");
+		const sourceSlug =
+			workspace.environment.name
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, "-")
+				.replace(/^-|-$/g, "")
+				.slice(0, 28) || "environment";
+		const environmentName = `preview-${sourceSlug}-${dateSlug}`;
+
+		toast.promise(
+			duplicateEnvironment.mutateAsync({
+				environmentId,
+				name: environmentName,
+				description: `Preview copy of ${workspace.environment.name}`,
+			}),
+			{
+				loading: "Creating preview environment...",
+				success: async (result) => {
+					await utils.project.all.invalidate();
+					await utils.environment.byProjectId.invalidate({ projectId });
+					router.push(
+						`/dashboard/project/${projectId}/environment/${result.environmentId}`,
+					);
+					return "Preview environment created";
+				},
+				error: (error) =>
+					`Could not create preview environment: ${error instanceof Error ? error.message : "Unknown error"}`,
+			},
+		);
+	};
+
 	const normalizedCommandQuery = commandQuery.trim().toLowerCase();
 	const openCreateDialog = (dialog: CreateServiceDialog) => {
 		setCommandOpen(false);
@@ -1947,6 +1992,7 @@ export const EnvironmentCanvas = ({
 		setCreateDatabaseType(databaseType);
 		openCreateDialog("database");
 	};
+	const currentEnvironmentName = workspace?.environment.name ?? "environment";
 	const getCreateDialogProps = (dialog: CreateServiceDialog) => ({
 		open: createDialog === dialog,
 		onOpenChange: (open: boolean) => {
@@ -2059,6 +2105,19 @@ export const EnvironmentCanvas = ({
 					},
 				]
 			: []),
+		{
+			id: "environment:preview-copy",
+			group: "Environments" as const,
+			label: "Create preview environment",
+			detail: `Duplicate ${currentEnvironmentName} into a staging canvas`,
+			search:
+				"preview duplicate branch environment staging pull request pr temporary canvas",
+			icon: <GitPullRequest className="size-5 text-muted-foreground" />,
+			run: () => {
+				setCommandOpen(false);
+				void duplicateCurrentEnvironment();
+			},
+		},
 		...(projectEnvironments?.map((environment) => {
 			const serviceCount =
 				environment.applications.length +
