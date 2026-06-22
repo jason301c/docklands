@@ -22,7 +22,7 @@ function BuildsPage() {
 
 	const setTab = (value: string) => {
 		if (!isValidTab(value)) return;
-		router.replace(`/dashboard/deployments?tab=${value}`, { scroll: false });
+		router.replace(`/dashboard/builds?tab=${value}`, { scroll: false });
 	};
 
 	return (

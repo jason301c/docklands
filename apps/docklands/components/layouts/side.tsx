@@ -141,14 +141,14 @@ const MENU: Menu = {
 		{
 			isSingle: true,
 			title: "Builds",
-			url: "/dashboard/deployments",
+			url: "/dashboard/builds",
 			icon: Rocket,
 			isEnabled: ({ permissions }) => !!permissions?.deployment.read,
 		},
 		{
 			isSingle: true,
 			title: "Automations",
-			url: "/dashboard/schedules",
+			url: "/dashboard/automations",
 			icon: Clock,
 			isEnabled: ({ permissions }) => !!permissions?.organization.update,
 		},
