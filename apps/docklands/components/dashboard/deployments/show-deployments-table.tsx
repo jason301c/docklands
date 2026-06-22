@@ -35,7 +35,7 @@ import { type ReactNode, useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
 import type { AppRouter } from "@/server/api/root";
 
-type BuildRow =
+type DeploymentRow =
 	inferRouterOutputs<AppRouter>["deployment"]["allCentralized"][number];
 
 const statusVariants: Record<
@@ -61,7 +61,7 @@ const statusDotClass: Record<string, string> = {
 	cancelled: "bg-muted-foreground/50",
 };
 
-function getServiceInfo(d: BuildRow) {
+function getServiceInfo(d: DeploymentRow) {
 	const app = d.application;
 	const comp = d.compose;
 	if (app?.environment?.project && app.environment) {
@@ -91,7 +91,7 @@ function getServiceInfo(d: BuildRow) {
 	return null;
 }
 
-function BuildMetricCard({
+function DeploymentMetricCard({
 	label,
 	value,
 	detail,
@@ -118,7 +118,7 @@ function BuildMetricCard({
 	);
 }
 
-export function ShowBuildsTable() {
+export function ShowDeploymentsTable() {
 	const [sorting, setSorting] = useState<SortingState>([
 		{ id: "createdAt", desc: true },
 	]);
@@ -131,14 +131,14 @@ export function ShowBuildsTable() {
 		pageSize: 50,
 	});
 
-	const { data: buildsList, isLoading } =
+	const { data: deploymentsList, isLoading } =
 		api.deployment.allCentralized.useQuery(undefined, {
 			refetchInterval: 5000,
 		});
 
 	const filteredData = useMemo(() => {
-		if (!buildsList) return [];
-		let list = buildsList;
+		if (!deploymentsList) return [];
+		let list = deploymentsList;
 		if (statusFilter !== "all") {
 			list = list.filter((d) => d.status === statusFilter);
 		}
@@ -161,13 +161,15 @@ export function ShowBuildsTable() {
 			});
 		}
 		return list;
-	}, [buildsList, statusFilter, typeFilter, globalFilter]);
+	}, [deploymentsList, statusFilter, typeFilter, globalFilter]);
 
-	const buildStats = useMemo(() => {
-		const list = buildsList ?? [];
-		const active = list.filter((build) => build.status === "running");
-		const failed = list.filter((build) => build.status === "error");
-		const successful = list.filter((build) => build.status === "done");
+	const deploymentStats = useMemo(() => {
+		const list = deploymentsList ?? [];
+		const active = list.filter((deployment) => deployment.status === "running");
+		const failed = list.filter((deployment) => deployment.status === "error");
+		const successful = list.filter(
+			(deployment) => deployment.status === "done",
+		);
 		const latest = [...list].sort(
 			(a, b) =>
 				new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -180,9 +182,9 @@ export function ShowBuildsTable() {
 			total: list.length,
 			latest,
 		};
-	}, [buildsList]);
+	}, [deploymentsList]);
 
-	const recentBuildStream = useMemo(
+	const recentDeploymentStream = useMemo(
 		() =>
 			[...filteredData]
 				.sort(
@@ -197,7 +199,7 @@ export function ShowBuildsTable() {
 		() => [
 			{
 				id: "serviceName",
-				accessorFn: (row: BuildRow) => getServiceInfo(row)?.name ?? "",
+				accessorFn: (row: DeploymentRow) => getServiceInfo(row)?.name ?? "",
 				header: ({
 					column,
 				}: {
@@ -215,7 +217,7 @@ export function ShowBuildsTable() {
 						<ArrowUpDown className="ml-2 size-4" />
 					</Button>
 				),
-				cell: ({ row }: { row: { original: BuildRow } }) => {
+				cell: ({ row }: { row: { original: DeploymentRow } }) => {
 					const info = getServiceInfo(row.original);
 					if (!info) return <span className="text-muted-foreground">—</span>;
 					return (
@@ -237,7 +239,8 @@ export function ShowBuildsTable() {
 			},
 			{
 				id: "projectName",
-				accessorFn: (row: BuildRow) => getServiceInfo(row)?.projectName ?? "",
+				accessorFn: (row: DeploymentRow) =>
+					getServiceInfo(row)?.projectName ?? "",
 				header: ({
 					column,
 				}: {
@@ -255,7 +258,7 @@ export function ShowBuildsTable() {
 						<ArrowUpDown className="ml-2 size-4" />
 					</Button>
 				),
-				cell: ({ row }: { row: { original: BuildRow } }) => {
+				cell: ({ row }: { row: { original: DeploymentRow } }) => {
 					const info = getServiceInfo(row.original);
 					return (
 						<span className="text-muted-foreground">
@@ -266,7 +269,7 @@ export function ShowBuildsTable() {
 			},
 			{
 				id: "environmentName",
-				accessorFn: (row: BuildRow) =>
+				accessorFn: (row: DeploymentRow) =>
 					getServiceInfo(row)?.environmentName ?? "",
 				header: ({
 					column,
@@ -285,7 +288,7 @@ export function ShowBuildsTable() {
 						<ArrowUpDown className="ml-2 size-4" />
 					</Button>
 				),
-				cell: ({ row }: { row: { original: BuildRow } }) => {
+				cell: ({ row }: { row: { original: DeploymentRow } }) => {
 					const info = getServiceInfo(row.original);
 					return (
 						<span className="text-muted-foreground">
@@ -313,7 +316,7 @@ export function ShowBuildsTable() {
 						<ArrowUpDown className="ml-2 size-4" />
 					</Button>
 				),
-				cell: ({ row }: { row: { original: BuildRow } }) => (
+				cell: ({ row }: { row: { original: DeploymentRow } }) => (
 					<span className="text-sm truncate max-w-[200px] block">
 						{row.original.title || "—"}
 					</span>
@@ -338,7 +341,7 @@ export function ShowBuildsTable() {
 						<ArrowUpDown className="ml-2 size-4" />
 					</Button>
 				),
-				cell: ({ row }: { row: { original: BuildRow } }) => {
+				cell: ({ row }: { row: { original: DeploymentRow } }) => {
 					const status = row.original.status ?? "running";
 					return (
 						<Badge variant={statusVariants[status] ?? "secondary"}>
@@ -366,7 +369,7 @@ export function ShowBuildsTable() {
 						<ArrowUpDown className="ml-2 size-4" />
 					</Button>
 				),
-				cell: ({ row }: { row: { original: BuildRow } }) => (
+				cell: ({ row }: { row: { original: DeploymentRow } }) => (
 					<span className="text-muted-foreground text-sm whitespace-nowrap">
 						{row.original.createdAt
 							? new Date(row.original.createdAt).toLocaleString()
@@ -378,7 +381,7 @@ export function ShowBuildsTable() {
 				header: "",
 				id: "actions",
 				enableSorting: false,
-				cell: ({ row }: { row: { original: BuildRow } }) => {
+				cell: ({ row }: { row: { original: DeploymentRow } }) => {
 					const info = getServiceInfo(row.original);
 					if (!info) return null;
 					return (
@@ -422,34 +425,37 @@ export function ShowBuildsTable() {
 			{!isLoading && (
 				<>
 					<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-						<BuildMetricCard
-							label="Active builds"
-							value={buildStats.active}
-							detail="Builds currently moving through the worker."
+						<DeploymentMetricCard
+							label="Active deployments"
+							value={deploymentStats.active}
+							detail="Deployments currently moving through the worker."
 							icon={<Activity className="size-4" />}
 						/>
-						<BuildMetricCard
+						<DeploymentMetricCard
 							label="Successful"
-							value={buildStats.successful}
-							detail="Completed builds retained in the central timeline."
+							value={deploymentStats.successful}
+							detail="Completed deployments retained in the central timeline."
 							icon={<CheckCircle2 className="size-4" />}
 						/>
-						<BuildMetricCard
+						<DeploymentMetricCard
 							label="Failed"
-							value={buildStats.failed}
-							detail="Builds that need attention before the next release."
+							value={deploymentStats.failed}
+							detail="Deployments that need attention before the next release."
 							icon={<AlertCircle className="size-4" />}
 						/>
-						<BuildMetricCard
+						<DeploymentMetricCard
 							label="Latest"
 							value={
-								buildStats.latest?.createdAt
-									? formatDistanceToNow(new Date(buildStats.latest.createdAt), {
-											addSuffix: true,
-										})
+								deploymentStats.latest?.createdAt
+									? formatDistanceToNow(
+											new Date(deploymentStats.latest.createdAt),
+											{
+												addSuffix: true,
+											},
+										)
 									: "—"
 							}
-							detail={`${buildStats.total} total build records`}
+							detail={`${deploymentStats.total} total deployment records`}
 							icon={<Clock className="size-4" />}
 						/>
 					</div>
@@ -457,26 +463,28 @@ export function ShowBuildsTable() {
 					<div className="rounded-md border bg-background">
 						<div className="flex items-center justify-between gap-3 border-b px-4 py-3">
 							<div>
-								<p className="text-sm font-medium">Build stream</p>
+								<p className="text-sm font-medium">Deployment stream</p>
 								<p className="text-xs text-muted-foreground">
 									Latest runtime changes across every project and environment.
 								</p>
 							</div>
 							<Badge variant="outline">{filteredData.length} visible</Badge>
 						</div>
-						{recentBuildStream.length === 0 ? (
+						{recentDeploymentStream.length === 0 ? (
 							<div className="flex min-h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
 								<Rocket className="size-6" />
-								<p className="text-sm">No build activity matches this view.</p>
+								<p className="text-sm">
+									No deployment activity matches this view.
+								</p>
 							</div>
 						) : (
 							<div className="divide-y">
-								{recentBuildStream.map((build) => {
-									const info = getServiceInfo(build);
-									const status = build.status ?? "running";
+								{recentDeploymentStream.map((deployment) => {
+									const info = getServiceInfo(deployment);
+									const status = deployment.status ?? "running";
 									return (
 										<div
-											key={build.deploymentId}
+											key={deployment.deploymentId}
 											className="grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_auto]"
 										>
 											<div className="flex min-w-0 items-start gap-3">
@@ -502,16 +510,19 @@ export function ShowBuildsTable() {
 														{info
 															? `${info.projectName} / ${info.environmentName}`
 															: "Service metadata unavailable"}
-														{build.title ? ` · ${build.title}` : ""}
+														{deployment.title ? ` · ${deployment.title}` : ""}
 													</p>
 												</div>
 											</div>
 											<div className="flex items-center gap-3 md:justify-end">
 												<span className="text-xs text-muted-foreground">
-													{build.createdAt
-														? formatDistanceToNow(new Date(build.createdAt), {
-																addSuffix: true,
-															})
+													{deployment.createdAt
+														? formatDistanceToNow(
+																new Date(deployment.createdAt),
+																{
+																	addSuffix: true,
+																},
+															)
 														: "—"}
 												</span>
 												{info && (
@@ -542,7 +553,7 @@ export function ShowBuildsTable() {
 					className="max-w-xs"
 				/>
 				<Select
-					aria-label="Build status filter"
+					aria-label="Deployment status filter"
 					value={statusFilter}
 					onValueChange={(value) =>
 						value !== null && setStatusFilter(value as never)
@@ -558,7 +569,7 @@ export function ShowBuildsTable() {
 					</>
 				</Select>
 				<Select
-					aria-label="Build service type filter"
+					aria-label="Deployment service type filter"
 					value={typeFilter}
 					onValueChange={(value) =>
 						value !== null && setTypeFilter(value as never)
@@ -576,7 +587,7 @@ export function ShowBuildsTable() {
 				{isLoading ? (
 					<div className="flex gap-4 w-full items-center justify-center min-h-[45vh] text-muted-foreground">
 						<Loader2 className="size-4 animate-spin" />
-						<span>Loading builds...</span>
+						<span>Loading deployments...</span>
 					</div>
 				) : (
 					<>
@@ -620,10 +631,10 @@ export function ShowBuildsTable() {
 											>
 												<div className="flex flex-col min-h-[45vh] items-center justify-center gap-2 text-muted-foreground">
 													<Rocket className="size-8" />
-													<p className="font-medium">No builds found</p>
+													<p className="font-medium">No deployments found</p>
 													<p className="text-sm">
-														Build records from applications and compose will
-														appear here.
+														Deployment records from applications and compose
+														will appear here.
 													</p>
 												</div>
 											</Table.Cell>
@@ -638,7 +649,7 @@ export function ShowBuildsTable() {
 									Rows per page
 								</span>
 								<Select
-									aria-label="Build rows per page"
+									aria-label="Deployment rows per page"
 									value={String(pagination.pageSize)}
 									onValueChange={(value) => {
 										if (value === null) return;

@@ -3,8 +3,8 @@
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { Rocket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShowBuildsTable } from "@/components/dashboard/builds/show-builds-table";
-import { ShowQueueTable } from "@/components/dashboard/builds/show-queue-table";
+import { ShowDeploymentsTable } from "@/components/dashboard/deployments/show-deployments-table";
+import { ShowDeploymentQueueTable } from "@/components/dashboard/deployments/show-queue-table";
 
 const TAB_VALUES = ["history", "queue"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
@@ -53,12 +53,12 @@ function DeploymentsPage() {
 					/>
 					{tab === "history" && (
 						<div className="mt-0 pt-4">
-							<ShowBuildsTable />
+							<ShowDeploymentsTable />
 						</div>
 					)}
 					{tab === "queue" && (
 						<div className="mt-0 pt-4">
-							<ShowQueueTable />
+							<ShowDeploymentQueueTable />
 						</div>
 					)}
 				</div>

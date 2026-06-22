@@ -100,7 +100,7 @@ function QueueMetricCard({
 	);
 }
 
-export function ShowQueueTable(props: { embedded?: boolean }) {
+export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 	const { embedded: _embedded = false } = props;
 	const { data: queueList, isLoading } = api.deployment.queueList.useQuery(
 		undefined,
@@ -163,7 +163,7 @@ export function ShowQueueTable(props: { embedded?: boolean }) {
 						<QueueMetricCard
 							label="Active"
 							value={queueStats.active}
-							detail="Workers currently processing build jobs."
+							detail="Workers currently processing deployment jobs."
 							icon={<Activity className="size-4" />}
 						/>
 						<QueueMetricCard
@@ -191,7 +191,7 @@ export function ShowQueueTable(props: { embedded?: boolean }) {
 							<div>
 								<p className="text-sm font-medium">Worker queue</p>
 								<p className="text-xs text-muted-foreground">
-									Most recent build jobs observed by the build worker.
+									Most recent deployment jobs observed by the worker.
 								</p>
 							</div>
 							<Badge variant="outline">{queueStats.total} jobs</Badge>
@@ -366,7 +366,7 @@ export function ShowQueueTable(props: { embedded?: boolean }) {
 												<ListTodo className="size-8" />
 												<p className="font-medium">Queue is empty</p>
 												<p className="text-sm">
-													Build jobs will appear here when they are queued.
+													Deployment jobs will appear here when they are queued.
 												</p>
 											</div>
 										</Table.Cell>
