@@ -468,9 +468,9 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 											<div className="space-y-0.5">
-												<FormLabel>Access to Docker</FormLabel>
+												<FormLabel>Access to Container Runtime</FormLabel>
 												<FormDescription>
-													Allow the user to access to the Docker Tab
+													Allow the user to access the container runtime view
 												</FormDescription>
 											</div>
 											<FormControl>

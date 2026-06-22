@@ -1,10 +1,10 @@
-import copy from "copy-to-clipboard";
-import { Check, Copy, Loader2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
+import copy from "copy-to-clipboard";
+import { Check, Copy, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { TerminalLine } from "../../docker/logs/terminal-line";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
 
@@ -137,10 +137,10 @@ export const ShowDeployment = ({
 		>
 			<Dialog className={"sm:max-w-5xl"}>
 				<div>
-					<Dialog.Title>Deployment</Dialog.Title>
+					<Dialog.Title>Build</Dialog.Title>
 					<Dialog.Description className="flex items-center gap-2">
 						<span className="flex items-center gap-2">
-							See all the details of this deployment |{" "}
+							See all the details of this build |{" "}
 							<Badge variant="neutral" className="text-xs">
 								{filteredLogs.length} lines
 							</Badge>

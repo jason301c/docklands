@@ -149,7 +149,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 						<Dialog.Title>Preview Environment Settings</Dialog.Title>
 						<Dialog.Description>
 							Adjust pull request environments for this application, including
-							environment variables, build options, and deployment rules.
+							environment variables, build options, and build rules.
 						</Dialog.Description>
 					</div>
 					<div className="grid gap-4">
@@ -219,9 +219,9 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 																<>
 																	<p>
 																		Add a labels that will trigger a preview
-																		deployment for a pull request. If no labels
-																		are specified, all pull requests will
-																		trigger a preview environment.
+																		build for a pull request. If no labels are
+																		specified, all pull requests will trigger a
+																		preview environment.
 																	</p>
 																</>
 															}
@@ -400,8 +400,8 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 														refetch();
 														toast.success(
 															checked
-																? "Preview deployments enabled"
-																: "Preview deployments disabled",
+																? "Preview builds enabled"
+																: "Preview builds disabled",
 														);
 													})
 													.catch((error) => {
@@ -423,8 +423,8 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 														Require Collaborator Permissions
 													</FormLabel>
 													<FormDescription>
-														Require collaborator permissions to preview
-														deployments, valid roles are:
+														Require collaborator permissions to preview builds.
+														Valid roles are:
 														<ul>
 															<li>Admin</li>
 															<li>Maintain</li>

@@ -48,10 +48,10 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 		setRunningSchedules((prev) => new Set(prev).add(scheduleId));
 		try {
 			await runManually({ scheduleId });
-			toast.success("Schedule run successfully");
+			toast.success("Scheduled task run successfully");
 			await refetchSchedules();
 		} catch {
-			toast.error("Error running schedule");
+			toast.error("Error running scheduled task");
 		} finally {
 			setRunningSchedules((prev) => {
 				const newSet = new Set(prev);
@@ -69,7 +69,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 						<h3 className="text-xl font-bold flex items-center gap-2">
 							Scheduled Tasks
 						</h3>
-						<p>Schedule tasks to run automatically at specified intervals.</p>
+						<p>Run tasks automatically at specified intervals.</p>
 					</div>
 					{schedules && schedules.length > 0 && (
 						<HandleSchedules id={id} scheduleType={scheduleType} />
@@ -156,7 +156,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 											serverId={serverId || undefined}
 										>
 											<Button
-												aria-label="View schedule deployments"
+												aria-label="View scheduled task build history"
 												variant="ghost"
 												shape="square"
 											>
@@ -164,9 +164,9 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 											</Button>
 										</ShowDeploymentsModal>
 										<TooltipProvider delay={0}>
-											<Tooltip content={<>Run Manual Schedule</>} asChild>
+											<Tooltip content={<>Run Task Now</>} asChild>
 												<Button
-													aria-label="Run schedule now"
+													aria-label="Run scheduled task now"
 													type="button"
 													variant="ghost"
 													shape="square"
@@ -187,8 +187,8 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 											scheduleType={scheduleType}
 										/>
 										<DialogAction
-											title="Delete Schedule"
-											description="Are you sure you want to delete this schedule?"
+											title="Delete Scheduled Task"
+											description="Are you sure you want to delete this scheduled task?"
 											type="destructive"
 											onClick={async () => {
 												await deleteSchedule({
@@ -199,15 +199,17 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 															id,
 															scheduleType,
 														});
-														toast.success("Schedule deleted successfully");
+														toast.success(
+															"Scheduled task deleted successfully",
+														);
 													})
 													.catch(() => {
-														toast.error("Error deleting schedule");
+														toast.error("Error deleting scheduled task");
 													});
 											}}
 										>
 											<Button
-												aria-label="Delete schedule"
+												aria-label="Delete scheduled task"
 												variant="ghost"
 												shape="square"
 												className="group hover:bg-red-500/10"

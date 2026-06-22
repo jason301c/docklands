@@ -1,8 +1,8 @@
-import { Paintbrush } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Paintbrush } from "lucide-react";
+import { api } from "@/client/api/trpc";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	id: string;
@@ -18,22 +18,22 @@ export const ClearDeployments = ({ id, type }: Props) => {
 
 	return (
 		<Dialog.Root role="alertdialog">
-			<Dialog.Trigger render={(
-
-				<Button variant="outline" className="w-fit" loading={isPending}>
-					Clear deployments
-					<Paintbrush className="size-4" />
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button variant="outline" className="w-fit" loading={isPending}>
+						Clear build records
+						<Paintbrush className="size-4" />
+					</Button>
+				}
+			/>
 			<Dialog>
 				<div>
 					<Dialog.Title>
-						Are you sure you want to clear old deployments?
+						Are you sure you want to clear old build records?
 					</Dialog.Title>
 					<Dialog.Description>
-						This will delete all old deployment records and logs, keeping only
-						the active deployment (the most recent successful one).
+						This will delete all old build records and logs, keeping only the
+						active build (the most recent successful one).
 					</Dialog.Description>
 				</div>
 				<div>
@@ -45,7 +45,7 @@ export const ClearDeployments = ({ id, type }: Props) => {
 								composeId: id || "",
 							})
 								.then(async () => {
-									toast.success("Old deployments cleared successfully");
+									toast.success("Old build records cleared successfully");
 									await utils.deployment.allByType.invalidate({
 										id,
 										type: type as "application" | "compose",

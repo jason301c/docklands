@@ -409,7 +409,7 @@ export const HandleVolumeBackups = ({
 																	<p>
 																		Cache: If you previously deployed this
 																		compose, it will read the services from the
-																		last deployment/fetch from the repository
+																		last build or repository fetch
 																	</p>
 																</>
 															}

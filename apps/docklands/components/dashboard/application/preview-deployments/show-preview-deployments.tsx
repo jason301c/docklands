@@ -188,7 +188,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 																className="gap-2"
 															>
 																<RocketIcon className="size-4" />
-																Deployments
+																Builds
 															</Button>
 														</ShowDeploymentsModal>
 
@@ -285,8 +285,8 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
 						<RocketIcon className="size-8 text-muted-foreground" />
 						<span className="text-base text-muted-foreground">
-							Preview deployments are disabled for this application, please
-							enable it
+							Preview builds are disabled for this application. Enable them to
+							create preview environments.
 						</span>
 						<ShowPreviewSettings applicationId={applicationId} />
 					</div>

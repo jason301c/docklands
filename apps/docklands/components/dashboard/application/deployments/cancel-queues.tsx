@@ -1,8 +1,8 @@
-import { Ban } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Ban } from "lucide-react";
+import { api } from "@/client/api/trpc";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	id: string;
@@ -22,21 +22,21 @@ export const CancelQueues = ({ id, type }: Props) => {
 
 	return (
 		<Dialog.Root role="alertdialog">
-			<Dialog.Trigger render={(
-
-				<Button variant="destructive" className="w-fit" loading={isPending}>
-					Cancel Queues
-					<Ban className="size-4" />
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button variant="destructive" className="w-fit" loading={isPending}>
+						Cancel Queued Builds
+						<Ban className="size-4" />
+					</Button>
+				}
+			/>
 			<Dialog>
 				<div>
 					<Dialog.Title>
-						Are you sure to cancel the incoming deployments?
+						Are you sure you want to cancel queued builds?
 					</Dialog.Title>
 					<Dialog.Description>
-						This will cancel all the incoming deployments
+						This will cancel all queued builds for this service.
 					</Dialog.Description>
 				</div>
 				<div>
@@ -48,7 +48,7 @@ export const CancelQueues = ({ id, type }: Props) => {
 								composeId: id || "",
 							})
 								.then(() => {
-									toast.success("Queues are being cleaned");
+									toast.success("Queued builds are being cancelled");
 								})
 								.catch((err) => {
 									toast.error(err.message);

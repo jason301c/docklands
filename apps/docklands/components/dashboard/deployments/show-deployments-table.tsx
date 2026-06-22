@@ -428,19 +428,19 @@ export function ShowDeploymentsTable() {
 						<DeploymentMetricCard
 							label="Active builds"
 							value={deploymentStats.active}
-							detail="Deployments currently moving through the worker."
+							detail="Builds currently moving through the worker."
 							icon={<Activity className="size-4" />}
 						/>
 						<DeploymentMetricCard
 							label="Successful"
 							value={deploymentStats.successful}
-							detail="Completed deploys retained in the central timeline."
+							detail="Completed builds retained in the central timeline."
 							icon={<CheckCircle2 className="size-4" />}
 						/>
 						<DeploymentMetricCard
 							label="Failed"
 							value={deploymentStats.failed}
-							detail="Deploys that need attention before the next release."
+							detail="Builds that need attention before the next release."
 							icon={<AlertCircle className="size-4" />}
 						/>
 						<DeploymentMetricCard
@@ -453,7 +453,7 @@ export function ShowDeploymentsTable() {
 										)
 									: "—"
 							}
-							detail={`${deploymentStats.total} total deployment records`}
+							detail={`${deploymentStats.total} total build records`}
 							icon={<Clock className="size-4" />}
 						/>
 					</div>
@@ -471,9 +471,7 @@ export function ShowDeploymentsTable() {
 						{recentDeploymentStream.length === 0 ? (
 							<div className="flex min-h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
 								<Rocket className="size-6" />
-								<p className="text-sm">
-									No deployment activity matches this view.
-								</p>
+								<p className="text-sm">No build activity matches this view.</p>
 							</div>
 						) : (
 							<div className="divide-y">
@@ -549,7 +547,7 @@ export function ShowDeploymentsTable() {
 					className="max-w-xs"
 				/>
 				<Select
-					aria-label="Deployment status filter"
+					aria-label="Build status filter"
 					value={statusFilter}
 					onValueChange={(value) =>
 						value !== null && setStatusFilter(value as never)
@@ -565,7 +563,7 @@ export function ShowDeploymentsTable() {
 					</>
 				</Select>
 				<Select
-					aria-label="Deployment service type filter"
+					aria-label="Build service type filter"
 					value={typeFilter}
 					onValueChange={(value) =>
 						value !== null && setTypeFilter(value as never)
@@ -583,7 +581,7 @@ export function ShowDeploymentsTable() {
 				{isLoading ? (
 					<div className="flex gap-4 w-full items-center justify-center min-h-[45vh] text-muted-foreground">
 						<Loader2 className="size-4 animate-spin" />
-						<span>Loading deployments...</span>
+						<span>Loading builds...</span>
 					</div>
 				) : (
 					<>
@@ -627,9 +625,9 @@ export function ShowDeploymentsTable() {
 											>
 												<div className="flex flex-col min-h-[45vh] items-center justify-center gap-2 text-muted-foreground">
 													<Rocket className="size-8" />
-													<p className="font-medium">No deployments found</p>
+													<p className="font-medium">No builds found</p>
 													<p className="text-sm">
-														Deployments from applications and compose will
+														Build records from applications and compose will
 														appear here.
 													</p>
 												</div>
@@ -645,7 +643,7 @@ export function ShowDeploymentsTable() {
 									Rows per page
 								</span>
 								<Select
-									aria-label="Deployment rows per page"
+									aria-label="Build rows per page"
 									value={String(pagination.pageSize)}
 									onValueChange={(value) => {
 										if (value === null) return;

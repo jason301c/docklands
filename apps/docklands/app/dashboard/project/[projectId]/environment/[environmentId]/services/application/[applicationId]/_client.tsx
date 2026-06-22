@@ -99,13 +99,13 @@ const Service = (props: {
 			: null,
 		permissions?.domain.read ? { value: "domains", label: "Domains" } : null,
 		permissions?.deployment.read
-			? { value: "deployments", label: "Deployments" }
+			? { value: "deployments", label: "Builds" }
 			: null,
 		permissions?.deployment.read
-			? { value: "preview-deployments", label: "Preview Deployments" }
+			? { value: "preview-deployments", label: "Preview Builds" }
 			: null,
 		permissions?.schedule.read
-			? { value: "schedules", label: "Schedules" }
+			? { value: "schedules", label: "Automations" }
 			: null,
 		permissions?.volumeBackup.read
 			? { value: "volume-backups", label: "Volume Backups" }

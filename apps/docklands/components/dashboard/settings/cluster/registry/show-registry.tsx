@@ -19,9 +19,9 @@ export const ShowRegistry = () => {
 					<div className="">
 						<h3 className="text-xl flex flex-row gap-2">
 							<Package className="size-6 text-muted-foreground self-center" />
-							Docker Registry
+							Image Registry
 						</h3>
-						<p>Manage your Docker Registry configurations</p>
+						<p>Manage your container image registry configurations</p>
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						{isPending ? (

@@ -1,3 +1,9 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Table } from "@cloudflare/kumo/components/table";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	Boxes,
 	HelpCircle,
@@ -5,16 +11,10 @@ import {
 	LockIcon,
 	MoreHorizontal,
 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Table } from "@cloudflare/kumo/components/table";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { AddNode } from "./add-node";
 import { ShowNodeData } from "./show-node-data";
 
@@ -57,15 +57,15 @@ export const ShowNodes = ({ serverId }: Props) => {
 						) : haveAtLeastOneRegistry ? (
 							<div className="grid md:grid-cols-1 gap-4">
 								<Table>
-									<caption>
-										A list of your managers / workers.
-									</caption>
+									<caption>A list of your managers / workers.</caption>
 									<Table.Header>
 										<Table.Row>
 											<Table.Head className="text-left">Hostname</Table.Head>
 											<Table.Head className="text-right">Status</Table.Head>
 											<Table.Head className="text-right">Role</Table.Head>
-											<Table.Head className="text-right">Availability</Table.Head>
+											<Table.Head className="text-right">
+												Availability
+											</Table.Head>
 											<Table.Head className="text-right">
 												Engine Version
 											</Table.Head>
@@ -110,14 +110,17 @@ export const ShowNodes = ({ serverId }: Props) => {
 													</Table.Cell>
 													<Table.Cell className="text-right flex justify-end">
 														<DropdownMenu>
-															<DropdownMenu.Trigger render={(
-
-																<Button variant="ghost" className="h-8 w-8 p-0">
-																	<span className="sr-only">Open menu</span>
-																	<MoreHorizontal className="h-4 w-4" />
-																</Button>
-															
-)} />
+															<DropdownMenu.Trigger
+																render={
+																	<Button
+																		variant="ghost"
+																		className="h-8 w-8 p-0"
+																	>
+																		<span className="sr-only">Open menu</span>
+																		<MoreHorizontal className="h-4 w-4" />
+																	</Button>
+																}
+															/>
 															<DropdownMenu.Content align="end">
 																<DropdownMenu.Label>Actions</DropdownMenu.Label>
 																<ShowNodeData data={node} />
@@ -167,17 +170,17 @@ export const ShowNodes = ({ serverId }: Props) => {
 										one registry.
 									</span>
 									<TooltipProvider delay={0}>
-										<Tooltip content={<>
-												Nodes need a registry to pull images from.
-											</>}>
-												<HelpCircle className="size-5 text-muted-foreground " />
-											</Tooltip>
+										<Tooltip
+											content={<>Nodes need a registry to pull images from.</>}
+										>
+											<HelpCircle className="size-5 text-muted-foreground " />
+										</Tooltip>
 									</TooltipProvider>
 								</div>
 
 								<ul className="list-disc list-inside text-sm text-muted-foreground border p-4 rounded-lg flex flex-col gap-1.5 mt-2.5">
 									<li>
-										<strong>Docker Registry:</strong> Use custom registries like
+										<strong>Image Registry:</strong> Use custom registries like
 										Docker Hub, DigitalOcean Registry, etc.
 									</li>
 								</ul>

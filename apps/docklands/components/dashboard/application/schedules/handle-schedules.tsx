@@ -138,7 +138,7 @@ export const ScheduleFormField = <TFieldValues extends FieldValues>({
 			render={({ field }) => (
 				<FormItem>
 					<FormLabel className="flex items-center gap-2">
-						Schedule
+						Cadence
 						<TooltipProvider>
 							<Tooltip
 								content={
@@ -197,7 +197,7 @@ export const ScheduleFormField = <TFieldValues extends FieldValues>({
 						</div>
 					</div>
 					<FormDescription>
-						Choose a predefined schedule or enter a custom cron expression
+						Choose a preset cadence or enter a custom cron expression.
 					</FormDescription>
 					<FormMessage />
 				</FormItem>
@@ -292,7 +292,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 		})
 			.then(() => {
 				toast.success(
-					`Schedule ${scheduleId ? "updated" : "created"} successfully`,
+					`Scheduled task ${scheduleId ? "updated" : "created"} successfully`,
 				);
 				utils.schedule.list.invalidate({
 					id,
@@ -313,7 +313,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 				render={
 					scheduleId ? (
 						<Button
-							aria-label="Edit schedule"
+							aria-label="Edit scheduled task"
 							variant="ghost"
 							shape="square"
 							className="group hover:bg-blue-500/10"
@@ -324,7 +324,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 						((
 							<Button>
 								<PlusCircle className="w-4 h-4 mr-2" />
-								Add Schedule
+								Add Task
 							</Button>
 						) as never)
 					)
@@ -339,10 +339,12 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 				)}
 			>
 				<div>
-					<Dialog.Title>{scheduleId ? "Edit" : "Create"} Schedule</Dialog.Title>
+					<Dialog.Title>
+						{scheduleId ? "Edit" : "Create"} Scheduled Task
+					</Dialog.Title>
 					<Dialog.Description>
-						{scheduleId ? "Manage" : "Create"} a schedule to run a task at a
-						specific time or interval.
+						{scheduleId ? "Manage" : "Create"} a task that runs at a specific
+						time or interval.
 					</Dialog.Description>
 				</div>
 				<Form {...form}>
@@ -424,7 +426,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 																<p>
 																	Cache: If you previously deployed this
 																	compose, it will read the services from the
-																	last deployment/fetch from the repository
+																	last build or repository fetch
 																</p>
 															</>
 														}
@@ -489,7 +491,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 										/>
 									</FormControl>
 									<FormDescription>
-										Optional description of what this schedule does
+										Optional description of what this task does
 									</FormDescription>
 									<FormMessage />
 								</FormItem>
@@ -513,8 +515,8 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 												content={
 													<>
 														<p>
-															Select a timezone for the schedule. If not
-															specified, UTC will be used.
+															Select a timezone for the task. If not specified,
+															UTC will be used.
 														</p>
 													</>
 												}
@@ -579,7 +581,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 										</PopoverContent>
 									</Popover>
 									<FormDescription>
-										Optional: Choose a timezone for the schedule execution time
+										Optional: Choose a timezone for the task execution time
 									</FormDescription>
 									<FormMessage />
 								</FormItem>
@@ -681,7 +683,7 @@ echo "Hello, world!"
 						/>
 
 						<Button type="submit" loading={isPending} className="w-full">
-							{scheduleId ? "Update" : "Create"} Schedule
+							{scheduleId ? "Update" : "Create"} Task
 						</Button>
 					</form>
 				</Form>

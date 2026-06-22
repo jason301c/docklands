@@ -1,3 +1,6 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import copy from "copy-to-clipboard";
 import {
 	ChevronDown,
@@ -11,15 +14,12 @@ import {
 	Trash2,
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { toast } from "@/components/shared/toast";
 import { ShowRollbackSettings } from "../rollbacks/show-rollback-settings";
 import { CancelQueues } from "./cancel-queues";
 import { ClearDeployments } from "./clear-deployments";
@@ -144,10 +144,8 @@ export const ShowDeployments = ({
 		<LayerCard className="bg-background border-none">
 			<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 				<div className="flex flex-col gap-2">
-					<h3 className="text-xl">Deployments</h3>
-					<p>
-						See the last 10 deployments for this {type}
-					</p>
+					<h3 className="text-xl">Builds</h3>
+					<p>See the last 10 builds for this {type}</p>
 				</div>
 				<div className="flex flex-row items-center flex-wrap gap-2">
 					{(type === "application" || type === "compose") && (
@@ -181,7 +179,7 @@ export const ShowDeployments = ({
 								</div>
 								<p className="text-sm">
 									Hey! Looks like the build has been running for more than 10
-									minutes. Would you like to cancel this deployment?
+									minutes. Would you like to cancel this build?
 								</p>
 							</div>
 							<Button
@@ -202,17 +200,17 @@ export const ShowDeployments = ({
 												composeId: id,
 											});
 										}
-										toast.success("Deployment cancellation requested");
+										toast.success("Build cancellation requested");
 									} catch (error) {
 										toast.error(
 											error instanceof Error
 												? error.message
-												: "Failed to cancel deployment",
+												: "Failed to cancel build",
 										);
 									}
 								}}
 							>
-								Cancel Deployment
+								Cancel Build
 							</Button>
 						</div>
 					</AlertBlock>
@@ -220,8 +218,8 @@ export const ShowDeployments = ({
 				{refreshToken && (
 					<div className="flex flex-col gap-2 text-sm">
 						<span>
-							If you want to re-deploy this application use this URL in the
-							config of your git provider or docker
+							If you want to trigger a new build, use this URL in your Git
+							provider or runtime webhook configuration.
 						</span>
 						<div className="flex flex-row items-center gap-2 flex-wrap">
 							<span>Webhook URL: </span>
@@ -250,14 +248,14 @@ export const ShowDeployments = ({
 					<div className="flex w-full flex-row items-center justify-center gap-3 pt-10 min-h-[25vh]">
 						<Loader2 className="size-6 text-muted-foreground animate-spin" />
 						<span className="text-base text-muted-foreground">
-							Loading deployments...
+							Loading builds...
 						</span>
 					</div>
 				) : deployments?.length === 0 ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10 min-h-[25vh]">
 						<RocketIcon className="size-8 text-muted-foreground" />
 						<span className="text-base text-muted-foreground">
-							No deployments found
+							No builds found
 						</span>
 					</div>
 				) : (
@@ -390,17 +388,19 @@ export const ShowDeployments = ({
 
 											{canDelete && (
 												<DialogAction
-													title="Delete Deployment"
-													description="Are you sure you want to delete this deployment? This action cannot be undone."
+													title="Delete Build Record"
+													description="Are you sure you want to delete this build record? This action cannot be undone."
 													type="default"
 													onClick={async () => {
 														try {
 															await removeDeployment({
 																deploymentId: deployment.deploymentId,
 															});
-															toast.success("Deployment deleted successfully");
+															toast.success(
+																"Build record deleted successfully",
+															);
 														} catch (error) {
-															toast.error("Error deleting deployment");
+															toast.error("Error deleting build record");
 														}
 													}}
 												>
@@ -419,12 +419,12 @@ export const ShowDeployments = ({
 												deployment.status === "done" &&
 												type === "application" && (
 													<DialogAction
-														title="Rollback to this deployment"
+														title="Rollback to this build"
 														description={
 															<div className="flex flex-col gap-3">
 																<p>
 																	Are you sure you want to rollback to this
-																	deployment?
+																	build?
 																</p>
 																<AlertBlock type="info" className="text-sm">
 																	Please wait a few seconds while the image is
