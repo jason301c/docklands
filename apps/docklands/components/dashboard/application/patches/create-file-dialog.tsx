@@ -1,10 +1,10 @@
-import { FilePlus } from "lucide-react";
-import { useState } from "react";
-import { CodeEditor } from "@/components/shared/code-editor";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
+import { FilePlus } from "lucide-react";
+import { useState } from "react";
+import { CodeEditor } from "@/components/shared/code-editor";
 
 interface Props {
 	folderPath: string;
@@ -32,19 +32,20 @@ export const CreateFileDialog = ({
 
 	return (
 		<Dialog.Root>
-			<Dialog.Trigger render={(
-
-				<Button aria-label="Create file"
-					variant="ghost"
-					shape="square"
-					type="button"
-					className={`h-6 w-6 ${alwaysVisible ? "" : "opacity-0 group-hover:opacity-100"}`}
-					title="Create file"
-				>
-					<FilePlus className="h-3 w-3" />
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button
+						aria-label="Create file"
+						variant="ghost"
+						shape="square"
+						type="button"
+						className={`h-6 w-6 ${alwaysVisible ? "" : "opacity-0 group-hover:opacity-100"}`}
+						title="Create file"
+					>
+						<FilePlus className="h-3 w-3" />
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-2xl">
 				<form
 					onSubmit={(e) => {
@@ -82,20 +83,20 @@ export const CreateFileDialog = ({
 						</div>
 					</div>
 					<div>
-						<Dialog.Close render={(
-
-							<Button variant="outline" type="button">
-								Cancel
-							</Button>
-						
-)} />
-						<Dialog.Close render={(
-
-							<Button type="submit" disabled={!filename.trim()}>
-								Create
-							</Button>
-						
-)} />
+						<Dialog.Close
+							render={
+								<Button variant="outline" type="button">
+									Cancel
+								</Button>
+							}
+						/>
+						<Dialog.Close
+							render={
+								<Button type="submit" disabled={!filename.trim()}>
+									Create
+								</Button>
+							}
+						/>
 					</div>
 				</form>
 			</Dialog>

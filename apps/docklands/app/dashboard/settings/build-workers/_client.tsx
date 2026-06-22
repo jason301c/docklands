@@ -16,8 +16,8 @@ const Page = () => {
 						<div>
 							<h3 className="text-xl">Concurrent Builds</h3>
 							<p>
-								Configure how many deployments can build at the same time on
-								each server. Builds of the same service are always serialized.
+								Configure how many builds can run at the same time on each
+								server. Builds of the same service are always serialized.
 							</p>
 						</div>
 						<div className="flex flex-col gap-6">
@@ -26,7 +26,7 @@ const Page = () => {
 								usage on each runtime. Each concurrent build runs its own
 								builder and image build, so set this based on the resources the
 								runtime can handle. Too high a value can exhaust memory and make
-								deployments fail.
+								builds fail.
 							</AlertBlock>
 							<div className="flex flex-col gap-2">
 								<p className="text-sm font-medium text-muted-foreground">

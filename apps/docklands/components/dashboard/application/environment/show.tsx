@@ -1,11 +1,11 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -15,7 +15,7 @@ import {
 	FormLabel,
 } from "@/components/shared/form";
 import { Secrets } from "@/components/shared/secrets";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 
 const addEnvironmentSchema = z.object({
 	env: z.string(),

@@ -1,13 +1,13 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -16,7 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 
 const organizationSchema = z.object({
 	name: z.string().min(1, {
@@ -92,26 +92,32 @@ export function AddOrganization({ organizationId }: Props) {
 
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
-			<Dialog.Trigger render={organizationId ? (
-					<DropdownMenu.Item
-						className="group cursor-pointer hover:bg-blue-500/10"
-						onSelect={(e) => e.preventDefault()}
-					>
-						<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
-					</DropdownMenu.Item>
-				) : (
-					<DropdownMenu.Item
-						className="gap-2 p-2"
-						onSelect={(e) => e.preventDefault()}
-					>
-						<div className="flex size-6 items-center justify-center rounded-md border bg-background">
-							<Plus className="size-4" />
-						</div>
-						<div className="font-medium text-muted-foreground">
-							Add organization
-						</div>
-					</DropdownMenu.Item>
-				) as never} />
+			<Dialog.Trigger
+				render={
+					organizationId ? (
+						<DropdownMenu.Item
+							className="group cursor-pointer hover:bg-blue-500/10"
+							onSelect={(e) => e.preventDefault()}
+						>
+							<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
+						</DropdownMenu.Item>
+					) : (
+						((
+							<DropdownMenu.Item
+								className="gap-2 p-2"
+								onSelect={(e) => e.preventDefault()}
+							>
+								<div className="flex size-6 items-center justify-center rounded-md border bg-background">
+									<Plus className="size-4" />
+								</div>
+								<div className="font-medium text-muted-foreground">
+									Add organization
+								</div>
+							</DropdownMenu.Item>
+						) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-[425px]">
 				<div>
 					<Dialog.Title>

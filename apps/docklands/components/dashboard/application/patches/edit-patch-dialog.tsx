@@ -1,10 +1,10 @@
-import { Loader2, Pencil } from "lucide-react";
-import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { CodeEditor } from "@/components/shared/code-editor";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Loader2, Pencil } from "lucide-react";
+import { useEffect, useState } from "react";
+import { api } from "@/client/api/trpc";
+import { CodeEditor } from "@/components/shared/code-editor";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	patchId: string;
@@ -49,13 +49,18 @@ export const EditPatchDialog = ({
 
 	return (
 		<Dialog.Root>
-			<Dialog.Trigger render={(
-
-				<Button aria-label="Edit patch" variant="ghost" shape="square" title="Edit patch">
-					<Pencil className="h-4 w-4" />
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button
+						aria-label="Edit patch"
+						variant="ghost"
+						shape="square"
+						title="Edit patch"
+					>
+						<Pencil className="h-4 w-4" />
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-4xl max-h-[85vh] flex flex-col p-0">
 				<div className="px-6 pt-6 pb-4">
 					<Dialog.Title>Edit Patch</Dialog.Title>
@@ -79,11 +84,7 @@ export const EditPatchDialog = ({
 					</div>
 				)}
 				<div className="px-6 ">
-					<Dialog.Close render={(
-
-						<Button variant="outline">Cancel</Button>
-					
-)} />
+					<Dialog.Close render={<Button variant="outline">Cancel</Button>} />
 					<Button onClick={handleSave} loading={updatePatch.isPending}>
 						{updatePatch.isPending && (
 							<Loader2 className="mr-2 h-4 w-4 animate-spin" />

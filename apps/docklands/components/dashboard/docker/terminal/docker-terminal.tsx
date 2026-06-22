@@ -2,9 +2,9 @@ import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
 import React, { useEffect, useRef } from "react";
 import "@xterm/xterm/css/xterm.css";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { AttachAddon } from "@xterm/addon-attach";
 import { useTheme } from "next-themes";
-import { Tabs } from "@cloudflare/kumo/components/tabs";
 
 interface Props {
 	id: string;
@@ -61,7 +61,9 @@ export const DockerTerminal: React.FC<Props> = ({
 				</span>
 				<Tabs
 					value={activeWay}
-					onValueChange={(value) => value !== null && setActiveWay(value as never)}
+					onValueChange={(value) =>
+						value !== null && setActiveWay(value as never)
+					}
 					tabs={[
 						{ value: "bash", label: "Bash" },
 						{ value: "sh", label: "/bin/sh" },

@@ -1,5 +1,9 @@
 "use client";
 
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Table } from "@cloudflare/kumo/components/table";
 import {
 	type ColumnDef,
 	type ColumnFiltersState,
@@ -14,10 +18,6 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDown } from "lucide-react";
 import React from "react";
-import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Table } from "@cloudflare/kumo/components/table";
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -75,8 +75,8 @@ export function DataTable<TData, TValue>({
 						<DropdownMenu.Trigger
 							render={
 								<Button variant="outline" className="sm:ml-auto max-sm:w-full">
-								Columns <ChevronDown className="ml-2 h-4 w-4" />
-							</Button>
+									Columns <ChevronDown className="ml-2 h-4 w-4" />
+								</Button>
 							}
 						/>
 						<DropdownMenu.Content align="end">

@@ -1,6 +1,6 @@
-import { CodeEditor } from "@/components/shared/code-editor";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { CodeEditor } from "@/components/shared/code-editor";
 
 interface Props {
 	data: unknown;
@@ -9,16 +9,16 @@ interface Props {
 export const ShowNodeData = ({ data }: Props) => {
 	return (
 		<Dialog.Root>
-			<Dialog.Trigger render={(
-
-				<DropdownMenu.Item
-					className="w-full cursor-pointer"
-					onSelect={(e) => e.preventDefault()}
-				>
-					View Config
-				</DropdownMenu.Item>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<DropdownMenu.Item
+						className="w-full cursor-pointer"
+						onSelect={(e) => e.preventDefault()}
+					>
+						View Config
+					</DropdownMenu.Item>
+				}
+			/>
 			<Dialog className={"sm:max-w-5xl"}>
 				<div>
 					<Dialog.Title>Node Config</Dialog.Title>

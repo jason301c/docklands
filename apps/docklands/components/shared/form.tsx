@@ -1,5 +1,6 @@
 "use client";
 
+import { Label } from "@cloudflare/kumo/components/label";
 import * as React from "react";
 import {
 	Controller,
@@ -9,7 +10,6 @@ import {
 	FormProvider,
 	useFormContext,
 } from "react-hook-form";
-import { Label } from "@cloudflare/kumo/components/label";
 import { cn } from "@/shared/utils";
 
 const Form = FormProvider;

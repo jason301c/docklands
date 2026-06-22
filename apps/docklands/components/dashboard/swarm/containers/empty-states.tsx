@@ -162,9 +162,9 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 		</Alert>
 		<div className="space-y-3 text-sm text-muted-foreground">
 			<p>
-				This view shows containers deployed through the{" "}
+				This view shows containers running through the{" "}
 				<strong>orchestration layer</strong>. Standalone containers and Compose
-				services that are not deployed as stacks won&apos;t appear here.
+				services that are not running as stacks won&apos;t appear here.
 			</p>
 			<p>To see containers in this view, make sure your applications are:</p>
 			<ol className="list-decimal list-inside space-y-2 ml-1">
@@ -191,8 +191,8 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 					.
 				</li>
 				<li>
-					<strong>Successfully built and deployed</strong> &mdash; Check your
-					project&apos;s deployment logs for errors.
+					<strong>Successfully built and started</strong> &mdash; Check your
+					project&apos;s build logs for errors.
 				</li>
 			</ol>
 			<DocLinks />
@@ -249,8 +249,7 @@ export const NoRunningContainers = ({
 				<ul className="list-disc list-inside space-y-2 ml-1">
 					<li>Services are scaled to 0 replicas</li>
 					<li>
-						Containers are failing to start &mdash; check deployment logs for
-						errors
+						Containers are failing to start &mdash; check build logs for errors
 					</li>
 					<li>
 						Images can&apos;t be pulled on workers &mdash; verify your{" "}

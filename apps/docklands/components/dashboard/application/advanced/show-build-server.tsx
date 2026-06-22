@@ -112,17 +112,16 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 			</div>
 			<div className="flex flex-col gap-4">
 				<AlertBlock type="info">
-					Build workers offload the build process from your deployment workers.
-					Select a build worker and registry to use for building your
-					application.
+					Build workers offload image creation from your runtime workers. Select
+					a build worker and registry to use for building your application.
 				</AlertBlock>
 
 				<AlertBlock type="info">
 					📊 <strong>Important:</strong> Once the build finishes, you'll need to
-					wait a few seconds for the deployment worker to download the image.
-					These download logs will <strong>NOT</strong> appear in the build
-					deployment logs. Check the <strong>Logs</strong> tab to see when the
-					container starts running.
+					wait a few seconds for the runtime worker to download the image. These
+					download logs will <strong>NOT</strong> appear in the build logs.
+					Check the <strong>Logs</strong> tab to see when the container starts
+					running.
 				</AlertBlock>
 
 				<AlertBlock type="info">

@@ -127,7 +127,7 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 			</div>
 			<div className="flex flex-col gap-4">
 				<AlertBlock type="info">
-					Click Redeploy after modifying orchestration settings to apply the
+					Run a build after modifying orchestration settings to apply the
 					changes.
 				</AlertBlock>
 				<Form {...form}>

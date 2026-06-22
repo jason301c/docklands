@@ -125,7 +125,7 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 											Enable Rollbacks
 										</FormLabel>
 										<FormDescription>
-											Allow rolling back to previous deployments
+											Allow rolling back to previous builds
 										</FormDescription>
 									</div>
 									<FormControl>

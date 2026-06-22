@@ -416,8 +416,7 @@ export const SaveBitbucketProviderCompose = ({ composeId }: Props) => {
 													<>
 														<p>
 															Add paths to watch for changes. When files in
-															these paths change, a new deployment will be
-															triggered.
+															these paths change, a new build will be triggered.
 														</p>
 													</>
 												}

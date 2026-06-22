@@ -1,12 +1,12 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -16,7 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	composeId: string;
@@ -85,9 +85,7 @@ export const AddCommandCompose = ({ composeId }: Props) => {
 			<div className="flex flex-row justify-between">
 				<div>
 					<h3 className="text-xl">Run Command</h3>
-					<p>
-						Override a custom command to the compose file
-					</p>
+					<p>Override a custom command to the compose file</p>
 				</div>
 			</div>
 			<div className="flex flex-col gap-4">
@@ -97,7 +95,7 @@ export const AddCommandCompose = ({ composeId }: Props) => {
 						className="grid w-full gap-4"
 					>
 						<AlertBlock type="warning">
-							Modifying the default command may affect deployment stability,
+							Modifying the default command may affect runtime stability,
 							impacting logs and monitoring. Proceed carefully and test
 							thoroughly. By default, the command starts with{" "}
 							<strong>docker</strong>.

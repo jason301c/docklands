@@ -1,12 +1,12 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Upload } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Dropzone } from "@/components/shared/dropzone";
 import {
 	Form,
@@ -16,7 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 import {
 	type UploadFileToContainer,
 	uploadFileToContainerSchema,
@@ -73,16 +73,16 @@ export const UploadFileModal = ({ children, containerId, serverId }: Props) => {
 
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
-			<Dialog.Trigger render={(
-
-				<DropdownMenu.Item
-					className="w-full cursor-pointer space-x-3"
-					onSelect={(e) => e.preventDefault()}
-				>
-					{children}
-				</DropdownMenu.Item>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<DropdownMenu.Item
+						className="w-full cursor-pointer space-x-3"
+						onSelect={(e) => e.preventDefault()}
+					>
+						{children}
+					</DropdownMenu.Item>
+				}
+			/>
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title className="flex items-center gap-2">

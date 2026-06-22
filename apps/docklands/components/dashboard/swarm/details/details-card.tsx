@@ -1,7 +1,7 @@
-import { Box, Cpu, Database, HardDrive, Loader2 } from "lucide-react";
-import { api } from "@/client/api/trpc";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Box, Cpu, Database, HardDrive, Loader2 } from "lucide-react";
+import { api } from "@/client/api/trpc";
 import { Separator } from "@/components/shared/separator";
 import { ShowNodeApplications } from "../applications/show-applications";
 import { ShowNodeConfig } from "./show-node-config";

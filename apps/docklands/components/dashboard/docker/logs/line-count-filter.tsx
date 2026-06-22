@@ -1,6 +1,3 @@
-import debounce from "lodash/debounce";
-import { CheckIcon, Hash } from "lucide-react";
-import React, { useCallback, useRef } from "react";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
@@ -9,6 +6,9 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@cloudflare/kumo/components/popover";
+import debounce from "lodash/debounce";
+import { CheckIcon, Hash } from "lucide-react";
+import React, { useCallback, useRef } from "react";
 import { Separator } from "@/components/shared/separator";
 import { cn } from "@/shared/utils";
 
@@ -53,7 +53,7 @@ export function LineCountFilter({
 		setInputValue(input);
 
 		// Extract numbers from input and convert
-		const numValue = Number.parseInt(input.replace(/[^0-9]/g, ""));
+		const numValue = Number.parseInt(input.replace(/[^0-9]/g, ""), 10);
 		if (!Number.isNaN(numValue)) {
 			pendingValueRef.current = numValue;
 			debouncedValueChange(numValue);
@@ -71,7 +71,7 @@ export function LineCountFilter({
 			return;
 		}
 
-		const numValue = Number.parseInt(selectedValue);
+		const numValue = Number.parseInt(selectedValue, 10);
 		if (
 			!Number.isNaN(numValue) &&
 			numValue > 0 &&
@@ -99,9 +99,9 @@ export function LineCountFilter({
 			<PopoverTrigger
 				render={
 					<Button
-					variant="outline"
-					size="sm"
-					className="h-9 bg-input text-sm placeholder-gray-400 w-full sm:w-auto"
+						variant="outline"
+						size="sm"
+						className="h-9 bg-input text-sm placeholder-gray-400 w-full sm:w-auto"
 					>
 						{title}
 						<Separator orientation="vertical" className="mx-2 h-4" />
@@ -127,6 +127,7 @@ export function LineCountFilter({
 									e.preventDefault();
 									const numValue = Number.parseInt(
 										inputValue.replace(/[^0-9]/g, ""),
+										10,
 									);
 									if (
 										!Number.isNaN(numValue) &&
@@ -149,19 +150,19 @@ export function LineCountFilter({
 									type="button"
 									onClick={() => handleSelect(option.label)}
 									className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+								>
+									<div
+										className={cn(
+											"flex h-4 w-4 items-center justify-center rounded-sm border border-primary mr-2",
+											isSelected
+												? "bg-primary text-primary-foreground"
+												: "opacity-50 [&_svg]:invisible",
+										)}
 									>
-										<div
-											className={cn(
-												"flex h-4 w-4 items-center justify-center rounded-sm border border-primary mr-2",
-												isSelected
-													? "bg-primary text-primary-foreground"
-													: "opacity-50 [&_svg]:invisible",
-											)}
-										>
-											<CheckIcon className={cn("h-4 w-4")} />
-										</div>
-										<span>{option.label}</span>
-									</button>
+										<CheckIcon className={cn("h-4 w-4")} />
+									</div>
+									<span>{option.label}</span>
+								</button>
 							);
 						})}
 					</div>

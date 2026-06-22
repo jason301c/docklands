@@ -1,7 +1,7 @@
-import { api } from "@/client/api/trpc";
-import { CodeEditor } from "@/components/shared/code-editor";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { api } from "@/client/api/trpc";
+import { CodeEditor } from "@/components/shared/code-editor";
 
 interface Props {
 	containerId: string;
@@ -20,16 +20,16 @@ export const ShowContainerConfig = ({ containerId, serverId }: Props) => {
 	);
 	return (
 		<Dialog.Root>
-			<Dialog.Trigger render={(
-
-				<DropdownMenu.Item
-					className="w-full cursor-pointer"
-					onSelect={(e) => e.preventDefault()}
-				>
-					View Config
-				</DropdownMenu.Item>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<DropdownMenu.Item
+						className="w-full cursor-pointer"
+						onSelect={(e) => e.preventDefault()}
+					>
+						View Config
+					</DropdownMenu.Item>
+				}
+			/>
 			<Dialog className={"w-full md:w-[70vw] min-w-[70vw]"}>
 				<div>
 					<Dialog.Title>Container Config</Dialog.Title>

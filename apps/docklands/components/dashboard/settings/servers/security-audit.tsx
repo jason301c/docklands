@@ -1,9 +1,9 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Loader2, LockKeyhole, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { StatusRow } from "./gpu-support";
 
 interface Props {
@@ -29,13 +29,9 @@ export const SecurityAudit = ({ serverId }: Props) => {
 							<div className="flex flex-col gap-1">
 								<div className="flex items-center gap-2">
 									<LockKeyhole className="size-5" />
-									<h3 className="text-xl">
-										Setup Security Suggestions
-									</h3>
+									<h3 className="text-xl">Setup Security Suggestions</h3>
 								</div>
-								<p>
-									Check the security suggestions
-								</p>
+								<p>Check the security suggestions</p>
 							</div>
 							<Button
 								loading={isRefreshing}

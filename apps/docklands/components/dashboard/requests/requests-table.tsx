@@ -1,3 +1,9 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Table } from "@cloudflare/kumo/components/table";
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -21,15 +27,9 @@ import {
 	TrendingUpIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Input } from "@cloudflare/kumo/components/input";
 import { ScrollArea } from "@/components/shared/scroll-area";
-import { Table } from "@cloudflare/kumo/components/table";
+import { toast } from "@/components/shared/toast";
 import { columns, getStatusColor } from "./columns";
 import type { LogEntry } from "./show-requests";
 import { DataTableFacetedFilter } from "./status-request-filter";
@@ -181,12 +181,12 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 							<DropdownMenu>
 								<DropdownMenu.Trigger
 									render={
-									<Button
-										variant="outline"
-										className="sm:ml-auto max-sm:w-full"
-									>
-										Columns <ChevronDown className="ml-2 h-4 w-4" />
-									</Button>
+										<Button
+											variant="outline"
+											className="sm:ml-auto max-sm:w-full"
+										>
+											Columns <ChevronDown className="ml-2 h-4 w-4" />
+										</Button>
 									}
 								/>
 								<DropdownMenu.Content align="end">
@@ -316,7 +316,9 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 			>
 				<Dialog size="xl" className="flex flex-col">
 					<Dialog.Title>Request log</Dialog.Title>
-					<Dialog.Description>Details of the request log entry.</Dialog.Description>
+					<Dialog.Description>
+						Details of the request log entry.
+					</Dialog.Description>
 					<ScrollArea className="flex-grow mt-4 pr-4">
 						<div className="border rounded-md">
 							<Table>

@@ -75,7 +75,7 @@ export const ShowComposeContainers = ({
 				) : !data || data.length === 0 ? (
 					<div className="flex items-center justify-center h-[20vh]">
 						<span className="text-muted-foreground">
-							No containers found. Deploy the compose to see containers here.
+							No containers found. Run a build to see containers here.
 						</span>
 					</div>
 				) : (

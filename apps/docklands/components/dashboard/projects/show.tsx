@@ -280,7 +280,7 @@ export const ShowProjects = () => {
 												{visibleServiceCounts.compose}
 											</p>
 											<p className="mt-2 text-xs text-muted-foreground">
-												Stack deployments ready for the canvas
+												Stack services ready for the canvas
 											</p>
 										</div>
 										<div className="rounded-md border bg-background p-4">

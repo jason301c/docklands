@@ -226,8 +226,8 @@ export const SaveGitProviderCompose = ({ composeId }: Props) => {
 												<>
 													<p>
 														Add paths to watch for changes. When files in these
-														paths change, a new deployment will be triggered.
-														This will work only when manual webhook is setup.
+														paths change, a new build will be triggered. This
+														will work only when manual webhook is setup.
 													</p>
 												</>
 											}

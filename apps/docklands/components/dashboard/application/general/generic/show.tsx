@@ -229,7 +229,7 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
 									<GithubIcon className="size-8 text-muted-foreground" />
 									<span className="text-base text-muted-foreground">
-										To deploy using GitHub, you need to configure your account
+										To build from GitHub, you need to configure your account
 										first. Please, go to{" "}
 										<Link
 											href="/dashboard/settings/git-providers"
@@ -251,7 +251,7 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
 									<GitlabIcon className="size-8 text-muted-foreground" />
 									<span className="text-base text-muted-foreground">
-										To deploy using GitLab, you need to configure your account
+										To build from GitLab, you need to configure your account
 										first. Please, go to{" "}
 										<Link
 											href="/dashboard/settings/git-providers"
@@ -273,8 +273,8 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
 									<BitbucketIcon className="size-8 text-muted-foreground" />
 									<span className="text-base text-muted-foreground">
-										To deploy using Bitbucket, you need to configure your
-										account first. Please, go to{" "}
+										To build from Bitbucket, you need to configure your account
+										first. Please, go to{" "}
 										<Link
 											href="/dashboard/settings/git-providers"
 											className="text-foreground"
@@ -295,7 +295,7 @@ export const ShowProviderForm = ({ applicationId }: Props) => {
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
 									<GiteaIcon className="size-8 text-muted-foreground" />
 									<span className="text-base text-muted-foreground">
-										To deploy using Gitea, you need to configure your account
+										To build from Gitea, you need to configure your account
 										first. Please, go to{" "}
 										<Link
 											href="/dashboard/settings/git-providers"

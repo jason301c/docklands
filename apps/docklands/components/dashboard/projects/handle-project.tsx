@@ -1,16 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { PlusIcon, SquarePen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { TagSelector } from "@/components/shared/tag-selector";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -19,8 +18,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Textarea } from "@cloudflare/kumo/components/input";
+import { TagSelector } from "@/components/shared/tag-selector";
+import { toast } from "@/components/shared/toast";
 
 const AddProjectSchema = z.object({
 	name: z
@@ -145,20 +144,26 @@ export const HandleProject = ({ projectId }: Props) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={projectId ? (
-					<DropdownMenu.Item
-						className="w-full cursor-pointer space-x-3"
-						onSelect={(e) => e.preventDefault()}
-					>
-						<SquarePen className="size-4" />
-						<span>Update</span>
-					</DropdownMenu.Item>
-				) : (
-					<Button>
-						<PlusIcon className="h-4 w-4" />
-						Create Project
-					</Button>
-				) as never} />
+			<Dialog.Trigger
+				render={
+					projectId ? (
+						<DropdownMenu.Item
+							className="w-full cursor-pointer space-x-3"
+							onSelect={(e) => e.preventDefault()}
+						>
+							<SquarePen className="size-4" />
+							<span>Update</span>
+						</DropdownMenu.Item>
+					) : (
+						((
+							<Button>
+								<PlusIcon className="h-4 w-4" />
+								Create Project
+							</Button>
+						) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:m:max-w-lg ">
 				<div>
 					<Dialog.Title>{projectId ? "Update" : "Add a"} project</Dialog.Title>

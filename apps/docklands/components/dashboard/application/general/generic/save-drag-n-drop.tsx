@@ -1,10 +1,10 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { TrashIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
 import { Dropzone } from "@/components/shared/dropzone";
 import {
 	Form,
@@ -14,7 +14,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 import { type UploadFile, uploadFileSchema } from "@/shared/validation/schema";
 
 interface Props {
@@ -52,11 +52,11 @@ export const SaveDragNDrop = ({ applicationId }: Props) => {
 
 		await mutateAsync(formData)
 			.then(async () => {
-				toast.success("Deployment saved");
+				toast.success("Source upload saved");
 				await refetch();
 			})
 			.catch(() => {
-				toast.error("Error saving the deployment");
+				toast.error("Error saving the source upload");
 			});
 	};
 
@@ -132,7 +132,7 @@ export const SaveDragNDrop = ({ applicationId }: Props) => {
 						loading={isPending}
 						disabled={!zip || isPending}
 					>
-						Deploy{" "}
+						Upload source
 					</Button>
 				</div>
 			</form>

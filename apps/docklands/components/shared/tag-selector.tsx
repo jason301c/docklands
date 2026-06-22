@@ -1,8 +1,8 @@
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
 import { Check } from "lucide-react";
 import { HandleTag } from "@/components/dashboard/settings/tags/handle-tag";
 import { TagBadge } from "@/components/shared/tag-badge";
-import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import { cn } from "@/shared/utils";
 
 export interface Tag {
@@ -28,7 +28,9 @@ export function TagSelector({
 	className,
 	disabled = false,
 }: TagSelectorProps) {
-	const selectedTagObjects = tags.filter((tag) => selectedTags.includes(tag.id));
+	const selectedTagObjects = tags.filter((tag) =>
+		selectedTags.includes(tag.id),
+	);
 
 	return (
 		<div className={cn("w-full", className)}>
@@ -67,7 +69,11 @@ export function TagSelector({
 							return (
 								<Combobox.Item key={tag.id} value={tag}>
 									<Checkbox checked={isSelected} className="mr-2" />
-									<TagBadge name={tag.name} color={tag.color} className="mr-2" />
+									<TagBadge
+										name={tag.name}
+										color={tag.color}
+										className="mr-2"
+									/>
 									<Check
 										className={cn(
 											"ml-auto h-4 w-4",
@@ -80,7 +86,9 @@ export function TagSelector({
 					</Combobox.List>
 					<Combobox.Empty>
 						<div className="flex flex-col items-center gap-2 py-1">
-							<span className="text-sm text-muted-foreground">No tags found.</span>
+							<span className="text-sm text-muted-foreground">
+								No tags found.
+							</span>
 							<HandleTag />
 						</div>
 					</Combobox.Empty>

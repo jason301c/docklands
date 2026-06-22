@@ -285,8 +285,8 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
 						<RocketIcon className="size-8 text-muted-foreground" />
 						<span className="text-base text-muted-foreground">
-							Preview builds are disabled for this application. Enable them to
-							create preview environments.
+							Preview environments are disabled for this application. Enable
+							them to create pull request runtimes.
 						</span>
 						<ShowPreviewSettings applicationId={applicationId} />
 					</div>

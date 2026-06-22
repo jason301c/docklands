@@ -1,9 +1,10 @@
+import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
+import { Collapsible } from "@cloudflare/kumo/components/collapsible";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Settings } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Collapsible } from "@cloudflare/kumo/components/collapsible";
-import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -12,7 +13,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
 import { cn } from "@/shared/utils";
 
 const Schema = z.object({
@@ -73,9 +73,7 @@ const LocalServerConfig = ({ onSave }: Props) => {
 				<div className="flex flex-row items-center gap-2 justify-between w-full">
 					<div className="flex flex-row gap-2 items-center">
 						<Settings className="h-4 w-4" />
-						<span className="hover:text-kumo-strong">
-							Connection settings
-						</span>
+						<span className="hover:text-kumo-strong">Connection settings</span>
 					</div>
 				</div>
 			</Collapsible.Trigger>
@@ -135,9 +133,7 @@ const LocalServerConfig = ({ onSave }: Props) => {
 				<Button
 					form="hook-form-add-server"
 					type="submit"
-					className={cn(
-						"ml-auto",
-					)}
+					className={cn("ml-auto")}
 					disabled={!form.formState.isDirty}
 				>
 					Save

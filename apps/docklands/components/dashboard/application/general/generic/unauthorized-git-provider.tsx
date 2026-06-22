@@ -1,3 +1,5 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { AlertCircle, GitBranch, Unlink } from "lucide-react";
 import type { RouterOutputs } from "@/client/api/trpc";
 import {
@@ -7,10 +9,8 @@ import {
 	GitIcon,
 	GitlabIcon,
 } from "@/components/icons/data-tools-icons";
-import { DialogAction } from "@/components/shared/dialog-action";
 import { Alert, AlertDescription } from "@/components/shared/alert";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { DialogAction } from "@/components/shared/dialog-action";
 
 interface Props {
 	service:

@@ -1,11 +1,10 @@
-import { ChevronDown } from "lucide-react";
-import Link from "next/link";
-import { Fragment } from "react";
-import { api } from "@/client/api/trpc";
 import { Breadcrumbs } from "@cloudflare/kumo/components/breadcrumbs";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Separator } from "@/components/shared/separator";
 import { SidebarTrigger } from "@cloudflare/kumo/components/sidebar";
+import { ChevronDown } from "lucide-react";
+import { Fragment } from "react";
+import { api } from "@/client/api/trpc";
+import { Separator } from "@/components/shared/separator";
 import { TimeBadge } from "@/components/shared/time-badge";
 
 interface BreadcrumbEntry {
@@ -51,7 +50,9 @@ export const BreadcrumbSidebar = ({ list }: Props) => {
 										</DropdownMenu.Content>
 									</DropdownMenu>
 								) : item.href ? (
-									<Breadcrumbs.Link href={item.href}>{item.name}</Breadcrumbs.Link>
+									<Breadcrumbs.Link href={item.href}>
+										{item.name}
+									</Breadcrumbs.Link>
 								) : (
 									<Breadcrumbs.Current>{item.name}</Breadcrumbs.Current>
 								)}

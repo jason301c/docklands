@@ -1,7 +1,7 @@
-import { useState } from "react";
-import type { RouterOutputs } from "@/client/api/trpc";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { useState } from "react";
+import type { RouterOutputs } from "@/client/api/trpc";
 import { ShowDeployment } from "../deployments/show-deployment";
 import { ShowDeployments } from "./show-deployments";
 
@@ -40,13 +40,17 @@ export const ShowDeploymentsModal = ({
 	const [isOpen, setIsOpen] = useState(false);
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={(children ? (
-					children
-				) : (
-					<Button className="sm:w-auto w-full" size="sm" variant="outline">
-						View Logs
-					</Button>
-				)) as never} />
+			<Dialog.Trigger
+				render={
+					(children ? (
+						children
+					) : (
+						<Button className="sm:w-auto w-full" size="sm" variant="outline">
+							View Logs
+						</Button>
+					)) as never
+				}
+			/>
 			<Dialog className="sm:max-w-5xl p-0">
 				<ShowDeployments
 					id={id}

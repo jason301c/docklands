@@ -1,6 +1,6 @@
-import { MinusIcon, PlusIcon } from "lucide-react";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
+import { MinusIcon, PlusIcon } from "lucide-react";
 
 export interface UnitConverter {
 	toValue: (raw: string | undefined) => number;

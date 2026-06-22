@@ -118,8 +118,8 @@ export const WebDomain = () => {
 									<p className="font-medium">⚠️ Important: URL Change Impact</p>
 									<p>
 										If you change the Docklands ingress URL make sure to update
-										your Github Apps to keep the auto-deploy working and preview
-										deployments working.
+										your GitHub Apps to keep autobuilds and preview environments
+										working.
 									</p>
 								</div>
 							</AlertBlock>

@@ -1,10 +1,10 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Download } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/client/api/trpc";
 import type { IUpdateData } from "@/server/core/services/settings";
 import UpdateServer from "../dashboard/settings/web-server/update-server";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 
 const AUTO_CHECK_UPDATES_INTERVAL_MINUTES = 7;
 
@@ -76,12 +76,10 @@ export const UpdateServerButton = () => {
 				onOpenChange={setIsOpen}
 			>
 				<TooltipProvider delay={0}>
-					<Tooltip side="right" content={(
-
-								<p>Update Available</p>
-							
-)} render={(
-
+					<Tooltip
+						side="right"
+						content={<p>Update Available</p>}
+						render={
 							<Button
 								variant={updateData ? "outline" : "secondary"}
 								className="w-full"
@@ -104,8 +102,8 @@ export const UpdateServerButton = () => {
 									</span>
 								)}
 							</Button>
-						
-)} />
+						}
+					/>
 				</TooltipProvider>
 			</UpdateServer>
 		</div>

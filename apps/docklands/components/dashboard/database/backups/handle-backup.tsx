@@ -530,9 +530,9 @@ export const HandleBackup = ({
 															content={
 																<>
 																	<p>
-																		Cache: If you previously deployed this
-																		compose, it will read the services from the
-																		last build or repository fetch
+																		Cache: If you previously built this compose,
+																		it will read the services from the last
+																		build or repository fetch
 																	</p>
 																</>
 															}

@@ -23,7 +23,7 @@ export const OnboardingLayout = ({ children }: Props) => {
 				<div className="relative z-20 mt-auto">
 					<blockquote className="space-y-2">
 						<p className="text-lg text-primary">
-							Deploy applications, databases, and compose stacks on your own
+							Run applications, databases, and compose stacks on your own
 							infrastructure.
 						</p>
 					</blockquote>

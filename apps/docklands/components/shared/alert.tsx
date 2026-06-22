@@ -22,7 +22,11 @@ const AlertTitle = React.forwardRef<
 	HTMLParagraphElement,
 	React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-	<h5 ref={ref} className={cn("font-medium text-kumo-default", className)} {...props} />
+	<h5
+		ref={ref}
+		className={cn("font-medium text-kumo-default", className)}
+		{...props}
+	/>
 ));
 AlertTitle.displayName = "AlertTitle";
 
@@ -30,7 +34,11 @@ const AlertDescription = React.forwardRef<
 	HTMLParagraphElement,
 	React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-	<div ref={ref} className={cn("text-sm text-kumo-subtle", className)} {...props} />
+	<div
+		ref={ref}
+		className={cn("text-sm text-kumo-subtle", className)}
+		{...props}
+	/>
 ));
 AlertDescription.displayName = "AlertDescription";
 

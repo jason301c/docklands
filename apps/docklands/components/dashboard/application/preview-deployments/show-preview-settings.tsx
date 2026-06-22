@@ -218,10 +218,9 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 															content={
 																<>
 																	<p>
-																		Add a labels that will trigger a preview
-																		build for a pull request. If no labels are
-																		specified, all pull requests will trigger a
-																		preview environment.
+																		Add labels that can create a preview
+																		environment for a pull request. If none are
+																		specified, all pull requests can create one.
 																	</p>
 																</>
 															}
@@ -400,8 +399,8 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 														refetch();
 														toast.success(
 															checked
-																? "Preview builds enabled"
-																: "Preview builds disabled",
+																? "Preview environments enabled"
+																: "Preview environments disabled",
 														);
 													})
 													.catch((error) => {
@@ -423,8 +422,8 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 														Require Collaborator Permissions
 													</FormLabel>
 													<FormDescription>
-														Require collaborator permissions to preview builds.
-														Valid roles are:
+														Require collaborator permissions to create preview
+														environments. Valid roles are:
 														<ul>
 															<li>Admin</li>
 															<li>Maintain</li>

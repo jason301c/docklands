@@ -1,11 +1,11 @@
 "use client";
 
 import {
-	Toasty,
 	createKumoToastManager,
 	type KumoToastManagerAddOptions,
+	Toasty,
 } from "@cloudflare/kumo/components/toast";
-import * as React from "react";
+import type * as React from "react";
 
 type ToastMessage = React.ReactNode;
 type ToastOptions = Omit<KumoToastManagerAddOptions<any>, "title"> & {
@@ -65,7 +65,10 @@ export const toast = Object.assign(baseToast, {
 		promise: Promise<T>,
 		options: {
 			loading: ToastMessage | ToastOptions;
-			success: ToastMessage | ToastOptions | ((data: T) => ToastMessage | ToastOptions);
+			success:
+				| ToastMessage
+				| ToastOptions
+				| ((data: T) => ToastMessage | ToastOptions);
 			error:
 				| ToastMessage
 				| ToastOptions

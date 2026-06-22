@@ -1,7 +1,8 @@
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { CodeIcon, GitBranch, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { UnauthorizedGitProvider } from "@/components/dashboard/application/general/generic/unauthorized-git-provider";
 import {
@@ -11,8 +12,7 @@ import {
 	GitIcon,
 	GitlabIcon,
 } from "@/components/icons/data-tools-icons";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Tabs } from "@cloudflare/kumo/components/tabs";
+import { toast } from "@/components/shared/toast";
 import { ComposeFileEditor } from "../compose-file-editor";
 import { ShowConvertedCompose } from "../show-converted-compose";
 import { SaveBitbucketProviderCompose } from "./save-bitbucket-provider-compose";
@@ -203,101 +203,101 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 
 					{tab === "github" && (
 						<div className="w-full p-2">
-						{githubProviders && githubProviders?.length > 0 ? (
-							<SaveGithubProviderCompose composeId={composeId} />
-						) : (
-							<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-								<GithubIcon className="size-8 text-muted-foreground" />
-								<span className="text-base text-muted-foreground">
-									To deploy using GitHub, you need to configure your account
-									first. Please, go to{" "}
-									<Link
-										href="/dashboard/settings/git-providers"
-										className="text-foreground"
-									>
-										Settings
-									</Link>{" "}
-									to do so.
-								</span>
-							</div>
-						)}
+							{githubProviders && githubProviders?.length > 0 ? (
+								<SaveGithubProviderCompose composeId={composeId} />
+							) : (
+								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
+									<GithubIcon className="size-8 text-muted-foreground" />
+									<span className="text-base text-muted-foreground">
+										To build from GitHub, you need to configure your account
+										first. Please, go to{" "}
+										<Link
+											href="/dashboard/settings/git-providers"
+											className="text-foreground"
+										>
+											Settings
+										</Link>{" "}
+										to do so.
+									</span>
+								</div>
+							)}
 						</div>
 					)}
 					{tab === "gitlab" && (
 						<div className="w-full p-2">
-						{gitlabProviders && gitlabProviders?.length > 0 ? (
-							<SaveGitlabProviderCompose composeId={composeId} />
-						) : (
-							<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-								<GitlabIcon className="size-8 text-muted-foreground" />
-								<span className="text-base text-muted-foreground">
-									To deploy using GitLab, you need to configure your account
-									first. Please, go to{" "}
-									<Link
-										href="/dashboard/settings/git-providers"
-										className="text-foreground"
-									>
-										Settings
-									</Link>{" "}
-									to do so.
-								</span>
-							</div>
-						)}
+							{gitlabProviders && gitlabProviders?.length > 0 ? (
+								<SaveGitlabProviderCompose composeId={composeId} />
+							) : (
+								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
+									<GitlabIcon className="size-8 text-muted-foreground" />
+									<span className="text-base text-muted-foreground">
+										To build from GitLab, you need to configure your account
+										first. Please, go to{" "}
+										<Link
+											href="/dashboard/settings/git-providers"
+											className="text-foreground"
+										>
+											Settings
+										</Link>{" "}
+										to do so.
+									</span>
+								</div>
+							)}
 						</div>
 					)}
 					{tab === "bitbucket" && (
 						<div className="w-full p-2">
-						{bitbucketProviders && bitbucketProviders?.length > 0 ? (
-							<SaveBitbucketProviderCompose composeId={composeId} />
-						) : (
-							<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-								<BitbucketIcon className="size-8 text-muted-foreground" />
-								<span className="text-base text-muted-foreground">
-									To deploy using Bitbucket, you need to configure your account
-									first. Please, go to{" "}
-									<Link
-										href="/dashboard/settings/git-providers"
-										className="text-foreground"
-									>
-										Settings
-									</Link>{" "}
-									to do so.
-								</span>
-							</div>
-						)}
+							{bitbucketProviders && bitbucketProviders?.length > 0 ? (
+								<SaveBitbucketProviderCompose composeId={composeId} />
+							) : (
+								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
+									<BitbucketIcon className="size-8 text-muted-foreground" />
+									<span className="text-base text-muted-foreground">
+										To build from Bitbucket, you need to configure your account
+										first. Please, go to{" "}
+										<Link
+											href="/dashboard/settings/git-providers"
+											className="text-foreground"
+										>
+											Settings
+										</Link>{" "}
+										to do so.
+									</span>
+								</div>
+							)}
 						</div>
 					)}
 					{tab === "gitea" && (
 						<div className="w-full p-2">
-						{giteaProviders && giteaProviders?.length > 0 ? (
-							<SaveGiteaProviderCompose composeId={composeId} />
-						) : (
-							<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-								<GiteaIcon className="size-8 text-muted-foreground" />
-								<span className="text-base text-muted-foreground">
-									To deploy using Gitea, you need to configure your account
-									first. Please, go to{" "}
-									<Link
-										href="/dashboard/settings/git-providers"
-										className="text-foreground"
-									>
-										Settings
-									</Link>{" "}
-									to do so.
-								</span>
-							</div>
-						)}
+							{giteaProviders && giteaProviders?.length > 0 ? (
+								<SaveGiteaProviderCompose composeId={composeId} />
+							) : (
+								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
+									<GiteaIcon className="size-8 text-muted-foreground" />
+									<span className="text-base text-muted-foreground">
+										To build from Gitea, you need to configure your account
+										first. Please, go to{" "}
+										<Link
+											href="/dashboard/settings/git-providers"
+											className="text-foreground"
+										>
+											Settings
+										</Link>{" "}
+										to do so.
+									</span>
+								</div>
+							)}
 						</div>
 					)}
 					{tab === "git" && (
 						<div className="w-full p-2">
-						<SaveGitProviderCompose composeId={composeId} />
+							<SaveGitProviderCompose composeId={composeId} />
 						</div>
 					)}
 
 					{tab === "raw" && (
 						<div className="w-full p-2 flex flex-col gap-4">
-						<ComposeFileEditor composeId={composeId} />
+							<ComposeFileEditor composeId={composeId} />
 						</div>
 					)}
 				</div>

@@ -1,15 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -18,7 +18,7 @@ import {
 	FormItem,
 	FormLabel,
 } from "@/components/shared/form";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	composeId: string;
@@ -98,17 +98,17 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 	return (
 		<LayerCard className="bg-background">
 			<div>
-				<h3 className="text-xl">Enable Isolated Deployment</h3>
+				<h3 className="text-xl">Enable Isolated Runtime</h3>
 				<p>
-					Configure isolated deployment to the compose file.
+					Configure isolated runtime resources for the compose file.
 					<div className="text-sm text-muted-foreground flex flex-col gap-2">
 						<span>
-							This feature creates an isolated environment for your deployment
-							by adding unique prefixes to all resources. It establishes a
-							dedicated network based on your compose file's name, ensuring your
-							services run in isolation. This prevents conflicts when running
-							multiple instances of the same template or services with identical
-							names.
+							This feature creates an isolated environment for your compose
+							runtime by adding unique prefixes to all resources. It establishes
+							a dedicated network based on your compose file's name, ensuring
+							your services run in isolation. This prevents conflicts when
+							running multiple instances of the same template or services with
+							identical names.
 						</span>
 						<div className="space-y-4">
 							<div>
@@ -150,10 +150,11 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 											<FormItem className="mt-4 flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 												<div className="space-y-0.5">
 													<FormLabel>
-														Enable Isolated Deployment ({data?.appName})
+														Enable Isolated Runtime ({data?.appName})
 													</FormLabel>
 													<FormDescription>
-														Enable isolated deployment to the compose file.
+														Enable isolated runtime resources for the compose
+														file.
 													</FormDescription>
 												</div>
 												<FormControl>
@@ -188,12 +189,15 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 								>
 									Preview Compose
 								</Button>
-								<Dialog.Root open={isOpenPreview} onOpenChange={setIsOpenPreview}>
+								<Dialog.Root
+									open={isOpenPreview}
+									onOpenChange={setIsOpenPreview}
+								>
 									<Dialog className="sm:max-w-6xl max-h-[80vh]">
 										<div>
-											<Dialog.Title>Isolated Deployment Preview</Dialog.Title>
+											<Dialog.Title>Isolated Runtime Preview</Dialog.Title>
 											<Dialog.Description>
-												Preview of the compose file with isolated deployment
+												Preview of the compose file with isolated runtime
 												configuration
 											</Dialog.Description>
 										</div>

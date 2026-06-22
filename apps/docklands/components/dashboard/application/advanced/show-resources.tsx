@@ -184,8 +184,7 @@ export const ShowResources = ({ id, type }: Props) => {
 			</div>
 			<div className="flex flex-col gap-4">
 				<AlertBlock type="info">
-					Please remember to click Redeploy after modify the resources to apply
-					the changes.
+					Run a build after modifying resources to apply the changes.
 				</AlertBlock>
 				<Form {...form}>
 					<form

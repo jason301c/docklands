@@ -1,3 +1,6 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import {
@@ -9,12 +12,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -24,7 +24,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 import {
 	BACKUP_CODES_PLACEHOLDER,
 	backupCodeTemplate,
@@ -206,14 +206,14 @@ export const Configure2FA = () => {
 	return (
 		<>
 			<Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-				<Dialog.Trigger render={(
-
-					<Button variant="secondary">
-						<KeyRound className="size-4 text-muted-foreground" />
-						Manage 2FA
-					</Button>
-				
-)} />
+				<Dialog.Trigger
+					render={
+						<Button variant="secondary">
+							<KeyRound className="size-4 text-muted-foreground" />
+							Manage 2FA
+						</Button>
+					}
+				/>
 				<Dialog className="sm:max-w-xl">
 					<div>
 						<Dialog.Title>
@@ -385,7 +385,8 @@ export const Configure2FA = () => {
 				</Dialog>
 			</Dialog.Root>
 
-			<Dialog.Root role="alertdialog"
+			<Dialog.Root
+				role="alertdialog"
 				open={showDisableConfirm}
 				onOpenChange={setShowDisableConfirm}
 			>

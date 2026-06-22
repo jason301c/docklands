@@ -1,14 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { AlertTriangle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -18,8 +19,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	composeId: string;
@@ -97,7 +97,7 @@ export const RandomizeCompose = ({ composeId }: Props) => {
 			<div>
 				<Dialog.Title>Randomize Compose (Experimental)</Dialog.Title>
 				<Dialog.Description>
-					Use this in case you want to deploy the same compose file and you have
+					Use this when you want to run the same compose file and you have
 					conflicts with some property like volumes, networks, etc.
 				</Dialog.Description>
 			</div>

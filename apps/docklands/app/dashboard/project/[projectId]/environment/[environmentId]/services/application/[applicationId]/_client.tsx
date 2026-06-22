@@ -102,7 +102,7 @@ const Service = (props: {
 			? { value: "deployments", label: "Builds" }
 			: null,
 		permissions?.deployment.read
-			? { value: "preview-deployments", label: "Preview Builds" }
+			? { value: "preview-deployments", label: "Previews" }
 			: null,
 		permissions?.schedule.read
 			? { value: "schedules", label: "Automations" }
@@ -180,7 +180,7 @@ const Service = (props: {
 													<>
 														<span>
 															This runtime is inactive. Re-enable runtime
-															capacity from Settings to deploy this service.
+															capacity from Settings to run this service.
 														</span>
 													</>
 												}

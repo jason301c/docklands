@@ -32,8 +32,8 @@ export const ToggleRemoteServersOnly = () => {
 						<>
 							<p>
 								When enabled, all services (applications, databases, compose)
-								must be deployed to remote workers. Deploying directly to the
-								Docklands host runtime is not allowed.
+								must run on remote workers. Running directly on the Docklands
+								host runtime is not allowed.
 							</p>
 						</>
 					}

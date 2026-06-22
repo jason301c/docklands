@@ -1,11 +1,11 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Loader2, Puzzle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	composeId: string;
@@ -39,14 +39,14 @@ export const ShowConvertedCompose = ({ composeId }: Props) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={(
-
-				<Button className="max-lg:w-full" variant="outline">
-					<Puzzle className="h-4 w-4" />
-					Preview Compose
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button className="max-lg:w-full" variant="outline">
+						<Puzzle className="h-4 w-4" />
+						Preview Compose
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-6xl max-h-[50rem]">
 				<div>
 					<Dialog.Title>Converted Compose</Dialog.Title>

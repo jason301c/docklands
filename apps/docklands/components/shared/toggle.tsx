@@ -1,10 +1,7 @@
 "use client";
 
+import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
 import * as React from "react";
-import {
-	Button,
-	buttonVariants,
-} from "@cloudflare/kumo/components/button";
 import { cn } from "@/shared/utils";
 
 type ToggleProps = Omit<
@@ -17,8 +14,12 @@ type ToggleProps = Omit<
 };
 
 const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(
-	({ pressed, defaultPressed = false, onPressedChange, className, ...props }, ref) => {
-		const [internalPressed, setInternalPressed] = React.useState(defaultPressed);
+	(
+		{ pressed, defaultPressed = false, onPressedChange, className, ...props },
+		ref,
+	) => {
+		const [internalPressed, setInternalPressed] =
+			React.useState(defaultPressed);
 		const isPressed = pressed ?? internalPressed;
 
 		const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {

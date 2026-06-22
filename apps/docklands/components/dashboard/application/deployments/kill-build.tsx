@@ -1,8 +1,8 @@
-import { Scissors } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Scissors } from "lucide-react";
+import { api } from "@/client/api/trpc";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	id: string;
@@ -17,14 +17,14 @@ export const KillBuild = ({ id, type }: Props) => {
 
 	return (
 		<Dialog.Root role="alertdialog">
-			<Dialog.Trigger render={(
-
-				<Button variant="outline" className="w-fit" loading={isPending}>
-					Kill Build
-					<Scissors className="size-4" />
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button variant="outline" className="w-fit" loading={isPending}>
+						Kill Build
+						<Scissors className="size-4" />
+					</Button>
+				}
+			/>
 			<Dialog>
 				<div>
 					<Dialog.Title>Are you sure to kill the build?</Dialog.Title>

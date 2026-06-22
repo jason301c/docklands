@@ -1,3 +1,5 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	ArrowLeft,
 	ChevronRight,
@@ -8,12 +10,10 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { ScrollArea } from "@/components/shared/scroll-area";
+import { toast } from "@/components/shared/toast";
 import { CreateFileDialog } from "./create-file-dialog";
 
 interface Props {
@@ -247,7 +247,12 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 		<LayerCard className="bg-background overflow-hidden">
 			<div className="flex flex-row items-center justify-between pb-4">
 				<div className="flex items-center gap-4">
-					<Button aria-label="Close" variant="ghost" shape="square" onClick={onClose}>
+					<Button
+						aria-label="Close"
+						variant="ghost"
+						shape="square"
+						onClick={onClose}
+					>
 						<ArrowLeft className="h-4 w-4" />
 					</Button>
 					<div>

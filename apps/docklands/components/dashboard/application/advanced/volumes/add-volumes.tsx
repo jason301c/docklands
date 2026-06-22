@@ -176,10 +176,10 @@ export const AddVolumes = ({
 									</p>
 									<p className="text-sm text-muted-foreground">
 										<strong>Cluster Warning:</strong> If you're using cluster
-										features, bind mounts may cause deployment failures since
-										the path must exist on all worker/manager nodes. Consider
-										using external tools to distribute the folder across nodes
-										or use named volumes instead.
+										features, bind mounts may cause build failures since the
+										path must exist on all worker/manager nodes. Consider using
+										external tools to distribute the folder across nodes or use
+										named volumes instead.
 									</p>
 								</div>
 							</AlertBlock>

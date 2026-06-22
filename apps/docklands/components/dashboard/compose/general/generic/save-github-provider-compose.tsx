@@ -401,7 +401,7 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 												content={
 													<>
 														<p>
-															Choose when to trigger deployments: on push to the
+															Choose when to trigger builds: on push to the
 															selected branch or when a new tag is created.
 														</p>
 													</>
@@ -444,7 +444,7 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 														<>
 															<p>
 																Add paths to watch for changes. When files in
-																these paths change, a new deployment will be
+																these paths change, a new build will be
 																triggered.
 															</p>
 														</>

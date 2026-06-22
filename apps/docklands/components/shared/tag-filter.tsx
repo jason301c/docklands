@@ -1,9 +1,9 @@
-import { Check, Tags } from "lucide-react";
-import { HandleTag } from "@/components/dashboard/settings/tags/handle-tag";
-import { TagBadge } from "@/components/shared/tag-badge";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Check, Tags } from "lucide-react";
+import { HandleTag } from "@/components/dashboard/settings/tags/handle-tag";
+import { TagBadge } from "@/components/shared/tag-badge";
 import { cn } from "@/shared/utils";
 
 export interface Tag {
@@ -25,7 +25,9 @@ export function TagFilter({
 	onTagsChange,
 	className,
 }: TagFilterProps) {
-	const selectedTagObjects = tags.filter((tag) => selectedTags.includes(tag.id));
+	const selectedTagObjects = tags.filter((tag) =>
+		selectedTags.includes(tag.id),
+	);
 
 	return (
 		<div className={cn("flex items-center gap-2", className)}>
@@ -85,7 +87,9 @@ export function TagFilter({
 					</Combobox.List>
 					<Combobox.Empty>
 						<div className="flex flex-col items-center gap-2 py-1">
-							<span className="text-sm text-muted-foreground">No tags found.</span>
+							<span className="text-sm text-muted-foreground">
+								No tags found.
+							</span>
 							<HandleTag />
 						</div>
 					</Combobox.Empty>

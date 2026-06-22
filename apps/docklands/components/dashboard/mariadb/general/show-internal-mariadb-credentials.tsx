@@ -1,10 +1,10 @@
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
-import { UpdateDatabasePassword } from "@/components/shared/update-database-password";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { api } from "@/client/api/trpc";
+import { toast } from "@/components/shared/toast";
+import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
+import { UpdateDatabasePassword } from "@/components/shared/update-database-password";
 
 interface Props {
 	mariadbId: string;

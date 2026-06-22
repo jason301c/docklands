@@ -75,8 +75,8 @@ export const ShowVolumes = ({ id, type }: Props) => {
 				) : (
 					<div className="flex flex-col pt-2 gap-4">
 						<AlertBlock type="warning">
-							Please remember to click Redeploy after adding, editing, or
-							deleting a mount to apply the changes.
+							Run a build after adding, editing, or deleting a mount to apply
+							the changes.
 						</AlertBlock>
 						<div className="flex flex-col gap-6">
 							{data?.mounts.map((mount) => (

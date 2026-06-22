@@ -1,20 +1,15 @@
 "use client";
 
-
-
-
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Logo } from "@/components/shared/logo";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -23,7 +18,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { Logo } from "@/components/shared/logo";
+import { toast } from "@/components/shared/toast";
 
 const loginSchema = z.object({
 	email: z
@@ -90,9 +86,7 @@ export default function Home() {
 					<span className="font-medium text-sm">Docklands</span>
 				</Link>
 				<h3 className="text-2xl font-bold">Reset Password</h3>
-				<p>
-					Enter your email to reset your password
-				</p>
+				<p>Enter your email to reset your password</p>
 
 				<div className="mx-auto w-full max-w-lg bg-transparent ">
 					<div className="p-0">

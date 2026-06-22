@@ -414,10 +414,10 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																			content={
 																				<>
 																					<p>
-																						Cache: If you previously deployed
-																						this compose, it will read the
-																						services from the last
-																						deployment/fetch from the repository
+																						Cache: If you previously built this
+																						compose, it will read the services
+																						from the last build or repository
+																						fetch
 																					</p>
 																				</>
 																			}

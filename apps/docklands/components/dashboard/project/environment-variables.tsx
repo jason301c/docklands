@@ -1,15 +1,14 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Terminal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Form,
 	FormControl,
@@ -18,6 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { toast } from "@/components/shared/toast";
 
 const updateEnvironmentSchema = z.object({
 	env: z.string().optional(),
@@ -103,15 +103,19 @@ export const EnvironmentVariables = ({ environmentId, children }: Props) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={(children ?? (
-					<DropdownMenu.Item
-						className="w-full cursor-pointer space-x-3"
-						onSelect={(e) => e.preventDefault()}
-					>
-						<Terminal className="size-4" />
-						<span>Environment Variables</span>
-					</DropdownMenu.Item>
-				)) as never} />
+			<Dialog.Trigger
+				render={
+					(children ?? (
+						<DropdownMenu.Item
+							className="w-full cursor-pointer space-x-3"
+							onSelect={(e) => e.preventDefault()}
+						>
+							<Terminal className="size-4" />
+							<span>Environment Variables</span>
+						</DropdownMenu.Item>
+					)) as never
+				}
+			/>
 			<Dialog className="sm:max-w-6xl">
 				<div>
 					<Dialog.Title>Environment Variables</Dialog.Title>

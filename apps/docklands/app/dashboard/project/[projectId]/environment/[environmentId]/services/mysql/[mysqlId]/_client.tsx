@@ -117,7 +117,7 @@ const MySql = (props: {
 														<>
 															<span>
 																This runtime is inactive. Re-enable runtime
-																capacity from Settings to deploy this service.
+																capacity from Settings to run this service.
 															</span>
 														</>
 													}

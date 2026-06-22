@@ -13,9 +13,10 @@ const ScrollArea = React.forwardRef<
 ));
 ScrollArea.displayName = "ScrollArea";
 
-const ScrollBar = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-	(props, ref) => <div ref={ref} {...props} />,
-);
+const ScrollBar = React.forwardRef<
+	HTMLDivElement,
+	React.HTMLAttributes<HTMLDivElement>
+>((props, ref) => <div ref={ref} {...props} />);
 ScrollBar.displayName = "ScrollBar";
 
 export { ScrollArea, ScrollBar };

@@ -1,7 +1,7 @@
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { api } from "@/client/api/trpc";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	containerId: string;
@@ -14,16 +14,16 @@ export const RemoveContainerDialog = ({ containerId, serverId }: Props) => {
 
 	return (
 		<Dialog.Root role="alertdialog">
-			<Dialog.Trigger render={(
-
-				<DropdownMenu.Item
-					className="w-full cursor-pointer text-red-500 hover:!text-red-600"
-					onSelect={(e) => e.preventDefault()}
-				>
-					Remove Container
-				</DropdownMenu.Item>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<DropdownMenu.Item
+						className="w-full cursor-pointer text-red-500 hover:!text-red-600"
+						onSelect={(e) => e.preventDefault()}
+					>
+						Remove Container
+					</DropdownMenu.Item>
+				}
+			/>
 			<Dialog>
 				<div>
 					<Dialog.Title>Are you sure?</Dialog.Title>

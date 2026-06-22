@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
 import { Input } from "@cloudflare/kumo/components/input";
+import { useEffect, useRef } from "react";
 
 type Props = React.ComponentPropsWithoutRef<typeof Input>;
 

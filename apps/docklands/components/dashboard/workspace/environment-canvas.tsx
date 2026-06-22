@@ -1624,7 +1624,9 @@ export const EnvironmentCanvas = ({
 					: `${service.name} ${action === "start" ? "started" : "stopped"}`;
 			},
 			error: (error) =>
-				`Could not ${action} ${service.name}: ${error instanceof Error ? error.message : "Unknown error"}`,
+				action === "deploy"
+					? `Could not queue build for ${service.name}: ${error instanceof Error ? error.message : "Unknown error"}`
+					: `Could not ${action} ${service.name}: ${error instanceof Error ? error.message : "Unknown error"}`,
 		});
 	};
 
@@ -1660,7 +1662,11 @@ export const EnvironmentCanvas = ({
 				);
 			}
 			if (failed > 0) {
-				toast.error(`${failed} services could not ${action}`);
+				toast.error(
+					action === "deploy"
+						? `${failed} services could not be queued for build`
+						: `${failed} services could not ${action}`,
+				);
 			}
 			if (failed === 0) {
 				setSelectedBulkKeys([]);
@@ -2051,7 +2057,7 @@ export const EnvironmentCanvas = ({
 						id: "create:application",
 						group: "Create" as const,
 						label: "New application",
-						detail: "Create a deployable app service",
+						detail: "Create an app service from source or image",
 						search:
 							"new create application app service build git docker image builder",
 						icon: <Folder className="size-5 text-muted-foreground" />,

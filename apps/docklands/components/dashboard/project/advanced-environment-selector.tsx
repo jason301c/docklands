@@ -1,15 +1,14 @@
-import { ChevronDownIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { AlertBlock } from "@/components/shared/alert-block";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Input } from "@cloudflare/kumo/components/input";
+import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
-import { Textarea } from "@cloudflare/kumo/components/input";
+import { ChevronDownIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { api } from "@/client/api/trpc";
+import { AlertBlock } from "@/components/shared/alert-block";
+import { toast } from "@/components/shared/toast";
 import type { findEnvironmentsByProjectId } from "@/server/core/services/environment";
 
 type Environment = Awaited<
@@ -184,17 +183,17 @@ export const AdvancedEnvironmentSelector = ({
 	return (
 		<>
 			<DropdownMenu>
-				<DropdownMenu.Trigger render={(
-
-					<Button variant="ghost" className="h-auto p-2 font-normal">
-						<div className="flex items-center gap-1">
-							<span className="text-muted-foreground">/</span>
-							<span>{currentEnv?.name || "Select Environment"}</span>
-							<ChevronDownIcon className="h-4 w-4 text-muted-foreground" />
-						</div>
-					</Button>
-				
-)} />
+				<DropdownMenu.Trigger
+					render={
+						<Button variant="ghost" className="h-auto p-2 font-normal">
+							<div className="flex items-center gap-1">
+								<span className="text-muted-foreground">/</span>
+								<span>{currentEnv?.name || "Select Environment"}</span>
+								<ChevronDownIcon className="h-4 w-4 text-muted-foreground" />
+							</div>
+						</Button>
+					}
+				/>
 				<DropdownMenu.Content className="w-[300px]" align="start">
 					<DropdownMenu.Label>Environments</DropdownMenu.Label>
 					<DropdownMenu.Separator />
@@ -275,7 +274,10 @@ export const AdvancedEnvironmentSelector = ({
 				</DropdownMenu.Content>
 			</DropdownMenu>
 
-			<Dialog.Root open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+			<Dialog.Root
+				open={isCreateDialogOpen}
+				onOpenChange={setIsCreateDialogOpen}
+			>
 				<Dialog>
 					<div>
 						<Dialog.Title>Create Environment</Dialog.Title>
@@ -380,7 +382,10 @@ export const AdvancedEnvironmentSelector = ({
 			</Dialog.Root>
 
 			{/* Delete Environment Dialog */}
-			<Dialog.Root open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+			<Dialog.Root
+				open={isDeleteDialogOpen}
+				onOpenChange={setIsDeleteDialogOpen}
+			>
 				<Dialog>
 					<div>
 						<Dialog.Title>Delete Environment</Dialog.Title>

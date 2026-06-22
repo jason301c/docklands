@@ -1,12 +1,11 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Switch } from "@cloudflare/kumo/components/switch";
 
 export const AddGithubProvider = () => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -50,14 +49,14 @@ export const AddGithubProvider = () => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={(
-
-				<Button variant="secondary" className="flex items-center space-x-1">
-					<GithubIcon className="text-current fill-current" />
-					<span>Github</span>
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button variant="secondary" className="flex items-center space-x-1">
+						<GithubIcon className="text-current fill-current" />
+						<span>Github</span>
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-2xl ">
 				<div>
 					<Dialog.Title className="flex items-center gap-2">

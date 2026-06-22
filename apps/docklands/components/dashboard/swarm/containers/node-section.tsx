@@ -1,8 +1,8 @@
-import { ChevronDown, ChevronRight, Server } from "lucide-react";
 import { Badge } from "@cloudflare/kumo/components/badge";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Collapsible } from "@cloudflare/kumo/components/collapsible";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Table } from "@cloudflare/kumo/components/table";
+import { ChevronDown, ChevronRight, Server } from "lucide-react";
 import { ContainerRow } from "./container-row";
 import type { ContainerStat, NodeGroup } from "./types";
 

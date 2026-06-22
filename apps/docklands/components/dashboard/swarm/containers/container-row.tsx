@@ -1,7 +1,7 @@
-import { AlertCircle, HardDrive, Network } from "lucide-react";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Table } from "@cloudflare/kumo/components/table";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { AlertCircle, HardDrive, Network } from "lucide-react";
 import type { ContainerInfo, ContainerStat } from "./types";
 import { formatCpu, formatIOValue, formatMemUsage } from "./utils";
 
@@ -16,7 +16,9 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 
 	const stateBadge = (
 		<Badge
-			variant={hasError ? "destructive" : isRunning ? "secondary" : "destructive"}
+			variant={
+				hasError ? "destructive" : isRunning ? "secondary" : "destructive"
+			}
 		>
 			{container.CurrentState}
 		</Badge>
@@ -35,15 +37,22 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 			<Table.Cell>
 				{hasError ? (
 					<TooltipProvider>
-						<Tooltip content={<>
-								<p className="text-xs font-medium">Error:</p>
-								<p className="text-xs">{container.Error}</p>
-							</>} side="top" className="max-w-xs"  asChild>
-								<span className="inline-flex items-center gap-1.5 cursor-help">
-									{stateBadge}
-									<AlertCircle className="h-3.5 w-3.5 text-destructive" />
-								</span>
-							</Tooltip>
+						<Tooltip
+							content={
+								<>
+									<p className="text-xs font-medium">Error:</p>
+									<p className="text-xs">{container.Error}</p>
+								</>
+							}
+							side="top"
+							className="max-w-xs"
+							asChild
+						>
+							<span className="inline-flex items-center gap-1.5 cursor-help">
+								{stateBadge}
+								<AlertCircle className="h-3.5 w-3.5 text-destructive" />
+							</span>
+						</Tooltip>
 					</TooltipProvider>
 				) : (
 					stateBadge

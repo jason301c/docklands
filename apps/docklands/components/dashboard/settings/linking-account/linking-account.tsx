@@ -1,12 +1,11 @@
 "use client";
 
-
-import { Link2, Loader2, Unlink } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
-import { authClient } from "@/client/auth/client";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Link2, Loader2, Unlink } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { authClient } from "@/client/auth/client";
+import { toast } from "@/components/shared/toast";
 
 const LINKING_CALLBACK_URL = "/dashboard/settings/profile";
 
@@ -114,9 +113,7 @@ export function LinkingAccount() {
 								<Link2 className="size-6 text-muted-foreground self-center" />
 								Linking account
 							</h3>
-							<p>
-								Link your Google or GitHub account to sign in with them.
-							</p>
+							<p>Link your Google or GitHub account to sign in with them.</p>
 						</div>
 					</div>
 				</div>

@@ -1,8 +1,8 @@
-import { api } from "@/client/api/trpc";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Table } from "@cloudflare/kumo/components/table";
+import { api } from "@/client/api/trpc";
 
 interface Props {
 	containerId: string;
@@ -42,16 +42,16 @@ export const ShowContainerNetworks = ({ containerId, serverId }: Props) => {
 
 	return (
 		<Dialog.Root>
-			<Dialog.Trigger render={(
-
-				<DropdownMenu.Item
-					className="w-full cursor-pointer"
-					onSelect={(e) => e.preventDefault()}
-				>
-					View Networks
-				</DropdownMenu.Item>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<DropdownMenu.Item
+						className="w-full cursor-pointer"
+						onSelect={(e) => e.preventDefault()}
+					>
+						View Networks
+					</DropdownMenu.Item>
+				}
+			/>
 			<Dialog className="w-full md:w-[70vw] min-w-[70vw]">
 				<div>
 					<Dialog.Title>Container Networks</Dialog.Title>

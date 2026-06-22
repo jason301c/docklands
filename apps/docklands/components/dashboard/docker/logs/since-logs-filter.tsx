@@ -1,9 +1,9 @@
-import { CheckIcon } from "lucide-react";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Separator } from "@/components/shared/separator";
 import { Switch } from "@cloudflare/kumo/components/switch";
+import { CheckIcon } from "lucide-react";
+import { Separator } from "@/components/shared/separator";
 import { cn } from "@/shared/utils";
 
 export type TimeFilter = "all" | "1h" | "6h" | "24h" | "168h" | "720h";

@@ -1,18 +1,23 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import debounce from "lodash/debounce";
 import { CheckIcon, ChevronsUpDown, Copy, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -21,13 +26,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
 import { ScrollArea } from "@/components/shared/scroll-area";
+import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import { formatBytes } from "../../database/backups/restore-backup";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
@@ -136,14 +136,14 @@ export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={(
-
-				<Button variant="outline">
-					<RotateCcw className="mr-2 size-4" />
-					Restore Volume Backup
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button variant="outline">
+						<RotateCcw className="mr-2 size-4" />
+						Restore Volume Backup
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-lg">
 				<div>
 					<Dialog.Title className="flex items-center">

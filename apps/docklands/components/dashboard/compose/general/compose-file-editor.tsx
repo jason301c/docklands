@@ -1,11 +1,10 @@
+import { Button } from "@cloudflare/kumo/components/button";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
 import {
 	Form,
 	FormControl,
@@ -13,6 +12,7 @@ import {
 	FormItem,
 	FormMessage,
 } from "@/components/shared/form";
+import { toast } from "@/components/shared/toast";
 import { validateAndFormatYAML } from "../../application/advanced/traefik/update-traefik-config";
 
 interface Props {

@@ -18,16 +18,15 @@ export const DialogAction = ({
 	disabled,
 	type,
 }: Props) => {
-	const confirmVariant = type === "default" ? "secondary" : (type ?? "destructive");
+	const confirmVariant =
+		type === "default" ? "secondary" : (type ?? "destructive");
 
 	return (
 		<Dialog.Root role="alertdialog">
 			<Dialog.Trigger render={children as never} />
 			<Dialog>
 				<div>
-					<Dialog.Title>
-						{title ?? "Are you absolutely sure?"}
-					</Dialog.Title>
+					<Dialog.Title>{title ?? "Are you absolutely sure?"}</Dialog.Title>
 					<Dialog.Description>
 						{description ?? "This action cannot be undone."}
 					</Dialog.Description>

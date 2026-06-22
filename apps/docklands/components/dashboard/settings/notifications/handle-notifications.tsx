@@ -1416,7 +1416,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 												<FormItem>
 													<FormLabel>Topic</FormLabel>
 													<FormControl>
-														<Input placeholder="deployments" {...field} />
+														<Input placeholder="builds" {...field} />
 													</FormControl>
 													<FormMessage />
 												</FormItem>
@@ -1501,7 +1501,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 												<FormItem>
 													<FormLabel>Channel</FormLabel>
 													<FormControl>
-														<Input placeholder="deployments" {...field} />
+														<Input placeholder="builds" {...field} />
 													</FormControl>
 													<FormDescription>
 														Optional. Channel to post to (without #).
@@ -1818,9 +1818,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
 											<div className="">
-												<FormLabel>App Deploy</FormLabel>
+												<FormLabel>App Build</FormLabel>
 												<FormDescription>
-													Trigger the action when a app is deployed.
+													Trigger the action when an app build completes.
 												</FormDescription>
 											</div>
 											<FormControl>

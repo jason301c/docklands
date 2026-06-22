@@ -1,7 +1,7 @@
-import { FancyAnsi } from "fancy-ansi";
-import escapeRegExp from "lodash/escapeRegExp";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { FancyAnsi } from "fancy-ansi";
+import escapeRegExp from "lodash/escapeRegExp";
 import { cn } from "@/shared/utils";
 import { getLogType, type LogLine } from "./utils";
 
@@ -63,11 +63,19 @@ export function TerminalLine({ log, noTimestamp, searchTerm }: LogLineProps) {
 		);
 		return timestamp ? (
 			<TooltipProvider delay={0}>
-				<Tooltip content={<>
+				<Tooltip
+					content={
+						<>
 							<p className="text text-xs text-muted-foreground break-all max-w-md">
 								<pre>{timestamp}</pre>
 							</p>
-						</>} className="bg-popover border-border z-[99999]"  asChild>{square}</Tooltip>
+						</>
+					}
+					className="bg-popover border-border z-[99999]"
+					asChild
+				>
+					{square}
+				</Tooltip>
 			</TooltipProvider>
 		) : (
 			square

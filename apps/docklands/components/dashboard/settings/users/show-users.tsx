@@ -1,14 +1,14 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Table } from "@cloudflare/kumo/components/table";
 import { format } from "date-fns";
 import { Loader2, MoreHorizontal, Users } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Table } from "@cloudflare/kumo/components/table";
+import { toast } from "@/components/shared/toast";
 import { AddUserPermissions } from "./add-permissions";
 import { ChangeRole } from "./change-role";
 
@@ -30,9 +30,7 @@ export const ShowUsers = () => {
 							<Users className="size-6 text-muted-foreground self-center" />
 							Users
 						</h3>
-						<p>
-							Add your users to your Docklands account.
-						</p>
+						<p>Add your users to your Docklands account.</p>
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
@@ -61,7 +59,9 @@ export const ShowUsers = () => {
 													<Table.Head className="text-center">
 														Created At
 													</Table.Head>
-													<Table.Head className="text-right">Actions</Table.Head>
+													<Table.Head className="text-right">
+														Actions
+													</Table.Head>
 												</Table.Row>
 											</Table.Header>
 											<Table.Body>
@@ -146,19 +146,19 @@ export const ShowUsers = () => {
 															<Table.Cell className="text-right flex justify-end">
 																{hasAnyAction ? (
 																	<DropdownMenu>
-																		<DropdownMenu.Trigger render={(
-
-																			<Button
-																				variant="ghost"
-																				className="h-8 w-8 p-0"
-																			>
-																				<span className="sr-only">
-																					Open menu
-																				</span>
-																				<MoreHorizontal className="h-4 w-4" />
-																			</Button>
-																		
-)} />
+																		<DropdownMenu.Trigger
+																			render={
+																				<Button
+																					variant="ghost"
+																					className="h-8 w-8 p-0"
+																				>
+																					<span className="sr-only">
+																						Open menu
+																					</span>
+																					<MoreHorizontal className="h-4 w-4" />
+																				</Button>
+																			}
+																		/>
 																		<DropdownMenu.Content align="end">
 																			<DropdownMenu.Label>
 																				Actions

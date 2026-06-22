@@ -247,9 +247,9 @@ export const HandlePorts = ({
 						<AlertBlock type="warning" className="mt-4">
 							<strong>Host Mode Limitation:</strong> When using Host publish
 							mode, orchestration has limitations that prevent proper container
-							updates during deployments. Old containers may not be replaced
+							updates during builds. Old containers may not be replaced
 							automatically. Consider using Ingress mode instead, or be prepared
-							to manually stop/start the application after deployments.
+							to manually stop/start the application after builds.
 						</AlertBlock>
 					)}
 

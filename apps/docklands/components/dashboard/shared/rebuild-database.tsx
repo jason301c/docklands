@@ -1,9 +1,9 @@
-import { AlertTriangle, DatabaseIcon } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { AlertTriangle, DatabaseIcon } from "lucide-react";
+import { api } from "@/client/api/trpc";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	id: string;
@@ -61,18 +61,18 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 						</p>
 					</div>
 					<Dialog.Root role="alertdialog">
-						<Dialog.Trigger render={(
-
-							<Button
-								loading={isPending}
-								variant="outline"
-								className="w-full border-destructive/50 hover:bg-destructive/10 hover:text-destructive text-destructive"
-							>
-								<DatabaseIcon className="mr-2 h-4 w-4" />
-								Rebuild Database
-							</Button>
-						
-)} />
+						<Dialog.Trigger
+							render={
+								<Button
+									loading={isPending}
+									variant="outline"
+									className="w-full border-destructive/50 hover:bg-destructive/10 hover:text-destructive text-destructive"
+								>
+									<DatabaseIcon className="mr-2 h-4 w-4" />
+									Rebuild Database
+								</Button>
+							}
+						/>
 						<Dialog>
 							<div>
 								<Dialog.Title className="flex items-center gap-2">
@@ -94,14 +94,15 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 							</div>
 							<div>
 								<Dialog.Close>Cancel</Dialog.Close>
-								<Dialog.Close onClick={handleRebuild}
-									className="bg-destructive text-destructive-foreground hover:bg-destructive/90" render={(
-
-									<Button loading={isPending} type="submit">
-										Yes, rebuild database
-									</Button>
-								
-)} />
+								<Dialog.Close
+									onClick={handleRebuild}
+									className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+									render={
+										<Button loading={isPending} type="submit">
+											Yes, rebuild database
+										</Button>
+									}
+								/>
 							</div>
 						</Dialog>
 					</Dialog.Root>
