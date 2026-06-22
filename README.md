@@ -57,9 +57,14 @@ and docs sites can be added as separate deployables under `apps/`.
 ```bash
 pnpm install --frozen-lockfile
 cp apps/docklands/.env.example apps/docklands/.env
-pnpm setup
+NODE_ENV=development pnpm setup
 pnpm dev
 ```
+
+`pnpm setup` waits for the configured `DATABASE_URL` to accept a real
+connection before running migrations. If it reports that the `docklands` role or
+database does not exist, another local Postgres is probably already using port
+`5432`; stop it or update `DATABASE_URL` before rerunning setup.
 
 Useful checks:
 
