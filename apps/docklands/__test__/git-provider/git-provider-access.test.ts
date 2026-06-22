@@ -13,6 +13,9 @@ const mockDb = vi.hoisted(() => ({
 		member: {
 			findFirst: vi.fn(),
 		},
+		memberResourceAccess: {
+			findMany: vi.fn(),
+		},
 	},
 }));
 
@@ -23,6 +26,14 @@ const USER_OWNER = "user-owner";
 const USER_ADMIN = "user-admin";
 const USER_MEMBER = "user-member";
 const USER_MEMBER_2 = "user-member-2";
+
+// Grant the member access to the given git providers via the normalized
+// member_resource_access table.
+const grantGitProviders = (ids: string[]) => {
+	mockDb.query.memberResourceAccess.findMany.mockResolvedValue(
+		ids.map((resourceId) => ({ resourceType: "gitProvider", resourceId })),
+	);
+};
 
 const providerOwned = {
 	gitProviderId: "gp-owned",
@@ -59,14 +70,15 @@ function session(userId: string) {
 beforeEach(() => {
 	vi.clearAllMocks();
 	mockDb.query.gitProvider.findMany.mockResolvedValue(allProviders);
+	mockDb.query.memberResourceAccess.findMany.mockResolvedValue([]);
 });
 
 describe("getAccessibleGitProviderIds", () => {
 	describe("owner", () => {
 		beforeEach(() => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-owner",
 				role: "owner",
-				accessedGitProviders: [],
 			});
 		});
 
@@ -85,8 +97,8 @@ describe("getAccessibleGitProviderIds", () => {
 	describe("admin", () => {
 		beforeEach(() => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-admin",
 				role: "admin",
-				accessedGitProviders: [],
 			});
 		});
 
@@ -105,9 +117,10 @@ describe("getAccessibleGitProviderIds", () => {
 	describe("member access", () => {
 		beforeEach(() => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-member",
 				role: "member",
-				accessedGitProviders: [providerPrivate.gitProviderId],
 			});
+			grantGitProviders([providerPrivate.gitProviderId]);
 		});
 
 		it("can access their own provider", async () => {
@@ -134,18 +147,20 @@ describe("getAccessibleGitProviderIds", () => {
 	describe("member assignments", () => {
 		it("can access provider explicitly assigned to them", async () => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-member",
 				role: "member",
-				accessedGitProviders: [providerPrivate.gitProviderId],
 			});
+			grantGitProviders([providerPrivate.gitProviderId]);
 			const ids = await getAccessibleGitProviderIds(session(USER_MEMBER));
 			expect(ids.has(providerPrivate.gitProviderId)).toBe(true);
 		});
 
 		it("cannot access provider not assigned and not shared", async () => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-member",
 				role: "member",
-				accessedGitProviders: [],
 			});
+			grantGitProviders([]);
 			const ids = await getAccessibleGitProviderIds(session(USER_MEMBER));
 			expect(ids.has(providerPrivate.gitProviderId)).toBe(false);
 			expect(ids.has(providerOtherMember.gitProviderId)).toBe(false);
@@ -153,27 +168,30 @@ describe("getAccessibleGitProviderIds", () => {
 
 		it("can access shared provider even without explicit assignment", async () => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-member",
 				role: "member",
-				accessedGitProviders: [],
 			});
+			grantGitProviders([]);
 			const ids = await getAccessibleGitProviderIds(session(USER_MEMBER));
 			expect(ids.has(providerShared.gitProviderId)).toBe(true);
 		});
 
 		it("can access own provider regardless of assignments", async () => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-member",
 				role: "member",
-				accessedGitProviders: [],
 			});
+			grantGitProviders([]);
 			const ids = await getAccessibleGitProviderIds(session(USER_MEMBER));
 			expect(ids.has(providerOwned.gitProviderId)).toBe(true);
 		});
 
 		it("cannot access provider of other member without assignment", async () => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-member",
 				role: "member",
-				accessedGitProviders: [],
 			});
+			grantGitProviders([]);
 			const ids = await getAccessibleGitProviderIds(session(USER_MEMBER));
 			expect(ids.has(providerOtherMember.gitProviderId)).toBe(false);
 		});
@@ -196,18 +214,20 @@ describe("getAccessibleGitProviderIds", () => {
 		// getAccessibleGitProviderIds still returns the provider (member can connect NEW deploys)
 		it("member assigned to owner's private provider can USE the provider for new deploys", async () => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-member",
 				role: "member",
-				accessedGitProviders: [providerPrivate.gitProviderId],
 			});
+			grantGitProviders([providerPrivate.gitProviderId]);
 			const ids = await getAccessibleGitProviderIds(session(USER_MEMBER));
 			expect(ids.has(providerPrivate.gitProviderId)).toBe(true);
 		});
 
 		it("member NOT assigned to owner's private provider cannot use it at all", async () => {
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-member",
 				role: "member",
-				accessedGitProviders: [],
 			});
+			grantGitProviders([]);
 			const ids = await getAccessibleGitProviderIds(session(USER_MEMBER));
 			expect(ids.has(providerPrivate.gitProviderId)).toBe(false);
 		});
@@ -217,8 +237,8 @@ describe("getAccessibleGitProviderIds", () => {
 		beforeEach(() => {
 			mockDb.query.gitProvider.findMany.mockResolvedValue([]);
 			mockDb.query.member.findFirst.mockResolvedValue({
+				id: "m-admin",
 				role: "admin",
-				accessedGitProviders: [],
 			});
 		});
 
@@ -232,6 +252,7 @@ describe("getAccessibleGitProviderIds", () => {
 describe("canEditDeployGitSource", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		mockDb.query.memberResourceAccess.findMany.mockResolvedValue([]);
 	});
 
 	describe("owner", () => {

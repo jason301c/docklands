@@ -25,8 +25,11 @@ import {
 } from "@/server/core/services/admin";
 import { findNotificationById } from "@/server/core/services/notification";
 import {
+	findMemberByUserId,
 	hasPermission,
+	loadResourceAccess,
 	resolvePermissions,
+	syncMemberResourceAccess,
 } from "@/server/core/services/permission";
 import {
 	createApiKey,
@@ -117,7 +120,10 @@ export const userRouter = createTRPCRouter({
 				}
 			}
 
-			return memberResult;
+			return {
+				...memberResult,
+				...(await loadResourceAccess(memberResult.id)),
+			};
 		}),
 	session: publicProcedure.query(async ({ ctx }) => {
 		if (!ctx.user || !ctx.session || !ctx.session.activeOrganizationId) {
@@ -361,34 +367,44 @@ export const userRouter = createTRPCRouter({
 					});
 				}
 
-				const { id, accessedGitProviders, accessedRuntimeWorkers, ...rest } =
-					input;
+				const organizationId = ctx.session?.activeOrganizationId || "";
+				const {
+					id,
+					accessedWorkspaces,
+					accessedEnvironments,
+					accessedServices,
+					accessedGitProviders,
+					accessedRuntimeWorkers,
+					...flags
+				} = input;
 
-				await db
-					.update(member)
-					.set({
-						...rest,
-						...(accessedGitProviders !== undefined
-							? { accessedGitProviders }
-							: {}),
-						...(accessedRuntimeWorkers !== undefined
-							? { accessedRuntimeWorkers }
-							: {}),
-					})
-					.where(
-						and(
-							eq(member.userId, input.id),
-							eq(
-								member.organizationId,
-								ctx.session?.activeOrganizationId || "",
+				const memberRecord = await findMemberByUserId(id, organizationId);
+
+				if (Object.keys(flags).length > 0) {
+					await db
+						.update(member)
+						.set(flags)
+						.where(
+							and(
+								eq(member.userId, id),
+								eq(member.organizationId, organizationId),
 							),
-						),
-					);
+						);
+				}
+
+				await syncMemberResourceAccess(memberRecord.id, organizationId, {
+					workspace: accessedWorkspaces,
+					environment: accessedEnvironments,
+					service: accessedServices,
+					gitProvider: accessedGitProviders,
+					runtimeWorker: accessedRuntimeWorkers,
+				});
+
 				await audit(ctx, {
 					action: "update",
 					resourceType: "user",
 					resourceId: input.id,
-					metadata: { permissions: rest },
+					metadata: { permissions: flags },
 				});
 			} catch (error) {
 				throw error;

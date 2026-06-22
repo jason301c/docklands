@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { gitProvider, member } from "@/server/core/db/schema";
+import { getMemberResourceAccessSet } from "./permission";
 
 export type GitProvider = typeof gitProvider.$inferSelect;
 
@@ -89,19 +90,15 @@ export const getAccessibleGitProviderIds = async (session: {
 		},
 	});
 
-	const memberRecord = await db.query.member.findFirst({
-		where: and(
-			eq(member.userId, userId),
-			eq(member.organizationId, activeOrganizationId),
-		),
-		columns: { accessedGitProviders: true, role: true },
-	});
+	const { role, ids: assignedSet } = await getMemberResourceAccessSet(
+		userId,
+		activeOrganizationId,
+		"gitProvider",
+	);
 
-	if (memberRecord?.role === "owner" || memberRecord?.role === "admin") {
+	if (role === "owner" || role === "admin") {
 		return new Set(allOrgProviders.map((p) => p.gitProviderId));
 	}
-
-	const assignedSet = new Set(memberRecord?.accessedGitProviders ?? []);
 
 	const result = new Set<string>();
 	for (const p of allOrgProviders) {

@@ -1,4 +1,4 @@
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 import {
 	boolean,
 	index,
@@ -149,26 +149,8 @@ export const member = pgTable("member", {
 	canCreateEnvironments: boolean("canCreateEnvironments")
 		.notNull()
 		.default(false),
-	accessedWorkspaces: text("accessedWorkspaces")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
-	accessedEnvironments: text("accessedEnvironments")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
-	accessedServices: text("accesedServices")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
-	accessedGitProviders: text("accessedGitProviders")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
-	accessedRuntimeWorkers: text("accessedRuntimeWorkers")
-		.array()
-		.notNull()
-		.default(sql`ARRAY[]::text[]`),
+	// Per-resource access scoping now lives in the normalized
+	// `member_resource_access` table (see member-resource-access.ts).
 });
 
 export const memberRelations = relations(member, ({ one }) => ({

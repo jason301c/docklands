@@ -1,13 +1,13 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
 import {
 	type apiCreateRuntimeWorker,
-	member,
 	organization,
 	runtimeWorkers,
 } from "@/server/core/db/schema";
+import { getMemberResourceAccessSet } from "./permission";
 
 export type RuntimeWorker = typeof runtimeWorkers.$inferSelect;
 
@@ -145,19 +145,17 @@ export const getAccessibleRuntimeWorkerIds = async (session: {
 		},
 	});
 
-	const memberRecord = await db.query.member.findFirst({
-		where: and(
-			eq(member.userId, userId),
-			eq(member.organizationId, activeOrganizationId),
-		),
-		columns: { accessedRuntimeWorkers: true, role: true },
-	});
+	const { role, ids } = await getMemberResourceAccessSet(
+		userId,
+		activeOrganizationId,
+		"runtimeWorker",
+	);
 
-	if (memberRecord?.role === "owner" || memberRecord?.role === "admin") {
+	if (role === "owner" || role === "admin") {
 		return new Set(
 			allOrgRuntimeWorkers.map((worker) => worker.runtimeWorkerId),
 		);
 	}
 
-	return new Set(memberRecord?.accessedRuntimeWorkers ?? []);
+	return ids;
 };

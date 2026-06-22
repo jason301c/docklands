@@ -1,7 +1,12 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
-import { member, organizationRole } from "@/server/core/db/schema";
+import {
+	type MemberResourceAccessType,
+	member,
+	memberResourceAccess,
+	organizationRole,
+} from "@/server/core/db/schema";
 import {
 	ac,
 	adminRole,
@@ -339,60 +344,174 @@ export const addNewWorkspace = async (
 	ctx: PermissionCtx,
 	workspaceId: string,
 ) => {
-	const userId = ctx.user.id;
-	const organizationId = ctx.session.activeOrganizationId;
-	const memberRecord = await findMemberByUserId(userId, organizationId);
-	await db
-		.update(member)
-		.set({
-			accessedWorkspaces: [...memberRecord.accessedWorkspaces, workspaceId],
-		})
-		.where(
-			and(
-				eq(member.id, memberRecord.id),
-				eq(member.organizationId, organizationId),
-			),
-		);
+	const memberRecord = await findMemberByUserId(
+		ctx.user.id,
+		ctx.session.activeOrganizationId,
+	);
+	await grantResourceAccess(
+		memberRecord.id,
+		ctx.session.activeOrganizationId,
+		"workspace",
+		workspaceId,
+	);
 };
 
 export const addNewEnvironment = async (
 	ctx: PermissionCtx,
 	environmentId: string,
 ) => {
-	const userId = ctx.user.id;
-	const organizationId = ctx.session.activeOrganizationId;
-	const memberRecord = await findMemberByUserId(userId, organizationId);
-	await db
-		.update(member)
-		.set({
-			accessedEnvironments: [
-				...memberRecord.accessedEnvironments,
-				environmentId,
-			],
-		})
-		.where(
-			and(
-				eq(member.id, memberRecord.id),
-				eq(member.organizationId, organizationId),
-			),
-		);
+	const memberRecord = await findMemberByUserId(
+		ctx.user.id,
+		ctx.session.activeOrganizationId,
+	);
+	await grantResourceAccess(
+		memberRecord.id,
+		ctx.session.activeOrganizationId,
+		"environment",
+		environmentId,
+	);
 };
 
 export const addNewService = async (ctx: PermissionCtx, serviceId: string) => {
-	const userId = ctx.user.id;
-	const organizationId = ctx.session.activeOrganizationId;
-	const memberRecord = await findMemberByUserId(userId, organizationId);
+	const memberRecord = await findMemberByUserId(
+		ctx.user.id,
+		ctx.session.activeOrganizationId,
+	);
+	await grantResourceAccess(
+		memberRecord.id,
+		ctx.session.activeOrganizationId,
+		"service",
+		serviceId,
+	);
+};
+
+const ACCESS_FIELD_BY_TYPE = {
+	workspace: "accessedWorkspaces",
+	environment: "accessedEnvironments",
+	service: "accessedServices",
+	gitProvider: "accessedGitProviders",
+	runtimeWorker: "accessedRuntimeWorkers",
+} as const satisfies Record<MemberResourceAccessType, string>;
+
+export type ResourceAccessLists = {
+	accessedWorkspaces: string[];
+	accessedEnvironments: string[];
+	accessedServices: string[];
+	accessedGitProviders: string[];
+	accessedRuntimeWorkers: string[];
+};
+
+/**
+ * Load a member's per-resource access scoping from the normalized
+ * `member_resource_access` table and project it back into the legacy array
+ * shape (`accessedWorkspaces`, `accessedServices`, ...) that the rest of the
+ * codebase consumes. This keeps every existing `.includes()`/SQL-filter call
+ * site working unchanged after the columns were removed from the member row.
+ */
+export const loadResourceAccess = async (
+	memberId: string,
+): Promise<ResourceAccessLists> => {
+	const rows = await db.query.memberResourceAccess.findMany({
+		where: eq(memberResourceAccess.memberId, memberId),
+		columns: { resourceType: true, resourceId: true },
+	});
+	const lists: ResourceAccessLists = {
+		accessedWorkspaces: [],
+		accessedEnvironments: [],
+		accessedServices: [],
+		accessedGitProviders: [],
+		accessedRuntimeWorkers: [],
+	};
+	for (const row of rows) {
+		const field = ACCESS_FIELD_BY_TYPE[row.resourceType];
+		if (field) {
+			lists[field].push(row.resourceId);
+		}
+	}
+	return lists;
+};
+
+/**
+ * Returns the scoped resource ids of a given type for a member, plus the
+ * member's role so callers can apply the owner/admin bypass. Used by the few
+ * services that previously read a single `accessed*` column directly.
+ */
+export const getMemberResourceAccessSet = async (
+	userId: string,
+	organizationId: string,
+	resourceType: MemberResourceAccessType,
+): Promise<{ role: string | null; ids: Set<string> }> => {
+	const memberRecord = await db.query.member.findFirst({
+		where: and(
+			eq(member.userId, userId),
+			eq(member.organizationId, organizationId),
+		),
+		columns: { id: true, role: true },
+	});
+	if (!memberRecord) {
+		return { role: null, ids: new Set() };
+	}
+	const rows = await db.query.memberResourceAccess.findMany({
+		where: and(
+			eq(memberResourceAccess.memberId, memberRecord.id),
+			eq(memberResourceAccess.resourceType, resourceType),
+		),
+		columns: { resourceId: true },
+	});
+	return {
+		role: memberRecord.role,
+		ids: new Set(rows.map((r) => r.resourceId)),
+	};
+};
+
+const grantResourceAccess = async (
+	memberId: string,
+	organizationId: string,
+	resourceType: MemberResourceAccessType,
+	resourceId: string,
+) => {
 	await db
-		.update(member)
-		.set({
-			accessedServices: [...memberRecord.accessedServices, serviceId],
-		})
-		.where(
-			and(
-				eq(member.id, memberRecord.id),
-				eq(member.organizationId, organizationId),
-			),
-		);
+		.insert(memberResourceAccess)
+		.values({ memberId, organizationId, resourceType, resourceId })
+		.onConflictDoNothing();
+};
+
+/**
+ * Replace the full set of granted ids of a given type for a member. Used by the
+ * permissions editor: `undefined` leaves that type untouched.
+ */
+export const syncMemberResourceAccess = async (
+	memberId: string,
+	organizationId: string,
+	updates: Partial<Record<MemberResourceAccessType, string[]>>,
+) => {
+	for (const [resourceType, ids] of Object.entries(updates) as [
+		MemberResourceAccessType,
+		string[] | undefined,
+	][]) {
+		if (ids === undefined) {
+			continue;
+		}
+		await db
+			.delete(memberResourceAccess)
+			.where(
+				and(
+					eq(memberResourceAccess.memberId, memberId),
+					eq(memberResourceAccess.resourceType, resourceType),
+				),
+			);
+		const unique = [...new Set(ids)];
+		if (unique.length > 0) {
+			await db.insert(memberResourceAccess).values(
+				unique.map((resourceId) => ({
+					memberId,
+					organizationId,
+					resourceType,
+					resourceId,
+				})),
+			);
+		}
+	}
 };
 
 export const findMemberByUserId = async (
@@ -415,5 +534,5 @@ export const findMemberByUserId = async (
 			message: "Permission denied",
 		});
 	}
-	return result;
+	return { ...result, ...(await loadResourceAccess(result.id)) };
 };

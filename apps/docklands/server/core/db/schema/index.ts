@@ -15,6 +15,7 @@ export * from "./github";
 export * from "./gitlab";
 export * from "./libsql";
 export * from "./mariadb";
+export * from "./member-resource-access";
 export * from "./mongo";
 export * from "./mount";
 export * from "./mysql";

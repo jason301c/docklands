@@ -33,6 +33,9 @@ vi.mock("@/server/core/db", () => ({
 			organizationRole: {
 				findMany: vi.fn(() => Promise.resolve([])),
 			},
+			memberResourceAccess: {
+				findMany: vi.fn(() => Promise.resolve([])),
+			},
 		},
 	},
 }));
