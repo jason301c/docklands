@@ -245,7 +245,7 @@ export const WorkspaceOverview = () => {
 							delta={`${totals.applications} apps · ${totals.compose} compose · ${totals.databases} db`}
 						/>
 						<StatCard
-							label="Deploys / 7d"
+							label="Builds / 7d"
 							value={deployStats.value}
 							delta={deployStats.delta}
 						/>
@@ -276,7 +276,7 @@ export const WorkspaceOverview = () => {
 							<div className="flex items-center justify-between px-5 py-4 border-b">
 								<div className="flex items-center gap-2">
 									<Rocket className="size-4 text-muted-foreground" />
-									<h2 className="text-sm font-semibold">Recent deployments</h2>
+									<h2 className="text-sm font-semibold">Recent builds</h2>
 								</div>
 								{canReadDeployments && (
 									<Link
@@ -290,12 +290,12 @@ export const WorkspaceOverview = () => {
 							{!canReadDeployments ? (
 								<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
 									<Rocket className="size-8 opacity-40" />
-									<span>You do not have permission to view deployments.</span>
+									<span>You do not have permission to view builds.</span>
 								</div>
 							) : recentDeployments.length === 0 ? (
 								<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
 									<Rocket className="size-8 opacity-40" />
-									<span>No deployments yet.</span>
+									<span>No builds yet.</span>
 								</div>
 							) : (
 								<ul className="divide-y">

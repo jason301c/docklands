@@ -919,7 +919,7 @@ export const EnvironmentCanvas = ({
 		...(selectedServiceModel &&
 		deploymentServiceTypes.has(selectedServiceModel.type) &&
 		permissions?.deployment.read
-			? [{ value: "deployments", label: "Deployments" }]
+			? [{ value: "deployments", label: "Builds" }]
 			: []),
 		...(selectedServiceModel &&
 		deploymentServiceTypes.has(selectedServiceModel.type) &&
@@ -932,7 +932,7 @@ export const EnvironmentCanvas = ({
 		...(selectedServiceModel &&
 		deploymentServiceTypes.has(selectedServiceModel.type) &&
 		permissions?.schedule.read
-			? [{ value: "schedules", label: "Schedules" }]
+			? [{ value: "schedules", label: "Automations" }]
 			: []),
 		...(selectedServiceModel?.type === "compose" ||
 		(selectedServiceModel && getDatabaseBackupType(selectedServiceModel))
@@ -2234,8 +2234,8 @@ export const EnvironmentCanvas = ({
 							{
 								id: `deployments:${service.type}:${service.id}`,
 								group: "Actions" as const,
-								label: `Deployments for ${service.name}`,
-								detail: `${serviceTypeLabels[service.type]} · release history`,
+								label: `Build history for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · releases and worker output`,
 								search: `${baseSearch} deployments releases history builds`,
 								icon: <Rocket className="size-5 text-muted-foreground" />,
 								run: () => {
@@ -2369,8 +2369,8 @@ export const EnvironmentCanvas = ({
 							{
 								id: `schedules:${service.type}:${service.id}`,
 								group: "Actions" as const,
-								label: `Schedules for ${service.name}`,
-								detail: `${serviceTypeLabels[service.type]} · scheduled jobs`,
+								label: `Automations for ${service.name}`,
+								detail: `${serviceTypeLabels[service.type]} · cron jobs and tasks`,
 								search: `${baseSearch} schedules cron jobs tasks automation`,
 								icon: <Clock className="size-5 text-muted-foreground" />,
 								run: () => {

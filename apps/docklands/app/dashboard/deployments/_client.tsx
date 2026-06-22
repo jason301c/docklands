@@ -1,11 +1,11 @@
 "use client";
 
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { Rocket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShowDeploymentsTable } from "@/components/dashboard/deployments/show-deployments-table";
 import { ShowQueueTable } from "@/components/dashboard/deployments/show-queue-table";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Tabs } from "@cloudflare/kumo/components/tabs";
 
 const TAB_VALUES = ["deployments", "queue"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
@@ -14,7 +14,7 @@ function isValidTab(t: string): t is TabValue {
 	return TAB_VALUES.includes(t as TabValue);
 }
 
-function DeploymentsPage() {
+function BuildsPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const tabParam = searchParams?.get("tab");
@@ -34,20 +34,20 @@ function DeploymentsPage() {
 							<div>
 								<h3 className="text-xl font-bold flex items-center gap-2">
 									<Rocket className="size-5" />
-									Deployments
+									Builds
 								</h3>
-								<p>
-									All application and compose deployments in one place.
-								</p>
+								<p>Build history and worker queue across every service.</p>
 							</div>
 						</div>
 						<Tabs
 							value={tab}
-							onValueChange={(value) => value !== null && setTab(value as never)}
+							onValueChange={(value) =>
+								value !== null && setTab(value as never)
+							}
 							className="mt-2 w-full"
 							tabs={[
-								{ value: "deployments", label: "Deployments" },
-								{ value: "queue", label: "Queue" },
+								{ value: "deployments", label: "History" },
+								{ value: "queue", label: "Worker queue" },
 							]}
 						/>
 						{tab === "deployments" && (
@@ -67,4 +67,4 @@ function DeploymentsPage() {
 	);
 }
 
-export default DeploymentsPage;
+export default BuildsPage;
