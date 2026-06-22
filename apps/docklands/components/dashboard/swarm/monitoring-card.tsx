@@ -65,122 +65,114 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 	);
 
 	return (
-		<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl mx-auto w-full">
-			<div className="rounded-xl bg-background shadow-md p-6 flex flex-col gap-4">
-				<header className="flex items-center flex-wrap gap-4 justify-between">
-					<div className="space-y-1">
-						<h3 className="text-xl flex flex-row gap-2">
-							<WorkflowIcon className="size-6 text-muted-foreground self-center" />
-							Orchestration Overview
-						</h3>
-						<p className="text-sm text-muted-foreground">
-							Monitor runtime capacity and node health across the cluster.
-						</p>
+		<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-background p-6">
+			<header className="flex items-center flex-wrap gap-4 justify-between">
+				<div className="space-y-1">
+					<h3 className="text-xl flex flex-row gap-2">
+						<WorkflowIcon className="size-6 text-muted-foreground self-center" />
+						Orchestration Overview
+					</h3>
+					<p className="text-sm text-muted-foreground">
+						Monitor runtime capacity and node health across the cluster.
+					</p>
+				</div>
+				{!serverId && (
+					<Button
+						onClick={() =>
+							window.location.replace("/dashboard/settings/cluster-nodes")
+						}
+					>
+						<Settings className="mr-2 h-4 w-4" />
+						Manage Cluster Nodes
+					</Button>
+				)}
+			</header>
+
+			<div className="grid gap-6 lg:grid-cols-3">
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<h3 className="text-sm font-medium">Total Workers</h3>
+						<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
+							<Server className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
+						</div>
 					</div>
-					{!serverId && (
-						<Button
-							onClick={() =>
-								window.location.replace("/dashboard/settings/cluster-nodes")
-							}
-						>
-							<Settings className="mr-2 h-4 w-4" />
-							Manage Cluster Nodes
-						</Button>
-					)}
-				</header>
+					<div>
+						<div className="text-2xl font-bold">{totalNodes}</div>
+					</div>
+				</LayerCard>
 
-				<div className="grid gap-6 lg:grid-cols-3">
-					<LayerCard className="bg-background">
-						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<h3 className="text-sm font-medium">Total Workers</h3>
-							<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
-								<Server className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
-							</div>
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<div className="flex items-center gap-2">
+							<h3 className="text-sm font-medium">Active Workers</h3>
+							<Badge variant="green">Online</Badge>
 						</div>
-						<div>
-							<div className="text-2xl font-bold">{totalNodes}</div>
+						<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
+							<Activity className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
 						</div>
-					</LayerCard>
+					</div>
+					<div>
+						<TooltipProvider>
+							<Tooltip
+								content={
+									<>
+										<div className="max-h-48 overflow-y-auto">
+											{activeNodes.map((node) => (
+												<div key={node.ID} className="flex items-center gap-2">
+													{node.Hostname}
+												</div>
+											))}
+										</div>
+									</>
+								}
+							>
+								<div className="text-2xl font-bold">
+									{activeNodesCount} / {totalNodes}
+								</div>
+							</Tooltip>
+						</TooltipProvider>
+					</div>
+				</LayerCard>
 
-					<LayerCard className="bg-background">
-						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<div className="flex items-center gap-2">
-								<h3 className="text-sm font-medium">Active Workers</h3>
-								<Badge variant="green">Online</Badge>
-							</div>
-							<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
-								<Activity className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
-							</div>
+				<LayerCard className="bg-background">
+					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
+						<div className="flex items-center gap-2">
+							<h3 className="text-sm font-medium">Managers</h3>
+							<Badge variant="green">Online</Badge>
 						</div>
-						<div>
-							<TooltipProvider>
-								<Tooltip
-									content={
-										<>
-											<div className="max-h-48 overflow-y-auto">
-												{activeNodes.map((node) => (
-													<div
-														key={node.ID}
-														className="flex items-center gap-2"
-													>
-														{node.Hostname}
-													</div>
-												))}
-											</div>
-										</>
-									}
-								>
-									<div className="text-2xl font-bold">
-										{activeNodesCount} / {totalNodes}
-									</div>
-								</Tooltip>
-							</TooltipProvider>
+						<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
+							<Monitor className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
 						</div>
-					</LayerCard>
-
-					<LayerCard className="bg-background">
-						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-							<div className="flex items-center gap-2">
-								<h3 className="text-sm font-medium">Managers</h3>
-								<Badge variant="green">Online</Badge>
-							</div>
-							<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
-								<Monitor className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
-							</div>
-						</div>
-						<div>
-							<TooltipProvider>
-								<Tooltip
-									content={
-										<>
-											<div className="max-h-48 overflow-y-auto">
-												{managerNodes.map((node) => (
-													<div
-														key={node.ID}
-														className="flex items-center gap-2"
-													>
-														{node.Hostname}
-													</div>
-												))}
-											</div>
-										</>
-									}
-								>
-									<div className="text-2xl font-bold">
-										{managerNodesCount} / {totalNodes}
-									</div>
-								</Tooltip>
-							</TooltipProvider>
-						</div>
-					</LayerCard>
-				</div>
-
-				<div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
-					{nodes.map((node) => (
-						<NodeCard key={node.ID} node={node} serverId={serverId} />
-					))}
-				</div>
+					</div>
+					<div>
+						<TooltipProvider>
+							<Tooltip
+								content={
+									<>
+										<div className="max-h-48 overflow-y-auto">
+											{managerNodes.map((node) => (
+												<div key={node.ID} className="flex items-center gap-2">
+													{node.Hostname}
+												</div>
+											))}
+										</div>
+									</>
+								}
+							>
+								<div className="text-2xl font-bold">
+									{managerNodesCount} / {totalNodes}
+								</div>
+							</Tooltip>
+						</TooltipProvider>
+					</div>
+				</LayerCard>
 			</div>
-		</LayerCard>
+
+			<div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
+				{nodes.map((node) => (
+					<NodeCard key={node.ID} node={node} serverId={serverId} />
+				))}
+			</div>
+		</div>
 	);
 }
