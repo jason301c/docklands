@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Radio } from "@cloudflare/kumo/components/radio";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -143,310 +142,308 @@ export const ProfileForm = () => {
 
 	return (
 		<div className="w-full">
-			<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  max-w-5xl mx-auto">
-				<div className="rounded-xl bg-background shadow-md ">
-					<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
-						<div>
-							<h3 className="text-xl flex flex-row gap-2">
-								<User className="size-6 text-muted-foreground self-center" />
-								Account
-							</h3>
-							<p>Change the details of your profile here.</p>
-						</div>
-
-						{!data?.user.twoFactorEnabled ? <Enable2FA /> : <Configure2FA />}
+			<div className="mx-auto w-full max-w-5xl rounded-lg border bg-background p-6">
+				<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
+					<div>
+						<h3 className="text-xl flex flex-row gap-2">
+							<User className="size-6 text-muted-foreground self-center" />
+							Account
+						</h3>
+						<p>Change the details of your profile here.</p>
 					</div>
 
-					<div className="space-y-2 py-8 border-t">
-						{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
-						{isPending ? (
-							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[35vh]">
-								<span>Loading...</span>
-								<Loader2 className="animate-spin size-4" />
-							</div>
-						) : (
-							<>
-								<Form {...form}>
-									<form
-										onSubmit={form.handleSubmit(onSubmit)}
-										className="grid gap-4"
-									>
-										<div className="space-y-4">
-											<FormField
-												control={form.control}
-												name="firstName"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>First Name</FormLabel>
-														<FormControl>
-															<Input placeholder="John" {...field} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="lastName"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Last Name</FormLabel>
-														<FormControl>
-															<Input placeholder="Doe" {...field} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="email"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Email</FormLabel>
-														<FormControl>
-															<Input placeholder="Email" {...field} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="currentPassword"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Current Password</FormLabel>
-														<FormControl>
-															<Input
-																type="password"
-																placeholder="Current Password"
-																{...field}
-																value={field.value || ""}
-															/>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="password"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Password</FormLabel>
-														<FormControl>
-															<Input
-																type="password"
-																placeholder="Password"
-																{...field}
-																value={field.value || ""}
-															/>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-
-											<FormField
-												control={form.control}
-												name="image"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Avatar</FormLabel>
-														<FormControl>
-															<Radio.Group
-																onValueChange={(e) => {
-																	if (e === null) return;
-																	field.onChange(e);
-																}}
-																defaultValue={getAvatarType(field.value)}
-																value={getAvatarType(field.value)}
-																orientation="horizontal"
-																appearance="card"
-																className="w-full"
-															>
-																<Radio.Legend className="sr-only">
-																	Avatar
-																</Radio.Legend>
-																<Radio.Item
-																	key="no-avatar"
-																	value=""
-																	className="p-2"
-																	label={
-																		<Avatar className="default-avatar h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-transform">
-																			<AvatarFallback className="rounded-lg">
-																				{getFallbackAvatarInitials(
-																					`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
-																				)}
-																			</AvatarFallback>
-																		</Avatar>
-																	}
-																/>
-																<Radio.Item
-																	key="custom-upload"
-																	value="upload"
-																	className="p-2"
-																	label={
-																		<>
-																			<div
-																				className="upload-avatar h-12 w-12 rounded-full border border-dashed border-muted-foreground hover:border-primary transition-colors flex items-center justify-center bg-muted/50 hover:bg-muted overflow-hidden"
-																				onClick={() =>
-																					document
-																						.getElementById("avatar-upload")
-																						?.click()
-																				}
-																			>
-																				{field.value?.startsWith("data:") ? (
-																					<img
-																						src={field.value}
-																						alt="Custom avatar"
-																						className="h-full w-full object-cover rounded-full"
-																					/>
-																				) : (
-																					<svg
-																						className="h-5 w-5 text-muted-foreground"
-																						fill="none"
-																						stroke="currentColor"
-																						viewBox="0 0 24 24"
-																					>
-																						<path
-																							strokeLinecap="round"
-																							strokeLinejoin="round"
-																							strokeWidth={2}
-																							d="M12 4v16m8-8H4"
-																						/>
-																					</svg>
-																				)}
-																			</div>
-																			<input
-																				id="avatar-upload"
-																				type="file"
-																				accept="image/*"
-																				className="hidden"
-																				onChange={async (e) => {
-																					const file = e.target.files?.[0];
-																					if (file) {
-																						// max file size 2mb
-																						if (file.size > 2 * 1024 * 1024) {
-																							toast.error(
-																								"Image size must be less than 2MB",
-																							);
-																							return;
-																						}
-																						const reader = new FileReader();
-																						reader.onload = (event) => {
-																							const result = event.target
-																								?.result as string;
-																							field.onChange(result);
-																						};
-																						reader.readAsDataURL(file);
-																					}
-																				}}
-																			/>
-																		</>
-																	}
-																/>
-																<Radio.Item
-																	key="color-avatar"
-																	value="color"
-																	className="relative p-2"
-																	label={
-																		<>
-																			<div
-																				className="color-avatar h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-colors flex items-center justify-center overflow-hidden cursor-pointer"
-																				style={{
-																					backgroundColor: isSolidColorAvatar(
-																						field.value,
-																					)
-																						? field.value
-																						: undefined,
-																				}}
-																				onClick={() =>
-																					colorInputRef.current?.click()
-																				}
-																			>
-																				{!isSolidColorAvatar(field.value) && (
-																					<Palette className="h-5 w-5 text-muted-foreground" />
-																				)}
-																			</div>
-																			<input
-																				ref={colorInputRef}
-																				type="color"
-																				className="absolute opacity-0 pointer-events-none w-12 h-12 top-0 left-0"
-																				value={
-																					field.value?.startsWith("#")
-																						? field.value
-																						: "#6366f1"
-																				}
-																				onChange={field.onChange}
-																			/>
-																		</>
-																	}
-																/>
-																{availableAvatars.map((image) => (
-																	<Radio.Item
-																		key={image}
-																		value={image}
-																		className="p-2"
-																		label={
-																			<>
-																				<img
-																					key={image}
-																					src={image}
-																					alt="avatar"
-																					className="h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-transform"
-																				/>
-																			</>
-																		}
-																	/>
-																))}
-															</Radio.Group>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											{isCloud && (
-												<FormField
-													control={form.control}
-													name="allowImpersonation"
-													render={({ field }) => (
-														<FormItem className="flex flex-row items-center justify-between p-3 mt-4 border rounded-lg shadow-sm">
-															<div className="space-y-0.5">
-																<FormLabel>Allow Impersonation</FormLabel>
-																<FormDescription>
-																	Enable this option to allow Docklands Cloud
-																	administrators to temporarily access your
-																	account for troubleshooting and support
-																	purposes. This helps them quickly identify and
-																	resolve any issues you may encounter.
-																</FormDescription>
-															</div>
-															<FormControl>
-																<Switch
-																	checked={field.value}
-																	onCheckedChange={field.onChange}
-																/>
-															</FormControl>
-														</FormItem>
-													)}
-												/>
-											)}
-										</div>
-
-										<div className="flex items-center justify-end gap-2">
-											<Button type="submit" loading={isUpdating}>
-												Save
-											</Button>
-										</div>
-									</form>
-								</Form>
-							</>
-						)}
-					</div>
+					{!data?.user.twoFactorEnabled ? <Enable2FA /> : <Configure2FA />}
 				</div>
-			</LayerCard>
+
+				<div className="space-y-2 py-8 border-t">
+					{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
+					{isPending ? (
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[35vh]">
+							<span>Loading...</span>
+							<Loader2 className="animate-spin size-4" />
+						</div>
+					) : (
+						<>
+							<Form {...form}>
+								<form
+									onSubmit={form.handleSubmit(onSubmit)}
+									className="grid gap-4"
+								>
+									<div className="space-y-4">
+										<FormField
+											control={form.control}
+											name="firstName"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>First Name</FormLabel>
+													<FormControl>
+														<Input placeholder="John" {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name="lastName"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Last Name</FormLabel>
+													<FormControl>
+														<Input placeholder="Doe" {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name="email"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Email</FormLabel>
+													<FormControl>
+														<Input placeholder="Email" {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name="currentPassword"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Current Password</FormLabel>
+													<FormControl>
+														<Input
+															type="password"
+															placeholder="Current Password"
+															{...field}
+															value={field.value || ""}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name="password"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Password</FormLabel>
+													<FormControl>
+														<Input
+															type="password"
+															placeholder="Password"
+															{...field}
+															value={field.value || ""}
+														/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+
+										<FormField
+											control={form.control}
+											name="image"
+											render={({ field }) => (
+												<FormItem>
+													<FormLabel>Avatar</FormLabel>
+													<FormControl>
+														<Radio.Group
+															onValueChange={(e) => {
+																if (e === null) return;
+																field.onChange(e);
+															}}
+															defaultValue={getAvatarType(field.value)}
+															value={getAvatarType(field.value)}
+															orientation="horizontal"
+															appearance="card"
+															className="w-full"
+														>
+															<Radio.Legend className="sr-only">
+																Avatar
+															</Radio.Legend>
+															<Radio.Item
+																key="no-avatar"
+																value=""
+																className="p-2"
+																label={
+																	<Avatar className="default-avatar h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-transform">
+																		<AvatarFallback className="rounded-lg">
+																			{getFallbackAvatarInitials(
+																				`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
+																			)}
+																		</AvatarFallback>
+																	</Avatar>
+																}
+															/>
+															<Radio.Item
+																key="custom-upload"
+																value="upload"
+																className="p-2"
+																label={
+																	<>
+																		<div
+																			className="upload-avatar h-12 w-12 rounded-full border border-dashed border-muted-foreground hover:border-primary transition-colors flex items-center justify-center bg-muted/50 hover:bg-muted overflow-hidden"
+																			onClick={() =>
+																				document
+																					.getElementById("avatar-upload")
+																					?.click()
+																			}
+																		>
+																			{field.value?.startsWith("data:") ? (
+																				<img
+																					src={field.value}
+																					alt="Custom avatar"
+																					className="h-full w-full object-cover rounded-full"
+																				/>
+																			) : (
+																				<svg
+																					className="h-5 w-5 text-muted-foreground"
+																					fill="none"
+																					stroke="currentColor"
+																					viewBox="0 0 24 24"
+																				>
+																					<path
+																						strokeLinecap="round"
+																						strokeLinejoin="round"
+																						strokeWidth={2}
+																						d="M12 4v16m8-8H4"
+																					/>
+																				</svg>
+																			)}
+																		</div>
+																		<input
+																			id="avatar-upload"
+																			type="file"
+																			accept="image/*"
+																			className="hidden"
+																			onChange={async (e) => {
+																				const file = e.target.files?.[0];
+																				if (file) {
+																					// max file size 2mb
+																					if (file.size > 2 * 1024 * 1024) {
+																						toast.error(
+																							"Image size must be less than 2MB",
+																						);
+																						return;
+																					}
+																					const reader = new FileReader();
+																					reader.onload = (event) => {
+																						const result = event.target
+																							?.result as string;
+																						field.onChange(result);
+																					};
+																					reader.readAsDataURL(file);
+																				}
+																			}}
+																		/>
+																	</>
+																}
+															/>
+															<Radio.Item
+																key="color-avatar"
+																value="color"
+																className="relative p-2"
+																label={
+																	<>
+																		<div
+																			className="color-avatar h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-colors flex items-center justify-center overflow-hidden cursor-pointer"
+																			style={{
+																				backgroundColor: isSolidColorAvatar(
+																					field.value,
+																				)
+																					? field.value
+																					: undefined,
+																			}}
+																			onClick={() =>
+																				colorInputRef.current?.click()
+																			}
+																		>
+																			{!isSolidColorAvatar(field.value) && (
+																				<Palette className="h-5 w-5 text-muted-foreground" />
+																			)}
+																		</div>
+																		<input
+																			ref={colorInputRef}
+																			type="color"
+																			className="absolute opacity-0 pointer-events-none w-12 h-12 top-0 left-0"
+																			value={
+																				field.value?.startsWith("#")
+																					? field.value
+																					: "#6366f1"
+																			}
+																			onChange={field.onChange}
+																		/>
+																	</>
+																}
+															/>
+															{availableAvatars.map((image) => (
+																<Radio.Item
+																	key={image}
+																	value={image}
+																	className="p-2"
+																	label={
+																		<>
+																			<img
+																				key={image}
+																				src={image}
+																				alt="avatar"
+																				className="h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-transform"
+																			/>
+																		</>
+																	}
+																/>
+															))}
+														</Radio.Group>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										{isCloud && (
+											<FormField
+												control={form.control}
+												name="allowImpersonation"
+												render={({ field }) => (
+													<FormItem className="flex flex-row items-center justify-between p-3 mt-4 border rounded-lg shadow-sm">
+														<div className="space-y-0.5">
+															<FormLabel>Allow Impersonation</FormLabel>
+															<FormDescription>
+																Enable this option to allow Docklands Cloud
+																administrators to temporarily access your
+																account for troubleshooting and support
+																purposes. This helps them quickly identify and
+																resolve any issues you may encounter.
+															</FormDescription>
+														</div>
+														<FormControl>
+															<Switch
+																checked={field.value}
+																onCheckedChange={field.onChange}
+															/>
+														</FormControl>
+													</FormItem>
+												)}
+											/>
+										)}
+									</div>
+
+									<div className="flex items-center justify-end gap-2">
+										<Button type="submit" loading={isUpdating}>
+											Save
+										</Button>
+									</div>
+								</form>
+							</Form>
+						</>
+					)}
+				</div>
+			</div>
 		</div>
 	);
 };
