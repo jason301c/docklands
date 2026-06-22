@@ -22,7 +22,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Added nested `AGENTS.md` files and clarified app/server/tools boundaries.
 - Updated dependencies to the current major stack, including Next 16, React 19, TypeScript 6, Tailwind 4, Biome 2, tRPC 11, and Vitest 4.
 - Converted the workspace to Bun 1.3.14 with an isolated linker, `bun.lock`, Bun-first scripts, and trusted dependency controls.
-- Removed Webpack opt-out paths; Next 16 builds now use the default Turbopack path in local and Docker builds, the app config declares `turbopack: {}`, and the custom Next server explicitly selects Turbopack.
+- Removed Webpack opt-out paths; Next 16 builds now explicitly use `next build --turbopack`, the app config declares `turbopack: {}`, and the custom Next server explicitly selects Turbopack.
 - Hardened Docker packaging around Bun/Node 24 native dependency builds, runtime env injection, and `.env` exclusion from the build context.
 - Baseline before the Bun migration: typecheck passed in 14.65s, non-real Vitest passed in 6.39s, and production build passed in 30.45s.
 - Converted the API surface to App Router route handlers, with old webhook/deploy callback logic wrapped through compatibility helpers where risky.
