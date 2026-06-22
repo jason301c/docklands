@@ -11,9 +11,9 @@ import { badgeStateColor } from "../../application/logs/show";
 
 const Terminal = dynamic(
 	() =>
-		import("@/components/dashboard/docker/terminal/docker-terminal").then(
-			(e) => e.DockerTerminal,
-		),
+		import(
+			"@/components/dashboard/container-runtime/terminal/docker-terminal"
+		).then((e) => e.DockerTerminal),
 	{
 		ssr: false,
 	},

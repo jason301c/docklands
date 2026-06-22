@@ -5,8 +5,8 @@ import { Dialog } from "@cloudflare/kumo/components/dialog";
 import copy from "copy-to-clipboard";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { TerminalLine } from "../../docker/logs/terminal-line";
-import { type LogLine, parseLogs } from "../../docker/logs/utils";
+import { TerminalLine } from "../../container-runtime/logs/terminal-line";
+import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
 
 interface Props {
 	logPath: string | null;

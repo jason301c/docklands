@@ -38,7 +38,7 @@ import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
-import { type LogLine, parseLogs } from "../../docker/logs/utils";
+import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
 
 const Command = Combobox;
 const CommandInput = Combobox.TriggerInput;

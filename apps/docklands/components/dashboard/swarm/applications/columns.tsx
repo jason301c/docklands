@@ -3,7 +3,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
-import { ShowDockerModalStackLogs } from "../../docker/logs/show-docker-modal-stack-logs";
+import { ShowDockerModalStackLogs } from "../../container-runtime/logs/show-docker-modal-stack-logs";
 
 export interface ApplicationList {
 	ID: string;

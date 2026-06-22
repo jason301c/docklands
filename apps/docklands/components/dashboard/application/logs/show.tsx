@@ -10,7 +10,7 @@ import { api } from "@/client/api/trpc";
 
 export const DockerLogs = dynamic(
 	() =>
-		import("@/components/dashboard/docker/logs/docker-logs-id").then(
+		import("@/components/dashboard/container-runtime/logs/docker-logs-id").then(
 			(e) => e.DockerLogsId,
 		),
 	{

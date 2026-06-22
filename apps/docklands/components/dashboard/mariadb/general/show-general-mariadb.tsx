@@ -7,7 +7,7 @@ import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
 import { toast } from "@/components/shared/toast";
-import { type LogLine, parseLogs } from "../../docker/logs/utils";
+import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
 import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
 interface Props {

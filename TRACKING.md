@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Fold project list into workspace
+- Latest checkpoint: Rehome container runtime components
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -35,6 +35,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Moved workspace service route client modules out of the legacy project route tree and into the canonical workspace service route.
 - Rehomed the remaining workspace creation/environment action components from `components/dashboard/project/*` into `components/dashboard/workspace/actions/*`.
 - Folded the old `/dashboard/projects` bulk management surface into `/dashboard/workspace?view=workspaces`, moved the list/create/variables components under `components/dashboard/workspace/manage/*`, and left `/dashboard/projects` as a redirect-only compatibility route.
+- Rehomed the container runtime UI component subtree from `components/dashboard/docker/*` to `components/dashboard/container-runtime/*` while leaving literal Docker engine utilities under server code.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
 - Recorded the first upstream PR security audit under `outputs/docklands-pr-security-audit.md` outside the repo.
 
@@ -95,6 +96,12 @@ git diff --check
   - `bun --filter docklands build`
 - Current workspace-list route checkpoint
   - `bun --filter docklands test --run __test__/navigation/dashboard-routes.test.ts __test__/navigation/dashboard-nav.test.ts __test__/navigation/legacy-route-redirects.test.ts`
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
+- Current container-runtime source-layout checkpoint
+  - `bun --filter docklands test --run __test__/utils/log-type.test.ts`
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`
