@@ -56,7 +56,7 @@ export const ComposePaidMonitoring = ({
 		<div>
 			<LayerCard className="bg-background border-0">
 				<div>
-					<h3 className="text-xl">Monitoring</h3>
+					<h3 className="text-xl">Metrics</h3>
 					<p>Watch the usage of your compose</p>
 				</div>
 				<div className="flex flex-col gap-4">

@@ -155,14 +155,14 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 							onClick={async () => {
 								await cleanMonitoring()
 									.then(async () => {
-										toast.success("Cleaned Monitoring");
+										toast.success("Cleaned metrics");
 									})
 									.catch(() => {
-										toast.error("Error cleaning Monitoring");
+										toast.error("Error cleaning metrics");
 									});
 							}}
 						>
-							<span>Clean Monitoring</span>
+							<span>Clean metrics</span>
 						</DropdownMenu.Item>
 					)}
 

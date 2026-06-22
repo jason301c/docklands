@@ -172,7 +172,7 @@ const Redis = (props: {
 													: null,
 												permissions?.monitoring.read &&
 												((data?.serverId && isCloud) || !data?.server)
-													? { value: "monitoring", label: "Monitoring" }
+													? { value: "monitoring", label: "Metrics" }
 													: null,
 												permissions?.service.create
 													? { value: "advanced", label: "Advanced" }
@@ -213,7 +213,7 @@ const Redis = (props: {
 															{/* {monitoring?.enabledFeatures && (
 															<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2">
 																<Label className="text-muted-foreground">
-																	Change Monitoring
+																	Metrics source
 																</Label>
 																<Switch
 																	checked={toggleMonitoring}

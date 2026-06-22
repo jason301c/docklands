@@ -135,7 +135,7 @@ export const ShowPaidMonitoring = ({
 					<p className="whitespace-pre-line text-sm text-destructive">
 						{queryError instanceof Error
 							? queryError.message
-							: "Failed to fetch metrics, Please check your monitoring Instance is Configured correctly."}
+							: "Failed to fetch metrics. Please check that your metrics collector is configured correctly."}
 					</p>
 					<p className="text-sm text-muted-foreground">URL: {BASE_URL}</p>
 				</div>
@@ -146,7 +146,7 @@ export const ShowPaidMonitoring = ({
 	return (
 		<div className="space-y-4 pt-5 pb-10 w-full md:px-4">
 			<div className="flex items-center justify-between flex-wrap	 gap-2">
-				<h2 className="text-2xl font-bold tracking-tight">System Monitoring</h2>
+				<h2 className="text-2xl font-bold tracking-tight">Host Metrics</h2>
 				<div className="flex items-center gap-4 flex-wrap">
 					<div>
 						<span className="text-sm text-muted-foreground">Data points:</span>

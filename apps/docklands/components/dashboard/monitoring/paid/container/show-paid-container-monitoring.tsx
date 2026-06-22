@@ -115,7 +115,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 					<p className="whitespace-pre-line text-sm text-destructive">
 						{queryError instanceof Error
 							? queryError.message
-							: "Failed to fetch metrics, Please check your monitoring Instance is Configured correctly."}
+							: "Failed to fetch metrics. Please check that your metrics collector is configured correctly."}
 					</p>
 					<p className="text-sm text-muted-foreground">URL: {baseUrl}</p>
 				</div>
@@ -126,9 +126,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 	return (
 		<>
 			<div className="flex items-center justify-between flex-wrap	 gap-2">
-				<h2 className="text-2xl font-bold tracking-tight">
-					Container Monitoring
-				</h2>
+				<h2 className="text-2xl font-bold tracking-tight">Container Metrics</h2>
 				<div className="flex items-center gap-4 flex-wrap">
 					<div>
 						<span className="text-sm text-muted-foreground">Data points:</span>

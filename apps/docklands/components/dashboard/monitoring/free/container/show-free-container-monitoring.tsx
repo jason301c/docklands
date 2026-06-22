@@ -205,7 +205,7 @@ export const ContainerFreeMonitoring = ({
 		<div className="rounded-xl bg-background flex flex-col gap-4">
 			<header className="flex items-center justify-between">
 				<div className="space-y-1">
-					<h1 className="text-2xl font-semibold tracking-tight">Monitoring</h1>
+					<h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
 					<p className="text-sm text-muted-foreground">
 						Watch runtime usage for this service
 					</p>

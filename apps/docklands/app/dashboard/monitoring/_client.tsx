@@ -1,11 +1,11 @@
 "use client";
 
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { useLocalStorage } from "@/client/hooks/useLocalStorage";
 import { ContainerFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-container-monitoring";
 import { ShowPaidMonitoring } from "@/components/dashboard/monitoring/paid/servers/show-paid-monitoring";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 
 const BASE_URL = "http://localhost:3001/metrics";
 
@@ -31,7 +31,7 @@ const Dashboard = () => {
 				<>
 					{/* {monitoring?.enabledFeatures && (
 						<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2">
-							<Label className="text-muted-foreground">Change Monitoring</Label>
+							<Label className="text-muted-foreground">Metrics source</Label>
 							<Switch
 								checked={toggleMonitoring}
 								onCheckedChange={setToggleMonitoring}

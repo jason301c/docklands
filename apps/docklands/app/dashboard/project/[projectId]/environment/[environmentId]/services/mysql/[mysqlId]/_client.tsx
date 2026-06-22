@@ -179,7 +179,7 @@ const MySql = (props: {
 														: null,
 													permissions?.monitoring.read &&
 													((data?.serverId && isCloud) || !data?.server)
-														? { value: "monitoring", label: "Monitoring" }
+														? { value: "monitoring", label: "Metrics" }
 														: null,
 													{ value: "backups", label: "Backups" },
 													permissions?.service.create
