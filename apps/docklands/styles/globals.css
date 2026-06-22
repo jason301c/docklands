@@ -121,13 +121,13 @@
 	}
 
 	::-webkit-scrollbar-thumb {
-		background: hsl(var(--border));
+		background: var(--color-kumo-hairline);
 		border-radius: 0.3125rem;
 	}
 
 	* {
 		scrollbar-width: thin;
-		scrollbar-color: hsl(var(--border)) transparent;
+		scrollbar-color: var(--color-kumo-hairline) transparent;
 	}
 }
 
@@ -209,7 +209,7 @@
 @layer utilities {
 	.custom-logs-scrollbar {
 		scrollbar-width: thin;
-		scrollbar-color: hsl(var(--muted-foreground)) transparent;
+		scrollbar-color: var(--text-color-kumo-subtle) transparent;
 	}
 
 	.custom-logs-scrollbar::-webkit-scrollbar {
@@ -222,12 +222,20 @@
 	}
 
 	.custom-logs-scrollbar::-webkit-scrollbar-thumb {
-		background-color: hsl(var(--muted-foreground) / 0.3);
+		background-color: color-mix(
+			in oklab,
+			var(--text-color-kumo-subtle) 30%,
+			transparent
+		);
 		border-radius: 20px;
 	}
 
 	.custom-logs-scrollbar::-webkit-scrollbar-thumb:hover {
-		background-color: hsl(var(--muted-foreground) / 0.5);
+		background-color: color-mix(
+			in oklab,
+			var(--text-color-kumo-subtle) 50%,
+			transparent
+		);
 	}
 }
 

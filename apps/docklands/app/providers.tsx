@@ -23,7 +23,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
 				enableSystem
 				disableTransitionOnChange
 			>
-				<NextTopLoader color="hsl(var(--sidebar-ring))" />
+				<NextTopLoader color="var(--color-kumo-brand)" />
 				<Toaster />
 				<SearchCommand />
 				{children}

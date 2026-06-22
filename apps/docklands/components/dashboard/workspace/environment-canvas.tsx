@@ -3144,7 +3144,7 @@ export const EnvironmentCanvas = ({
 								width: canvasBounds.width,
 								height: canvasBounds.height,
 								backgroundImage:
-									"linear-gradient(to right, hsl(var(--border) / .45) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / .45) 1px, transparent 1px)",
+									"linear-gradient(to right, color-mix(in oklab, var(--color-kumo-hairline) 45%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in oklab, var(--color-kumo-hairline) 45%, transparent) 1px, transparent 1px)",
 								backgroundSize: "32px 32px",
 							}}
 						>

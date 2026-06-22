@@ -139,7 +139,7 @@ export const DockerDiskUsageChart = () => {
 						innerRadius={60}
 						outerRadius={85}
 						strokeWidth={3}
-						stroke="hsl(var(--background))"
+						stroke="var(--color-kumo-canvas)"
 						minAngle={15}
 					>
 						{chartData.map((entry) => (
