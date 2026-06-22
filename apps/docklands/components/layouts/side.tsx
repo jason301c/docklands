@@ -262,14 +262,14 @@ const MENU: Menu = {
 				{
 					isSingle: true,
 					title: "Container Runtime",
-					url: "/dashboard/runtime",
+					url: "/dashboard/container-runtime",
 					icon: BlocksIcon,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
 				},
 				{
 					isSingle: true,
 					title: "Cluster Runtime",
-					url: "/dashboard/orchestration",
+					url: "/dashboard/cluster-runtime",
 					icon: PieChart,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
 				},
@@ -284,14 +284,14 @@ const MENU: Menu = {
 				{
 					isSingle: true,
 					title: "Proxy Files",
-					url: "/dashboard/ingress",
+					url: "/dashboard/proxy-files",
 					icon: GalleryVerticalEnd,
 					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
 				},
 				{
 					isSingle: true,
 					title: "Host Metrics",
-					url: "/dashboard/monitoring",
+					url: "/dashboard/host-metrics",
 					icon: BarChartHorizontalBigIcon,
 					isEnabled: ({ isCloud, permissions }) =>
 						!isCloud && !!permissions?.monitoring.read,

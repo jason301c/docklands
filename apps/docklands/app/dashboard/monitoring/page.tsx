@@ -1,8 +1,5 @@
-import { requirePermission, requireSelfHosted } from "@/server/web/app-auth";
-import ClientPage from "./_client";
+import { redirect } from "next/navigation";
 
 export default async function Page() {
-	requireSelfHosted();
-	await requirePermission("monitoring", "read", "/dashboard/workspace");
-	return <ClientPage />;
+	redirect("/dashboard/host-metrics");
 }

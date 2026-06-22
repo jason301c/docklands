@@ -88,29 +88,29 @@ export const UserNav = () => {
 							<DropdownMenu.Item
 								className="cursor-pointer"
 								onClick={() => {
-									router.push("/dashboard/monitoring");
+									router.push("/dashboard/host-metrics");
 								}}
 							>
-								Monitoring
+								Host metrics
 							</DropdownMenu.Item>
 							{permissions?.traefikFiles.read && (
 								<DropdownMenu.Item
 									className="cursor-pointer"
 									onClick={() => {
-										router.push("/dashboard/ingress");
+										router.push("/dashboard/proxy-files");
 									}}
 								>
-									Ingress files
+									Proxy files
 								</DropdownMenu.Item>
 							)}
 							{permissions?.docker.read && (
 								<DropdownMenu.Item
 									className="cursor-pointer"
 									onClick={() => {
-										router.push("/dashboard/runtime");
+										router.push("/dashboard/container-runtime");
 									}}
 								>
-									Runtime containers
+									Container runtime
 								</DropdownMenu.Item>
 							)}
 						</>

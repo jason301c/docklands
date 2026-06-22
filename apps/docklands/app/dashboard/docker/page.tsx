@@ -3,5 +3,5 @@ import { requirePermission } from "@/server/web/app-auth";
 
 export default async function Page() {
 	await requirePermission("docker", "read", "/");
-	redirect("/dashboard/runtime");
+	redirect("/dashboard/container-runtime");
 }

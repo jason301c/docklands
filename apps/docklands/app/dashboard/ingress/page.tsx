@@ -1,7 +1,5 @@
-import { requirePermission } from "@/server/web/app-auth";
-import ClientPage from "../traefik/_client";
+import { redirect } from "next/navigation";
 
 export default async function Page() {
-	await requirePermission("traefikFiles", "read", "/");
-	return <ClientPage />;
+	redirect("/dashboard/proxy-files");
 }
