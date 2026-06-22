@@ -2,7 +2,6 @@
 
 import { Button } from "@cloudflare/kumo/components/button";
 import { Label } from "@cloudflare/kumo/components/label";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import copy from "copy-to-clipboard";
@@ -128,141 +127,140 @@ const Service = (props: {
 			<UseKeyboardNav forPage="application" />
 			<AdvanceBreadcrumb />
 			<div className="w-full">
-				<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl w-full">
-					<div className="rounded-xl bg-background shadow-md ">
-						<div className="flex flex-row justify-between items-center">
-							<div className="flex flex-col">
-								<h3 className="text-xl flex flex-row gap-2 items-center">
-									<div className="relative flex flex-row gap-4 items-center">
-										<ShowIconSettings
-											applicationId={applicationId}
-											icon={data?.icon}
-										/>
-										<div className="absolute -right-1 -top-2 z-10">
-											<StatusTooltip status={data?.applicationStatus} />
-										</div>
+				<div className="rounded-lg border bg-background p-6">
+					<div className="flex flex-row justify-between items-center">
+						<div className="flex flex-col">
+							<h3 className="text-xl flex flex-row gap-2 items-center">
+								<div className="relative flex flex-row gap-4 items-center">
+									<ShowIconSettings
+										applicationId={applicationId}
+										icon={data?.icon}
+									/>
+									<div className="absolute -right-1 -top-2 z-10">
+										<StatusTooltip status={data?.applicationStatus} />
 									</div>
-									{data?.name}
-								</h3>
-								{data?.description && <p>{data?.description}</p>}
+								</div>
+								{data?.name}
+							</h3>
+							{data?.description && <p>{data?.description}</p>}
 
-								<span className="text-sm text-muted-foreground">
-									{data?.appName}
-								</span>
-							</div>
-							<div className="flex flex-col h-fit w-fit gap-2">
-								<div className="flex flex-row h-fit w-fit gap-2">
-									<Button
-										type="button"
-										size="xs"
-										className="cursor-pointer"
-										onClick={() => {
-											const ip = data?.server?.ipAddress || serverIp;
-											if (ip) {
-												copy(ip);
-												toast.success("Runtime address copied");
-											}
-										}}
-										variant={
-											!data?.serverId
-												? "secondary"
-												: data?.server?.serverStatus === "active"
-													? "secondary"
-													: "destructive"
+							<span className="text-sm text-muted-foreground">
+								{data?.appName}
+							</span>
+						</div>
+						<div className="flex flex-col h-fit w-fit gap-2">
+							<div className="flex flex-row h-fit w-fit gap-2">
+								<Button
+									type="button"
+									size="xs"
+									className="cursor-pointer"
+									onClick={() => {
+										const ip = data?.server?.ipAddress || serverIp;
+										if (ip) {
+											copy(ip);
+											toast.success("Runtime address copied");
 										}
-									>
-										Runtime
-									</Button>
-									{data?.server?.serverStatus === "inactive" && (
-										<TooltipProvider delay={0}>
-											<Tooltip
-												content={
-													<>
-														<span>
-															This runtime is inactive. Re-enable runtime
-															capacity from Settings to run this service.
-														</span>
-													</>
-												}
-												className="z-[999] w-[300px]"
-												align="start"
-												side="top"
-												asChild
-											>
-												<Label className="break-all w-fit flex flex-row gap-1 items-center">
-													<HelpCircle className="size-4 text-muted-foreground" />
-												</Label>
-											</Tooltip>
-										</TooltipProvider>
-									)}
-								</div>
+									}}
+									variant={
+										!data?.serverId
+											? "secondary"
+											: data?.server?.serverStatus === "active"
+												? "secondary"
+												: "destructive"
+									}
+								>
+									Runtime
+								</Button>
+								{data?.server?.serverStatus === "inactive" && (
+									<TooltipProvider delay={0}>
+										<Tooltip
+											content={
+												<>
+													<span>
+														This runtime is inactive. Re-enable runtime capacity
+														from Settings to run this service.
+													</span>
+												</>
+											}
+											className="z-[999] w-[300px]"
+											align="start"
+											side="top"
+											asChild
+										>
+											<Label className="break-all w-fit flex flex-row gap-1 items-center">
+												<HelpCircle className="size-4 text-muted-foreground" />
+											</Label>
+										</Tooltip>
+									</TooltipProvider>
+								)}
+							</div>
 
-								<div className="flex flex-row gap-2 justify-end">
-									{permissions?.service.create && (
-										<UpdateApplication applicationId={applicationId} />
-									)}
-									{permissions?.service.delete && (
-										<DeleteService id={applicationId} type="application" />
-									)}
-								</div>
+							<div className="flex flex-row gap-2 justify-end">
+								{permissions?.service.create && (
+									<UpdateApplication applicationId={applicationId} />
+								)}
+								{permissions?.service.delete && (
+									<DeleteService id={applicationId} type="application" />
+								)}
 							</div>
 						</div>
-						<div className="space-y-2 py-8 border-t">
-							{data?.server?.serverStatus === "inactive" ? (
-								<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
-									<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
-										<ServerOff className="size-10 text-muted-foreground self-center" />
-										<span className="text-center text-base text-muted-foreground">
-											This service's runtime is currently marked inactive.
-											Re-enable runtime capacity from Settings to regain access
-											to this service.
-										</span>
-									</div>
+					</div>
+					<div className="space-y-2 py-8 border-t">
+						{data?.server?.serverStatus === "inactive" ? (
+							<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
+								<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
+									<ServerOff className="size-10 text-muted-foreground self-center" />
+									<span className="text-center text-base text-muted-foreground">
+										This service's runtime is currently marked inactive.
+										Re-enable runtime capacity from Settings to regain access to
+										this service.
+									</span>
 								</div>
-							) : (
-								<div className="w-full">
-									<Tabs
-										value={tab}
-										className="w-full overflow-auto"
-										onValueChange={(e) => {
-											if (e === null) return;
-											setTab(e as TabState);
-											const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/application/${applicationId}?tab=${e}`;
-											router.push(newPath);
-										}}
-										tabs={serviceTabs}
-									/>
+							</div>
+						) : (
+							<div className="w-full">
+								<Tabs
+									value={tab}
+									className="w-full overflow-auto"
+									onValueChange={(e) => {
+										if (e === null) return;
+										setTab(e as TabState);
+										const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/application/${applicationId}?tab=${e}`;
+										router.push(newPath);
+									}}
+									tabs={serviceTabs}
+								/>
 
-									{tab === "general" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowGeneralApplication applicationId={applicationId} />
-											</div>
+								{tab === "general" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowGeneralApplication applicationId={applicationId} />
 										</div>
-									)}
-									{permissions?.envVars.read && tab === "environment" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowEnvironment applicationId={applicationId} />
-											</div>
+									</div>
+								)}
+								{permissions?.envVars.read && tab === "environment" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowEnvironment applicationId={applicationId} />
 										</div>
-									)}
+									</div>
+								)}
 
-									{permissions?.monitoring.read && tab === "monitoring" && (
-										<div>
-											<div className="pt-2.5">
-												<div className="flex flex-col gap-4 border rounded-lg p-6">
-													{data?.serverId && isCloud ? (
-														<ContainerPaidMonitoring
-															appName={data?.appName || ""}
-															baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
-															token={
-																data?.server?.metricsConfig?.server?.token || ""
-															}
-														/>
-													) : (
-														<>
-															{/* {monitoring?.enabledFeatures &&
+								{permissions?.monitoring.read && tab === "monitoring" && (
+									<div>
+										<div className="pt-2.5">
+											<div className="flex flex-col gap-4 border rounded-lg p-6">
+												{data?.serverId && isCloud ? (
+													<ContainerPaidMonitoring
+														appName={data?.appName || ""}
+														baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
+														token={
+															data?.server?.metricsConfig?.server?.token || ""
+														}
+													/>
+												) : (
+													<>
+														{/* {monitoring?.enabledFeatures &&
 															isCloud &&
 															data?.serverId && (
 																<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2">
@@ -276,7 +274,7 @@ const Service = (props: {
 																</div>
 															)} */}
 
-															{/* {toggleMonitoring ? (
+														{/* {toggleMonitoring ? (
 															<ContainerPaidMonitoring
 																appName={data?.appName || ""}
 																baseUrl={`http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.server?.port}`}
@@ -285,110 +283,106 @@ const Service = (props: {
 																}
 															/>
 														) : ( */}
-															<div>
-																<ContainerFreeMonitoring
-																	appName={data?.appName || ""}
-																/>
-															</div>
-															{/* )} */}
-														</>
-													)}
-												</div>
+														<div>
+															<ContainerFreeMonitoring
+																appName={data?.appName || ""}
+															/>
+														</div>
+														{/* )} */}
+													</>
+												)}
 											</div>
 										</div>
-									)}
+									</div>
+								)}
 
-									{permissions?.logs.read && tab === "logs" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowDockerLogs
-													appName={data?.appName || ""}
-													serverId={data?.serverId || ""}
-												/>
-											</div>
+								{permissions?.logs.read && tab === "logs" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowDockerLogs
+												appName={data?.appName || ""}
+												serverId={data?.serverId || ""}
+											/>
 										</div>
-									)}
-									{permissions?.schedule.read && tab === "schedules" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowSchedules
-													id={applicationId}
-													scheduleType="application"
-												/>
-											</div>
+									</div>
+								)}
+								{permissions?.schedule.read && tab === "schedules" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowSchedules
+												id={applicationId}
+												scheduleType="application"
+											/>
 										</div>
-									)}
-									{permissions?.deployment.read && tab === "deployments" && (
-										<div className="w-full pt-2.5">
-											<div className="flex flex-col gap-4 border rounded-lg">
-												<ShowDeployments
-													id={applicationId}
-													type="application"
-													serverId={data?.serverId || ""}
-													refreshToken={data?.refreshToken || ""}
-												/>
-											</div>
+									</div>
+								)}
+								{permissions?.deployment.read && tab === "deployments" && (
+									<div className="w-full pt-2.5">
+										<div className="flex flex-col gap-4 border rounded-lg">
+											<ShowDeployments
+												id={applicationId}
+												type="application"
+												serverId={data?.serverId || ""}
+												refreshToken={data?.refreshToken || ""}
+											/>
 										</div>
-									)}
-									{permissions?.volumeBackup.read &&
-										tab === "volume-backups" && (
-											<div className="w-full pt-2.5">
-												<div className="flex flex-col gap-4 border rounded-lg">
-													<ShowVolumeBackups
-														id={applicationId}
-														type="application"
-														serverId={data?.serverId || ""}
-													/>
-												</div>
-											</div>
-										)}
-									{permissions?.deployment.read &&
-										tab === "preview-deployments" && (
-											<div className="w-full">
-												<div className="flex flex-col gap-4 pt-2.5">
-													<ShowPreviewDeployments
-														applicationId={applicationId}
-													/>
-												</div>
-											</div>
-										)}
-									{permissions?.domain.read && tab === "domains" && (
+									</div>
+								)}
+								{permissions?.volumeBackup.read && tab === "volume-backups" && (
+									<div className="w-full pt-2.5">
+										<div className="flex flex-col gap-4 border rounded-lg">
+											<ShowVolumeBackups
+												id={applicationId}
+												type="application"
+												serverId={data?.serverId || ""}
+											/>
+										</div>
+									</div>
+								)}
+								{permissions?.deployment.read &&
+									tab === "preview-deployments" && (
 										<div className="w-full">
 											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowDomains id={applicationId} type="application" />
+												<ShowPreviewDeployments applicationId={applicationId} />
 											</div>
 										</div>
 									)}
-									{tab === "patches" && (
-										<div className="w-full">
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowPatches id={applicationId} type="application" />
-											</div>
+								{permissions?.domain.read && tab === "domains" && (
+									<div className="w-full">
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowDomains id={applicationId} type="application" />
 										</div>
-									)}
-									{permissions?.service.create && tab === "advanced" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<AddCommand applicationId={applicationId} />
-												<ShowClusterSettings
-													id={applicationId}
-													type="application"
-												/>
-												<ShowBuildServer applicationId={applicationId} />
-												<ShowResources id={applicationId} type="application" />
-												<ShowVolumes id={applicationId} type="application" />
-												<ShowRedirects applicationId={applicationId} />
-												<ShowSecurity applicationId={applicationId} />
-												<ShowPorts applicationId={applicationId} />
-												<ShowTraefikConfig applicationId={applicationId} />
-											</div>
+									</div>
+								)}
+								{tab === "patches" && (
+									<div className="w-full">
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowPatches id={applicationId} type="application" />
 										</div>
-									)}
-								</div>
-							)}
-						</div>
+									</div>
+								)}
+								{permissions?.service.create && tab === "advanced" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<AddCommand applicationId={applicationId} />
+											<ShowClusterSettings
+												id={applicationId}
+												type="application"
+											/>
+											<ShowBuildServer applicationId={applicationId} />
+											<ShowResources id={applicationId} type="application" />
+											<ShowVolumes id={applicationId} type="application" />
+											<ShowRedirects applicationId={applicationId} />
+											<ShowSecurity applicationId={applicationId} />
+											<ShowPorts applicationId={applicationId} />
+											<ShowTraefikConfig applicationId={applicationId} />
+										</div>
+									</div>
+								)}
+							</div>
+						)}
 					</div>
-				</LayerCard>
+				</div>
 			</div>
 		</div>
 	);

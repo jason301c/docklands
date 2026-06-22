@@ -2,7 +2,6 @@
 
 import { Button } from "@cloudflare/kumo/components/button";
 import { Label } from "@cloudflare/kumo/components/label";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import copy from "copy-to-clipboard";
@@ -60,157 +59,156 @@ const Redis = (props: {
 			<UseKeyboardNav forPage="redis" />
 			<AdvanceBreadcrumb />
 			<div className="w-full">
-				<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl w-full">
-					<div className="rounded-xl bg-background shadow-md ">
-						<div className="flex flex-row justify-between items-center">
-							<div className="flex flex-col">
-								<h3 className="text-xl flex flex-row gap-2">
-									<div className="relative flex flex-row gap-4">
-										<div className="absolute -right-1  -top-2">
-											<StatusTooltip status={data?.applicationStatus} />
-										</div>
-
-										<RedisIcon className="h-6 w-6 text-muted-foreground" />
+				<div className="rounded-lg border bg-background p-6">
+					<div className="flex flex-row justify-between items-center">
+						<div className="flex flex-col">
+							<h3 className="text-xl flex flex-row gap-2">
+								<div className="relative flex flex-row gap-4">
+									<div className="absolute -right-1  -top-2">
+										<StatusTooltip status={data?.applicationStatus} />
 									</div>
-									{data?.name}
-								</h3>
-								{data?.description && <p>{data?.description}</p>}
 
-								<span className="text-sm text-muted-foreground">
-									{data?.appName}
-								</span>
-							</div>
-							<div className="flex flex-col h-fit w-fit gap-2">
-								<div className="flex flex-row h-fit w-fit gap-2">
-									<Button
-										type="button"
-										size="xs"
-										className="cursor-pointer"
-										onClick={() => {
-											const ip = data?.server?.ipAddress || serverIp;
-											if (ip) {
-												copy(ip);
-												toast.success("Runtime address copied");
-											}
-										}}
-										variant={
-											!data?.serverId
-												? "secondary"
-												: data?.server?.serverStatus === "active"
-													? "secondary"
-													: "destructive"
+									<RedisIcon className="h-6 w-6 text-muted-foreground" />
+								</div>
+								{data?.name}
+							</h3>
+							{data?.description && <p>{data?.description}</p>}
+
+							<span className="text-sm text-muted-foreground">
+								{data?.appName}
+							</span>
+						</div>
+						<div className="flex flex-col h-fit w-fit gap-2">
+							<div className="flex flex-row h-fit w-fit gap-2">
+								<Button
+									type="button"
+									size="xs"
+									className="cursor-pointer"
+									onClick={() => {
+										const ip = data?.server?.ipAddress || serverIp;
+										if (ip) {
+											copy(ip);
+											toast.success("Runtime address copied");
 										}
-									>
-										Runtime
-									</Button>
-									{data?.server?.serverStatus === "inactive" && (
-										<TooltipProvider delay={0}>
-											<Tooltip
-												content={
-													<>
-														<span>
-															This runtime is inactive. Re-enable runtime
-															capacity from Settings to run this service.
-														</span>
-													</>
-												}
-												className="z-[999] w-[300px]"
-												align="start"
-												side="top"
-												asChild
-											>
-												<Label className="break-all w-fit flex flex-row gap-1 items-center">
-													<HelpCircle className="size-4 text-muted-foreground" />
-												</Label>
-											</Tooltip>
-										</TooltipProvider>
-									)}
-								</div>
+									}}
+									variant={
+										!data?.serverId
+											? "secondary"
+											: data?.server?.serverStatus === "active"
+												? "secondary"
+												: "destructive"
+									}
+								>
+									Runtime
+								</Button>
+								{data?.server?.serverStatus === "inactive" && (
+									<TooltipProvider delay={0}>
+										<Tooltip
+											content={
+												<>
+													<span>
+														This runtime is inactive. Re-enable runtime capacity
+														from Settings to run this service.
+													</span>
+												</>
+											}
+											className="z-[999] w-[300px]"
+											align="start"
+											side="top"
+											asChild
+										>
+											<Label className="break-all w-fit flex flex-row gap-1 items-center">
+												<HelpCircle className="size-4 text-muted-foreground" />
+											</Label>
+										</Tooltip>
+									</TooltipProvider>
+								)}
+							</div>
 
-								<div className="flex flex-row gap-2 justify-end">
-									{permissions?.service.create && (
-										<UpdateRedis redisId={redisId} />
-									)}
-									{permissions?.service.delete && (
-										<DeleteService id={redisId} type="redis" />
-									)}
-								</div>
+							<div className="flex flex-row gap-2 justify-end">
+								{permissions?.service.create && (
+									<UpdateRedis redisId={redisId} />
+								)}
+								{permissions?.service.delete && (
+									<DeleteService id={redisId} type="redis" />
+								)}
 							</div>
 						</div>
-						<div className="space-y-2 py-8 border-t">
-							{data?.server?.serverStatus === "inactive" ? (
-								<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
-									<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
-										<ServerOff className="size-10 text-muted-foreground self-center" />
-										<span className="text-center text-base text-muted-foreground">
-											This service's runtime is currently marked inactive.
-											Re-enable runtime capacity from Settings to regain access
-											to this service.
-										</span>
-									</div>
+					</div>
+					<div className="space-y-2 py-8 border-t">
+						{data?.server?.serverStatus === "inactive" ? (
+							<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
+								<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
+									<ServerOff className="size-10 text-muted-foreground self-center" />
+									<span className="text-center text-base text-muted-foreground">
+										This service's runtime is currently marked inactive.
+										Re-enable runtime capacity from Settings to regain access to
+										this service.
+									</span>
 								</div>
-							) : (
-								<div className="w-full">
-									<Tabs
-										value={tab}
-										className="w-full overflow-auto"
-										onValueChange={(e) => {
-											if (e === null) return;
-											setSab(e as TabState);
-											const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/redis/${redisId}?tab=${e}`;
+							</div>
+						) : (
+							<div className="w-full">
+								<Tabs
+									value={tab}
+									className="w-full overflow-auto"
+									onValueChange={(e) => {
+										if (e === null) return;
+										setSab(e as TabState);
+										const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/redis/${redisId}?tab=${e}`;
 
-											router.push(newPath);
-										}}
-										tabs={
-											[
-												{ value: "general", label: "General" },
-												permissions?.envVars.read
-													? { value: "environment", label: "Environment" }
-													: null,
-												permissions?.logs.read
-													? { value: "logs", label: "Logs" }
-													: null,
-												permissions?.monitoring.read &&
-												((data?.serverId && isCloud) || !data?.server)
-													? { value: "monitoring", label: "Metrics" }
-													: null,
-												permissions?.service.create
-													? { value: "advanced", label: "Advanced" }
-													: null,
-											].filter(Boolean) as { value: string; label: string }[]
-										}
-									/>
-									{tab === "general" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowGeneralRedis redisId={redisId} />
-												<ShowInternalRedisCredentials redisId={redisId} />
-												<ShowExternalRedisCredentials redisId={redisId} />
-											</div>
+										router.push(newPath);
+									}}
+									tabs={
+										[
+											{ value: "general", label: "General" },
+											permissions?.envVars.read
+												? { value: "environment", label: "Environment" }
+												: null,
+											permissions?.logs.read
+												? { value: "logs", label: "Logs" }
+												: null,
+											permissions?.monitoring.read &&
+											((data?.serverId && isCloud) || !data?.server)
+												? { value: "monitoring", label: "Metrics" }
+												: null,
+											permissions?.service.create
+												? { value: "advanced", label: "Advanced" }
+												: null,
+										].filter(Boolean) as { value: string; label: string }[]
+									}
+								/>
+								{tab === "general" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowGeneralRedis redisId={redisId} />
+											<ShowInternalRedisCredentials redisId={redisId} />
+											<ShowExternalRedisCredentials redisId={redisId} />
 										</div>
-									)}
-									{permissions?.envVars.read && tab === "environment" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowEnvironment id={redisId} type="redis" />
-											</div>
+									</div>
+								)}
+								{permissions?.envVars.read && tab === "environment" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowEnvironment id={redisId} type="redis" />
 										</div>
-									)}
-									{permissions?.monitoring.read && tab === "monitoring" && (
-										<div>
-											<div className="pt-2.5">
-												<div className="flex flex-col gap-4 border rounded-lg p-6">
-													{data?.serverId && isCloud ? (
-														<ContainerPaidMonitoring
-															appName={data?.appName || ""}
-															baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
-															token={
-																data?.server?.metricsConfig?.server?.token || ""
-															}
-														/>
-													) : (
-														<>
-															{/* {monitoring?.enabledFeatures && (
+									</div>
+								)}
+								{permissions?.monitoring.read && tab === "monitoring" && (
+									<div>
+										<div className="pt-2.5">
+											<div className="flex flex-col gap-4 border rounded-lg p-6">
+												{data?.serverId && isCloud ? (
+													<ContainerPaidMonitoring
+														appName={data?.appName || ""}
+														baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
+														token={
+															data?.server?.metricsConfig?.server?.token || ""
+														}
+													/>
+												) : (
+													<>
+														{/* {monitoring?.enabledFeatures && (
 															<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2">
 																<Label className="text-muted-foreground">
 																	Metrics source
@@ -232,42 +230,38 @@ const Redis = (props: {
 															/>
 														) : (
 															<div> */}
-															<ContainerFreeMonitoring
-																appName={data?.appName || ""}
-															/>
-															{/* </div> */}
-															{/* )} */}
-														</>
-													)}
-												</div>
+														<ContainerFreeMonitoring
+															appName={data?.appName || ""}
+														/>
+														{/* </div> */}
+														{/* )} */}
+													</>
+												)}
 											</div>
 										</div>
-									)}
-									{permissions?.logs.read && tab === "logs" && (
-										<div>
-											<div className="flex flex-col gap-4  pt-2.5">
-												<ShowDockerLogs
-													serverId={data?.serverId || ""}
-													appName={data?.appName || ""}
-												/>
-											</div>
+									</div>
+								)}
+								{permissions?.logs.read && tab === "logs" && (
+									<div>
+										<div className="flex flex-col gap-4  pt-2.5">
+											<ShowDockerLogs
+												serverId={data?.serverId || ""}
+												appName={data?.appName || ""}
+											/>
 										</div>
-									)}
-									{permissions?.service.create && tab === "advanced" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowDatabaseAdvancedSettings
-													id={redisId}
-													type="redis"
-												/>
-											</div>
+									</div>
+								)}
+								{permissions?.service.create && tab === "advanced" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowDatabaseAdvancedSettings id={redisId} type="redis" />
 										</div>
-									)}
-								</div>
-							)}
-						</div>
+									</div>
+								)}
+							</div>
+						)}
 					</div>
-				</LayerCard>
+				</div>
 			</div>
 		</div>
 	);

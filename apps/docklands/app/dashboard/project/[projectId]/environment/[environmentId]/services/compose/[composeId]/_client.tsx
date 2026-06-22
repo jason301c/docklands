@@ -2,7 +2,6 @@
 
 import { Button } from "@cloudflare/kumo/components/button";
 import { Label } from "@cloudflare/kumo/components/label";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import copy from "copy-to-clipboard";
@@ -117,181 +116,179 @@ const Service = (props: {
 			<UseKeyboardNav forPage="compose" />
 			<AdvanceBreadcrumb />
 			<div className="w-full">
-				<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl w-full">
-					<div className="rounded-xl bg-background shadow-md ">
-						<div className="flex flex-col gap-4">
-							<div className="flex flex-row justify-between items-center">
-								<div className="flex flex-col">
-									<h3 className="text-xl flex flex-row gap-2">
-										<div className="relative flex flex-row gap-4">
-											<div className="absolute -right-1 -top-2">
-												<StatusTooltip status={data?.composeStatus} />
-											</div>
-
-											<CircuitBoard className="h-6 w-6 text-muted-foreground" />
+				<div className="rounded-lg border bg-background p-6">
+					<div className="flex flex-col gap-4">
+						<div className="flex flex-row justify-between items-center">
+							<div className="flex flex-col">
+								<h3 className="text-xl flex flex-row gap-2">
+									<div className="relative flex flex-row gap-4">
+										<div className="absolute -right-1 -top-2">
+											<StatusTooltip status={data?.composeStatus} />
 										</div>
-										{data?.name}
-									</h3>
-									{data?.description && <p>{data?.description}</p>}
 
-									<span className="text-sm text-muted-foreground">
-										{data?.appName}
-									</span>
-								</div>
-								<div className="flex flex-col h-fit w-fit gap-2">
-									<div className="flex flex-row h-fit w-fit gap-2">
-										<Button
-											type="button"
-											size="xs"
-											className="cursor-pointer"
-											onClick={() => {
-												const ip = data?.server?.ipAddress || serverIp;
-												if (ip) {
-													copy(ip);
-													toast.success("Runtime address copied");
-												}
-											}}
-											variant={
-												!data?.serverId
-													? "secondary"
-													: data?.server?.serverStatus === "active"
-														? "secondary"
-														: "destructive"
+										<CircuitBoard className="h-6 w-6 text-muted-foreground" />
+									</div>
+									{data?.name}
+								</h3>
+								{data?.description && <p>{data?.description}</p>}
+
+								<span className="text-sm text-muted-foreground">
+									{data?.appName}
+								</span>
+							</div>
+							<div className="flex flex-col h-fit w-fit gap-2">
+								<div className="flex flex-row h-fit w-fit gap-2">
+									<Button
+										type="button"
+										size="xs"
+										className="cursor-pointer"
+										onClick={() => {
+											const ip = data?.server?.ipAddress || serverIp;
+											if (ip) {
+												copy(ip);
+												toast.success("Runtime address copied");
 											}
-										>
-											Runtime
-										</Button>
-										{data?.server?.serverStatus === "inactive" && (
-											<TooltipProvider>
-												<Tooltip
-													content={
-														<>
-															<span>
-																This runtime is inactive. Re-enable runtime
-																capacity from Settings to run this service.
-															</span>
-														</>
-													}
-													className="z-[999] w-[300px]"
-													align="start"
-													side="top"
-													asChild
-												>
-													<Label className="break-all w-fit flex flex-row gap-1 items-center">
-														<HelpCircle className="size-4 text-muted-foreground" />
-													</Label>
-												</Tooltip>
-											</TooltipProvider>
-										)}
-									</div>
-									<div className="flex flex-row gap-2 justify-end">
-										{permissions?.service.create && (
-											<UpdateCompose composeId={composeId} />
-										)}
+										}}
+										variant={
+											!data?.serverId
+												? "secondary"
+												: data?.server?.serverStatus === "active"
+													? "secondary"
+													: "destructive"
+										}
+									>
+										Runtime
+									</Button>
+									{data?.server?.serverStatus === "inactive" && (
+										<TooltipProvider>
+											<Tooltip
+												content={
+													<>
+														<span>
+															This runtime is inactive. Re-enable runtime
+															capacity from Settings to run this service.
+														</span>
+													</>
+												}
+												className="z-[999] w-[300px]"
+												align="start"
+												side="top"
+												asChild
+											>
+												<Label className="break-all w-fit flex flex-row gap-1 items-center">
+													<HelpCircle className="size-4 text-muted-foreground" />
+												</Label>
+											</Tooltip>
+										</TooltipProvider>
+									)}
+								</div>
+								<div className="flex flex-row gap-2 justify-end">
+									{permissions?.service.create && (
+										<UpdateCompose composeId={composeId} />
+									)}
 
-										{permissions?.service.delete && (
-											<DeleteService id={composeId} type="compose" />
-										)}
-									</div>
+									{permissions?.service.delete && (
+										<DeleteService id={composeId} type="compose" />
+									)}
 								</div>
 							</div>
 						</div>
-						<div className="space-y-2 py-8 border-t">
-							{data?.server?.serverStatus === "inactive" ? (
-								<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
-									<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
-										<ServerOff className="size-10 text-muted-foreground self-center" />
-										<span className="text-center text-base text-muted-foreground">
-											This service's runtime is currently marked inactive.
-											Re-enable runtime capacity from Settings to regain access
-											to this service.
-										</span>
-									</div>
+					</div>
+					<div className="space-y-2 py-8 border-t">
+						{data?.server?.serverStatus === "inactive" ? (
+							<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
+								<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
+									<ServerOff className="size-10 text-muted-foreground self-center" />
+									<span className="text-center text-base text-muted-foreground">
+										This service's runtime is currently marked inactive.
+										Re-enable runtime capacity from Settings to regain access to
+										this service.
+									</span>
 								</div>
-							) : (
-								<div className="w-full">
-									<Tabs
-										value={tab}
-										className="w-full overflow-auto"
-										onValueChange={(e) => {
-											if (e === null) return;
-											setTab(e as TabState);
-											const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/compose/${composeId}?tab=${e}`;
-											router.push(newPath);
-										}}
-										tabs={serviceTabs}
-									/>
+							</div>
+						) : (
+							<div className="w-full">
+								<Tabs
+									value={tab}
+									className="w-full overflow-auto"
+									onValueChange={(e) => {
+										if (e === null) return;
+										setTab(e as TabState);
+										const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/compose/${composeId}?tab=${e}`;
+										router.push(newPath);
+									}}
+									tabs={serviceTabs}
+								/>
 
-									{tab === "general" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowGeneralCompose composeId={composeId} />
-											</div>
+								{tab === "general" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowGeneralCompose composeId={composeId} />
 										</div>
-									)}
-									{permissions?.envVars.read && tab === "environment" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowEnvironment id={composeId} type="compose" />
-											</div>
+									</div>
+								)}
+								{permissions?.envVars.read && tab === "environment" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowEnvironment id={composeId} type="compose" />
 										</div>
-									)}
-									{permissions?.service.create && tab === "backups" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowBackups id={composeId} backupType="compose" />
-											</div>
+									</div>
+								)}
+								{permissions?.service.create && tab === "backups" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowBackups id={composeId} backupType="compose" />
 										</div>
-									)}
+									</div>
+								)}
 
-									{permissions?.schedule.read && tab === "schedules" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowSchedules id={composeId} scheduleType="compose" />
-											</div>
+								{permissions?.schedule.read && tab === "schedules" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowSchedules id={composeId} scheduleType="compose" />
 										</div>
-									)}
-									{permissions?.volumeBackup.read &&
-										tab === "volumeBackups" && (
-											<div>
-												<div className="flex flex-col gap-4 pt-2.5">
-													<ShowVolumeBackups
-														id={composeId}
-														type="compose"
+									</div>
+								)}
+								{permissions?.volumeBackup.read && tab === "volumeBackups" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowVolumeBackups
+												id={composeId}
+												type="compose"
+												serverId={data?.serverId || ""}
+											/>
+										</div>
+									</div>
+								)}
+								{permissions?.service.read && tab === "containers" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowComposeContainers
+												serverId={data?.serverId || undefined}
+												appName={data?.appName || ""}
+												appType={data?.composeType || "docker-compose"}
+											/>
+										</div>
+									</div>
+								)}
+
+								{permissions?.monitoring.read && tab === "monitoring" && (
+									<div>
+										<div className="pt-2.5">
+											<div className="flex flex-col border rounded-lg ">
+												{data?.serverId && isCloud ? (
+													<ComposePaidMonitoring
 														serverId={data?.serverId || ""}
+														baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
+														appName={data?.appName || ""}
+														token={
+															data?.server?.metricsConfig?.server?.token || ""
+														}
+														appType={data?.composeType || "docker-compose"}
 													/>
-												</div>
-											</div>
-										)}
-									{permissions?.service.read && tab === "containers" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowComposeContainers
-													serverId={data?.serverId || undefined}
-													appName={data?.appName || ""}
-													appType={data?.composeType || "docker-compose"}
-												/>
-											</div>
-										</div>
-									)}
-
-									{permissions?.monitoring.read && tab === "monitoring" && (
-										<div>
-											<div className="pt-2.5">
-												<div className="flex flex-col border rounded-lg ">
-													{data?.serverId && isCloud ? (
-														<ComposePaidMonitoring
-															serverId={data?.serverId || ""}
-															baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
-															appName={data?.appName || ""}
-															token={
-																data?.server?.metricsConfig?.server?.token || ""
-															}
-															appType={data?.composeType || "docker-compose"}
-														/>
-													) : (
-														<>
-															{/* {monitoring?.enabledFeatures &&
+												) : (
+													<>
+														{/* {monitoring?.enabledFeatures &&
 															isCloud &&
 															data?.serverId && (
 																<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2 m-4">
@@ -315,84 +312,83 @@ const Service = (props: {
 																appType={data?.composeType || "docker-compose"}
 															/>
 														) : ( */}
-															{/* <div> */}
-															<ComposeFreeMonitoring
-																serverId={data?.serverId || ""}
-																appName={data?.appName || ""}
-																appType={data?.composeType || "docker-compose"}
-															/>
-															{/* </div> */}
-															{/* )} */}
-														</>
-													)}
-												</div>
-											</div>
-										</div>
-									)}
-
-									{permissions?.logs.read && tab === "logs" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												{data?.composeType === "docker-compose" ? (
-													<ShowDockerLogsCompose
-														serverId={data?.serverId || ""}
-														appName={data?.appName || ""}
-														appType={data?.composeType || "docker-compose"}
-													/>
-												) : (
-													<ShowDockerLogsStack
-														serverId={data?.serverId || ""}
-														appName={data?.appName || ""}
-													/>
+														{/* <div> */}
+														<ComposeFreeMonitoring
+															serverId={data?.serverId || ""}
+															appName={data?.appName || ""}
+															appType={data?.composeType || "docker-compose"}
+														/>
+														{/* </div> */}
+														{/* )} */}
+													</>
 												)}
 											</div>
 										</div>
-									)}
+									</div>
+								)}
 
-									{permissions?.deployment.read && tab === "deployments" && (
-										<div className="w-full pt-2.5">
-											<div className="flex flex-col gap-4 border rounded-lg">
-												<ShowDeployments
-													id={composeId}
-													type="compose"
+								{permissions?.logs.read && tab === "logs" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											{data?.composeType === "docker-compose" ? (
+												<ShowDockerLogsCompose
 													serverId={data?.serverId || ""}
-													refreshToken={data?.refreshToken || ""}
+													appName={data?.appName || ""}
+													appType={data?.composeType || "docker-compose"}
 												/>
-											</div>
+											) : (
+												<ShowDockerLogsStack
+													serverId={data?.serverId || ""}
+													appName={data?.appName || ""}
+												/>
+											)}
 										</div>
-									)}
+									</div>
+								)}
 
-									{permissions?.domain.read && tab === "domains" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowDomains id={composeId} type="compose" />
-											</div>
+								{permissions?.deployment.read && tab === "deployments" && (
+									<div className="w-full pt-2.5">
+										<div className="flex flex-col gap-4 border rounded-lg">
+											<ShowDeployments
+												id={composeId}
+												type="compose"
+												serverId={data?.serverId || ""}
+												refreshToken={data?.refreshToken || ""}
+											/>
 										</div>
-									)}
+									</div>
+								)}
 
-									{tab === "patches" && (
-										<div className="w-full">
-											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowPatches id={composeId} type="compose" />
-											</div>
+								{permissions?.domain.read && tab === "domains" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowDomains id={composeId} type="compose" />
 										</div>
-									)}
+									</div>
+								)}
 
-									{permissions?.service.create && tab === "advanced" && (
-										<div>
-											<div className="flex flex-col gap-4 pt-2.5">
-												<AddCommandCompose composeId={composeId} />
-												<ShowVolumes id={composeId} type="compose" />
-												<ShowImport composeId={composeId} />
-												<IsolatedDeploymentTab composeId={composeId} />
-											</div>
+								{tab === "patches" && (
+									<div className="w-full">
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowPatches id={composeId} type="compose" />
 										</div>
-									)}
-								</div>
-							)}
-						</div>
+									</div>
+								)}
+
+								{permissions?.service.create && tab === "advanced" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<AddCommandCompose composeId={composeId} />
+											<ShowVolumes id={composeId} type="compose" />
+											<ShowImport composeId={composeId} />
+											<IsolatedDeploymentTab composeId={composeId} />
+										</div>
+									</div>
+								)}
+							</div>
+						)}
 					</div>
-				</LayerCard>
+				</div>
 			</div>
 		</div>
 	);
