@@ -135,7 +135,7 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 						You need to add at least one registry to use build workers. Please
 						go to{" "}
 						<Link
-							href="/dashboard/settings/registry"
+							href="/dashboard/settings/image-registry"
 							className="text-primary underline"
 						>
 							Settings

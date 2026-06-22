@@ -2578,9 +2578,9 @@ export const EnvironmentCanvas = ({
 			},
 			{
 				id: "system:registry",
-				label: "Registry",
+				label: "Image registry",
 				detail: "Container image registries",
-				path: "/dashboard/settings/registry",
+				path: "/dashboard/settings/image-registry",
 				search: "registry docker image container credentials",
 				icon: <Box className="size-5 text-muted-foreground" />,
 			},
@@ -2821,9 +2821,9 @@ export const EnvironmentCanvas = ({
 										Git providers
 									</DropdownMenu.Item>
 								</Link>
-								<Link href="/dashboard/settings/registry">
+								<Link href="/dashboard/settings/image-registry">
 									<DropdownMenu.Item className="cursor-pointer">
-										Registry
+										Image registry
 									</DropdownMenu.Item>
 								</Link>
 								<Link href="/dashboard/settings/ssh-keys">

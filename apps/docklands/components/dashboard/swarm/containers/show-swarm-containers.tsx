@@ -302,10 +302,10 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 						<p className="mt-2 text-xs">
 							Manage workers in{" "}
 							<Link
-								href="/dashboard/settings/cluster"
+								href="/dashboard/settings/cluster-nodes"
 								className="underline underline-offset-4"
 							>
-								Orchestration Settings
+								Cluster Nodes
 							</Link>
 						</p>
 					</AlertDescription>

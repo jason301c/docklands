@@ -80,11 +80,11 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 					{!serverId && (
 						<Button
 							onClick={() =>
-								window.location.replace("/dashboard/settings/cluster")
+								window.location.replace("/dashboard/settings/cluster-nodes")
 							}
 						>
 							<Settings className="mr-2 h-4 w-4" />
-							Manage Orchestration
+							Manage Cluster Nodes
 						</Button>
 					)}
 				</header>

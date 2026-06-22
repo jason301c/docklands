@@ -35,10 +35,10 @@ export const DocLinks = () => (
 				<ExternalLink className="h-3 w-3" />
 			</a>
 			<Link
-				href="/dashboard/settings/cluster"
+				href="/dashboard/settings/cluster-nodes"
 				className="text-xs text-primary underline underline-offset-4 inline-flex items-center gap-1"
 			>
-				Orchestration Settings
+				Cluster Nodes
 			</Link>
 		</div>
 	</div>
@@ -85,10 +85,10 @@ export const SwarmNotAvailable = ({
 				<li>
 					Check the{" "}
 					<Link
-						href="/dashboard/settings/cluster"
+						href="/dashboard/settings/cluster-nodes"
 						className="text-primary underline underline-offset-4"
 					>
-						Orchestration Settings
+						Cluster Nodes
 					</Link>{" "}
 					page to manage your workers
 				</li>
@@ -130,10 +130,10 @@ export const ServicesError = ({
 				<li>
 					Network connectivity issues to a remote worker &mdash; check{" "}
 					<Link
-						href="/dashboard/settings/cluster"
+						href="/dashboard/settings/cluster-nodes"
 						className="text-primary underline underline-offset-4"
 					>
-						Orchestration Settings
+						Cluster Nodes
 					</Link>
 				</li>
 			</ul>
@@ -183,10 +183,10 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 					Worker nodes need to pull images from a shared registry. Configure one
 					in{" "}
 					<Link
-						href="/dashboard/settings/cluster"
+						href="/dashboard/settings/image-registry"
 						className="text-primary underline underline-offset-4"
 					>
-						Orchestration Settings
+						Image Registry
 					</Link>
 					.
 				</li>
@@ -255,7 +255,7 @@ export const NoRunningContainers = ({
 					<li>
 						Images can&apos;t be pulled on workers &mdash; verify your{" "}
 						<Link
-							href="/dashboard/settings/cluster"
+							href="/dashboard/settings/image-registry"
 							className="text-primary underline underline-offset-4"
 						>
 							registry configuration

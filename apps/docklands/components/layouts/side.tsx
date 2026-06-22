@@ -173,7 +173,7 @@ const MENU: Menu = {
 		{
 			isSingle: true,
 			title: "Build Workers",
-			url: "/dashboard/settings/deployments",
+			url: "/dashboard/settings/build-workers",
 			icon: Boxes,
 			isEnabled: ({ permissions, isCloud }) =>
 				!!(permissions?.server.read && !isCloud),
@@ -212,7 +212,7 @@ const MENU: Menu = {
 		{
 			isSingle: true,
 			title: "Image Registry",
-			url: "/dashboard/settings/registry",
+			url: "/dashboard/settings/image-registry",
 			icon: Package,
 			isEnabled: ({ permissions }) => !!permissions?.registry.read,
 		},
@@ -233,8 +233,8 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Cluster",
-			url: "/dashboard/settings/cluster",
+			title: "Cluster Nodes",
+			url: "/dashboard/settings/cluster-nodes",
 			icon: Boxes,
 			// Only enabled for admins
 			isEnabled: ({ permissions }) => !!permissions?.organization.update,

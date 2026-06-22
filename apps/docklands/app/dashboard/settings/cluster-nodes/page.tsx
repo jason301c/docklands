@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
 import { requireAdmin } from "@/server/web/app-auth";
+import ClientPage from "../cluster/_client";
 
 export default async function Page() {
 	await requireAdmin();
-	redirect("/dashboard/settings/image-registry");
+	return <ClientPage />;
 }

@@ -171,10 +171,10 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 												To use multi-worker orchestration, configure at least
 												one registry first. Go to{" "}
 												<Link
-													href="/dashboard/settings/cluster"
+													href="/dashboard/settings/image-registry"
 													className="text-foreground"
 												>
-													Orchestration Settings
+													Image Registry
 												</Link>{" "}
 												to do so.
 											</span>

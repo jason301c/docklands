@@ -1,13 +1,14 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -17,8 +18,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 
 const formSchema = z
 	.object({
@@ -145,14 +145,13 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Rollback Registry</FormLabel>
-										<Select aria-label="Select option"
+										<Select
+											aria-label="Select option"
 											onValueChange={field.onChange}
 											value={field.value || "none"}
 										>
 											<FormControl>
-												<>
-													
-												</>
+												<></>
 											</FormControl>
 											<>
 												<Select.Group>
@@ -179,7 +178,7 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 											<FormDescription className="text-amber-600 dark:text-amber-500">
 												No registries available. Please{" "}
 												<Link
-													href="/dashboard/settings/registry"
+													href="/dashboard/settings/image-registry"
 													className="underline font-medium hover:text-amber-700 dark:hover:text-amber-400"
 												>
 													configure a registry
