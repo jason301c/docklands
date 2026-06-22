@@ -2248,6 +2248,18 @@ export const EnvironmentCanvas = ({
 						setCommandOpen(false);
 					},
 				},
+				{
+					id: `connect-from:${service.type}:${service.id}`,
+					group: "Actions" as const,
+					label: `Connect from ${service.name}`,
+					detail: `${serviceTypeLabels[service.type]} · start drawing a private link`,
+					search: `${baseSearch} connect link wire private network variables database`,
+					icon: <Cable className="size-5 text-muted-foreground" />,
+					run: () => {
+						setCommandOpen(false);
+						startConnectionFromService(service);
+					},
+				},
 				...(service.appName && permissions?.logs.read
 					? [
 							{
