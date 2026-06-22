@@ -2649,10 +2649,10 @@ export const EnvironmentCanvas = ({
 			},
 			{
 				id: "system:remote-servers",
-				label: "Runtime capacity",
+				label: "Runtime workers",
 				detail: "Worker machines and placement",
 				path: "/dashboard/settings/runtime",
-				search: "remote servers runtime capacity workers nodes machines",
+				search: "remote servers runtime workers nodes machines",
 				icon: <Network className="size-5 text-muted-foreground" />,
 			},
 			{
@@ -2904,7 +2904,7 @@ export const EnvironmentCanvas = ({
 								</Link>
 								<Link href="/dashboard/settings/runtime">
 									<DropdownMenu.Item className="cursor-pointer">
-										Runtime capacity
+										Runtime workers
 									</DropdownMenu.Item>
 								</Link>
 								<Link href="/dashboard/settings/git-providers">

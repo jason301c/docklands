@@ -238,7 +238,7 @@ export const SearchCommand = () => {
 			{
 				id: "app-runtime-settings",
 				title: "Runtime worker settings",
-				searchText: "settings runtime capacity workers servers",
+				searchText: "settings runtime workers servers",
 				onSelect: () => navigate("/dashboard/settings/runtime"),
 			},
 			{

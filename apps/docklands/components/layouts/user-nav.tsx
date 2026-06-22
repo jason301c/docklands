@@ -124,7 +124,7 @@ export const UserNav = () => {
 									router.push("/dashboard/settings/runtime");
 								}}
 							>
-								Runtime capacity
+								Runtime workers
 							</DropdownMenu.Item>
 						)
 					)}

@@ -13,8 +13,8 @@ const Page = () => {
 				<div>
 					<h3 className="text-xl">Concurrent Builds</h3>
 					<p>
-						Configure how many builds can run at the same time on each server.
-						Builds of the same service are always serialized.
+						Configure how many builds can run at the same time on each runtime
+						worker. Builds of the same service are always serialized.
 					</p>
 				</div>
 				<div className="flex flex-col gap-6">
@@ -26,14 +26,14 @@ const Page = () => {
 					</AlertBlock>
 					<div className="flex flex-col gap-2">
 						<p className="text-sm font-medium text-muted-foreground">
-							Local runtime
+							Local runtime worker
 						</p>
 						<BuildsConcurrency />
 					</div>
 
 					<div className="flex flex-col gap-2">
 						<p className="text-sm font-medium text-muted-foreground">
-							Remote capacity
+							Remote workers
 						</p>
 						{servers && servers.length > 0 ? (
 							<div className="flex flex-col gap-3">
@@ -47,7 +47,7 @@ const Page = () => {
 							</div>
 						) : (
 							<p className="text-sm text-muted-foreground rounded-lg border border-dashed p-4 text-center">
-								No remote servers added yet.
+								No remote workers added yet.
 							</p>
 						)}
 					</div>

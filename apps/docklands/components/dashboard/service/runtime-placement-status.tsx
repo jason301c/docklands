@@ -58,7 +58,7 @@ export const RuntimePlacementStatus = ({
 					<Tooltip
 						content={
 							<span>
-								This runtime worker is inactive. Re-enable runtime capacity from
+								This runtime worker is inactive. Re-enable runtime workers from
 								Settings to run this service.
 							</span>
 						}
@@ -83,7 +83,7 @@ export const RuntimeWorkerInactiveState = () => (
 			<ServerOff className="size-10 text-muted-foreground self-center" />
 			<span className="text-center text-base text-muted-foreground">
 				This service's runtime worker is currently marked inactive. Re-enable
-				runtime capacity from Settings to regain access to this service.
+				runtime workers from Settings to regain access to this service.
 			</span>
 		</div>
 	</div>

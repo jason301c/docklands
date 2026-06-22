@@ -7,13 +7,13 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
 import { api } from "@/client/api/trpc";
 
-const DOCKLANDS_SERVER = "docklands-server";
+const LOCAL_RUNTIME_WORKER = "docklands-local-runtime";
 
 interface Props {
 	children: (serverId?: string) => ReactNode;
 }
 
-export const ServerFilter = ({ children }: Props) => {
+export const RuntimeWorkerFilter = ({ children }: Props) => {
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -38,7 +38,7 @@ export const ServerFilter = ({ children }: Props) => {
 
 	const setServerId = (value: string) => {
 		const query = new URLSearchParams(searchParams?.toString() ?? "");
-		if (value === DOCKLANDS_SERVER) {
+		if (value === LOCAL_RUNTIME_WORKER) {
 			query.delete("serverId");
 		} else {
 			query.set("serverId", value);
@@ -67,17 +67,17 @@ export const ServerFilter = ({ children }: Props) => {
 					<ServerIcon className="size-8 text-muted-foreground" />
 				</div>
 				<div className="flex max-w-md flex-col items-center gap-1.5 text-center">
-					<span className="text-lg font-medium">No runtime capacity yet</span>
+					<span className="text-lg font-medium">No runtime workers yet</span>
 					<span className="text-sm text-muted-foreground">
 						{permissions?.server.create
-							? "This section works on remote runtime capacity. Add your first worker to start managing it from here."
-							: "This section works on remote runtime capacity. Ask an administrator to add a worker to your organization."}
+							? "This section works on remote runtime workers. Add your first worker to start managing it from here."
+							: "This section works on remote runtime workers. Ask an administrator to add a worker to your organization."}
 					</span>
 				</div>
 				{permissions?.server.create && (
 					<LinkButton href="/dashboard/settings/runtime">
 						<PlusIcon className="size-4" />
-						Add Worker
+						Add worker
 					</LinkButton>
 				)}
 			</div>
@@ -89,14 +89,14 @@ export const ServerFilter = ({ children }: Props) => {
 			{!!servers?.length && (
 				<div className="flex w-full items-center justify-end gap-3">
 					<Label
-						htmlFor="server-filter"
+						htmlFor="runtime-worker-filter"
 						className="whitespace-nowrap text-sm text-muted-foreground"
 					>
-						Runtime
+						Runtime worker
 					</Label>
 					<Select
-						aria-label="Runtime filter"
-						value={serverId ?? DOCKLANDS_SERVER}
+						aria-label="Runtime worker filter"
+						value={serverId ?? LOCAL_RUNTIME_WORKER}
 						onValueChange={(value) =>
 							value !== null && setServerId(value as never)
 						}
@@ -108,11 +108,11 @@ export const ServerFilter = ({ children }: Props) => {
 						</>
 						<>
 							<Select.Group>
-								<Select.GroupLabel>Runtime capacity</Select.GroupLabel>
+								<Select.GroupLabel>Runtime workers</Select.GroupLabel>
 								{!isCloud && (
-									<Select.Option value={DOCKLANDS_SERVER}>
+									<Select.Option value={LOCAL_RUNTIME_WORKER}>
 										<div className="flex items-center gap-2">
-											<span>Local runtime</span>
+											<span>Local runtime worker</span>
 											<Badge
 												variant="secondary"
 												className="text-[10px] px-1.5 py-0"
@@ -137,7 +137,7 @@ export const ServerFilter = ({ children }: Props) => {
 					</Select>
 				</div>
 			)}
-			<Fragment key={serverId ?? DOCKLANDS_SERVER}>
+			<Fragment key={serverId ?? LOCAL_RUNTIME_WORKER}>
 				{children(serverId)}
 			</Fragment>
 		</div>

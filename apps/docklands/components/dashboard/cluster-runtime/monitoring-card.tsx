@@ -73,7 +73,7 @@ export default function ClusterMonitorCard({ serverId }: Props) {
 						Cluster Runtime Overview
 					</h3>
 					<p className="text-sm text-muted-foreground">
-						Monitor runtime capacity and node health across the cluster.
+						Monitor runtime workers and node health across the cluster.
 					</p>
 				</div>
 				{!serverId && (

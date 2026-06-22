@@ -1,13 +1,13 @@
 "use client";
 
 import { ShowContainers } from "@/components/dashboard/container-runtime/show/show-containers";
-import { ServerFilter } from "@/components/shared/server-filter";
+import { RuntimeWorkerFilter } from "@/components/shared/runtime-worker-filter";
 
 const Dashboard = () => {
 	return (
-		<ServerFilter>
+		<RuntimeWorkerFilter>
 			{(serverId) => <ShowContainers serverId={serverId} />}
-		</ServerFilter>
+		</RuntimeWorkerFilter>
 	);
 };
 

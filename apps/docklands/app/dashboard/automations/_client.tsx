@@ -1,11 +1,11 @@
 "use client";
 
 import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
-import { ServerFilter } from "@/components/shared/server-filter";
+import { RuntimeWorkerFilter } from "@/components/shared/runtime-worker-filter";
 
 function SchedulesPage() {
 	return (
-		<ServerFilter>
+		<RuntimeWorkerFilter>
 			{(serverId) => (
 				<div className="w-full">
 					<div className="min-h-[45vh] rounded-lg border bg-background">
@@ -16,7 +16,7 @@ function SchedulesPage() {
 					</div>
 				</div>
 			)}
-		</ServerFilter>
+		</RuntimeWorkerFilter>
 	);
 }
 export default SchedulesPage;

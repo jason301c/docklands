@@ -4,13 +4,13 @@ import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { useState } from "react";
 import { ShowClusterContainers } from "@/components/dashboard/cluster-runtime/containers/show-cluster-containers";
 import ClusterMonitorCard from "@/components/dashboard/cluster-runtime/monitoring-card";
-import { ServerFilter } from "@/components/shared/server-filter";
+import { RuntimeWorkerFilter } from "@/components/shared/runtime-worker-filter";
 
 const Dashboard = () => {
 	const [activeTab, setActiveTab] = useState("overview");
 
 	return (
-		<ServerFilter>
+		<RuntimeWorkerFilter>
 			{(serverId) => (
 				<div className="space-y-4">
 					<Tabs
@@ -35,7 +35,7 @@ const Dashboard = () => {
 					)}
 				</div>
 			)}
-		</ServerFilter>
+		</RuntimeWorkerFilter>
 	);
 };
 
