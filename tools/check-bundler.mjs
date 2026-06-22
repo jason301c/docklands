@@ -61,6 +61,16 @@ for (const packageFile of packageFiles) {
 				`${relativePackageFile} script "${scriptName}" opts into Webpack with --webpack.`,
 			);
 		}
+		if (/\bNEXT_PRIVATE_LOCAL_WEBPACK\s*=/.test(command)) {
+			failures.push(
+				`${relativePackageFile} script "${scriptName}" sets NEXT_PRIVATE_LOCAL_WEBPACK.`,
+			);
+		}
+		if (/\bNEXT_PRIVATE_TURBOPACK\s*=\s*(?:0|false)\b/i.test(command)) {
+			failures.push(
+				`${relativePackageFile} script "${scriptName}" disables Turbopack with NEXT_PRIVATE_TURBOPACK.`,
+			);
+		}
 		if (/(^|\s)--turbo(\s|$)/.test(command)) {
 			failures.push(
 				`${relativePackageFile} script "${scriptName}" uses the legacy --turbo flag; use Next 16 Turbopack defaults or --turbopack.`,
@@ -104,6 +114,26 @@ if (existsSync(lockfilePath)) {
 
 const nextConfigPath = join(appRoot, "next.config.mjs");
 const nextConfig = readText(nextConfigPath);
+const appManifest = readJson(join(appRoot, "package.json"));
+const appScripts = appManifest.scripts ?? {};
+
+if (!/\bcheck:bundler\b/.test(appScripts.build ?? "")) {
+	failures.push(
+		'apps/docklands/package.json script "build" must run check:bundler before building.',
+	);
+}
+
+if (!/\bnext\s+build\b/.test(appScripts["build-next"] ?? "")) {
+	failures.push(
+		'apps/docklands/package.json script "build-next" must run next build.',
+	);
+}
+
+if (!/(^|\s)--turbopack(\s|$)/.test(appScripts["build-next"] ?? "")) {
+	failures.push(
+		'apps/docklands/package.json script "build-next" must explicitly use --turbopack.',
+	);
+}
 
 if (!/\bturbopack\s*:\s*\{/.test(nextConfig)) {
 	failures.push(

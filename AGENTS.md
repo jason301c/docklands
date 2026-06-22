@@ -131,13 +131,14 @@ bun run docker:build
 ## Verification Notes
 
 - `bun run build` may need permissions to create a local `tsx` IPC pipe.
+- `bun --filter docklands build-next` uses Turbopack and may need permissions to spawn local Turbopack/CSS worker processes.
 - Build output can be noisy if local Postgres/Docker secrets are not configured. The important part is whether the build exits successfully.
 - The full real deployment tests may need Docker socket access, nixpacks/build tooling, and a more complete local runtime. Prefer the non-real Vitest command above for routine changes.
 - `bun run format-and-lint:fix` currently passes but may report Biome warnings such as optional-chain suggestions, radix suggestions, and unused suppressions.
 
 ## Dependency And Migration Notes
 
-- Next 16 uses Turbopack by default, and Docklands makes that explicit with `next build --turbopack` plus `turbopack: true` in the custom Next server. Do not add custom Webpack config, `--webpack`, or legacy `--turbo` flags. Run `bun run check:bundler` after bundler/tooling changes.
+- Next 16 uses Turbopack by default, and Docklands makes that explicit with `next build --turbopack` plus `turbopack: true` in the custom Next server. Do not add custom Webpack config, Webpack opt-out env vars, `--webpack`, or legacy `--turbo` flags. `bun --filter docklands build` and root `bun run test:ci` run `check:bundler`; run `bun run check:bundler` directly after bundler/tooling changes.
 - Tailwind 4 uses `apps/docklands/postcss.config.cjs` with `@tailwindcss/postcss`; do not switch it back to `tailwindcss` as a PostCSS plugin.
 - `apps/docklands/styles/globals.css` uses `@import "tailwindcss";` and `@config "../tailwind.config.ts";`.
 - React Email now uses `render`, not `renderAsync`.

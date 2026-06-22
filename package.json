@@ -34,7 +34,7 @@
 		"docker:build:canary": "./tools/docker/build.sh canary",
 		"docker:push:canary": "./tools/docker/push.sh canary",
 		"test": "bun --filter docklands test",
-		"test:ci": "bun --filter docklands test:ci",
+		"test:ci": "bun run check:bundler && bun --filter docklands test:ci",
 		"generate:openapi": "bun --filter docklands generate:openapi",
 		"format-and-lint": "bun --filter docklands format-and-lint",
 		"format-and-lint:fix": "bun --filter docklands format-and-lint:fix"
