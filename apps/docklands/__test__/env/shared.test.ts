@@ -3,27 +3,27 @@ import { prepareEnvironmentVariables } from "@/server/core/utils/docker/utils";
 
 const projectEnv = `
 ENVIRONMENT=staging
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db
 PORT=3000
 `;
 const serviceEnv = `
-ENVIRONMENT=\${{project.ENVIRONMENT}}
-DATABASE_URL=\${{project.DATABASE_URL}}
+ENVIRONMENT=\${{workspace.ENVIRONMENT}}
+DATABASE_URL=\${{workspace.DATABASE_URL}}
 SERVICE_PORT=4000
 `;
 
 describe("prepareEnvironmentVariables", () => {
-	it("resolves project variables correctly", () => {
+	it("resolves workspace variables correctly", () => {
 		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
 
 		expect(resolved).toEqual([
 			"ENVIRONMENT=staging",
-			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db",
+			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db",
 			"SERVICE_PORT=4000",
 		]);
 	});
 
-	it("resolves workspace variables as the canonical project-scope alias", () => {
+	it("resolves workspace variables as the canonical workspace-scope alias", () => {
 		const workspaceServiceEnv = `
 ENVIRONMENT=\${{workspace.ENVIRONMENT}}
 DATABASE_URL=\${{workspace.DATABASE_URL}}
@@ -37,24 +37,38 @@ SERVICE_PORT=4000
 
 		expect(resolved).toEqual([
 			"ENVIRONMENT=staging",
-			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db",
+			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db",
 			"SERVICE_PORT=4000",
 		]);
 	});
 
-	it("handles undefined project variables", () => {
+	it("handles undefined workspace variables", () => {
 		const incompleteProjectEnv = `
 		NODE_ENV=production
 		`;
 
 		const invalidServiceEnv = `
-		UNDEFINED_VAR=\${{project.UNDEFINED_VAR}}
+		UNDEFINED_VAR=\${{workspace.UNDEFINED_VAR}}
 		`;
 
 		expect(
 			() =>
 				prepareEnvironmentVariables(invalidServiceEnv, incompleteProjectEnv), // Cambiado el orden
-		).toThrow("Invalid project environment variable: project.UNDEFINED_VAR");
+		).toThrow(
+			"Invalid workspace environment variable: workspace.UNDEFINED_VAR",
+		);
+	});
+
+	it("rejects the old project variable namespace", () => {
+		const invalidServiceEnv = `
+		OLD_VAR=\${{project.ENVIRONMENT}}
+		`;
+
+		expect(() =>
+			prepareEnvironmentVariables(invalidServiceEnv, projectEnv),
+		).toThrow(
+			"Unsupported project environment variable namespace: project.ENVIRONMENT. Use workspace.ENVIRONMENT instead.",
+		);
 	});
 
 	it("reports missing workspace variables with workspace language", () => {
@@ -73,10 +87,10 @@ SERVICE_PORT=4000
 		);
 	});
 
-	it("allows service-specific variables to override project variables", () => {
+	it("allows service-specific variables to override workspace variables", () => {
 		const serviceSpecificEnv = `
 		ENVIRONMENT=production
-		DATABASE_URL=\${{project.DATABASE_URL}}
+		DATABASE_URL=\${{workspace.DATABASE_URL}}
 		`;
 
 		const resolved = prepareEnvironmentVariables(
@@ -85,8 +99,8 @@ SERVICE_PORT=4000
 		);
 
 		expect(resolved).toEqual([
-			"ENVIRONMENT=production", // Overrides project variable
-			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db",
+			"ENVIRONMENT=production", // Overrides workspace variable
+			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db",
 		]);
 	});
 
@@ -97,7 +111,7 @@ API_VERSION=v1
 PORT=8000
 `;
 		const serviceEnv = `
-API_ENDPOINT=\${{project.BASE_URL}}/\${{project.API_VERSION}}/endpoint
+API_ENDPOINT=\${{workspace.BASE_URL}}/\${{workspace.API_VERSION}}/endpoint
 SERVICE_PORT=9000
 `;
 		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
@@ -108,27 +122,27 @@ SERVICE_PORT=9000
 		]);
 	});
 
-	it("handles missing project variables gracefully", () => {
+	it("handles missing workspace variables gracefully", () => {
 		const projectEnv = `
 PORT=8080
 `;
 		const serviceEnv = `
-MISSING_VAR=\${{project.MISSING_KEY}}
+MISSING_VAR=\${{workspace.MISSING_KEY}}
 SERVICE_PORT=3000
 `;
 
 		expect(() => prepareEnvironmentVariables(serviceEnv, projectEnv)).toThrow(
-			"Invalid project environment variable: project.MISSING_KEY",
+			"Invalid workspace environment variable: workspace.MISSING_KEY",
 		);
 	});
 
-	it("overrides project variables with service-specific values", () => {
+	it("overrides workspace variables with service-specific values", () => {
 		const projectEnv = `
 ENVIRONMENT=staging
-DATABASE_URL=postgres://project:project@localhost:5432/project_db
+DATABASE_URL=postgres://project:project@localhost:5432/workspace_db
 `;
 		const serviceEnv = `
-ENVIRONMENT=\${{project.ENVIRONMENT}}
+ENVIRONMENT=\${{workspace.ENVIRONMENT}}
 DATABASE_URL=postgres://service:service@localhost:5432/service_db
 SERVICE_NAME=my-service
 `;
@@ -141,15 +155,15 @@ SERVICE_NAME=my-service
 		]);
 	});
 
-	it("handles project variables with normal and unusual characters", () => {
+	it("handles workspace variables with normal and unusual characters", () => {
 		const projectEnv = `
 ENVIRONMENT=PRODUCTION
 `;
 
 		// Needs to be in quotes
 		const serviceEnv = `
-NODE_ENV=\${{project.ENVIRONMENT}}
-SPECIAL_VAR="$^@$^@#$^@!#$@#$-\${{project.ENVIRONMENT}}"
+NODE_ENV=\${{workspace.ENVIRONMENT}}
+SPECIAL_VAR="$^@$^@#$^@!#$@#$-\${{workspace.ENVIRONMENT}}"
 `;
 
 		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
@@ -167,8 +181,8 @@ APP_NAME=MyApp
 `;
 
 		const serviceEnv = `
-NODE_ENV=\${{project.ENVIRONMENT}}
-COMPLEX_VAR="Prefix-$#^!@-\${{project.ENVIRONMENT}}--\${{project.APP_NAME}} Suffix "
+NODE_ENV=\${{workspace.ENVIRONMENT}}
+COMPLEX_VAR="Prefix-$#^!@-\${{workspace.ENVIRONMENT}}--\${{workspace.APP_NAME}} Suffix "
 `;
 		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
 
@@ -185,8 +199,8 @@ COMPLEX_VAR="Prefix-$#^!@-\${{project.ENVIRONMENT}}--\${{project.APP_NAME}} Suff
 	`;
 
 		const serviceEnv = `
-	NODE_ENV='\${{project.ENVIRONMENT}}'
-	COMPLEX_VAR='Prefix-$#^!@-\${{project.ENVIRONMENT}}--\${{project.APP_NAME}} Suffix'
+	NODE_ENV='\${{workspace.ENVIRONMENT}}'
+	COMPLEX_VAR='Prefix-$#^!@-\${{workspace.ENVIRONMENT}}--\${{workspace.APP_NAME}} Suffix'
 	`;
 		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
 
@@ -202,8 +216,8 @@ ENVIRONMENT=PRODUCTION
 APP_NAME=MyApp
 `;
 		const serviceEnv = `
-NODE_ENV="'\${{project.ENVIRONMENT}}'"
-COMPLEX_VAR="'Prefix "DoubleQuoted" and \${{project.APP_NAME}}'"
+NODE_ENV="'\${{workspace.ENVIRONMENT}}'"
+COMPLEX_VAR="'Prefix "DoubleQuoted" and \${{workspace.APP_NAME}}'"
 `;
 		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
 
@@ -218,7 +232,7 @@ describe("prepareEnvironmentVariables (self references)", () => {
 	it("resolves self references correctly", () => {
 		const serviceEnv = `
 ENVIRONMENT=staging
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db
 SELF_REF=\${{ENVIRONMENT}}
 `;
 
@@ -226,7 +240,7 @@ SELF_REF=\${{ENVIRONMENT}}
 
 		expect(resolved).toEqual([
 			"ENVIRONMENT=staging",
-			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db",
+			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db",
 			"SELF_REF=staging",
 		]);
 	});

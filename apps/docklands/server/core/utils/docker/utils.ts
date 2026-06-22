@@ -402,26 +402,23 @@ export const prepareEnvironmentVariables = (
 	projectEnv?: string | null,
 	environmentEnv?: string | null,
 ) => {
-	const projectVars = parse(projectEnv ?? "");
+	const workspaceVars = parse(projectEnv ?? "");
 	const environmentVars = parse(environmentEnv ?? "");
 	const serviceVars = parse(serviceEnv ?? "");
 
 	const resolvedVars = Object.entries(serviceVars).map(([key, value]) => {
 		let resolvedValue = value;
 
-		// Replace workspace variables. The project namespace remains supported for
-		// compatibility with existing service environment strings.
-		if (projectVars) {
+		// Replace workspace variables backed by the workspace/project env store.
+		if (workspaceVars) {
 			resolvedValue = resolvedValue.replace(
-				/\$\{\{(project|workspace)\.(.*?)\}\}/g,
-				(_, namespace, ref) => {
-					if (projectVars[ref] !== undefined) {
-						return projectVars[ref];
+				/\$\{\{workspace\.(.*?)\}\}/g,
+				(_, ref) => {
+					if (workspaceVars[ref] !== undefined) {
+						return workspaceVars[ref];
 					}
 					throw new Error(
-						namespace === "workspace"
-							? `Invalid workspace environment variable: workspace.${ref}`
-							: `Invalid project environment variable: project.${ref}`,
+						`Invalid workspace environment variable: workspace.${ref}`,
 					);
 				},
 			);
@@ -437,6 +434,13 @@ export const prepareEnvironmentVariables = (
 					}
 					throw new Error(`Invalid environment variable: environment.${ref}`);
 				},
+			);
+		}
+
+		const legacyProjectRef = resolvedValue.match(/\$\{\{project\.(.*?)\}\}/);
+		if (legacyProjectRef?.[1]) {
+			throw new Error(
+				`Unsupported project environment variable namespace: project.${legacyProjectRef[1]}. Use workspace.${legacyProjectRef[1]} instead.`,
 			);
 		}
 

@@ -43,20 +43,20 @@ describe("Bitbucket authentication", () => {
 		);
 	});
 
-	it("omits the old Bitbucket App Password column from API schemas", () => {
-		const source = sourceFile("server/core/db/schema/bitbucket.ts");
+	it("removes the old Bitbucket App Password column from active schemas", () => {
+		const schema = sourceFile("server/core/db/schema/bitbucket.ts");
+		const migration = sourceFile(
+			"drizzle/0002_remove_legacy_project_env_and_bitbucket_password.sql",
+		);
 
-		expect(source).toContain(
-			"const activeBitbucketSchema = createSchema.omit({ appPassword: true });",
+		expect(schema).not.toContain("appPassword");
+		expect(schema).toContain("export const apiCreateBitbucket = createSchema");
+		expect(schema).toContain(
+			"export const apiBitbucketTestConnection = createSchema",
 		);
-		expect(source).toContain(
-			"export const apiCreateBitbucket = activeBitbucketSchema",
-		);
-		expect(source).toContain(
-			"export const apiBitbucketTestConnection = activeBitbucketSchema",
-		);
-		expect(source).toContain(
-			"export const apiUpdateBitbucket = activeBitbucketSchema",
+		expect(schema).toContain("export const apiUpdateBitbucket = createSchema");
+		expect(migration).toContain(
+			'ALTER TABLE "bitbucket" DROP COLUMN "appPassword";',
 		);
 	});
 });

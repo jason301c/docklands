@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Visible settings/service copy cleanup
+- Latest checkpoint: Workspace env namespace migration
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -59,6 +59,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Replaced deployment-history visible project language with workspace language and added source coverage for the table/search copy.
 - Replaced the template-create confirmation and workspace action refresh comments with workspace language while preserving backing `projectId` contracts.
 - Replaced remaining visible project wording in service description placeholders, tag settings, organization creation, permissions scoping, SSH-key examples, runtime-worker role copy, and cluster empty states with workspace/service/workload language.
+- Removed active `{{project.KEY}}` env-reference compatibility, added a migration that rewrites stored env strings to `{{workspace.KEY}}`, and dropped the old Bitbucket `appPassword` credential column.
 - Centralized the workspace service creation placement selector so application, compose, database, import, and template flows all use the same automatic-placement/runtime-worker UI and copy.
 - Replaced the workspace overview's zero-workspace placeholder with a canvas-first launch state and loading-aware recent panels.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
@@ -239,6 +240,12 @@ git diff --check
   - `bun --filter docklands build`
 - Current visible settings/service copy checkpoint
   - `bun --filter docklands test --run __test__/workspace/workspace-visible-copy.test.ts`
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
+- Current workspace env namespace migration checkpoint
+  - `bun --filter docklands test --run __test__/env/shared.test.ts __test__/env/environment.test.ts __test__/env/stack-environment.test.ts __test__/git-provider/bitbucket-auth.test.ts __test__/migrations/workspace-env-migration.test.ts`
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`

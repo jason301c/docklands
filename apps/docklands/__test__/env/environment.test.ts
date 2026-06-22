@@ -6,7 +6,7 @@ import {
 
 const projectEnv = `
 ENVIRONMENT=staging
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db
 PORT=3000
 `;
 
@@ -41,10 +41,10 @@ SERVICE_PORT=4000
 
 	it("resolves both project and environment variables", () => {
 		const serviceWithBoth = `
-ENVIRONMENT=\${{project.ENVIRONMENT}}
+ENVIRONMENT=\${{workspace.ENVIRONMENT}}
 NODE_ENV=\${{environment.NODE_ENV}}
 API_URL=\${{environment.API_URL}}
-DATABASE_URL=\${{project.DATABASE_URL}}
+DATABASE_URL=\${{workspace.DATABASE_URL}}
 SERVICE_PORT=4000
 `;
 
@@ -58,7 +58,7 @@ SERVICE_PORT=4000
 			"ENVIRONMENT=staging",
 			"NODE_ENV=development",
 			"API_URL=https://api.dev.example.com",
-			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db",
+			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db",
 			"SERVICE_PORT=4000",
 		]);
 	});
@@ -91,12 +91,12 @@ API_URL=\${{environment.API_URL}}
 		]);
 	});
 
-	it("resolves complex references with project, environment, and service variables", () => {
+	it("resolves complex references with workspace, environment, and service variables", () => {
 		const complexServiceEnv = `
-FULL_DATABASE_URL=\${{project.DATABASE_URL}}/\${{environment.DATABASE_NAME}}
-API_ENDPOINT=\${{environment.API_URL}}/\${{project.ENVIRONMENT}}/api
+FULL_DATABASE_URL=\${{workspace.DATABASE_URL}}/\${{environment.DATABASE_NAME}}
+API_ENDPOINT=\${{environment.API_URL}}/\${{workspace.ENVIRONMENT}}/api
 SERVICE_NAME=my-service
-COMPLEX_VAR=\${{SERVICE_NAME}}-\${{environment.NODE_ENV}}-\${{project.ENVIRONMENT}}
+COMPLEX_VAR=\${{SERVICE_NAME}}-\${{environment.NODE_ENV}}-\${{workspace.ENVIRONMENT}}
 `;
 
 		const resolved = prepareEnvironmentVariables(
@@ -106,7 +106,7 @@ COMPLEX_VAR=\${{SERVICE_NAME}}-\${{environment.NODE_ENV}}-\${{project.ENVIRONMEN
 		);
 
 		expect(resolved).toEqual([
-			"FULL_DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db/dev_database",
+			"FULL_DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db/dev_database",
 			"API_ENDPOINT=https://api.dev.example.com/staging/api",
 			"SERVICE_NAME=my-service",
 			"COMPLEX_VAR=my-service-development-staging",
@@ -139,9 +139,9 @@ AUTH_SECRET=\${{environment.JWT_SECRET}}
 
 	it("maintains precedence: service > environment > project", () => {
 		const conflictingProjectEnv = `
-NODE_ENV=production-project
+NODE_ENV=production-workspace
 API_URL=https://project.api.com
-DATABASE_NAME=project_db
+DATABASE_NAME=workspace_db
 `;
 
 		const conflictingEnvironmentEnv = `
@@ -152,7 +152,7 @@ DATABASE_NAME=env_db
 
 		const serviceWithConflicts = `
 NODE_ENV=service-override
-PROJECT_ENV=\${{project.NODE_ENV}}
+WORKSPACE_ENV=\${{workspace.NODE_ENV}}
 ENV_VAR=\${{environment.API_URL}}
 DB_NAME=\${{environment.DATABASE_NAME}}
 `;
@@ -165,7 +165,7 @@ DB_NAME=\${{environment.DATABASE_NAME}}
 
 		expect(resolved).toEqual([
 			"NODE_ENV=service-override", // Service wins
-			"PROJECT_ENV=production-project", // Project reference
+			"WORKSPACE_ENV=production-workspace", // Workspace reference
 			"ENV_VAR=https://environment.api.com", // Environment reference
 			"DB_NAME=env_db", // Environment reference
 		]);
@@ -174,7 +174,7 @@ DB_NAME=\${{environment.DATABASE_NAME}}
 	it("handles empty environment variables", () => {
 		const serviceWithEmpty = `
 SERVICE_VAR=test
-PROJECT_VAR=\${{project.ENVIRONMENT}}
+WORKSPACE_VAR=\${{workspace.ENVIRONMENT}}
 `;
 
 		const resolved = prepareEnvironmentVariables(
@@ -183,7 +183,7 @@ PROJECT_VAR=\${{project.ENVIRONMENT}}
 			"",
 		);
 
-		expect(resolved).toEqual(["SERVICE_VAR=test", "PROJECT_VAR=staging"]);
+		expect(resolved).toEqual(["SERVICE_VAR=test", "WORKSPACE_VAR=staging"]);
 	});
 
 	it("handles mixed quotes and environment variables", () => {
@@ -237,7 +237,7 @@ CONNECTION_STRING=\${{environment.HOST}}:\${{environment.PORT}}
 		]);
 	});
 
-	it("handles nested references with environment and project variables", () => {
+	it("handles nested references with environment and workspace variables", () => {
 		const nestedProjectEnv = `
 BASE_DOMAIN=example.com
 PROTOCOL=https
@@ -249,8 +249,8 @@ PATH_PREFIX=/v1
 `;
 
 		const serviceWithNested = `
-FULL_URL=\${{project.PROTOCOL}}://\${{environment.SUBDOMAIN}}.\${{project.BASE_DOMAIN}}\${{environment.PATH_PREFIX}}/endpoint
-API_BASE=\${{project.PROTOCOL}}://\${{environment.SUBDOMAIN}}.\${{project.BASE_DOMAIN}}
+FULL_URL=\${{workspace.PROTOCOL}}://\${{environment.SUBDOMAIN}}.\${{workspace.BASE_DOMAIN}}\${{environment.PATH_PREFIX}}/endpoint
+API_BASE=\${{workspace.PROTOCOL}}://\${{environment.SUBDOMAIN}}.\${{workspace.BASE_DOMAIN}}
 `;
 
 		const resolved = prepareEnvironmentVariables(
@@ -545,8 +545,8 @@ DB_PASS='pa$$word'
 `;
 
 		const serviceEnv = `
-FULL_URL=\${{project.BASE_URL}}/api
-AUTH_KEY=\${{project.API_KEY}}
+FULL_URL=\${{workspace.BASE_URL}}/api
+AUTH_KEY=\${{workspace.API_KEY}}
 ENVIRONMENT=\${{environment.ENV_NAME}}
 DB_PASSWORD=\${{environment.DB_PASS}}
 CUSTOM='value with 'quotes' inside'

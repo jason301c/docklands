@@ -3,7 +3,7 @@ import { getEnvironmentVariablesObject } from "@/server/core/utils/docker/utils"
 
 const projectEnv = `
 ENVIRONMENT=staging
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/project_db
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db
 PORT=3000
 `;
 
@@ -38,10 +38,10 @@ BAZ=test
 
 	it("resolves both project and environment variables for Stack compose", () => {
 		const serviceEnv = `
-ENVIRONMENT=\${{project.ENVIRONMENT}}
+ENVIRONMENT=\${{workspace.ENVIRONMENT}}
 NODE_ENV=\${{environment.NODE_ENV}}
 API_URL=\${{environment.API_URL}}
-DATABASE_URL=\${{project.DATABASE_URL}}
+DATABASE_URL=\${{workspace.DATABASE_URL}}
 SERVICE_PORT=4000
 `;
 
@@ -55,7 +55,7 @@ SERVICE_PORT=4000
 			ENVIRONMENT: "staging",
 			NODE_ENV: "development",
 			API_URL: "https://api.dev.example.com",
-			DATABASE_URL: "postgres://postgres:postgres@localhost:5432/project_db",
+			DATABASE_URL: "postgres://postgres:postgres@localhost:5432/workspace_db",
 			SERVICE_PORT: "4000",
 		});
 	});
@@ -107,12 +107,12 @@ API_URL=\${{environment.API_URL}}
 		});
 	});
 
-	it("resolves complex references with project, environment, and service variables for Stack compose", () => {
+	it("resolves complex references with workspace, environment, and service variables for Stack compose", () => {
 		const complexServiceEnv = `
-FULL_DATABASE_URL=\${{project.DATABASE_URL}}/\${{environment.DATABASE_NAME}}
-API_ENDPOINT=\${{environment.API_URL}}/\${{project.ENVIRONMENT}}/api
+FULL_DATABASE_URL=\${{workspace.DATABASE_URL}}/\${{environment.DATABASE_NAME}}
+API_ENDPOINT=\${{environment.API_URL}}/\${{workspace.ENVIRONMENT}}/api
 SERVICE_NAME=my-service
-COMPLEX_VAR=\${{SERVICE_NAME}}-\${{environment.NODE_ENV}}-\${{project.ENVIRONMENT}}
+COMPLEX_VAR=\${{SERVICE_NAME}}-\${{environment.NODE_ENV}}-\${{workspace.ENVIRONMENT}}
 `;
 
 		const result = getEnvironmentVariablesObject(
@@ -123,7 +123,7 @@ COMPLEX_VAR=\${{SERVICE_NAME}}-\${{environment.NODE_ENV}}-\${{project.ENVIRONMEN
 
 		expect(result).toEqual({
 			FULL_DATABASE_URL:
-				"postgres://postgres:postgres@localhost:5432/project_db/dev_database",
+				"postgres://postgres:postgres@localhost:5432/workspace_db/dev_database",
 			API_ENDPOINT: "https://api.dev.example.com/staging/api",
 			SERVICE_NAME: "my-service",
 			COMPLEX_VAR: "my-service-development-staging",
@@ -132,9 +132,9 @@ COMPLEX_VAR=\${{SERVICE_NAME}}-\${{environment.NODE_ENV}}-\${{project.ENVIRONMEN
 
 	it("maintains precedence: service > environment > project in Stack compose", () => {
 		const conflictingProjectEnv = `
-NODE_ENV=production-project
+NODE_ENV=production-workspace
 API_URL=https://project.api.com
-DATABASE_NAME=project_db
+DATABASE_NAME=workspace_db
 `;
 
 		const conflictingEnvironmentEnv = `
@@ -145,7 +145,7 @@ DATABASE_NAME=env_db
 
 		const serviceWithConflicts = `
 NODE_ENV=service-override
-PROJECT_ENV=\${{project.NODE_ENV}}
+WORKSPACE_ENV=\${{workspace.NODE_ENV}}
 ENV_VAR=\${{environment.API_URL}}
 DB_NAME=\${{environment.DATABASE_NAME}}
 `;
@@ -158,7 +158,7 @@ DB_NAME=\${{environment.DATABASE_NAME}}
 
 		expect(result).toEqual({
 			NODE_ENV: "service-override",
-			PROJECT_ENV: "production-project",
+			WORKSPACE_ENV: "production-workspace",
 			ENV_VAR: "https://environment.api.com",
 			DB_NAME: "env_db",
 		});
@@ -167,7 +167,7 @@ DB_NAME=\${{environment.DATABASE_NAME}}
 	it("handles empty environment variables in Stack compose", () => {
 		const serviceWithEmpty = `
 SERVICE_VAR=test
-PROJECT_VAR=\${{project.ENVIRONMENT}}
+WORKSPACE_VAR=\${{workspace.ENVIRONMENT}}
 `;
 
 		const result = getEnvironmentVariablesObject(
@@ -178,7 +178,7 @@ PROJECT_VAR=\${{project.ENVIRONMENT}}
 
 		expect(result).toEqual({
 			SERVICE_VAR: "test",
-			PROJECT_VAR: "staging",
+			WORKSPACE_VAR: "staging",
 		});
 	});
 });
