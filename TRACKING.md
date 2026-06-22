@@ -52,7 +52,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Added `{{workspace.KEY}}` as the canonical workspace-variable reference syntax while preserving existing `{{project.KEY}}` service environment compatibility.
 - Replaced duplicated service-detail runtime placement chips with a shared runtime-worker status surface and explicit automatic-placement/inactive-worker copy.
 - Replaced visible domain DNS "server IP" guidance with ingress-address copy while leaving backend validation contracts intact.
-- Renamed the shared runtime page filter from server-filter to runtime-worker-filter, tightened worker copy across runtime navigation/settings, and left the `serverId` URL/API contract intact until a backend migration is worth the churn.
+- Renamed the shared runtime page filter from server-filter to runtime-worker-filter, tightened worker copy across runtime navigation/settings, and moved emitted runtime-worker URL/WebSocket query params to `runtimeWorkerId` while keeping legacy `serverId` reads for compatibility.
 - Removed stale old `/dashboard/project/...` route assertions from navigation tests now that compatibility aliases are gone.
 - Removed active Bitbucket App Password support from API inputs, edit/test UI, provider auth helpers, and deprecated provider badges; the nullable DB column remains until a dedicated schema migration removes it.
 - Removed hardcoded database and Better Auth fallback credentials from runtime paths; tests keep deterministic test-only values, and build commands supply explicit throwaway build envs for Next page-data collection.
