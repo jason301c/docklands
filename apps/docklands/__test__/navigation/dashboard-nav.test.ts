@@ -43,27 +43,27 @@ describe("dashboard nav", () => {
 		expect(menuTitles(menu)).toEqual({
 			home: ["Canvas", "Deployments", "Automations"],
 			settings: [
-				"Networking",
+				"Ingress",
 				"Profile",
-				"Builders",
+				"Build Workers",
 				"Users",
 				"SSH Keys",
 				"Tags",
 				"Git Providers",
-				"Registry",
+				"Image Registry",
 				"Storage",
 				"Certificates",
-				"Nodes",
+				"Cluster Nodes",
 				"Notifications",
 				"Runtime",
 			],
 			runtime: [
-				"Capacity",
-				"Containers",
-				"Cluster",
-				"Proxy Requests",
+				"Runtime Workers",
+				"Container Runtime",
+				"Cluster Runtime",
+				"Ingress Requests",
 				"Ingress Files",
-				"Metrics",
+				"Host Metrics",
 			],
 		});
 		expect(
@@ -80,17 +80,40 @@ describe("dashboard nav", () => {
 		});
 		const titles = menuTitles(menu);
 
-		expect(titles.settings).not.toContain("Networking");
-		expect(titles.settings).not.toContain("Builders");
-		expect(titles.runtime).not.toContain("Proxy Requests");
-		expect(titles.runtime).not.toContain("Metrics");
+		expect(titles.settings).not.toContain("Ingress");
+		expect(titles.settings).not.toContain("Build Workers");
+		expect(titles.runtime).not.toContain("Ingress Requests");
+		expect(titles.runtime).not.toContain("Host Metrics");
 		expect(titles.settings).toContain("Profile");
 		expect(titles.runtime).toEqual([
-			"Capacity",
-			"Containers",
-			"Cluster",
+			"Runtime Workers",
+			"Container Runtime",
+			"Cluster Runtime",
 			"Ingress Files",
 		]);
+	});
+
+	it("keeps old admin nouns out of the visible navigation shell", () => {
+		const menu = createMenuForAuthUser({
+			permissions: fullPermissions as any,
+			isCloud: false,
+		});
+		const titles = menuTitles(menu);
+		const visibleTitles = [
+			...titles.home,
+			...titles.settings,
+			...titles.runtime,
+		];
+
+		expect(visibleTitles).not.toContain("Networking");
+		expect(visibleTitles).not.toContain("Builders");
+		expect(visibleTitles).not.toContain("Registry");
+		expect(visibleTitles).not.toContain("Nodes");
+		expect(visibleTitles).not.toContain("Capacity");
+		expect(visibleTitles).not.toContain("Containers");
+		expect(visibleTitles).not.toContain("Cluster");
+		expect(visibleTitles).not.toContain("Proxy Requests");
+		expect(visibleTitles).not.toContain("Metrics");
 	});
 
 	it("treats legacy project routes as part of the Canvas area", () => {
@@ -140,12 +163,12 @@ describe("dashboard nav", () => {
 				[...menu.home, ...menu.settings],
 				"/dashboard/host-metrics",
 			)?.title,
-		).toBe("Metrics");
+		).toBe("Host Metrics");
 		expect(
 			findActiveNavItem(
 				[...menu.home, ...menu.settings],
 				"/dashboard/container-runtime",
 			)?.title,
-		).toBe("Containers");
+		).toBe("Container Runtime");
 	});
 });

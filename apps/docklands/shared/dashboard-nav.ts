@@ -95,7 +95,7 @@ export const DASHBOARD_MENU: Menu = {
 	settings: [
 		{
 			isSingle: true,
-			title: "Networking",
+			title: "Ingress",
 			url: "/dashboard/settings/ingress",
 			icon: Activity,
 			isEnabled: ({ permissions, isCloud }) =>
@@ -109,7 +109,7 @@ export const DASHBOARD_MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Builders",
+			title: "Build Workers",
 			url: "/dashboard/settings/build-workers",
 			icon: Boxes,
 			isEnabled: ({ permissions, isCloud }) =>
@@ -145,7 +145,7 @@ export const DASHBOARD_MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Registry",
+			title: "Image Registry",
 			url: "/dashboard/settings/image-registry",
 			icon: Package,
 			isEnabled: ({ permissions }) => !!permissions?.registry.read,
@@ -166,7 +166,7 @@ export const DASHBOARD_MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Nodes",
+			title: "Cluster Nodes",
 			url: "/dashboard/settings/cluster-nodes",
 			icon: Boxes,
 			isEnabled: ({ permissions }) => !!permissions?.organization.update,
@@ -185,28 +185,28 @@ export const DASHBOARD_MENU: Menu = {
 			items: [
 				{
 					isSingle: true,
-					title: "Capacity",
+					title: "Runtime Workers",
 					url: "/dashboard/settings/runtime",
 					icon: Server,
 					isEnabled: ({ permissions }) => !!permissions?.server.read,
 				},
 				{
 					isSingle: true,
-					title: "Containers",
+					title: "Container Runtime",
 					url: "/dashboard/container-runtime",
 					icon: BlocksIcon,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
 				},
 				{
 					isSingle: true,
-					title: "Cluster",
+					title: "Cluster Runtime",
 					url: "/dashboard/cluster-runtime",
 					icon: PieChart,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
 				},
 				{
 					isSingle: true,
-					title: "Proxy Requests",
+					title: "Ingress Requests",
 					url: "/dashboard/requests",
 					icon: Forward,
 					isEnabled: ({ permissions, isCloud }) =>
@@ -221,7 +221,7 @@ export const DASHBOARD_MENU: Menu = {
 				},
 				{
 					isSingle: true,
-					title: "Metrics",
+					title: "Host Metrics",
 					url: "/dashboard/host-metrics",
 					icon: BarChartHorizontalBigIcon,
 					isEnabled: ({ isCloud, permissions }) =>

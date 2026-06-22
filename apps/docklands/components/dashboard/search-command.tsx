@@ -200,12 +200,12 @@ export const SearchCommand = () => {
 						{
 							id: "app-monitoring",
 							title: "Host metrics",
-							searchText: "monitoring metrics runtime",
+							searchText: "host metrics monitoring runtime",
 							onSelect: () => navigate("/dashboard/host-metrics"),
 						},
 						{
 							id: "app-traefik",
-							title: "Proxy files",
+							title: "Ingress files",
 							searchText: "ingress files traefik proxy",
 							onSelect: () => navigate("/dashboard/proxy-files"),
 						},
@@ -223,8 +223,8 @@ export const SearchCommand = () => {
 						},
 						{
 							id: "app-requests",
-							title: "Runtime requests",
-							searchText: "requests runtime",
+							title: "Ingress requests",
+							searchText: "ingress requests runtime proxy",
 							onSelect: () => navigate("/dashboard/requests"),
 						},
 					]
@@ -237,7 +237,7 @@ export const SearchCommand = () => {
 			},
 			{
 				id: "app-runtime-settings",
-				title: "Runtime settings",
+				title: "Runtime worker settings",
 				searchText: "settings runtime capacity workers servers",
 				onSelect: () => navigate("/dashboard/settings/runtime"),
 			},
