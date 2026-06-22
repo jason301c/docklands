@@ -16,6 +16,9 @@ describe("workspace visible product copy", () => {
 		const environmentSelector = workspaceSource(
 			"components/dashboard/workspace/actions/advanced-environment-selector.tsx",
 		);
+		const addTemplate = workspaceSource(
+			"components/dashboard/workspace/actions/add-template.tsx",
+		);
 
 		expect(canvas).toContain("Select a target workspace");
 		expect(canvas).not.toContain("Select a target project");
@@ -25,6 +28,8 @@ describe("workspace visible product copy", () => {
 		expect(environmentSelector).not.toContain(
 			"Create a new environment for your project.",
 		);
+		expect(addTemplate).toMatch(/add it to your\s+workspace\./);
+		expect(addTemplate).not.toContain("add it to your project.");
 	});
 
 	it("teaches workspace variable references with the workspace namespace", () => {

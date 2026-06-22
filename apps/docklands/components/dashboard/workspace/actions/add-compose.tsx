@@ -100,11 +100,11 @@ export const AddCompose = ({
 			.then(async () => {
 				toast.success("Compose Created");
 				setVisible(false);
-				// Invalidate the project query to refresh the environment data
+				// Refresh the workspace environment data.
 				await utils.environment.one.invalidate({
 					environmentId,
 				});
-				// Invalidate the project query to refresh the project data for the advance-breadcrumb
+				// Refresh workspace data for the breadcrumb.
 				await utils.project.all.invalidate();
 			})
 			.catch(() => {

@@ -71,7 +71,7 @@ export const AddTemplate = ({
 		return undefined;
 	});
 
-	// Get environment data to extract projectId
+	// Get environment data to extract the backing projectId.
 	const { data: environment } = api.environment.one.useQuery({ environmentId });
 
 	// Save to localStorage when customBaseUrl changes
@@ -506,7 +506,7 @@ export const AddTemplate = ({
 														<Dialog.Description>
 															This will create an application from the{" "}
 															{template?.name} template and add it to your
-															project.
+															workspace.
 														</Dialog.Description>
 
 														{shouldShowServerDropdown && (
@@ -544,7 +544,7 @@ export const AddTemplate = ({
 																		toast.promise(promise, {
 																			loading: "Setting up...",
 																			success: () => {
-																				// Invalidate the project query to refresh the environment data
+																				// Refresh the workspace environment data.
 																				utils.environment.one.invalidate({
 																					environmentId,
 																				});

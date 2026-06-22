@@ -223,7 +223,7 @@ export const AddDatabase = ({
 	const postgresMutation = api.postgres.create.useMutation();
 	const redisMutation = api.redis.create.useMutation();
 
-	// Get environment data to extract projectId
+	// Get environment data to extract the backing projectId.
 	const { data: environment } = api.environment.one.useQuery({ environmentId });
 
 	const hasServers = servers && servers.length > 0;
@@ -402,7 +402,7 @@ export const AddDatabase = ({
 					toast.success("Database Created");
 					resetForm(defaultDatabaseType);
 					setVisible(false);
-					// Invalidate the project query to refresh the environment data
+					// Refresh the workspace environment data.
 					await utils.environment.one.invalidate({
 						environmentId,
 					});
