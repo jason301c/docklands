@@ -251,7 +251,7 @@ const serviceSortOptions: { value: ServiceSort; label: string }[] = [
 	{ value: "name-asc", label: "Name" },
 	{ value: "type-asc", label: "Type" },
 	{ value: "status-asc", label: "Status" },
-	{ value: "last-deploy-desc", label: "Recent build" },
+	{ value: "last-deploy-desc", label: "Recent deployment" },
 ];
 
 const serviceTypeDescriptions: Record<WorkspaceServiceType, string> = {
@@ -1635,12 +1635,12 @@ export const EnvironmentCanvas = ({
 			success: async () => {
 				await utils.workspace.byEnvironment.invalidate({ environmentId });
 				return action === "deploy"
-					? `${service.name} queued for build`
+					? `${service.name} deployment queued`
 					: `${service.name} ${action === "start" ? "started" : "stopped"}`;
 			},
 			error: (error) =>
 				action === "deploy"
-					? `Could not queue build for ${service.name}: ${error instanceof Error ? error.message : "Unknown error"}`
+					? `Could not queue deployment for ${service.name}: ${error instanceof Error ? error.message : "Unknown error"}`
 					: `Could not ${action} ${service.name}: ${error instanceof Error ? error.message : "Unknown error"}`,
 		});
 	};
@@ -1670,16 +1670,18 @@ export const EnvironmentCanvas = ({
 
 			await utils.workspace.byEnvironment.invalidate({ environmentId });
 			if (succeeded > 0) {
+				const deploymentNoun = succeeded === 1 ? "deployment" : "deployments";
 				toast.success(
 					action === "deploy"
-						? `${succeeded} services queued for build`
+						? `${succeeded} service ${deploymentNoun} queued`
 						: `${succeeded} services ${action === "start" ? "started" : "stopped"}`,
 				);
 			}
 			if (failed > 0) {
+				const deploymentNoun = failed === 1 ? "deployment" : "deployments";
 				toast.error(
 					action === "deploy"
-						? `${failed} services could not be queued for build`
+						? `${failed} service ${deploymentNoun} could not be queued`
 						: `${failed} services could not ${action}`,
 				);
 			}
@@ -2252,8 +2254,8 @@ export const EnvironmentCanvas = ({
 				{
 					id: `deploy:${service.type}:${service.id}`,
 					group: "Actions" as const,
-					label: `Run build for ${service.name}`,
-					detail: `${serviceTypeLabels[service.type]} · queue build`,
+					label: `Deploy ${service.name}`,
+					detail: `${serviceTypeLabels[service.type]} · queue deployment`,
 					search: `${baseSearch} deploy redeploy build release`,
 					icon: <RefreshCw className="size-5 text-muted-foreground" />,
 					run: () => {
@@ -2307,7 +2309,7 @@ export const EnvironmentCanvas = ({
 							{
 								id: `deployments:${service.type}:${service.id}`,
 								group: "Actions" as const,
-								label: `Build history for ${service.name}`,
+								label: `Deployment history for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · releases and worker output`,
 								search: `${baseSearch} deployments releases history builds`,
 								icon: <Rocket className="size-5 text-muted-foreground" />,
@@ -3064,7 +3066,7 @@ export const EnvironmentCanvas = ({
 									disabled={selectedBulkServices.length === 0}
 								>
 									<RefreshCw className="size-4" />
-									Run build
+									Deploy
 								</Button>
 							</div>
 						</div>
@@ -3605,7 +3607,7 @@ export const EnvironmentCanvas = ({
 										}
 									>
 										<RefreshCw className="size-4" />
-										Run build
+										Deploy
 									</Button>
 								</div>
 
