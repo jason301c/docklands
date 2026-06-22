@@ -322,7 +322,7 @@ export const ShowProjects = () => {
 											<div className="flex items-center gap-2 min-w-48 max-sm:w-full">
 												<ArrowUpDown className="size-4 text-muted-foreground" />
 												<Select
-													aria-label="Select option"
+													aria-label="Project sort order"
 													value={sortBy}
 													onValueChange={(value) =>
 														value !== null && setSortBy(value as never)

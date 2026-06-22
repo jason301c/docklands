@@ -549,7 +549,7 @@ export function ShowDeploymentsTable() {
 					className="max-w-xs"
 				/>
 				<Select
-					aria-label="Select option"
+					aria-label="Deployment status filter"
 					value={statusFilter}
 					onValueChange={(value) =>
 						value !== null && setStatusFilter(value as never)
@@ -565,7 +565,7 @@ export function ShowDeploymentsTable() {
 					</>
 				</Select>
 				<Select
-					aria-label="Select option"
+					aria-label="Deployment service type filter"
 					value={typeFilter}
 					onValueChange={(value) =>
 						value !== null && setTypeFilter(value as never)
@@ -645,7 +645,7 @@ export function ShowDeploymentsTable() {
 									Rows per page
 								</span>
 								<Select
-									aria-label="Select option"
+									aria-label="Deployment rows per page"
 									value={String(pagination.pageSize)}
 									onValueChange={(value) => {
 										if (value === null) return;
