@@ -3142,14 +3142,45 @@ export const EnvironmentCanvas = ({
 						)}
 
 						{services.length === 0 ? (
-							<div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-3 text-center text-muted-foreground">
-								<FolderInput className="size-10" />
-								<div>
-									<p className="font-medium">No services yet</p>
-									<p className="text-sm">
-										Create an app, database, compose stack, or template.
+							<div className="absolute left-1/2 top-1/2 flex w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 rounded-lg border bg-background/95 p-5 text-center shadow-sm backdrop-blur">
+								<div className="flex size-12 items-center justify-center rounded-md border bg-muted/30">
+									<FolderInput className="size-6 text-muted-foreground" />
+								</div>
+								<div className="space-y-1">
+									<p className="font-medium">Empty canvas</p>
+									<p className="text-sm text-muted-foreground">
+										Start with a runtime, database, compose stack, or template.
 									</p>
 								</div>
+								{permissions?.service.create && (
+									<div className="flex flex-wrap justify-center gap-2">
+										<Button onClick={() => openCreateDialog("application")}>
+											<Folder className="size-4" />
+											New app
+										</Button>
+										<Button
+											variant="outline"
+											onClick={() => openDatabaseDialog("postgres")}
+										>
+											<PostgresqlIcon className="size-4" />
+											Postgres
+										</Button>
+										<Button
+											variant="outline"
+											onClick={() => openCreateDialog("compose")}
+										>
+											<CircuitBoard className="size-4" />
+											Compose
+										</Button>
+										<Button
+											variant="outline"
+											onClick={() => openCreateDialog("template")}
+										>
+											<PuzzleIcon className="size-4" />
+											Template
+										</Button>
+									</div>
+								)}
 							</div>
 						) : null}
 
