@@ -292,7 +292,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 		})
 			.then(() => {
 				toast.success(
-					`Scheduled task ${scheduleId ? "updated" : "created"} successfully`,
+					`Automation ${scheduleId ? "updated" : "created"} successfully`,
 				);
 				utils.schedule.list.invalidate({
 					id,
@@ -313,7 +313,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 				render={
 					scheduleId ? (
 						<Button
-							aria-label="Edit scheduled task"
+							aria-label="Edit automation"
 							variant="ghost"
 							shape="square"
 							className="group hover:bg-blue-500/10"
@@ -324,7 +324,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 						((
 							<Button>
 								<PlusCircle className="w-4 h-4 mr-2" />
-								Add Task
+								Add Automation
 							</Button>
 						) as never)
 					)
@@ -340,11 +340,11 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 			>
 				<div>
 					<Dialog.Title>
-						{scheduleId ? "Edit" : "Create"} Scheduled Task
+						{scheduleId ? "Edit" : "Create"} Automation
 					</Dialog.Title>
 					<Dialog.Description>
-						{scheduleId ? "Manage" : "Create"} a task that runs at a specific
-						time or interval.
+						{scheduleId ? "Manage" : "Create"} an automation that runs at a
+						specific time or interval.
 					</Dialog.Description>
 				</div>
 				<Form {...form}>
@@ -424,9 +424,9 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 														content={
 															<>
 																<p>
-																	Cache: If you previously deployed this
-																	compose, it will read the services from the
-																	last build or repository fetch
+																	Cache: If you previously built this compose,
+																	it will read the services from the last build
+																	or repository fetch
 																</p>
 															</>
 														}
@@ -465,13 +465,13 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel className="flex items-center gap-2">
-										Task Name
+										Automation Name
 									</FormLabel>
 									<FormControl>
 										<Input placeholder="Daily Database Backup" {...field} />
 									</FormControl>
 									<FormDescription>
-										A descriptive name for your scheduled task
+										A descriptive name for your automation
 									</FormDescription>
 									<FormMessage />
 								</FormItem>
@@ -491,7 +491,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 										/>
 									</FormControl>
 									<FormDescription>
-										Optional description of what this task does
+										Optional description of what this automation does
 									</FormDescription>
 									<FormMessage />
 								</FormItem>
@@ -515,8 +515,8 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 												content={
 													<>
 														<p>
-															Select a timezone for the task. If not specified,
-															UTC will be used.
+															Select a timezone for the automation. If not
+															specified, UTC will be used.
 														</p>
 													</>
 												}
@@ -581,7 +581,8 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 										</PopoverContent>
 									</Popover>
 									<FormDescription>
-										Optional: Choose a timezone for the task execution time
+										Optional: choose a timezone for the automation execution
+										time
 									</FormDescription>
 									<FormMessage />
 								</FormItem>
@@ -683,7 +684,7 @@ echo "Hello, world!"
 						/>
 
 						<Button type="submit" loading={isPending} className="w-full">
-							{scheduleId ? "Update" : "Create"} Task
+							{scheduleId ? "Update" : "Create"} Automation
 						</Button>
 					</form>
 				</Form>

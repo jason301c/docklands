@@ -48,10 +48,10 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 		setRunningSchedules((prev) => new Set(prev).add(scheduleId));
 		try {
 			await runManually({ scheduleId });
-			toast.success("Scheduled task run successfully");
+			toast.success("Automation run successfully");
 			await refetchSchedules();
 		} catch {
-			toast.error("Error running scheduled task");
+			toast.error("Error running automation");
 		} finally {
 			setRunningSchedules((prev) => {
 				const newSet = new Set(prev);
@@ -67,9 +67,9 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 				<div className="flex justify-between items-center gap-y-2 flex-wrap">
 					<div className="flex flex-col gap-2">
 						<h3 className="text-xl font-bold flex items-center gap-2">
-							Scheduled Tasks
+							Automations
 						</h3>
-						<p>Run tasks automatically at specified intervals.</p>
+						<p>Run commands automatically at specified intervals.</p>
 					</div>
 					{schedules && schedules.length > 0 && (
 						<HandleSchedules id={id} scheduleType={scheduleType} />
@@ -81,7 +81,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 					<div className="flex gap-4 w-full items-center justify-center text-center mx-auto min-h-[45vh]">
 						<Loader2 className="size-4 text-muted-foreground/70 transition-colors animate-spin self-center" />
 						<span className="text-sm text-muted-foreground/70">
-							Loading scheduled tasks...
+							Loading automations...
 						</span>
 					</div>
 				) : schedules && schedules.length > 0 ? (
@@ -156,7 +156,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 											serverId={serverId || undefined}
 										>
 											<Button
-												aria-label="View scheduled task build history"
+												aria-label="View automation build history"
 												variant="ghost"
 												shape="square"
 											>
@@ -164,9 +164,9 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 											</Button>
 										</ShowDeploymentsModal>
 										<TooltipProvider delay={0}>
-											<Tooltip content={<>Run Task Now</>} asChild>
+											<Tooltip content={<>Run Automation Now</>} asChild>
 												<Button
-													aria-label="Run scheduled task now"
+													aria-label="Run automation now"
 													type="button"
 													variant="ghost"
 													shape="square"
@@ -187,8 +187,8 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 											scheduleType={scheduleType}
 										/>
 										<DialogAction
-											title="Delete Scheduled Task"
-											description="Are you sure you want to delete this scheduled task?"
+											title="Delete Automation"
+											description="Are you sure you want to delete this automation?"
 											type="destructive"
 											onClick={async () => {
 												await deleteSchedule({
@@ -199,17 +199,15 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 															id,
 															scheduleType,
 														});
-														toast.success(
-															"Scheduled task deleted successfully",
-														);
+														toast.success("Automation deleted successfully");
 													})
 													.catch(() => {
-														toast.error("Error deleting scheduled task");
+														toast.error("Error deleting automation");
 													});
 											}}
 										>
 											<Button
-												aria-label="Delete scheduled task"
+												aria-label="Delete automation"
 												variant="ghost"
 												shape="square"
 												className="group hover:bg-red-500/10"
@@ -227,10 +225,10 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 					<div className="flex flex-col gap-2 items-center justify-center py-12 rounded-lg">
 						<Clock className="size-8 mb-4 text-muted-foreground" />
 						<p className="text-lg font-medium text-muted-foreground">
-							No scheduled tasks
+							No automations
 						</p>
 						<p className="text-sm text-muted-foreground mt-1">
-							Create your first scheduled task to automate your workflows
+							Create your first automation to run recurring workflows
 						</p>
 						<HandleSchedules id={id} scheduleType={scheduleType} />
 					</div>
