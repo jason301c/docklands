@@ -75,7 +75,7 @@ export const projectRouter = createTRPCRouter({
 				if (admin.serversQuantity === 0 && IS_CLOUD) {
 					throw new TRPCError({
 						code: "NOT_FOUND",
-						message: "No servers available, Please subscribe to a plan",
+						message: "No runtime workers available, please subscribe to a plan",
 					});
 				}
 
@@ -97,7 +97,7 @@ export const projectRouter = createTRPCRouter({
 			} catch (error) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: `Error creating the project: ${error instanceof Error ? error.message : error}`,
+					message: `Error creating the workspace: ${error instanceof Error ? error.message : error}`,
 					cause: error,
 				});
 			}
@@ -176,7 +176,7 @@ export const projectRouter = createTRPCRouter({
 				if (!project) {
 					throw new TRPCError({
 						code: "NOT_FOUND",
-						message: "Project not found",
+						message: "Workspace not found",
 					});
 				}
 				return project;
@@ -186,7 +186,7 @@ export const projectRouter = createTRPCRouter({
 			if (project.organizationId !== ctx.session.activeOrganizationId) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
-					message: "You are not authorized to access this project",
+					message: "You are not authorized to access this workspace",
 				});
 			}
 			return project;
@@ -821,7 +821,7 @@ export const projectRouter = createTRPCRouter({
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You are not authorized to access this project",
+						message: "You are not authorized to access this workspace",
 					});
 				}
 

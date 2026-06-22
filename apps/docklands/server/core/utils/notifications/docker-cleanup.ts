@@ -21,7 +21,7 @@ import {
 
 export const sendDockerCleanupNotifications = async (
 	organizationId: string,
-	message = "Docker cleanup for docklands",
+	message = "Container runtime cleanup for Docklands",
 ) => {
 	const date = new Date();
 	const unixDate = ~~(Number(date) / 1000);
@@ -70,7 +70,7 @@ export const sendDockerCleanupNotifications = async (
 				if (email) {
 					await sendEmailNotification(
 						email,
-						"Docker cleanup for docklands",
+						"Container runtime cleanup for Docklands",
 						template,
 					);
 				}
@@ -78,7 +78,7 @@ export const sendDockerCleanupNotifications = async (
 				if (resend) {
 					await sendResendNotification(
 						resend,
-						"Docker cleanup for docklands",
+						"Container runtime cleanup for Docklands",
 						template,
 					);
 				}
@@ -89,7 +89,7 @@ export const sendDockerCleanupNotifications = async (
 					`${discord.decoration ? decoration : ""} ${text}`.trim();
 
 				await sendDiscordNotification(discord, {
-					title: decorate(">", "`✅` Docker Cleanup"),
+					title: decorate(">", "`✅` Container Runtime Cleanup"),
 					color: 0x57f287,
 					fields: [
 						{
@@ -114,7 +114,7 @@ export const sendDockerCleanupNotifications = async (
 					],
 					timestamp: date.toISOString(),
 					footer: {
-						text: "Docklands Docker Cleanup Notification",
+						text: "Docklands Container Runtime Cleanup Notification",
 					},
 				});
 			}
@@ -124,7 +124,7 @@ export const sendDockerCleanupNotifications = async (
 					`${gotify.decoration ? decoration : ""} ${text}\n`;
 				await sendGotifyNotification(
 					gotify,
-					decorate("✅", "Docker Cleanup"),
+					decorate("✅", "Container Runtime Cleanup"),
 					`${decorate("🕒", `Date: ${date.toLocaleString()}`)}` +
 						`${decorate("📜", `Message:\n${message}`)}`,
 				);
@@ -133,7 +133,7 @@ export const sendDockerCleanupNotifications = async (
 			if (ntfy) {
 				await sendNtfyNotification(
 					ntfy,
-					"Docker Cleanup",
+					"Container Runtime Cleanup",
 					"white_check_mark",
 					"",
 					`🕒Date: ${date.toLocaleString()}\n` + `📜Message:\n${message}`,
@@ -143,7 +143,7 @@ export const sendDockerCleanupNotifications = async (
 			if (telegram) {
 				await sendTelegramNotification(
 					telegram,
-					`<b>✅ Docker Cleanup</b>\n\n<b>Message:</b> ${message}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}`,
+					`<b>✅ Container Runtime Cleanup</b>\n\n<b>Message:</b> ${message}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}`,
 				);
 			}
 
@@ -154,7 +154,7 @@ export const sendDockerCleanupNotifications = async (
 					attachments: [
 						{
 							color: "#00FF00",
-							pretext: ":white_check_mark: *Docker Cleanup*",
+							pretext: ":white_check_mark: *Container Runtime Cleanup*",
 							fields: [
 								{
 									title: "Message",
@@ -173,7 +173,7 @@ export const sendDockerCleanupNotifications = async (
 
 			if (mattermost) {
 				await sendMattermostNotification(mattermost, {
-					text: `**✅ Docker Cleanup**\n\n**Message:** ${message}\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}`,
+					text: `**✅ Container Runtime Cleanup**\n\n**Message:** ${message}\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}`,
 					channel: mattermost.channel,
 					username: mattermost.username || "Docklands",
 				});
@@ -181,8 +181,8 @@ export const sendDockerCleanupNotifications = async (
 
 			if (custom) {
 				await sendCustomNotification(custom, {
-					title: "Docker Cleanup",
-					message: "Docker cleanup completed successfully",
+					title: "Container Runtime Cleanup",
+					message: "Container runtime cleanup completed successfully",
 					cleanupMessage: message,
 					timestamp: date.toISOString(),
 					date: date.toLocaleString(),
@@ -211,7 +211,7 @@ export const sendDockerCleanupNotifications = async (
 						header: {
 							title: {
 								tag: "plain_text",
-								content: "✅ Docker Cleanup",
+								content: "✅ Container Runtime Cleanup",
 							},
 							subtitle: {
 								tag: "plain_text",
@@ -272,14 +272,14 @@ export const sendDockerCleanupNotifications = async (
 			if (pushover) {
 				await sendPushoverNotification(
 					pushover,
-					"Docker Cleanup",
+					"Container Runtime Cleanup",
 					`Date: ${date.toLocaleString()}\nMessage: ${message}`,
 				);
 			}
 
 			if (teams) {
 				await sendTeamsNotification(teams, {
-					title: "✅ Docker Cleanup",
+					title: "✅ Container Runtime Cleanup",
 					facts: [
 						{ name: "Date", value: format(date, "PP pp") },
 						{ name: "Message", value: message },

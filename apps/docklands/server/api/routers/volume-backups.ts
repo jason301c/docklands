@@ -282,7 +282,7 @@ export const volumeBackupsRouter = createTRPCRouter({
 				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You don't have access to this server.",
+						message: "You don't have access to this runtime worker.",
 					});
 				}
 			}

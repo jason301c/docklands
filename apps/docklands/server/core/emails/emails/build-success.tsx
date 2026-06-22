@@ -71,7 +71,7 @@ export const BuildSuccessEmail = ({
 						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">
 							<Text className="!leading-3 font-bold">Details: </Text>
 							<Text className="!leading-3">
-								Project Name: <strong>{projectName}</strong>
+								Workspace Name: <strong>{projectName}</strong>
 							</Text>
 							<Text className="!leading-3">
 								Application Name: <strong>{applicationName}</strong>

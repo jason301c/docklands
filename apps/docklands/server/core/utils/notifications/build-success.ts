@@ -168,7 +168,7 @@ export const sendBuildSuccessNotifications = async ({
 				await sendGotifyNotification(
 					gotify,
 					decorate("✅", "Build Success"),
-					`${decorate("🛠️", `Project: ${projectName}`)}` +
+					`${decorate("🛠️", `Workspace: ${projectName}`)}` +
 						`${decorate("⚙️", `Application: ${applicationName}`)}` +
 						`${decorate("🌍", `Environment: ${environmentName}`)}` +
 						`${decorate("❔", `Type: ${applicationType}`)}` +
@@ -183,7 +183,7 @@ export const sendBuildSuccessNotifications = async ({
 					"Build Success",
 					"white_check_mark",
 					`view, Build details, ${buildLink}, clear=true;`,
-					`🛠Project: ${projectName}\n` +
+					`🛠Workspace: ${projectName}\n` +
 						`⚙️Application: ${applicationName}\n` +
 						`🌍Environment: ${environmentName}\n` +
 						`❔Type: ${applicationType}\n` +
@@ -214,7 +214,7 @@ export const sendBuildSuccessNotifications = async ({
 
 				await sendTelegramNotification(
 					telegram,
-					`<b>✅ Build Success</b>\n\n<b>Project:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Environment:</b> ${environmentName}\n<b>Type:</b> ${applicationType}\n<b>Date:</b> ${format(
+					`<b>✅ Build Success</b>\n\n<b>Workspace:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Environment:</b> ${environmentName}\n<b>Type:</b> ${applicationType}\n<b>Date:</b> ${format(
 						date,
 						"PP",
 					)}\n<b>Time:</b> ${format(date, "pp")}`,
@@ -270,7 +270,7 @@ export const sendBuildSuccessNotifications = async ({
 
 			if (mattermost) {
 				await sendMattermostNotification(mattermost, {
-					text: `**✅ Build Success**\n\n**Project:** ${projectName}\n**Application:** ${applicationName}\n**Type:** ${applicationType}\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}\n\n[View Build Details](${buildLink})`,
+					text: `**✅ Build Success**\n\n**Workspace:** ${projectName}\n**Application:** ${applicationName}\n**Type:** ${applicationType}\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}\n\n[View Build Details](${buildLink})`,
 					channel: mattermost.channel,
 					username: mattermost.username || "Docklands",
 				});
@@ -334,7 +334,7 @@ export const sendBuildSuccessNotifications = async ({
 											elements: [
 												{
 													tag: "markdown",
-													content: `**Project:**\n${projectName}`,
+													content: `**Workspace:**\n${projectName}`,
 													text_align: "left",
 													text_size: "normal_v2",
 												},
@@ -406,7 +406,7 @@ export const sendBuildSuccessNotifications = async ({
 				await sendPushoverNotification(
 					pushover,
 					"Build Success",
-					`Project: ${projectName}\nApplication: ${applicationName}\nEnvironment: ${environmentName}\nType: ${applicationType}\nDate: ${date.toLocaleString()}`,
+					`Workspace: ${projectName}\nApplication: ${applicationName}\nEnvironment: ${environmentName}\nType: ${applicationType}\nDate: ${date.toLocaleString()}`,
 				);
 			}
 

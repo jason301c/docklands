@@ -174,7 +174,7 @@ export const sendBuildErrorNotifications = async ({
 				await sendGotifyNotification(
 					gotify,
 					decorate("⚠️", "Build Failed"),
-					`${decorate("🛠️", `Project: ${projectName}`)}` +
+					`${decorate("🛠️", `Workspace: ${projectName}`)}` +
 						`${decorate("⚙️", `Application: ${applicationName}`)}` +
 						`${decorate("❔", `Type: ${applicationType}`)}` +
 						`${decorate("🕒", `Date: ${date.toLocaleString()}`)}` +
@@ -189,7 +189,7 @@ export const sendBuildErrorNotifications = async ({
 					"Build Failed",
 					"warning",
 					`view, Build details, ${buildLink}, clear=true;`,
-					`🛠️Project: ${projectName}\n` +
+					`🛠️Workspace: ${projectName}\n` +
 						`⚙️Application: ${applicationName}\n` +
 						`❔Type: ${applicationType}\n` +
 						`🕒Date: ${date.toLocaleString()}\n` +
@@ -209,7 +209,7 @@ export const sendBuildErrorNotifications = async ({
 
 				await sendTelegramNotification(
 					telegram,
-					`<b>⚠️ Build Failed</b>\n\n<b>Project:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Type:</b> ${applicationType}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}\n\n<b>Error:</b>\n<pre>${errorMessage}</pre>`,
+					`<b>⚠️ Build Failed</b>\n\n<b>Workspace:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Type:</b> ${applicationType}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}\n\n<b>Error:</b>\n<pre>${errorMessage}</pre>`,
 					inlineButton,
 				);
 			}
@@ -264,7 +264,7 @@ export const sendBuildErrorNotifications = async ({
 				await sendMattermostNotification(mattermost, {
 					text: `:warning: **Build Failed**
 
-**Project:** ${projectName}
+**Workspace:** ${projectName}
 **Application:** ${applicationName}
 **Type:** ${applicationType}
 **Time:** ${date.toLocaleString()}
@@ -339,7 +339,7 @@ ${errorMessage}
 											elements: [
 												{
 													tag: "markdown",
-													content: `**Project:**\n${projectName}`,
+													content: `**Workspace:**\n${projectName}`,
 													text_align: "left",
 													text_size: "normal_v2",
 												},
@@ -411,7 +411,7 @@ ${errorMessage}
 				await sendPushoverNotification(
 					pushover,
 					"Build Failed",
-					`Project: ${projectName}\nApplication: ${applicationName}\nType: ${applicationType}\nDate: ${date.toLocaleString()}\nError: ${errorMessage}`,
+					`Workspace: ${projectName}\nApplication: ${applicationName}\nType: ${applicationType}\nDate: ${date.toLocaleString()}\nError: ${errorMessage}`,
 				);
 			}
 

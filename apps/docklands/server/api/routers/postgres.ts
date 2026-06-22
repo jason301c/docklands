@@ -75,14 +75,14 @@ export const postgresRouter = createTRPCRouter({
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You need to use a server to create a Postgres",
+						message: "You need to select a runtime worker to create a Postgres",
 					});
 				}
 
 				if (project.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You are not authorized to access this project",
+						message: "You are not authorized to access this workspace",
 					});
 				}
 
@@ -91,7 +91,7 @@ export const postgresRouter = createTRPCRouter({
 					if (!accessibleIds.has(input.serverId)) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
-							message: "You are not authorized to access this server",
+							message: "You are not authorized to access this runtime worker",
 						});
 					}
 				}

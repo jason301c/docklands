@@ -17,10 +17,10 @@ export type TemplateProps = {
 };
 
 export const DockerCleanupEmail = ({
-	message = "Docker cleanup for docklands",
+	message = "Container runtime cleanup for Docklands",
 	date = "2023-05-01T00:00:00.000Z",
 }: TemplateProps) => {
-	const previewText = "Docker cleanup for docklands";
+	const previewText = "Container runtime cleanup for Docklands";
 	return (
 		<Html>
 			<Preview>{previewText}</Preview>
@@ -51,14 +51,14 @@ export const DockerCleanupEmail = ({
 							/>
 						</Section>
 						<Heading className="text-black text-[24px] font-normal text-center p-0 my-[30px] mx-0">
-							Docker cleanup for <strong>docklands</strong>
+							Container runtime cleanup for <strong>Docklands</strong>
 						</Heading>
 						<Text className="text-black text-[14px] leading-[24px]">
 							Hello,
 						</Text>
 						<Text className="text-black text-[14px] leading-[24px]">
-							The docker cleanup for <strong>docklands</strong> was successful
-							✅
+							The container runtime cleanup for <strong>Docklands</strong> was
+							successful ✅
 						</Text>
 
 						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">

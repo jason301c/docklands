@@ -171,7 +171,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 		}
 
 		if (isCloud && !serverId) {
-			toast.error("Please select a server");
+			toast.error("Please select a runtime worker");
 			return;
 		}
 

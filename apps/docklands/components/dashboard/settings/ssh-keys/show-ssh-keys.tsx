@@ -21,8 +21,8 @@ export const ShowSshKeys = () => {
 						SSH Keys
 					</h3>
 					<p>
-						Create and manage SSH Keys, you can use them to access your servers,
-						git private repositories, and more.
+						Create and manage SSH Keys, you can use them to access your runtime
+						workers, git private repositories, and more.
 					</p>
 				</div>
 				<div className="space-y-2 py-8 border-t">

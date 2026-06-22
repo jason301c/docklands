@@ -66,7 +66,7 @@ export const serverRouter = createTRPCRouter({
 			} catch (error) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: "Error creating the server",
+					message: "Error creating the runtime worker",
 					cause: error,
 				});
 			}
@@ -79,7 +79,7 @@ export const serverRouter = createTRPCRouter({
 			if (server.organizationId !== ctx.session.activeOrganizationId) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
-					message: "You are not authorized to access this server",
+					message: "You are not authorized to access this runtime worker",
 				});
 			}
 
@@ -87,7 +87,7 @@ export const serverRouter = createTRPCRouter({
 			if (!accessibleIds.has(input.serverId)) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
-					message: "You are not authorized to access this server",
+					message: "You are not authorized to access this runtime worker",
 				});
 			}
 
@@ -196,7 +196,7 @@ export const serverRouter = createTRPCRouter({
 				if (server.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You are not authorized to setup this server",
+						message: "You are not authorized to set up this runtime worker",
 					});
 				}
 				const currentServer = await serverSetup(input.serverId);
@@ -227,7 +227,7 @@ export const serverRouter = createTRPCRouter({
 				if (server.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You are not authorized to setup this server",
+						message: "You are not authorized to set up this runtime worker",
 					});
 				}
 				return observable<string>((emit) => {
@@ -247,7 +247,7 @@ export const serverRouter = createTRPCRouter({
 				if (server.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You are not authorized to validate this server",
+						message: "You are not authorized to validate this runtime worker",
 					});
 				}
 				const response = await serverValidate(input.serverId);
@@ -295,7 +295,7 @@ export const serverRouter = createTRPCRouter({
 				if (server.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You are not authorized to validate this server",
+						message: "You are not authorized to validate this runtime worker",
 					});
 				}
 				const response = await serverAudit(input.serverId);
@@ -346,7 +346,8 @@ export const serverRouter = createTRPCRouter({
 				if (activeServers) {
 					throw new TRPCError({
 						code: "BAD_REQUEST",
-						message: "Server has active services, please delete them first",
+						message:
+							"Runtime worker has active services, please delete them first",
 					});
 				}
 				const currentServer = await findServerById(input.serverId);
@@ -372,14 +373,14 @@ export const serverRouter = createTRPCRouter({
 				if (server.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You are not authorized to update this server",
+						message: "You are not authorized to update this runtime worker",
 					});
 				}
 
 				if (server.serverStatus === "inactive") {
 					throw new TRPCError({
 						code: "NOT_FOUND",
-						message: "Server is inactive",
+						message: "Runtime worker is inactive",
 					});
 				}
 				const currentServer = await updateServerById(input.serverId, {
@@ -410,7 +411,7 @@ export const serverRouter = createTRPCRouter({
 			if (currentServer.organizationId !== ctx.session.activeOrganizationId) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
-					message: "You are not authorized to update this server",
+					message: "You are not authorized to update this runtime worker",
 				});
 			}
 			await assertBuildsConcurrencyAllowed(

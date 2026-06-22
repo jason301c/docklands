@@ -1969,8 +1969,8 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 												<div className="space-y-0.5">
 													<FormLabel>Server Threshold</FormLabel>
 													<FormDescription>
-														Trigger the action when the server threshold is
-														reached.
+														Trigger the action when the runtime worker threshold
+														is reached.
 													</FormDescription>
 												</div>
 												<FormControl>

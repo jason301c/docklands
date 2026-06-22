@@ -204,7 +204,7 @@ export const tagRouter = createTRPCRouter({
 					throw new TRPCError({
 						code: "NOT_FOUND",
 						message:
-							"Project not found or you don't have permission to modify it",
+							"Workspace not found or you don't have permission to modify it",
 					});
 				}
 
@@ -255,7 +255,7 @@ export const tagRouter = createTRPCRouter({
 				) {
 					throw new TRPCError({
 						code: "CONFLICT",
-						message: "This tag is already assigned to this project",
+						message: "This tag is already assigned to this workspace",
 					});
 				}
 				throw new TRPCError({
@@ -292,7 +292,7 @@ export const tagRouter = createTRPCRouter({
 					throw new TRPCError({
 						code: "NOT_FOUND",
 						message:
-							"Project not found or you don't have permission to modify it",
+							"Workspace not found or you don't have permission to modify it",
 					});
 				}
 
@@ -340,7 +340,7 @@ export const tagRouter = createTRPCRouter({
 				}
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: `Error removing tag from project: ${error instanceof Error ? error.message : error}`,
+					message: `Error removing tag from workspace: ${error instanceof Error ? error.message : error}`,
 					cause: error,
 				});
 			}
@@ -372,7 +372,7 @@ export const tagRouter = createTRPCRouter({
 					throw new TRPCError({
 						code: "NOT_FOUND",
 						message:
-							"Project not found or you don't have permission to modify it",
+							"Workspace not found or you don't have permission to modify it",
 					});
 				}
 

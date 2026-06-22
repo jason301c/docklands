@@ -131,7 +131,7 @@ export const backupRouter = createTRPCRouter({
 					if (server.serverStatus === "inactive") {
 						throw new TRPCError({
 							code: "NOT_FOUND",
-							message: "Server is inactive",
+							message: "Runtime worker is inactive",
 						});
 					}
 					await schedule({
@@ -484,7 +484,7 @@ export const backupRouter = createTRPCRouter({
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
-							message: "You don't have access to this server.",
+							message: "You don't have access to this runtime worker.",
 						});
 					}
 				}

@@ -74,7 +74,7 @@ export const scheduleRouter = createTRPCRouter({
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
-							message: "You don't have access to this server.",
+							message: "You don't have access to this runtime worker.",
 						});
 					}
 				}
@@ -167,7 +167,7 @@ export const scheduleRouter = createTRPCRouter({
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
-							message: "You don't have access to this server.",
+							message: "You don't have access to this runtime worker.",
 						});
 					}
 				}
@@ -250,7 +250,7 @@ export const scheduleRouter = createTRPCRouter({
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
-							message: "You don't have access to this server.",
+							message: "You don't have access to this runtime worker.",
 						});
 					}
 				}
@@ -305,7 +305,7 @@ export const scheduleRouter = createTRPCRouter({
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
-							message: "You don't have access to this server.",
+							message: "You don't have access to this runtime worker.",
 						});
 					}
 				}
@@ -417,7 +417,7 @@ export const scheduleRouter = createTRPCRouter({
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
-							message: "You don't have access to this server.",
+							message: "You don't have access to this runtime worker.",
 						});
 					}
 				}

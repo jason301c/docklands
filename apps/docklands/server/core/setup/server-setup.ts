@@ -37,8 +37,10 @@ export const serverSetup = async (
 ) => {
 	const server = await findServerById(serverId);
 	const { LOGS_PATH } = paths();
+	const isBuildServer = server.serverType === "build";
+	const workerKind = isBuildServer ? "Build Worker" : "Runtime Worker";
 
-	const slugifyName = slugify(`server ${server.name}`);
+	const slugifyName = slugify(`${workerKind} ${server.name}`);
 
 	const fullPath = path.join(LOGS_PATH, slugifyName);
 
@@ -46,22 +48,17 @@ export const serverSetup = async (
 
 	const deployment = await createServerDeployment({
 		serverId: server.serverId,
-		title: "Setup Server",
-		description: "Setup Server",
+		title: `Setup ${workerKind}`,
+		description: `Setup ${workerKind}`,
 	});
 
 	try {
-		const isBuildServer = server.serverType === "build";
-		onData?.(
-			isBuildServer
-				? "\nInstalling Build Server Dependencies: ✅\n"
-				: "\nInstalling Server Dependencies: ✅\n",
-		);
+		onData?.(`\nInstalling ${workerKind} Dependencies: ✅\n`);
 		await installRequirements(serverId, onData);
 
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 
-		onData?.("\nSetup Server: ✅\n");
+		onData?.(`\nSetup ${workerKind}: ✅\n`);
 	} catch (err) {
 		console.log(err);
 
@@ -153,7 +150,7 @@ echo -e "---------------------------------------------"
 echo "| CPU Architecture  | $SYS_ARCH"
 echo "| Operating System  | $OS_TYPE $OS_VERSION"
 echo "| Docker            | $DOCKER_VERSION"
-${isBuildServer ? 'echo "| Server Type       | Build Server"' : ""}
+${isBuildServer ? 'echo "| Worker Role       | Build Worker"' : ""}
 echo -e "---------------------------------------------\n"
 echo -e "1. Installing required packages (curl, wget, git, jq, openssl). "
 
@@ -241,7 +238,7 @@ const installRequirements = async (
 	const client = new Client();
 	const server = await findServerById(serverId);
 	if (!server.sshKeyId) {
-		onData?.("❌ No SSH Key found, please assign one to this server");
+		onData?.("❌ No SSH Key found, please assign one to this worker");
 		throw new Error("No SSH Key found");
 	}
 
@@ -276,16 +273,16 @@ const installRequirements = async (
 					const technicalDetail = `Error: ${err.message} ${err.level}`;
 					const friendlyMessage = [
 						"",
-						"❌ Couldn't connect to your server — the SSH key was not accepted.",
+						"❌ Couldn't connect to your worker — the SSH key was not accepted.",
 						"",
-						"This usually means the key doesn't match what's on the server, or the key format is invalid.",
+						"This usually means the key doesn't match what's on the worker, or the key format is invalid.",
 						"",
 						`Technical details: ${technicalDetail}`,
 						"",
 						"💡 Hints:",
-						"  • Check that the SSH key you added in Docklands is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
-						"  • Try generating a new SSH key in Docklands and add only the public key to the server, then try again.",
-						"  • Make sure to follow the instructions on the Setup Server Button on the SSH Keys tab",
+						"  • Check that the SSH key you added in Docklands is the same one installed on the worker (e.g. in ~/.ssh/authorized_keys).",
+						"  • Try generating a new SSH key in Docklands and add only the public key to the worker, then try again.",
+						"  • Make sure to follow the instructions on the setup button in the SSH Keys tab.",
 					].join("\n");
 					onData?.(friendlyMessage);
 					reject(
@@ -297,16 +294,16 @@ const installRequirements = async (
 					const technicalDetail = `${err.message} ${err.level ?? ""}`.trim();
 					const friendlyMessage = [
 						"",
-						"❌ Couldn't connect to your server.",
+						"❌ Couldn't connect to your worker.",
 						"",
-						"The connection failed before setup could run. Common causes: wrong IP or port, firewall blocking access, or the server is offline.",
+						"The connection failed before setup could run. Common causes: wrong IP or port, firewall blocking access, or the worker is offline.",
 						"",
 						`Technical details: ${technicalDetail}`,
 						"",
 						"💡 Hints:",
-						"  • Check that the server IP address and SSH port are correct and the server is powered on.",
-						"  • If the server is in a private network, ensure Docklands can reach it (VPN, firewall rules, or correct security groups).",
-						"  • Make sure the SSH port (usually 22) is open and the SSH service is running on the server.",
+						"  • Check that the worker IP address and SSH port are correct and the worker is powered on.",
+						"  • If the worker is in a private network, ensure Docklands can reach it (VPN, firewall rules, or correct security groups).",
+						"  • Make sure the SSH port (usually 22) is open and the SSH service is running on the worker.",
 					].join("\n");
 					onData?.(friendlyMessage);
 					reject(new Error(`SSH connection error: ${technicalDetail}`));
@@ -393,9 +390,9 @@ export const setupSwarm = () => `
 				fi
 
 				if [ -z "$ip" ]; then
-					echo "Error: Could not determine server IP address automatically (neither IPv4 nor IPv6)." >&2
+					echo "Error: Could not determine worker IP address automatically (neither IPv4 nor IPv6)." >&2
 					echo "Please set the ADVERTISE_ADDR environment variable manually." >&2
-					echo "Example: export ADVERTISE_ADDR=<your-server-ip>" >&2
+					echo "Example: export ADVERTISE_ADDR=<your-worker-ip>" >&2
 					exit 1
 				fi
 

@@ -390,7 +390,7 @@ export const settingsRouter = createTRPCRouter({
 				if (server.organizationId !== ctx.session?.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You are not authorized to access this server",
+						message: "You are not authorized to access this runtime worker",
 					});
 				}
 
@@ -399,7 +399,7 @@ export const settingsRouter = createTRPCRouter({
 					if (server.serverStatus === "inactive") {
 						throw new TRPCError({
 							code: "NOT_FOUND",
-							message: "Server is inactive",
+							message: "Runtime worker is inactive",
 						});
 					}
 					if (IS_CLOUD) {
@@ -411,7 +411,7 @@ export const settingsRouter = createTRPCRouter({
 					} else {
 						scheduleJob(server.serverId, CLEANUP_CRON_JOB, async () => {
 							console.log(
-								`Docker Cleanup ${new Date().toLocaleString()}] Running...`,
+								`Container Runtime Cleanup ${new Date().toLocaleString()}] Running...`,
 							);
 
 							await cleanupAll(server.serverId);
@@ -439,7 +439,7 @@ export const settingsRouter = createTRPCRouter({
 				if (settingsUpdated?.enableDockerCleanup) {
 					scheduleJob("docker-cleanup", CLEANUP_CRON_JOB, async () => {
 						console.log(
-							`Docker Cleanup ${new Date().toLocaleString()}] Running...`,
+							`Container Runtime Cleanup ${new Date().toLocaleString()}] Running...`,
 						);
 
 						await cleanupAll();

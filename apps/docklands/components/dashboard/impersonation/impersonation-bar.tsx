@@ -364,7 +364,9 @@ export const ImpersonationBar = () => {
 											{data?.user?.serversQuantity !== undefined && (
 												<span className="flex items-center gap-1">
 													<Server className="h-3 w-3" />
-													<span>Servers: {data.user.serversQuantity}</span>
+													<span>
+														Runtime workers: {data.user.serversQuantity}
+													</span>
 												</span>
 											)}
 											{data?.createdAt && (

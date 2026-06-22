@@ -68,11 +68,11 @@ export const sendServerThresholdNotifications = async (
 					`${discord.decoration ? decoration : ""} ${text}`.trim();
 
 				await sendDiscordNotification(discord, {
-					title: decorate(">", `\`⚠️\` Server ${payload.Type} Alert`),
+					title: decorate(">", `\`⚠️\` Runtime Worker ${payload.Type} Alert`),
 					color: typeColor,
 					fields: [
 						{
-							name: decorate("`🏷️`", "Server Name"),
+							name: decorate("`🏷️`", "Runtime Worker Name"),
 							value: payload.ServerName,
 							inline: true,
 						},
@@ -108,7 +108,7 @@ export const sendServerThresholdNotifications = async (
 					],
 					timestamp: date.toISOString(),
 					footer: {
-						text: "Docklands Server Monitoring Alert",
+						text: "Docklands Runtime Worker Monitoring Alert",
 					},
 				});
 			}
@@ -117,8 +117,8 @@ export const sendServerThresholdNotifications = async (
 				await sendTelegramNotification(
 					telegram,
 					`
-				<b>⚠️ Server ${payload.Type} Alert</b>
-                <b>Server Name:</b> ${payload.ServerName}
+				<b>⚠️ Runtime Worker ${payload.Type} Alert</b>
+                <b>Runtime Worker Name:</b> ${payload.ServerName}
 				<b>Type:</b> ${payload.Type}
 				<b>Current Value:</b> ${payload.Value.toFixed(2)}%
 				<b>Threshold:</b> ${payload.Threshold.toFixed(2)}%
@@ -135,10 +135,10 @@ export const sendServerThresholdNotifications = async (
 					attachments: [
 						{
 							color: "#FF0000",
-							pretext: `:warning: *Server ${payload.Type} Alert*`,
+							pretext: `:warning: *Runtime Worker ${payload.Type} Alert*`,
 							fields: [
 								{
-									title: "Server Name",
+									title: "Runtime Worker Name",
 									value: payload.ServerName,
 									short: true,
 								},
@@ -174,7 +174,7 @@ export const sendServerThresholdNotifications = async (
 
 			if (mattermost) {
 				await sendMattermostNotification(mattermost, {
-					text: `**⚠️ Server ${payload.Type} Alert**\n\n**Server Name:** ${payload.ServerName}\n**Type:** ${payload.Type}\n**Current Value:** ${payload.Value.toFixed(2)}%\n**Threshold:** ${payload.Threshold.toFixed(2)}%\n**Message:** ${payload.Message}\n**Time:** ${date.toLocaleString()}`,
+					text: `**⚠️ Runtime Worker ${payload.Type} Alert**\n\n**Runtime Worker Name:** ${payload.ServerName}\n**Type:** ${payload.Type}\n**Current Value:** ${payload.Value.toFixed(2)}%\n**Threshold:** ${payload.Threshold.toFixed(2)}%\n**Message:** ${payload.Message}\n**Time:** ${date.toLocaleString()}`,
 					channel: mattermost.channel,
 					username: mattermost.username || "Docklands",
 				});
@@ -182,7 +182,7 @@ export const sendServerThresholdNotifications = async (
 
 			if (custom) {
 				await sendCustomNotification(custom, {
-					title: `Server ${payload.Type} Alert`,
+					title: `Runtime Worker ${payload.Type} Alert`,
 					message: payload.Message,
 					serverName: payload.ServerName,
 					type: payload.Type,
@@ -215,7 +215,7 @@ export const sendServerThresholdNotifications = async (
 						header: {
 							title: {
 								tag: "plain_text",
-								content: `⚠️ Server ${payload.Type} Alert`,
+								content: `⚠️ Runtime Worker ${payload.Type} Alert`,
 							},
 							subtitle: {
 								tag: "plain_text",
@@ -237,7 +237,7 @@ export const sendServerThresholdNotifications = async (
 											elements: [
 												{
 													tag: "markdown",
-													content: `**Server Name:**\n${payload.ServerName}`,
+													content: `**Runtime Worker Name:**\n${payload.ServerName}`,
 													text_align: "left",
 													text_size: "normal_v2",
 												},
@@ -294,8 +294,8 @@ export const sendServerThresholdNotifications = async (
 			if (pushover) {
 				await sendPushoverNotification(
 					pushover,
-					`Server ${payload.Type} Alert`,
-					`Server: ${payload.ServerName}\nType: ${payload.Type}\nCurrent: ${payload.Value.toFixed(2)}%\nThreshold: ${payload.Threshold.toFixed(2)}%\nMessage: ${payload.Message}\nTime: ${date.toLocaleString()}`,
+					`Runtime Worker ${payload.Type} Alert`,
+					`Runtime worker: ${payload.ServerName}\nType: ${payload.Type}\nCurrent: ${payload.Value.toFixed(2)}%\nThreshold: ${payload.Threshold.toFixed(2)}%\nMessage: ${payload.Message}\nTime: ${date.toLocaleString()}`,
 				);
 			}
 		} catch (error) {
@@ -304,9 +304,9 @@ export const sendServerThresholdNotifications = async (
 
 		if (teams) {
 			await sendTeamsNotification(teams, {
-				title: `⚠️ Server ${payload.Type} Alert`,
+				title: `⚠️ Runtime Worker ${payload.Type} Alert`,
 				facts: [
-					{ name: "Server Name", value: payload.ServerName },
+					{ name: "Runtime Worker Name", value: payload.ServerName },
 					{ name: "Type", value: payload.Type },
 					{ name: "Current Value", value: `${payload.Value.toFixed(2)}%` },
 					{ name: "Threshold", value: `${payload.Threshold.toFixed(2)}%` },

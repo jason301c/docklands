@@ -352,7 +352,9 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 								name="serverId"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Server {!isCloud && "(Optional)"}</FormLabel>
+										<FormLabel>
+											Runtime worker {!isCloud && "(Optional)"}
+										</FormLabel>
 										<FormDescription>
 											{!isCloud ? (
 												<>

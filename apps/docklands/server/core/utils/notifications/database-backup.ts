@@ -178,7 +178,7 @@ export const sendDatabaseBackupNotifications = async ({
 						type === "success" ? "✅" : "❌",
 						`Database Backup ${type === "success" ? "Successful" : "Failed"}`,
 					),
-					`${decorate("🛠️", `Project: ${projectName}`)}` +
+					`${decorate("🛠️", `Workspace: ${projectName}`)}` +
 						`${decorate("⚙️", `Application: ${applicationName}`)}` +
 						`${decorate("❔", `Type: ${databaseType}`)}` +
 						`${decorate("📂", `Database Name: ${databaseName}`)}` +
@@ -193,7 +193,7 @@ export const sendDatabaseBackupNotifications = async ({
 					`Database Backup ${type === "success" ? "Successful" : "Failed"}`,
 					`${type === "success" ? "white_check_mark" : "x"}`,
 					"",
-					`🛠Project: ${projectName}\n` +
+					`🛠Workspace: ${projectName}\n` +
 						`⚙️Application: ${applicationName}\n` +
 						`❔Type: ${databaseType}\n` +
 						`📂Database Name: ${databaseName}` +
@@ -211,7 +211,7 @@ export const sendDatabaseBackupNotifications = async ({
 					? `\n\n<b>Error:</b>\n<pre>${errorMessage}</pre>`
 					: "";
 
-				const messageText = `<b>${statusEmoji} Database Backup ${typeStatus}</b>\n\n<b>Project:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Type:</b> ${databaseType}\n<b>Database Name:</b> ${databaseName}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}${isError ? errorMsg : ""}`;
+				const messageText = `<b>${statusEmoji} Database Backup ${typeStatus}</b>\n\n<b>Workspace:</b> ${projectName}\n<b>Application:</b> ${applicationName}\n<b>Type:</b> ${databaseType}\n<b>Database Name:</b> ${databaseName}\n<b>Date:</b> ${format(date, "PP")}\n<b>Time:</b> ${format(date, "pp")}${isError ? errorMsg : ""}`;
 
 				await sendTelegramNotification(telegram, messageText);
 			}
@@ -284,7 +284,7 @@ export const sendDatabaseBackupNotifications = async ({
 						: "";
 
 				await sendMattermostNotification(mattermost, {
-					text: `**${statusEmoji} Database Backup ${typeStatus}**\n\n**Project:** ${projectName}\n**Application:** ${applicationName}\n**Type:** ${databaseType}\n**Database Name:** ${databaseName}\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}${errorMsg}`,
+					text: `**${statusEmoji} Database Backup ${typeStatus}**\n\n**Workspace:** ${projectName}\n**Application:** ${applicationName}\n**Type:** ${databaseType}\n**Database Name:** ${databaseName}\n**Date:** ${format(date, "PP")}\n**Time:** ${format(date, "pp")}${errorMsg}`,
 					channel: mattermost.channel,
 					username: mattermost.username || "Docklands",
 				});
@@ -360,7 +360,7 @@ export const sendDatabaseBackupNotifications = async ({
 											elements: [
 												{
 													tag: "markdown",
-													content: `**Project:**\n${projectName}`,
+													content: `**Workspace:**\n${projectName}`,
 													text_align: "left",
 													text_size: "normal_v2",
 												},
@@ -428,7 +428,7 @@ export const sendDatabaseBackupNotifications = async ({
 				await sendPushoverNotification(
 					pushover,
 					`Database Backup ${type === "success" ? "Successful" : "Failed"}`,
-					`Project: ${projectName}\nApplication: ${applicationName}\nDatabase: ${databaseType}\nDatabase Name: ${databaseName}\nDate: ${date.toLocaleString()}${type === "error" && errorMessage ? `\nError: ${errorMessage}` : ""}`,
+					`Workspace: ${projectName}\nApplication: ${applicationName}\nDatabase: ${databaseType}\nDatabase Name: ${databaseName}\nDate: ${date.toLocaleString()}${type === "error" && errorMessage ? `\nError: ${errorMessage}` : ""}`,
 				);
 			}
 
