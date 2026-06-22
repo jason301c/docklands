@@ -1,12 +1,12 @@
 "use client";
 
-import { ShowTraefikSystem } from "@/components/dashboard/proxy-files/show-traefik-system";
+import { ShowIngressFiles } from "@/components/dashboard/proxy-files/show-ingress-files";
 import { ServerFilter } from "@/components/shared/server-filter";
 
 const Dashboard = () => {
 	return (
 		<ServerFilter>
-			{(serverId) => <ShowTraefikSystem serverId={serverId} />}
+			{(serverId) => <ShowIngressFiles serverId={serverId} />}
 		</ServerFilter>
 	);
 };

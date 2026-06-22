@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Rehome service ingress config UI
+- Latest checkpoint: Rename ingress file components
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -39,6 +39,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Rehomed the cluster runtime UI component subtree from `components/dashboard/swarm/*` to `components/dashboard/cluster-runtime/*`, renamed visible component symbols, and replaced user-facing orchestration wording with cluster runtime language while preserving literal Docker Swarm API/docs/commands.
 - Rehomed runtime worker settings from `components/dashboard/settings/servers/*` to `components/dashboard/settings/runtime/*` and tightened visible setup/validation/security copy around workers instead of servers.
 - Rehomed the service advanced ingress config UI from `components/dashboard/application/advanced/traefik/*` to `components/dashboard/application/advanced/ingress/*` and renamed exported component symbols to ingress language while preserving backend Traefik config API fields.
+- Renamed the proxy-files UI modules from `show-traefik-*` to `show-ingress-*` so the file-management surface matches the Ingress Files product language while preserving literal Traefik runtime paths and APIs.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
 - Recorded the first upstream PR security audit under `outputs/docklands-pr-security-audit.md` outside the repo.
 
@@ -124,6 +125,11 @@ git diff --check
   - `bun --filter docklands test:ci`
   - `bun --filter docklands build`
 - Current service-ingress source-layout checkpoint
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
+- Current ingress-files source-layout checkpoint
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`

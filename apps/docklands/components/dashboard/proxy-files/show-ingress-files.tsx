@@ -10,12 +10,12 @@ import React from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Tree } from "@/components/shared/file-tree";
-import { ShowTraefikFile } from "./show-traefik-file";
+import { ShowIngressFile } from "./show-ingress-file";
 
 interface Props {
 	serverId?: string;
 }
-export const ShowTraefikSystem = ({ serverId }: Props) => {
+export const ShowIngressFiles = ({ serverId }: Props) => {
 	const [file, setFile] = React.useState<null | string>(null);
 
 	const {
@@ -42,7 +42,7 @@ export const ShowTraefikSystem = ({ serverId }: Props) => {
 				<p>Manage generated and custom ingress files.</p>
 
 				<AlertBlock type="warning">
-					Invalid proxy configuration can break access to your applications.
+					Invalid ingress configuration can break access to your applications.
 				</AlertBlock>
 			</div>
 			<div className="space-y-2 border-t py-8">
@@ -68,7 +68,7 @@ export const ShowTraefikSystem = ({ serverId }: Props) => {
 								</div>
 								<div className="flex flex-col items-center gap-1 text-center px-4">
 									<span className="text-base font-medium">
-										No configuration files found
+										No ingress files found
 									</span>
 									<span className="text-sm text-muted-foreground">
 										There are no ingress files in{" "}
@@ -91,7 +91,7 @@ export const ShowTraefikSystem = ({ serverId }: Props) => {
 								/>
 								<div className="w-full">
 									{file ? (
-										<ShowTraefikFile path={file} serverId={serverId} />
+										<ShowIngressFile path={file} serverId={serverId} />
 									) : (
 										<div className="h-full min-h-[300px] w-full flex-col gap-4 flex items-center justify-center border border-dashed rounded-lg">
 											<div className="flex items-center justify-center size-14 rounded-full bg-muted">

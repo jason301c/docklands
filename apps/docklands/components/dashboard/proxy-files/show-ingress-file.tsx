@@ -21,20 +21,18 @@ import {
 import { toast } from "@/components/shared/toast";
 import { validateAndFormatYAML } from "../application/advanced/ingress/update-ingress-config";
 
-const UpdateServerMiddlewareConfigSchema = z.object({
+const UpdateIngressFileConfigSchema = z.object({
 	traefikConfig: z.string(),
 });
 
-type UpdateServerMiddlewareConfig = z.infer<
-	typeof UpdateServerMiddlewareConfigSchema
->;
+type UpdateIngressFileConfig = z.infer<typeof UpdateIngressFileConfigSchema>;
 
 interface Props {
 	path: string;
 	serverId?: string;
 }
 
-export const ShowTraefikFile = ({ path, serverId }: Props) => {
+export const ShowIngressFile = ({ path, serverId }: Props) => {
 	const {
 		data,
 		refetch,
@@ -54,12 +52,12 @@ export const ShowTraefikFile = ({ path, serverId }: Props) => {
 	const { mutateAsync, isPending, error, isError } =
 		api.settings.updateTraefikFile.useMutation();
 
-	const form = useForm<UpdateServerMiddlewareConfig>({
+	const form = useForm<UpdateIngressFileConfig>({
 		defaultValues: {
 			traefikConfig: "",
 		},
 		disabled: canEdit,
-		resolver: zodResolver(UpdateServerMiddlewareConfigSchema),
+		resolver: zodResolver(UpdateIngressFileConfigSchema),
 	});
 
 	useEffect(() => {
@@ -68,7 +66,7 @@ export const ShowTraefikFile = ({ path, serverId }: Props) => {
 		});
 	}, [form, form.reset, data]);
 
-	const onSubmit = async (data: UpdateServerMiddlewareConfig) => {
+	const onSubmit = async (data: UpdateIngressFileConfig) => {
 		if (!skipYamlValidation) {
 			const { valid, error } = validateAndFormatYAML(data.traefikConfig);
 			if (!valid) {
