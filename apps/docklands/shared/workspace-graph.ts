@@ -64,6 +64,14 @@ export type WorkspaceConnectionGroup = WorkspaceNodePosition & {
 	nodeKeys: string[];
 };
 
+export type WorkspaceTopologyCounts = {
+	services: number;
+	running: number;
+	errors: number;
+	connections: number;
+	unlinked: number;
+};
+
 export type PersistedWorkspaceNode = Partial<WorkspaceNodePosition> & {
 	serviceId: string;
 	serviceType: WorkspaceServiceType;
@@ -364,4 +372,39 @@ export const resolveWorkspaceConnectionGroups = (
 	}
 
 	return groups.sort((a, b) => a.y - b.y || a.x - b.x);
+};
+
+export const countWorkspaceTopology = (
+	services: WorkspaceService[],
+	connections: WorkspaceConnectionLike[] = [],
+): WorkspaceTopologyCounts => {
+	const linkedServiceKeys = new Set<string>();
+
+	for (const connection of connections) {
+		linkedServiceKeys.add(
+			getWorkspaceServiceKey(
+				connection.sourceServiceType,
+				connection.sourceServiceId,
+			),
+		);
+		linkedServiceKeys.add(
+			getWorkspaceServiceKey(
+				connection.targetServiceType,
+				connection.targetServiceId,
+			),
+		);
+	}
+
+	return {
+		services: services.length,
+		running: services.filter((service) => service.status === "running").length,
+		errors: services.filter((service) => service.status === "error").length,
+		connections: connections.length,
+		unlinked: services.filter(
+			(service) =>
+				!linkedServiceKeys.has(
+					getWorkspaceServiceKey(service.type, service.id),
+				),
+		).length,
+	};
 };

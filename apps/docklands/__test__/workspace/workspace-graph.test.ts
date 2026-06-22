@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	canWorkspaceServiceExposeVariables,
+	countWorkspaceTopology,
 	extractWorkspaceServicesFromEnvironment,
 	getDefaultWorkspacePosition,
 	normalizeWorkspaceConnectionEndpoints,
@@ -291,6 +292,47 @@ describe("workspace graph helpers", () => {
 			y: 388,
 			width: 684,
 			height: 228,
+		});
+	});
+
+	it("counts topology health and unlinked services", () => {
+		const counts = countWorkspaceTopology(
+			[
+				{
+					id: "web",
+					type: "application",
+					name: "web",
+					status: "running",
+				},
+				{
+					id: "api",
+					type: "application",
+					name: "api",
+					status: "error",
+				},
+				{
+					id: "db",
+					type: "postgres",
+					name: "database",
+					status: "done",
+				},
+			],
+			[
+				{
+					sourceServiceId: "db",
+					sourceServiceType: "postgres",
+					targetServiceId: "api",
+					targetServiceType: "application",
+				},
+			],
+		);
+
+		expect(counts).toEqual({
+			services: 3,
+			running: 1,
+			errors: 1,
+			connections: 1,
+			unlinked: 1,
 		});
 	});
 });

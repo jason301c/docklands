@@ -108,6 +108,7 @@ import { parseEnvironmentVariables } from "@/shared/env-string";
 import { cn } from "@/shared/utils";
 import {
 	canWorkspaceServiceExposeVariables,
+	countWorkspaceTopology,
 	getDefaultWorkspacePosition,
 	getWorkspaceServiceKey,
 	isWorkspaceServiceType,
@@ -647,6 +648,7 @@ export const EnvironmentCanvas = ({
 	const [connectSource, setConnectSource] = useState<SelectedServiceRef | null>(
 		null,
 	);
+	const [isTopologyOpen, setIsTopologyOpen] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [commandQuery, setCommandQuery] = useState("");
 	const [serviceKindFilter, setServiceKindFilter] =
@@ -1280,14 +1282,8 @@ export const EnvironmentCanvas = ({
 		[workspace?.environment.env],
 	);
 	const workspaceStats = useMemo(
-		() => ({
-			services: services.length,
-			running: services.filter((service) => service.status === "running")
-				.length,
-			errors: services.filter((service) => service.status === "error").length,
-			connections: connections.length,
-		}),
-		[connections.length, services],
+		() => countWorkspaceTopology(services, connections),
+		[connections, services],
 	);
 	const unlinkedServices = useMemo(
 		() =>
@@ -1574,6 +1570,16 @@ export const EnvironmentCanvas = ({
 		setSearchQuery("");
 		setServiceKindFilter("all");
 		setServiceStatusFilter("all");
+	};
+
+	const toggleTopologyPanel = () => {
+		if (connectSource) {
+			setConnectSource(null);
+			setConnectionPointer(null);
+			return;
+		}
+
+		setIsTopologyOpen((current) => !current);
 	};
 
 	const resetMoveDialog = () => {
@@ -2586,6 +2592,18 @@ export const EnvironmentCanvas = ({
 							void arrangeWorkspace();
 						},
 					},
+					{
+						id: "workspace:toggle-topology",
+						group: "System" as const,
+						label: isTopologyOpen ? "Hide topology" : "Show topology",
+						detail: "Toggle connected stack and unlinked service panel",
+						search: "topology graph groups sidebar panel connections links",
+						icon: <Network className="size-5 text-muted-foreground" />,
+						run: () => {
+							setCommandOpen(false);
+							setIsTopologyOpen((current) => !current);
+						},
+					},
 				]
 			: []),
 		...connectionGroupSummaries.map((group) => ({
@@ -2797,11 +2815,15 @@ export const EnvironmentCanvas = ({
 						)}
 
 						<Button
-							variant={connectSource ? "primary" : "outline"}
-							onClick={() => setConnectSource(null)}
+							variant={connectSource || isTopologyOpen ? "primary" : "outline"}
+							onClick={toggleTopologyPanel}
 						>
 							<Cable className="size-4" />
-							{connectSource ? "Cancel connection" : "Connections"}
+							{connectSource
+								? "Cancel link"
+								: isTopologyOpen
+									? "Hide topology"
+									: "Topology"}
 						</Button>
 
 						<Button
@@ -3031,110 +3053,118 @@ export const EnvironmentCanvas = ({
 					)}
 				</div>
 
-				<div className="grid min-h-0 grid-cols-1 bg-muted/20 lg:grid-cols-[280px_minmax(0,1fr)]">
-					<aside className="max-h-64 overflow-auto border-b bg-background/80 p-3 lg:max-h-none lg:border-b-0 lg:border-r">
-						<div className="mb-3 flex items-start justify-between gap-3">
-							<div className="min-w-0">
-								<p className="text-sm font-medium">Topology</p>
-								<p className="text-xs text-muted-foreground">
-									{connectionGroupSummaries.length > 0
-										? `${connectionGroupSummaries.length} connected stack${connectionGroupSummaries.length === 1 ? "" : "s"}`
-										: "No linked services yet"}
-								</p>
-							</div>
-							<Badge>{unlinkedServices.length} unlinked</Badge>
-						</div>
-
-						<div className="space-y-4">
-							{connectionGroupSummaries.length > 0 && (
-								<div className="space-y-2">
-									<p className="text-xs uppercase text-muted-foreground">
-										Stacks
+				<div
+					className={cn(
+						"grid min-h-0 grid-cols-1 bg-muted/20",
+						isTopologyOpen && "lg:grid-cols-[280px_minmax(0,1fr)]",
+					)}
+				>
+					{isTopologyOpen && (
+						<aside className="max-h-64 overflow-auto border-b bg-background/80 p-3 lg:max-h-none lg:border-b-0 lg:border-r">
+							<div className="mb-3 flex items-start justify-between gap-3">
+								<div className="min-w-0">
+									<p className="text-sm font-medium">Topology</p>
+									<p className="text-xs text-muted-foreground">
+										{connectionGroupSummaries.length > 0
+											? `${connectionGroupSummaries.length} connected stack${connectionGroupSummaries.length === 1 ? "" : "s"}`
+											: "No linked services yet"}
 									</p>
-									<div className="space-y-1.5">
-										{connectionGroupSummaries.map((group) => {
-											const groupSelected = group.nodeKeys.every((nodeKey) =>
-												selectedBulkKeySet.has(nodeKey),
-											);
-											const groupVisible = group.nodeKeys.some((nodeKey) =>
-												visibleServiceKeys.has(nodeKey),
-											);
-
-											return (
-												<button
-													key={group.id}
-													type="button"
-													aria-label={`Select ${group.title} topology group`}
-													className={cn(
-														"w-full rounded-md border bg-background p-2 text-left transition hover:bg-muted/40",
-														groupSelected && "border-primary bg-primary/5",
-														!groupVisible && "opacity-50",
-													)}
-													onClick={() => selectServiceGroup(group.nodeKeys)}
-												>
-													<div className="flex items-center justify-between gap-2">
-														<span className="truncate text-sm font-medium">
-															{group.title ||
-																`Service group ${group.index + 1}`}
-														</span>
-														<Badge>{group.connectionCount} links</Badge>
-													</div>
-													<div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
-														<span>{group.serviceCount} services</span>
-														{group.runtimeCount > 0 && (
-															<span>{group.runtimeCount} runtimes</span>
-														)}
-														{group.dataCount > 0 && (
-															<span>{group.dataCount} data stores</span>
-														)}
-													</div>
-												</button>
-											);
-										})}
-									</div>
 								</div>
-							)}
+								<Badge>{unlinkedServices.length} unlinked</Badge>
+							</div>
 
-							<div className="space-y-2">
-								<p className="text-xs uppercase text-muted-foreground">
-									Unlinked
-								</p>
-								{unlinkedServices.length === 0 ? (
-									<p className="rounded-md border border-dashed bg-background/70 p-3 text-xs text-muted-foreground">
-										All visible services have at least one private link.
-									</p>
-								) : (
-									<div className="space-y-1.5">
-										{unlinkedServices.slice(0, 8).map((service) => (
-											<button
-												key={getWorkspaceServiceKey(service.type, service.id)}
-												type="button"
-												className="flex w-full items-center gap-2 rounded-md border bg-background p-2 text-left transition hover:bg-muted/40"
-												onClick={() => openServiceFromTopology(service)}
-											>
-												<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/30">
-													<WorkspaceServiceIcon service={service} />
-												</div>
-												<div className="min-w-0">
-													<p className="truncate text-sm font-medium">
-														{service.name}
-													</p>
-													<p className="truncate text-xs text-muted-foreground">
-														{serviceTypeLabels[service.type]}
-													</p>
-												</div>
-											</button>
-										))}
-										{unlinkedServices.length > 8 && (
-											<p className="px-1 text-xs text-muted-foreground">
-												+{unlinkedServices.length - 8} more hidden by this panel
-											</p>
-										)}
+							<div className="space-y-4">
+								{connectionGroupSummaries.length > 0 && (
+									<div className="space-y-2">
+										<p className="text-xs uppercase text-muted-foreground">
+											Stacks
+										</p>
+										<div className="space-y-1.5">
+											{connectionGroupSummaries.map((group) => {
+												const groupSelected = group.nodeKeys.every((nodeKey) =>
+													selectedBulkKeySet.has(nodeKey),
+												);
+												const groupVisible = group.nodeKeys.some((nodeKey) =>
+													visibleServiceKeys.has(nodeKey),
+												);
+
+												return (
+													<button
+														key={group.id}
+														type="button"
+														aria-label={`Select ${group.title} topology group`}
+														className={cn(
+															"w-full rounded-md border bg-background p-2 text-left transition hover:bg-muted/40",
+															groupSelected && "border-primary bg-primary/5",
+															!groupVisible && "opacity-50",
+														)}
+														onClick={() => selectServiceGroup(group.nodeKeys)}
+													>
+														<div className="flex items-center justify-between gap-2">
+															<span className="truncate text-sm font-medium">
+																{group.title ||
+																	`Service group ${group.index + 1}`}
+															</span>
+															<Badge>{group.connectionCount} links</Badge>
+														</div>
+														<div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+															<span>{group.serviceCount} services</span>
+															{group.runtimeCount > 0 && (
+																<span>{group.runtimeCount} runtimes</span>
+															)}
+															{group.dataCount > 0 && (
+																<span>{group.dataCount} data stores</span>
+															)}
+														</div>
+													</button>
+												);
+											})}
+										</div>
 									</div>
 								)}
+
+								<div className="space-y-2">
+									<p className="text-xs uppercase text-muted-foreground">
+										Unlinked
+									</p>
+									{unlinkedServices.length === 0 ? (
+										<p className="rounded-md border border-dashed bg-background/70 p-3 text-xs text-muted-foreground">
+											All visible services have at least one private link.
+										</p>
+									) : (
+										<div className="space-y-1.5">
+											{unlinkedServices.slice(0, 8).map((service) => (
+												<button
+													key={getWorkspaceServiceKey(service.type, service.id)}
+													type="button"
+													className="flex w-full items-center gap-2 rounded-md border bg-background p-2 text-left transition hover:bg-muted/40"
+													onClick={() => openServiceFromTopology(service)}
+												>
+													<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/30">
+														<WorkspaceServiceIcon service={service} />
+													</div>
+													<div className="min-w-0">
+														<p className="truncate text-sm font-medium">
+															{service.name}
+														</p>
+														<p className="truncate text-xs text-muted-foreground">
+															{serviceTypeLabels[service.type]}
+														</p>
+													</div>
+												</button>
+											))}
+											{unlinkedServices.length > 8 && (
+												<p className="px-1 text-xs text-muted-foreground">
+													+{unlinkedServices.length - 8} more hidden by this
+													panel
+												</p>
+											)}
+										</div>
+									)}
+								</div>
 							</div>
-						</div>
-					</aside>
+						</aside>
+					)}
 					<div className="relative min-w-0 overflow-auto">
 						<div
 							className="relative"

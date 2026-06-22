@@ -1,5 +1,4 @@
 import { LinkButton } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowRight, BookIcon, FolderInput, Rocket } from "lucide-react";
 import Link from "next/link";
@@ -78,7 +77,7 @@ function StatCard({
 	delta?: string;
 }) {
 	return (
-		<div className="rounded-xl border bg-background p-5 min-h-[140px] flex flex-col justify-between">
+		<div className="flex min-h-[140px] flex-col justify-between rounded-lg border bg-background p-5">
 			<span className="text-xs uppercase tracking-wider text-muted-foreground">
 				{label}
 			</span>
@@ -100,7 +99,7 @@ function StatusListCard({
 	items: { dotClass: string; label: string; count: number }[];
 }) {
 	return (
-		<div className="rounded-xl border bg-background p-5 min-h-[140px] flex flex-col gap-3">
+		<div className="flex min-h-[140px] flex-col gap-3 rounded-lg border bg-background p-5">
 			<span className="text-xs uppercase tracking-wider text-muted-foreground">
 				{label}
 			</span>
@@ -214,189 +213,183 @@ export const WorkspaceOverview = () => {
 
 	return (
 		<div className="w-full">
-			<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl min-h-[85vh]">
-				<div className="rounded-xl bg-background shadow-md p-6 flex flex-col gap-6 h-full">
-					<div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-						<h1 className="text-3xl font-semibold tracking-tight">
-							{firstName ? `Welcome back, ${firstName}` : "Welcome back"}
-						</h1>
-						<div className="flex flex-wrap items-center gap-2">
-							<LinkButton
-								href="/dashboard/projects"
-								variant="secondary"
-								className="w-fit"
-							>
-								Go to projects
-								<ArrowRight className="size-4" />
-							</LinkButton>
-							{canCreateProjects && <HandleProject />}
-						</div>
+			<div className="flex min-h-[85vh] flex-col gap-6 rounded-lg border bg-background p-6">
+				<div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+					<h1 className="text-3xl font-semibold tracking-tight">
+						{firstName ? `Welcome back, ${firstName}` : "Welcome back"}
+					</h1>
+					<div className="flex flex-wrap items-center gap-2">
+						<LinkButton
+							href="/dashboard/projects"
+							variant="secondary"
+							className="w-fit"
+						>
+							Go to projects
+							<ArrowRight className="size-4" />
+						</LinkButton>
+						{canCreateProjects && <HandleProject />}
 					</div>
+				</div>
 
-					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-						<StatCard
-							label="Projects"
-							value={String(totals.projects)}
-							delta={`${totals.environments} ${totals.environments === 1 ? "environment" : "environments"}`}
-						/>
-						<StatCard
-							label="Services"
-							value={String(totals.services)}
-							delta={`${totals.applications} apps · ${totals.compose} compose · ${totals.databases} db`}
-						/>
-						<StatCard
-							label="Builds / 7d"
-							value={deployStats.value}
-							delta={deployStats.delta}
-						/>
-						<StatusListCard
-							label="Status"
-							items={[
-								{
-									dotClass: "bg-emerald-500",
-									label: "running",
-									count: statusBreakdown.running,
-								},
-								{
-									dotClass: "bg-red-500",
-									label: "errored",
-									count: statusBreakdown.error,
-								},
-								{
-									dotClass: "bg-muted-foreground/40",
-									label: "idle",
-									count: statusBreakdown.idle,
-								},
-							]}
-						/>
-					</div>
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+					<StatCard
+						label="Projects"
+						value={String(totals.projects)}
+						delta={`${totals.environments} ${totals.environments === 1 ? "environment" : "environments"}`}
+					/>
+					<StatCard
+						label="Services"
+						value={String(totals.services)}
+						delta={`${totals.applications} apps · ${totals.compose} compose · ${totals.databases} db`}
+					/>
+					<StatCard
+						label="Builds / 7d"
+						value={deployStats.value}
+						delta={deployStats.delta}
+					/>
+					<StatusListCard
+						label="Status"
+						items={[
+							{
+								dotClass: "bg-emerald-500",
+								label: "running",
+								count: statusBreakdown.running,
+							},
+							{
+								dotClass: "bg-red-500",
+								label: "errored",
+								count: statusBreakdown.error,
+							},
+							{
+								dotClass: "bg-muted-foreground/40",
+								label: "idle",
+								count: statusBreakdown.idle,
+							},
+						]}
+					/>
+				</div>
 
-					<div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
-						<div className="rounded-xl border bg-background">
-							<div className="flex items-center justify-between px-5 py-4 border-b">
-								<div className="flex items-center gap-2">
-									<Rocket className="size-4 text-muted-foreground" />
-									<h2 className="text-sm font-semibold">Recent builds</h2>
-								</div>
-								{canReadDeployments && (
-									<Link
-										href="/dashboard/builds"
-										className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-									>
-										view all →
-									</Link>
-								)}
+				<div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
+					<div className="rounded-lg border bg-background">
+						<div className="flex items-center justify-between px-5 py-4 border-b">
+							<div className="flex items-center gap-2">
+								<Rocket className="size-4 text-muted-foreground" />
+								<h2 className="text-sm font-semibold">Recent builds</h2>
 							</div>
-							{!canReadDeployments ? (
-								<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
-									<Rocket className="size-8 opacity-40" />
-									<span>You do not have permission to view builds.</span>
-								</div>
-							) : recentDeployments.length === 0 ? (
-								<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
-									<Rocket className="size-8 opacity-40" />
-									<span>No builds yet.</span>
-								</div>
-							) : (
-								<ul className="divide-y">
-									{recentDeployments.map((d) => {
-										const info = getServiceInfo(d);
-										if (!info) return null;
-										const status = (d.status ?? "idle") as DeploymentStatus;
-										return (
-											<li key={d.deploymentId}>
-												<Link
-													href={info.href}
-													className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
-												>
-													<span
-														className={`size-2 rounded-full shrink-0 ${statusDotClass[status] ?? statusDotClass.idle}`}
-														aria-hidden
-													/>
-													<div className="flex flex-col min-w-0 flex-1">
-														<span className="text-sm truncate">
-															{info.name}
-														</span>
-														<span className="text-xs text-muted-foreground truncate">
-															{info.projectName} · {info.environment}
-														</span>
-													</div>
-													<span className="text-xs text-muted-foreground w-36 hidden lg:flex items-center justify-end gap-1.5 truncate">
-														<Rocket className="size-3 shrink-0" />
-														<span className="truncate">Runtime</span>
-													</span>
-													<span className="text-xs text-muted-foreground w-20 text-right hidden sm:inline">
-														{status}
-													</span>
-													<span className="text-xs text-muted-foreground w-24 text-right hidden md:inline">
-														{formatDistanceToNow(new Date(d.createdAt), {
-															addSuffix: true,
-														})}
-													</span>
-													<span className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-														logs →
-													</span>
-												</Link>
-											</li>
-										);
-									})}
-								</ul>
-							)}
-						</div>
-
-						<div className="rounded-xl border bg-background">
-							<div className="flex items-center justify-between px-5 py-4 border-b">
-								<div className="flex items-center gap-2">
-									<FolderInput className="size-4 text-muted-foreground" />
-									<h2 className="text-sm font-semibold">Workspaces</h2>
-								</div>
+							{canReadDeployments && (
 								<Link
-									href="/dashboard/projects"
+									href="/dashboard/builds"
 									className="text-xs text-muted-foreground hover:text-foreground transition-colors"
 								>
 									view all →
 								</Link>
-							</div>
-
-							{recentProjects.length === 0 ? (
-								<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
-									<FolderInput className="size-8 opacity-40" />
-									<span>No projects yet.</span>
-								</div>
-							) : (
-								<ul className="divide-y">
-									{recentProjects.map(({ project, environment, services }) => (
-										<li key={project.projectId}>
-											<Link
-												href={
-													environment
-														? `/dashboard/project/${project.projectId}/environment/${environment.environmentId}`
-														: "/dashboard/projects"
-												}
-												className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
-											>
-												<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-muted/30">
-													<BookIcon className="size-4 text-muted-foreground" />
-												</span>
-												<div className="flex flex-col min-w-0 flex-1">
-													<span className="text-sm truncate">
-														{project.name}
-													</span>
-													<span className="text-xs text-muted-foreground truncate">
-														{environment?.name ?? "No environment"} · {services}{" "}
-														{services === 1 ? "service" : "services"}
-													</span>
-												</div>
-												<ArrowRight className="size-4 shrink-0 text-muted-foreground" />
-											</Link>
-										</li>
-									))}
-								</ul>
 							)}
 						</div>
+						{!canReadDeployments ? (
+							<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+								<Rocket className="size-8 opacity-40" />
+								<span>You do not have permission to view builds.</span>
+							</div>
+						) : recentDeployments.length === 0 ? (
+							<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+								<Rocket className="size-8 opacity-40" />
+								<span>No builds yet.</span>
+							</div>
+						) : (
+							<ul className="divide-y">
+								{recentDeployments.map((d) => {
+									const info = getServiceInfo(d);
+									if (!info) return null;
+									const status = (d.status ?? "idle") as DeploymentStatus;
+									return (
+										<li key={d.deploymentId}>
+											<Link
+												href={info.href}
+												className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
+											>
+												<span
+													className={`size-2 rounded-full shrink-0 ${statusDotClass[status] ?? statusDotClass.idle}`}
+													aria-hidden
+												/>
+												<div className="flex flex-col min-w-0 flex-1">
+													<span className="text-sm truncate">{info.name}</span>
+													<span className="text-xs text-muted-foreground truncate">
+														{info.projectName} · {info.environment}
+													</span>
+												</div>
+												<span className="text-xs text-muted-foreground w-36 hidden lg:flex items-center justify-end gap-1.5 truncate">
+													<Rocket className="size-3 shrink-0" />
+													<span className="truncate">Runtime</span>
+												</span>
+												<span className="text-xs text-muted-foreground w-20 text-right hidden sm:inline">
+													{status}
+												</span>
+												<span className="text-xs text-muted-foreground w-24 text-right hidden md:inline">
+													{formatDistanceToNow(new Date(d.createdAt), {
+														addSuffix: true,
+													})}
+												</span>
+												<span className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+													logs →
+												</span>
+											</Link>
+										</li>
+									);
+								})}
+							</ul>
+						)}
+					</div>
+
+					<div className="rounded-lg border bg-background">
+						<div className="flex items-center justify-between px-5 py-4 border-b">
+							<div className="flex items-center gap-2">
+								<FolderInput className="size-4 text-muted-foreground" />
+								<h2 className="text-sm font-semibold">Workspaces</h2>
+							</div>
+							<Link
+								href="/dashboard/projects"
+								className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+							>
+								view all →
+							</Link>
+						</div>
+
+						{recentProjects.length === 0 ? (
+							<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+								<FolderInput className="size-8 opacity-40" />
+								<span>No projects yet.</span>
+							</div>
+						) : (
+							<ul className="divide-y">
+								{recentProjects.map(({ project, environment, services }) => (
+									<li key={project.projectId}>
+										<Link
+											href={
+												environment
+													? `/dashboard/project/${project.projectId}/environment/${environment.environmentId}`
+													: "/dashboard/projects"
+											}
+											className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
+										>
+											<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-muted/30">
+												<BookIcon className="size-4 text-muted-foreground" />
+											</span>
+											<div className="flex flex-col min-w-0 flex-1">
+												<span className="text-sm truncate">{project.name}</span>
+												<span className="text-xs text-muted-foreground truncate">
+													{environment?.name ?? "No environment"} · {services}{" "}
+													{services === 1 ? "service" : "services"}
+												</span>
+											</div>
+											<ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+										</Link>
+									</li>
+								))}
+							</ul>
+						)}
 					</div>
 				</div>
-			</LayerCard>
+			</div>
 		</div>
 	);
 };
