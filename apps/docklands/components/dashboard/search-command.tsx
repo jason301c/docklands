@@ -202,6 +202,12 @@ export const SearchCommand = () => {
 							onSelect: () => navigate("/dashboard/container-runtime"),
 						},
 						{
+							id: "app-cluster-runtime",
+							title: "Cluster runtime",
+							searchText: "cluster runtime workers swarm orchestration",
+							onSelect: () => navigate("/dashboard/cluster-runtime"),
+						},
+						{
 							id: "app-requests",
 							title: "Runtime requests",
 							searchText: "requests runtime",
@@ -214,6 +220,30 @@ export const SearchCommand = () => {
 				title: "Ingress settings",
 				searchText: "settings ingress domains tls proxy",
 				onSelect: () => navigate("/dashboard/settings/ingress"),
+			},
+			{
+				id: "app-runtime-settings",
+				title: "Runtime settings",
+				searchText: "settings runtime capacity workers servers",
+				onSelect: () => navigate("/dashboard/settings/runtime"),
+			},
+			{
+				id: "app-image-registry-settings",
+				title: "Image registry settings",
+				searchText: "settings image registry container credentials",
+				onSelect: () => navigate("/dashboard/settings/image-registry"),
+			},
+			{
+				id: "app-storage-settings",
+				title: "Storage settings",
+				searchText: "settings storage s3 destinations backups",
+				onSelect: () => navigate("/dashboard/settings/storage"),
+			},
+			{
+				id: "app-build-workers-settings",
+				title: "Build worker settings",
+				searchText: "settings build workers concurrency queue",
+				onSelect: () => navigate("/dashboard/settings/build-workers"),
 			},
 		];
 
