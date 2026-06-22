@@ -1164,6 +1164,22 @@ export const EnvironmentCanvas = ({
 	);
 
 	const connections = workspace?.connections ?? [];
+	const serviceLinkCounts = useMemo(() => {
+		const counts = new Map<string, number>();
+		for (const connection of connections) {
+			const sourceKey = getWorkspaceServiceKey(
+				connection.sourceServiceType,
+				connection.sourceServiceId,
+			);
+			const targetKey = getWorkspaceServiceKey(
+				connection.targetServiceType,
+				connection.targetServiceId,
+			);
+			counts.set(sourceKey, (counts.get(sourceKey) ?? 0) + 1);
+			counts.set(targetKey, (counts.get(targetKey) ?? 0) + 1);
+		}
+		return counts;
+	}, [connections]);
 	const connectionGroups = useMemo(
 		() => resolveWorkspaceConnectionGroups(nodes, connections),
 		[nodes, connections],
@@ -1272,6 +1288,16 @@ export const EnvironmentCanvas = ({
 			connections: connections.length,
 		}),
 		[connections.length, services],
+	);
+	const unlinkedServices = useMemo(
+		() =>
+			filteredServices.filter(
+				(service) =>
+					(serviceLinkCounts.get(
+						getWorkspaceServiceKey(service.type, service.id),
+					) ?? 0) === 0,
+			),
+		[filteredServices, serviceLinkCounts],
 	);
 
 	const canvasBounds = useMemo(() => {
@@ -1899,6 +1925,23 @@ export const EnvironmentCanvas = ({
 		router.replace(query ? `${pathname}?${query}` : pathname, {
 			scroll: false,
 		});
+	};
+
+	const openServiceFromTopology = (service: WorkspaceService) => {
+		setConnectSource(null);
+		setConnectionPointer(null);
+		setIsSelectionMode(false);
+		setSelectedBulkKeys([]);
+		setSelectedService({
+			serviceId: service.id,
+			serviceType: service.type,
+		});
+		setDrawerTab("overview");
+
+		const nextParams = new URLSearchParams(searchParams.toString());
+		nextParams.set("serviceId", service.id);
+		nextParams.set("serviceType", service.type);
+		router.replace(`${pathname}?${nextParams.toString()}`, { scroll: false });
 	};
 
 	const arrangeWorkspace = async () => {
@@ -2982,354 +3025,458 @@ export const EnvironmentCanvas = ({
 					)}
 				</div>
 
-				<div className="relative overflow-auto bg-muted/20">
-					<div
-						className="relative"
-						onPointerMove={updateConnectionPointer}
-						onPointerLeave={() => connectSource && setConnectionPointer(null)}
-						style={{
-							width: canvasBounds.width,
-							height: canvasBounds.height,
-							backgroundImage:
-								"linear-gradient(to right, hsl(var(--border) / .45) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / .45) 1px, transparent 1px)",
-							backgroundSize: "32px 32px",
-						}}
-					>
-						{connectionGroupSummaries.map((group) => {
-							const groupSelected = group.nodeKeys.every((nodeKey) =>
-								selectedBulkKeySet.has(nodeKey),
-							);
+				<div className="grid min-h-0 grid-cols-1 bg-muted/20 lg:grid-cols-[280px_minmax(0,1fr)]">
+					<aside className="max-h-64 overflow-auto border-b bg-background/80 p-3 lg:max-h-none lg:border-b-0 lg:border-r">
+						<div className="mb-3 flex items-start justify-between gap-3">
+							<div className="min-w-0">
+								<p className="text-sm font-medium">Topology</p>
+								<p className="text-xs text-muted-foreground">
+									{connectionGroupSummaries.length > 0
+										? `${connectionGroupSummaries.length} connected stack${connectionGroupSummaries.length === 1 ? "" : "s"}`
+										: "No linked services yet"}
+								</p>
+							</div>
+							<Badge>{unlinkedServices.length} unlinked</Badge>
+						</div>
 
-							return (
-								<div
-									key={group.id}
-									className={cn(
-										"pointer-events-none absolute rounded-xl border border-dashed bg-background/35",
-										groupSelected
-											? "border-primary/80 bg-primary/5"
-											: "border-kumo-line",
-									)}
-									style={{
-										left: group.x,
-										top: group.y,
-										width: group.width,
-										height: group.height,
-									}}
-								>
-									<div className="pointer-events-auto absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-md border bg-background/90 px-2 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
-										<div className="min-w-0">
-											<p className="truncate font-medium text-foreground">
-												{group.title || `Service group ${group.index + 1}`}
-											</p>
-											<div className="flex flex-wrap gap-x-2 gap-y-0.5">
-												<span>{group.serviceCount} services</span>
-												<span>{group.connectionCount} links</span>
-												{group.runtimeCount > 0 && (
-													<span>{group.runtimeCount} runtimes</span>
-												)}
-												{group.dataCount > 0 && (
-													<span>{group.dataCount} data stores</span>
-												)}
-											</div>
-										</div>
-										<button
-											type="button"
-											className="shrink-0 rounded border px-2 py-1 font-medium text-foreground transition hover:bg-muted"
-											onClick={() => selectServiceGroup(group.nodeKeys)}
-										>
-											{groupSelected ? "Selected" : "Select group"}
-										</button>
+						<div className="space-y-4">
+							{connectionGroupSummaries.length > 0 && (
+								<div className="space-y-2">
+									<p className="text-xs uppercase text-muted-foreground">
+										Stacks
+									</p>
+									<div className="space-y-1.5">
+										{connectionGroupSummaries.map((group) => {
+											const groupSelected = group.nodeKeys.every((nodeKey) =>
+												selectedBulkKeySet.has(nodeKey),
+											);
+											const groupVisible = group.nodeKeys.some((nodeKey) =>
+												visibleServiceKeys.has(nodeKey),
+											);
+
+											return (
+												<button
+													key={group.id}
+													type="button"
+													aria-label={`Select ${group.title} topology group`}
+													className={cn(
+														"w-full rounded-md border bg-background p-2 text-left transition hover:bg-muted/40",
+														groupSelected && "border-primary bg-primary/5",
+														!groupVisible && "opacity-50",
+													)}
+													onClick={() => selectServiceGroup(group.nodeKeys)}
+												>
+													<div className="flex items-center justify-between gap-2">
+														<span className="truncate text-sm font-medium">
+															{group.title ||
+																`Service group ${group.index + 1}`}
+														</span>
+														<Badge>{group.connectionCount} links</Badge>
+													</div>
+													<div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+														<span>{group.serviceCount} services</span>
+														{group.runtimeCount > 0 && (
+															<span>{group.runtimeCount} runtimes</span>
+														)}
+														{group.dataCount > 0 && (
+															<span>{group.dataCount} data stores</span>
+														)}
+													</div>
+												</button>
+											);
+										})}
 									</div>
 								</div>
-							);
-						})}
-
-						<svg
-							className="pointer-events-none absolute inset-0"
-							width={canvasBounds.width}
-							height={canvasBounds.height}
-							aria-hidden="true"
-						>
-							<defs>
-								<marker
-									id="workspace-arrow"
-									viewBox="0 0 10 10"
-									refX="8"
-									refY="5"
-									markerWidth="6"
-									markerHeight="6"
-									orient="auto-start-reverse"
-								>
-									<path
-										d="M 0 0 L 10 5 L 0 10 z"
-										className="fill-muted-foreground"
-									/>
-								</marker>
-								<marker
-									id="workspace-preview-dot"
-									viewBox="0 0 10 10"
-									refX="5"
-									refY="5"
-									markerWidth="5"
-									markerHeight="5"
-								>
-									<circle cx="5" cy="5" r="4" className="fill-primary" />
-								</marker>
-							</defs>
-							{connections.map((connection) => {
-								const source = nodesByKey.get(
-									getWorkspaceServiceKey(
-										connection.sourceServiceType,
-										connection.sourceServiceId,
-									),
-								);
-								const target = nodesByKey.get(
-									getWorkspaceServiceKey(
-										connection.targetServiceType,
-										connection.targetServiceId,
-									),
-								);
-								if (!source || !target) return null;
-
-								const sourceVisible = visibleServiceKeys.has(
-									getWorkspaceServiceKey(
-										connection.sourceServiceType,
-										connection.sourceServiceId,
-									),
-								);
-								const targetVisible = visibleServiceKeys.has(
-									getWorkspaceServiceKey(
-										connection.targetServiceType,
-										connection.targetServiceId,
-									),
-								);
-
-								return (
-									<path
-										key={connection.connectionId}
-										d={connectionPath(source, target)}
-										className={cn(
-											"fill-none stroke-muted-foreground/60 stroke-2",
-											(!sourceVisible || !targetVisible) && "opacity-20",
-										)}
-										markerEnd="url(#workspace-arrow)"
-									/>
-								);
-							})}
-							{connectionPreview && (
-								<path
-									d={connectionPreview}
-									className="fill-none stroke-primary stroke-2 opacity-80"
-									strokeDasharray="8 8"
-									markerEnd="url(#workspace-preview-dot)"
-								/>
 							)}
-						</svg>
 
-						{connectSourceService && (
-							<div className="pointer-events-none absolute left-1/2 top-6 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-background/95 px-3 py-2 text-xs shadow-sm backdrop-blur">
-								<Cable className="size-4 text-primary" />
-								<span>
-									Connecting from{" "}
-									<strong className="font-medium">
-										{connectSourceService.name}
-									</strong>
-								</span>
-								<span className="text-muted-foreground">
-									Select a target service
-								</span>
-							</div>
-						)}
-
-						{services.length === 0 ? (
-							<div className="absolute left-1/2 top-1/2 flex w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 rounded-lg border bg-background/95 p-5 text-center shadow-sm backdrop-blur">
-								<div className="flex size-12 items-center justify-center rounded-md border bg-muted/30">
-									<FolderInput className="size-6 text-muted-foreground" />
-								</div>
-								<div className="space-y-1">
-									<p className="font-medium">Empty canvas</p>
-									<p className="text-sm text-muted-foreground">
-										Start with a runtime, database, compose stack, or template.
+							<div className="space-y-2">
+								<p className="text-xs uppercase text-muted-foreground">
+									Unlinked
+								</p>
+								{unlinkedServices.length === 0 ? (
+									<p className="rounded-md border border-dashed bg-background/70 p-3 text-xs text-muted-foreground">
+										All visible services have at least one private link.
 									</p>
-								</div>
-								{permissions?.service.create && (
-									<div className="flex flex-wrap justify-center gap-2">
-										<Button onClick={() => openCreateDialog("application")}>
-											<Folder className="size-4" />
-											New app
-										</Button>
-										<Button
-											variant="outline"
-											onClick={() => openDatabaseDialog("postgres")}
-										>
-											<PostgresqlIcon className="size-4" />
-											Postgres
-										</Button>
-										<Button
-											variant="outline"
-											onClick={() => openCreateDialog("compose")}
-										>
-											<CircuitBoard className="size-4" />
-											Compose
-										</Button>
-										<Button
-											variant="outline"
-											onClick={() => openCreateDialog("template")}
-										>
-											<PuzzleIcon className="size-4" />
-											Template
-										</Button>
+								) : (
+									<div className="space-y-1.5">
+										{unlinkedServices.slice(0, 8).map((service) => (
+											<button
+												key={getWorkspaceServiceKey(service.type, service.id)}
+												type="button"
+												className="flex w-full items-center gap-2 rounded-md border bg-background p-2 text-left transition hover:bg-muted/40"
+												onClick={() => openServiceFromTopology(service)}
+											>
+												<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/30">
+													<WorkspaceServiceIcon service={service} />
+												</div>
+												<div className="min-w-0">
+													<p className="truncate text-sm font-medium">
+														{service.name}
+													</p>
+													<p className="truncate text-xs text-muted-foreground">
+														{serviceTypeLabels[service.type]}
+													</p>
+												</div>
+											</button>
+										))}
+										{unlinkedServices.length > 8 && (
+											<p className="px-1 text-xs text-muted-foreground">
+												+{unlinkedServices.length - 8} more hidden by this panel
+											</p>
+										)}
 									</div>
 								)}
 							</div>
-						) : null}
+						</div>
+					</aside>
+					<div className="relative min-w-0 overflow-auto">
+						<div
+							className="relative"
+							onPointerMove={updateConnectionPointer}
+							onPointerLeave={() => connectSource && setConnectionPointer(null)}
+							style={{
+								width: canvasBounds.width,
+								height: canvasBounds.height,
+								backgroundImage:
+									"linear-gradient(to right, hsl(var(--border) / .45) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--border) / .45) 1px, transparent 1px)",
+								backgroundSize: "32px 32px",
+							}}
+						>
+							{connectionGroupSummaries.map((group) => {
+								const groupSelected = group.nodeKeys.every((nodeKey) =>
+									selectedBulkKeySet.has(nodeKey),
+								);
 
-						{nodes.map((node) => {
-							const serviceKey = getWorkspaceServiceKey(
-								node.serviceType,
-								node.serviceId,
-							);
-							const service = servicesByKey.get(serviceKey);
-							if (!service) return null;
-
-							const visible = visibleServiceKeys.has(serviceKey);
-							const isConnectSource =
-								connectSource?.serviceId === service.id &&
-								connectSource.serviceType === service.type;
-							const isBulkSelected = selectedBulkKeySet.has(serviceKey);
-							const linkCount = connections.filter(
-								(connection) =>
-									connection.sourceServiceId === service.id ||
-									connection.targetServiceId === service.id,
-							).length;
-
-							return (
-								<div
-									key={serviceKey}
-									className={cn(
-										"group absolute rounded-lg transition",
-										!visible && "pointer-events-none opacity-20",
-									)}
-									style={{
-										left: node.x,
-										top: node.y,
-										width: node.width,
-										height: node.height,
-									}}
-								>
-									<button
-										type="button"
-										onPointerDown={(event) => onNodePointerDown(event, node)}
-										onPointerMove={onNodePointerMove}
-										onPointerUp={onNodePointerUp}
-										onClick={() => selectOrConnectService(service)}
+								return (
+									<div
+										key={group.id}
 										className={cn(
-											"h-full w-full touch-none rounded-lg text-left outline-none transition",
-											isSelectionMode
-												? "cursor-pointer"
-												: "cursor-grab active:cursor-grabbing",
-											"focus-visible:ring-2 focus-visible:ring-ring",
+											"pointer-events-none absolute rounded-xl border border-dashed bg-background/35",
+											groupSelected
+												? "border-primary/80 bg-primary/5"
+												: "border-kumo-line",
 										)}
+										style={{
+											left: group.x,
+											top: group.y,
+											width: group.width,
+											height: group.height,
+										}}
 									>
-										<LayerCard
-											className={cn(
-												"relative h-full bg-background/95 shadow-sm transition hover:bg-background",
-												isConnectSource && "ring-2 ring-primary",
-												connectSource &&
-													!isConnectSource &&
-													"ring-1 ring-primary/30",
-												isBulkSelected && "ring-2 ring-primary",
-											)}
-										>
-											<div className="flex h-full flex-col gap-4">
-												<div className="flex items-start justify-between gap-4">
-													<div className="flex min-w-0 items-start gap-3">
-														<div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
-															<WorkspaceServiceIcon service={service} />
-														</div>
-														<div className="min-w-0">
-															<div className="flex items-center gap-2">
-																<span className="truncate font-medium">
-																	{service.name}
-																</span>
-																<Grip className="size-3 shrink-0 text-muted-foreground" />
-															</div>
-															<p className="truncate text-xs text-muted-foreground">
-																{serviceTypeLabels[service.type]}
-															</p>
-														</div>
-													</div>
-													<div className="flex shrink-0 items-center gap-1.5">
-														{isSelectionMode && (
-															<Badge>
-																{isBulkSelected ? "Selected" : "Select"}
-															</Badge>
-														)}
-														<StatusTooltip
-															status={service.status ?? undefined}
-														/>
-													</div>
-												</div>
-
-												<p className="line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
-													{service.description ||
-														serviceTypeDescriptions[service.type]}
+										<div className="pointer-events-auto absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-md border bg-background/90 px-2 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
+											<div className="min-w-0">
+												<p className="truncate font-medium text-foreground">
+													{group.title || `Service group ${group.index + 1}`}
 												</p>
-
-												<div className="mt-auto space-y-1 text-xs text-muted-foreground">
-													<div className="flex items-center justify-between gap-3">
-														<span className="flex min-w-0 items-center gap-1.5">
-															<Network className="size-3 shrink-0" />
-															<span className="truncate">Private runtime</span>
-														</span>
-														<span>{linkCount} links</span>
-													</div>
-													<div className="flex min-w-0 items-center gap-1.5">
-														<RefreshCw className="size-3 shrink-0" />
-														<span className="truncate">
-															{service.lastDeployAt
-																? `Deployed ${formatLastDeploy(service.lastDeployAt)}`
-																: "No deploys yet"}
-														</span>
-													</div>
+												<div className="flex flex-wrap gap-x-2 gap-y-0.5">
+													<span>{group.serviceCount} services</span>
+													<span>{group.connectionCount} links</span>
+													{group.runtimeCount > 0 && (
+														<span>{group.runtimeCount} runtimes</span>
+													)}
+													{group.dataCount > 0 && (
+														<span>{group.dataCount} data stores</span>
+													)}
 												</div>
 											</div>
-											<ServiceRuntimePulse
-												service={service}
-												linkCount={linkCount}
-											/>
-										</LayerCard>
-									</button>
-									{!isSelectionMode && (
-										<button
-											type="button"
-											aria-label={
-												isConnectSource
-													? `Cancel connection from ${service.name}`
-													: connectSource
-														? `Connect to ${service.name}`
-														: `Start connection from ${service.name}`
-											}
+											<button
+												type="button"
+												className="shrink-0 rounded border px-2 py-1 font-medium text-foreground transition hover:bg-muted"
+												onClick={() => selectServiceGroup(group.nodeKeys)}
+											>
+												{groupSelected ? "Selected" : "Select group"}
+											</button>
+										</div>
+									</div>
+								);
+							})}
+
+							<svg
+								className="pointer-events-none absolute inset-0"
+								width={canvasBounds.width}
+								height={canvasBounds.height}
+								aria-hidden="true"
+							>
+								<defs>
+									<marker
+										id="workspace-arrow"
+										viewBox="0 0 10 10"
+										refX="8"
+										refY="5"
+										markerWidth="6"
+										markerHeight="6"
+										orient="auto-start-reverse"
+									>
+										<path
+											d="M 0 0 L 10 5 L 0 10 z"
+											className="fill-muted-foreground"
+										/>
+									</marker>
+									<marker
+										id="workspace-preview-dot"
+										viewBox="0 0 10 10"
+										refX="5"
+										refY="5"
+										markerWidth="5"
+										markerHeight="5"
+									>
+										<circle cx="5" cy="5" r="4" className="fill-primary" />
+									</marker>
+								</defs>
+								{connections.map((connection) => {
+									const source = nodesByKey.get(
+										getWorkspaceServiceKey(
+											connection.sourceServiceType,
+											connection.sourceServiceId,
+										),
+									);
+									const target = nodesByKey.get(
+										getWorkspaceServiceKey(
+											connection.targetServiceType,
+											connection.targetServiceId,
+										),
+									);
+									if (!source || !target) return null;
+
+									const sourceVisible = visibleServiceKeys.has(
+										getWorkspaceServiceKey(
+											connection.sourceServiceType,
+											connection.sourceServiceId,
+										),
+									);
+									const targetVisible = visibleServiceKeys.has(
+										getWorkspaceServiceKey(
+											connection.targetServiceType,
+											connection.targetServiceId,
+										),
+									);
+
+									return (
+										<path
+											key={connection.connectionId}
+											d={connectionPath(source, target)}
 											className={cn(
-												"absolute -right-4 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground opacity-0 shadow-sm transition hover:text-foreground group-hover:opacity-100",
-												connectSource && "opacity-100",
-												isConnectSource && "border-primary text-primary",
+												"fill-none stroke-muted-foreground/60 stroke-2",
+												(!sourceVisible || !targetVisible) && "opacity-20",
 											)}
-											onClick={(event) => {
-												event.stopPropagation();
-												handleConnectionHandleClick(service);
-											}}
-										>
-											{isConnectSource ? (
-												<X className="size-4" />
-											) : (
-												<Cable className="size-4" />
-											)}
-										</button>
+											markerEnd="url(#workspace-arrow)"
+										/>
+									);
+								})}
+								{connectionPreview && (
+									<path
+										d={connectionPreview}
+										className="fill-none stroke-primary stroke-2 opacity-80"
+										strokeDasharray="8 8"
+										markerEnd="url(#workspace-preview-dot)"
+									/>
+								)}
+							</svg>
+
+							{connectSourceService && (
+								<div className="pointer-events-none absolute left-1/2 top-6 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-background/95 px-3 py-2 text-xs shadow-sm backdrop-blur">
+									<Cable className="size-4 text-primary" />
+									<span>
+										Connecting from{" "}
+										<strong className="font-medium">
+											{connectSourceService.name}
+										</strong>
+									</span>
+									<span className="text-muted-foreground">
+										Select a target service
+									</span>
+								</div>
+							)}
+
+							{services.length === 0 ? (
+								<div className="absolute left-1/2 top-1/2 flex w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 rounded-lg border bg-background/95 p-5 text-center shadow-sm backdrop-blur">
+									<div className="flex size-12 items-center justify-center rounded-md border bg-muted/30">
+										<FolderInput className="size-6 text-muted-foreground" />
+									</div>
+									<div className="space-y-1">
+										<p className="font-medium">Empty canvas</p>
+										<p className="text-sm text-muted-foreground">
+											Start with a runtime, database, compose stack, or
+											template.
+										</p>
+									</div>
+									{permissions?.service.create && (
+										<div className="flex flex-wrap justify-center gap-2">
+											<Button onClick={() => openCreateDialog("application")}>
+												<Folder className="size-4" />
+												New app
+											</Button>
+											<Button
+												variant="outline"
+												onClick={() => openDatabaseDialog("postgres")}
+											>
+												<PostgresqlIcon className="size-4" />
+												Postgres
+											</Button>
+											<Button
+												variant="outline"
+												onClick={() => openCreateDialog("compose")}
+											>
+												<CircuitBoard className="size-4" />
+												Compose
+											</Button>
+											<Button
+												variant="outline"
+												onClick={() => openCreateDialog("template")}
+											>
+												<PuzzleIcon className="size-4" />
+												Template
+											</Button>
+										</div>
 									)}
 								</div>
-							);
-						})}
+							) : null}
+
+							{nodes.map((node) => {
+								const serviceKey = getWorkspaceServiceKey(
+									node.serviceType,
+									node.serviceId,
+								);
+								const service = servicesByKey.get(serviceKey);
+								if (!service) return null;
+
+								const visible = visibleServiceKeys.has(serviceKey);
+								const isConnectSource =
+									connectSource?.serviceId === service.id &&
+									connectSource.serviceType === service.type;
+								const isBulkSelected = selectedBulkKeySet.has(serviceKey);
+								const linkCount = serviceLinkCounts.get(serviceKey) ?? 0;
+
+								return (
+									<div
+										key={serviceKey}
+										className={cn(
+											"group absolute rounded-lg transition",
+											!visible && "pointer-events-none opacity-20",
+										)}
+										style={{
+											left: node.x,
+											top: node.y,
+											width: node.width,
+											height: node.height,
+										}}
+									>
+										<button
+											type="button"
+											onPointerDown={(event) => onNodePointerDown(event, node)}
+											onPointerMove={onNodePointerMove}
+											onPointerUp={onNodePointerUp}
+											onClick={() => selectOrConnectService(service)}
+											className={cn(
+												"h-full w-full touch-none rounded-lg text-left outline-none transition",
+												isSelectionMode
+													? "cursor-pointer"
+													: "cursor-grab active:cursor-grabbing",
+												"focus-visible:ring-2 focus-visible:ring-ring",
+											)}
+										>
+											<LayerCard
+												className={cn(
+													"relative h-full bg-background/95 shadow-sm transition hover:bg-background",
+													isConnectSource && "ring-2 ring-primary",
+													connectSource &&
+														!isConnectSource &&
+														"ring-1 ring-primary/30",
+													isBulkSelected && "ring-2 ring-primary",
+												)}
+											>
+												<div className="flex h-full flex-col gap-4">
+													<div className="flex items-start justify-between gap-4">
+														<div className="flex min-w-0 items-start gap-3">
+															<div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
+																<WorkspaceServiceIcon service={service} />
+															</div>
+															<div className="min-w-0">
+																<div className="flex items-center gap-2">
+																	<span className="truncate font-medium">
+																		{service.name}
+																	</span>
+																	<Grip className="size-3 shrink-0 text-muted-foreground" />
+																</div>
+																<p className="truncate text-xs text-muted-foreground">
+																	{serviceTypeLabels[service.type]}
+																</p>
+															</div>
+														</div>
+														<div className="flex shrink-0 items-center gap-1.5">
+															{isSelectionMode && (
+																<Badge>
+																	{isBulkSelected ? "Selected" : "Select"}
+																</Badge>
+															)}
+															<StatusTooltip
+																status={service.status ?? undefined}
+															/>
+														</div>
+													</div>
+
+													<p className="line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
+														{service.description ||
+															serviceTypeDescriptions[service.type]}
+													</p>
+
+													<div className="mt-auto space-y-1 text-xs text-muted-foreground">
+														<div className="flex items-center justify-between gap-3">
+															<span className="flex min-w-0 items-center gap-1.5">
+																<Network className="size-3 shrink-0" />
+																<span className="truncate">
+																	Private runtime
+																</span>
+															</span>
+															<span>{linkCount} links</span>
+														</div>
+														<div className="flex min-w-0 items-center gap-1.5">
+															<RefreshCw className="size-3 shrink-0" />
+															<span className="truncate">
+																{service.lastDeployAt
+																	? `Deployed ${formatLastDeploy(service.lastDeployAt)}`
+																	: "No deploys yet"}
+															</span>
+														</div>
+													</div>
+												</div>
+												<ServiceRuntimePulse
+													service={service}
+													linkCount={linkCount}
+												/>
+											</LayerCard>
+										</button>
+										{!isSelectionMode && (
+											<button
+												type="button"
+												aria-label={
+													isConnectSource
+														? `Cancel connection from ${service.name}`
+														: connectSource
+															? `Connect to ${service.name}`
+															: `Start connection from ${service.name}`
+												}
+												className={cn(
+													"absolute -right-4 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground opacity-0 shadow-sm transition hover:text-foreground group-hover:opacity-100",
+													connectSource && "opacity-100",
+													isConnectSource && "border-primary text-primary",
+												)}
+												onClick={(event) => {
+													event.stopPropagation();
+													handleConnectionHandleClick(service);
+												}}
+											>
+												{isConnectSource ? (
+													<X className="size-4" />
+												) : (
+													<Cable className="size-4" />
+												)}
+											</button>
+										)}
+									</div>
+								);
+							})}
+						</div>
 					</div>
 				</div>
 			</div>
