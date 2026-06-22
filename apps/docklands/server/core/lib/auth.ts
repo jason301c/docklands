@@ -26,7 +26,27 @@ import { betterAuthSecret } from "./auth-secret";
 const isNextProductionBuild = () =>
 	process.env.NEXT_PHASE === "phase-production-build";
 
+// Resolve the Better Auth base URL.
+// - If BETTER_AUTH_URL is set (recommended for prod/VM installs that have a
+//   stable host or domain), use it so callback/verification links are absolute
+//   and correct.
+// - In development, default to localhost so local auth is deterministic and the
+//   "Base URL is not set" warning goes away.
+// - Otherwise (self-hosted prod without an explicit URL) leave it undefined so
+//   Better Auth keeps deriving the origin from the incoming request, which is
+//   the correct behavior for multi-host installs gated by trustedOrigins().
+const resolveBaseURL = (): string | undefined => {
+	if (process.env.BETTER_AUTH_URL) {
+		return process.env.BETTER_AUTH_URL;
+	}
+	if (process.env.NODE_ENV !== "production") {
+		return `http://localhost:${process.env.PORT || "3000"}`;
+	}
+	return undefined;
+};
+
 const { handler, api } = betterAuth({
+	baseURL: resolveBaseURL(),
 	database: drizzleAdapter(db, {
 		provider: "pg",
 		schema: schema,

@@ -152,17 +152,19 @@ export async function repairLegacySchema(sql: Sql) {
 		end $$;
 	`);
 
-	await sql.unsafe(`
+	await sql
+		.unsafe(`
 		update "schedule"
 		set "scheduleType" = 'runtimeWorker'
 		where "scheduleType"::text = 'server';
-	`).catch((error) => {
-		const code = getPostgresCode(error);
-		if (code === "42P01" || code === "42703") {
-			return;
-		}
-		throw error;
-	});
+	`)
+		.catch((error) => {
+			const code = getPostgresCode(error);
+			if (code === "42P01" || code === "42703") {
+				return;
+			}
+			throw error;
+		});
 }
 
 export async function adoptResetBaseline(

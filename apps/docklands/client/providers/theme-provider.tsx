@@ -77,7 +77,8 @@ export function ThemeProvider({
 		setSystemTheme(getSystemTheme());
 	}, [defaultTheme, storageKey]);
 
-	const resolvedTheme = theme === "system" && enableSystem ? systemTheme : theme;
+	const resolvedTheme =
+		theme === "system" && enableSystem ? systemTheme : theme;
 	const normalizedResolvedTheme =
 		resolvedTheme === "system" ? systemTheme : resolvedTheme;
 

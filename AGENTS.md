@@ -1,14 +1,12 @@
 # AGENTS.md
 
 @README.md
-@TRACKING.md
 
 This is Docklands: a fork focused on self-hosted deployment management. Treat the repository as a Bun workspace with separate deployable surfaces. Today only `apps/docklands` exists; later `apps/site` and `apps/docs` can be added as independent Astro deployables.
 
 ## AGENTS.md Scope
 
 - This root file owns repo-wide architecture, workspace commands, development modes, dependency notes, and branding.
-- `TRACKING.md` owns the current transformation backlog and recent verified checkpoints. Update it when a slice materially changes the product direction, architecture, or verification state.
 - Nested `AGENTS.md` files are intentionally disjoint. They should add only subtree-specific boundaries and should not copy root-level rules.
 - If guidance applies everywhere, keep it here. If guidance applies only to one subtree, keep it in the nearest nested `AGENTS.md`.
 
@@ -52,6 +50,17 @@ Key Docklands app versions after the dependency refresh:
 - Drizzle ORM plus Drizzle Zod
 - Better Auth
 - Vitest 4
+
+## Runtime And Tooling Split
+
+Bun and Node have distinct, non-overlapping roles. Keep them separated:
+
+- **Bun is the package manager and task runner.** Use Bun for `bun install`, `bun.lock`, and every `bun run <script>` / `bun --filter docklands <script>` entrypoint.
+- **Node 24 is the application runtime, in both development and production.** The dev server (`bun dev` runs `tsx server/server.ts` on Node), the build (`esbuild` targets `node24`, plus `next build`), and production (`node ... dist/*.mjs`, Docker base `node:24.4.0-slim`) all execute app code on Node, never on Bun's runtime. Bun is only ever the launcher.
+
+This split is deliberate. Docklands depends on native addons (`node-pty`, `ssh2`, `dockerode`, `bcrypt`) and ships on Node, so development must exercise the same runtime it deploys on. Do not switch the app runtime to Bun: no `bun --bun` for app processes and no `bun server/server.ts`. `bun --bun` is acceptable only as a temporary local escape hatch for the toolchain (typecheck/build) when a usable Node is unavailable; it is not how the app is meant to run.
+
+Pin Node with the repo `.nvmrc` (`24.4.0`). Use a version manager such as fnm (`eval "$(fnm env --use-on-cd --shell zsh)"`) so entering the repo selects Node 24 automatically. Avoid Homebrew's rolling `node`, which tracks the latest major and will drift past the supported `<26` range and break native module linkage.
 
 ## Development Model
 

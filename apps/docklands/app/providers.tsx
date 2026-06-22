@@ -10,11 +10,7 @@ import { Toaster } from "@/components/shared/toast";
 export const Providers = ({ children }: { children: ReactNode }) => {
 	return (
 		<TRPCReactProvider>
-			<ThemeProvider
-				attribute="data-mode"
-				defaultTheme="system"
-				enableSystem
-			>
+			<ThemeProvider attribute="data-mode" defaultTheme="system" enableSystem>
 				<NextTopLoader color="var(--color-kumo-brand)" />
 				<Toaster />
 				<SearchCommand />

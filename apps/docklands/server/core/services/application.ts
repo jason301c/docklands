@@ -398,7 +398,7 @@ export const deployPreviewApplication = async ({
 		owner: application?.owner || "",
 		repository: application?.repository || "",
 		issue_number: previewDeployment.pullRequestNumber,
-		comment_id: Number.parseInt(previewDeployment.pullRequestCommentId),
+		comment_id: Number.parseInt(previewDeployment.pullRequestCommentId, 10),
 		githubId: application?.githubId || "",
 	};
 	try {
@@ -513,7 +513,7 @@ export const rebuildPreviewApplication = async ({
 		owner: application?.owner || "",
 		repository: application?.repository || "",
 		issue_number: previewDeployment.pullRequestNumber,
-		comment_id: Number.parseInt(previewDeployment.pullRequestCommentId),
+		comment_id: Number.parseInt(previewDeployment.pullRequestCommentId, 10),
 		githubId: application?.githubId || "",
 	};
 

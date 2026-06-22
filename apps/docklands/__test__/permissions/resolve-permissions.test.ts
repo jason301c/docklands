@@ -78,8 +78,7 @@ describe("static roles", () => {
 
 		for (const [resource, actions] of Object.entries(statements)) {
 			for (const action of actions) {
-				const expected =
-					resource === "organization" && action === "delete" ? false : true;
+				const expected = !(resource === "organization" && action === "delete");
 				expect((perms as any)[resource][action]).toBe(expected);
 			}
 		}

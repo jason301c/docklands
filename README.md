@@ -14,7 +14,6 @@ Docklands is early and should be treated as a fork-in-progress.
 - Remaining upstream PRs are intentionally not mass-merged. Most need dedicated security or product review.
 - The primary project environment view is now a workspace canvas with persisted service layout, service connections, generated connection variables, service variables, deployments, domains, previews, topology grouping, and command-bar navigation.
 - The inherited list view remains available as a fallback while remaining bulk operations are migrated into the workspace surface.
-- Ongoing transformation work is tracked in [TRACKING.md](TRACKING.md).
 
 ## What It Does
 
@@ -54,6 +53,13 @@ Preferred route names in docs, navigation, and new links:
 Docklands is now organized as a small Bun workspace. The only app today is the
 self-hosted Docklands control plane in `apps/docklands`; future public landing
 and docs sites can be added as separate deployables under `apps/`.
+
+Bun and Node have separate jobs here: **Bun is the package manager and task
+runner**, while **Node 24 is the runtime that actually runs the app** in both
+development and production. Pin Node with the repo `.nvmrc` (`24.4.0`) using a
+version manager such as [fnm](https://github.com/Schniz/fnm) so the right Node
+is selected automatically; do not rely on Homebrew's rolling `node`, which will
+drift past the supported range.
 
 ```bash
 bun install --frozen-lockfile
