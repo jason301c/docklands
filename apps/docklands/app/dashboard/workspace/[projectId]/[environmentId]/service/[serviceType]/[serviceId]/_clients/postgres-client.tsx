@@ -1,11 +1,6 @@
 "use client";
 
-import { Button } from "@cloudflare/kumo/components/button";
-import { Label } from "@cloudflare/kumo/components/label";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
-import copy from "copy-to-clipboard";
-import { HelpCircle, ServerOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
@@ -20,11 +15,14 @@ import { ShowExternalPostgresCredentials } from "@/components/dashboard/postgres
 import { ShowGeneralPostgres } from "@/components/dashboard/postgres/general/show-general-postgres";
 import { ShowInternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-internal-postgres-credentials";
 import { UpdatePostgres } from "@/components/dashboard/postgres/update-postgres";
+import {
+	RuntimePlacementStatus,
+	RuntimeWorkerInactiveState,
+} from "@/components/dashboard/service/runtime-placement-status";
 import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/shared/show-database-advanced-settings";
 import { PostgresqlIcon } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import { toast } from "@/components/shared/toast";
 import {
 	workspaceEnvironmentPath,
 	workspaceServicePath,
@@ -92,51 +90,11 @@ const Postgresql = (props: {
 							</span>
 						</div>
 						<div className="flex flex-col h-fit w-fit gap-2">
-							<div className="flex flex-row h-fit w-fit gap-2">
-								<Button
-									type="button"
-									size="xs"
-									className="cursor-pointer"
-									onClick={() => {
-										const ip = data?.server?.ipAddress || serverIp;
-										if (ip) {
-											copy(ip);
-											toast.success("Runtime address copied");
-										}
-									}}
-									variant={
-										!data?.serverId
-											? "secondary"
-											: data?.server?.serverStatus === "active"
-												? "secondary"
-												: "destructive"
-									}
-								>
-									Runtime
-								</Button>
-								{data?.server?.serverStatus === "inactive" && (
-									<TooltipProvider delay={0}>
-										<Tooltip
-											content={
-												<>
-													<span>
-														This runtime is inactive. Re-enable runtime capacity
-														from Settings to run this service.
-													</span>
-												</>
-											}
-											className="z-[999] w-[300px]"
-											align="start"
-											side="top"
-											asChild
-										>
-											<Label className="break-all w-fit flex flex-row gap-1 items-center">
-												<HelpCircle className="size-4 text-muted-foreground" />
-											</Label>
-										</Tooltip>
-									</TooltipProvider>
-								)}
-							</div>
+							<RuntimePlacementStatus
+								fallbackIp={serverIp}
+								server={data?.server}
+								serverId={data?.serverId}
+							/>
 
 							<div className="flex flex-row gap-2 justify-end">
 								{permissions?.service.create && (
@@ -150,16 +108,7 @@ const Postgresql = (props: {
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						{data?.server?.serverStatus === "inactive" ? (
-							<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
-								<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
-									<ServerOff className="size-10 text-muted-foreground self-center" />
-									<span className="text-center text-base text-muted-foreground">
-										This service's runtime is currently marked inactive.
-										Re-enable runtime capacity from Settings to regain access to
-										this service.
-									</span>
-								</div>
-							</div>
+							<RuntimeWorkerInactiveState />
 						) : (
 							<div className="w-full">
 								<Tabs
