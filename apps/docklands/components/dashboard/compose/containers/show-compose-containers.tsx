@@ -178,7 +178,11 @@ const ContainerRow = ({
 					<DropdownMenu>
 						<DropdownMenu.Trigger
 							render={
-								<Button variant="ghost" className="h-8 w-8 p-0">
+								<Button
+									aria-label={`Open actions for ${container.name}`}
+									variant="ghost"
+									className="h-8 w-8 p-0"
+								>
 									{actionLoading ? (
 										<Loader2 className="h-4 w-4 animate-spin" />
 									) : (

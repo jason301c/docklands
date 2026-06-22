@@ -336,7 +336,7 @@ export const ShowServers = () => {
 																								}}
 																							>
 																								<Button
-																									aria-label="Delete"
+																									aria-label={`Delete worker ${server.name}`}
 																									variant="ghost"
 																									shape="square"
 																									className={`h-9 w-9 ${canDelete ? "text-destructive hover:text-destructive hover:bg-destructive/10" : "text-muted-foreground hover:bg-muted"}`}

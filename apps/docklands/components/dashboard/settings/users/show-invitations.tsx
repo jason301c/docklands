@@ -1,14 +1,14 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Table } from "@cloudflare/kumo/components/table";
 import copy from "copy-to-clipboard";
 import { format, isPast } from "date-fns";
 import { Loader2, Mail, MoreHorizontal, Users } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Table } from "@cloudflare/kumo/components/table";
+import { toast } from "@/components/shared/toast";
 import { AddInvitation } from "./add-invitation";
 
 export const ShowInvitations = () => {
@@ -27,9 +27,7 @@ export const ShowInvitations = () => {
 							<Mail className="size-6 text-muted-foreground self-center" />
 							Invitations
 						</h3>
-						<p>
-							Create invitations to your organization.
-						</p>
+						<p>Create invitations to your organization.</p>
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
@@ -55,11 +53,15 @@ export const ShowInvitations = () => {
 												<Table.Row>
 													<Table.Head className="w-[100px]">Email</Table.Head>
 													<Table.Head className="text-center">Role</Table.Head>
-													<Table.Head className="text-center">Status</Table.Head>
+													<Table.Head className="text-center">
+														Status
+													</Table.Head>
 													<Table.Head className="text-center">
 														Expires At
 													</Table.Head>
-													<Table.Head className="text-right">Actions</Table.Head>
+													<Table.Head className="text-right">
+														Actions
+													</Table.Head>
 												</Table.Row>
 											</Table.Header>
 											<Table.Body>
@@ -107,17 +109,21 @@ export const ShowInvitations = () => {
 
 															<Table.Cell className="text-right flex justify-end">
 																<DropdownMenu>
-																	<DropdownMenu.Trigger render={(
-
-																		<Button
-																			variant="ghost"
-																			className="h-8 w-8 p-0"
-																		>
-																			<span className="sr-only">Open menu</span>
-																			<MoreHorizontal className="h-4 w-4" />
-																		</Button>
-																	
-)} />
+																	<DropdownMenu.Trigger
+																		render={
+																			<Button
+																				variant="ghost"
+																				className="h-8 w-8 p-0"
+																				aria-label={`Open actions for invitation to ${invitation.email}`}
+																			>
+																				<span className="sr-only">
+																					Open actions for invitation to{" "}
+																					{invitation.email}
+																				</span>
+																				<MoreHorizontal className="h-4 w-4" />
+																			</Button>
+																		}
+																	/>
 																	<DropdownMenu.Content align="end">
 																		<DropdownMenu.Label>
 																			Actions

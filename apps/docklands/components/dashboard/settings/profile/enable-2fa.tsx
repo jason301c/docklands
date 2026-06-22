@@ -352,7 +352,7 @@ export const Enable2FA = () => {
 																content={<p>Copy</p>}
 																render={
 																	<Button
-																		aria-label="Copy"
+																		aria-label="Copy backup codes"
 																		type="button"
 																		variant="outline"
 																		shape="square"

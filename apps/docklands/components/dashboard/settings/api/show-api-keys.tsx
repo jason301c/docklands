@@ -1,11 +1,11 @@
-import { formatDistanceToNow } from "date-fns";
-import { Clock, KeyIcon, Tag, Trash2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { DialogAction } from "@/components/shared/dialog-action";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { formatDistanceToNow } from "date-fns";
+import { Clock, KeyIcon, Tag, Trash2 } from "lucide-react";
+import { api } from "@/client/api/trpc";
+import { DialogAction } from "@/components/shared/dialog-action";
+import { toast } from "@/components/shared/toast";
 import { AddApiKey } from "./add-api-key";
 
 export const ShowApiKeys = () => {
@@ -23,9 +23,7 @@ export const ShowApiKeys = () => {
 								<KeyIcon className="size-5" />
 								API/CLI Keys
 							</h3>
-							<p>
-								Generate and manage API keys to access the API/CLI
-							</p>
+							<p>Generate and manage API keys to access the API/CLI</p>
 						</div>
 					</div>
 					<div className="space-y-6">
@@ -89,7 +87,8 @@ export const ShowApiKeys = () => {
 													}
 												}}
 											>
-												<Button aria-label="Delete"
+												<Button
+													aria-label={`Delete API key ${apiKey.name}`}
 													variant="ghost"
 													shape="square"
 													loading={isLoadingDelete}

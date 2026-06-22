@@ -1,8 +1,8 @@
-import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import type { ColumnDef } from "@tanstack/react-table";
+import { ArrowUpDown, MoreHorizontal } from "lucide-react";
 import { ShowContainerConfig } from "../config/show-container-config";
 import { ShowDockerModalLogs } from "../logs/show-docker-modal-logs";
 import { ShowContainerMounts } from "../mounts/show-container-mounts";
@@ -102,14 +102,20 @@ export const columns: ColumnDef<Container>[] = [
 
 			return (
 				<DropdownMenu>
-					<DropdownMenu.Trigger render={(
-
-						<Button variant="ghost" className="h-8 w-8 p-0">
-							<span className="sr-only">Open menu</span>
-							<MoreHorizontal className="h-4 w-4" />
-						</Button>
-					
-)} />
+					<DropdownMenu.Trigger
+						render={
+							<Button
+								aria-label={`Open actions for ${container.name}`}
+								variant="ghost"
+								className="h-8 w-8 p-0"
+							>
+								<span className="sr-only">
+									Open actions for {container.name}
+								</span>
+								<MoreHorizontal className="h-4 w-4" />
+							</Button>
+						}
+					/>
 					<DropdownMenu.Content align="end">
 						<DropdownMenu.Label>Actions</DropdownMenu.Label>
 						<ShowDockerModalLogs

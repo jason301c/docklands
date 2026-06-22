@@ -104,7 +104,7 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 									</Button>
 								</DialogAction>
 								<Button
-									aria-label="Refresh"
+									aria-label="Refresh GPU status"
 									shape="square"
 									onClick={handleRefresh}
 									disabled={isChecking || isRefreshing}

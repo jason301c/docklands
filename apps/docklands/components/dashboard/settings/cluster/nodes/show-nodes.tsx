@@ -113,10 +113,14 @@ export const ShowNodes = ({ serverId }: Props) => {
 															<DropdownMenu.Trigger
 																render={
 																	<Button
+																		aria-label={`Open actions for ${node.Description.Hostname}`}
 																		variant="ghost"
 																		className="h-8 w-8 p-0"
 																	>
-																		<span className="sr-only">Open menu</span>
+																		<span className="sr-only">
+																			Open actions for{" "}
+																			{node.Description.Hostname}
+																		</span>
 																		<MoreHorizontal className="h-4 w-4" />
 																	</Button>
 																}
