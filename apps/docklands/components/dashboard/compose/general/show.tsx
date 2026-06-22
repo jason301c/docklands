@@ -1,6 +1,6 @@
-import { api } from "@/client/api/trpc";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { api } from "@/client/api/trpc";
 import { ComposeActions } from "./actions";
 import { ShowProviderFormCompose } from "./generic/show";
 
@@ -21,15 +21,13 @@ export const ShowGeneralCompose = ({ composeId }: Props) => {
 			<LayerCard className="bg-background">
 				<div>
 					<div className="flex flex-row gap-2 justify-between flex-wrap">
-						<h3 className="text-xl">Deploy Settings</h3>
+						<h3 className="text-xl">Build Settings</h3>
 						<Badge>
 							{data?.composeType === "docker-compose" ? "Compose" : "Stack"}
 						</Badge>
 					</div>
 
-					<p>
-						Create a compose file to deploy your compose
-					</p>
+					<p>Create a compose file to build your compose service.</p>
 				</div>
 				<div className="flex flex-col gap-4 flex-wrap">
 					<ComposeActions composeId={composeId} />

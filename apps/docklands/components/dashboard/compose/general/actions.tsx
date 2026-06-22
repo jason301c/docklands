@@ -1,11 +1,11 @@
-import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { DialogAction } from "@/components/shared/dialog-action";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { api } from "@/client/api/trpc";
+import { DialogAction } from "@/components/shared/dialog-action";
+import { toast } from "@/components/shared/toast";
 import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
 interface Props {
@@ -34,22 +34,22 @@ export const ComposeActions = ({ composeId }: Props) => {
 			<TooltipProvider delay={0}>
 				{canDeploy && (
 					<DialogAction
-						title="Deploy Compose"
-						description="Are you sure you want to deploy this compose?"
+						title="Run Compose Build"
+						description="Are you sure you want to queue a build for this compose service?"
 						type="default"
 						onClick={async () => {
 							await deploy({
 								composeId: composeId,
 							})
 								.then(() => {
-									toast.success("Compose deployed successfully");
+									toast.success("Compose build queued");
 									refetch();
 									router.push(
 										`/dashboard/project/${data?.environment.projectId}/environment/${data?.environmentId}/services/compose/${composeId}?tab=deployments`,
 									);
 								})
 								.catch(() => {
-									toast.error("Error deploying compose");
+									toast.error("Error queueing compose build");
 								});
 						}}
 					>
@@ -58,16 +58,22 @@ export const ComposeActions = ({ composeId }: Props) => {
 							loading={data?.composeStatus === "running"}
 							className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 						>
-							<Tooltip content={<>
+							<Tooltip
+								content={
+									<>
 										<p>
 											Downloads the source code and performs a complete build
 										</p>
-									</>} className="z-[60]"  asChild>
-									<div className="flex items-center">
-										<Rocket className="size-4 mr-1" />
-										Deploy
-									</div>
-								</Tooltip>
+									</>
+								}
+								className="z-[60]"
+								asChild
+							>
+								<div className="flex items-center">
+									<Rocket className="size-4 mr-1" />
+									Run Build
+								</div>
+							</Tooltip>
 						</Button>
 					</DialogAction>
 				)}
@@ -94,14 +100,20 @@ export const ComposeActions = ({ composeId }: Props) => {
 							loading={data?.composeStatus === "running"}
 							className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 						>
-							<Tooltip content={<>
+							<Tooltip
+								content={
+									<>
 										<p>Reload the compose without rebuilding it</p>
-									</>} className="z-[60]"  asChild>
-									<div className="flex items-center">
-										<RefreshCcw className="size-4 mr-1" />
-										Reload
-									</div>
-								</Tooltip>
+									</>
+								}
+								className="z-[60]"
+								asChild
+							>
+								<div className="flex items-center">
+									<RefreshCcw className="size-4 mr-1" />
+									Reload
+								</div>
+							</Tooltip>
 						</Button>
 					</DialogAction>
 				)}
@@ -130,16 +142,22 @@ export const ComposeActions = ({ composeId }: Props) => {
 								loading={isStarting}
 								className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 							>
-								<Tooltip content={<>
+								<Tooltip
+									content={
+										<>
 											<p>
 												Start the compose (requires a previous successful build)
 											</p>
-										</>} className="z-[60]"  asChild>
-										<div className="flex items-center">
-											<CheckCircle2 className="size-4 mr-1" />
-											Start
-										</div>
-									</Tooltip>
+										</>
+									}
+									className="z-[60]"
+									asChild
+								>
+									<div className="flex items-center">
+										<CheckCircle2 className="size-4 mr-1" />
+										Start
+									</div>
+								</Tooltip>
 							</Button>
 						</DialogAction>
 					) : (
@@ -164,14 +182,20 @@ export const ComposeActions = ({ composeId }: Props) => {
 								loading={isStopping}
 								className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 							>
-								<Tooltip content={<>
+								<Tooltip
+									content={
+										<>
 											<p>Stop the currently running compose</p>
-										</>} className="z-[60]"  asChild>
-										<div className="flex items-center">
-											<Ban className="size-4 mr-1" />
-											Stop
-										</div>
-									</Tooltip>
+										</>
+									}
+									className="z-[60]"
+									asChild
+								>
+									<div className="flex items-center">
+										<Ban className="size-4 mr-1" />
+										Stop
+									</div>
+								</Tooltip>
 							</Button>
 						</DialogAction>
 					))}
@@ -191,9 +215,9 @@ export const ComposeActions = ({ composeId }: Props) => {
 			</DockerTerminalModal>
 			{canUpdateService && (
 				<div className="flex flex-row items-center gap-2 rounded-md px-4 py-2 border">
-					<span className="text-sm font-medium">Autodeploy</span>
+					<span className="text-sm font-medium">Autobuild</span>
 					<Switch
-						aria-label="Toggle autodeploy"
+						aria-label="Toggle autobuild"
 						checked={data?.autoDeploy || false}
 						onCheckedChange={async (enabled) => {
 							await update({
@@ -201,11 +225,11 @@ export const ComposeActions = ({ composeId }: Props) => {
 								autoDeploy: enabled,
 							})
 								.then(async () => {
-									toast.success("Auto Deploy Updated");
+									toast.success("Auto Build Updated");
 									await refetch();
 								})
 								.catch(() => {
-									toast.error("Error updating Auto Deploy");
+									toast.error("Error updating Auto Build");
 								});
 						}}
 						className="flex flex-row gap-2 items-center data-[state=checked]:bg-primary"

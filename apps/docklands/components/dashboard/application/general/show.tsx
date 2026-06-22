@@ -1,3 +1,7 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	Ban,
 	CheckCircle2,
@@ -7,15 +11,11 @@ import {
 	Terminal,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { ShowBuildChooseForm } from "@/components/dashboard/application/build/show";
 import { ShowProviderForm } from "@/components/dashboard/application/general/generic/show";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
 interface Props {
@@ -50,28 +50,28 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 		<>
 			<LayerCard className="bg-background">
 				<div>
-					<h3 className="text-xl">Deploy Settings</h3>
+					<h3 className="text-xl">Build Settings</h3>
 				</div>
 				<div className="grid grid-cols-2 lg:flex lg:flex-row lg:flex-wrap gap-4">
 					<TooltipProvider delay={0}>
 						{canDeploy && (
 							<DialogAction
-								title="Deploy Application"
-								description="Are you sure you want to deploy this application?"
+								title="Run Application Build"
+								description="Are you sure you want to queue a build for this application?"
 								type="default"
 								onClick={async () => {
 									await deploy({
 										applicationId: applicationId,
 									})
 										.then(() => {
-											toast.success("Application deployed successfully");
+											toast.success("Application build queued");
 											refetch();
 											router.push(
 												`/dashboard/project/${data?.environment.projectId}/environment/${data?.environmentId}/services/application/${applicationId}?tab=deployments`,
 											);
 										})
 										.catch(() => {
-											toast.error("Error deploying application");
+											toast.error("Error queueing application build");
 										});
 								}}
 							>
@@ -80,17 +80,23 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 									loading={data?.applicationStatus === "running"}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip content={<>
+									<Tooltip
+										content={
+											<>
 												<p>
 													Downloads the source code and performs a complete
 													build
 												</p>
-											</>} className="z-[60]"  asChild>
-											<div className="flex items-center">
-												<Rocket className="size-4 mr-1" />
-												Deploy
-											</div>
-										</Tooltip>
+											</>
+										}
+										className="z-[60]"
+										asChild
+									>
+										<div className="flex items-center">
+											<Rocket className="size-4 mr-1" />
+											Run Build
+										</div>
+									</Tooltip>
 								</Button>
 							</DialogAction>
 						)}
@@ -118,14 +124,20 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 									loading={isReloading}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip content={<>
+									<Tooltip
+										content={
+											<>
 												<p>Reload the application without rebuilding it</p>
-											</>} className="z-[60]"  asChild>
-											<div className="flex items-center">
-												<RefreshCcw className="size-4 mr-1" />
-												Reload
-											</div>
-										</Tooltip>
+											</>
+										}
+										className="z-[60]"
+										asChild
+									>
+										<div className="flex items-center">
+											<RefreshCcw className="size-4 mr-1" />
+											Reload
+										</div>
+									</Tooltip>
 								</Button>
 							</DialogAction>
 						)}
@@ -152,17 +164,23 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 									loading={data?.applicationStatus === "running"}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip content={<>
+									<Tooltip
+										content={
+											<>
 												<p>
 													Only rebuilds the application without downloading new
 													code
 												</p>
-											</>} className="z-[60]"  asChild>
-											<div className="flex items-center">
-												<Hammer className="size-4 mr-1" />
-												Rebuild
-											</div>
-										</Tooltip>
+											</>
+										}
+										className="z-[60]"
+										asChild
+									>
+										<div className="flex items-center">
+											<Hammer className="size-4 mr-1" />
+											Rebuild
+										</div>
+									</Tooltip>
 								</Button>
 							</DialogAction>
 						)}
@@ -190,17 +208,23 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 									loading={isStarting}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip content={<>
+									<Tooltip
+										content={
+											<>
 												<p>
 													Start the application (requires a previous successful
 													build)
 												</p>
-											</>} className="z-[60]"  asChild>
-											<div className="flex items-center">
-												<CheckCircle2 className="size-4 mr-1" />
-												Start
-											</div>
-										</Tooltip>
+											</>
+										}
+										className="z-[60]"
+										asChild
+									>
+										<div className="flex items-center">
+											<CheckCircle2 className="size-4 mr-1" />
+											Start
+										</div>
+									</Tooltip>
 								</Button>
 							</DialogAction>
 						) : canDeploy ? (
@@ -225,14 +249,20 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 									loading={isStopping}
 									className="flex items-center gap-1.5 group focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip content={<>
+									<Tooltip
+										content={
+											<>
 												<p>Stop the currently running application</p>
-											</>} className="z-[60]"  asChild>
-											<div className="flex items-center">
-												<Ban className="size-4 mr-1" />
-												Stop
-											</div>
-										</Tooltip>
+											</>
+										}
+										className="z-[60]"
+										asChild
+									>
+										<div className="flex items-center">
+											<Ban className="size-4 mr-1" />
+											Stop
+										</div>
+									</Tooltip>
 								</Button>
 							</DialogAction>
 						) : null}
@@ -251,9 +281,9 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 					</DockerTerminalModal>
 					{canUpdateService && (
 						<div className="flex flex-row items-center gap-2 justify-between rounded-md px-4 py-2 border col-span-2 md:col-span-1">
-							<span className="text-sm font-medium">Autodeploy</span>
+							<span className="text-sm font-medium">Autobuild</span>
 							<Switch
-								aria-label="Toggle autodeploy"
+								aria-label="Toggle autobuild"
 								checked={data?.autoDeploy || false}
 								onCheckedChange={async (enabled) => {
 									await update({
@@ -261,11 +291,11 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 										autoDeploy: enabled,
 									})
 										.then(async () => {
-											toast.success("Auto Deploy Updated");
+											toast.success("Auto Build Updated");
 											await refetch();
 										})
 										.catch(() => {
-											toast.error("Error updating Auto Deploy");
+											toast.error("Error updating Auto Build");
 										});
 								}}
 								className="flex flex-row gap-2 items-center data-[state=checked]:bg-primary"
