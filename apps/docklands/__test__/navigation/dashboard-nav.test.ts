@@ -1,0 +1,125 @@
+import { describe, expect, it } from "vitest";
+import {
+	createMenuForAuthUser,
+	findActiveNavItem,
+	isActiveRoute,
+	type Menu,
+} from "@/shared/dashboard-nav";
+
+const fullPermissions = {
+	certificate: { read: true },
+	deployment: { read: true },
+	destination: { read: true },
+	docker: { read: true },
+	gitProviders: { read: true },
+	member: { read: true },
+	monitoring: { read: true },
+	notification: { read: true },
+	organization: { update: true },
+	registry: { read: true },
+	server: { read: true },
+	sshKeys: { read: true },
+	tag: { read: true },
+	traefikFiles: { read: true },
+} as const;
+
+const menuTitles = (menu: Menu) => ({
+	home: menu.home.map((item) => item.title),
+	settings: menu.settings.map((item) => item.title),
+	runtime: (() => {
+		const runtime = menu.settings.find((item) => item.title === "Runtime");
+		if (runtime?.isSingle !== false) return [];
+		return runtime.items.map((item) => item.title);
+	})(),
+});
+
+describe("dashboard nav", () => {
+	it("exposes the Railway-style self-hosted workspace labels", () => {
+		const menu = createMenuForAuthUser({
+			permissions: fullPermissions as any,
+			isCloud: false,
+		});
+
+		expect(menuTitles(menu)).toEqual({
+			home: ["Canvas", "Projects", "Deployments", "Automations"],
+			settings: [
+				"Networking",
+				"Profile",
+				"Builders",
+				"Users",
+				"SSH Keys",
+				"Tags",
+				"Git Providers",
+				"Registry",
+				"Storage",
+				"Certificates",
+				"Nodes",
+				"Notifications",
+				"Runtime",
+			],
+			runtime: [
+				"Capacity",
+				"Containers",
+				"Cluster",
+				"Proxy Requests",
+				"Ingress Files",
+				"Metrics",
+			],
+		});
+	});
+
+	it("keeps VM-only runtime controls out of cloud mode", () => {
+		const menu = createMenuForAuthUser({
+			permissions: fullPermissions as any,
+			isCloud: true,
+		});
+		const titles = menuTitles(menu);
+
+		expect(titles.settings).not.toContain("Networking");
+		expect(titles.settings).not.toContain("Builders");
+		expect(titles.runtime).not.toContain("Proxy Requests");
+		expect(titles.runtime).not.toContain("Metrics");
+		expect(titles.settings).toContain("Profile");
+		expect(titles.runtime).toEqual([
+			"Capacity",
+			"Containers",
+			"Cluster",
+			"Ingress Files",
+		]);
+	});
+
+	it("treats project list and project detail routes as one active area", () => {
+		expect(
+			isActiveRoute({
+				itemUrl: "/dashboard/projects",
+				pathname: "/dashboard/project/project_1/environment/env_1",
+			}),
+		).toBe(true);
+		expect(
+			isActiveRoute({
+				itemUrl: "/dashboard/projects",
+				pathname: "/dashboard/projector",
+			}),
+		).toBe(false);
+	});
+
+	it("finds active nested runtime items for breadcrumbs", () => {
+		const menu = createMenuForAuthUser({
+			permissions: fullPermissions as any,
+			isCloud: false,
+		});
+
+		expect(
+			findActiveNavItem(
+				[...menu.home, ...menu.settings],
+				"/dashboard/host-metrics",
+			)?.title,
+		).toBe("Metrics");
+		expect(
+			findActiveNavItem(
+				[...menu.home, ...menu.settings],
+				"/dashboard/container-runtime",
+			)?.title,
+		).toBe("Containers");
+	});
+});
