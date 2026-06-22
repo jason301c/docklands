@@ -126,7 +126,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 							className="w-full overflow-auto"
 							tabs={[
 								{ value: "ssh-keys", label: "SSH Keys" },
-								{ value: "deployments", label: "Builds" },
+								{ value: "deployments", label: "Deployments" },
 								{ value: "validate", label: "Validate" },
 								...(!isBuildServer
 									? [

@@ -66,6 +66,11 @@ describe("dashboard nav", () => {
 				"Metrics",
 			],
 		});
+		expect(
+			menu.home.find((item) => item.title === "Deployments"),
+		).toMatchObject({
+			url: "/dashboard/deployments",
+		});
 	});
 
 	it("keeps VM-only runtime controls out of cloud mode", () => {

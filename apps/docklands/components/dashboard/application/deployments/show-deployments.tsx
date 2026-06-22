@@ -113,19 +113,18 @@ export const ShowDeployments = ({
 		return `${truncated}...`;
 	};
 
-	// Check for stuck deployment (more than 9 minutes) - only for the most recent deployment
+	// Check for stuck deployment, only for the most recent deployment.
 	const stuckDeployment = useMemo(() => {
 		if (!isCloud || !deployments || deployments.length === 0) return null;
 
 		const now = Date.now();
-		const NINE_MINUTES = 10 * 60 * 1000; // 9 minutes in milliseconds
+		const TEN_MINUTES = 10 * 60 * 1000;
 
 		// Get the most recent deployment (first in the list since they're sorted by date)
 		const mostRecentDeployment = deployments[0];
 
 		if (
-			!mostRecentDeployment ||
-			mostRecentDeployment.status !== "running" ||
+			mostRecentDeployment?.status !== "running" ||
 			!mostRecentDeployment.startedAt
 		) {
 			return null;
@@ -134,7 +133,7 @@ export const ShowDeployments = ({
 		const startTime = new Date(mostRecentDeployment.startedAt).getTime();
 		const elapsed = now - startTime;
 
-		return elapsed > NINE_MINUTES ? mostRecentDeployment : null;
+		return elapsed > TEN_MINUTES ? mostRecentDeployment : null;
 	}, [isCloud, deployments]);
 	useEffect(() => {
 		setUrl(document.location.origin);
@@ -144,8 +143,8 @@ export const ShowDeployments = ({
 		<LayerCard className="bg-background border-none">
 			<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 				<div className="flex flex-col gap-2">
-					<h3 className="text-xl">Builds</h3>
-					<p>See the last 10 builds for this {type}</p>
+					<h3 className="text-xl">Deployments</h3>
+					<p>See the last 10 deployments for this {type}</p>
 				</div>
 				<div className="flex flex-row items-center flex-wrap gap-2">
 					{(type === "application" || type === "compose") && (

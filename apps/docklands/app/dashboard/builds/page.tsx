@@ -1,7 +1,5 @@
-import { requirePermission } from "@/server/web/app-auth";
-import ClientPage from "./_client";
+import { redirect } from "next/navigation";
 
-export default async function Page() {
-	await requirePermission("deployment", "read", "/dashboard/workspace");
-	return <ClientPage />;
+export default function Page() {
+	redirect("/dashboard/deployments");
 }

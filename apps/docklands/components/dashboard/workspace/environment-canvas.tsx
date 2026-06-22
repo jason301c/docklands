@@ -528,10 +528,10 @@ const getServiceSettingsHref = (
 ) =>
 	`/dashboard/project/${projectId}/environment/${environmentId}/services/${service.type}/${service.id}`;
 
-const formatLastBuild = (lastDeployAt?: string | null) =>
+const formatLastDeployment = (lastDeployAt?: string | null) =>
 	lastDeployAt
 		? formatDistanceToNow(new Date(lastDeployAt), { addSuffix: true })
-		: "No builds yet";
+		: "No deployments yet";
 
 const getDatabaseBackupType = (service: WorkspaceService) =>
 	databaseBackupServiceTypes.has(service.type)
@@ -921,7 +921,7 @@ export const EnvironmentCanvas = ({
 		...(selectedServiceModel &&
 		deploymentServiceTypes.has(selectedServiceModel.type) &&
 		permissions?.deployment.read
-			? [{ value: "deployments", label: "Builds" }]
+			? [{ value: "deployments", label: "Deployments" }]
 			: []),
 		...(selectedServiceModel &&
 		deploymentServiceTypes.has(selectedServiceModel.type) &&
@@ -3470,8 +3470,8 @@ export const EnvironmentCanvas = ({
 															<RefreshCw className="size-3 shrink-0" />
 															<span className="truncate">
 																{service.lastDeployAt
-																	? `Built ${formatLastBuild(service.lastDeployAt)}`
-																	: "No builds yet"}
+																	? `Deployed ${formatLastDeployment(service.lastDeployAt)}`
+																	: "No deployments yet"}
 															</span>
 														</div>
 													</div>
@@ -3609,9 +3609,11 @@ export const EnvironmentCanvas = ({
 												</span>
 											</div>
 											<div className="flex items-center justify-between gap-4">
-												<span>Last build</span>
+												<span>Last deployment</span>
 												<span className="truncate">
-													{formatLastBuild(selectedServiceModel.lastDeployAt)}
+													{formatLastDeployment(
+														selectedServiceModel.lastDeployAt,
+													)}
 												</span>
 											</div>
 										</div>

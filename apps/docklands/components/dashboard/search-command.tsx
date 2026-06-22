@@ -170,10 +170,10 @@ export const SearchCommand = () => {
 				onSelect: () => navigate("/dashboard/projects"),
 			},
 			{
-				id: "app-builds",
-				title: "Builds",
-				searchText: "builds deployments releases history worker queue",
-				onSelect: () => navigate("/dashboard/builds"),
+				id: "app-deployments",
+				title: "Deployments",
+				searchText: "deployments builds releases history worker queue",
+				onSelect: () => navigate("/dashboard/deployments"),
 			},
 			{
 				id: "app-automations",

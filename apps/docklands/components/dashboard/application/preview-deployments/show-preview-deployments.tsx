@@ -188,7 +188,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 																className="gap-2"
 															>
 																<RocketIcon className="size-4" />
-																Builds
+																Deployments
 															</Button>
 														</ShowDeploymentsModal>
 

@@ -86,7 +86,7 @@ export const DASHBOARD_MENU: Menu = {
 		{
 			isSingle: true,
 			title: "Deployments",
-			url: "/dashboard/builds",
+			url: "/dashboard/deployments",
 			icon: Rocket,
 			isEnabled: ({ permissions }) => !!permissions?.deployment.read,
 		},

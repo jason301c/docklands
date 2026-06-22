@@ -13,12 +13,12 @@ function isValidTab(t: string): t is TabValue {
 	return TAB_VALUES.includes(t as TabValue);
 }
 
-function BuildsPage() {
+function DeploymentsPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const tabParam = searchParams?.get("tab");
 	const tab =
-		tabParam === "deployments"
+		tabParam === "builds"
 			? "history"
 			: tabParam && isValidTab(tabParam)
 				? tabParam
@@ -26,7 +26,7 @@ function BuildsPage() {
 
 	const setTab = (value: string) => {
 		if (!isValidTab(value)) return;
-		router.replace(`/dashboard/builds?tab=${value}`, { scroll: false });
+		router.replace(`/dashboard/deployments?tab=${value}`, { scroll: false });
 	};
 
 	return (
@@ -37,9 +37,9 @@ function BuildsPage() {
 						<div>
 							<h3 className="flex items-center gap-2 text-xl font-bold">
 								<Rocket className="size-5" />
-								Builds
+								Deployments
 							</h3>
-							<p>Build history and worker queue across every service.</p>
+							<p>Deployment history and worker queue across every service.</p>
 						</div>
 					</div>
 					<Tabs
@@ -67,4 +67,4 @@ function BuildsPage() {
 	);
 }
 
-export default BuildsPage;
+export default DeploymentsPage;

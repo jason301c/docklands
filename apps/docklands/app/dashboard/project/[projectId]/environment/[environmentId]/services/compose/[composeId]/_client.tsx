@@ -88,7 +88,7 @@ const Service = (props: {
 			: null,
 		permissions?.domain.read ? { value: "domains", label: "Domains" } : null,
 		permissions?.deployment.read
-			? { value: "deployments", label: "Builds" }
+			? { value: "deployments", label: "Deployments" }
 			: null,
 		permissions?.service.read
 			? { value: "containers", label: "Containers" }
