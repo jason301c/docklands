@@ -72,7 +72,7 @@ export const ToggleDockerCleanup = ({ serverId }: Props) => {
 									rel="noopener noreferrer"
 									className="underline text-primary"
 								>
-									Schedule Jobs
+									Automations
 								</a>{" "}
 								on your ingress runtime or remote workers.
 							</p>

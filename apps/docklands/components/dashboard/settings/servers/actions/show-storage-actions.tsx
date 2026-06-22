@@ -58,7 +58,7 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						}
 						variant="outline"
 					>
-						Space
+						Storage
 					</Button>
 				}
 			/>
