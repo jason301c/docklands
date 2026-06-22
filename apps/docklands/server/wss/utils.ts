@@ -65,6 +65,9 @@ export const isValidShell = (shell: string): boolean => {
 	return allowedShells.includes(shell);
 };
 
+export const getRuntimeWorkerIdParam = (url: URL) =>
+	url.searchParams.get("runtimeWorkerId") ?? url.searchParams.get("serverId");
+
 export const getShell = () => {
 	if (IS_CLOUD) {
 		return "NO_AVAILABLE";

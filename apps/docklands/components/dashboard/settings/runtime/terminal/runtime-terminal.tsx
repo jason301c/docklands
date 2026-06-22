@@ -44,7 +44,7 @@ export const RuntimeTerminal: React.FC<Props> = ({ id, serverId }) => {
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 
 		const urlParams = new URLSearchParams();
-		urlParams.set("serverId", serverId);
+		urlParams.set("runtimeWorkerId", serverId);
 
 		if (serverId === "local") {
 			const { port, username } = getLocalRuntimeTerminalData();

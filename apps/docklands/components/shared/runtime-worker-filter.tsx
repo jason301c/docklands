@@ -24,7 +24,10 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 		api.settings.isCloud.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
-	const queryServerId = searchParams?.get("serverId") ?? undefined;
+	const queryServerId =
+		searchParams?.get("runtimeWorkerId") ??
+		searchParams?.get("serverId") ??
+		undefined;
 
 	const selectedServer = servers?.find(
 		(server) => server.serverId === queryServerId,
@@ -38,10 +41,11 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 
 	const setServerId = (value: string) => {
 		const query = new URLSearchParams(searchParams?.toString() ?? "");
+		query.delete("serverId");
 		if (value === LOCAL_RUNTIME_WORKER) {
-			query.delete("serverId");
+			query.delete("runtimeWorkerId");
 		} else {
-			query.set("serverId", value);
+			query.set("runtimeWorkerId", value);
 		}
 		const suffix = query.toString();
 		router.replace(suffix ? `${currentPathname}?${suffix}` : currentPathname, {

@@ -153,7 +153,7 @@ export const DockerLogsId: React.FC<Props> = ({
 		});
 
 		if (serverId) {
-			params.append("serverId", serverId);
+			params.append("runtimeWorkerId", serverId);
 		}
 
 		const wsUrl = `${protocol}//${

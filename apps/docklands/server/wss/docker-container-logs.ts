@@ -6,6 +6,7 @@ import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { findServerById } from "@/server/core/services/server";
 import {
+	getRuntimeWorkerIdParam,
 	getShell,
 	isValidContainerId,
 	isValidSearch,
@@ -38,7 +39,7 @@ export const setupDockerContainerLogsWebSocketServer = (
 		const tail = url.searchParams.get("tail") ?? "100";
 		const search = url.searchParams.get("search") ?? "";
 		const since = url.searchParams.get("since") ?? "all";
-		const serverId = url.searchParams.get("serverId");
+		const serverId = getRuntimeWorkerIdParam(url);
 		const runType = url.searchParams.get("runType");
 		const { user, session } = await validateRequest(req);
 

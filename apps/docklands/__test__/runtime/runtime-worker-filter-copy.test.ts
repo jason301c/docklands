@@ -23,6 +23,8 @@ describe("runtime worker filter copy", () => {
 		expect(source).toContain("Runtime workers");
 		expect(source).toContain("No runtime workers yet");
 		expect(source).toContain("Local runtime worker");
+		expect(source).toContain('"runtimeWorkerId"');
+		expect(source).not.toContain('query.set("serverId"');
 		expect(source).not.toContain("ServerFilter");
 		expect(source).not.toContain("DOCKLANDS_SERVER");
 		expect(source).not.toContain("server-filter");
@@ -62,5 +64,23 @@ describe("runtime worker filter copy", () => {
 				),
 			),
 		).toBe(false);
+	});
+
+	it("emits runtime-worker query params for websocket clients", () => {
+		const websocketClients = [
+			"components/dashboard/settings/runtime/terminal/runtime-terminal.tsx",
+			"components/dashboard/container-runtime/terminal/docker-terminal.tsx",
+			"components/dashboard/container-runtime/logs/docker-logs-id.tsx",
+			"components/dashboard/application/deployments/show-deployment.tsx",
+		];
+
+		for (const client of websocketClients) {
+			const source = sourceFile(client);
+
+			expect(source).toContain("runtimeWorkerId");
+			expect(source).not.toContain('urlParams.set("serverId"');
+			expect(source).not.toContain('params.append("serverId"');
+			expect(source).not.toContain("&serverId=");
+		}
 	});
 });

@@ -7,6 +7,7 @@ import { validateRequest } from "@/server/core/lib/auth";
 import { readValidDirectory } from "@/server/core/runtime/host";
 import { findServerById } from "@/server/core/services/server";
 import { encodeBase64 } from "@/server/core/utils/docker/utils";
+import { getRuntimeWorkerIdParam } from "./utils";
 
 export const setupDeploymentLogsWebSocketServer = (
 	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
@@ -29,7 +30,7 @@ export const setupDeploymentLogsWebSocketServer = (
 	wssTerm.on("connection", async (ws, req) => {
 		const url = new URL(req.url || "", `http://${req.headers.host}`);
 		const logPath = url.searchParams.get("logPath");
-		const serverId = url.searchParams.get("serverId");
+		const serverId = getRuntimeWorkerIdParam(url);
 		const { user, session } = await validateRequest(req);
 
 		// Generate unique connection ID for tracking

@@ -5,7 +5,11 @@ import { WebSocketServer } from "ws";
 import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { findServerById } from "@/server/core/services/server";
-import { isValidContainerId, isValidShell } from "./utils";
+import {
+	getRuntimeWorkerIdParam,
+	isValidContainerId,
+	isValidShell,
+} from "./utils";
 
 export const setupDockerContainerTerminalWebSocketServer = (
 	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
@@ -30,7 +34,7 @@ export const setupDockerContainerTerminalWebSocketServer = (
 		const url = new URL(req.url || "", `http://${req.headers.host}`);
 		const containerId = url.searchParams.get("containerId");
 		const activeWay = url.searchParams.get("activeWay");
-		const serverId = url.searchParams.get("serverId");
+		const serverId = getRuntimeWorkerIdParam(url);
 		const { user, session } = await validateRequest(req);
 
 		if (!containerId) {

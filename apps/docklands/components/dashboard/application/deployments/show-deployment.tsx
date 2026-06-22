@@ -50,7 +50,7 @@ export const ShowDeployment = ({
 		setData("");
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 
-		const wsUrl = `${protocol}//${window.location.host}/listen-deployment?logPath=${logPath}${serverId ? `&serverId=${serverId}` : ""}`;
+		const wsUrl = `${protocol}//${window.location.host}/listen-deployment?logPath=${logPath}${serverId ? `&runtimeWorkerId=${serverId}` : ""}`;
 		const ws = new WebSocket(wsUrl);
 		wsRef.current = ws; // Store WebSocket instance in ref
 
@@ -72,7 +72,7 @@ export const ShowDeployment = ({
 				wsRef.current = null;
 			}
 		};
-	}, [logPath, open]);
+	}, [logPath, open, serverId]);
 
 	useEffect(() => {
 		const logs = parseLogs(data);

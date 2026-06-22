@@ -5,7 +5,7 @@ import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { getDockerHost } from "@/server/core/runtime/docker";
 import { findServerById } from "@/server/core/services/server";
-import { setupLocalServerSSHKey } from "./utils";
+import { getRuntimeWorkerIdParam, setupLocalServerSSHKey } from "./utils";
 
 const COMMAND_TO_ALLOW_LOCAL_ACCESS = `
 # ----------------------------------------
@@ -42,7 +42,7 @@ export const setupTerminalWebSocketServer = (
 
 	wssTerm.on("connection", async (ws, req) => {
 		const url = new URL(req.url || "", `http://${req.headers.host}`);
-		const serverId = url.searchParams.get("serverId");
+		const serverId = getRuntimeWorkerIdParam(url);
 		const { user, session } = await validateRequest(req);
 		if (!user || !session || !serverId) {
 			ws.close();

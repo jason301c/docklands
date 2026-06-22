@@ -1,10 +1,33 @@
 import { describe, expect, it } from "vitest";
 import {
+	getRuntimeWorkerIdParam,
 	isValidContainerId,
 	isValidSearch,
 	isValidSince,
 	isValidTail,
 } from "../../server/wss/utils";
+
+describe("getRuntimeWorkerIdParam", () => {
+	it("prefers runtimeWorkerId over legacy serverId", () => {
+		const url = new URL(
+			"http://docklands.test/terminal?serverId=legacy&runtimeWorkerId=worker_1",
+		);
+
+		expect(getRuntimeWorkerIdParam(url)).toBe("worker_1");
+	});
+
+	it("keeps accepting legacy serverId", () => {
+		const url = new URL("http://docklands.test/terminal?serverId=legacy");
+
+		expect(getRuntimeWorkerIdParam(url)).toBe("legacy");
+	});
+
+	it("returns null when no runtime worker query is present", () => {
+		const url = new URL("http://docklands.test/terminal");
+
+		expect(getRuntimeWorkerIdParam(url)).toBeNull();
+	});
+});
 
 describe("isValidTail (docker-container-logs)", () => {
 	it("accepts valid numeric tail values", () => {
