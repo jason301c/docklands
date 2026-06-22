@@ -13,6 +13,7 @@ const buildCpus = configuredBuildCpus > 0 ? configuredBuildCpus : 4;
 const nextConfig = {
 	reactStrictMode: true,
 	allowedDevOrigins: ["0.0.0.0", "127.0.0.1"],
+	turbopack: {},
 	experimental: {
 		cpus: buildCpus,
 	},

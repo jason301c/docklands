@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Rehome container runtime components
+- Latest checkpoint: Make Turbopack explicit in Next config
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -22,7 +22,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Added nested `AGENTS.md` files and clarified app/server/tools boundaries.
 - Updated dependencies to the current major stack, including Next 16, React 19, TypeScript 6, Tailwind 4, Biome 2, tRPC 11, and Vitest 4.
 - Converted the workspace to Bun 1.3.14 with an isolated linker, `bun.lock`, Bun-first scripts, and trusted dependency controls.
-- Removed Webpack opt-out paths; Next 16 builds now use the default Turbopack path in local and Docker builds, and the custom Next server explicitly selects Turbopack.
+- Removed Webpack opt-out paths; Next 16 builds now use the default Turbopack path in local and Docker builds, the app config declares `turbopack: {}`, and the custom Next server explicitly selects Turbopack.
 - Hardened Docker packaging around Bun/Node 24 native dependency builds, runtime env injection, and `.env` exclusion from the build context.
 - Baseline before the Bun migration: typecheck passed in 14.65s, non-real Vitest passed in 6.39s, and production build passed in 30.45s.
 - Converted the API surface to App Router route handlers, with old webhook/deploy callback logic wrapped through compatibility helpers where risky.
@@ -106,6 +106,10 @@ git diff --check
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`
   - `bun --filter docklands build`
+- Current Turbopack config checkpoint
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands build-next`
 
 ## Open Questions
 
