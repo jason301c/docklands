@@ -1,6 +1,5 @@
 "use client";
 
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { Rocket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -32,42 +31,38 @@ function BuildsPage() {
 
 	return (
 		<div className="w-full">
-			<LayerCard className="h-full bg-sidebar p-2.5 rounded-xl min-h-[45vh]">
-				<div className="rounded-xl bg-background shadow-md h-full">
-					<div>
-						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-							<div>
-								<h3 className="text-xl font-bold flex items-center gap-2">
-									<Rocket className="size-5" />
-									Builds
-								</h3>
-								<p>Build history and worker queue across every service.</p>
-							</div>
+			<div className="min-h-[45vh] rounded-lg border bg-background p-6">
+				<div>
+					<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+						<div>
+							<h3 className="flex items-center gap-2 text-xl font-bold">
+								<Rocket className="size-5" />
+								Builds
+							</h3>
+							<p>Build history and worker queue across every service.</p>
 						</div>
-						<Tabs
-							value={tab}
-							onValueChange={(value) =>
-								value !== null && setTab(value as never)
-							}
-							className="mt-2 w-full"
-							tabs={[
-								{ value: "history", label: "History" },
-								{ value: "queue", label: "Worker queue" },
-							]}
-						/>
-						{tab === "history" && (
-							<div className="mt-0 pt-4">
-								<ShowBuildsTable />
-							</div>
-						)}
-						{tab === "queue" && (
-							<div className="mt-0 pt-4">
-								<ShowQueueTable />
-							</div>
-						)}
 					</div>
+					<Tabs
+						value={tab}
+						onValueChange={(value) => value !== null && setTab(value as never)}
+						className="mt-2 w-full"
+						tabs={[
+							{ value: "history", label: "History" },
+							{ value: "queue", label: "Worker queue" },
+						]}
+					/>
+					{tab === "history" && (
+						<div className="mt-0 pt-4">
+							<ShowBuildsTable />
+						</div>
+					)}
+					{tab === "queue" && (
+						<div className="mt-0 pt-4">
+							<ShowQueueTable />
+						</div>
+					)}
 				</div>
-			</LayerCard>
+			</div>
 		</div>
 	);
 }
