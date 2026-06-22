@@ -21,6 +21,7 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import type { ServiceType } from "@/server/core/db/schema";
+import { workspaceEnvironmentPath } from "@/shared/routes";
 
 const deleteComposeSchema = z.object({
 	projectName: z.string().min(1, {
@@ -97,9 +98,17 @@ export const DeleteService = ({ id, type }: Props) => {
 				deleteVolumes,
 			})
 				.then((result) => {
-					push(
-						`/dashboard/project/${result?.environment?.projectId}/environment/${result?.environment?.environmentId}`,
-					);
+					if (
+						result?.environment?.projectId &&
+						result.environment.environmentId
+					) {
+						push(
+							workspaceEnvironmentPath({
+								projectId: result.environment.projectId,
+								environmentId: result.environment.environmentId,
+							}),
+						);
+					}
 					toast.success("Service deleted successfully");
 					setIsOpen(false);
 				})

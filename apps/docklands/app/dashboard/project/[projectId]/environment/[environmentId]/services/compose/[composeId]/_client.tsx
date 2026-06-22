@@ -32,6 +32,10 @@ import { ComposePaidMonitoring } from "@/components/dashboard/metrics/paid/conta
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
+import {
+	workspaceEnvironmentPath,
+	workspaceServicePath,
+} from "@/shared/routes";
 
 type TabState =
 	| "general"
@@ -79,7 +83,10 @@ const Service = (props: {
 	const environmentDropdownItems =
 		environments?.map((env) => ({
 			name: env.name,
-			href: `/dashboard/project/${projectId}/environment/${env.environmentId}`,
+			href: workspaceEnvironmentPath({
+				projectId,
+				environmentId: env.environmentId,
+			}),
 		})) || [];
 	const serviceTabs = [
 		{ value: "general", label: "General" },
@@ -214,7 +221,13 @@ const Service = (props: {
 									onValueChange={(e) => {
 										if (e === null) return;
 										setTab(e as TabState);
-										const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/compose/${composeId}?tab=${e}`;
+										const newPath = workspaceServicePath({
+											projectId,
+											environmentId,
+											serviceType: "compose",
+											serviceId: composeId,
+											tab: e,
+										});
 										router.push(newPath);
 									}}
 									tabs={serviceTabs}

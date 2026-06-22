@@ -27,6 +27,7 @@ import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { TagBadge } from "@/components/shared/tag-badge";
 import { TagFilter } from "@/components/shared/tag-filter";
 import { toast } from "@/components/shared/toast";
+import { workspaceEnvironmentPath } from "@/shared/routes";
 import { HandleProject } from "./handle-project";
 import { ProjectEnvironment } from "./project-environment";
 
@@ -376,7 +377,10 @@ export const ShowProjects = () => {
 										const hasNoEnvironments = !accessibleEnvironment;
 										const workspaceHref = hasNoEnvironments
 											? null
-											: `/dashboard/project/${project.projectId}/environment/${accessibleEnvironment?.environmentId}`;
+											: workspaceEnvironmentPath({
+													projectId: project.projectId,
+													environmentId: accessibleEnvironment.environmentId,
+												});
 
 										return (
 											<LayerCard

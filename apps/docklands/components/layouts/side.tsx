@@ -42,6 +42,7 @@ import {
 	findActiveNavItem,
 	isActiveRoute,
 } from "@/shared/dashboard-nav";
+import { isWorkspaceDetailPath } from "@/shared/routes";
 import { cn } from "@/shared/utils";
 import { AddOrganization } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
@@ -428,7 +429,7 @@ export default function Page({ children }: Props) {
 	const { data: docklandsVersion } =
 		api.settings.getDocklandsVersion.useQuery();
 
-	const includesProjects = pathname?.includes("/dashboard/project");
+	const includesProjects = isWorkspaceDetailPath(pathname);
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 
 	const {

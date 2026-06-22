@@ -25,6 +25,10 @@ import { LibsqlIcon } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
+import {
+	workspaceEnvironmentPath,
+	workspaceServicePath,
+} from "@/shared/routes";
 
 type TabState =
 	| "general"
@@ -58,7 +62,10 @@ const Libsql = (props: {
 	const environmentDropdownItems =
 		environments?.map((env) => ({
 			name: env.name,
-			href: `/dashboard/project/${projectId}/environment/${env.environmentId}`,
+			href: workspaceEnvironmentPath({
+				projectId,
+				environmentId: env.environmentId,
+			}),
 		})) || [];
 
 	return (
@@ -160,7 +167,13 @@ const Libsql = (props: {
 									onValueChange={(e) => {
 										if (e === null) return;
 										setSab(e as TabState);
-										const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/libsql/${libsqlId}?tab=${e}`;
+										const newPath = workspaceServicePath({
+											projectId,
+											environmentId,
+											serviceType: "libsql",
+											serviceId: libsqlId,
+											tab: e,
+										});
 
 										router.push(newPath);
 									}}

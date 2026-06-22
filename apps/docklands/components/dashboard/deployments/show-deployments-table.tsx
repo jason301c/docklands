@@ -34,6 +34,7 @@ import {
 import { type ReactNode, useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
 import type { AppRouter } from "@/server/api/root";
+import { workspaceServicePath } from "@/shared/routes";
 
 type DeploymentRow =
 	inferRouterOutputs<AppRouter>["deployment"]["allCentralized"][number];
@@ -73,7 +74,12 @@ function getServiceInfo(d: DeploymentRow) {
 			projectName: app.environment.project.name,
 			environmentName: app.environment.name,
 			serviceId: app.applicationId,
-			href: `/dashboard/project/${app.environment.project.projectId}/environment/${app.environment.environmentId}/services/application/${app.applicationId}`,
+			href: workspaceServicePath({
+				projectId: app.environment.project.projectId,
+				environmentId: app.environment.environmentId,
+				serviceType: "application",
+				serviceId: app.applicationId,
+			}),
 		};
 	}
 	if (comp?.environment?.project && comp.environment) {
@@ -85,7 +91,12 @@ function getServiceInfo(d: DeploymentRow) {
 			projectName: comp.environment.project.name,
 			environmentName: comp.environment.name,
 			serviceId: comp.composeId,
-			href: `/dashboard/project/${comp.environment.project.projectId}/environment/${comp.environment.environmentId}/services/compose/${comp.composeId}`,
+			href: workspaceServicePath({
+				projectId: comp.environment.project.projectId,
+				environmentId: comp.environment.environmentId,
+				serviceType: "compose",
+				serviceId: comp.composeId,
+			}),
 		};
 	}
 	return null;

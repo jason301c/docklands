@@ -16,6 +16,7 @@ import { ShowBuildChooseForm } from "@/components/dashboard/application/build/sh
 import { ShowProviderForm } from "@/components/dashboard/application/general/generic/show";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
+import { workspaceServicePath } from "@/shared/routes";
 import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
 interface Props {
@@ -66,9 +67,17 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 										.then(() => {
 											toast.success("Application build queued");
 											refetch();
-											router.push(
-												`/dashboard/project/${data?.environment.projectId}/environment/${data?.environmentId}/services/application/${applicationId}?tab=deployments`,
-											);
+											if (data?.environment.projectId && data.environmentId) {
+												router.push(
+													workspaceServicePath({
+														projectId: data.environment.projectId,
+														environmentId: data.environmentId,
+														serviceType: "application",
+														serviceId: applicationId,
+														tab: "deployments",
+													}),
+												);
+											}
 										})
 										.catch(() => {
 											toast.error("Error queueing application build");

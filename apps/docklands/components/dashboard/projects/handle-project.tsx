@@ -20,6 +20,7 @@ import {
 } from "@/components/shared/form";
 import { TagSelector } from "@/components/shared/tag-selector";
 import { toast } from "@/components/shared/toast";
+import { workspaceEnvironmentPath } from "@/shared/routes";
 
 const AddProjectSchema = z.object({
 	name: z
@@ -128,7 +129,10 @@ export const HandleProject = ({ projectId }: Props) => {
 
 					if (environmentIdToUse && projectIdToUse) {
 						router.push(
-							`/dashboard/project/${projectIdToUse}/environment/${environmentIdToUse}`,
+							workspaceEnvironmentPath({
+								projectId: projectIdToUse,
+								environmentId: environmentIdToUse,
+							}),
 						);
 					}
 				} else {

@@ -108,6 +108,21 @@ describe("dashboard nav", () => {
 		).toBe(false);
 	});
 
+	it("keeps canonical workspace detail routes active under Canvas", () => {
+		expect(
+			isActiveRoute({
+				itemUrl: "/dashboard/workspace",
+				pathname: "/dashboard/workspace/project_1/env_1",
+			}),
+		).toBe(true);
+		expect(
+			isActiveRoute({
+				itemUrl: "/dashboard/projects",
+				pathname: "/dashboard/workspace/project_1/env_1",
+			}),
+		).toBe(false);
+	});
+
 	it("finds active nested runtime items for breadcrumbs", () => {
 		const menu = createMenuForAuthUser({
 			permissions: fullPermissions as any,

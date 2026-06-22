@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useMemo } from "react";
 import { api } from "@/client/api/trpc";
 import { HandleProject } from "@/components/dashboard/projects/handle-project";
+import {
+	workspaceEnvironmentPath,
+	workspaceServicePath,
+} from "@/shared/routes";
 
 type DeploymentStatus = "idle" | "running" | "done" | "error";
 
@@ -53,7 +57,12 @@ function getServiceInfo(d: any) {
 			name: app.name as string,
 			environment: app.environment.name as string,
 			projectName: app.environment.project.name as string,
-			href: `/dashboard/project/${app.environment.project.projectId}/environment/${app.environment.environmentId}/services/application/${app.applicationId}`,
+			href: workspaceServicePath({
+				projectId: app.environment.project.projectId,
+				environmentId: app.environment.environmentId,
+				serviceType: "application",
+				serviceId: app.applicationId,
+			}),
 		};
 	}
 	if (comp?.environment?.project && comp.environment) {
@@ -61,7 +70,12 @@ function getServiceInfo(d: any) {
 			name: comp.name as string,
 			environment: comp.environment.name as string,
 			projectName: comp.environment.project.name as string,
-			href: `/dashboard/project/${comp.environment.project.projectId}/environment/${comp.environment.environmentId}/services/compose/${comp.composeId}`,
+			href: workspaceServicePath({
+				projectId: comp.environment.project.projectId,
+				environmentId: comp.environment.environmentId,
+				serviceType: "compose",
+				serviceId: comp.composeId,
+			}),
 		};
 	}
 	return null;
@@ -366,7 +380,10 @@ export const WorkspaceOverview = () => {
 										<Link
 											href={
 												environment
-													? `/dashboard/project/${project.projectId}/environment/${environment.environmentId}`
+													? workspaceEnvironmentPath({
+															projectId: project.projectId,
+															environmentId: environment.environmentId,
+														})
 													: "/dashboard/projects"
 											}
 											className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"

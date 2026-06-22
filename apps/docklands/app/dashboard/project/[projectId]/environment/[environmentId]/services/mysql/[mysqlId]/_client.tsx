@@ -25,6 +25,10 @@ import { MysqlIcon } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
+import {
+	workspaceEnvironmentPath,
+	workspaceServicePath,
+} from "@/shared/routes";
 
 type TabState =
 	| "general"
@@ -57,7 +61,10 @@ const MySql = (props: {
 	const environmentDropdownItems =
 		environments?.map((env) => ({
 			name: env.name,
-			href: `/dashboard/project/${projectId}/environment/${env.environmentId}`,
+			href: workspaceEnvironmentPath({
+				projectId,
+				environmentId: env.environmentId,
+			}),
 		})) || [];
 
 	return (
@@ -162,7 +169,13 @@ const MySql = (props: {
 										onValueChange={(e) => {
 											if (e === null) return;
 											setSab(e as TabState);
-											const newPath = `/dashboard/project/${projectId}/environment/${environmentId}/services/mysql/${mysqlId}?tab=${e}`;
+											const newPath = workspaceServicePath({
+												projectId,
+												environmentId,
+												serviceType: "mysql",
+												serviceId: mysqlId,
+												tab: e,
+											});
 
 											router.push(newPath);
 										}}

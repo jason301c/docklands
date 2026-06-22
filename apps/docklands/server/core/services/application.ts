@@ -30,6 +30,7 @@ import { cloneGiteaRepository } from "@/server/core/utils/providers/gitea";
 import { cloneGithubRepository } from "@/server/core/utils/providers/github";
 import { cloneGitlabRepository } from "@/server/core/utils/providers/gitlab";
 import { createTraefikConfig } from "@/server/core/utils/traefik/application";
+import { workspaceServicePath } from "@/shared/routes";
 import { encodeBase64 } from "../utils/docker/utils";
 import { getDocklandsUrl } from "./admin";
 import {
@@ -179,7 +180,13 @@ export const deployApplication = async ({
 		serverId: serverId,
 	};
 
-	const buildLink = `${await getDocklandsUrl()}/dashboard/project/${application.environment.projectId}/environment/${application.environmentId}/services/application/${application.applicationId}?tab=deployments`;
+	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
+		projectId: application.environment.projectId,
+		environmentId: application.environmentId,
+		serviceType: "application",
+		serviceId: application.applicationId,
+		tab: "deployments",
+	})}`;
 	const deployment = await createDeployment({
 		applicationId: applicationId,
 		title: titleLog,
@@ -297,7 +304,13 @@ export const rebuildApplication = async ({
 }) => {
 	const application = await findApplicationById(applicationId);
 	const serverId = application.buildServerId || application.serverId;
-	const buildLink = `${await getDocklandsUrl()}/dashboard/project/${application.environment.projectId}/environment/${application.environmentId}/services/application/${application.applicationId}?tab=deployments`;
+	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
+		projectId: application.environment.projectId,
+		environmentId: application.environmentId,
+		serviceType: "application",
+		serviceId: application.applicationId,
+		tab: "deployments",
+	})}`;
 
 	const deployment = await createDeployment({
 		applicationId: applicationId,

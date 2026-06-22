@@ -34,6 +34,7 @@ import { cloneGiteaRepository } from "@/server/core/utils/providers/gitea";
 import { cloneGithubRepository } from "@/server/core/utils/providers/github";
 import { cloneGitlabRepository } from "@/server/core/utils/providers/gitlab";
 import { getCreateComposeFileCommand } from "@/server/core/utils/providers/raw";
+import { workspaceServicePath } from "@/shared/routes";
 import { encodeBase64 } from "../utils/docker/utils";
 import { getDocklandsUrl } from "./admin";
 import {
@@ -222,9 +223,13 @@ export const deployCompose = async ({
 }) => {
 	const compose = await findComposeById(composeId);
 
-	const buildLink = `${await getDocklandsUrl()}/dashboard/project/${
-		compose.environment.projectId
-	}/environment/${compose.environmentId}/services/compose/${compose.composeId}?tab=deployments`;
+	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
+		projectId: compose.environment.projectId,
+		environmentId: compose.environmentId,
+		serviceType: "compose",
+		serviceId: compose.composeId,
+		tab: "deployments",
+	})}`;
 	const deployment = await createDeploymentCompose({
 		composeId: composeId,
 		title: titleLog,

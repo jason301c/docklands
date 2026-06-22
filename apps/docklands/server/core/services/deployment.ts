@@ -26,6 +26,7 @@ import {
 	execAsync,
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
+import { workspaceServicePath } from "@/shared/routes";
 import {
 	type Application,
 	findApplicationById,
@@ -96,7 +97,12 @@ export async function resolveServicePath(
 				return { href: null, label: "Application" };
 			}
 			return {
-				href: `/dashboard/project/${app.environment.project.projectId}/environment/${app.environment.environmentId}/services/application/${app.applicationId}`,
+				href: workspaceServicePath({
+					projectId: app.environment.project.projectId,
+					environmentId: app.environment.environmentId,
+					serviceType: "application",
+					serviceId: app.applicationId,
+				}),
 				label: "Application",
 			};
 		}
@@ -106,7 +112,12 @@ export async function resolveServicePath(
 				return { href: null, label: "Compose" };
 			}
 			return {
-				href: `/dashboard/project/${comp.environment.project.projectId}/environment/${comp.environment.environmentId}/services/compose/${comp.composeId}`,
+				href: workspaceServicePath({
+					projectId: comp.environment.project.projectId,
+					environmentId: comp.environment.environmentId,
+					serviceType: "compose",
+					serviceId: comp.composeId,
+				}),
 				label: "Compose",
 			};
 		}

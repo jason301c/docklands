@@ -29,6 +29,10 @@ import {
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { Separator } from "@/components/shared/separator";
 import type { ServiceType } from "@/server/core/db/schema";
+import {
+	workspaceEnvironmentPath,
+	workspaceServicePath,
+} from "@/shared/routes";
 
 const Command = Combobox;
 const CommandInput = Combobox.TriggerInput;
@@ -190,9 +194,11 @@ export const AdvanceBreadcrumb = () => {
 	const projectId = getStringQueryParam(params.projectId);
 	const environmentId = getStringQueryParam(params.environmentId);
 	const serviceId =
+		getStringQueryParam(params.serviceId) ??
 		SERVICE_QUERY_KEYS.map((key) => getStringQueryParam(params[key])).find(
 			(value): value is string => !!value,
-		) ?? null;
+		) ??
+		null;
 
 	const [projectOpen, setProjectOpen] = useState(false);
 	const [serviceOpen, setServiceOpen] = useState(false);
@@ -262,7 +268,10 @@ export const AdvanceBreadcrumb = () => {
 
 			if (targetEnvironmentId) {
 				router.push(
-					`/dashboard/project/${selectedProjectId}/environment/${targetEnvironmentId}`,
+					workspaceEnvironmentPath({
+						projectId: selectedProjectId,
+						environmentId: targetEnvironmentId,
+					}),
 				);
 			}
 		}
@@ -272,16 +281,23 @@ export const AdvanceBreadcrumb = () => {
 
 	// Navigate to environment
 	const handleEnvironmentSelect = (envId: string) => {
-		router.push(`/dashboard/project/${projectId}/environment/${envId}`);
+		if (!projectId) return;
+
+		router.push(workspaceEnvironmentPath({ projectId, environmentId: envId }));
 		setEnvironmentOpen(false);
 	};
 
 	// Navigate to service
 	const handleServiceSelect = (service: ServiceItem) => {
-		if (!environmentId) return;
+		if (!projectId || !environmentId) return;
 
 		router.push(
-			`/dashboard/project/${projectId}/environment/${environmentId}/services/${service.type}/${service.id}`,
+			workspaceServicePath({
+				projectId,
+				environmentId,
+				serviceType: service.type,
+				serviceId: service.id,
+			}),
 		);
 		setServiceOpen(false);
 	};
@@ -624,8 +640,13 @@ export const AdvanceBreadcrumb = () => {
 								shape="square"
 								className="size-7 ml-1 hidden md:flex"
 								onClick={() => {
+									if (!projectId || !environmentId) return;
+
 									router.push(
-										`/dashboard/project/${projectId}/environment/${environmentId}`,
+										workspaceEnvironmentPath({
+											projectId,
+											environmentId,
+										}),
 									);
 								}}
 							>

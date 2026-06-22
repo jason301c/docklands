@@ -105,6 +105,10 @@ import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
 import { parseEnvironmentVariables } from "@/shared/env-string";
+import {
+	workspaceEnvironmentPath,
+	workspaceServicePath,
+} from "@/shared/routes";
 import { cn } from "@/shared/utils";
 import {
 	canWorkspaceServiceExposeVariables,
@@ -526,7 +530,12 @@ const getServiceSettingsHref = (
 	environmentId: string,
 	service: WorkspaceService,
 ) =>
-	`/dashboard/project/${projectId}/environment/${environmentId}/services/${service.type}/${service.id}`;
+	workspaceServicePath({
+		projectId,
+		environmentId,
+		serviceType: service.type,
+		serviceId: service.id,
+	});
 
 const formatLastDeployment = (lastDeployAt?: string | null) =>
 	lastDeployAt
@@ -1825,7 +1834,10 @@ export const EnvironmentCanvas = ({
 
 			if (duplicateMode === "new-project" && newEnvironment?.projectId) {
 				router.push(
-					`/dashboard/project/${newEnvironment.projectId}/environment/${newEnvironment.environmentId}`,
+					workspaceEnvironmentPath({
+						projectId: newEnvironment.projectId,
+						environmentId: newEnvironment.environmentId,
+					}),
 				);
 			}
 		} catch (error) {
@@ -2027,7 +2039,10 @@ export const EnvironmentCanvas = ({
 					await utils.project.all.invalidate();
 					await utils.environment.byProjectId.invalidate({ projectId });
 					router.push(
-						`/dashboard/project/${projectId}/environment/${result.environmentId}`,
+						workspaceEnvironmentPath({
+							projectId,
+							environmentId: result.environmentId,
+						}),
 					);
 					return "Preview environment created";
 				},
@@ -2198,7 +2213,10 @@ export const EnvironmentCanvas = ({
 					setCommandOpen(false);
 					setCommandQuery("");
 					router.push(
-						`/dashboard/project/${projectId}/environment/${environment.environmentId}`,
+						workspaceEnvironmentPath({
+							projectId,
+							environmentId: environment.environmentId,
+						}),
 					);
 				},
 			};
@@ -3631,7 +3649,11 @@ export const EnvironmentCanvas = ({
 										Connect
 									</Button>
 									<Link
-										href={`/dashboard/project/${projectId}/environment/${environmentId}/services/${selectedServiceModel.type}/${selectedServiceModel.id}`}
+										href={getServiceSettingsHref(
+											projectId,
+											environmentId,
+											selectedServiceModel,
+										)}
 									>
 										<Button variant="outline">
 											<ExternalLink className="size-4" />

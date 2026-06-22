@@ -10,6 +10,7 @@ import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { toast } from "@/components/shared/toast";
 import type { findEnvironmentsByProjectId } from "@/server/core/services/environment";
+import { projectsPath, workspaceEnvironmentPath } from "@/shared/routes";
 
 type Environment = Awaited<
 	ReturnType<typeof findEnvironmentsByProjectId>
@@ -132,11 +133,14 @@ export const AdvancedEnvironmentSelector = ({
 				);
 				if (firstEnv) {
 					router.push(
-						`/dashboard/project/${projectId}/environment/${firstEnv.environmentId}`,
+						workspaceEnvironmentPath({
+							projectId,
+							environmentId: firstEnv.environmentId,
+						}),
 					);
 				} else {
 					// No other environments, redirect to project page
-					router.push(`/dashboard/project/${projectId}`);
+					router.push(projectsPath);
 				}
 			}
 		} catch (error) {
@@ -157,7 +161,10 @@ export const AdvancedEnvironmentSelector = ({
 
 			// Navigate to the new duplicated environment
 			router.push(
-				`/dashboard/project/${projectId}/environment/${result.environmentId}`,
+				workspaceEnvironmentPath({
+					projectId,
+					environmentId: result.environmentId,
+				}),
 			);
 		} catch (error) {
 			toast.error("Failed to duplicate environment");
@@ -216,7 +223,10 @@ export const AdvancedEnvironmentSelector = ({
 									className="flex-1 cursor-pointer"
 									onClick={() => {
 										router.push(
-											`/dashboard/project/${projectId}/environment/${environment.environmentId}`,
+											workspaceEnvironmentPath({
+												projectId,
+												environmentId: environment.environmentId,
+											}),
 										);
 									}}
 								>

@@ -16,6 +16,11 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
+import {
+	isEnvironmentCanvasPath,
+	workspaceEnvironmentPath,
+	workspaceServicePath,
+} from "@/shared/routes";
 import { StatusTooltip } from "../shared/status-tooltip";
 
 type SearchServices = Services & {
@@ -97,8 +102,7 @@ export const SearchCommand = () => {
 			const isShortcut =
 				(e.code === "KeyK" || e.code === "KeyJ") && (e.metaKey || e.ctrlKey);
 			const canvasOwnsCommandK =
-				e.code === "KeyK" &&
-				/^\/dashboard\/project\/[^/]+\/environment\/[^/]+\/?$/.test(pathname);
+				e.code === "KeyK" && isEnvironmentCanvasPath(pathname ?? "");
 
 			if (isShortcut && !canvasOwnsCommandK) {
 				e.preventDefault();
@@ -132,7 +136,10 @@ export const SearchCommand = () => {
 						icon: <BookIcon className="size-4 text-muted-foreground mr-2" />,
 						onSelect: () =>
 							navigate(
-								`/dashboard/project/${project.projectId}/environment/${defaultEnvironment.environmentId}`,
+								workspaceEnvironmentPath({
+									projectId: project.projectId,
+									environmentId: defaultEnvironment.environmentId,
+								}),
 							),
 					},
 				];
@@ -150,7 +157,12 @@ export const SearchCommand = () => {
 						status: toStatusTooltipStatus(service.status),
 						onSelect: () =>
 							navigate(
-								`/dashboard/project/${project.projectId}/environment/${service.environmentId}?serviceType=${service.type}&serviceId=${service.id}`,
+								workspaceServicePath({
+									projectId: project.projectId,
+									environmentId: service.environmentId,
+									serviceType: service.type,
+									serviceId: service.id,
+								}),
 							),
 					};
 				}),

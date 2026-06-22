@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
+import { workspaceServicePath } from "@/shared/routes";
 import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
 interface Props {
@@ -44,9 +45,17 @@ export const ComposeActions = ({ composeId }: Props) => {
 								.then(() => {
 									toast.success("Compose build queued");
 									refetch();
-									router.push(
-										`/dashboard/project/${data?.environment.projectId}/environment/${data?.environmentId}/services/compose/${composeId}?tab=deployments`,
-									);
+									if (data?.environment.projectId && data.environmentId) {
+										router.push(
+											workspaceServicePath({
+												projectId: data.environment.projectId,
+												environmentId: data.environmentId,
+												serviceType: "compose",
+												serviceId: composeId,
+												tab: "deployments",
+											}),
+										);
+									}
 								})
 								.catch(() => {
 									toast.error("Error queueing compose build");
