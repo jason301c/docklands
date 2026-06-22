@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Shared workspace placement selector
+- Latest checkpoint: Hardened Turbopack bundler guard
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -45,7 +45,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Moved redirect-only dashboard aliases out of the App Router tree and into temporary `next.config.mjs` redirects so the built route surface now favors Docklands product routes.
 - Rehomed the old settings `web-server` UI modules into product-named ingress runtime, runtime terminal, and container runtime modal modules while preserving backend API/schema compatibility names.
 - Rehomed old settings `destination`, `cluster/registry`, and `cluster/nodes` UI modules into `settings/storage`, `settings/image-registry`, and `settings/cluster-nodes`, keeping backend permission/API compatibility names intact.
-- Added a bundler guard so Docklands fails fast if scripts, dependencies, Next config, or the custom server opt back into Webpack instead of Turbopack.
+- Added a bundler guard so Docklands fails fast if workspace scripts, manifests, lockfile entries, Next config, or the custom server opt back into Webpack instead of Turbopack.
 - Tightened the sidebar and command palette vocabulary around Docklands product nouns: Ingress, Build Workers, Image Registry, Cluster Nodes, Runtime Workers, Container Runtime, Cluster Runtime, Ingress Requests, and Host Metrics.
 - Centralized the workspace service creation placement selector so application, compose, database, import, and template flows all use the same automatic-placement/runtime-worker UI and copy.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
@@ -172,6 +172,10 @@ git diff --check
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`
   - `bun --filter docklands build`
+- Current hardened Turbopack bundler guard checkpoint
+  - `bun run check:bundler`
+  - `bun run format-and-lint:fix`
+  - `bun run build-next`
 
 ## Open Questions
 

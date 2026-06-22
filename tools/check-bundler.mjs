@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,11 +11,35 @@ const failures = [];
 
 const readText = (path) => readFileSync(path, "utf8");
 const readJson = (path) => JSON.parse(readText(path));
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const packageFiles = [
-	join(workspaceRoot, "package.json"),
-	join(appRoot, "package.json"),
-];
+const workspaceManifest = readJson(join(workspaceRoot, "package.json"));
+const packageFiles = new Set([join(workspaceRoot, "package.json")]);
+
+for (const workspacePattern of workspaceManifest.workspaces ?? []) {
+	if (!workspacePattern.endsWith("/*")) {
+		failures.push(
+			`Unsupported workspace pattern "${workspacePattern}" in package.json; update tools/check-bundler.mjs before relying on it.`,
+		);
+		continue;
+	}
+
+	const workspaceDir = join(workspaceRoot, workspacePattern.slice(0, -2));
+	if (!existsSync(workspaceDir)) {
+		continue;
+	}
+
+	for (const entry of readdirSync(workspaceDir, { withFileTypes: true })) {
+		if (!entry.isDirectory()) {
+			continue;
+		}
+
+		const packageFile = join(workspaceDir, entry.name, "package.json");
+		if (existsSync(packageFile)) {
+			packageFiles.add(packageFile);
+		}
+	}
+}
 
 const webpackPackages = new Set([
 	"@next/bundle-analyzer",
@@ -44,13 +68,36 @@ for (const packageFile of packageFiles) {
 		}
 	}
 
-	for (const dependencyGroup of ["dependencies", "devDependencies"]) {
+	for (const dependencyGroup of [
+		"dependencies",
+		"devDependencies",
+		"optionalDependencies",
+		"peerDependencies",
+	]) {
 		for (const dependencyName of Object.keys(manifest[dependencyGroup] ?? {})) {
 			if (webpackPackages.has(dependencyName)) {
 				failures.push(
 					`${relativePackageFile} declares ${dependencyName} in ${dependencyGroup}; Docklands should not carry Webpack tooling.`,
 				);
 			}
+		}
+	}
+}
+
+const lockfilePath = join(workspaceRoot, "bun.lock");
+if (existsSync(lockfilePath)) {
+	const lockfile = readText(lockfilePath);
+	for (const packageName of webpackPackages) {
+		const packagePattern = escapeRegExp(packageName);
+		const lockfilePackagePattern = new RegExp(
+			`^\\s*"${packagePattern}(?:@npm:[^"]*)?"\\s*:`,
+			"m",
+		);
+
+		if (lockfilePackagePattern.test(lockfile)) {
+			failures.push(
+				`bun.lock contains ${packageName}; remove Webpack tooling from the dependency graph.`,
+			);
 		}
 	}
 }
