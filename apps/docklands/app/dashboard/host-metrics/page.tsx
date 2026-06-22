@@ -1,5 +1,5 @@
 import { requirePermission, requireSelfHosted } from "@/server/web/app-auth";
-import ClientPage from "../monitoring/_client";
+import ClientPage from "./_client";
 
 export default async function Page() {
 	requireSelfHosted();

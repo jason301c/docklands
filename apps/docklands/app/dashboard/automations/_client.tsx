@@ -1,8 +1,8 @@
 "use client";
 
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
 import { ServerFilter } from "@/components/shared/server-filter";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 
 function SchedulesPage() {
 	return (

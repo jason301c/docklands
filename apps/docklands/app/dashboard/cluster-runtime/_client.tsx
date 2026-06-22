@@ -1,11 +1,11 @@
 "use client";
 
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { useState } from "react";
 import { ShowSwarmContainers } from "@/components/dashboard/swarm/containers/show-swarm-containers";
 import SwarmMonitorCard from "@/components/dashboard/swarm/monitoring-card";
 import { ServerFilter } from "@/components/shared/server-filter";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Tabs } from "@cloudflare/kumo/components/tabs";
 
 const Dashboard = () => {
 	const [activeTab, setActiveTab] = useState("overview");
@@ -16,7 +16,9 @@ const Dashboard = () => {
 				<div className="space-y-4">
 					<Tabs
 						value={activeTab}
-						onValueChange={(value) => value !== null && setActiveTab(value as never)}
+						onValueChange={(value) =>
+							value !== null && setActiveTab(value as never)
+						}
 						tabs={[
 							{ value: "overview", label: "Overview" },
 							{ value: "containers", label: "Containers" },

@@ -1,5 +1,5 @@
 import { requirePermission } from "@/server/web/app-auth";
-import ClientPage from "../docker/_client";
+import ClientPage from "./_client";
 
 export default async function Page() {
 	await requirePermission("docker", "read", "/");
