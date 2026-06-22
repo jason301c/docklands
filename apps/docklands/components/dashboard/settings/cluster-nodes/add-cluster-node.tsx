@@ -5,14 +5,14 @@ import { ExternalLink, PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { AddManager } from "./manager/add-manager";
-import { AddWorker } from "./workers/add-worker";
+import { AddClusterManager } from "./manager/add-cluster-manager";
+import { AddClusterWorker } from "./workers/add-cluster-worker";
 
 interface Props {
 	serverId?: string;
 }
 
-export const AddNode = ({ serverId }: Props) => {
+export const AddClusterNode = ({ serverId }: Props) => {
 	const [activeTab, setActiveTab] = useState("worker");
 
 	return (
@@ -67,12 +67,12 @@ export const AddNode = ({ serverId }: Props) => {
 					/>
 					{activeTab === "worker" && (
 						<div className="pt-4 overflow-hidden">
-							<AddWorker serverId={serverId} />
+							<AddClusterWorker serverId={serverId} />
 						</div>
 					)}
 					{activeTab === "manager" && (
 						<div className="pt-4 overflow-hidden">
-							<AddManager serverId={serverId} />
+							<AddClusterManager serverId={serverId} />
 						</div>
 					)}
 				</div>

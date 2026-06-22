@@ -137,7 +137,7 @@ bun run docker:build
 
 ## Dependency And Migration Notes
 
-- Next 16 uses Turbopack by default, and Docklands makes that explicit with `next build --turbopack` plus `turbopack: true` in the custom Next server. Do not add custom Webpack config, `--webpack`, or legacy `--turbo` flags.
+- Next 16 uses Turbopack by default, and Docklands makes that explicit with `next build --turbopack` plus `turbopack: true` in the custom Next server. Do not add custom Webpack config, `--webpack`, or legacy `--turbo` flags. Run `bun run check:bundler` after bundler/tooling changes.
 - Tailwind 4 uses `apps/docklands/postcss.config.cjs` with `@tailwindcss/postcss`; do not switch it back to `tailwindcss` as a PostCSS plugin.
 - `apps/docklands/styles/globals.css` uses `@import "tailwindcss";` and `@config "../tailwind.config.ts";`.
 - React Email now uses `render`, not `renderAsync`.

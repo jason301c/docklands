@@ -66,7 +66,7 @@ interface Props {
 	registryId?: string;
 }
 
-export const HandleRegistry = ({ registryId }: Props) => {
+export const HandleImageRegistry = ({ registryId }: Props) => {
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -197,7 +197,7 @@ export const HandleRegistry = ({ registryId }: Props) => {
 				render={
 					registryId ? (
 						<Button
-							aria-label="Edit registry configuration"
+							aria-label="Edit image registry"
 							variant="ghost"
 							shape="square"
 							className="group hover:bg-blue-500/10 "
@@ -208,7 +208,7 @@ export const HandleRegistry = ({ registryId }: Props) => {
 						((
 							<Button className="cursor-pointer space-x-3">
 								<PlusIcon className="h-4 w-4" />
-								Add Registry
+								Add Image Registry
 							</Button>
 						) as never)
 					)
@@ -216,9 +216,11 @@ export const HandleRegistry = ({ registryId }: Props) => {
 			/>
 			<Dialog className="sm:max-w-2xl">
 				<div>
-					<Dialog.Title>Add a external registry</Dialog.Title>
+					<Dialog.Title>
+						{registryId ? "Update" : "Add"} Image Registry
+					</Dialog.Title>
 					<Dialog.Description>
-						Fill the next fields to add a external registry.
+						Configure credentials for a container image registry.
 					</Dialog.Description>
 				</div>
 				{(isError || testRegistryIsError || testRegistryByIdIsError) && (

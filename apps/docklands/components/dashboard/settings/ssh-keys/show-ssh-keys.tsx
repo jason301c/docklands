@@ -6,7 +6,7 @@ import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { HandleSSHKeys } from "./handle-ssh-keys";
 
-export const ShowDestinations = () => {
+export const ShowSshKeys = () => {
 	const { data, isPending, refetch } = api.sshKey.all.useQuery();
 	const { mutateAsync, isPending: isRemoving } =
 		api.sshKey.remove.useMutation();

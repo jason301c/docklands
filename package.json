@@ -27,6 +27,7 @@
 		"format": "bun --filter docklands format",
 		"lint": "bun --filter docklands lint",
 		"typecheck": "bun --filter docklands typecheck",
+		"check:bundler": "bun tools/check-bundler.mjs",
 		"db:clean": "bun --filter docklands db:clean",
 		"docker:build": "./tools/docker/build.sh",
 		"docker:push": "./tools/docker/push.sh",

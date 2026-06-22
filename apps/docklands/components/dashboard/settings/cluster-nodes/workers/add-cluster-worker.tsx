@@ -9,7 +9,7 @@ interface Props {
 	serverId?: string;
 }
 
-export const AddWorker = ({ serverId }: Props) => {
+export const AddClusterWorker = ({ serverId }: Props) => {
 	const { data, isPending, error, isError } = api.cluster.addWorker.useQuery({
 		serverId,
 	});
@@ -17,8 +17,10 @@ export const AddWorker = ({ serverId }: Props) => {
 	return (
 		<div className="sm:max-w-4xl   flex flex-col gap-4 px-0">
 			<div>
-				<Dialog.Title>Add a new worker</Dialog.Title>
-				<Dialog.Description>Add a new worker</Dialog.Description>
+				<Dialog.Title>Add Cluster Worker</Dialog.Title>
+				<Dialog.Description>
+					Add a worker machine to the cluster runtime.
+				</Dialog.Description>
 			</div>
 			{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 			{isPending ? (
@@ -26,7 +28,7 @@ export const AddWorker = ({ serverId }: Props) => {
 			) : (
 				<>
 					<div className="flex flex-col gap-2.5 text-sm">
-						<span>1. Go to your new server and run the following command</span>
+						<span>1. Go to the new machine and run this command</span>
 						<span className="bg-muted rounded-lg p-2 flex justify-between">
 							curl https://get.docker.com | sh -s -- --version {data?.version}
 							<button
@@ -47,8 +49,7 @@ export const AddWorker = ({ serverId }: Props) => {
 
 					<div className="flex flex-col gap-2.5 text-sm">
 						<span>
-							2. Run the following command to add the node(worker) to your
-							cluster
+							2. Run this command to join the machine as a cluster worker
 						</span>
 
 						<span className="bg-muted rounded-lg p-2  flex">

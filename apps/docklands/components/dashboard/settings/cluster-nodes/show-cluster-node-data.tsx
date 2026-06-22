@@ -6,7 +6,7 @@ interface Props {
 	data: unknown;
 }
 
-export const ShowNodeData = ({ data }: Props) => {
+export const ShowClusterNodeData = ({ data }: Props) => {
 	return (
 		<Dialog.Root>
 			<Dialog.Trigger

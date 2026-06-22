@@ -1,11 +1,11 @@
 "use client";
 
-import { ShowDestinations } from "@/components/dashboard/settings/destination/show-destinations";
+import { ShowStorageProviders } from "@/components/dashboard/settings/storage/show-storage-providers";
 
 const Page = () => {
 	return (
 		<div className="flex flex-col gap-4 w-full">
-			<ShowDestinations />
+			<ShowStorageProviders />
 		</div>
 	);
 };

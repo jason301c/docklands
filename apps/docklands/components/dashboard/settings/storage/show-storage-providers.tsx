@@ -3,9 +3,9 @@ import { Database, FolderUp, Loader2, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
-import { HandleDestinations } from "./handle-destinations";
+import { HandleStorageProvider } from "./handle-storage-provider";
 
-export const ShowDestinations = () => {
+export const ShowStorageProviders = () => {
 	const { data, isPending, refetch } = api.destination.all.useQuery();
 	const { mutateAsync, isPending: isRemoving } =
 		api.destination.remove.useMutation();
@@ -38,7 +38,7 @@ export const ShowDestinations = () => {
 										To create a backup it is required to set at least 1
 										provider.
 									</span>
-									{permissions?.destination.create && <HandleDestinations />}
+									{permissions?.destination.create && <HandleStorageProvider />}
 								</div>
 							) : (
 								<div className="flex flex-col gap-4  min-h-[25vh]">
@@ -61,13 +61,13 @@ export const ShowDestinations = () => {
 														</span>
 													</div>
 													<div className="flex flex-row gap-1">
-														<HandleDestinations
+														<HandleStorageProvider
 															destinationId={destination.destinationId}
 														/>
 														{permissions?.destination.delete && (
 															<DialogAction
-																title="Delete Destination"
-																description="Are you sure you want to delete this destination?"
+																title="Delete Storage Provider"
+																description="Are you sure you want to delete this storage provider?"
 																type="destructive"
 																onClick={async () => {
 																	await mutateAsync({
@@ -75,17 +75,19 @@ export const ShowDestinations = () => {
 																	})
 																		.then(() => {
 																			toast.success(
-																				"Destination deleted successfully",
+																				"Storage provider deleted successfully",
 																			);
 																			refetch();
 																		})
 																		.catch(() => {
-																			toast.error("Error deleting destination");
+																			toast.error(
+																				"Error deleting storage provider",
+																			);
 																		});
 																}}
 															>
 																<Button
-																	aria-label="Delete destination"
+																	aria-label="Delete storage provider"
 																	variant="ghost"
 																	shape="square"
 																	className="group hover:bg-red-500/10 "
@@ -103,7 +105,7 @@ export const ShowDestinations = () => {
 
 									{permissions?.destination.create && (
 										<div className="flex flex-row gap-2 flex-wrap w-full justify-end mr-4">
-											<HandleDestinations />
+											<HandleStorageProvider />
 										</div>
 									)}
 								</div>

@@ -14,14 +14,14 @@ import { api } from "@/client/api/trpc";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
-import { AddNode } from "./add-node";
-import { ShowNodeData } from "./show-node-data";
+import { AddClusterNode } from "./add-cluster-node";
+import { ShowClusterNodeData } from "./show-cluster-node-data";
 
 interface Props {
 	serverId?: string;
 }
 
-export const ShowNodes = ({ serverId }: Props) => {
+export const ShowClusterNodes = ({ serverId }: Props) => {
 	const { data, isPending, refetch } = api.cluster.getNodes.useQuery({
 		serverId,
 	});
@@ -39,11 +39,11 @@ export const ShowNodes = ({ serverId }: Props) => {
 							<Boxes className="size-6 text-muted-foreground self-center" />
 							Cluster
 						</h3>
-						<p>Add nodes to your cluster</p>
+						<p>Add nodes to your cluster runtime.</p>
 					</div>
 					{haveAtLeastOneRegistry && (
 						<div className="flex flex-row gap-2">
-							<AddNode serverId={serverId} />
+							<AddClusterNode serverId={serverId} />
 						</div>
 					)}
 				</div>
@@ -122,7 +122,7 @@ export const ShowNodes = ({ serverId }: Props) => {
 														/>
 														<DropdownMenu.Content align="end">
 															<DropdownMenu.Label>Actions</DropdownMenu.Label>
-															<ShowNodeData data={node} />
+															<ShowClusterNodeData data={node} />
 															{!node?.ManagerStatus?.Leader && (
 																<DialogAction
 																	title="Delete Node"

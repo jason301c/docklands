@@ -23,9 +23,9 @@ import {
 	ADDITIONAL_FLAG_REGEX,
 } from "@/server/core/db/validations/destination";
 import { cn } from "@/shared/utils";
-import { S3_PROVIDERS } from "./constants";
+import { S3_PROVIDERS } from "./provider-options";
 
-const addDestination = z.object({
+const storageProviderSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	provider: z.string().min(1, "Provider is required"),
 	accessKeyId: z.string().min(1, "Access Key Id is required"),
@@ -46,13 +46,13 @@ const addDestination = z.object({
 		.optional(),
 });
 
-type AddDestination = z.infer<typeof addDestination>;
+type StorageProviderForm = z.infer<typeof storageProviderSchema>;
 
 interface Props {
 	destinationId?: string;
 }
 
-export const HandleDestinations = ({ destinationId }: Props) => {
+export const HandleStorageProvider = ({ destinationId }: Props) => {
 	const [open, setOpen] = useState(false);
 	const utils = api.useUtils();
 	const { data: servers } = api.server.withSSHKey.useQuery();
@@ -78,7 +78,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 		isError: isErrorConnection,
 	} = api.destination.testConnection.useMutation();
 
-	const form = useForm<AddDestination>({
+	const form = useForm<StorageProviderForm>({
 		defaultValues: {
 			provider: "",
 			accessKeyId: "",
@@ -89,7 +89,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 			endpoint: "",
 			additionalFlags: [],
 		},
-		resolver: zodResolver(addDestination),
+		resolver: zodResolver(storageProviderSchema),
 	});
 
 	const { fields, append, remove } = useFieldArray({
@@ -115,7 +115,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 		}
 	}, [form, form.reset, form.formState.isSubmitSuccessful, destination]);
 
-	const onSubmit = async (data: AddDestination) => {
+	const onSubmit = async (data: StorageProviderForm) => {
 		await mutateAsync({
 			provider: data.provider || "",
 			accessKey: data.accessKeyId,
@@ -128,7 +128,9 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 			additionalFlags: data.additionalFlags?.map((f) => f.value) ?? [],
 		})
 			.then(async () => {
-				toast.success(`Destination ${destinationId ? "Updated" : "Created"}`);
+				toast.success(
+					`Storage provider ${destinationId ? "updated" : "created"}`,
+				);
 				await utils.destination.all.invalidate();
 				if (destinationId) {
 					await utils.destination.one.invalidate({ destinationId });
@@ -137,7 +139,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 			})
 			.catch((e) => {
 				toast.error(
-					`Error ${destinationId ? "Updating" : "Creating"} the Destination`,
+					`Error ${destinationId ? "updating" : "creating"} the storage provider`,
 					{
 						description: e.message,
 					},
@@ -211,7 +213,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 				render={
 					destinationId ? (
 						<Button
-							aria-label="Edit destination"
+							aria-label="Edit storage provider"
 							variant="ghost"
 							shape="square"
 							className="group hover:bg-blue-500/10 "
@@ -222,7 +224,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 						((
 							<Button className="cursor-pointer space-x-3">
 								<PlusIcon className="h-4 w-4" />
-								Add Destination
+								Add Storage Provider
 							</Button>
 						) as never)
 					)
@@ -231,12 +233,10 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title>
-						{destinationId ? "Update" : "Add"} Destination
+						{destinationId ? "Update" : "Add"} Storage Provider
 					</Dialog.Title>
 					<Dialog.Description>
-						In this section, you can configure and add new destinations for your
-						backups. Please ensure that you provide the correct information to
-						guarantee secure and efficient storage.
+						Configure the object storage provider Docklands uses for backups.
 					</Dialog.Description>
 				</div>
 				{(isError || isErrorConnection) && (
@@ -247,7 +247,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 
 				<Form {...form}>
 					<form
-						id="hook-form-destination-add"
+						id="hook-form-storage-provider"
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="grid w-full gap-4 "
 					>
@@ -405,7 +405,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 													/>
 												</FormControl>
 												<Button
-													aria-label="Remove destination option"
+													aria-label="Remove storage provider option"
 													type="button"
 													variant="ghost"
 													shape="square"
@@ -431,8 +431,8 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 						{isCloud ? (
 							<div className="flex flex-col gap-4 border p-2 rounded-lg">
 								<span className="text-sm text-muted-foreground">
-									Select a runtime worker to test the destination. If you do not
-									have a worker, use automatic placement.
+									Select a runtime worker to test this storage provider. If you
+									do not have a worker, use automatic placement.
 								</span>
 								<FormField
 									control={form.control}
@@ -442,14 +442,16 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 											<FormLabel>Runtime Worker (Optional)</FormLabel>
 											<FormControl>
 												<Select
-													aria-label="Destination test worker"
+													aria-label="Storage provider test worker"
 													onValueChange={field.onChange}
 													defaultValue={field.value}
 												>
 													<></>
 													<>
 														<Select.Group>
-															<Select.GroupLabel>Servers</Select.GroupLabel>
+															<Select.GroupLabel>
+																Runtime Workers
+															</Select.GroupLabel>
 															{servers?.map((server) => (
 																<Select.Option
 																	key={server.serverId}
@@ -494,7 +496,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 
 						<Button
 							loading={isPending}
-							form="hook-form-destination-add"
+							form="hook-form-storage-provider"
 							type="submit"
 						>
 							{destinationId ? "Update" : "Create"}
