@@ -91,77 +91,65 @@ export default function Home({ tokenResetPassword }: Props) {
 		setIsLoading(false);
 	};
 	return (
-		<div className="flex  h-screen w-full items-center justify-center ">
-			<div className="flex flex-col items-center gap-4 w-full">
-				<h3 className="text-2xl font-bold flex flex-row gap-2 items-center">
-					<Link href="/" className="flex flex-row items-center gap-2">
-						<Logo className="size-12" />
-					</Link>
+		<section className="w-full rounded-lg border bg-background p-8 shadow-sm">
+			<div className="mb-8 flex flex-col items-center gap-4 text-center">
+				<Link href="/" aria-label="Docklands home">
+					<Logo className="size-12" />
+				</Link>
+				<h1 className="font-semibold text-2xl tracking-tight">
 					Reset Password
-				</h3>
-				<p>Enter your email to reset your password</p>
-
-				<div className="w-full">
-					<div className="p-0">
-						{error && (
-							<AlertBlock type="error" className="my-2">
-								{error}
-							</AlertBlock>
-						)}
-						<Form {...form}>
-							<form
-								onSubmit={form.handleSubmit(onSubmit)}
-								className="grid gap-4"
-							>
-								<div className="space-y-4">
-									<FormField
-										control={form.control}
-										name="password"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Password</FormLabel>
-												<FormControl>
-													<Input
-														type="password"
-														placeholder="Password"
-														{...field}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="confirmPassword"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Confirm Password</FormLabel>
-												<FormControl>
-													<Input
-														type="password"
-														placeholder="Password"
-														{...field}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-
-									<Button type="submit" loading={isLoading} className="w-full">
-										Confirm
-									</Button>
-								</div>
-
-								<div className="text-center text-sm flex gap-2 text-muted-foreground">
-									<Link href="/">Sign in</Link>
-								</div>
-							</form>
-						</Form>
-					</div>
-				</div>
+				</h1>
 			</div>
-		</div>
+
+			{error && (
+				<AlertBlock type="error" className="my-2">
+					{error}
+				</AlertBlock>
+			)}
+			<Form {...form}>
+				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<FormField
+						control={form.control}
+						name="password"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Password</FormLabel>
+								<FormControl>
+									<Input type="password" placeholder="Password" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="confirmPassword"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Confirm Password</FormLabel>
+								<FormControl>
+									<Input type="password" placeholder="Password" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					<Button
+						type="submit"
+						loading={isLoading}
+						className="w-full justify-center"
+					>
+						Confirm
+					</Button>
+
+					<div className="text-center text-sm">
+						<Link className="hover:underline text-muted-foreground" href="/">
+							Sign in
+						</Link>
+					</div>
+				</form>
+			</Form>
+		</section>
 	);
 }

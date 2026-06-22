@@ -73,6 +73,7 @@ export const ShowContainers = ({ runtimeWorkerId }: Props) => {
 						<div className="flex flex-col gap-4  w-full overflow-auto">
 							<div className="flex items-center gap-2 max-sm:flex-wrap">
 								<Input
+									aria-label="Filter containers by name"
 									placeholder="Filter by name..."
 									value={
 										(table.getColumn("name")?.getFilterValue() as string) ?? ""

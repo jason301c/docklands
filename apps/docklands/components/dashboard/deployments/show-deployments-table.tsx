@@ -558,6 +558,7 @@ export function ShowDeploymentsTable() {
 
 			<div className="flex flex-wrap items-center gap-2">
 				<Input
+					aria-label="Search deployments"
 					placeholder="Search by name, workspace, environment, or title..."
 					value={globalFilter}
 					onChange={(e) => setGlobalFilter(e.target.value)}

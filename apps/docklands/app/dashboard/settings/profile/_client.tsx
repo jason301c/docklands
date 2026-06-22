@@ -9,7 +9,7 @@ const Page = () => {
 
 	return (
 		<div className="w-full">
-			<div className="h-full rounded-xl max-w-5xl mx-auto flex flex-col gap-4">
+			<div className="flex h-full w-full flex-col gap-4">
 				<ProfileForm />
 				{permissions?.api.read && <ShowApiKeys />}
 			</div>

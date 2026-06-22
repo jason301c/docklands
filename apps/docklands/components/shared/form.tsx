@@ -76,7 +76,7 @@ const FormItem = React.forwardRef<
 
 	return (
 		<FormItemContext.Provider value={{ id }}>
-			<div ref={ref} className={cn("space-y-2", className)} {...props} />
+			<div ref={ref} className={cn("grid gap-2", className)} {...props} />
 		</FormItemContext.Provider>
 	);
 });
@@ -96,10 +96,43 @@ const FormLabel = React.forwardRef<
 });
 FormLabel.displayName = "FormLabel";
 
+const formControlComponentNames = new Set([
+	"Autocomplete",
+	"Checkbox",
+	"Combobox",
+	"FocusShortcutInput",
+	"Input",
+	"InputArea",
+	"InputOTP",
+	"NumberInputWithSteps",
+	"RadioGroup",
+	"Select",
+	"Switch",
+	"Textarea",
+	"ToggleVisibilityInput",
+]);
+
+const formControlDomElements = new Set([
+	"button",
+	"input",
+	"select",
+	"textarea",
+]);
+const formLayoutDomElements = new Set(["div", "span"]);
+
+const getElementName = (type: unknown) => {
+	if (typeof type === "string") return type;
+	return (
+		(type as { displayName?: string; name?: string }).displayName ||
+		(type as { name?: string }).name ||
+		""
+	);
+};
+
 const FormControl = React.forwardRef<
 	HTMLElement,
 	React.HTMLAttributes<HTMLElement> & { children?: React.ReactNode }
->(({ children, ...props }, ref) => {
+>(({ children, className, ...props }, ref) => {
 	const { error, formItemId, formLabelId, formDescriptionId, formMessageId } =
 		useFormField();
 	const controlProps = {
@@ -113,8 +146,75 @@ const FormControl = React.forwardRef<
 	};
 
 	if (React.isValidElement(children)) {
+		let controlRefAssigned = false;
+		let controlPropsAssigned = false;
+
+		const injectControlProps = (child: React.ReactNode): React.ReactNode => {
+			if (!React.isValidElement(child)) return child;
+
+			const element = child as React.ReactElement<any>;
+			const childProps = element.props as {
+				children?: React.ReactNode;
+				className?: string;
+				onCheckedChange?: unknown;
+			};
+			const elementType = element.type;
+			const elementName = getElementName(elementType);
+			const isDomElement = typeof elementType === "string";
+			const isFormControlElement = isDomElement
+				? formControlDomElements.has(elementType)
+				: formControlComponentNames.has(elementName);
+
+			if (isFormControlElement) {
+				const isCompactControl =
+					typeof childProps.onCheckedChange === "function";
+				const nextRef = !controlRefAssigned ? ref : undefined;
+				controlRefAssigned = true;
+				controlPropsAssigned = true;
+
+				return React.cloneElement(element, {
+					...controlProps,
+					className: cn(
+						!isCompactControl && "w-full",
+						childProps.className,
+						className,
+					),
+					ref: nextRef,
+				});
+			}
+
+			const canInspectChildren =
+				elementType === React.Fragment ||
+				(isDomElement && formLayoutDomElements.has(elementType));
+
+			if (canInspectChildren && childProps.children) {
+				return React.cloneElement(element, {
+					children: React.Children.map(childProps.children, injectControlProps),
+				});
+			}
+
+			return child;
+		};
+
+		const labelledChildren = injectControlProps(children);
+
+		if (controlPropsAssigned) {
+			return labelledChildren;
+		}
+
+		const childProps = children.props as {
+			className?: string;
+			onCheckedChange?: unknown;
+		};
+		const isCompactControl = typeof childProps.onCheckedChange === "function";
+
 		return React.cloneElement(children as React.ReactElement<any>, {
 			...controlProps,
+			className: cn(
+				!isCompactControl && "w-full",
+				childProps.className,
+				className,
+			),
 			ref,
 		});
 	}

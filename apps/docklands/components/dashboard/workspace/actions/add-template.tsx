@@ -180,6 +180,7 @@ export const AddTemplate = ({
 							</div>
 							<div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
 								<Input
+									aria-label="Search templates"
 									placeholder="Search Template"
 									onChange={(e) => setQuery(e.target.value)}
 									className="w-full"

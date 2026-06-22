@@ -196,7 +196,11 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 							/>
 						)}
 
-						<Button type="submit" className="w-full" loading={isPending}>
+						<Button
+							type="submit"
+							className="w-full justify-center"
+							loading={isPending}
+						>
 							Save Settings
 						</Button>
 					</form>

@@ -32,9 +32,9 @@ export const UserNav = () => {
 				render={
 					<SidebarMenuButton
 						size="base"
-						className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+						className="h-auto min-h-14 w-full gap-3 px-2 py-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:min-h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-1"
 					>
-						<Avatar className="h-8 w-8 rounded-lg">
+						<Avatar className="h-8 w-8 shrink-0 rounded-lg">
 							<AvatarImage
 								className="object-cover"
 								src={data?.user?.image || undefined}
@@ -44,11 +44,13 @@ export const UserNav = () => {
 								{getFallbackAvatarInitials(userName)}
 							</AvatarFallback>
 						</Avatar>
-						<div className="grid flex-1 text-left text-sm leading-tight">
+						<div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
 							<span className="truncate font-semibold">Account</span>
-							<span className="truncate text-xs">{data?.user?.email}</span>
+							<span className="truncate text-xs text-muted-foreground">
+								{data?.user?.email}
+							</span>
 						</div>
-						<ChevronsUpDown className="ml-auto size-4" />
+						<ChevronsUpDown className="ml-auto size-4 shrink-0 group-data-[collapsible=icon]:hidden" />
 					</SidebarMenuButton>
 				}
 			/>
@@ -59,12 +61,12 @@ export const UserNav = () => {
 				sideOffset={4}
 			>
 				<div className="flex items-center justify-between px-2 py-1.5">
-					<DropdownMenu.Label className="flex flex-col">
-						My Account
+					<div className="min-w-0">
+						<DropdownMenu.Label>My Account</DropdownMenu.Label>
 						<span className="text-xs font-normal text-muted-foreground">
 							{data?.user?.email}
 						</span>
-					</DropdownMenu.Label>
+					</div>
 					<ModeToggle />
 				</div>
 				<DropdownMenu.Separator />

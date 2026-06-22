@@ -617,7 +617,11 @@ export const HandleVolumeBackups = ({
 							)}
 						/>
 
-						<Button type="submit" loading={isPending} className="w-full">
+						<Button
+							type="submit"
+							loading={isPending}
+							className="w-full justify-center"
+						>
 							{volumeBackupId ? "Update" : "Create"} Volume Backup
 						</Button>
 					</form>

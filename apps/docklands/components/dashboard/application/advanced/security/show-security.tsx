@@ -59,7 +59,11 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 										<div className="grid grid-cols-1 md:grid-cols-2 flex-col gap-4 md:gap-8">
 											<div className="flex flex-col gap-2">
 												<Label>Username</Label>
-												<Input disabled value={security.username} />
+												<Input
+													aria-label="Security username"
+													disabled
+													value={security.username}
+												/>
 											</div>
 											<div className="flex flex-col gap-2">
 												<Label>Password</Label>

@@ -7,10 +7,19 @@ import { toast } from "@/components/shared/toast";
 
 export const ToggleVisibilityInput = ({ ...props }: InputProps) => {
 	const inputRef = useRef<HTMLInputElement>(null);
+	const accessibleName =
+		props.label || props["aria-label"] || props["aria-labelledby"]
+			? {}
+			: {
+					"aria-label":
+						typeof props.placeholder === "string"
+							? props.placeholder
+							: "Hidden input value",
+				};
 
 	return (
 		<div className="flex w-full items-center space-x-2">
-			<Input ref={inputRef} {...props} type="password" />
+			<Input ref={inputRef} {...props} {...accessibleName} type="password" />
 			<Button
 				aria-label="Copy hidden input value"
 				variant={"secondary"}

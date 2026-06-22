@@ -5,6 +5,15 @@ type Props = React.ComponentPropsWithoutRef<typeof Input>;
 
 export const FocusShortcutInput = (props: Props) => {
 	const inputRef = useRef<HTMLInputElement | null>(null);
+	const accessibleName =
+		props.label || props["aria-label"] || props["aria-labelledby"]
+			? {}
+			: {
+					"aria-label":
+						typeof props.placeholder === "string"
+							? props.placeholder
+							: "Shortcut input",
+				};
 
 	useEffect(() => {
 		const onKeyDown = (e: KeyboardEvent) => {
@@ -32,5 +41,5 @@ export const FocusShortcutInput = (props: Props) => {
 		return () => window.removeEventListener("keydown", onKeyDown);
 	}, []);
 
-	return <Input {...props} ref={inputRef} />;
+	return <Input {...props} {...accessibleName} ref={inputRef} />;
 };

@@ -99,6 +99,7 @@ export const BuildsConcurrency = ({ runtimeWorkerId, label }: Props) => {
 				</div>
 				<div className="flex items-center gap-2">
 					<Input
+						aria-label={`${label ?? serverQuery.data?.name ?? "Local runtime worker"} build concurrency`}
 						type="number"
 						min={1}
 						max={MAX_BUILDS_CONCURRENCY}

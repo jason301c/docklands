@@ -689,7 +689,11 @@ echo "Hello, world!"
 							)}
 						/>
 
-						<Button type="submit" loading={isPending} className="w-full">
+						<Button
+							type="submit"
+							loading={isPending}
+							className="w-full justify-center"
+						>
 							{scheduleId ? "Update" : "Create"} Automation
 						</Button>
 					</form>

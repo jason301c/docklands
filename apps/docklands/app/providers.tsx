@@ -1,18 +1,11 @@
 "use client";
 
-import {
-	ThemeProvider as NextThemesProvider,
-	type ThemeProviderProps,
-} from "next-themes";
 import NextTopLoader from "nextjs-toploader";
-import type { ComponentType, ReactNode } from "react";
+import type { ReactNode } from "react";
+import { ThemeProvider } from "@/client/providers/theme-provider";
 import { TRPCReactProvider } from "@/client/providers/trpc-provider";
 import { SearchCommand } from "@/components/dashboard/search-command";
 import { Toaster } from "@/components/shared/toast";
-
-const ThemeProvider = NextThemesProvider as ComponentType<
-	ThemeProviderProps & { children?: ReactNode }
->;
 
 export const Providers = ({ children }: { children: ReactNode }) => {
 	return (
@@ -21,7 +14,6 @@ export const Providers = ({ children }: { children: ReactNode }) => {
 				attribute="data-mode"
 				defaultTheme="system"
 				enableSystem
-				disableTransitionOnChange
 			>
 				<NextTopLoader color="var(--color-kumo-brand)" />
 				<Toaster />

@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react";
 import "@xterm/xterm/css/xterm.css";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { AttachAddon } from "@xterm/addon-attach";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/client/providers/theme-provider";
 
 interface Props {
 	id: string;

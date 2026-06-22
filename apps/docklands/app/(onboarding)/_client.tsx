@@ -192,7 +192,11 @@ export default function Home({ IS_CLOUD }: Props) {
 							</FormItem>
 						)}
 					/>
-					<Button className="w-full" type="submit" loading={isLoginLoading}>
+					<Button
+						className="w-full justify-center"
+						type="submit"
+						loading={isLoginLoading}
+					>
 						Login
 					</Button>
 				</form>
@@ -201,24 +205,17 @@ export default function Home({ IS_CLOUD }: Props) {
 	);
 
 	return (
-		<>
-			<div className="flex flex-col space-y-2 text-center">
-				<h1 className="text-2xl font-semibold tracking-tight">
-					<div className="flex flex-row items-center justify-center gap-2">
-						<Logo className="size-12" />
-						Sign in
-					</div>
-				</h1>
-				<p className="text-sm text-muted-foreground">
-					Enter your email and password to sign in
-				</p>
+		<section className="w-full rounded-lg border bg-background p-8 shadow-sm">
+			<div className="mb-8 flex flex-col items-center gap-4 text-center">
+				<Logo className="size-12" />
+				<h1 className="font-semibold text-2xl tracking-tight">Login</h1>
 			</div>
 			{error && (
 				<AlertBlock type="error" className="my-2">
 					<span>{error}</span>
 				</AlertBlock>
 			)}
-			<div className="p-0">
+			<div>
 				{!isTwoFactor ? (
 					loginContent
 				) : (
@@ -254,7 +251,7 @@ export default function Home({ IS_CLOUD }: Props) {
 							<div className="flex gap-4">
 								<Button
 									variant="outline"
-									className="w-full"
+									className="w-full justify-center"
 									type="button"
 									onClick={() => {
 										setIsTwoFactor(false);
@@ -264,7 +261,7 @@ export default function Home({ IS_CLOUD }: Props) {
 									Back
 								</Button>
 								<Button
-									className="w-full"
+									className="w-full justify-center"
 									type="submit"
 									loading={isTwoFactorLoading}
 								>
@@ -289,6 +286,7 @@ export default function Home({ IS_CLOUD }: Props) {
 									<div className="flex flex-col gap-2">
 										<Label>Backup Code</Label>
 										<Input
+											aria-label="Backup code"
 											value={backupCode}
 											onChange={(e) => setBackupCode(e.target.value)}
 											placeholder="Enter your backup code"
@@ -303,7 +301,7 @@ export default function Home({ IS_CLOUD }: Props) {
 									<div className="flex gap-4">
 										<Button
 											variant="outline"
-											className="w-full"
+											className="w-full justify-center"
 											type="button"
 											onClick={() => {
 												setIsBackupCodeModalOpen(false);
@@ -313,7 +311,7 @@ export default function Home({ IS_CLOUD }: Props) {
 											Cancel
 										</Button>
 										<Button
-											className="w-full"
+											className="w-full justify-center"
 											type="submit"
 											loading={isBackupCodeLoading}
 										>
@@ -326,8 +324,8 @@ export default function Home({ IS_CLOUD }: Props) {
 					</>
 				)}
 
-				<div className="flex flex-row justify-between flex-wrap">
-					<div className="mt-4 text-center text-sm flex flex-row justify-center gap-2">
+				<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
+					<div>
 						{IS_CLOUD && (
 							<Link
 								className="hover:underline text-muted-foreground"
@@ -338,7 +336,7 @@ export default function Home({ IS_CLOUD }: Props) {
 						)}
 					</div>
 
-					<div className="mt-4 text-sm flex flex-row justify-center gap-2">
+					<div>
 						{IS_CLOUD ? (
 							<Link
 								className="hover:underline text-muted-foreground"
@@ -357,8 +355,7 @@ export default function Home({ IS_CLOUD }: Props) {
 						)}
 					</div>
 				</div>
-				<div className="p-2" />
 			</div>
-		</>
+		</section>
 	);
 }

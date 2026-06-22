@@ -24,15 +24,12 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 
 	if (isPending) {
 		return (
-			<div className="w-full max-w-7xl mx-auto">
-				<div className="mb-6 border min-h-[55vh] flex rounded-lg h-full items-center justify-center  text-muted-foreground">
-					{/* <div className="flex items-center justify-center h-full text-muted-foreground"> */}
-
-					<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[55vh]">
-						<span>Loading...</span>
-						<Loader2 className="animate-spin size-4" />
-					</div>
-					{/* </div> */}
+			<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-background p-6">
+				<div className="flex min-h-[55vh] items-center justify-center text-muted-foreground">
+					<span className="flex flex-row items-center justify-center gap-2 text-sm">
+						Loading...
+						<Loader2 className="size-4 animate-spin" />
+					</span>
 				</div>
 			</div>
 		);
@@ -40,11 +37,9 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 
 	if (!nodes) {
 		return (
-			<div className="w-full max-w-7xl mx-auto">
-				<div className="mb-6 border min-h-[55vh] flex justify-center items-center rounded-lg h-full">
-					<div className="flex items-center justify-center h-full  text-destructive">
-						<span>Failed to load data</span>
-					</div>
+			<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-background p-6">
+				<div className="flex min-h-[55vh] items-center justify-center text-destructive">
+					<span>Failed to load data</span>
 				</div>
 			</div>
 		);

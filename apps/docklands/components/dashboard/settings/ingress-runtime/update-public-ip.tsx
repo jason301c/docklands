@@ -96,36 +96,33 @@ export const UpdatePublicIp = ({ children }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Public IP</FormLabel>
-									<FormControl className="flex gap-2">
-										<div>
+									<div className="flex gap-2">
+										<FormControl>
 											<Input {...field} />
-
-											<TooltipProvider delay={0}>
-												<Tooltip
-													content={
-														<>
-															<p>Set current public IP</p>
-														</>
-													}
-													side="left"
-													className="max-w-[11rem]"
-													asChild
+										</FormControl>
+										<TooltipProvider delay={0}>
+											<Tooltip
+												content={
+													<>
+														<p>Set current public IP</p>
+													</>
+												}
+												side="left"
+												className="max-w-[11rem]"
+												asChild
+											>
+												<Button
+													aria-label="Set current public IP"
+													variant="secondary"
+													type="button"
+													onClick={setCurrentIp}
 												>
-													<Button
-														aria-label="Set current public IP"
-														variant="secondary"
-														type="button"
-														onClick={setCurrentIp}
-													>
-														<RefreshCw className="size-4 text-muted-foreground" />
-													</Button>
-												</Tooltip>
-											</TooltipProvider>
-										</div>
-									</FormControl>
-									<pre>
-										<FormMessage />
-									</pre>
+													<RefreshCw className="size-4 text-muted-foreground" />
+												</Button>
+											</Tooltip>
+										</TooltipProvider>
+									</div>
+									<FormMessage />
 								</FormItem>
 							)}
 						/>

@@ -9,7 +9,7 @@ const Page = () => {
 
 	return (
 		<div className="w-full">
-			<div className="mx-auto flex h-full max-w-5xl flex-col gap-4 rounded-lg border bg-background p-6">
+			<div className="flex h-full w-full flex-col gap-4 rounded-lg border bg-background p-6">
 				<div>
 					<h3 className="text-xl">Concurrent Builds</h3>
 					<p>

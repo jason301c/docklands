@@ -63,6 +63,7 @@ export const CreateFileDialog = ({
 						<div className="space-y-2">
 							<Label htmlFor="filename">Filename</Label>
 							<Input
+								aria-label="Filename"
 								id="filename"
 								placeholder="e.g. .env.example"
 								value={filename}

@@ -141,6 +141,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 												<div className="pl-8 space-y-3">
 													<div className="relative flex-grow">
 														<Input
+															aria-label="Preview deployment URL"
 															value={deploymentUrl}
 															readOnly
 															className="pr-8 text-sm text-blue-500 hover:text-blue-600 cursor-pointer"

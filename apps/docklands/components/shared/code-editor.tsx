@@ -14,7 +14,7 @@ import { search, searchKeymap } from "@codemirror/search";
 import { EditorView, keymap } from "@codemirror/view";
 import { githubDark, githubLight } from "@uiw/codemirror-theme-github";
 import CodeMirror, { type ReactCodeMirrorProps } from "@uiw/react-codemirror";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/client/providers/theme-provider";
 import { cn } from "@/shared/utils";
 
 // Docker Compose completion options

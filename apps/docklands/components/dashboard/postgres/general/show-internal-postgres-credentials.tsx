@@ -25,11 +25,15 @@ export const ShowInternalPostgresCredentials = ({ postgresId }: Props) => {
 						<div className="grid w-full md:grid-cols-2 gap-4 md:gap-8">
 							<div className="flex flex-col gap-2">
 								<Label>User</Label>
-								<Input disabled value={data?.databaseUser} />
+								<Input aria-label="User" disabled value={data?.databaseUser} />
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Database Name</Label>
-								<Input disabled value={data?.databaseName} />
+								<Input
+									aria-label="Database name"
+									disabled
+									value={data?.databaseName}
+								/>
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Password</Label>
@@ -52,12 +56,16 @@ export const ShowInternalPostgresCredentials = ({ postgresId }: Props) => {
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Internal Port (Container)</Label>
-								<Input disabled value="5432" />
+								<Input aria-label="Internal port" disabled value="5432" />
 							</div>
 
 							<div className="flex flex-col gap-2">
 								<Label>Internal Host</Label>
-								<Input disabled value={data?.appName} />
+								<Input
+									aria-label="Internal host"
+									disabled
+									value={data?.appName}
+								/>
 							</div>
 
 							<div className="flex flex-col gap-2">

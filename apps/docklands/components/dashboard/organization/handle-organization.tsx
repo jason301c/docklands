@@ -138,16 +138,12 @@ export function AddOrganization({ organizationId }: Props) {
 							control={form.control}
 							name="name"
 							render={({ field }) => (
-								<FormItem className="tems-center gap-4">
-									<FormLabel className="text-right">Name</FormLabel>
+								<FormItem className="gap-4">
+									<FormLabel>Name</FormLabel>
 									<FormControl>
-										<Input
-											placeholder="Organization name"
-											{...field}
-											className="col-span-3"
-										/>
+										<Input placeholder="Organization name" {...field} />
 									</FormControl>
-									<FormMessage className="" />
+									<FormMessage />
 								</FormItem>
 							)}
 						/>
@@ -156,16 +152,15 @@ export function AddOrganization({ organizationId }: Props) {
 							name="logo"
 							render={({ field }) => (
 								<FormItem className="gap-4">
-									<FormLabel className="text-right">Logo URL</FormLabel>
+									<FormLabel>Logo URL</FormLabel>
 									<FormControl>
 										<Input
 											placeholder="https://example.com/logo.png"
 											{...field}
 											value={field.value || ""}
-											className="col-span-3"
 										/>
 									</FormControl>
-									<FormMessage className="col-span-3 col-start-2" />
+									<FormMessage />
 								</FormItem>
 							)}
 						/>

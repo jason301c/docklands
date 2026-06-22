@@ -14,7 +14,7 @@ export const ShowApiKeys = () => {
 
 	return (
 		<div className="w-full">
-			<div className="mx-auto w-full max-w-5xl rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-background p-6">
 				<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
 					<div>
 						<h3 className="text-xl flex items-center gap-2">

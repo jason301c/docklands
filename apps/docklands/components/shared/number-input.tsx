@@ -1,6 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
+import { Input, type InputProps } from "@cloudflare/kumo/components/input";
 import { MinusIcon, PlusIcon } from "lucide-react";
+import { cn } from "@/shared/utils";
 
 export interface UnitConverter {
 	toValue: (raw: string | undefined) => number;
@@ -22,7 +23,8 @@ export const createConverter = (
 	formatDisplay,
 });
 
-interface NumberInputWithStepsProps {
+interface NumberInputWithStepsProps
+	extends Omit<InputProps, "onChange" | "placeholder" | "value"> {
 	value: string | undefined;
 	onChange: (value: string) => void;
 	placeholder: string;
@@ -36,9 +38,15 @@ export const NumberInputWithSteps = ({
 	placeholder,
 	step,
 	converter,
+	className,
+	...props
 }: NumberInputWithStepsProps) => {
 	const numericValue = converter.toValue(value);
 	const displayValue = converter.formatDisplay(numericValue);
+	const accessibleName =
+		props.label || props["aria-label"] || props["aria-labelledby"]
+			? {}
+			: { "aria-label": placeholder };
 
 	const handleIncrement = () =>
 		onChange(converter.fromValue(numericValue + step));
@@ -63,7 +71,9 @@ export const NumberInputWithSteps = ({
 					placeholder={placeholder}
 					value={value || ""}
 					onChange={(e) => onChange(e.target.value)}
-					className="text-center"
+					className={cn("text-center", className)}
+					{...props}
+					{...accessibleName}
 				/>
 				<Button
 					type="button"

@@ -446,6 +446,7 @@ export default function Page({ children }: Props) {
 		[...filteredHome, ...filteredSettings],
 		pathname,
 	);
+	const isSettingsPath = pathname.startsWith("/dashboard/settings");
 
 	if (!isLoaded) {
 		return <div className="w-full h-screen bg-background" />; // Placeholder mientras se carga
@@ -456,7 +457,8 @@ export default function Page({ children }: Props) {
 			defaultOpen={defaultOpen}
 			open={defaultOpen}
 			collapsible="icon"
-			variant="floating"
+			variant="sidebar"
+			className="h-svh min-h-svh"
 			onOpenChange={(open) => {
 				setDefaultOpen(open);
 
@@ -471,7 +473,7 @@ export default function Page({ children }: Props) {
 			}
 		>
 			<MobileCloser />
-			<Sidebar>
+			<Sidebar className="h-svh min-h-svh" contentClassName="h-svh min-h-svh">
 				<SidebarHeader>
 					{/* <SidebarMenuButton
 						className="group-data-[collapsible=icon]:!p-0"
@@ -660,7 +662,7 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 				</SidebarContent>
-				<SidebarFooter>
+				<SidebarFooter className="border-t bg-background p-2 pb-3">
 					<SidebarMenu className="flex flex-col gap-2">
 						{!isCloud && permissions?.organization.update && (
 							<SidebarMenuItem>
@@ -679,7 +681,7 @@ export default function Page({ children }: Props) {
 				</SidebarFooter>
 				<SidebarRail />
 			</Sidebar>
-			<main className="flex min-h-svh flex-1 flex-col">
+			<main className="flex min-h-svh min-w-0 flex-1 flex-col bg-background">
 				{!includesProjects && (
 					<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
 						<div className="flex items-center justify-between w-full px-4">
@@ -697,7 +699,21 @@ export default function Page({ children }: Props) {
 					</header>
 				)}
 
-				<div className="flex flex-col w-full p-4 pt-0">{children}</div>
+				<div
+					className={cn(
+						"flex w-full flex-1 flex-col px-4 pb-8",
+						includesProjects ? "pt-4" : "pt-0",
+					)}
+				>
+					<div
+						className={cn(
+							"flex w-full flex-1 flex-col",
+							isSettingsPath && "mx-auto max-w-5xl",
+						)}
+					>
+						{children}
+					</div>
+				</div>
 			</main>
 		</SidebarProvider>
 	);

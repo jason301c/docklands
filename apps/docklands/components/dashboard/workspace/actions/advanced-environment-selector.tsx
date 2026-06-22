@@ -300,6 +300,7 @@ export const AdvancedEnvironmentSelector = ({
 						<div className="space-y-1">
 							<Label htmlFor="name">Name</Label>
 							<Input
+								aria-label="Environment name"
 								id="name"
 								value={name}
 								onChange={(e) => setName(e.target.value)}
@@ -352,6 +353,7 @@ export const AdvancedEnvironmentSelector = ({
 						<div className="space-y-1">
 							<Label htmlFor="edit-name">Name</Label>
 							<Input
+								aria-label="Environment name"
 								id="edit-name"
 								value={name}
 								onChange={(e) => setName(e.target.value)}

@@ -99,7 +99,7 @@ export const IngressDomain = () => {
 
 	return (
 		<div className="w-full">
-			<LayerCard className="h-full max-w-5xl mx-auto">
+			<LayerCard className="h-full w-full">
 				<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
 					<div className="flex flex-col gap-1">
 						<h3 className="text-xl flex flex-row gap-2">

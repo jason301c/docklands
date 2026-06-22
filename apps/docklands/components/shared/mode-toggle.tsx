@@ -2,7 +2,7 @@
 
 import { Button } from "@cloudflare/kumo/components/button";
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/client/providers/theme-provider";
 
 export function ModeToggle() {
 	const { theme, setTheme } = useTheme();

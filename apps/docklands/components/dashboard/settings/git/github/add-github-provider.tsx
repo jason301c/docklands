@@ -84,6 +84,7 @@ export const AddGithubProvider = () => {
 
 								{isOrganization && (
 									<Input
+										aria-label="GitHub organization name"
 										required
 										placeholder="Organization name"
 										onChange={(e) => setOrganization(e.target.value)}

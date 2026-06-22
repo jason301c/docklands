@@ -128,6 +128,7 @@ export const ShowRequests = () => {
 								</div>
 								<div className="flex-1 flex gap-4">
 									<Input
+										aria-label="Cron expression"
 										id="cron"
 										placeholder="0 0 * * *"
 										value={cronExpression || ""}

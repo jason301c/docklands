@@ -161,6 +161,7 @@ export const HealthCheckForm = ({ id, type }: HealthCheckFormProps) => {
 						{testCommands.map((cmd: string, index: number) => (
 							<div key={index} className="flex gap-2">
 								<Input
+									aria-label={`Health check test command ${index + 1}`}
 									value={cmd}
 									onChange={(e) => updateTestCommand(index, e.target.value)}
 									placeholder={

@@ -19,7 +19,7 @@ export const ShowInvitations = () => {
 
 	return (
 		<div className="w-full">
-			<div className="mx-auto w-full max-w-5xl rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-background p-6">
 				<div className="">
 					<h3 className="text-xl flex flex-row gap-2">
 						<Mail className="size-6 text-muted-foreground self-center" />

@@ -16,11 +16,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html
 			lang="en"
-			className="font-sans"
+			className="h-full font-sans"
 			data-theme="kumo"
 			suppressHydrationWarning
 		>
-			<body className="flex h-full w-full flex-col font-sans">
+			<body className="flex min-h-full w-full flex-col font-sans">
 				<Providers>{children}</Providers>
 			</body>
 		</html>

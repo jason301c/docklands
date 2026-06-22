@@ -4247,6 +4247,7 @@ export const EnvironmentCanvas = ({
 										Workspace name
 									</label>
 									<Input
+										aria-label="Workspace name"
 										id="duplicate-workspace-name"
 										value={duplicateName}
 										onChange={(event) => setDuplicateName(event.target.value)}
@@ -4261,6 +4262,7 @@ export const EnvironmentCanvas = ({
 										Description
 									</label>
 									<Input
+										aria-label="Workspace description"
 										id="duplicate-workspace-description"
 										value={duplicateDescription}
 										onChange={(event) =>

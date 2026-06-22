@@ -21,7 +21,7 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 						<div className="grid w-full md:grid-cols-2 gap-4 md:gap-8">
 							<div className="flex flex-col gap-2">
 								<Label>User</Label>
-								<Input disabled value={data?.databaseUser} />
+								<Input aria-label="User" disabled value={data?.databaseUser} />
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Sqld Node</Label>
@@ -53,20 +53,32 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 							<div className="flex flex-row gap-2">
 								<div className="w-full flex flex-col gap-2">
 									<Label>Internal Port (Container)</Label>
-									<Input disabled value="8080" />
+									<Input aria-label="Internal port" disabled value="8080" />
 								</div>
 								<div className="w-full flex flex-col gap-2">
 									<Label>Internal GRPC Port (Container)</Label>
-									<Input disabled value="5001" />
+									<Input
+										aria-label="Internal GRPC port"
+										disabled
+										value="5001"
+									/>
 								</div>
 								<div className="w-full flex flex-col gap-2">
 									<Label>Internal Admin Port (Container)</Label>
-									<Input disabled value="5000" />
+									<Input
+										aria-label="Internal admin port"
+										disabled
+										value="5000"
+									/>
 								</div>
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Internal Host</Label>
-								<Input disabled value={data?.appName} />
+								<Input
+									aria-label="Internal host"
+									disabled
+									value={data?.appName}
+								/>
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Enable Namespaces</Label>

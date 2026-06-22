@@ -167,6 +167,7 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 					<div className="flex flex-col gap-4  w-full overflow-auto">
 						<div className="flex items-center gap-2 max-sm:flex-wrap">
 							<Input
+								aria-label="Filter requests by hostname"
 								placeholder="Filter by hostname..."
 								value={search}
 								onChange={(event) => setSearch(event.target.value)}

@@ -214,6 +214,7 @@ export const PlacementForm = ({ id, type }: PlacementFormProps) => {
 						{constraints.map((constraint: string, index: number) => (
 							<div key={index} className="flex gap-2">
 								<Input
+									aria-label={`Placement constraint ${index + 1}`}
 									value={constraint}
 									onChange={(e) => updateConstraint(index, e.target.value)}
 									placeholder="node.role==manager"
@@ -249,6 +250,7 @@ export const PlacementForm = ({ id, type }: PlacementFormProps) => {
 						{preferences.map((pref: any, index: number) => (
 							<div key={index} className="flex gap-2">
 								<Input
+									aria-label={`Placement preference ${index + 1}`}
 									value={pref.SpreadDescriptor}
 									onChange={(e) => updatePreference(index, e.target.value)}
 									placeholder="node.labels.region"
@@ -300,6 +302,7 @@ export const PlacementForm = ({ id, type }: PlacementFormProps) => {
 						{platforms.map((platform: any, index: number) => (
 							<div key={index} className="flex gap-2">
 								<Input
+									aria-label={`Platform architecture ${index + 1}`}
 									value={platform.Architecture}
 									onChange={(e) =>
 										updatePlatform(index, "Architecture", e.target.value)
@@ -307,6 +310,7 @@ export const PlacementForm = ({ id, type }: PlacementFormProps) => {
 									placeholder="amd64"
 								/>
 								<Input
+									aria-label={`Platform operating system ${index + 1}`}
 									value={platform.OS}
 									onChange={(e) => updatePlatform(index, "OS", e.target.value)}
 									placeholder="linux"

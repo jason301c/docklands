@@ -272,6 +272,7 @@ export const ShowDomains = ({ id, type }: Props) => {
 						<div className="flex flex-col gap-4 w-full">
 							<div className="flex items-center gap-2 max-sm:flex-wrap">
 								<Input
+									aria-label="Filter domains by host"
 									placeholder="Filter by host..."
 									value={
 										(table.getColumn("host")?.getFilterValue() as string) ?? ""

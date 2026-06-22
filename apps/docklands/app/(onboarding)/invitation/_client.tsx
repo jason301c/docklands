@@ -142,170 +142,141 @@ const Invitation = ({
 	};
 
 	return (
-		<div>
-			<div className="flex  h-screen w-full items-center justify-center ">
-				<div className="flex flex-col items-center gap-4 w-full">
-					<h3 className="text-2xl font-bold flex items-center gap-2">
-						<Link href="/" className="flex flex-row items-center gap-2">
-							<Logo className="size-12" />
-						</Link>
-						Invitation
-					</h3>
-					{userAlreadyExists ? (
-						<div className="flex flex-col gap-4 justify-center items-center">
-							<AlertBlock type="success">
-								<div className="flex flex-col gap-2">
-									<span className="font-medium">Valid Invitation!</span>
-									<span className="text-sm text-green-600 dark:text-green-400">
-										We detected that you already have an account with this
-										email. Please sign in to accept the invitation.
-									</span>
-								</div>
-							</AlertBlock>
-
-							<LinkButton href="/" variant="primary" className="w-full">
-								Sign In
-							</LinkButton>
-						</div>
-					) : (
-						<>
-							<p>Fill the form below to create your account</p>
-							<div className="w-full">
-								<div className="p-3" />
-
-								{/* {isError && (
-									<div className="mx-5 my-2 flex flex-row items-center gap-2 rounded-lg bg-red-50 p-2 dark:bg-red-950">
-										<AlertTriangle className="text-red-600 dark:text-red-400" />
-										<span className="text-sm text-red-600 dark:text-red-400">
-											{error?.message}
-										</span>
-									</div>
-								)} */}
-
-								<div className="p-0">
-									<Form {...form}>
-										<form
-											onSubmit={form.handleSubmit(onSubmit)}
-											className="grid gap-4"
-										>
-											<div className="space-y-4">
-												<FormField
-													control={form.control}
-													name="name"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>First Name</FormLabel>
-															<FormControl>
-																<Input placeholder="John" {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-												<FormField
-													control={form.control}
-													name="lastName"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>Last Name</FormLabel>
-															<FormControl>
-																<Input placeholder="Doe" {...field} />
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-												<FormField
-													control={form.control}
-													name="email"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>Email</FormLabel>
-															<FormControl>
-																<Input
-																	disabled
-																	placeholder="Email"
-																	{...field}
-																/>
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-												<FormField
-													control={form.control}
-													name="password"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>Password</FormLabel>
-															<FormControl>
-																<Input
-																	type="password"
-																	placeholder="Password"
-																	{...field}
-																/>
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-
-												<FormField
-													control={form.control}
-													name="confirmPassword"
-													render={({ field }) => (
-														<FormItem>
-															<FormLabel>Confirm Password</FormLabel>
-															<FormControl>
-																<Input
-																	type="password"
-																	placeholder="Confirm Password"
-																	{...field}
-																/>
-															</FormControl>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-
-												<Button
-													type="submit"
-													loading={form.formState.isSubmitting}
-													className="w-full"
-												>
-													Register
-												</Button>
-											</div>
-
-											<div className="mt-4 text-sm flex flex-row justify-between gap-2 w-full">
-												{isCloud && (
-													<>
-														<Link
-															className="hover:underline text-muted-foreground"
-															href="/"
-														>
-															Login
-														</Link>
-														<Link
-															className="hover:underline text-muted-foreground"
-															href="/send-reset-password"
-														>
-															Lost your password?
-														</Link>
-													</>
-												)}
-											</div>
-										</form>
-									</Form>
-								</div>
-							</div>
-						</>
-					)}
-				</div>
+		<section className="w-full rounded-lg border bg-background p-8 shadow-sm">
+			<div className="mb-8 flex flex-col items-center gap-4 text-center">
+				<Link href="/" aria-label="Docklands home">
+					<Logo className="size-12" />
+				</Link>
+				<h1 className="font-semibold text-2xl tracking-tight">Invitation</h1>
 			</div>
-		</div>
+			{userAlreadyExists ? (
+				<div className="flex flex-col gap-4">
+					<AlertBlock type="success">
+						<div className="flex flex-col gap-2">
+							<span className="font-medium">Valid Invitation</span>
+							<span className="text-sm text-green-600 dark:text-green-400">
+								We detected that you already have an account with this email.
+								Please sign in to accept the invitation.
+							</span>
+						</div>
+					</AlertBlock>
+
+					<LinkButton
+						href="/"
+						variant="primary"
+						className="w-full justify-center"
+					>
+						Sign In
+					</LinkButton>
+				</div>
+			) : (
+				<>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>First Name</FormLabel>
+										<FormControl>
+											<Input placeholder="John" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="lastName"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Last Name</FormLabel>
+										<FormControl>
+											<Input placeholder="Doe" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="email"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Email</FormLabel>
+										<FormControl>
+											<Input disabled placeholder="Email" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="password"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Password</FormLabel>
+										<FormControl>
+											<Input
+												type="password"
+												placeholder="Password"
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="confirmPassword"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Confirm Password</FormLabel>
+										<FormControl>
+											<Input
+												type="password"
+												placeholder="Confirm Password"
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<Button
+								type="submit"
+								loading={form.formState.isSubmitting}
+								className="w-full justify-center"
+							>
+								Register
+							</Button>
+
+							{isCloud && (
+								<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
+									<Link
+										className="hover:underline text-muted-foreground"
+										href="/"
+									>
+										Login
+									</Link>
+									<Link
+										className="hover:underline text-muted-foreground"
+										href="/send-reset-password"
+									>
+										Lost your password?
+									</Link>
+								</div>
+							)}
+						</form>
+					</Form>
+				</>
+			)}
+		</section>
 	);
 };
-// http://localhost:3000/invitation?token=CZK4BLrUdMa32RVkAdZiLsPDdvnPiAgZ
-// /f7af93acc1a99eae864972ab4c92fee089f0d83473d415ede8e821e5dbabe79c
 export default Invitation;

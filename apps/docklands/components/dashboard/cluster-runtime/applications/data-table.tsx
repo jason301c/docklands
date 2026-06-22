@@ -64,6 +64,7 @@ export function DataTable<TData, TValue>({
 			<div className="flex flex-col gap-4 w-full overflow-auto">
 				<div className="flex items-center gap-2 max-sm:flex-wrap">
 					<Input
+						aria-label="Filter applications by name"
 						placeholder="Filter by name..."
 						value={(table.getColumn("Name")?.getFilterValue() as string) ?? ""}
 						onChange={(event) =>

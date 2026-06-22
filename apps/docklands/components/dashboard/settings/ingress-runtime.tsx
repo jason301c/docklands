@@ -18,7 +18,7 @@ export const IngressRuntime = () => {
 
 	return (
 		<div className="w-full">
-			<LayerCard className="h-full max-w-5xl mx-auto">
+			<LayerCard className="h-full w-full">
 				<div>
 					<h3 className="text-xl flex flex-row gap-2">
 						<ServerIcon className="size-6 text-muted-foreground self-center" />

@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import "@xterm/xterm/css/xterm.css";
 import { AttachAddon } from "@xterm/addon-attach";
 import { ClipboardAddon } from "@xterm/addon-clipboard";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/client/providers/theme-provider";
 import { getLocalRuntimeTerminalData } from "./local-runtime-terminal-config";
 
 interface Props {

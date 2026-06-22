@@ -118,6 +118,7 @@ export function LineCountFilter({
 					<div className="flex items-center border-b pb-2">
 						<Hash className="mr-2 h-4 w-4 shrink-0 opacity-50" />
 						<Input
+							aria-label="Number of log lines"
 							placeholder="Number of lines"
 							value={inputValue}
 							onChange={(event) => handleInputChange(event.target.value)}

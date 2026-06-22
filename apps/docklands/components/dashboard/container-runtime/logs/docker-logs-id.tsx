@@ -329,6 +329,7 @@ export const DockerLogsId: React.FC<Props> = ({
 							/>
 
 							<Input
+								aria-label="Search logs"
 								type="search"
 								placeholder="Search logs..."
 								value={search}

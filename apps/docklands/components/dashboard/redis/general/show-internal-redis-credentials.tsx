@@ -25,7 +25,7 @@ export const ShowInternalRedisCredentials = ({ redisId }: Props) => {
 						<div className="grid w-full md:grid-cols-2 gap-4 md:gap-8">
 							<div className="flex flex-col gap-2">
 								<Label>User</Label>
-								<Input disabled value="default" />
+								<Input aria-label="User" disabled value="default" />
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Password</Label>
@@ -48,12 +48,16 @@ export const ShowInternalRedisCredentials = ({ redisId }: Props) => {
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Internal Port (Container)</Label>
-								<Input disabled value="6379" />
+								<Input aria-label="Internal port" disabled value="6379" />
 							</div>
 
 							<div className="flex flex-col gap-2">
 								<Label>Internal Host</Label>
-								<Input disabled value={data?.appName} />
+								<Input
+									aria-label="Internal host"
+									disabled
+									value={data?.appName}
+								/>
 							</div>
 
 							<div className="flex flex-col gap-2 md:col-span-2">
