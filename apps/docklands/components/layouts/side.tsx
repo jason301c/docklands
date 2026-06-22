@@ -140,14 +140,14 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Deployments",
+			title: "Builds",
 			url: "/dashboard/deployments",
 			icon: Rocket,
 			isEnabled: ({ permissions }) => !!permissions?.deployment.read,
 		},
 		{
 			isSingle: true,
-			title: "Schedules",
+			title: "Automations",
 			url: "/dashboard/schedules",
 			icon: Clock,
 			isEnabled: ({ permissions }) => !!permissions?.organization.update,
@@ -172,7 +172,7 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Deployments",
+			title: "Build Workers",
 			url: "/dashboard/settings/deployments",
 			icon: Boxes,
 			isEnabled: ({ permissions, isCloud }) =>
@@ -203,7 +203,7 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Git",
+			title: "Git Providers",
 			url: "/dashboard/settings/git-providers",
 			icon: GitBranch,
 			// Only enabled for users with access to Git providers
@@ -211,7 +211,7 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: true,
-			title: "Registry",
+			title: "Image Registry",
 			url: "/dashboard/settings/registry",
 			icon: Package,
 			isEnabled: ({ permissions }) => !!permissions?.registry.read,
@@ -249,7 +249,7 @@ const MENU: Menu = {
 		},
 		{
 			isSingle: false,
-			title: "System",
+			title: "Infrastructure",
 			icon: BlocksIcon,
 			items: [
 				{
@@ -261,14 +261,14 @@ const MENU: Menu = {
 				},
 				{
 					isSingle: true,
-					title: "Containers",
+					title: "Container Runtime",
 					url: "/dashboard/runtime",
 					icon: BlocksIcon,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
 				},
 				{
 					isSingle: true,
-					title: "Orchestration",
+					title: "Cluster Runtime",
 					url: "/dashboard/orchestration",
 					icon: PieChart,
 					isEnabled: ({ permissions }) => !!permissions?.docker.read,
@@ -283,14 +283,14 @@ const MENU: Menu = {
 				},
 				{
 					isSingle: true,
-					title: "Ingress Files",
+					title: "Proxy Files",
 					url: "/dashboard/ingress",
 					icon: GalleryVerticalEnd,
 					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
 				},
 				{
 					isSingle: true,
-					title: "Runtime Metrics",
+					title: "Host Metrics",
 					url: "/dashboard/monitoring",
 					icon: BarChartHorizontalBigIcon,
 					isEnabled: ({ isCloud, permissions }) =>
@@ -843,7 +843,7 @@ export default function Page({ children }: Props) {
 				</SidebarHeader>
 				<SidebarContent>
 					<SidebarGroup>
-						<SidebarGroupLabel>Home</SidebarGroupLabel>
+						<SidebarGroupLabel>Canvas</SidebarGroupLabel>
 						<SidebarMenu>
 							{filteredHome.map((item) => {
 								const isSingle = item.isSingle !== false;
@@ -924,7 +924,7 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 					<SidebarGroup>
-						<SidebarGroupLabel>Settings</SidebarGroupLabel>
+						<SidebarGroupLabel>Control Plane</SidebarGroupLabel>
 						<SidebarMenu className="gap-1">
 							{filteredSettings.map((item) => {
 								const isSingle = item.isSingle !== false;
@@ -1005,7 +1005,7 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 					<SidebarGroup className="group-data-[collapsible=icon]:hidden">
-						<SidebarGroupLabel>Extra</SidebarGroupLabel>
+						<SidebarGroupLabel>Resources</SidebarGroupLabel>
 						<SidebarMenu>
 							{help.map((item: ExternalLink) => (
 								<SidebarMenuItem key={item.name}>
