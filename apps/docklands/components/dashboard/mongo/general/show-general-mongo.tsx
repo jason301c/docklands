@@ -1,12 +1,12 @@
-import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
-import { useState } from "react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { DialogAction } from "@/components/shared/dialog-action";
-import { DrawerLogs } from "@/components/shared/drawer-logs";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
+import { useState } from "react";
+import { api } from "@/client/api/trpc";
+import { DialogAction } from "@/components/shared/dialog-action";
+import { DrawerLogs } from "@/components/shared/drawer-logs";
+import { toast } from "@/components/shared/toast";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
 import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
@@ -65,14 +65,14 @@ export const ShowGeneralMongo = ({ mongoId }: Props) => {
 			<div className="flex w-full flex-col gap-5 ">
 				<LayerCard className="bg-background">
 					<div>
-						<h3 className="text-xl">Deploy Settings</h3>
+						<h3 className="text-xl">Runtime Setup</h3>
 					</div>
 					<div className="flex flex-row gap-4 flex-wrap">
 						<TooltipProvider delay={0}>
 							{canDeploy && (
 								<DialogAction
-									title="Deploy Mongo"
-									description="Are you sure you want to deploy this mongo?"
+									title="Provision MongoDB"
+									description="Are you sure you want to provision this MongoDB database?"
 									type="default"
 									onClick={async () => {
 										setIsDeploying(true);
@@ -85,21 +85,27 @@ export const ShowGeneralMongo = ({ mongoId }: Props) => {
 										loading={data?.applicationStatus === "running"}
 										className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 									>
-										<Tooltip content={<>
+										<Tooltip
+											content={
+												<>
 													<p>Downloads and sets up the MongoDB database</p>
-												</>} className="z-[60]"  asChild>
-												<div className="flex items-center">
-													<Rocket className="size-4 mr-1" />
-													Deploy
-												</div>
-											</Tooltip>
+												</>
+											}
+											className="z-[60]"
+											asChild
+										>
+											<div className="flex items-center">
+												<Rocket className="size-4 mr-1" />
+												Provision
+											</div>
+										</Tooltip>
 									</Button>
 								</DialogAction>
 							)}
 							{canDeploy && (
 								<DialogAction
 									title="Reload Mongo"
-									description="Are you sure you want to reload this mongo?"
+									description="Are you sure you want to reload this MongoDB database?"
 									type="default"
 									onClick={async () => {
 										await reload({
@@ -120,14 +126,20 @@ export const ShowGeneralMongo = ({ mongoId }: Props) => {
 										loading={isReloading}
 										className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 									>
-										<Tooltip content={<>
+										<Tooltip
+											content={
+												<>
 													<p>Restart the MongoDB service without rebuilding</p>
-												</>} className="z-[60]"  asChild>
-												<div className="flex items-center">
-													<RefreshCcw className="size-4 mr-1" />
-													Reload
-												</div>
-											</Tooltip>
+												</>
+											}
+											className="z-[60]"
+											asChild
+										>
+											<div className="flex items-center">
+												<RefreshCcw className="size-4 mr-1" />
+												Reload
+											</div>
+										</Tooltip>
 									</Button>
 								</DialogAction>
 							)}
@@ -135,7 +147,7 @@ export const ShowGeneralMongo = ({ mongoId }: Props) => {
 								(data?.applicationStatus === "idle" ? (
 									<DialogAction
 										title="Start Mongo"
-										description="Are you sure you want to start this mongo?"
+										description="Are you sure you want to start this MongoDB database?"
 										type="default"
 										onClick={async () => {
 											await start({
@@ -155,23 +167,29 @@ export const ShowGeneralMongo = ({ mongoId }: Props) => {
 											loading={isStarting}
 											className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 										>
-											<Tooltip content={<>
+											<Tooltip
+												content={
+													<>
 														<p>
 															Start the MongoDB database (requires a previous
 															successful setup)
 														</p>
-													</>} className="z-[60]"  asChild>
-													<div className="flex items-center">
-														<CheckCircle2 className="size-4 mr-1" />
-														Start
-													</div>
-												</Tooltip>
+													</>
+												}
+												className="z-[60]"
+												asChild
+											>
+												<div className="flex items-center">
+													<CheckCircle2 className="size-4 mr-1" />
+													Start
+												</div>
+											</Tooltip>
 										</Button>
 									</DialogAction>
 								) : (
 									<DialogAction
 										title="Stop Mongo"
-										description="Are you sure you want to stop this mongo?"
+										description="Are you sure you want to stop this MongoDB database?"
 										onClick={async () => {
 											await stop({
 												mongoId: mongoId,
@@ -190,14 +208,20 @@ export const ShowGeneralMongo = ({ mongoId }: Props) => {
 											loading={isStopping}
 											className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 										>
-											<Tooltip content={<>
+											<Tooltip
+												content={
+													<>
 														<p>Stop the currently running MongoDB database</p>
-													</>} className="z-[60]"  asChild>
-													<div className="flex items-center">
-														<Ban className="size-4 mr-1" />
-														Stop
-													</div>
-												</Tooltip>
+													</>
+												}
+												className="z-[60]"
+												asChild
+											>
+												<div className="flex items-center">
+													<Ban className="size-4 mr-1" />
+													Stop
+												</div>
+											</Tooltip>
 										</Button>
 									</DialogAction>
 								))}
@@ -210,14 +234,20 @@ export const ShowGeneralMongo = ({ mongoId }: Props) => {
 								variant="outline"
 								className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 							>
-								<Tooltip content={<>
+								<Tooltip
+									content={
+										<>
 											<p>Open a terminal to the MongoDB container</p>
-										</>} className="z-[60]"  asChild>
-										<div className="flex items-center">
-											<Terminal className="size-4 mr-1" />
-											Open Terminal
-										</div>
-									</Tooltip>
+										</>
+									}
+									className="z-[60]"
+									asChild
+								>
+									<div className="flex items-center">
+										<Terminal className="size-4 mr-1" />
+										Open Terminal
+									</div>
+								</Tooltip>
 							</Button>
 						</DockerTerminalModal>
 					</div>

@@ -1,12 +1,12 @@
-import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
-import { useState } from "react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { DialogAction } from "@/components/shared/dialog-action";
-import { DrawerLogs } from "@/components/shared/drawer-logs";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
+import { useState } from "react";
+import { api } from "@/client/api/trpc";
+import { DialogAction } from "@/components/shared/dialog-action";
+import { DrawerLogs } from "@/components/shared/drawer-logs";
+import { toast } from "@/components/shared/toast";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
 import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
@@ -63,13 +63,13 @@ export const ShowGeneralLibsql = ({ libsqlId }: Props) => {
 			<div className="flex w-full flex-col gap-5 ">
 				<LayerCard className="bg-background">
 					<div>
-						<h3 className="text-xl">Deploy Settings</h3>
+						<h3 className="text-xl">Runtime Setup</h3>
 					</div>
 					<div className="flex flex-row gap-4 flex-wrap">
 						<TooltipProvider delay={0}>
 							<DialogAction
-								title="Deploy Libsql"
-								description="Are you sure you want to deploy this Libsql?"
+								title="Provision libSQL"
+								description="Are you sure you want to provision this libSQL database?"
 								type="default"
 								onClick={async () => {
 									setIsDeploying(true);
@@ -82,21 +82,27 @@ export const ShowGeneralLibsql = ({ libsqlId }: Props) => {
 									loading={data?.applicationStatus === "running"}
 									className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip content={<>
-												<p>Downloads and sets up the Libsql database</p>
-											</>} className="z-[60]"  asChild>
-											<div className="flex items-center">
-												<Rocket className="size-4 mr-1" />
-												Deploy
-											</div>
-										</Tooltip>
+									<Tooltip
+										content={
+											<>
+												<p>Downloads and sets up the libSQL database</p>
+											</>
+										}
+										className="z-[60]"
+										asChild
+									>
+										<div className="flex items-center">
+											<Rocket className="size-4 mr-1" />
+											Provision
+										</div>
+									</Tooltip>
 								</Button>
 							</DialogAction>
 						</TooltipProvider>
 						<TooltipProvider delay={0}>
 							<DialogAction
-								title="Reload Libsql"
-								description="Are you sure you want to reload this libsql?"
+								title="Reload libSQL"
+								description="Are you sure you want to reload this libSQL database?"
 								type="default"
 								onClick={async () => {
 									await reload({
@@ -104,11 +110,11 @@ export const ShowGeneralLibsql = ({ libsqlId }: Props) => {
 										appName: data?.appName || "",
 									})
 										.then(() => {
-											toast.success("Libsql reloaded successfully");
+											toast.success("libSQL reloaded successfully");
 											refetch();
 										})
 										.catch(() => {
-											toast.error("Error reloading Libsql");
+											toast.error("Error reloading libSQL");
 										});
 								}}
 							>
@@ -117,33 +123,39 @@ export const ShowGeneralLibsql = ({ libsqlId }: Props) => {
 									loading={isReloading}
 									className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 								>
-									<Tooltip content={<>
-												<p>Restart the Libsql service without rebuilding</p>
-											</>} className="z-[60]"  asChild>
-											<div className="flex items-center">
-												<RefreshCcw className="size-4 mr-1" />
-												Reload
-											</div>
-										</Tooltip>
+									<Tooltip
+										content={
+											<>
+												<p>Restart the libSQL service without rebuilding</p>
+											</>
+										}
+										className="z-[60]"
+										asChild
+									>
+										<div className="flex items-center">
+											<RefreshCcw className="size-4 mr-1" />
+											Reload
+										</div>
+									</Tooltip>
 								</Button>
 							</DialogAction>
 						</TooltipProvider>
 						{data?.applicationStatus === "idle" ? (
 							<TooltipProvider delay={0}>
 								<DialogAction
-									title="Start Libsql"
-									description="Are you sure you want to start this Libsql?"
+									title="Start libSQL"
+									description="Are you sure you want to start this libSQL database?"
 									type="default"
 									onClick={async () => {
 										await start({
 											libsqlId: libsqlId,
 										})
 											.then(() => {
-												toast.success("Libsql started successfully");
+												toast.success("libSQL started successfully");
 												refetch();
 											})
 											.catch(() => {
-												toast.error("Error starting Libsql");
+												toast.error("Error starting libSQL");
 											});
 									}}
 								>
@@ -152,35 +164,41 @@ export const ShowGeneralLibsql = ({ libsqlId }: Props) => {
 										loading={isStarting}
 										className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 									>
-										<Tooltip content={<>
+										<Tooltip
+											content={
+												<>
 													<p>
-														Start the Libsql database (requires a previous
+														Start the libSQL database (requires a previous
 														successful setup)
 													</p>
-												</>} className="z-[60]"  asChild>
-												<div className="flex items-center">
-													<CheckCircle2 className="size-4 mr-1" />
-													Start
-												</div>
-											</Tooltip>
+												</>
+											}
+											className="z-[60]"
+											asChild
+										>
+											<div className="flex items-center">
+												<CheckCircle2 className="size-4 mr-1" />
+												Start
+											</div>
+										</Tooltip>
 									</Button>
 								</DialogAction>
 							</TooltipProvider>
 						) : (
 							<TooltipProvider delay={0}>
 								<DialogAction
-									title="Stop Libsql"
-									description="Are you sure you want to stop this Libsql?"
+									title="Stop libSQL"
+									description="Are you sure you want to stop this libSQL database?"
 									onClick={async () => {
 										await stop({
 											libsqlId: libsqlId,
 										})
 											.then(() => {
-												toast.success("Libsql stopped successfully");
+												toast.success("libSQL stopped successfully");
 												refetch();
 											})
 											.catch(() => {
-												toast.error("Error stopping Libsql");
+												toast.error("Error stopping libSQL");
 											});
 									}}
 								>
@@ -189,14 +207,20 @@ export const ShowGeneralLibsql = ({ libsqlId }: Props) => {
 										loading={isStopping}
 										className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 									>
-										<Tooltip content={<>
-													<p>Stop the currently running Libsql database</p>
-												</>} className="z-[60]"  asChild>
-												<div className="flex items-center">
-													<Ban className="size-4 mr-1" />
-													Stop
-												</div>
-											</Tooltip>
+										<Tooltip
+											content={
+												<>
+													<p>Stop the currently running libSQL database</p>
+												</>
+											}
+											className="z-[60]"
+											asChild
+										>
+											<div className="flex items-center">
+												<Ban className="size-4 mr-1" />
+												Stop
+											</div>
+										</Tooltip>
 									</Button>
 								</DialogAction>
 							</TooltipProvider>
@@ -209,14 +233,20 @@ export const ShowGeneralLibsql = ({ libsqlId }: Props) => {
 								variant="outline"
 								className="flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-offset-2"
 							>
-								<Tooltip content={<>
-											<p>Open a terminal to the Libsql container</p>
-										</>} className="z-[60]"  asChild>
-										<div className="flex items-center">
-											<Terminal className="size-4 mr-1" />
-											Open Terminal
-										</div>
-									</Tooltip>
+								<Tooltip
+									content={
+										<>
+											<p>Open a terminal to the libSQL container</p>
+										</>
+									}
+									className="z-[60]"
+									asChild
+								>
+									<div className="flex items-center">
+										<Terminal className="size-4 mr-1" />
+										Open Terminal
+									</div>
+								</Tooltip>
 							</Button>
 						</DockerTerminalModal>
 					</div>
