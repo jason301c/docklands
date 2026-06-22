@@ -1,5 +1,6 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Bell, Loader2, Mail, PenBoxIcon, Trash2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import {
 	DiscordIcon,
@@ -13,8 +14,7 @@ import {
 	TelegramIcon,
 } from "@/components/icons/notification-icons";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { toast } from "@/components/shared/toast";
 import { HandleNotifications } from "./handle-notifications";
 
 export const ShowNotifications = () => {
@@ -153,7 +153,8 @@ export const ShowNotifications = () => {
 																			});
 																	}}
 																>
-																	<Button aria-label="Action"
+																	<Button
+																		aria-label="Delete notification"
 																		variant="ghost"
 																		shape="square"
 																		className="group hover:bg-red-500/10 "

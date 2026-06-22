@@ -1,15 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { getGiteaOAuthUrl } from "@/client/git/gitea";
 import { useUrl } from "@/client/hooks/use-url";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -19,7 +19,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
@@ -156,7 +156,12 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 
 	if (isLoading) {
 		return (
-			<Button aria-label="Action" variant="ghost" shape="square" disabled>
+			<Button
+				aria-label="Edit Gitea provider"
+				variant="ghost"
+				shape="square"
+				disabled
+			>
 				<PenBoxIcon className="h-4 w-4 text-muted-foreground" />
 			</Button>
 		);
@@ -169,17 +174,18 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 
 	return (
 		<Dialog.Root open={open} onOpenChange={handleOpenChange}>
-			<Dialog.Trigger render={(
-
-				<Button aria-label="Action"
-					variant="ghost"
-					shape="square"
-					className="group hover:bg-blue-500/10"
-				>
-					<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button
+						aria-label="Edit Gitea provider"
+						variant="ghost"
+						shape="square"
+						className="group hover:bg-blue-500/10"
+					>
+						<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
+					</Button>
+				}
+			/>
 			<Dialog>
 				<div>
 					<Dialog.Title>Edit Gitea Provider</Dialog.Title>

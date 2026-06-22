@@ -1,12 +1,12 @@
-import { LockKeyhole, Trash2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { DialogAction } from "@/components/shared/dialog-action";
-import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { LockKeyhole, Trash2 } from "lucide-react";
+import { api } from "@/client/api/trpc";
+import { DialogAction } from "@/components/shared/dialog-action";
+import { toast } from "@/components/shared/toast";
+import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import { HandleSecurity } from "./handle-security";
 
 interface Props {
@@ -94,7 +94,8 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 														});
 												}}
 											>
-												<Button aria-label="Action"
+												<Button
+													aria-label="Delete security rule"
 													variant="ghost"
 													shape="square"
 													className="group hover:bg-red-500/10"

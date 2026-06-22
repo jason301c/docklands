@@ -1,10 +1,10 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Loader2, TagIcon, Trash2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { TagBadge } from "@/components/shared/tag-badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { toast } from "@/components/shared/toast";
 import { HandleTag } from "./handle-tag";
 
 export const TagManager = () => {
@@ -23,9 +23,7 @@ export const TagManager = () => {
 							<TagIcon className="size-6 text-muted-foreground self-center" />
 							Tags
 						</h3>
-						<p>
-							Create and manage tags to organize your projects
-						</p>
+						<p>Create and manage tags to organize your projects</p>
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
@@ -85,7 +83,8 @@ export const TagManager = () => {
 																			});
 																	}}
 																>
-																	<Button aria-label="Action"
+																	<Button
+																		aria-label="Delete tag"
 																		variant="ghost"
 																		shape="square"
 																		className="group hover:bg-red-500/10"

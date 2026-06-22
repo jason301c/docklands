@@ -211,7 +211,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 				render={
 					destinationId ? (
 						<Button
-							aria-label="Action"
+							aria-label="Edit destination"
 							variant="ghost"
 							shape="square"
 							className="group hover:bg-blue-500/10 "
@@ -405,7 +405,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 													/>
 												</FormControl>
 												<Button
-													aria-label="Action"
+													aria-label="Remove destination option"
 													type="button"
 													variant="ghost"
 													shape="square"

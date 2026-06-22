@@ -197,7 +197,7 @@ export const HandleRegistry = ({ registryId }: Props) => {
 				render={
 					registryId ? (
 						<Button
-							aria-label="Action"
+							aria-label="Edit registry configuration"
 							variant="ghost"
 							shape="square"
 							className="group hover:bg-blue-500/10 "

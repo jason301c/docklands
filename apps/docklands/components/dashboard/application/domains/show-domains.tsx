@@ -1,3 +1,10 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Table } from "@cloudflare/kumo/components/table";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	type ColumnFiltersState,
 	flexRender,
@@ -26,16 +33,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Table } from "@cloudflare/kumo/components/table";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { createColumns } from "./columns";
 import { DnsHelperModal } from "./dns-helper-modal";
 import { AddDomain } from "./handle-domain";
@@ -207,15 +207,14 @@ export const ShowDomains = ({ id, type }: Props) => {
 				<div className="flex flex-row items-center flex-wrap gap-4 justify-between">
 					<div className="flex flex-col gap-1">
 						<h3 className="text-xl">Domains</h3>
-						<p>
-							Domains are used to access to the application
-						</p>
+						<p>Domains are used to access to the application</p>
 					</div>
 
 					<div className="flex flex-row gap-2 flex-wrap">
 						{data && data?.length > 0 && (
 							<>
-								<Button aria-label="Action"
+								<Button
+									aria-label="Toggle domain layout"
 									variant="outline"
 									shape="square"
 									onClick={() => {
@@ -280,16 +279,16 @@ export const ShowDomains = ({ id, type }: Props) => {
 									className="md:max-w-sm"
 								/>
 								<DropdownMenu>
-									<DropdownMenu.Trigger render={(
-
-										<Button
-											variant="outline"
-											className="sm:ml-auto max-sm:w-full"
-										>
-											Columns <ChevronDown className="ml-2 h-4 w-4" />
-										</Button>
-									
-)} />
+									<DropdownMenu.Trigger
+										render={
+											<Button
+												variant="outline"
+												className="sm:ml-auto max-sm:w-full"
+											>
+												Columns <ChevronDown className="ml-2 h-4 w-4" />
+											</Button>
+										}
+									/>
 									<DropdownMenu.Content align="end">
 										{table
 											.getAllColumns()
@@ -423,7 +422,8 @@ export const ShowDomains = ({ id, type }: Props) => {
 																type={type}
 																domainId={item.domainId}
 															>
-																<Button aria-label="Action"
+																<Button
+																	aria-label="Edit domain"
 																	variant="ghost"
 																	shape="square"
 																	className="group hover:bg-blue-500/10"
@@ -452,7 +452,8 @@ export const ShowDomains = ({ id, type }: Props) => {
 																		});
 																}}
 															>
-																<Button aria-label="Action"
+																<Button
+																	aria-label="Delete domain"
 																	variant="ghost"
 																	shape="square"
 																	className="group hover:bg-red-500/10"
@@ -478,122 +479,151 @@ export const ShowDomains = ({ id, type }: Props) => {
 												{/* Domain Details */}
 												<div className="flex flex-wrap gap-3">
 													<TooltipProvider>
-														<Tooltip content={<>
-																<p>URL path for this service</p>
-															</>}  asChild>
-																<Badge variant="secondary">
-																	<InfoIcon className="size-3 mr-1" />
-																	Path: {item.path || "/"}
-																</Badge>
-															</Tooltip>
+														<Tooltip
+															content={
+																<>
+																	<p>URL path for this service</p>
+																</>
+															}
+															asChild
+														>
+															<Badge variant="secondary">
+																<InfoIcon className="size-3 mr-1" />
+																Path: {item.path || "/"}
+															</Badge>
+														</Tooltip>
 													</TooltipProvider>
 
 													<TooltipProvider>
-														<Tooltip content={<>
-																<p>Container port exposed</p>
-															</>}  asChild>
-																<Badge variant="secondary">
-																	<InfoIcon className="size-3 mr-1" />
-																	Port: {item.port}
-																</Badge>
-															</Tooltip>
+														<Tooltip
+															content={
+																<>
+																	<p>Container port exposed</p>
+																</>
+															}
+															asChild
+														>
+															<Badge variant="secondary">
+																<InfoIcon className="size-3 mr-1" />
+																Port: {item.port}
+															</Badge>
+														</Tooltip>
 													</TooltipProvider>
 
 													<TooltipProvider>
-														<Tooltip content={<>
-																<p>
-																	{item.https
-																		? "Secure HTTPS connection"
-																		: "Standard HTTP connection"}
-																</p>
-															</>}  asChild>
-																<Badge
-																	variant={item.https ? "outline" : "secondary"}
-																>
-																	{item.https ? "HTTPS" : "HTTP"}
-																</Badge>
-															</Tooltip>
+														<Tooltip
+															content={
+																<>
+																	<p>
+																		{item.https
+																			? "Secure HTTPS connection"
+																			: "Standard HTTP connection"}
+																	</p>
+																</>
+															}
+															asChild
+														>
+															<Badge
+																variant={item.https ? "outline" : "secondary"}
+															>
+																{item.https ? "HTTPS" : "HTTP"}
+															</Badge>
+														</Tooltip>
 													</TooltipProvider>
 
 													{item.certificateType && (
 														<TooltipProvider>
-															<Tooltip content={<>
-																	<p>SSL Certificate Provider</p>
-																</>}  asChild>
-																	<Badge variant="outline">
-																		Cert: {item.certificateType}
-																	</Badge>
-																</Tooltip>
+															<Tooltip
+																content={
+																	<>
+																		<p>SSL Certificate Provider</p>
+																	</>
+																}
+																asChild
+															>
+																<Badge variant="outline">
+																	Cert: {item.certificateType}
+																</Badge>
+															</Tooltip>
 														</TooltipProvider>
 													)}
 
 													{item.middlewares?.map((middleware, index) => (
 														<TooltipProvider key={`${middleware}-${index}`}>
-															<Tooltip content={<>
-																	<p>Traefik middleware reference</p>
-																</>}  asChild>
-																	<Badge variant="secondary">
-																		<InfoIcon className="size-3 mr-1" />
-																		Middleware: {middleware}
-																	</Badge>
-																</Tooltip>
+															<Tooltip
+																content={
+																	<>
+																		<p>Traefik middleware reference</p>
+																	</>
+																}
+																asChild
+															>
+																<Badge variant="secondary">
+																	<InfoIcon className="size-3 mr-1" />
+																	Middleware: {middleware}
+																</Badge>
+															</Tooltip>
 														</TooltipProvider>
 													))}
 
 													<TooltipProvider>
-														<Tooltip content={<>
-																{validationState?.error ? (
-																	<div className="flex flex-col gap-1">
-																		<p className="font-medium text-red-500">
-																			Error:
-																		</p>
-																		<p>{validationState.error}</p>
-																	</div>
-																) : (
-																	"Click to validate DNS configuration"
-																)}
-															</>} className="max-w-xs"  asChild>
-																<Button
-																	type="button"
-																	variant="outline"
-																	size="xs"
-																	className={
-																		validationState?.isValid
-																			? "bg-green-500/10 text-green-500 cursor-pointer"
-																			: validationState?.error
-																				? "bg-red-500/10 text-red-500 cursor-pointer"
-																				: "bg-yellow-500/10 text-yellow-500 cursor-pointer"
-																	}
-																	onClick={() =>
-																		handleValidateDomain(item.host)
-																	}
-																>
-																	{validationState?.isLoading ? (
-																		<>
-																			<Loader2 className="size-3 mr-1 animate-spin" />
-																			Checking DNS...
-																		</>
-																	) : validationState?.isValid ? (
-																		<>
-																			<CheckCircle2 className="size-3 mr-1" />
-																			{validationState.message &&
-																			validationState.cdnProvider
-																				? `Behind ${validationState.cdnProvider}`
-																				: "DNS Valid"}
-																		</>
-																	) : validationState?.error ? (
-																		<>
-																			<XCircle className="size-3 mr-1" />
-																			{validationState.error}
-																		</>
+														<Tooltip
+															content={
+																<>
+																	{validationState?.error ? (
+																		<div className="flex flex-col gap-1">
+																			<p className="font-medium text-red-500">
+																				Error:
+																			</p>
+																			<p>{validationState.error}</p>
+																		</div>
 																	) : (
-																		<>
-																			<RefreshCw className="size-3 mr-1" />
-																			Validate DNS
-																		</>
+																		"Click to validate DNS configuration"
 																	)}
-																</Button>
-															</Tooltip>
+																</>
+															}
+															className="max-w-xs"
+															asChild
+														>
+															<Button
+																type="button"
+																variant="outline"
+																size="xs"
+																className={
+																	validationState?.isValid
+																		? "bg-green-500/10 text-green-500 cursor-pointer"
+																		: validationState?.error
+																			? "bg-red-500/10 text-red-500 cursor-pointer"
+																			: "bg-yellow-500/10 text-yellow-500 cursor-pointer"
+																}
+																onClick={() => handleValidateDomain(item.host)}
+															>
+																{validationState?.isLoading ? (
+																	<>
+																		<Loader2 className="size-3 mr-1 animate-spin" />
+																		Checking DNS...
+																	</>
+																) : validationState?.isValid ? (
+																	<>
+																		<CheckCircle2 className="size-3 mr-1" />
+																		{validationState.message &&
+																		validationState.cdnProvider
+																			? `Behind ${validationState.cdnProvider}`
+																			: "DNS Valid"}
+																	</>
+																) : validationState?.error ? (
+																	<>
+																		<XCircle className="size-3 mr-1" />
+																		{validationState.error}
+																	</>
+																) : (
+																	<>
+																		<RefreshCw className="size-3 mr-1" />
+																		Validate DNS
+																	</>
+																)}
+															</Button>
+														</Tooltip>
 													</TooltipProvider>
 												</div>
 											</div>

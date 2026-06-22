@@ -1,8 +1,8 @@
-import { Copy, HelpCircle, Server } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { AlertBlock } from "@/components/shared/alert-block";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Copy, HelpCircle, Server } from "lucide-react";
+import { AlertBlock } from "@/components/shared/alert-block";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	domain: {
@@ -22,7 +22,12 @@ export const DnsHelperModal = ({ domain, serverIp }: Props) => {
 	return (
 		<Dialog.Root>
 			<Dialog.Trigger>
-				<Button aria-label="Action" variant="ghost" shape="square" className="group">
+				<Button
+					aria-label="Open DNS configuration guide"
+					variant="ghost"
+					shape="square"
+					className="group"
+				>
 					<HelpCircle className="size-4" />
 				</Button>
 			</Dialog.Trigger>
@@ -63,7 +68,8 @@ export const DnsHelperModal = ({ domain, serverIp }: Props) => {
 												Value: {serverIp || "Your server IP"}
 											</p>
 										</div>
-										<Button aria-label="Action"
+										<Button
+											aria-label="Copy server IP"
 											variant="ghost"
 											shape="square"
 											onClick={() => copyToClipboard(serverIp || "")}

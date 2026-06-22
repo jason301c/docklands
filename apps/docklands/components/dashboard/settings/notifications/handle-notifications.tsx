@@ -824,7 +824,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				render={
 					notificationId ? (
 						<Button
-							aria-label="Action"
+							aria-label="Edit notification"
 							variant="ghost"
 							shape="square"
 							className="group hover:bg-blue-500/10 "

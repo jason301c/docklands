@@ -1,3 +1,11 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import { SidebarTrigger } from "@cloudflare/kumo/components/sidebar";
 import {
 	Check,
 	ChevronDown,
@@ -18,16 +26,8 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { Separator } from "@/components/shared/separator";
-import { SidebarTrigger } from "@cloudflare/kumo/components/sidebar";
 import type { ServiceType } from "@/server/core/db/schema";
 
 const Command = Combobox;
@@ -618,7 +618,8 @@ export const AdvanceBreadcrumb = () => {
 							</Popover>
 
 							{/* Close button to go back to environment */}
-							<Button aria-label="Action"
+							<Button
+								aria-label="Back to environment"
 								variant="ghost"
 								shape="square"
 								className="size-7 ml-1 hidden md:flex"

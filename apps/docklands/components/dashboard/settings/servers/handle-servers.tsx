@@ -122,7 +122,7 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 					<Dialog.Trigger
 						render={
 							<Button
-								aria-label="Action"
+								aria-label="Edit server"
 								variant="outline"
 								shape="square"
 								className="h-9 w-9"

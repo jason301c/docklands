@@ -1,15 +1,16 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import { CopyIcon, DownloadIcon, Fingerprint, QrCode } from "lucide-react";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -19,9 +20,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
 import { InputOTP } from "@/components/shared/input-otp";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 
 const PasswordSchema = z.object({
 	password: z.string().min(8, {
@@ -240,14 +240,14 @@ export const Enable2FA = () => {
 
 	return (
 		<Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-			<Dialog.Trigger render={(
-
-				<Button variant="ghost">
-					<Fingerprint className="size-4 text-muted-foreground" />
-					Enable 2FA
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button variant="ghost">
+						<Fingerprint className="size-4 text-muted-foreground" />
+						Enable 2FA
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-xl">
 				<div>
 					<Dialog.Title>2FA Setup</Dialog.Title>
@@ -326,7 +326,6 @@ export const Enable2FA = () => {
 											<span className="text-sm font-medium">
 												Scan this QR code with your authenticator app
 											</span>
-											{/** biome-ignore lint/performance/noImgElement: This is a valid use case for an img element */}
 											<img
 												src={data.qrCodeUrl}
 												alt="2FA QR Code"
@@ -348,13 +347,12 @@ export const Enable2FA = () => {
 													<h4 className="font-medium">Backup Codes</h4>
 													<div className="flex items-center gap-2">
 														<TooltipProvider>
-															<Tooltip delay={0} content={(
-
-																	<p>Copy</p>
-																
-)} render={(
-
-																	<Button aria-label="Copy"
+															<Tooltip
+																delay={0}
+																content={<p>Copy</p>}
+																render={
+																	<Button
+																		aria-label="Copy"
 																		type="button"
 																		variant="outline"
 																		shape="square"
@@ -362,18 +360,17 @@ export const Enable2FA = () => {
 																	>
 																		<CopyIcon className="size-4" />
 																	</Button>
-																
-)} />
+																}
+															/>
 														</TooltipProvider>
 
 														<TooltipProvider>
-															<Tooltip delay={0} content={(
-
-																	<p>Download</p>
-																
-)} render={(
-
-																	<Button aria-label="Action"
+															<Tooltip
+																delay={0}
+																content={<p>Download</p>}
+																render={
+																	<Button
+																		aria-label="Download backup codes"
 																		type="button"
 																		variant="outline"
 																		shape="square"
@@ -381,8 +378,8 @@ export const Enable2FA = () => {
 																	>
 																		<DownloadIcon className="size-4" />
 																	</Button>
-																
-)} />
+																}
+															/>
 														</TooltipProvider>
 													</div>
 												</div>

@@ -271,7 +271,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 														/>
 													</FormControl>
 													<Button
-														aria-label="Action"
+														aria-label="Add preview label"
 														type="button"
 														variant="outline"
 														shape="square"

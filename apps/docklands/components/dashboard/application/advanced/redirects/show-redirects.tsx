@@ -1,9 +1,9 @@
-import { Split, Trash2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { DialogAction } from "@/components/shared/dialog-action";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Split, Trash2 } from "lucide-react";
+import { api } from "@/client/api/trpc";
+import { DialogAction } from "@/components/shared/dialog-action";
+import { toast } from "@/components/shared/toast";
 import { HandleRedirect } from "./handle-redirect";
 
 interface Props {
@@ -103,7 +103,8 @@ export const ShowRedirects = ({ applicationId }: Props) => {
 														});
 												}}
 											>
-												<Button aria-label="Action"
+												<Button
+													aria-label="Delete redirect"
 													variant="ghost"
 													shape="square"
 													className="group hover:bg-red-500/10"

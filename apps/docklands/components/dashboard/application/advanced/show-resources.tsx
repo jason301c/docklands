@@ -1,13 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Input } from "@cloudflare/kumo/components/input";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { InfoIcon, Plus, Trash2 } from "lucide-react";
 import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import {
 	Form,
 	FormControl,
@@ -16,13 +18,11 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
 import {
 	createConverter,
 	NumberInputWithSteps,
 } from "@/components/shared/number-input";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 
 const CPU_STEP = 0.25;
 const MEMORY_STEP_MB = 256;
@@ -206,19 +206,19 @@ export const ShowResources = ({ id, type }: Props) => {
 											>
 												<FormLabel>Memory Limit</FormLabel>
 												<TooltipProvider>
-													<Tooltip delay={0} content={(
-
+													<Tooltip
+														delay={0}
+														content={
 															<p>
 																Memory hard limit in bytes. Example: 1GB =
 																1073741824 bytes. Use +/- buttons to adjust by
 																256 MB.
 															</p>
-														
-)} render={(
-
+														}
+														render={
 															<InfoIcon className="h-4 w-4 text-muted-foreground" />
-														
-)} />
+														}
+													/>
 												</TooltipProvider>
 											</div>
 											<FormControl>
@@ -246,19 +246,19 @@ export const ShowResources = ({ id, type }: Props) => {
 										>
 											<FormLabel>Memory Reservation</FormLabel>
 											<TooltipProvider>
-												<Tooltip delay={0} content={(
-
+												<Tooltip
+													delay={0}
+													content={
 														<p>
 															Memory soft limit in bytes. Example: 256MB =
 															268435456 bytes. Use +/- buttons to adjust by 256
 															MB.
 														</p>
-													
-)} render={(
-
+													}
+													render={
 														<InfoIcon className="h-4 w-4 text-muted-foreground" />
-													
-)} />
+													}
+												/>
 											</TooltipProvider>
 										</div>
 										<FormControl>
@@ -287,19 +287,19 @@ export const ShowResources = ({ id, type }: Props) => {
 											>
 												<FormLabel>CPU Limit</FormLabel>
 												<TooltipProvider>
-													<Tooltip delay={0} content={(
-
+													<Tooltip
+														delay={0}
+														content={
 															<p>
 																CPU quota in units of 10^-9 CPUs. Example: 2
 																CPUs = 2000000000. Use +/- buttons to adjust by
 																0.25 CPU.
 															</p>
-														
-)} render={(
-
+														}
+														render={
 															<InfoIcon className="h-4 w-4 text-muted-foreground" />
-														
-)} />
+														}
+													/>
 												</TooltipProvider>
 											</div>
 											<FormControl>
@@ -328,19 +328,19 @@ export const ShowResources = ({ id, type }: Props) => {
 											>
 												<FormLabel>CPU Reservation</FormLabel>
 												<TooltipProvider>
-													<Tooltip delay={0} content={(
-
+													<Tooltip
+														delay={0}
+														content={
 															<p>
 																CPU shares (relative weight). Example: 1 CPU =
 																1000000000. Use +/- buttons to adjust by 0.25
 																CPU.
 															</p>
-														
-)} render={(
-
+														}
+														render={
 															<InfoIcon className="h-4 w-4 text-muted-foreground" />
-														
-)} />
+														}
+													/>
 												</TooltipProvider>
 											</div>
 											<FormControl>
@@ -365,19 +365,20 @@ export const ShowResources = ({ id, type }: Props) => {
 								<div className="flex items-center gap-2">
 									<FormLabel className="text-base">Ulimits</FormLabel>
 									<TooltipProvider>
-										<Tooltip delay={0} className="max-w-xs" content={(
-
+										<Tooltip
+											delay={0}
+											className="max-w-xs"
+											content={
 												<p>
 													Set resource limits for the container. Each ulimit has
 													a soft limit (warning threshold) and hard limit
 													(maximum allowed). Use -1 for unlimited.
 												</p>
-											
-)} render={(
-
+											}
+											render={
 												<InfoIcon className="h-4 w-4 text-muted-foreground" />
-											
-)} />
+											}
+										/>
 									</TooltipProvider>
 								</div>
 								<Button
@@ -406,14 +407,13 @@ export const ShowResources = ({ id, type }: Props) => {
 												render={({ field }) => (
 													<FormItem className="flex-1">
 														<FormLabel className="text-xs">Type</FormLabel>
-														<Select aria-label="Select option"
+														<Select
+															aria-label="Select option"
 															onValueChange={field.onChange}
 															value={field.value}
 														>
 															<FormControl>
-																<>
-																	
-																</>
+																<></>
 															</FormControl>
 															<>
 																{ULIMIT_PRESETS.map((preset) => (
@@ -486,7 +486,8 @@ export const ShowResources = ({ id, type }: Props) => {
 													</FormItem>
 												)}
 											/>
-											<Button aria-label="Action"
+											<Button
+												aria-label="Remove resource reservation"
 												type="button"
 												variant="ghost"
 												shape="square"

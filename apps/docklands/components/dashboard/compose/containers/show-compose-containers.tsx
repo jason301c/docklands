@@ -1,18 +1,18 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Table } from "@cloudflare/kumo/components/table";
 import { Loader2, MoreHorizontal, RefreshCw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { ShowContainerConfig } from "@/components/dashboard/docker/config/show-container-config";
 import { ShowContainerMounts } from "@/components/dashboard/docker/mounts/show-container-mounts";
 import { ShowContainerNetworks } from "@/components/dashboard/docker/networks/show-container-networks";
 import { DockerTerminalModal } from "@/components/dashboard/docker/terminal/docker-terminal-modal";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Table } from "@cloudflare/kumo/components/table";
+import { toast } from "@/components/shared/toast";
 
 const DockerLogsId = dynamic(
 	() =>
@@ -57,7 +57,8 @@ export const ShowComposeContainers = ({
 						actions.
 					</p>
 				</div>
-				<Button aria-label="Action"
+				<Button
+					aria-label="Refresh containers"
 					variant="outline"
 					shape="square"
 					onClick={() => refetch()}
@@ -175,29 +176,29 @@ const ContainerRow = ({
 			<Table.Cell className="text-right">
 				<Dialog.Root open={logsOpen} onOpenChange={setLogsOpen}>
 					<DropdownMenu>
-						<DropdownMenu.Trigger render={(
-
-							<Button variant="ghost" className="h-8 w-8 p-0">
-								{actionLoading ? (
-									<Loader2 className="h-4 w-4 animate-spin" />
-								) : (
-									<MoreHorizontal className="h-4 w-4" />
-								)}
-							</Button>
-						
-)} />
+						<DropdownMenu.Trigger
+							render={
+								<Button variant="ghost" className="h-8 w-8 p-0">
+									{actionLoading ? (
+										<Loader2 className="h-4 w-4 animate-spin" />
+									) : (
+										<MoreHorizontal className="h-4 w-4" />
+									)}
+								</Button>
+							}
+						/>
 						<DropdownMenu.Content align="end">
 							<DropdownMenu.Label>Actions</DropdownMenu.Label>
-							<Dialog.Trigger render={(
-
-								<DropdownMenu.Item
-									className="cursor-pointer"
-									onSelect={(e) => e.preventDefault()}
-								>
-									View Logs
-								</DropdownMenu.Item>
-							
-)} />
+							<Dialog.Trigger
+								render={
+									<DropdownMenu.Item
+										className="cursor-pointer"
+										onSelect={(e) => e.preventDefault()}
+									>
+										View Logs
+									</DropdownMenu.Item>
+								}
+							/>
 							<ShowContainerConfig
 								containerId={container.containerId}
 								serverId={serverId || ""}

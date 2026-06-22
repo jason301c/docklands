@@ -1,12 +1,12 @@
-import { File, FilePlus2, Loader2, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { Table } from "@cloudflare/kumo/components/table";
+import { File, FilePlus2, Loader2, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { api } from "@/client/api/trpc";
+import { toast } from "@/components/shared/toast";
 import { EditPatchDialog } from "./edit-patch-dialog";
 import { PatchEditor } from "./patch-editor";
 
@@ -179,7 +179,8 @@ export const ShowPatches = ({ id, type }: Props) => {
 													type={type}
 												/>
 											)}
-											<Button aria-label="Action"
+											<Button
+												aria-label="Delete patch"
 												variant="ghost"
 												shape="square"
 												onClick={() => {

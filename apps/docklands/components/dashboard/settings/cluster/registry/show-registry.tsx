@@ -1,9 +1,9 @@
-import { Loader2, Package, Trash2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
-import { api } from "@/client/api/trpc";
-import { DialogAction } from "@/components/shared/dialog-action";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Loader2, Package, Trash2 } from "lucide-react";
+import { api } from "@/client/api/trpc";
+import { DialogAction } from "@/components/shared/dialog-action";
+import { toast } from "@/components/shared/toast";
 import { HandleRegistry } from "./handle-registry";
 
 export const ShowRegistry = () => {
@@ -21,9 +21,7 @@ export const ShowRegistry = () => {
 							<Package className="size-6 text-muted-foreground self-center" />
 							Docker Registry
 						</h3>
-						<p>
-							Manage your Docker Registry configurations
-						</p>
+						<p>Manage your Docker Registry configurations</p>
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
@@ -90,7 +88,8 @@ export const ShowRegistry = () => {
 																			});
 																	}}
 																>
-																	<Button aria-label="Action"
+																	<Button
+																		aria-label="Delete registry configuration"
 																		variant="ghost"
 																		shape="square"
 																		className="group hover:bg-red-500/10 "

@@ -1,13 +1,13 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { DownloadIcon, PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import type { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -16,8 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Textarea } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 import { sshKeyCreate, type sshKeyType } from "@/server/core/db/validations";
 
 type SSHKey = z.infer<typeof sshKeyCreate>;
@@ -128,20 +127,28 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger className="" render={sshKeyId ? (
-					<Button aria-label="Action"
-						variant="ghost"
-						shape="square"
-						className="group hover:bg-blue-500/10 "
-					>
-						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
-					</Button>
-				) : (
-					<Button className="cursor-pointer space-x-3">
-						<PlusIcon className="h-4 w-4" />
-						Add SSH Key
-					</Button>
-				) as never} />
+			<Dialog.Trigger
+				className=""
+				render={
+					sshKeyId ? (
+						<Button
+							aria-label="Edit SSH key"
+							variant="ghost"
+							shape="square"
+							className="group hover:bg-blue-500/10 "
+						>
+							<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+						</Button>
+					) : (
+						((
+							<Button className="cursor-pointer space-x-3">
+								<PlusIcon className="h-4 w-4" />
+								Add SSH Key
+							</Button>
+						) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title>SSH Key</Dialog.Title>

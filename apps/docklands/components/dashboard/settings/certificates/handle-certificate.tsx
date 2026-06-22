@@ -126,7 +126,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 				render={
 					certificateId ? (
 						<Button
-							aria-label="Action"
+							aria-label="Edit certificate"
 							variant="ghost"
 							shape="square"
 							className="group hover:bg-blue-500/10"

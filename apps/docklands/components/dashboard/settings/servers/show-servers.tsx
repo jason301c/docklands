@@ -234,7 +234,7 @@ export const ShowServers = () => {
 																								asButton={true}
 																							>
 																								<Button
-																									aria-label="Action"
+																									aria-label="Open server terminal"
 																									variant="outline"
 																									shape="square"
 																									className="h-9 w-9"

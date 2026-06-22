@@ -211,7 +211,7 @@ export const ShowCertificates = () => {
 																		}}
 																	>
 																		<Button
-																			aria-label="Action"
+																			aria-label="Delete certificate"
 																			variant="ghost"
 																			shape="square"
 																			className="group hover:bg-red-500/10"

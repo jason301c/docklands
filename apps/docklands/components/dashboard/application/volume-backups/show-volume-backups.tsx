@@ -1,3 +1,7 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	ClipboardList,
 	DatabaseBackup,
@@ -6,13 +10,9 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { HandleVolumeBackups } from "./handle-volume-backups";
 import { RestoreVolumeBackups } from "./restore-volume-backups";
@@ -152,32 +152,35 @@ export const ShowVolumeBackups = ({
 											type="volumeBackup"
 											serverId={serverId || undefined}
 										>
-											<Button aria-label="Action" variant="ghost" shape="square">
+											<Button
+												aria-label="View volume backup deployments"
+												variant="ghost"
+												shape="square"
+											>
 												<ClipboardList className="size-4 transition-colors" />
 											</Button>
 										</ShowDeploymentsModal>
 										<TooltipProvider delay={0}>
-											<Tooltip content={<>
-													Run Manual Volume Backup
-												</>}  asChild>
-													<Button aria-label="Action"
-														type="button"
-														variant="ghost"
-														shape="square"
-														disabled={runningBackups.has(
-															volumeBackup.volumeBackupId,
-														)}
-														onClick={() =>
-															handleRunManually(volumeBackup.volumeBackupId)
-														}
-													>
-														{runningBackups.has(volumeBackup.volumeBackupId) ? (
-															<Loader2 className="size-4 animate-spin" />
-														) : (
-															<Play className="size-4 transition-colors" />
-														)}
-													</Button>
-												</Tooltip>
+											<Tooltip content={<>Run Manual Volume Backup</>} asChild>
+												<Button
+													aria-label="Run volume backup now"
+													type="button"
+													variant="ghost"
+													shape="square"
+													disabled={runningBackups.has(
+														volumeBackup.volumeBackupId,
+													)}
+													onClick={() =>
+														handleRunManually(volumeBackup.volumeBackupId)
+													}
+												>
+													{runningBackups.has(volumeBackup.volumeBackupId) ? (
+														<Loader2 className="size-4 animate-spin" />
+													) : (
+														<Play className="size-4 transition-colors" />
+													)}
+												</Button>
+											</Tooltip>
 										</TooltipProvider>
 										<HandleVolumeBackups
 											volumeBackupId={volumeBackup.volumeBackupId}
@@ -204,7 +207,8 @@ export const ShowVolumeBackups = ({
 													});
 											}}
 										>
-											<Button aria-label="Action"
+											<Button
+												aria-label="Delete volume backup"
 												variant="ghost"
 												shape="square"
 												className="group hover:bg-red-500/10"

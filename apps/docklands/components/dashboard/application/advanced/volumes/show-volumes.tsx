@@ -1,10 +1,10 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Package, Trash2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { toast } from "@/components/shared/toast";
 import type { ServiceType } from "../show-resources";
 import { AddVolumes } from "./add-volumes";
 import { UpdateVolume } from "./update-volume";
@@ -161,7 +161,8 @@ export const ShowVolumes = ({ id, type }: Props) => {
 															});
 													}}
 												>
-													<Button aria-label="Action"
+													<Button
+														aria-label="Delete volume"
 														variant="ghost"
 														shape="square"
 														className="group hover:bg-red-500/10"

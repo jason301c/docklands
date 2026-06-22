@@ -277,7 +277,7 @@ export const ShowBackups = ({
 															serverId={serverId || undefined}
 														>
 															<Button
-																aria-label="Action"
+																aria-label="View backup deployments"
 																variant="ghost"
 																shape="square"
 																className="size-8"
@@ -288,7 +288,7 @@ export const ShowBackups = ({
 														<TooltipProvider delay={0}>
 															<Tooltip content={<>Run Manual Backup</>} asChild>
 																<Button
-																	aria-label="Action"
+																	aria-label="Run backup now"
 																	type="button"
 																	variant="ghost"
 																	shape="square"
@@ -346,7 +346,7 @@ export const ShowBackups = ({
 															}}
 														>
 															<Button
-																aria-label="Action"
+																aria-label="Delete backup"
 																variant="ghost"
 																shape="square"
 																className="group hover:bg-red-500/10 size-8"

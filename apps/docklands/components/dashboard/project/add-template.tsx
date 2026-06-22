@@ -276,7 +276,7 @@ export const AddTemplate = ({
 									</PopoverContent>
 								</Popover>
 								<Button
-									aria-label="Action"
+									aria-label="Show bookmarked templates"
 									variant={showBookmarksOnly ? "secondary" : "outline"}
 									shape="square"
 									onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
@@ -291,7 +291,7 @@ export const AddTemplate = ({
 									/>
 								</Button>
 								<Button
-									aria-label="Action"
+									aria-label="Toggle template layout"
 									shape="square"
 									onClick={() =>
 										setViewMode(viewMode === "detailed" ? "icon" : "detailed")
@@ -383,7 +383,7 @@ export const AddTemplate = ({
 									>
 										<div className="absolute top-2 left-2 z-10">
 											<Button
-												aria-label="Action"
+												aria-label="Toggle template bookmark"
 												variant="ghost"
 												shape="square"
 												className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"

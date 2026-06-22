@@ -1,13 +1,16 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Label } from "@cloudflare/kumo/components/label";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -17,11 +20,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Label } from "@cloudflare/kumo/components/label";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Separator } from "@/components/shared/separator";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 
 const AddRedirectSchema = z.object({
 	regex: z.string().min(1, "Regex required"),
@@ -152,17 +152,22 @@ export const HandleRedirect = ({
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={onDialogToggle}>
-			<Dialog.Trigger render={redirectId ? (
-					<Button aria-label="Action"
-						variant="ghost"
-						shape="square"
-						className="group hover:bg-blue-500/10 "
-					>
-						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
-					</Button>
-				) : (
-					<Button>{children}</Button>
-				) as never} />
+			<Dialog.Trigger
+				render={
+					redirectId ? (
+						<Button
+							aria-label="Edit redirect"
+							variant="ghost"
+							shape="square"
+							className="group hover:bg-blue-500/10 "
+						>
+							<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+						</Button>
+					) : (
+						((<Button>{children}</Button>) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-lg">
 				<div>
 					<Dialog.Title>Redirects</Dialog.Title>
@@ -176,14 +181,10 @@ export const HandleRedirect = ({
 					<Label>Presets</Label>
 					<Select
 						aria-label="Select option"
-						onValueChange={(value) =>
-							value !== null && onPresetSelect(value)
-						}
+						onValueChange={(value) => value !== null && onPresetSelect(value)}
 						value={presetSelected}
 					>
-						<>
-							
-						</>
+						<></>
 						<>
 							{redirectPresets.map((preset) => (
 								<Select.Option key={preset.label} value={preset.id}>

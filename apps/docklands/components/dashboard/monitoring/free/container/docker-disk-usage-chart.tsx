@@ -99,7 +99,7 @@ export const DockerDiskUsageChart = () => {
 					Total: {formatSize(totalBytes)}
 				</span>
 				<Button
-					aria-label="Action"
+					aria-label="Refresh disk usage"
 					variant="ghost"
 					shape="square"
 					className="h-7 w-7"

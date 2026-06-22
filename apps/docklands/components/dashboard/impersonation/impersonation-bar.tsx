@@ -1,5 +1,14 @@
 "use client";
 
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import copy from "copy-to-clipboard";
 import { format } from "date-fns";
 import {
@@ -17,20 +26,15 @@ import {
 	XIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { Logo } from "@/components/shared/logo";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/shared/avatar";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/components/shared/avatar";
+import { Logo } from "@/components/shared/logo";
+import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 
 const Command = Combobox;
@@ -140,28 +144,36 @@ export const ImpersonationBar = () => {
 	return (
 		<TooltipProvider>
 			<>
-				<Tooltip content={<>
-						{isImpersonating ? "Impersonation Controls" : "User Impersonation"}
-					</>}  asChild>
-						<Button aria-label="Action"
-							variant="outline"
-							shape="square"
+				<Tooltip
+					content={
+						<>
+							{isImpersonating
+								? "Impersonation Controls"
+								: "User Impersonation"}
+						</>
+					}
+					asChild
+				>
+					<Button
+						aria-label="Toggle impersonation controls"
+						variant="outline"
+						shape="square"
+						className={cn(
+							"fixed bottom-4 right-4 z-50 rounded-full shadow-lg",
+							isImpersonating &&
+								!showBar &&
+								"bg-red-100 hover:bg-red-200 border-red-200",
+						)}
+						onClick={() => setShowBar(!showBar)}
+					>
+						<Settings2
 							className={cn(
-								"fixed bottom-4 right-4 z-50 rounded-full shadow-lg",
-								isImpersonating &&
-									!showBar &&
-									"bg-red-100 hover:bg-red-200 border-red-200",
+								"h-4 w-4",
+								isImpersonating && !showBar && "text-red-500",
 							)}
-							onClick={() => setShowBar(!showBar)}
-						>
-							<Settings2
-								className={cn(
-									"h-4 w-4",
-									isImpersonating && !showBar && "text-red-500",
-								)}
-							/>
-						</Button>
-					</Tooltip>
+						/>
+					</Button>
+				</Tooltip>
 
 				<div
 					className={cn(
@@ -309,7 +321,8 @@ export const ImpersonationBar = () => {
 												<Key className="h-3 w-3" />
 												<span className="flex items-center gap-1">
 													ID: {data?.user?.id?.slice(0, 8)}
-													<Button aria-label="Action"
+													<Button
+														aria-label="Copy impersonated member ID"
 														variant="ghost"
 														shape="square"
 														className="h-4 w-4 hover:bg-muted/50"
@@ -328,7 +341,8 @@ export const ImpersonationBar = () => {
 												<Building2 className="h-3 w-3" />
 												<span className="flex items-center gap-1">
 													Org: {data?.organizationId?.slice(0, 8)}
-													<Button aria-label="Action"
+													<Button
+														aria-label="Copy impersonated organization ID"
 														variant="ghost"
 														shape="square"
 														className="h-4 w-4 hover:bg-muted/50"
@@ -358,33 +372,34 @@ export const ImpersonationBar = () => {
 													{format(new Date(data.createdAt), "MMM d, yyyy")}
 												</span>
 											)}
-											<Tooltip content={<>
-													Two-Factor Authentication Status
-												</>}  asChild>
-													<span className="flex items-center gap-1 cursor-default">
-														<Fingerprint
-															className={cn(
-																"h-3 w-3",
-																data?.user?.twoFactorEnabled
-																	? "text-green-500"
-																	: "text-muted-foreground",
-															)}
-														/>
-														<Badge
-															variant={
-																data?.user?.twoFactorEnabled
-																	? "green"
-																	: "secondary"
-															}
-															className="text-[10px] px-1 py-0"
-														>
-															2FA{" "}
-															{data?.user?.twoFactorEnabled
-																? "Enabled"
-																: "Disabled"}
-														</Badge>
-													</span>
-												</Tooltip>
+											<Tooltip
+												content={<>Two-Factor Authentication Status</>}
+												asChild
+											>
+												<span className="flex items-center gap-1 cursor-default">
+													<Fingerprint
+														className={cn(
+															"h-3 w-3",
+															data?.user?.twoFactorEnabled
+																? "text-green-500"
+																: "text-muted-foreground",
+														)}
+													/>
+													<Badge
+														variant={
+															data?.user?.twoFactorEnabled
+																? "green"
+																: "secondary"
+														}
+														className="text-[10px] px-1 py-0"
+													>
+														2FA{" "}
+														{data?.user?.twoFactorEnabled
+															? "Enabled"
+															: "Disabled"}
+													</Badge>
+												</span>
+											</Tooltip>
 										</div>
 									</div>
 								</div>

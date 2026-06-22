@@ -1,13 +1,13 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -16,8 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Textarea } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 
 const updateMysqlSchema = z.object({
 	name: z.string().min(1, {
@@ -82,17 +81,18 @@ export const UpdateMysql = ({ mysqlId }: Props) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={(
-
-				<Button aria-label="Action"
-					variant="ghost"
-					shape="square"
-					className="group hover:bg-blue-500/10 "
-				>
-					<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button
+						aria-label="Edit MySQL"
+						variant="ghost"
+						shape="square"
+						className="group hover:bg-blue-500/10 "
+					>
+						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-lg">
 				<div>
 					<Dialog.Title>Modify MySQL</Dialog.Title>

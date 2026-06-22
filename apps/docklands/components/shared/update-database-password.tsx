@@ -1,11 +1,12 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBox } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -14,7 +15,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
 
 const DATABASE_PASSWORD_REGEX = /^[a-zA-Z0-9@#%^&*()_+\-=[\]{}|;:,.<>?~`]*$/;
 
@@ -85,13 +85,13 @@ export const UpdateDatabasePassword = ({
 				}
 			}}
 		>
-			<Dialog.Trigger render={(
-
-				<Button aria-label="Action" variant="ghost" shape="square">
-					<PenBox className="size-3.5 text-muted-foreground" />
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button aria-label={`Update ${label}`} variant="ghost" shape="square">
+						<PenBox className="size-3.5 text-muted-foreground" />
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-lg">
 				<div>
 					<Dialog.Title>Update {label}</Dialog.Title>

@@ -1,10 +1,10 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Rss, Trash2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { toast } from "@/components/shared/toast";
 import { HandlePorts } from "./handle-ports";
 
 interface Props {
@@ -27,9 +27,7 @@ export const ShowPorts = ({ applicationId }: Props) => {
 			<div className="flex flex-row justify-between flex-wrap gap-4">
 				<div>
 					<h3 className="text-xl">Ports</h3>
-					<p>
-						the ports allows you to expose your application to the internet
-					</p>
+					<p>the ports allows you to expose your application to the internet</p>
 				</div>
 
 				{data && data?.ports.length > 0 && (
@@ -103,7 +101,8 @@ export const ShowPorts = ({ applicationId }: Props) => {
 														});
 												}}
 											>
-												<Button aria-label="Action"
+												<Button
+													aria-label="Delete port"
 													variant="ghost"
 													shape="square"
 													className="group hover:bg-red-500/10 "

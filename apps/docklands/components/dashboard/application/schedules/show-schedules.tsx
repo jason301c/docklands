@@ -1,3 +1,7 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	ClipboardList,
 	Clock,
@@ -7,13 +11,9 @@ import {
 	Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { HandleSchedules } from "./handle-schedules";
 
@@ -69,9 +69,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 						<h3 className="text-xl font-bold flex items-center gap-2">
 							Scheduled Tasks
 						</h3>
-						<p>
-							Schedule tasks to run automatically at specified intervals.
-						</p>
+						<p>Schedule tasks to run automatically at specified intervals.</p>
 					</div>
 					{schedules && schedules.length > 0 && (
 						<HandleSchedules id={id} scheduleType={scheduleType} />
@@ -157,28 +155,31 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 											type="schedule"
 											serverId={serverId || undefined}
 										>
-											<Button aria-label="Action" variant="ghost" shape="square">
+											<Button
+												aria-label="View schedule deployments"
+												variant="ghost"
+												shape="square"
+											>
 												<ClipboardList className="size-4 transition-colors" />
 											</Button>
 										</ShowDeploymentsModal>
 										<TooltipProvider delay={0}>
-											<Tooltip content={<>Run Manual Schedule</>}  asChild>
-													<Button aria-label="Action"
-														type="button"
-														variant="ghost"
-														shape="square"
-														disabled={runningSchedules.has(schedule.scheduleId)}
-														onClick={() =>
-															handleRunManually(schedule.scheduleId)
-														}
-													>
-														{runningSchedules.has(schedule.scheduleId) ? (
-															<Loader2 className="size-4 animate-spin" />
-														) : (
-															<Play className="size-4 transition-colors" />
-														)}
-													</Button>
-												</Tooltip>
+											<Tooltip content={<>Run Manual Schedule</>} asChild>
+												<Button
+													aria-label="Run schedule now"
+													type="button"
+													variant="ghost"
+													shape="square"
+													disabled={runningSchedules.has(schedule.scheduleId)}
+													onClick={() => handleRunManually(schedule.scheduleId)}
+												>
+													{runningSchedules.has(schedule.scheduleId) ? (
+														<Loader2 className="size-4 animate-spin" />
+													) : (
+														<Play className="size-4 transition-colors" />
+													)}
+												</Button>
+											</Tooltip>
 										</TooltipProvider>
 										<HandleSchedules
 											scheduleId={schedule.scheduleId}
@@ -205,7 +206,8 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 													});
 											}}
 										>
-											<Button aria-label="Action"
+											<Button
+												aria-label="Delete schedule"
 												variant="ghost"
 												shape="square"
 												className="group hover:bg-red-500/10"

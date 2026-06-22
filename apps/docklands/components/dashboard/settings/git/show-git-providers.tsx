@@ -1,3 +1,8 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { formatDate } from "date-fns";
 import {
 	ExternalLinkIcon,
@@ -8,7 +13,6 @@ import {
 	Users,
 } from "lucide-react";
 import Link from "next/link";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { useUrl } from "@/client/hooks/use-url";
 import {
@@ -18,11 +22,7 @@ import {
 	GitlabIcon,
 } from "@/components/icons/data-tools-icons";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { AddBitbucketProvider } from "./bitbucket/add-bitbucket-provider";
 import { EditBitbucketProvider } from "./bitbucket/edit-bitbucket-provider";
 import { AddGiteaProvider } from "./gitea/add-gitea-provider";
@@ -64,9 +64,7 @@ export const ShowGitProviders = () => {
 							<GitBranch className="size-6 text-muted-foreground self-center" />
 							Git Providers
 						</h3>
-						<p>
-							Connect your Git provider for authentication.
-						</p>
+						<p>Connect your Git provider for authentication.</p>
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
@@ -172,41 +170,42 @@ export const ShowGitProviders = () => {
 															<div className="flex flex-row gap-1 items-center">
 																{gitProvider.isOwner && (
 																	<TooltipProvider delay={0}>
-																		<Tooltip content={<>
-																				Share with entire organization
-																			</>}  asChild>
-																				<div className="flex items-center gap-1.5 mr-2">
-																					<Users className="size-4 text-muted-foreground" />
-																					<Switch
-																						disabled={isToggling}
-																						checked={
-																							gitProvider.sharedWithOrganization
-																						}
-																						onCheckedChange={async (
-																							checked,
-																						) => {
-																							await toggleShare({
-																								gitProviderId:
-																									gitProvider.gitProviderId,
-																								sharedWithOrganization: checked,
+																		<Tooltip
+																			content={
+																				<>Share with entire organization</>
+																			}
+																			asChild
+																		>
+																			<div className="flex items-center gap-1.5 mr-2">
+																				<Users className="size-4 text-muted-foreground" />
+																				<Switch
+																					disabled={isToggling}
+																					checked={
+																						gitProvider.sharedWithOrganization
+																					}
+																					onCheckedChange={async (checked) => {
+																						await toggleShare({
+																							gitProviderId:
+																								gitProvider.gitProviderId,
+																							sharedWithOrganization: checked,
+																						})
+																							.then(() => {
+																								toast.success(
+																									checked
+																										? "Provider shared with organization"
+																										: "Provider unshared",
+																								);
+																								refetch();
 																							})
-																								.then(() => {
-																									toast.success(
-																										checked
-																											? "Provider shared with organization"
-																											: "Provider unshared",
-																									);
-																									refetch();
-																								})
-																								.catch(() => {
-																									toast.error(
-																										"Error updating sharing",
-																									);
-																								});
-																						}}
-																					/>
-																				</div>
-																			</Tooltip>
+																							.catch(() => {
+																								toast.error(
+																									"Error updating sharing",
+																								);
+																							});
+																					}}
+																				/>
+																			</div>
+																		</Tooltip>
 																	</TooltipProvider>
 																)}
 
@@ -331,7 +330,8 @@ export const ShowGitProviders = () => {
 																					});
 																			}}
 																		>
-																			<Button aria-label="Action"
+																			<Button
+																				aria-label="Delete Git provider"
 																				variant="ghost"
 																				shape="square"
 																				className="group hover:bg-red-500/10"

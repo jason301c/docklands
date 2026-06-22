@@ -1,17 +1,16 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import { Copy, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -20,7 +19,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 import type { ServiceType } from "@/server/core/db/schema";
 
 const deleteComposeSchema = z.object({
@@ -124,18 +123,19 @@ export const DeleteService = ({ id, type }: Props) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={(
-
-				<Button aria-label="Action"
-					variant="ghost"
-					shape="square"
-					className="group hover:bg-red-500/10 "
-					loading={isPending}
-				>
-					<Trash2 className="size-4 text-primary group-hover:text-red-500" />
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button
+						aria-label="Delete service"
+						variant="ghost"
+						shape="square"
+						className="group hover:bg-red-500/10 "
+						loading={isPending}
+					>
+						<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-lg">
 				<div>
 					<Dialog.Title>Are you absolutely sure?</Dialog.Title>

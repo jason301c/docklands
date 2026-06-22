@@ -1,14 +1,13 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Palette, PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { TagBadge } from "@/components/shared/tag-badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -18,7 +17,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
+import { TagBadge } from "@/components/shared/tag-badge";
+import { toast } from "@/components/shared/toast";
 
 const TagSchema = z.object({
 	name: z
@@ -108,16 +108,27 @@ export const HandleTag = ({ tagId }: HandleTagProps) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={tagId ? (
-					<Button aria-label="Action" variant="ghost" shape="square" className="h-8 w-8">
-						<PenBoxIcon className="h-4 w-4" />
-					</Button>
-				) : (
-					<Button>
-						<PlusIcon className="h-4 w-4" />
-						Create Tag
-					</Button>
-				) as never} />
+			<Dialog.Trigger
+				render={
+					tagId ? (
+						<Button
+							aria-label="Edit tag"
+							variant="ghost"
+							shape="square"
+							className="h-8 w-8"
+						>
+							<PenBoxIcon className="h-4 w-4" />
+						</Button>
+					) : (
+						((
+							<Button>
+								<PlusIcon className="h-4 w-4" />
+								Create Tag
+							</Button>
+						) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-lg">
 				<div>
 					<Dialog.Title>{tagId ? "Update" : "Create"} Tag</Dialog.Title>

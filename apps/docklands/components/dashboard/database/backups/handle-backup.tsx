@@ -1,3 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import {
 	CheckIcon,
@@ -9,13 +21,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -25,16 +33,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
 import { ScrollArea } from "@/components/shared/scroll-area";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import { ScheduleFormField } from "../../application/schedules/handle-schedules";
 
@@ -312,20 +312,27 @@ export const HandleBackup = ({
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={backupId ? (
-					<Button aria-label="Action"
-						variant="ghost"
-						shape="square"
-						className="group hover:bg-blue-500/10 size-8"
-					>
-						<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
-					</Button>
-				) : (
-					<Button>
-						<PlusIcon className="h-4 w-4" />
-						{backupId ? "Update Backup" : "Create Backup"}
-					</Button>
-				) as never} />
+			<Dialog.Trigger
+				render={
+					backupId ? (
+						<Button
+							aria-label="Edit database backup"
+							variant="ghost"
+							shape="square"
+							className="group hover:bg-blue-500/10 size-8"
+						>
+							<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
+						</Button>
+					) : (
+						((
+							<Button>
+								<PlusIcon className="h-4 w-4" />
+								{backupId ? "Update Backup" : "Create Backup"}
+							</Button>
+						) as never)
+					)
+				}
+			/>
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title>
@@ -355,7 +362,8 @@ export const HandleBackup = ({
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Database Type</FormLabel>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Select option"
 												value={field.value}
 												onValueChange={(value) => {
 													if (value === null) return;
@@ -363,11 +371,11 @@ export const HandleBackup = ({
 													form.setValue("metadata", {});
 												}}
 											>
+												<></>
 												<>
-													
-												</>
-												<>
-													<Select.Option value="postgres">PostgreSQL</Select.Option>
+													<Select.Option value="postgres">
+														PostgreSQL
+													</Select.Option>
 													<Select.Option value="mariadb">MariaDB</Select.Option>
 													<Select.Option value="mysql">MySQL</Select.Option>
 													<Select.Option value="mongo">MongoDB</Select.Option>
@@ -462,14 +470,13 @@ export const HandleBackup = ({
 											<FormItem className="w-full">
 												<FormLabel>Service Name</FormLabel>
 												<div className="flex gap-2">
-													<Select aria-label="Select option"
+													<Select
+														aria-label="Select option"
 														onValueChange={field.onChange}
 														value={field.value || undefined}
 													>
 														<FormControl>
-															<>
-																
-															</>
+															<></>
 														</FormControl>
 
 														<>
@@ -489,53 +496,65 @@ export const HandleBackup = ({
 														</>
 													</Select>
 													<TooltipProvider delay={0}>
-														<Tooltip content={<>
-																<p>
-																	Fetch: Will clone the repository and load the
-																	services
-																</p>
-															</>} side="left"
-																className="max-w-[10rem]"  asChild>
-																<Button
-																	variant="secondary"
-																	type="button"
-																	loading={isLoadingServices}
-																	onClick={() => {
-																		if (cacheType === "fetch") {
-																			refetchServices();
-																		} else {
-																			setCacheType("fetch");
-																		}
-																	}}
-																>
-																	<RefreshCw className="size-4 text-muted-foreground" />
-																</Button>
-															</Tooltip>
+														<Tooltip
+															content={
+																<>
+																	<p>
+																		Fetch: Will clone the repository and load
+																		the services
+																	</p>
+																</>
+															}
+															side="left"
+															className="max-w-[10rem]"
+															asChild
+														>
+															<Button
+																variant="secondary"
+																type="button"
+																loading={isLoadingServices}
+																onClick={() => {
+																	if (cacheType === "fetch") {
+																		refetchServices();
+																	} else {
+																		setCacheType("fetch");
+																	}
+																}}
+															>
+																<RefreshCw className="size-4 text-muted-foreground" />
+															</Button>
+														</Tooltip>
 													</TooltipProvider>
 													<TooltipProvider delay={0}>
-														<Tooltip content={<>
-																<p>
-																	Cache: If you previously deployed this
-																	compose, it will read the services from the
-																	last deployment/fetch from the repository
-																</p>
-															</>} side="left"
-																className="max-w-[10rem]"  asChild>
-																<Button
-																	variant="secondary"
-																	type="button"
-																	loading={isLoadingServices}
-																	onClick={() => {
-																		if (cacheType === "cache") {
-																			refetchServices();
-																		} else {
-																			setCacheType("cache");
-																		}
-																	}}
-																>
-																	<DatabaseZap className="size-4 text-muted-foreground" />
-																</Button>
-															</Tooltip>
+														<Tooltip
+															content={
+																<>
+																	<p>
+																		Cache: If you previously deployed this
+																		compose, it will read the services from the
+																		last deployment/fetch from the repository
+																	</p>
+																</>
+															}
+															side="left"
+															className="max-w-[10rem]"
+															asChild
+														>
+															<Button
+																variant="secondary"
+																type="button"
+																loading={isLoadingServices}
+																onClick={() => {
+																	if (cacheType === "cache") {
+																		refetchServices();
+																	} else {
+																		setCacheType("cache");
+																	}
+																}}
+															>
+																<DatabaseZap className="size-4 text-muted-foreground" />
+															</Button>
+														</Tooltip>
 													</TooltipProvider>
 												</div>
 

@@ -89,7 +89,7 @@ export const ShowDestinations = () => {
 																	}}
 																>
 																	<Button
-																		aria-label="Action"
+																		aria-label="Delete destination"
 																		variant="ghost"
 																		shape="square"
 																		className="group hover:bg-red-500/10 "

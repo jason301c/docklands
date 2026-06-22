@@ -201,7 +201,7 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 															/>
 														</FormControl>
 														<Button
-															aria-label="Action"
+															aria-label="Remove command argument"
 															type="button"
 															variant="destructive"
 															shape="square"

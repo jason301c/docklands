@@ -1,3 +1,6 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
 	ArrowUpDown,
@@ -13,9 +16,6 @@ import {
 import Link from "next/link";
 import type { RouterOutputs } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { DnsHelperModal } from "./dns-helper-modal";
 import { AddDomain } from "./handle-domain";
 import type { ValidationStates } from "./show-domains";
@@ -165,54 +165,60 @@ export const createColumns = ({
 					)}
 					{!domain.host.includes("sslip.io") && (
 						<TooltipProvider>
-							<Tooltip content={<>
-									{validationState?.error ? (
-										<div className="flex flex-col gap-1">
-											<p className="font-medium text-red-500">Error:</p>
-											<p>{validationState.error}</p>
-										</div>
-									) : (
-										"Click to validate DNS configuration"
-									)}
-								</>} className="max-w-xs"  asChild>
-									<Button
-										type="button"
-										variant="outline"
-										size="xs"
-										className={
-											validationState?.isValid
-												? "bg-green-500/10 text-green-500 cursor-pointer"
-												: validationState?.error
-													? "bg-red-500/10 text-red-500 cursor-pointer"
-													: "bg-yellow-500/10 text-yellow-500 cursor-pointer"
-										}
-										onClick={() => handleValidateDomain(domain.host)}
-									>
-										{validationState?.isLoading ? (
-											<>
-												<Loader2 className="size-3 mr-1 animate-spin" />
-												Checking...
-											</>
-										) : validationState?.isValid ? (
-											<>
-												<CheckCircle2 className="size-3 mr-1" />
-												{validationState.message && validationState.cdnProvider
-													? `${validationState.cdnProvider}`
-													: "Valid"}
-											</>
-										) : validationState?.error ? (
-											<>
-												<XCircle className="size-3 mr-1" />
-												Invalid
-											</>
+							<Tooltip
+								content={
+									<>
+										{validationState?.error ? (
+											<div className="flex flex-col gap-1">
+												<p className="font-medium text-red-500">Error:</p>
+												<p>{validationState.error}</p>
+											</div>
 										) : (
-											<>
-												<RefreshCw className="size-3 mr-1" />
-												Validate
-											</>
+											"Click to validate DNS configuration"
 										)}
-									</Button>
-								</Tooltip>
+									</>
+								}
+								className="max-w-xs"
+								asChild
+							>
+								<Button
+									type="button"
+									variant="outline"
+									size="xs"
+									className={
+										validationState?.isValid
+											? "bg-green-500/10 text-green-500 cursor-pointer"
+											: validationState?.error
+												? "bg-red-500/10 text-red-500 cursor-pointer"
+												: "bg-yellow-500/10 text-yellow-500 cursor-pointer"
+									}
+									onClick={() => handleValidateDomain(domain.host)}
+								>
+									{validationState?.isLoading ? (
+										<>
+											<Loader2 className="size-3 mr-1 animate-spin" />
+											Checking...
+										</>
+									) : validationState?.isValid ? (
+										<>
+											<CheckCircle2 className="size-3 mr-1" />
+											{validationState.message && validationState.cdnProvider
+												? `${validationState.cdnProvider}`
+												: "Valid"}
+										</>
+									) : validationState?.error ? (
+										<>
+											<XCircle className="size-3 mr-1" />
+											Invalid
+										</>
+									) : (
+										<>
+											<RefreshCw className="size-3 mr-1" />
+											Validate
+										</>
+									)}
+								</Button>
+							</Tooltip>
 						</TooltipProvider>
 					)}
 				</div>
@@ -262,7 +268,8 @@ export const createColumns = ({
 					)}
 					{canCreateDomain && (
 						<AddDomain id={id} type={type} domainId={domain.domainId}>
-							<Button aria-label="Action"
+							<Button
+								aria-label="Edit domain"
 								variant="ghost"
 								shape="square"
 								className="group hover:bg-blue-500/10 h-8 w-8"
@@ -280,7 +287,8 @@ export const createColumns = ({
 								await handleDeleteDomain(domain.domainId);
 							}}
 						>
-							<Button aria-label="Action"
+							<Button
+								aria-label="Delete domain"
 								variant="ghost"
 								shape="square"
 								className="group hover:bg-red-500/10 h-8 w-8"

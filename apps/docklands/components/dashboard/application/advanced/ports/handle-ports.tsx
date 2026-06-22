@@ -102,7 +102,7 @@ export const HandlePorts = ({
 				render={
 					portId ? (
 						<Button
-							aria-label="Action"
+							aria-label="Edit port"
 							variant="ghost"
 							shape="square"
 							className="group hover:bg-blue-500/10 "
