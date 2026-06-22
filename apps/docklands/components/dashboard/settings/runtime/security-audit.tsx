@@ -61,7 +61,7 @@ export const SecurityAudit = ({ serverId }: Props) => {
 						{isPending ? (
 							<div className="flex items-center justify-center text-muted-foreground py-4">
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								<span>Checking Server configuration</span>
+								<span>Checking worker security posture</span>
 							</div>
 						) : (
 							<div className="grid w-full gap-4">
@@ -70,7 +70,7 @@ export const SecurityAudit = ({ serverId }: Props) => {
 									<p className="text-sm text-muted-foreground mb-4">
 										UFW (Uncomplicated Firewall) is a simple firewall that can
 										be used to block incoming and outgoing traffic from your
-										server.
+										worker.
 									</p>
 									<div className="grid gap-2.5">
 										<StatusRow
@@ -107,7 +107,7 @@ export const SecurityAudit = ({ serverId }: Props) => {
 									<h3 className="text-lg font-semibold mb-1">SSH</h3>
 									<p className="text-sm text-muted-foreground mb-4">
 										SSH (Secure Shell) is a protocol that allows you to securely
-										connect to a server and execute commands on it.
+										connect to a worker and execute commands on it.
 									</p>
 									<div className="grid gap-2.5">
 										<StatusRow
@@ -153,7 +153,7 @@ export const SecurityAudit = ({ serverId }: Props) => {
 									<h3 className="text-lg font-semibold mb-1">Fail2Ban</h3>
 									<p className="text-sm text-muted-foreground mb-4">
 										Fail2Ban (Fail2Ban) is a service that can be used to prevent
-										brute force attacks on your server.
+										brute force attacks on your worker.
 									</p>
 									<div className="grid gap-2.5">
 										<StatusRow

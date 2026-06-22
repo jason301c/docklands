@@ -12,7 +12,7 @@ interface Props {
 	 * omitted, configures the local Docklands runtime.
 	 */
 	serverId?: string;
-	/** Optional title override (e.g. the server name in a list). */
+	/** Optional title override (e.g. the worker name in a list). */
 	label?: string;
 }
 

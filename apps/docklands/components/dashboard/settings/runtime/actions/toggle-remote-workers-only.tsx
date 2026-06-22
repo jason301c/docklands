@@ -5,7 +5,7 @@ import { HelpCircle } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { toast } from "@/components/shared/toast";
 
-export const ToggleRemoteServersOnly = () => {
+export const ToggleRemoteWorkersOnly = () => {
 	const { data, refetch } = api.settings.getWebServerSettings.useQuery();
 
 	const { mutateAsync } = api.settings.updateRemoteServersOnly.useMutation();

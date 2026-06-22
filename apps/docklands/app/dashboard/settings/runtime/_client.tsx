@@ -1,11 +1,11 @@
 "use client";
 
-import { ShowServers } from "@/components/dashboard/settings/servers/show-servers";
+import { ShowRuntimeWorkers } from "@/components/dashboard/settings/runtime/show-runtime-workers";
 
 const Page = () => {
 	return (
 		<div className="flex flex-col gap-4 w-full">
-			<ShowServers />
+			<ShowRuntimeWorkers />
 		</div>
 	);
 };

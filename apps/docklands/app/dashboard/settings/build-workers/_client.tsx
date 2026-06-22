@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/client/api/trpc";
-import { BuildsConcurrency } from "@/components/dashboard/settings/servers/actions/builds-concurrency";
+import { BuildsConcurrency } from "@/components/dashboard/settings/runtime/actions/builds-concurrency";
 import { AlertBlock } from "@/components/shared/alert-block";
 
 const Page = () => {

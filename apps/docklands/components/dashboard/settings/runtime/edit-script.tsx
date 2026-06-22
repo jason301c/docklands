@@ -98,7 +98,7 @@ export const EditScript = ({ serverId }: Props) => {
 					<Dialog.Title>Modify Script</Dialog.Title>
 					<Dialog.Description>
 						Modify the script that installs everything necessary to run
-						applications on your server.
+						applications on your worker.
 					</Dialog.Description>
 
 					<AlertBlock type="warning">

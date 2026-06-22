@@ -12,7 +12,10 @@ interface Props {
 	asButton?: boolean;
 }
 
-export const ShowServerActions = ({ serverId, asButton = false }: Props) => {
+export const ShowRuntimeWorkerActions = ({
+	serverId,
+	asButton = false,
+}: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -20,7 +23,7 @@ export const ShowServerActions = ({ serverId, asButton = false }: Props) => {
 				<Dialog.Trigger
 					render={
 						<Button
-							aria-label="Open server actions"
+							aria-label="Open worker runtime actions"
 							variant="outline"
 							shape="square"
 							className="h-9 w-9"

@@ -17,14 +17,14 @@ import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
 import { EditScript } from "./edit-script";
 import { GPUSupport } from "./gpu-support";
 import { SecurityAudit } from "./security-audit";
-import { ValidateServer } from "./validate-server";
+import { ValidateRuntimeWorker } from "./validate-runtime-worker";
 
 interface Props {
 	serverId: string;
 	asButton?: boolean;
 }
 
-export const SetupServer = ({ serverId, asButton = false }: Props) => {
+export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [setupTab, setSetupTab] = useState("ssh-keys");
 	const { data: server } = api.server.one.useQuery(
@@ -74,7 +74,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 						<Button
 							variant="outline"
 							shape="square"
-							aria-label="Setup server"
+							aria-label="Set up worker"
 							className="h-9 w-9"
 						>
 							<Settings className="h-4 w-4" />
@@ -89,7 +89,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 						setIsOpen(true);
 					}}
 				>
-					Setup Server <Settings className="size-4" />
+					Set Up Worker <Settings className="size-4" />
 				</Button>
 			)}
 			<Dialog className="sm:max-w-4xl  ">
@@ -140,16 +140,16 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 							<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 								<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 									<p className="text-primary text-base font-semibold">
-										You have two options to add SSH Keys to your server:
+										You have two options to add SSH keys to your worker:
 									</p>
 
 									<ul>
 										<li>
-											1. Add the public SSH Key when you create a server in your
+											1. Add the public SSH key when you create a VM in your
 											preferred provider (Hostinger, Digital Ocean, Hetzner,
 											etc){" "}
 										</li>
-										<li>2. Add The SSH Key to Server Manually</li>
+										<li>2. Add the SSH key to the worker manually</li>
 									</ul>
 									<div className="flex flex-col gap-4 w-full overflow-auto">
 										<div className="flex relative flex-col gap-2 overflow-y-auto">
@@ -190,7 +190,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 										</span>
 										<ul>
 											<li className="items-center flex gap-1">
-												1. Login to your server{" "}
+												1. Log in to your worker{" "}
 												<span className="text-primary bg-secondary p-1 rounded-lg">
 													ssh {server?.username}@{server?.ipAddress}
 												</span>
@@ -234,7 +234,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 											</li>
 											<li className="mt-1">
 												3. You're done, you can test the connection by entering
-												to the terminal or by setting up the server tab.
+												to the terminal or by running the setup tab.
 											</li>
 										</ul>
 									</div>
@@ -271,10 +271,10 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 											<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 												<div className="flex flex-row gap-2 justify-between w-full max-sm:flex-col">
 													<div className="flex flex-col gap-1">
-														<h3 className="text-xl">Setup Server</h3>
+														<h3 className="text-xl">Set Up Worker</h3>
 														<p>
-															To setup a server, please click on the button
-															below.
+															Initialize this worker with the runtime services
+															Docklands needs.
 														</p>
 													</div>
 												</div>
@@ -282,21 +282,20 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 											<div className="flex flex-col gap-4 min-h-[25vh] items-center">
 												<div className="flex flex-col gap-4 items-center h-full max-w-xl mx-auto min-h-[25vh] justify-center">
 													<span className="text-sm text-muted-foreground text-center">
-														When your server is ready, you can click on the
-														button below, to directly run the script we use for
-														setup the server or directly modify the script
+														When your worker is ready, run the setup script or
+														adjust it before execution.
 													</span>
 													<div className="flex flex-row gap-2">
 														<EditScript serverId={server?.serverId || ""} />
 														<DialogAction
-															title={"Setup Server?"}
+															title={"Set Up Worker?"}
 															type="default"
-															description="This will setup the server and all associated data"
+															description="This will initialize the worker and its associated runtime data"
 															onClick={async () => {
 																setIsDeploying(true);
 															}}
 														>
-															<Button>Setup Server</Button>
+															<Button>Set Up Worker</Button>
 														</DialogAction>
 													</div>
 												</div>
@@ -315,7 +314,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 						{setupTab === "validate" && (
 							<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 								<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
-									<ValidateServer serverId={serverId} />
+									<ValidateRuntimeWorker serverId={serverId} />
 								</div>
 							</div>
 						)}

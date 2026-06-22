@@ -3,10 +3,10 @@ import copy from "copy-to-clipboard";
 import { CopyIcon, ServerIcon } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { toast } from "@/components/shared/toast";
-import { ShowDocklandsActions } from "./servers/actions/show-docklands-actions";
-import { ShowStorageActions } from "./servers/actions/show-storage-actions";
-import { ShowTraefikActions } from "./servers/actions/show-traefik-actions";
-import { ToggleDockerCleanup } from "./servers/actions/toggle-docker-cleanup";
+import { ShowDocklandsActions } from "./runtime/actions/show-docklands-actions";
+import { ShowStorageActions } from "./runtime/actions/show-storage-actions";
+import { ShowTraefikActions } from "./runtime/actions/show-traefik-actions";
+import { ToggleDockerCleanup } from "./runtime/actions/toggle-docker-cleanup";
 import { UpdateServer } from "./web-server/update-server";
 
 export const WebServer = () => {

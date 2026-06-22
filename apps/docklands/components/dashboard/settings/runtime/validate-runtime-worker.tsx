@@ -10,7 +10,7 @@ interface Props {
 	serverId: string;
 }
 
-export const ValidateServer = ({ serverId }: Props) => {
+export const ValidateRuntimeWorker = ({ serverId }: Props) => {
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const { data, refetch, error, isPending, isError } =
 		api.server.validate.useQuery(
@@ -65,7 +65,7 @@ export const ValidateServer = ({ serverId }: Props) => {
 						{isPending ? (
 							<div className="flex items-center justify-center text-muted-foreground py-4">
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								<span>Checking Server configuration</span>
+								<span>Checking worker configuration</span>
 							</div>
 						) : (
 							<div className="grid w-full gap-4">
@@ -73,8 +73,8 @@ export const ValidateServer = ({ serverId }: Props) => {
 									<h3 className="text-lg font-semibold mb-1">Status</h3>
 									<p className="text-sm text-muted-foreground mb-4">
 										{isBuildServer
-											? "Shows the build server configuration status"
-											: "Shows the server configuration status"}
+											? "Shows the build worker configuration status"
+											: "Shows the runtime worker configuration status"}
 									</p>
 									<div className="grid gap-2.5">
 										<StatusRow

@@ -20,11 +20,11 @@ import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { TerminalModal } from "../web-server/terminal-modal";
-import { ShowServerActions } from "./actions/show-server-actions";
-import { HandleServers } from "./handle-servers";
-import { SetupServer } from "./setup-server";
+import { ShowRuntimeWorkerActions } from "./actions/show-runtime-worker-actions";
+import { HandleRuntimeWorker } from "./handle-runtime-worker";
+import { SetupRuntimeWorker } from "./setup-runtime-worker";
 
-export const ShowServers = () => {
+export const ShowRuntimeWorkers = () => {
 	const { data, refetch, isPending } = api.server.all.useQuery();
 	const { mutateAsync } = api.server.remove.useMutation();
 	const { data: sshKeys } = api.sshKey.all.useQuery();
@@ -71,7 +71,7 @@ export const ShowServers = () => {
 												Start adding workers to run your applications across
 												remote machines.
 											</span>
-											{permissions?.server.create && <HandleServers />}
+											{permissions?.server.create && <HandleRuntimeWorker />}
 										</div>
 									) : (
 										<div className="flex flex-col gap-4 min-h-[25vh]">
@@ -196,9 +196,9 @@ export const ShowServers = () => {
 																							</p>
 																							<p className="text-xs text-muted-foreground">
 																								Configure and initialize your
-																								runtime worker with Docker,
-																								ingress, and other essential
-																								runtime services
+																								runtime worker with a container
+																								engine, ingress, and the
+																								services Docklands needs
 																							</p>
 																						</div>
 																					</>
@@ -207,7 +207,7 @@ export const ShowServers = () => {
 																				side="bottom"
 																				asChild
 																			>
-																				<SetupServer
+																				<SetupRuntimeWorker
 																					serverId={server.serverId}
 																				/>
 																			</Tooltip>
@@ -229,7 +229,7 @@ export const ShowServers = () => {
 																							asButton={true}
 																						>
 																							<Button
-																								aria-label="Open server terminal"
+																								aria-label="Open worker terminal"
 																								variant="outline"
 																								shape="square"
 																								className="h-9 w-9"
@@ -250,7 +250,7 @@ export const ShowServers = () => {
 																				asChild
 																			>
 																				<div>
-																					<HandleServers
+																					<HandleRuntimeWorker
 																						serverId={server.serverId}
 																						asButton={true}
 																					/>
@@ -267,7 +267,7 @@ export const ShowServers = () => {
 																					asChild
 																				>
 																					<div>
-																						<ShowServerActions
+																						<ShowRuntimeWorkerActions
 																							serverId={server.serverId}
 																							asButton={true}
 																						/>
@@ -355,7 +355,7 @@ export const ShowServers = () => {
 												<div className="flex flex-row gap-2 flex-wrap w-full justify-end mt-4">
 													{data && data?.length > 0 && (
 														<div>
-															<HandleServers />
+															<HandleRuntimeWorker />
 														</div>
 													)}
 												</div>
