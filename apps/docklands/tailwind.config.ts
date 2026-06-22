@@ -2,7 +2,7 @@ import type { Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
 
 const config = {
-	darkMode: "class",
+	darkMode: ["selector", '[data-mode="dark"]'],
 	content: [
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",

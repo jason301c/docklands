@@ -1,6 +1,6 @@
-@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
 @import "@cloudflare/kumo/styles";
 @import "tailwindcss";
+@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
 @config "../tailwind.config.ts";
 
 @layer base {
@@ -53,7 +53,8 @@
 		--sidebar-ring: 217.2 91.2% 59.8%;
 	}
 
-	.dark {
+	:root[data-mode="dark"],
+	[data-mode="dark"] {
 		--terminal-paste: rgba(255, 255, 255, 0.2);
 		--background: 0 0% 0%;
 		--foreground: 0 0% 98%;
