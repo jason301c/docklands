@@ -1,6 +1,5 @@
 "use client";
 
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { api } from "@/client/api/trpc";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
 import { WebDomain } from "@/components/dashboard/settings/web-domain";
@@ -14,13 +13,11 @@ const Page = () => {
 				<WebDomain />
 				<WebServer />
 				<div className="w-full flex flex-col gap-4">
-					<LayerCard className="h-full bg-sidebar  p-2.5 rounded-xl  mx-auto w-full">
-						<ShowBackups
-							id={user?.userId ?? ""}
-							databaseType="web-server"
-							backupType="database"
-						/>
-					</LayerCard>
+					<ShowBackups
+						id={user?.userId ?? ""}
+						databaseType="web-server"
+						backupType="database"
+					/>
 				</div>
 			</div>
 		</div>
