@@ -12,7 +12,7 @@ Docklands is early and should be treated as a fork-in-progress.
 - Extra upstream branches were removed from this fork; only `canary` and `main` are kept.
 - A first batch of security-positive upstream PRs was merged after review.
 - Remaining upstream PRs are intentionally not mass-merged. Most need dedicated security or product review.
-- The primary project environment view is now a workspace canvas with persisted service layout, service connections, generated connection variables, service variables, builds, domains, previews, topology grouping, and command-bar navigation.
+- The primary project environment view is now a workspace canvas with persisted service layout, service connections, generated connection variables, service variables, deployments, domains, previews, topology grouping, and command-bar navigation.
 - The inherited list view remains available as a fallback while remaining bulk operations are migrated into the workspace surface.
 
 ## What It Does
@@ -26,13 +26,13 @@ Docklands inherits the upstream project's core capabilities:
 - Route traffic through the Docklands ingress runtime, powered by Traefik under the hood.
 - Run database and volume backups.
 - Manage local and remote runtime workers for multi-machine container builds.
-- Inspect builds, logs, metrics, resources, and service state.
-- Send build notifications through configured providers.
+- Inspect deployments, logs, metrics, resources, and service state.
+- Send deployment notifications through configured providers.
 
 ## Product Surface
 
 The primary app surface is `/dashboard/workspace`: a project environment canvas
-for services, variables, builds, domains, previews, topology, and connection
+for services, variables, deployments, domains, previews, topology, and connection
 mapping.
 Older inherited routes are kept as compatibility redirects while the product
 continues moving toward the workspace model.
@@ -44,7 +44,7 @@ Preferred route names in docs, navigation, and new links:
 - `/dashboard/cluster-runtime` for worker and cluster state.
 - `/dashboard/proxy-files` for ingress runtime files.
 - `/dashboard/host-metrics` for host and runtime metrics.
-- `/dashboard/builds` for build history and worker queue state.
+- `/dashboard/deployments` for deployment history and worker queue state.
 - `/dashboard/automations` for scheduled tasks.
 - `/dashboard/settings/ingress`, `/dashboard/settings/runtime`, and `/dashboard/settings/storage` for the renamed settings surfaces.
 
