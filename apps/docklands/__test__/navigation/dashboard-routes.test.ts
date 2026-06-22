@@ -14,20 +14,20 @@ describe("dashboard route helpers", () => {
 		expect(workspaceListPath).toBe("/dashboard/workspace?view=workspaces");
 		expect(
 			workspaceEnvironmentPath({
-				projectId: "project_1",
+				workspaceId: "workspace_1",
 				environmentId: "env_1",
 			}),
-		).toBe("/dashboard/workspace/project_1/env_1");
+		).toBe("/dashboard/workspace/workspace_1/env_1");
 		expect(
 			workspaceServicePath({
-				projectId: "project_1",
+				workspaceId: "workspace_1",
 				environmentId: "env_1",
 				serviceType: "application",
 				serviceId: "app_1",
 				tab: "deployments",
 			}),
 		).toBe(
-			"/dashboard/workspace/project_1/env_1/service/application/app_1?tab=deployments",
+			"/dashboard/workspace/workspace_1/env_1/service/application/app_1?tab=deployments",
 		);
 	});
 

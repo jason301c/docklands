@@ -2,13 +2,13 @@ import { EnvironmentCanvas } from "@/components/dashboard/workspace/environment-
 import { requireUser } from "@/server/web/app-auth";
 
 type PageProps = {
-	params: Promise<{ projectId: string; environmentId: string }>;
+	params: Promise<{ workspaceId: string; environmentId: string }>;
 };
 
 export default async function Page({ params }: PageProps) {
 	await requireUser();
-	const { projectId, environmentId } = await params;
+	const { workspaceId, environmentId } = await params;
 	return (
-		<EnvironmentCanvas projectId={projectId} environmentId={environmentId} />
+		<EnvironmentCanvas projectId={workspaceId} environmentId={environmentId} />
 	);
 }

@@ -181,7 +181,7 @@ export const deployApplication = async ({
 	};
 
 	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
-		projectId: application.environment.projectId,
+		workspaceId: application.environment.projectId,
 		environmentId: application.environmentId,
 		serviceType: "application",
 		serviceId: application.applicationId,
@@ -305,7 +305,7 @@ export const rebuildApplication = async ({
 	const application = await findApplicationById(applicationId);
 	const serverId = application.buildServerId || application.serverId;
 	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
-		projectId: application.environment.projectId,
+		workspaceId: application.environment.projectId,
 		environmentId: application.environmentId,
 		serviceType: "application",
 		serviceId: application.applicationId,

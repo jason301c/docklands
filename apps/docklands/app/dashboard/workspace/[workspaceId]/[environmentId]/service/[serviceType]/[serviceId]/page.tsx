@@ -12,7 +12,7 @@ import RedisClient from "./_clients/redis-client";
 
 type PageProps = {
 	params: Promise<{
-		projectId: string;
+		workspaceId: string;
 		environmentId: string;
 		serviceType: string;
 		serviceId: string;
@@ -22,7 +22,7 @@ type PageProps = {
 
 export default async function Page({ params, searchParams }: PageProps) {
 	await requireUser();
-	const { projectId, environmentId, serviceType, serviceId } = await params;
+	const { workspaceId, environmentId, serviceType, serviceId } = await params;
 	const resolvedSearchParams = await searchParams;
 	const activeTab =
 		typeof resolvedSearchParams.tab === "string"
@@ -30,7 +30,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 			: "general";
 
 	const routeProps = {
-		projectId,
+		projectId: workspaceId,
 		environmentId,
 		activeTab: activeTab as never,
 	};

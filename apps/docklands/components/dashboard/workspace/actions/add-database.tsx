@@ -223,7 +223,7 @@ export const AddDatabase = ({
 	const postgresMutation = api.postgres.create.useMutation();
 	const redisMutation = api.redis.create.useMutation();
 
-	// Get environment data to extract the backing projectId.
+	// Get environment data to extract the backing workspace id.
 	const { data: environment } = api.environment.one.useQuery({ environmentId });
 
 	const hasServers = servers && servers.length > 0;

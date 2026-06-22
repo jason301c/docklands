@@ -269,7 +269,7 @@ export const AdvanceBreadcrumb = () => {
 			if (targetEnvironmentId) {
 				router.push(
 					workspaceEnvironmentPath({
-						projectId: selectedProjectId,
+						workspaceId: selectedProjectId,
 						environmentId: targetEnvironmentId,
 					}),
 				);
@@ -283,7 +283,12 @@ export const AdvanceBreadcrumb = () => {
 	const handleEnvironmentSelect = (envId: string) => {
 		if (!projectId) return;
 
-		router.push(workspaceEnvironmentPath({ projectId, environmentId: envId }));
+		router.push(
+			workspaceEnvironmentPath({
+				workspaceId: projectId,
+				environmentId: envId,
+			}),
+		);
 		setEnvironmentOpen(false);
 	};
 
@@ -293,7 +298,7 @@ export const AdvanceBreadcrumb = () => {
 
 		router.push(
 			workspaceServicePath({
-				projectId,
+				workspaceId: projectId,
 				environmentId,
 				serviceType: service.type,
 				serviceId: service.id,
@@ -644,7 +649,7 @@ export const AdvanceBreadcrumb = () => {
 
 									router.push(
 										workspaceEnvironmentPath({
-											projectId,
+											workspaceId: projectId,
 											environmentId,
 										}),
 									);

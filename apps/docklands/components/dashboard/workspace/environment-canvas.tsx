@@ -531,7 +531,7 @@ const getServiceSettingsHref = (
 	service: WorkspaceService,
 ) =>
 	workspaceServicePath({
-		projectId,
+		workspaceId: projectId,
 		environmentId,
 		serviceType: service.type,
 		serviceId: service.id,
@@ -1837,7 +1837,7 @@ export const EnvironmentCanvas = ({
 			if (duplicateMode === "new-project" && newEnvironment?.projectId) {
 				router.push(
 					workspaceEnvironmentPath({
-						projectId: newEnvironment.projectId,
+						workspaceId: newEnvironment.projectId,
 						environmentId: newEnvironment.environmentId,
 					}),
 				);
@@ -2042,7 +2042,7 @@ export const EnvironmentCanvas = ({
 					await utils.environment.byProjectId.invalidate({ projectId });
 					router.push(
 						workspaceEnvironmentPath({
-							projectId,
+							workspaceId: projectId,
 							environmentId: result.environmentId,
 						}),
 					);
@@ -2216,7 +2216,7 @@ export const EnvironmentCanvas = ({
 					setCommandQuery("");
 					router.push(
 						workspaceEnvironmentPath({
-							projectId,
+							workspaceId: projectId,
 							environmentId: environment.environmentId,
 						}),
 					);

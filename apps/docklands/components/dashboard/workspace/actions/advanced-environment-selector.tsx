@@ -134,7 +134,7 @@ export const AdvancedEnvironmentSelector = ({
 				if (firstEnv) {
 					router.push(
 						workspaceEnvironmentPath({
-							projectId,
+							workspaceId: projectId,
 							environmentId: firstEnv.environmentId,
 						}),
 					);
@@ -162,7 +162,7 @@ export const AdvancedEnvironmentSelector = ({
 			// Navigate to the new duplicated environment
 			router.push(
 				workspaceEnvironmentPath({
-					projectId,
+					workspaceId: projectId,
 					environmentId: result.environmentId,
 				}),
 			);
@@ -224,7 +224,7 @@ export const AdvancedEnvironmentSelector = ({
 									onClick={() => {
 										router.push(
 											workspaceEnvironmentPath({
-												projectId,
+												workspaceId: projectId,
 												environmentId: environment.environmentId,
 											}),
 										);

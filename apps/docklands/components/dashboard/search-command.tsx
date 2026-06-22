@@ -139,7 +139,7 @@ export const SearchCommand = () => {
 						onSelect: () =>
 							navigate(
 								workspaceEnvironmentPath({
-									projectId: project.projectId,
+									workspaceId: project.projectId,
 									environmentId: defaultEnvironment.environmentId,
 								}),
 							),
@@ -160,7 +160,7 @@ export const SearchCommand = () => {
 						onSelect: () =>
 							navigate(
 								workspaceServicePath({
-									projectId: project.projectId,
+									workspaceId: project.projectId,
 									environmentId: service.environmentId,
 									serviceType: service.type,
 									serviceId: service.id,

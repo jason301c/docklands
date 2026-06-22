@@ -8,18 +8,19 @@ import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { ShowEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
+import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
+import { ShowExternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-external-mariadb-credentials";
+import { ShowGeneralMariadb } from "@/components/dashboard/mariadb/general/show-general-mariadb";
+import { ShowInternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-internal-mariadb-credentials";
+import { UpdateMariadb } from "@/components/dashboard/mariadb/update-mariadb";
 import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
 import { ContainerPaidMonitoring } from "@/components/dashboard/metrics/paid/container/show-paid-container-monitoring";
-import { ShowExternalRedisCredentials } from "@/components/dashboard/redis/general/show-external-redis-credentials";
-import { ShowGeneralRedis } from "@/components/dashboard/redis/general/show-general-redis";
-import { ShowInternalRedisCredentials } from "@/components/dashboard/redis/general/show-internal-redis-credentials";
-import { UpdateRedis } from "@/components/dashboard/redis/update-redis";
 import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,
 } from "@/components/dashboard/service/runtime-placement-status";
 import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/shared/show-database-advanced-settings";
-import { RedisIcon } from "@/components/icons/data-tools-icons";
+import { MariadbIcon } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import {
@@ -27,26 +28,33 @@ import {
 	workspaceServicePath,
 } from "@/shared/routes";
 
-type TabState = "general" | "environment" | "logs" | "monitoring" | "advanced";
+type TabState =
+	| "general"
+	| "environment"
+	| "logs"
+	| "monitoring"
+	| "backups"
+	| "advanced";
 
-const Redis = (props: {
-	redisId: string;
+const Mariadb = (props: {
+	mariadbId: string;
 	projectId: string;
 	environmentId: string;
 	activeTab: TabState;
 }) => {
 	const [_toggleMonitoring, _setToggleMonitoring] = useState(false);
-	const { redisId, activeTab } = props;
+
+	const { mariadbId, activeTab } = props;
 	const router = useRouter();
 	const { projectId, environmentId } = props;
 	const [tab, setSab] = useState<TabState>(activeTab);
-	const { data } = api.redis.one.useQuery({ redisId });
-
+	const { data } = api.mariadb.one.useQuery({ mariadbId });
 	const { data: auth } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: serverIp } = api.settings.getIp.useQuery();
+
 	const { data: environments } = api.environment.byProjectId.useQuery({
 		projectId: data?.environment?.projectId || "",
 	});
@@ -54,16 +62,16 @@ const Redis = (props: {
 		environments?.map((env) => ({
 			name: env.name,
 			href: workspaceEnvironmentPath({
-				projectId,
+				workspaceId: projectId,
 				environmentId: env.environmentId,
 			}),
 		})) || [];
 
 	return (
 		<div className="pb-10">
-			<UseKeyboardNav forPage="redis" />
+			<UseKeyboardNav forPage="mariadb" />
 			<AdvanceBreadcrumb />
-			<div className="w-full">
+			<div className="flex flex-col gap-4">
 				<div className="rounded-lg border bg-background p-6">
 					<div className="flex flex-row justify-between items-center">
 						<div className="flex flex-col">
@@ -73,7 +81,7 @@ const Redis = (props: {
 										<StatusTooltip status={data?.applicationStatus} />
 									</div>
 
-									<RedisIcon className="h-6 w-6 text-muted-foreground" />
+									<MariadbIcon className="h-6 w-6 text-muted-foreground" />
 								</div>
 								{data?.name}
 							</h3>
@@ -92,10 +100,10 @@ const Redis = (props: {
 
 							<div className="flex flex-row gap-2 justify-end">
 								{permissions?.service.create && (
-									<UpdateRedis redisId={redisId} />
+									<UpdateMariadb mariadbId={mariadbId} />
 								)}
 								{permissions?.service.delete && (
-									<DeleteService id={redisId} type="redis" />
+									<DeleteService id={mariadbId} type="mariadb" />
 								)}
 							</div>
 						</div>
@@ -112,10 +120,10 @@ const Redis = (props: {
 										if (e === null) return;
 										setSab(e as TabState);
 										const newPath = workspaceServicePath({
-											projectId,
+											workspaceId: projectId,
 											environmentId,
-											serviceType: "redis",
-											serviceId: redisId,
+											serviceType: "mariadb",
+											serviceId: mariadbId,
 											tab: e,
 										});
 
@@ -134,6 +142,7 @@ const Redis = (props: {
 											((data?.serverId && isCloud) || !data?.server)
 												? { value: "monitoring", label: "Metrics" }
 												: null,
+											{ value: "backups", label: "Backups" },
 											permissions?.service.create
 												? { value: "advanced", label: "Advanced" }
 												: null,
@@ -143,16 +152,16 @@ const Redis = (props: {
 								{tab === "general" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowGeneralRedis redisId={redisId} />
-											<ShowInternalRedisCredentials redisId={redisId} />
-											<ShowExternalRedisCredentials redisId={redisId} />
+											<ShowGeneralMariadb mariadbId={mariadbId} />
+											<ShowInternalMariadbCredentials mariadbId={mariadbId} />
+											<ShowExternalMariadbCredentials mariadbId={mariadbId} />
 										</div>
 									</div>
 								)}
 								{permissions?.envVars.read && tab === "environment" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowEnvironment id={redisId} type="redis" />
+											<ShowEnvironment id={mariadbId} type="mariadb" />
 										</div>
 									</div>
 								)}
@@ -213,10 +222,20 @@ const Redis = (props: {
 										</div>
 									</div>
 								)}
+								{tab === "backups" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowBackups id={mariadbId} databaseType="mariadb" />
+										</div>
+									</div>
+								)}
 								{permissions?.service.create && tab === "advanced" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowDatabaseAdvancedSettings id={redisId} type="redis" />
+											<ShowDatabaseAdvancedSettings
+												id={mariadbId}
+												type="mariadb"
+											/>
 										</div>
 									</div>
 								)}
@@ -229,4 +248,4 @@ const Redis = (props: {
 	);
 };
 
-export default Redis;
+export default Mariadb;

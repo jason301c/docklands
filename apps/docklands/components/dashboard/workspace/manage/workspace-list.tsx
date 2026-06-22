@@ -386,7 +386,7 @@ export const WorkspaceList = () => {
 										const workspaceHref = hasNoEnvironments
 											? null
 											: workspaceEnvironmentPath({
-													projectId: project.projectId,
+													workspaceId: project.projectId,
 													environmentId: accessibleEnvironment.environmentId,
 												});
 

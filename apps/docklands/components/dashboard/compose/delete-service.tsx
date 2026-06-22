@@ -104,7 +104,7 @@ export const DeleteService = ({ id, type }: Props) => {
 					) {
 						push(
 							workspaceEnvironmentPath({
-								projectId: result.environment.projectId,
+								workspaceId: result.environment.projectId,
 								environmentId: result.environment.environmentId,
 							}),
 						);

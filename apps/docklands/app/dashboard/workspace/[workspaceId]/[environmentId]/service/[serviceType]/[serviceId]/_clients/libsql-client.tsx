@@ -9,10 +9,10 @@ import { ShowEnvironment } from "@/components/dashboard/application/environment/
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
-import { ShowExternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-external-mariadb-credentials";
-import { ShowGeneralMariadb } from "@/components/dashboard/mariadb/general/show-general-mariadb";
-import { ShowInternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-internal-mariadb-credentials";
-import { UpdateMariadb } from "@/components/dashboard/mariadb/update-mariadb";
+import { ShowExternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-external-libsql-credentials";
+import { ShowGeneralLibsql } from "@/components/dashboard/libsql/general/show-general-libsql";
+import { ShowInternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-internal-libsql-credentials";
+import { UpdateLibsql } from "@/components/dashboard/libsql/update-libsql";
 import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
 import { ContainerPaidMonitoring } from "@/components/dashboard/metrics/paid/container/show-paid-container-monitoring";
 import {
@@ -20,7 +20,7 @@ import {
 	RuntimeWorkerInactiveState,
 } from "@/components/dashboard/service/runtime-placement-status";
 import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/shared/show-database-advanced-settings";
-import { MariadbIcon } from "@/components/icons/data-tools-icons";
+import { LibsqlIcon } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import {
@@ -36,25 +36,24 @@ type TabState =
 	| "backups"
 	| "advanced";
 
-const Mariadb = (props: {
-	mariadbId: string;
+const Libsql = (props: {
+	libsqlId: string;
 	projectId: string;
 	environmentId: string;
 	activeTab: TabState;
 }) => {
 	const [_toggleMonitoring, _setToggleMonitoring] = useState(false);
 
-	const { mariadbId, activeTab } = props;
+	const { libsqlId, activeTab } = props;
 	const router = useRouter();
 	const { projectId, environmentId } = props;
 	const [tab, setSab] = useState<TabState>(activeTab);
-	const { data } = api.mariadb.one.useQuery({ mariadbId });
+	const { data } = api.libsql.one.useQuery({ libsqlId });
 	const { data: auth } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: serverIp } = api.settings.getIp.useQuery();
-
 	const { data: environments } = api.environment.byProjectId.useQuery({
 		projectId: data?.environment?.projectId || "",
 	});
@@ -62,15 +61,16 @@ const Mariadb = (props: {
 		environments?.map((env) => ({
 			name: env.name,
 			href: workspaceEnvironmentPath({
-				projectId,
+				workspaceId: projectId,
 				environmentId: env.environmentId,
 			}),
 		})) || [];
 
 	return (
 		<div className="pb-10">
-			<UseKeyboardNav forPage="mariadb" />
+			<UseKeyboardNav forPage="libsql" />
 			<AdvanceBreadcrumb />
+
 			<div className="flex flex-col gap-4">
 				<div className="rounded-lg border bg-background p-6">
 					<div className="flex flex-row justify-between items-center">
@@ -81,7 +81,7 @@ const Mariadb = (props: {
 										<StatusTooltip status={data?.applicationStatus} />
 									</div>
 
-									<MariadbIcon className="h-6 w-6 text-muted-foreground" />
+									<LibsqlIcon className="h-6 w-6 text-muted-foreground" />
 								</div>
 								{data?.name}
 							</h3>
@@ -99,11 +99,9 @@ const Mariadb = (props: {
 							/>
 
 							<div className="flex flex-row gap-2 justify-end">
-								{permissions?.service.create && (
-									<UpdateMariadb mariadbId={mariadbId} />
-								)}
-								{permissions?.service.delete && (
-									<DeleteService id={mariadbId} type="mariadb" />
+								<UpdateLibsql libsqlId={libsqlId} />
+								{(auth?.role === "owner" || auth?.canDeleteServices) && (
+									<DeleteService id={libsqlId} type="libsql" />
 								)}
 							</div>
 						</div>
@@ -120,10 +118,10 @@ const Mariadb = (props: {
 										if (e === null) return;
 										setSab(e as TabState);
 										const newPath = workspaceServicePath({
-											projectId,
+											workspaceId: projectId,
 											environmentId,
-											serviceType: "mariadb",
-											serviceId: mariadbId,
+											serviceType: "libsql",
+											serviceId: libsqlId,
 											tab: e,
 										});
 
@@ -152,16 +150,16 @@ const Mariadb = (props: {
 								{tab === "general" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowGeneralMariadb mariadbId={mariadbId} />
-											<ShowInternalMariadbCredentials mariadbId={mariadbId} />
-											<ShowExternalMariadbCredentials mariadbId={mariadbId} />
+											<ShowGeneralLibsql libsqlId={libsqlId} />
+											<ShowInternalLibsqlCredentials libsqlId={libsqlId} />
+											<ShowExternalLibsqlCredentials libsqlId={libsqlId} />
 										</div>
 									</div>
 								)}
 								{permissions?.envVars.read && tab === "environment" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowEnvironment id={mariadbId} type="mariadb" />
+											<ShowEnvironment id={libsqlId} type="libsql" />
 										</div>
 									</div>
 								)}
@@ -225,7 +223,11 @@ const Mariadb = (props: {
 								{tab === "backups" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowBackups id={mariadbId} databaseType="mariadb" />
+											<ShowBackups
+												id={libsqlId}
+												databaseType="libsql"
+												backupType="database"
+											/>
 										</div>
 									</div>
 								)}
@@ -233,8 +235,8 @@ const Mariadb = (props: {
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
 											<ShowDatabaseAdvancedSettings
-												id={mariadbId}
-												type="mariadb"
+												id={libsqlId}
+												type="libsql"
 											/>
 										</div>
 									</div>
@@ -248,4 +250,4 @@ const Mariadb = (props: {
 	);
 };
 
-export default Mariadb;
+export default Libsql;

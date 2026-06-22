@@ -98,7 +98,7 @@ export async function resolveServicePath(
 			}
 			return {
 				href: workspaceServicePath({
-					projectId: app.environment.project.projectId,
+					workspaceId: app.environment.project.projectId,
 					environmentId: app.environment.environmentId,
 					serviceType: "application",
 					serviceId: app.applicationId,
@@ -113,7 +113,7 @@ export async function resolveServicePath(
 			}
 			return {
 				href: workspaceServicePath({
-					projectId: comp.environment.project.projectId,
+					workspaceId: comp.environment.project.projectId,
 					environmentId: comp.environment.environmentId,
 					serviceType: "compose",
 					serviceId: comp.composeId,

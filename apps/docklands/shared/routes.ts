@@ -1,7 +1,7 @@
 import type { WorkspaceServiceType } from "@/shared/workspace-graph";
 
 export type WorkspaceEnvironmentRoute = {
-	projectId: string;
+	workspaceId: string;
 	environmentId: string;
 };
 
@@ -21,20 +21,20 @@ export const workspaceListView = "workspaces";
 export const workspaceListPath = `${workspaceOverviewPath}?view=${workspaceListView}`;
 
 export function workspaceEnvironmentPath({
-	projectId,
+	workspaceId,
 	environmentId,
 }: WorkspaceEnvironmentRoute) {
-	return `${workspaceOverviewPath}/${segment(projectId)}/${segment(environmentId)}`;
+	return `${workspaceOverviewPath}/${segment(workspaceId)}/${segment(environmentId)}`;
 }
 
 export function workspaceServicePath({
-	projectId,
+	workspaceId,
 	environmentId,
 	serviceType,
 	serviceId,
 	tab,
 }: WorkspaceServiceRoute) {
-	return `${workspaceEnvironmentPath({ projectId, environmentId })}/service/${segment(serviceType)}/${segment(serviceId)}${tabQuery(tab)}`;
+	return `${workspaceEnvironmentPath({ workspaceId, environmentId })}/service/${segment(serviceType)}/${segment(serviceId)}${tabQuery(tab)}`;
 }
 
 export function isEnvironmentCanvasPath(pathname: string) {

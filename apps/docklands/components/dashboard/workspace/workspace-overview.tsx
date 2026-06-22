@@ -59,7 +59,7 @@ function getServiceInfo(d: any) {
 			environment: app.environment.name as string,
 			projectName: app.environment.project.name as string,
 			href: workspaceServicePath({
-				projectId: app.environment.project.projectId,
+				workspaceId: app.environment.project.projectId,
 				environmentId: app.environment.environmentId,
 				serviceType: "application",
 				serviceId: app.applicationId,
@@ -72,7 +72,7 @@ function getServiceInfo(d: any) {
 			environment: comp.environment.name as string,
 			projectName: comp.environment.project.name as string,
 			href: workspaceServicePath({
-				projectId: comp.environment.project.projectId,
+				workspaceId: comp.environment.project.projectId,
 				environmentId: comp.environment.environmentId,
 				serviceType: "compose",
 				serviceId: comp.composeId,
@@ -474,7 +474,7 @@ export const WorkspaceOverview = () => {
 														href={
 															environment
 																? workspaceEnvironmentPath({
-																		projectId: project.projectId,
+																		workspaceId: project.projectId,
 																		environmentId: environment.environmentId,
 																	})
 																: workspaceListPath

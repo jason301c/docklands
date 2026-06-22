@@ -35,8 +35,8 @@ Docklands inherits the upstream project's core capabilities:
 The primary app surface is `/dashboard/workspace`: a project environment canvas
 for services, variables, deployments, domains, previews, topology, and connection
 mapping.
-Older inherited routes are kept as compatibility redirects while the product
-continues moving toward the workspace model.
+Older inherited dashboard routes are no longer preserved as compatibility
+redirects; new navigation and docs should use the workspace-first route model.
 
 Preferred route names in docs, navigation, and new links:
 

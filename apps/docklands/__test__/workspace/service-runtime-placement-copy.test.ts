@@ -10,7 +10,7 @@ const sourceFile = (relativePath: string) =>
 
 const serviceClientsDir = fileURLToPath(
 	new URL(
-		"../../app/dashboard/workspace/[projectId]/[environmentId]/service/[serviceType]/[serviceId]/_clients",
+		"../../app/dashboard/workspace/[workspaceId]/[environmentId]/service/[serviceType]/[serviceId]/_clients",
 		import.meta.url,
 	),
 );
@@ -38,7 +38,7 @@ describe("service runtime placement copy", () => {
 
 		for (const file of clientFiles) {
 			const source = sourceFile(
-				`app/dashboard/workspace/[projectId]/[environmentId]/service/[serviceType]/[serviceId]/_clients/${file}`,
+				`app/dashboard/workspace/[workspaceId]/[environmentId]/service/[serviceType]/[serviceId]/_clients/${file}`,
 			);
 
 			expect(source).toContain("RuntimePlacementStatus");

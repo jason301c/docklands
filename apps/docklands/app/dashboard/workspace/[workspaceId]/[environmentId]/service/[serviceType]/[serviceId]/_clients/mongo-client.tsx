@@ -61,7 +61,7 @@ const Mongo = (props: {
 		environments?.map((env) => ({
 			name: env.name,
 			href: workspaceEnvironmentPath({
-				projectId,
+				workspaceId: projectId,
 				environmentId: env.environmentId,
 			}),
 		})) || [];
@@ -119,7 +119,7 @@ const Mongo = (props: {
 										if (e === null) return;
 										setSab(e as TabState);
 										const newPath = workspaceServicePath({
-											projectId,
+											workspaceId: projectId,
 											environmentId,
 											serviceType: "mongo",
 											serviceId: mongoId,

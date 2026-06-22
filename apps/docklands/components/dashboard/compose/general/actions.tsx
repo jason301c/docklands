@@ -48,7 +48,7 @@ export const ComposeActions = ({ composeId }: Props) => {
 									if (data?.environment.projectId && data.environmentId) {
 										router.push(
 											workspaceServicePath({
-												projectId: data.environment.projectId,
+												workspaceId: data.environment.projectId,
 												environmentId: data.environmentId,
 												serviceType: "compose",
 												serviceId: composeId,

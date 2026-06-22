@@ -5,12 +5,12 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Runtime/workspace API and notification copy cleanup
+- Latest checkpoint: Workspace route parameter cleanup
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
-- Canonical environment route: `/dashboard/workspace/[projectId]/[environmentId]`
-- Canonical service route: `/dashboard/workspace/[projectId]/[environmentId]/service/[serviceType]/[serviceId]`
+- Canonical environment route: `/dashboard/workspace/[workspaceId]/[environmentId]`
+- Canonical service route: `/dashboard/workspace/[workspaceId]/[environmentId]/service/[serviceType]/[serviceId]`
 - Old `/dashboard/project/...` links and legacy single-page dashboard aliases are no longer supported.
 
 ## Done
@@ -26,7 +26,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Made `typecheck` regenerate current Next route types with `next typegen` after cleaning stale dev validators, keeping TypeScript checks aligned with route deletions without a full build.
 - Hardened Docker packaging around Bun/Node 24 native dependency builds, runtime env injection, and `.env` exclusion from the build context.
 - Baseline before the Bun migration: typecheck passed in 14.65s, non-real Vitest passed in 6.39s, and production build passed in 30.45s.
-- Converted the API surface to App Router route handlers, with old webhook/deploy callback logic wrapped through compatibility helpers where risky.
+- Converted the API surface to App Router route handlers; webhook/deploy/provider flows now live behind Fetch `Request` handlers under `server/web/`.
 - Flattened Kumo-based dashboard/settings/service shells and removed most card-in-card surfaces.
 - Made `/dashboard/deployments` the deployment history route and removed the old `/dashboard/builds` compatibility alias.
 - Extracted the dashboard navigation model and tests.
@@ -62,6 +62,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Removed active `{{project.KEY}}` env-reference compatibility, added a migration that rewrites stored env strings to `{{workspace.KEY}}`, and dropped the old Bitbucket `appPassword` credential column.
 - Removed unused React Email sample templates/assets, the unused Compose JSON schema, stale DBML generator/output, and the old PNPM devcontainer setup; also removed the now-unused `drizzle-dbml-generator` dependency.
 - Replaced visible server/project/Docker-cleanup wording across onboarding, runtime-worker settings, service API errors, setup logs, threshold notifications, backup/build notifications, and cleanup notifications with runtime-worker/workspace/container-runtime language.
+- Renamed canonical workspace App Router params and route-helper contracts from `projectId` to `workspaceId` while preserving DB/API `projectId` compatibility internals.
 - Centralized the workspace service creation placement selector so application, compose, database, import, and template flows all use the same automatic-placement/runtime-worker UI and copy.
 - Replaced the workspace overview's zero-workspace placeholder with a canvas-first launch state and loading-aware recent panels.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.

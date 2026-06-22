@@ -224,7 +224,7 @@ export const deployCompose = async ({
 	const compose = await findComposeById(composeId);
 
 	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
-		projectId: compose.environment.projectId,
+		workspaceId: compose.environment.projectId,
 		environmentId: compose.environmentId,
 		serviceType: "compose",
 		serviceId: compose.composeId,

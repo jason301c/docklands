@@ -130,7 +130,7 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 					if (environmentIdToUse && projectIdToUse) {
 						router.push(
 							workspaceEnvironmentPath({
-								projectId: projectIdToUse,
+								workspaceId: projectIdToUse,
 								environmentId: environmentIdToUse,
 							}),
 						);

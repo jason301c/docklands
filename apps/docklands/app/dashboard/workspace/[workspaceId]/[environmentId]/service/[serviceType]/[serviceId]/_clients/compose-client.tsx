@@ -83,7 +83,7 @@ const Service = (props: {
 		environments?.map((env) => ({
 			name: env.name,
 			href: workspaceEnvironmentPath({
-				projectId,
+				workspaceId: projectId,
 				environmentId: env.environmentId,
 			}),
 		})) || [];
@@ -173,7 +173,7 @@ const Service = (props: {
 										if (e === null) return;
 										setTab(e as TabState);
 										const newPath = workspaceServicePath({
-											projectId,
+											workspaceId: projectId,
 											environmentId,
 											serviceType: "compose",
 											serviceId: composeId,

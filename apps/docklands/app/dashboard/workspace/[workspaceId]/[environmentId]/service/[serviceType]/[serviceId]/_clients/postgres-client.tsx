@@ -60,7 +60,7 @@ const Postgresql = (props: {
 		environments?.map((env) => ({
 			name: env.name,
 			href: workspaceEnvironmentPath({
-				projectId,
+				workspaceId: projectId,
 				environmentId: env.environmentId,
 			}),
 		})) || [];
@@ -118,7 +118,7 @@ const Postgresql = (props: {
 										if (e === null) return;
 										setSab(e as TabState);
 										const newPath = workspaceServicePath({
-											projectId,
+											workspaceId: projectId,
 											environmentId,
 											serviceType: "postgres",
 											serviceId: postgresId,

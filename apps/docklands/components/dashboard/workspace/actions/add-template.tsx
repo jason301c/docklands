@@ -71,7 +71,7 @@ export const AddTemplate = ({
 		return undefined;
 	});
 
-	// Get environment data to extract the backing projectId.
+	// Get environment data to extract the backing workspace id.
 	const { data: environment } = api.environment.one.useQuery({ environmentId });
 
 	// Save to localStorage when customBaseUrl changes
