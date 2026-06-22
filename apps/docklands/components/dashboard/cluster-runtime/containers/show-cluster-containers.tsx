@@ -11,20 +11,20 @@ import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { Alert, AlertDescription, AlertTitle } from "@/components/shared/alert";
 import {
+	ClusterRuntimeUnavailable,
 	NoRunningContainers,
 	NoServices,
 	ServicesError,
-	SwarmNotAvailable,
 } from "./empty-states";
 import { NodeSection } from "./node-section";
 import { SummaryCards } from "./summary-cards";
-import type { ContainerInfo, ContainerStat, SwarmNode } from "./types";
+import type { ClusterNode, ContainerInfo, ContainerStat } from "./types";
 
 interface Props {
 	serverId?: string;
 }
 
-export const ShowSwarmContainers = ({ serverId }: Props) => {
+export const ShowClusterContainers = ({ serverId }: Props) => {
 	const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
 	const {
@@ -118,12 +118,12 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 	const unscheduledServices = containers.filter((c) => c.Node === "N/A");
 
 	const downNodes = (nodes ?? []).filter(
-		(n: SwarmNode) => n.Status !== "Ready" || n.Availability !== "Active",
+		(n: ClusterNode) => n.Status !== "Ready" || n.Availability !== "Active",
 	);
 
 	const isMultiNode = (nodes?.length ?? 0) > 1;
 
-	const nodeStatusMap = new Map<string, SwarmNode>();
+	const nodeStatusMap = new Map<string, ClusterNode>();
 	if (nodes) {
 		for (const node of nodes) {
 			nodeStatusMap.set(node.Hostname, node);
@@ -208,7 +208,7 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 
 	if (nodesError) {
 		return (
-			<SwarmNotAvailable
+			<ClusterRuntimeUnavailable
 				errorMessage={nodesErrorDetail?.message}
 				onRetry={() => refetchNodes()}
 			/>
@@ -217,8 +217,8 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 
 	if (!nodesError && nodes === undefined) {
 		return (
-			<SwarmNotAvailable
-				errorMessage="The orchestration layer may not be initialized - docker node ls returned no data."
+			<ClusterRuntimeUnavailable
+				errorMessage="The cluster runtime may not be initialized - docker node ls returned no data."
 				onRetry={() => refetchNodes()}
 			/>
 		);
@@ -291,7 +291,7 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 							Containers scheduled on these workers may not be running.
 						</p>
 						<ul className="list-disc list-inside space-y-1 text-xs">
-							{downNodes.map((node: SwarmNode) => (
+							{downNodes.map((node: ClusterNode) => (
 								<li key={node.ID}>
 									<strong>{node.Hostname}</strong> &mdash; Status: {node.Status}
 									, Availability: {node.Availability}
@@ -347,7 +347,7 @@ export const ShowSwarmContainers = ({ serverId }: Props) => {
 					</AlertTitle>
 					<AlertDescription>
 						<p className="mb-2">
-							These services exist in orchestration but have no running
+							These services exist in the cluster runtime but have no running
 							containers. They may be scaled to 0 replicas or failing to start.
 						</p>
 						<ul className="list-disc list-inside space-y-1 text-xs">

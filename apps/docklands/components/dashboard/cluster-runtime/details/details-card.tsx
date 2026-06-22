@@ -6,7 +6,7 @@ import { Separator } from "@/components/shared/separator";
 import { ShowNodeApplications } from "../applications/show-applications";
 import { ShowNodeConfig } from "./show-node-config";
 
-export interface SwarmList {
+export interface ClusterNodeSummary {
 	ID: string;
 	Hostname: string;
 	Availability: string;
@@ -17,7 +17,7 @@ export interface SwarmList {
 }
 
 interface Props {
-	node: SwarmList;
+	node: ClusterNodeSummary;
 	serverId?: string;
 }
 

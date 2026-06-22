@@ -20,7 +20,7 @@ export interface ContainerInfo {
 	ID: string;
 }
 
-export interface SwarmNode {
+export interface ClusterNode {
 	ID: string;
 	Hostname: string;
 	Status: string;
@@ -31,5 +31,5 @@ export interface SwarmNode {
 export interface NodeGroup {
 	nodeName: string;
 	containers: ContainerInfo[];
-	nodeStatus?: SwarmNode;
+	nodeStatus?: ClusterNode;
 }

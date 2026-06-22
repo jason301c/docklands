@@ -2,8 +2,8 @@
 
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { useState } from "react";
-import { ShowSwarmContainers } from "@/components/dashboard/swarm/containers/show-swarm-containers";
-import SwarmMonitorCard from "@/components/dashboard/swarm/monitoring-card";
+import { ShowClusterContainers } from "@/components/dashboard/cluster-runtime/containers/show-cluster-containers";
+import ClusterMonitorCard from "@/components/dashboard/cluster-runtime/monitoring-card";
 import { ServerFilter } from "@/components/shared/server-filter";
 
 const Dashboard = () => {
@@ -25,12 +25,12 @@ const Dashboard = () => {
 					/>
 					{activeTab === "overview" && (
 						<div>
-							<SwarmMonitorCard serverId={serverId} />
+							<ClusterMonitorCard serverId={serverId} />
 						</div>
 					)}
 					{activeTab === "containers" && (
 						<div className="rounded-lg border bg-background p-6">
-							<ShowSwarmContainers serverId={serverId} />
+							<ShowClusterContainers serverId={serverId} />
 						</div>
 					)}
 				</div>

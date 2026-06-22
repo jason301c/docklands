@@ -17,7 +17,7 @@ interface Props {
 	serverId?: string;
 }
 
-export default function SwarmMonitorCard({ serverId }: Props) {
+export default function ClusterMonitorCard({ serverId }: Props) {
 	const { data: nodes, isPending } = api.swarm.getNodes.useQuery({
 		serverId,
 	});
@@ -70,7 +70,7 @@ export default function SwarmMonitorCard({ serverId }: Props) {
 				<div className="space-y-1">
 					<h3 className="text-xl flex flex-row gap-2">
 						<WorkflowIcon className="size-6 text-muted-foreground self-center" />
-						Orchestration Overview
+						Cluster Runtime Overview
 					</h3>
 					<p className="text-sm text-muted-foreground">
 						Monitor runtime capacity and node health across the cluster.

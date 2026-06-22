@@ -44,21 +44,21 @@ export const DocLinks = () => (
 	</div>
 );
 
-interface SwarmNotAvailableProps {
+interface ClusterRuntimeUnavailableProps {
 	errorMessage?: string;
 	onRetry: () => void;
 }
 
-export const SwarmNotAvailable = ({
+export const ClusterRuntimeUnavailable = ({
 	errorMessage,
 	onRetry,
-}: SwarmNotAvailableProps) => (
+}: ClusterRuntimeUnavailableProps) => (
 	<div className="flex flex-col gap-4 py-6 max-w-2xl mx-auto">
 		<Alert variant="destructive">
 			<AlertTriangle className="h-4 w-4" />
-			<AlertTitle>Orchestration Not Available</AlertTitle>
+			<AlertTitle>Cluster Runtime Unavailable</AlertTitle>
 			<AlertDescription>
-				Could not reach the orchestration layer.{" "}
+				Could not reach the cluster runtime.{" "}
 				{errorMessage && (
 					<span className="block mt-1 text-xs opacity-80">{errorMessage}</span>
 				)}
@@ -67,11 +67,11 @@ export const SwarmNotAvailable = ({
 		<div className="space-y-3 text-sm text-muted-foreground">
 			<p>
 				This view uses Docker Swarm under the hood, so the runtime worker needs
-				orchestration initialized before Docklands can list scheduled services.
+				cluster mode initialized before Docklands can list scheduled services.
 			</p>
 			<ol className="list-decimal list-inside space-y-2 ml-1">
 				<li>
-					Initialize orchestration on your runtime worker:{" "}
+					Initialize cluster mode on your runtime worker:{" "}
 					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">
 						docker swarm init
 					</code>
@@ -116,7 +116,7 @@ export const ServicesError = ({
 			<AlertTriangle className="h-4 w-4" />
 			<AlertTitle>Failed to Load Services</AlertTitle>
 			<AlertDescription>
-				Orchestration is reachable but service listing failed.{" "}
+				The cluster runtime is reachable but service listing failed.{" "}
 				{errorMessage && (
 					<span className="block mt-1 text-xs opacity-80">{errorMessage}</span>
 				)}
@@ -154,22 +154,23 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 	<div className="flex flex-col gap-4 py-6 max-w-2xl mx-auto">
 		<Alert>
 			<Info className="h-4 w-4" />
-			<AlertTitle>No Orchestrated Services Found</AlertTitle>
+			<AlertTitle>No Cluster Services Found</AlertTitle>
 			<AlertDescription>
-				Orchestration is active with <strong>{nodeCount} worker(s)</strong>, but
-				there are no application services running yet.
+				The cluster runtime is active with{" "}
+				<strong>{nodeCount} worker(s)</strong>, but there are no application
+				services running yet.
 			</AlertDescription>
 		</Alert>
 		<div className="space-y-3 text-sm text-muted-foreground">
 			<p>
 				This view shows containers running through the{" "}
-				<strong>orchestration layer</strong>. Standalone containers and Compose
+				<strong>cluster runtime</strong>. Standalone containers and Compose
 				services that are not running as stacks won&apos;t appear here.
 			</p>
 			<p>To see containers in this view, make sure your applications are:</p>
 			<ol className="list-decimal list-inside space-y-2 ml-1">
 				<li>
-					<strong>Deployed as orchestrated services</strong> &mdash; Docklands
+					<strong>Deployed as cluster services</strong> &mdash; Docklands
 					deploys applications this way by default. Compose projects need to use{" "}
 					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">Stack</code>{" "}
 					type (not{" "}
@@ -222,8 +223,8 @@ export const NoRunningContainers = ({
 				<AlertTriangle className="h-4 w-4" />
 				<AlertTitle>No Running Containers</AlertTitle>
 				<AlertDescription>
-					Found <strong>{serviceCount} service(s)</strong> in orchestration, but
-					none have running containers.
+					Found <strong>{serviceCount} service(s)</strong> in the cluster
+					runtime, but none have running containers.
 				</AlertDescription>
 			</Alert>
 			{hasErrors && (
@@ -262,7 +263,7 @@ export const NoRunningContainers = ({
 					</li>
 					<li>
 						Placement constraints prevent scheduling &mdash; check placement
-						rules in your service&apos;s orchestration settings
+						rules in your service&apos;s cluster settings
 					</li>
 				</ul>
 				<DocLinks />
