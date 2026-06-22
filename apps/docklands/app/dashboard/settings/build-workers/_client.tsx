@@ -5,7 +5,7 @@ import { BuildsConcurrency } from "@/components/dashboard/settings/runtime/actio
 import { AlertBlock } from "@/components/shared/alert-block";
 
 const Page = () => {
-	const { data: servers } = api.server.all.useQuery();
+	const { data: servers } = api.runtimeWorker.all.useQuery();
 
 	return (
 		<div className="w-full">

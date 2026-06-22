@@ -43,7 +43,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 	const utils = api.useUtils();
 
 	const { data: isCloud } = api.settings.isCloud.useQuery();
-	const { data: servers } = api.server.withSSHKey.useQuery();
+	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const hasServers = servers && servers.length > 0;
 	const shouldShowServerDropdown = hasServers && !certificateId; // Hide on edit
 

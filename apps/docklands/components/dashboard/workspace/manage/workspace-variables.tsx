@@ -37,8 +37,8 @@ export const WorkspaceVariables = ({ projectId, children }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const utils = api.useUtils();
 	const { mutateAsync, error, isError, isPending } =
-		api.project.update.useMutation();
-	const { data } = api.project.one.useQuery(
+		api.workspaces.update.useMutation();
+	const { data } = api.workspaces.one.useQuery(
 		{
 			projectId,
 		},

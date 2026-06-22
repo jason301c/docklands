@@ -32,7 +32,7 @@ type Schema = z.infer<typeof schema>;
 
 export const EditScript = ({ serverId }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
-	const { data: server } = api.server.one.useQuery(
+	const { data: server } = api.runtimeWorker.one.useQuery(
 		{
 			serverId,
 		},
@@ -41,9 +41,9 @@ export const EditScript = ({ serverId }: Props) => {
 		},
 	);
 
-	const { mutateAsync, isPending } = api.server.update.useMutation();
+	const { mutateAsync, isPending } = api.runtimeWorker.update.useMutation();
 
-	const { data: defaultCommand } = api.server.getDefaultCommand.useQuery(
+	const { data: defaultCommand } = api.runtimeWorker.getDefaultCommand.useQuery(
 		{
 			serverId,
 		},

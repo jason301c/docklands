@@ -90,9 +90,9 @@ export const WorkspaceList = () => {
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 	const currentPathname = pathname ?? workspaceOverviewPath;
-	const { data, isPending } = api.project.all.useQuery();
+	const { data, isPending } = api.workspaces.all.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
-	const { mutateAsync } = api.project.remove.useMutation();
+	const { mutateAsync } = api.workspaces.remove.useMutation();
 	const { data: availableTags } = api.tag.all.useQuery();
 
 	const [searchQuery, setSearchQuery] = useState(searchParams?.get("q") ?? "");

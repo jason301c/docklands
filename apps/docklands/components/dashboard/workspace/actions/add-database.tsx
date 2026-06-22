@@ -215,7 +215,7 @@ export const AddDatabase = ({
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
 	const showLocalOption = !isCloud && !webServerSettings?.remoteServersOnly;
-	const { data: servers } = api.server.withSSHKey.useQuery();
+	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const libsqlMutation = api.libsql.create.useMutation();
 	const mariadbMutation = api.mariadb.create.useMutation();
 	const mongoMutation = api.mongo.create.useMutation();

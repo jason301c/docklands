@@ -25,8 +25,8 @@ import { SetupRuntimeWorker } from "./setup-runtime-worker";
 import { RuntimeTerminalModal } from "./terminal/runtime-terminal-modal";
 
 export const ShowRuntimeWorkers = () => {
-	const { data, refetch, isPending } = api.server.all.useQuery();
-	const { mutateAsync } = api.server.remove.useMutation();
+	const { data, refetch, isPending } = api.runtimeWorker.all.useQuery();
+	const { mutateAsync } = api.runtimeWorker.remove.useMutation();
 	const { data: sshKeys } = api.sshKey.all.useQuery();
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();

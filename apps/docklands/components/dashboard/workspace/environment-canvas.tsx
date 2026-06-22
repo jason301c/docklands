@@ -713,7 +713,7 @@ export const EnvironmentCanvas = ({
 	} | null>(null);
 	const dragState = useRef<DragState | null>(null);
 	const suppressClick = useRef(false);
-	const { data: allProjects } = api.project.all.useQuery(undefined, {
+	const { data: allProjects } = api.workspaces.all.useQuery(undefined, {
 		enabled: isSelectionMode,
 	});
 	const { data: projectEnvironments } = api.environment.byProjectId.useQuery(
@@ -738,7 +738,7 @@ export const EnvironmentCanvas = ({
 		api.workspace.applyConnectionVariables.useMutation();
 	const syncConnectionVariables =
 		api.workspace.syncServiceConnectionVariables.useMutation();
-	const duplicateProject = api.project.duplicate.useMutation();
+	const duplicateProject = api.workspaces.duplicate.useMutation();
 	const duplicateEnvironment = api.environment.duplicate.useMutation();
 
 	const serviceActions = {

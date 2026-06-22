@@ -65,7 +65,7 @@ export const AddApplication = ({
 	const visible = controlledOpen ?? internalVisible;
 	const setVisible = onOpenChange ?? setInternalVisible;
 	const slug = slugify(projectName);
-	const { data: servers } = api.server.withSSHKey.useQuery();
+	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 
 	const hasServers = servers && servers.length > 0;
 	// Show placement only when there is more than the local runtime to choose.

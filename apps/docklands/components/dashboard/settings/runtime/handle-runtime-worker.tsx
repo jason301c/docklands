@@ -50,7 +50,7 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
 
-	const { data, refetch: refetchServer } = api.server.one.useQuery(
+	const { data, refetch: refetchServer } = api.runtimeWorker.one.useQuery(
 		{
 			serverId: serverId || "",
 		},
@@ -61,8 +61,8 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 
 	const { data: sshKeys } = api.sshKey.all.useQuery();
 	const { mutateAsync, error, isPending, isError } = serverId
-		? api.server.update.useMutation()
-		: api.server.create.useMutation();
+		? api.runtimeWorker.update.useMutation()
+		: api.runtimeWorker.create.useMutation();
 	const form = useForm({
 		defaultValues: {
 			description: "",

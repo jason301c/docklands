@@ -84,8 +84,8 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 	const { mutateAsync, error, isError } = registryId
 		? api.registry.update.useMutation()
 		: api.registry.create.useMutation();
-	const { data: deployServers } = api.server.withSSHKey.useQuery();
-	const { data: buildServers } = api.server.buildServers.useQuery();
+	const { data: deployServers } = api.runtimeWorker.withSSHKey.useQuery();
+	const { data: buildServers } = api.runtimeWorker.buildServers.useQuery();
 	const servers = [...(deployServers || []), ...(buildServers || [])];
 	const {
 		mutateAsync: testRegistry,

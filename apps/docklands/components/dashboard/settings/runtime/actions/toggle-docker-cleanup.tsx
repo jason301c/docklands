@@ -16,14 +16,15 @@ export const ToggleDockerCleanup = ({ serverId }: Props) => {
 		},
 	);
 
-	const { data: server, refetch: refetchServer } = api.server.one.useQuery(
-		{
-			serverId: serverId || "",
-		},
-		{
-			enabled: !!serverId,
-		},
-	);
+	const { data: server, refetch: refetchServer } =
+		api.runtimeWorker.one.useQuery(
+			{
+				serverId: serverId || "",
+			},
+			{
+				enabled: !!serverId,
+			},
+		);
 
 	const enabled = serverId
 		? server?.enableDockerCleanup

@@ -187,9 +187,12 @@ interface Props {
 export const AddUserPermissions = ({ userId, role }: Props) => {
 	const isCustomRole = !!role && !["owner", "admin", "member"].includes(role);
 	const [isOpen, setIsOpen] = useState(false);
-	const { data: projects } = api.project.allForPermissions.useQuery(undefined, {
-		enabled: isOpen,
-	});
+	const { data: projects } = api.workspaces.allForPermissions.useQuery(
+		undefined,
+		{
+			enabled: isOpen,
+		},
+	);
 	const { data: gitProviders } = api.gitProvider.allForPermissions.useQuery(
 		undefined,
 		{
@@ -197,9 +200,12 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 		},
 	);
 
-	const { data: servers } = api.server.allForPermissions.useQuery(undefined, {
-		enabled: isOpen,
-	});
+	const { data: servers } = api.runtimeWorker.allForPermissions.useQuery(
+		undefined,
+		{
+			enabled: isOpen,
+		},
+	);
 
 	const { data, refetch } = api.user.one.useQuery(
 		{

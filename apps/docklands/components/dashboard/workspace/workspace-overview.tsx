@@ -203,8 +203,8 @@ function FirstRunWorkspacePanel({
 
 export const WorkspaceOverview = () => {
 	const { data: auth } = api.user.get.useQuery();
-	const { data: homeStats } = api.project.homeStats.useQuery();
-	const { data: projects } = api.project.all.useQuery();
+	const { data: homeStats } = api.workspaces.homeStats.useQuery();
+	const { data: projects } = api.workspaces.all.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const canCreateWorkspaces = !!permissions?.project.create;
 	const canReadDeployments = !!permissions?.deployment.read;

@@ -32,7 +32,7 @@ export const RuntimeTerminalModal = ({
 	const [isOpen, setIsOpen] = useState(false);
 	const isLocalRuntime = serverId === "local";
 
-	const { data } = api.server.one.useQuery(
+	const { data } = api.runtimeWorker.one.useQuery(
 		{
 			serverId,
 		},

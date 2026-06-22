@@ -27,7 +27,7 @@ interface Props {
 export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [setupTab, setSetupTab] = useState("ssh-keys");
-	const { data: server } = api.server.one.useQuery(
+	const { data: server } = api.runtimeWorker.one.useQuery(
 		{
 			serverId,
 		},
@@ -42,7 +42,7 @@ export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 	const [filteredLogs, setFilteredLogs] = useState<LogLine[]>([]);
 	const [isDeploying, setIsDeploying] = useState(false);
-	api.server.setupWithLogs.useSubscription(
+	api.runtimeWorker.setupWithLogs.useSubscription(
 		{
 			serverId: serverId,
 		},

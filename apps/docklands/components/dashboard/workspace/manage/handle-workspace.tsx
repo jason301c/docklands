@@ -57,10 +57,10 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 	const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
 	const { mutateAsync, error, isError } = projectId
-		? api.project.update.useMutation()
-		: api.project.create.useMutation();
+		? api.workspaces.update.useMutation()
+		: api.workspaces.create.useMutation();
 
-	const { data, refetch } = api.project.one.useQuery(
+	const { data, refetch } = api.workspaces.one.useQuery(
 		{
 			projectId: projectId || "",
 		},

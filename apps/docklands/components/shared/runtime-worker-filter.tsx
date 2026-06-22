@@ -19,7 +19,7 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 	const searchParams = useSearchParams();
 	const currentPathname = pathname ?? "/dashboard/workspace";
 	const { data: servers, isLoading: isLoadingServers } =
-		api.server.withSSHKey.useQuery();
+		api.runtimeWorker.withSSHKey.useQuery();
 	const { data: isCloud, isLoading: isLoadingCloud } =
 		api.settings.isCloud.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();

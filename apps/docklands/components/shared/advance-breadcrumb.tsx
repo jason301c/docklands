@@ -211,10 +211,10 @@ export const AdvanceBreadcrumb = () => {
 	);
 
 	// Fetch all projects
-	const { data: allProjects } = api.project.all.useQuery();
+	const { data: allProjects } = api.workspaces.all.useQuery();
 
 	// Fetch current project data
-	const { data: currentProject } = api.project.one.useQuery(
+	const { data: currentProject } = api.workspaces.one.useQuery(
 		{ projectId: projectId ?? "" },
 		{ enabled: !!projectId },
 	);

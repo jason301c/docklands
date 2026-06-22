@@ -24,7 +24,7 @@ interface Props {
 export const BuildsConcurrency = ({ serverId, label }: Props) => {
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 
-	const serverQuery = api.server.one.useQuery(
+	const serverQuery = api.runtimeWorker.one.useQuery(
 		{ serverId: serverId ?? "" },
 		{ enabled: !!serverId },
 	);
@@ -40,7 +40,7 @@ export const BuildsConcurrency = ({ serverId, label }: Props) => {
 		: localRuntimeQuery.data?.buildsConcurrency;
 	const refetch = serverId ? serverQuery.refetch : localRuntimeQuery.refetch;
 
-	const updateServer = api.server.updateBuildsConcurrency.useMutation();
+	const updateServer = api.runtimeWorker.updateBuildsConcurrency.useMutation();
 	const updateLocalRuntime = api.settings.updateBuildsConcurrency.useMutation();
 	const isPending = serverId
 		? updateServer.isPending

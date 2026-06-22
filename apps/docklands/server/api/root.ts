@@ -93,6 +93,8 @@ export const appRouter = createTRPCRouter({
 	tag: tagRouter,
 	patch: patchRouter,
 	workspace: workspaceRouter,
+	workspaces: projectRouter,
+	runtimeWorker: serverRouter,
 });
 
 // export type definition of API

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 
 export function TimeBadge() {
-	const { data: serverTime } = api.server.getServerTime.useQuery(undefined);
+	const { data: serverTime } =
+		api.runtimeWorker.getServerTime.useQuery(undefined);
 	const [time, setTime] = useState<Date | null>(null);
 
 	useEffect(() => {

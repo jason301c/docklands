@@ -84,7 +84,7 @@ export const AddImport = ({
 		api.settings.getWebServerSettings.useQuery();
 	const showAutomaticPlacement =
 		!isCloud && !webServerSettings?.remoteServersOnly;
-	const { data: servers } = api.server.withSSHKey.useQuery();
+	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const shouldShowServerDropdown = !!(servers && servers.length > 0);
 
 	const { mutateAsync: previewTemplate, isPending: isProcessing } =

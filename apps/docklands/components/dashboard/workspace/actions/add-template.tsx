@@ -99,7 +99,7 @@ export const AddTemplate = ({
 		api.settings.getWebServerSettings.useQuery();
 	const showAutomaticPlacement =
 		!isCloud && !webServerSettings?.remoteServersOnly;
-	const { data: servers } = api.server.withSSHKey.useQuery();
+	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const { data: tags, isPending: isLoadingTags } = api.compose.getTags.useQuery(
 		{ baseUrl: customBaseUrl },
 		{

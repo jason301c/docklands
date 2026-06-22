@@ -13,7 +13,7 @@ interface Props {
 export const SecurityAudit = ({ serverId }: Props) => {
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const { data, refetch, error, isPending, isError } =
-		api.server.security.useQuery(
+		api.runtimeWorker.security.useQuery(
 			{ serverId },
 			{
 				enabled: !!serverId,

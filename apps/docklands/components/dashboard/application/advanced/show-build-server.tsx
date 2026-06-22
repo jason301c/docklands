@@ -56,7 +56,7 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 		{ applicationId },
 		{ enabled: !!applicationId },
 	);
-	const { data: buildServers } = api.server.buildServers.useQuery();
+	const { data: buildServers } = api.runtimeWorker.buildServers.useQuery();
 	const { data: registries } = api.registry.all.useQuery();
 
 	const { mutateAsync, isPending } = api.application.update.useMutation();

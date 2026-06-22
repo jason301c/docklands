@@ -55,7 +55,7 @@ interface Props {
 export const HandleStorageProvider = ({ destinationId }: Props) => {
 	const [open, setOpen] = useState(false);
 	const utils = api.useUtils();
-	const { data: servers } = api.server.withSSHKey.useQuery();
+	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 
 	const { mutateAsync, isError, error, isPending } = destinationId

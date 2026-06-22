@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Workspace route parameter cleanup
+- Latest checkpoint: Product tRPC root aliases
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -63,6 +63,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Removed unused React Email sample templates/assets, the unused Compose JSON schema, stale DBML generator/output, and the old PNPM devcontainer setup; also removed the now-unused `drizzle-dbml-generator` dependency.
 - Replaced visible server/project/Docker-cleanup wording across onboarding, runtime-worker settings, service API errors, setup logs, threshold notifications, backup/build notifications, and cleanup notifications with runtime-worker/workspace/container-runtime language.
 - Renamed canonical workspace App Router params and route-helper contracts from `projectId` to `workspaceId` while preserving DB/API `projectId` compatibility internals.
+- Added product-named tRPC roots for `workspaces` and `runtimeWorker`, migrated frontend callers off `api.project`/`api.server`, and added a source guard to keep UI code on the product roots while backend compatibility roots remain.
 - Centralized the workspace service creation placement selector so application, compose, database, import, and template flows all use the same automatic-placement/runtime-worker UI and copy.
 - Replaced the workspace overview's zero-workspace placeholder with a canvas-first launch state and loading-aware recent panels.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.

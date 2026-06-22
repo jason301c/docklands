@@ -34,7 +34,7 @@ export const UpdatePublicIp = ({ children }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 
 	const { data, refetch } = api.settings.getWebServerSettings.useQuery();
-	const { data: ip } = api.server.publicIp.useQuery();
+	const { data: ip } = api.runtimeWorker.publicIp.useQuery();
 
 	const { mutateAsync, isPending, error, isError } =
 		api.settings.updateServerIp.useMutation();

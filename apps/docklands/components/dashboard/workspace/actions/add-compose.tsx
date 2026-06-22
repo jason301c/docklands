@@ -66,7 +66,7 @@ export const AddCompose = ({
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
 	const showLocalOption = !isCloud && !webServerSettings?.remoteServersOnly;
-	const { data: servers } = api.server.withSSHKey.useQuery();
+	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const { mutateAsync, isPending, error, isError } =
 		api.compose.create.useMutation();
 

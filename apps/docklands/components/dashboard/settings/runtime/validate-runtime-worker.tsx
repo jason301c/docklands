@@ -13,13 +13,13 @@ interface Props {
 export const ValidateRuntimeWorker = ({ serverId }: Props) => {
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const { data, refetch, error, isPending, isError } =
-		api.server.validate.useQuery(
+		api.runtimeWorker.validate.useQuery(
 			{ serverId },
 			{
 				enabled: !!serverId,
 			},
 		);
-	const { data: server } = api.server.one.useQuery(
+	const { data: server } = api.runtimeWorker.one.useQuery(
 		{ serverId },
 		{
 			enabled: !!serverId,
