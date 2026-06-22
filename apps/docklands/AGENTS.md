@@ -14,6 +14,8 @@
 - Use imported styled Kumo components from `@cloudflare/kumo` or granular `@cloudflare/kumo/components/*` paths for UI work. Prefer the installed package docs/types in `node_modules/@cloudflare/kumo` for API details, and prefer Kumo defaults for tokens/styles.
 - Do not add ShadCN, Radix UI, cmdk, sonner, or `components/ui/` primitives. Reach for Kumo primitives only when no styled Kumo component can preserve the existing capability.
 - Keep the custom Next server and production build on Turbopack. `server/server.ts` passes `turbopack: true`, `build-next` runs `next build --turbopack`, and app code should not add Webpack flags or custom Webpack config.
+- Keep legacy single-page dashboard aliases in `next.config.mjs` redirects instead of adding redirect-only App Router page files.
+- `typecheck` already runs `next typegen` after cleaning stale `.next/dev/types`; use it instead of manually depending on previous dev/build route validators.
 - Runtime/admin entrypoints belong in `server/ops/`; app-coupled development scripts belong in `tools/`; repository-level release scripts belong in `../../tools/`.
 - The Dockerfile builds this app from the workspace root context so Bun can install the workspace consistently.
 - You can run commands either through root scripts, such as `bun run typecheck`, or from this directory with the app-local scripts.

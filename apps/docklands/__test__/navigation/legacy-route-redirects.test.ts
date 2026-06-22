@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import EnvironmentLegacyPage from "@/app/dashboard/project/[projectId]/environment/[environmentId]/page";
 import ApplicationLegacyPage from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/application/[applicationId]/page";
 import ComposeLegacyPage from "@/app/dashboard/project/[projectId]/environment/[environmentId]/services/compose/[composeId]/page";
-import ProjectsLegacyPage from "@/app/dashboard/projects/page";
+import nextConfig from "../../next.config.mjs";
 
 vi.mock("next/navigation", () => ({
 	redirect: vi.fn((href: string) => {
@@ -12,6 +12,18 @@ vi.mock("next/navigation", () => ({
 }));
 
 const mockedRedirect = vi.mocked(redirect);
+
+type ConfigRedirect = {
+	source: string;
+	destination: string;
+	permanent: boolean;
+};
+
+async function getConfigRedirects() {
+	const redirects = ((await nextConfig.redirects?.()) ??
+		[]) as ConfigRedirect[];
+	return new Map(redirects.map((item) => [item.source, item]));
+}
 
 describe("legacy project route redirects", () => {
 	beforeEach(() => {
@@ -71,15 +83,32 @@ describe("legacy project route redirects", () => {
 		);
 	});
 
-	it("redirects the old project list to the workspace list mode", async () => {
-		await expect(
-			ProjectsLegacyPage({
-				searchParams: Promise.resolve({ q: "api" }),
-			}),
-		).rejects.toThrow("redirect:/dashboard/workspace?view=workspaces&q=api");
+	it("keeps old single-page dashboard aliases as config redirects", async () => {
+		const redirects = await getConfigRedirects();
 
-		expect(mockedRedirect).toHaveBeenCalledWith(
-			"/dashboard/workspace?view=workspaces&q=api",
-		);
+		expect(redirects.get("/dashboard/projects")).toMatchObject({
+			destination: "/dashboard/workspace?view=workspaces",
+			permanent: false,
+		});
+		expect(redirects.get("/dashboard/docker")).toMatchObject({
+			destination: "/dashboard/container-runtime",
+			permanent: false,
+		});
+		expect(redirects.get("/dashboard/swarm")).toMatchObject({
+			destination: "/dashboard/cluster-runtime",
+			permanent: false,
+		});
+		expect(redirects.get("/dashboard/traefik")).toMatchObject({
+			destination: "/dashboard/proxy-files",
+			permanent: false,
+		});
+		expect(redirects.get("/dashboard/settings/server")).toMatchObject({
+			destination: "/dashboard/settings/ingress",
+			permanent: false,
+		});
+		expect(redirects.get("/dashboard/settings/servers")).toMatchObject({
+			destination: "/dashboard/settings/runtime",
+			permanent: false,
+		});
 	});
 });
