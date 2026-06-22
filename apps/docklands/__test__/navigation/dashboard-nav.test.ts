@@ -116,27 +116,6 @@ describe("dashboard nav", () => {
 		expect(visibleTitles).not.toContain("Metrics");
 	});
 
-	it("treats legacy project routes as part of the Canvas area", () => {
-		expect(
-			isActiveRoute({
-				itemUrl: "/dashboard/workspace",
-				pathname: "/dashboard/projects",
-			}),
-		).toBe(true);
-		expect(
-			isActiveRoute({
-				itemUrl: "/dashboard/workspace",
-				pathname: "/dashboard/project/project_1/environment/env_1",
-			}),
-		).toBe(true);
-		expect(
-			isActiveRoute({
-				itemUrl: "/dashboard/workspace",
-				pathname: "/dashboard/projector",
-			}),
-		).toBe(false);
-	});
-
 	it("keeps canonical workspace detail routes active under Canvas", () => {
 		expect(
 			isActiveRoute({
@@ -148,6 +127,12 @@ describe("dashboard nav", () => {
 			isActiveRoute({
 				itemUrl: "/dashboard/deployments",
 				pathname: "/dashboard/workspace/project_1/env_1",
+			}),
+		).toBe(false);
+		expect(
+			isActiveRoute({
+				itemUrl: "/dashboard/workspace",
+				pathname: "/dashboard/project/project_1/environment/env_1",
 			}),
 		).toBe(false);
 	});

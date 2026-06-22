@@ -10,7 +10,7 @@ import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { toast } from "@/components/shared/toast";
 import type { findEnvironmentsByProjectId } from "@/server/core/services/environment";
-import { projectsPath, workspaceEnvironmentPath } from "@/shared/routes";
+import { workspaceEnvironmentPath, workspaceListPath } from "@/shared/routes";
 
 type Environment = Awaited<
 	ReturnType<typeof findEnvironmentsByProjectId>
@@ -139,8 +139,8 @@ export const AdvancedEnvironmentSelector = ({
 						}),
 					);
 				} else {
-					// No other environments, redirect to project page
-					router.push(projectsPath);
+					// No other environments, return to the workspace list.
+					router.push(workspaceListPath);
 				}
 			}
 		} catch (error) {

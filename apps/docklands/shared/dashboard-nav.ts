@@ -290,14 +290,6 @@ export function isActiveRoute(opts: {
 	itemUrl: string;
 	pathname: string;
 }): boolean {
-	if (
-		opts.itemUrl === "/dashboard/workspace" &&
-		(opts.pathname === "/dashboard/projects" ||
-			opts.pathname.startsWith("/dashboard/project/"))
-	) {
-		return true;
-	}
-
 	const normalizedItemUrl = opts.itemUrl;
 	const normalizedPathname = opts.pathname;
 

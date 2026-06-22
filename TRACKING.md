@@ -5,14 +5,13 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Shared runtime-worker service placement status
+- Latest checkpoint: Legacy dashboard compatibility route removal
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
 - Canonical environment route: `/dashboard/workspace/[projectId]/[environmentId]`
 - Canonical service route: `/dashboard/workspace/[projectId]/[environmentId]/service/[serviceType]/[serviceId]`
-- Compatibility routes still exist for old `/dashboard/project/...` links.
-- Legacy single-page dashboard aliases now live in `next.config.mjs` redirects instead of App Router page files.
+- Old `/dashboard/project/...` links and legacy single-page dashboard aliases are no longer supported.
 
 ## Done
 
@@ -29,20 +28,20 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Baseline before the Bun migration: typecheck passed in 14.65s, non-real Vitest passed in 6.39s, and production build passed in 30.45s.
 - Converted the API surface to App Router route handlers, with old webhook/deploy callback logic wrapped through compatibility helpers where risky.
 - Flattened Kumo-based dashboard/settings/service shells and removed most card-in-card surfaces.
-- Made `/dashboard/deployments` the canonical deployment history route; `/dashboard/builds` is only a compatibility alias.
+- Made `/dashboard/deployments` the deployment history route and removed the old `/dashboard/builds` compatibility alias.
 - Extracted the dashboard navigation model and tests.
 - Reworked the environment view into a workspace canvas with service layout, search, filters, sort, command palette, topology groups, service drawer tabs, connection modeling, generated connection variables, and bulk actions.
 - Added canonical workspace route helpers, tests, and new App Router pages for canonical environment/service URLs.
-- Converted old `/dashboard/project/...` pages into redirect-only compatibility routes that preserve service tabs and send users to canonical `/dashboard/workspace/...` URLs.
+- Removed old `/dashboard/project/...` compatibility pages so canonical `/dashboard/workspace/...` routes are the only supported workspace detail surface.
 - Moved workspace service route client modules out of the legacy project route tree and into the canonical workspace service route.
 - Rehomed the remaining workspace creation/environment action components from `components/dashboard/project/*` into `components/dashboard/workspace/actions/*`.
-- Folded the old `/dashboard/projects` bulk management surface into `/dashboard/workspace?view=workspaces`, moved the list/create/variables components under `components/dashboard/workspace/manage/*`, and left `/dashboard/projects` as a redirect-only compatibility route.
+- Folded the old `/dashboard/projects` bulk management surface into `/dashboard/workspace?view=workspaces`, moved the list/create/variables components under `components/dashboard/workspace/manage/*`, and removed the old route alias.
 - Rehomed the container runtime UI component subtree from `components/dashboard/docker/*` to `components/dashboard/container-runtime/*` while leaving literal Docker engine utilities under server code.
 - Rehomed the cluster runtime UI component subtree from `components/dashboard/swarm/*` to `components/dashboard/cluster-runtime/*`, renamed visible component symbols, and replaced user-facing orchestration wording with cluster runtime language while preserving literal Docker Swarm API/docs/commands.
 - Rehomed runtime worker settings from `components/dashboard/settings/servers/*` to `components/dashboard/settings/runtime/*` and tightened visible setup/validation/security copy around workers instead of servers.
 - Rehomed the service advanced ingress config UI from `components/dashboard/application/advanced/traefik/*` to `components/dashboard/application/advanced/ingress/*` and renamed exported component symbols to ingress language while preserving backend Traefik config API fields.
 - Renamed the proxy-files UI modules from `show-traefik-*` to `show-ingress-*` so the file-management surface matches the Ingress Files product language while preserving literal Traefik runtime paths and APIs.
-- Moved redirect-only dashboard aliases out of the App Router tree and into temporary `next.config.mjs` redirects so the built route surface now favors Docklands product routes.
+- Removed temporary legacy dashboard redirects from `next.config.mjs`; old admin URLs now fall through instead of being preserved as compatibility aliases.
 - Rehomed the old settings `web-server` UI modules into product-named ingress runtime, runtime terminal, and container runtime modal modules while preserving backend API/schema compatibility names.
 - Rehomed old settings `destination`, `cluster/registry`, and `cluster/nodes` UI modules into `settings/storage`, `settings/image-registry`, and `settings/cluster-nodes`, keeping backend permission/API compatibility names intact.
 - Added a bundler guard so Docklands fails fast if workspace scripts, manifests, lockfile entries, Next config, or the custom server opt back into Webpack instead of Turbopack.
@@ -61,7 +60,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 
 - Audit visible copy for old mental models: "project list", "builds", "server", "Docker", "Traefik", "Swarm", and "Dokploy". Keep engine names only where they are literal engine concepts.
 - Continue polishing the canvas as the primary app surface: first-run empty state, service card density, connection affordances, command palette actions, service drawer hierarchy, and mobile behavior.
-- Continue reducing compatibility routes once canonical workspace routes cover the remaining old `/dashboard/project/...` deep links.
+- Continue auditing compatibility names in backend data/API layers and remove them when a migration is worth the churn.
 - Add browser-level visual QA once a safe local runtime is available; do not start the dev server unless explicitly allowed in the current turn.
 - Decide whether a generated docs app and landing app should be scaffolded under `apps/docs` and `apps/site` after the control plane is stable.
 
@@ -101,19 +100,13 @@ git diff --check
   - `bun --filter docklands build`
   - `docker build --target build -f apps/docklands/Dockerfile .`
   - `docker build --target docklands -f apps/docklands/Dockerfile .`
-- Current legacy-route redirect checkpoint
-  - `bun --filter docklands test --run __test__/navigation/legacy-route-redirects.test.ts`
-  - `bun --filter docklands format-and-lint:fix`
-  - `bun --filter docklands typecheck`
-  - `bun --filter docklands test:ci`
-  - `bun --filter docklands build`
 - Current workspace-action source-layout checkpoint
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`
   - `bun --filter docklands build`
 - Current workspace-list route checkpoint
-  - `bun --filter docklands test --run __test__/navigation/dashboard-routes.test.ts __test__/navigation/dashboard-nav.test.ts __test__/navigation/legacy-route-redirects.test.ts`
+  - `bun --filter docklands test --run __test__/navigation/dashboard-routes.test.ts __test__/navigation/dashboard-nav.test.ts`
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`
@@ -149,7 +142,7 @@ git diff --check
   - `bun --filter docklands test:ci`
   - `bun --filter docklands build`
 - Current app-route alias cleanup checkpoint
-  - `bun --filter docklands test --run __test__/navigation/legacy-route-redirects.test.ts __test__/navigation/dashboard-routes.test.ts __test__/navigation/dashboard-nav.test.ts`
+  - `bun --filter docklands test --run __test__/navigation/dashboard-routes.test.ts __test__/navigation/dashboard-nav.test.ts`
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`

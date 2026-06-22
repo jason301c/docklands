@@ -19,8 +19,6 @@ const tabQuery = (tab?: string | null) =>
 export const workspaceOverviewPath = "/dashboard/workspace";
 export const workspaceListView = "workspaces";
 export const workspaceListPath = `${workspaceOverviewPath}?view=${workspaceListView}`;
-export const projectsPath = workspaceListPath;
-export const legacyProjectsPath = "/dashboard/projects";
 
 export function workspaceEnvironmentPath({
 	projectId,
@@ -39,32 +37,10 @@ export function workspaceServicePath({
 	return `${workspaceEnvironmentPath({ projectId, environmentId })}/service/${segment(serviceType)}/${segment(serviceId)}${tabQuery(tab)}`;
 }
 
-export function legacyEnvironmentPath({
-	projectId,
-	environmentId,
-}: WorkspaceEnvironmentRoute) {
-	return `/dashboard/project/${segment(projectId)}/environment/${segment(environmentId)}`;
-}
-
-export function legacyServicePath({
-	projectId,
-	environmentId,
-	serviceType,
-	serviceId,
-	tab,
-}: WorkspaceServiceRoute) {
-	return `${legacyEnvironmentPath({ projectId, environmentId })}/services/${segment(serviceType)}/${segment(serviceId)}${tabQuery(tab)}`;
-}
-
 export function isEnvironmentCanvasPath(pathname: string) {
-	return /^\/dashboard\/(?:workspace|project)\/[^/]+\/(?:environment\/)?[^/]+\/?$/.test(
-		pathname,
-	);
+	return /^\/dashboard\/workspace\/[^/]+\/[^/]+\/?$/.test(pathname);
 }
 
 export function isWorkspaceDetailPath(pathname: string) {
-	return (
-		/^\/dashboard\/workspace\/[^/]+\/[^/]+(?:\/.*)?$/.test(pathname) ||
-		/^\/dashboard\/project\/[^/]+\/environment\/[^/]+(?:\/.*)?$/.test(pathname)
-	);
+	return /^\/dashboard\/workspace\/[^/]+\/[^/]+(?:\/.*)?$/.test(pathname);
 }
