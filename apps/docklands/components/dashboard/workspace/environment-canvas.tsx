@@ -81,17 +81,17 @@ import { ShowExternalMysqlCredentials } from "@/components/dashboard/mysql/gener
 import { ShowInternalMysqlCredentials } from "@/components/dashboard/mysql/general/show-internal-mysql-credentials";
 import { ShowExternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-external-postgres-credentials";
 import { ShowInternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-internal-postgres-credentials";
-import { AddApplication } from "@/components/dashboard/project/add-application";
-import { AddCompose } from "@/components/dashboard/project/add-compose";
-import { AddDatabase } from "@/components/dashboard/project/add-database";
-import { AddImport } from "@/components/dashboard/project/add-import";
-import { AddTemplate } from "@/components/dashboard/project/add-template";
-import { AdvancedEnvironmentSelector } from "@/components/dashboard/project/advanced-environment-selector";
-import { EnvironmentVariables } from "@/components/dashboard/project/environment-variables";
 import { ProjectEnvironment } from "@/components/dashboard/projects/project-environment";
 import { ShowExternalRedisCredentials } from "@/components/dashboard/redis/general/show-external-redis-credentials";
 import { ShowInternalRedisCredentials } from "@/components/dashboard/redis/general/show-internal-redis-credentials";
 import { DockerTerminalModal } from "@/components/dashboard/settings/web-server/docker-terminal-modal";
+import { AddApplication } from "@/components/dashboard/workspace/actions/add-application";
+import { AddCompose } from "@/components/dashboard/workspace/actions/add-compose";
+import { AddDatabase } from "@/components/dashboard/workspace/actions/add-database";
+import { AddImport } from "@/components/dashboard/workspace/actions/add-import";
+import { AddTemplate } from "@/components/dashboard/workspace/actions/add-template";
+import { AdvancedEnvironmentSelector } from "@/components/dashboard/workspace/actions/advanced-environment-selector";
+import { EnvironmentVariables } from "@/components/dashboard/workspace/actions/environment-variables";
 import {
 	LibsqlIcon,
 	MariadbIcon,

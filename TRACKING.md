@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Migrate tooling to Bun and Turbopack
+- Latest checkpoint: Rehome workspace action components
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -22,7 +22,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Added nested `AGENTS.md` files and clarified app/server/tools boundaries.
 - Updated dependencies to the current major stack, including Next 16, React 19, TypeScript 6, Tailwind 4, Biome 2, tRPC 11, and Vitest 4.
 - Converted the workspace to Bun 1.3.14 with an isolated linker, `bun.lock`, Bun-first scripts, and trusted dependency controls.
-- Removed Webpack opt-out paths; Next 16 builds now use the default Turbopack path in local and Docker builds.
+- Removed Webpack opt-out paths; Next 16 builds now use the default Turbopack path in local and Docker builds, and the custom Next server explicitly selects Turbopack.
 - Hardened Docker packaging around Bun/Node 24 native dependency builds, runtime env injection, and `.env` exclusion from the build context.
 - Baseline before the Bun migration: typecheck passed in 14.65s, non-real Vitest passed in 6.39s, and production build passed in 30.45s.
 - Converted the API surface to App Router route handlers, with old webhook/deploy callback logic wrapped through compatibility helpers where risky.
@@ -33,12 +33,13 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Added canonical workspace route helpers, tests, and new App Router pages for canonical environment/service URLs.
 - Converted old `/dashboard/project/...` pages into redirect-only compatibility routes that preserve service tabs and send users to canonical `/dashboard/workspace/...` URLs.
 - Moved workspace service route client modules out of the legacy project route tree and into the canonical workspace service route.
+- Rehomed the remaining workspace creation/environment action components from `components/dashboard/project/*` into `components/dashboard/workspace/actions/*`.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
 - Recorded the first upstream PR security audit under `outputs/docklands-pr-security-audit.md` outside the repo.
 
 ## Next High-Impact Work
 
-- Rename or reorganize remaining source folders whose names now fight the product model, especially `components/dashboard/project/*`.
+- Audit and rename remaining project-list surfaces where they conflict with the workspace model, especially `components/dashboard/projects/*` and `/dashboard/projects` copy.
 - Audit visible copy for old mental models: "project list", "builds", "server", "Docker", "Traefik", "Swarm", and "Dokploy". Keep engine names only where they are literal engine concepts.
 - Continue polishing the canvas as the primary app surface: first-run empty state, service card density, connection affordances, command palette actions, service drawer hierarchy, and mobile behavior.
 - Reduce legacy route aliases once docs, navigation, search, notifications, and internal links no longer depend on them.
@@ -87,9 +88,14 @@ git diff --check
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`
   - `bun --filter docklands build`
+- Current workspace-action source-layout checkpoint
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
 
 ## Open Questions
 
-- Should `components/dashboard/project/*` be renamed mechanically now, or wait until the next visual QA pass over the workspace create/import flows?
+- Should `/dashboard/projects` remain as an advanced list view, or become a compatibility alias into `/dashboard/workspace` once workspace overview covers bulk project management?
 - Which settings surfaces should remain top-level for self-hosted users versus move into a lower-level runtime/admin area?
 - Which, if any, upstream PRs after the first audit deserve a second focused security review?

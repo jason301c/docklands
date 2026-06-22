@@ -40,6 +40,7 @@ const app = next({
 	dev,
 	hostname: HOST,
 	port: PORT,
+	turbopack: true,
 });
 const handle = app.getRequestHandler();
 const handleUpgrade = app.getUpgradeHandler();
