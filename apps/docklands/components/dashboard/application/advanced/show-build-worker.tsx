@@ -2,7 +2,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { Server } from "lucide-react";
+import { Hammer } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -45,18 +45,18 @@ const schema = z
 		{
 			message:
 				"Both Build Worker and Build Registry must be selected together, or both set to None",
-			path: ["buildServerId"], // Show error on buildServerId field
+			path: ["buildServerId"],
 		},
 	);
 
 type Schema = z.infer<typeof schema>;
 
-export const ShowBuildServer = ({ applicationId }: Props) => {
+export const ShowBuildWorker = ({ applicationId }: Props) => {
 	const { data, refetch } = api.application.one.useQuery(
 		{ applicationId },
 		{ enabled: !!applicationId },
 	);
-	const { data: buildServers } = api.runtimeWorker.buildServers.useQuery();
+	const { data: buildWorkers } = api.runtimeWorker.buildServers.useQuery();
 	const { data: registries } = api.registry.all.useQuery();
 
 	const { mutateAsync, isPending } = api.application.update.useMutation();
@@ -103,7 +103,7 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 		<LayerCard className="bg-background">
 			<div>
 				<div className="flex flex-row items-center gap-2">
-					<Server className="size-6 text-muted-foreground" />
+					<Hammer className="size-6 text-muted-foreground" />
 					<div>
 						<h3 className="text-xl">Build Worker</h3>
 						<p>Configure a dedicated worker for building your application.</p>
@@ -171,7 +171,7 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 													<span>None</span>
 												</span>
 											</Select.Option>
-											{buildServers?.map((server) => (
+											{buildWorkers?.map((server) => (
 												<Select.Option
 													key={server.serverId}
 													value={server.serverId}
@@ -185,7 +185,7 @@ export const ShowBuildServer = ({ applicationId }: Props) => {
 												</Select.Option>
 											))}
 											<Select.GroupLabel>
-												Build Workers ({buildServers?.length || 0})
+												Build Workers ({buildWorkers?.length || 0})
 											</Select.GroupLabel>
 										</Select.Group>
 									</Select>

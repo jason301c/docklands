@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { useLocalStorage } from "@/client/hooks/useLocalStorage";
 import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
-import { ShowPaidMonitoring } from "@/components/dashboard/metrics/paid/servers/show-paid-monitoring";
+import { ShowPaidMonitoring } from "@/components/dashboard/metrics/paid/runtime-workers/show-paid-monitoring";
 
 const BASE_URL = "http://localhost:3001/metrics";
 

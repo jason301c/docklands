@@ -11,7 +11,7 @@ import { ShowIngressConfig } from "@/components/dashboard/application/advanced/i
 import { ShowPorts } from "@/components/dashboard/application/advanced/ports/show-port";
 import { ShowRedirects } from "@/components/dashboard/application/advanced/redirects/show-redirects";
 import { ShowSecurity } from "@/components/dashboard/application/advanced/security/show-security";
-import { ShowBuildServer } from "@/components/dashboard/application/advanced/show-build-server";
+import { ShowBuildWorker } from "@/components/dashboard/application/advanced/show-build-worker";
 import { ShowResources } from "@/components/dashboard/application/advanced/show-resources";
 import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
@@ -331,7 +331,7 @@ const Service = (props: {
 												id={applicationId}
 												type="application"
 											/>
-											<ShowBuildServer applicationId={applicationId} />
+											<ShowBuildWorker applicationId={applicationId} />
 											<ShowResources id={applicationId} type="application" />
 											<ShowVolumes id={applicationId} type="application" />
 											<ShowRedirects applicationId={applicationId} />
