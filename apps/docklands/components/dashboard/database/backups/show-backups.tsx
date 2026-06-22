@@ -277,7 +277,7 @@ export const ShowBackups = ({
 															serverId={serverId || undefined}
 														>
 															<Button
-																aria-label="View backup deployments"
+																aria-label="View backup build history"
 																variant="ghost"
 																shape="square"
 																className="size-8"

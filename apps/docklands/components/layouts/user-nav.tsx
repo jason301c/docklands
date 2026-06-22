@@ -19,6 +19,10 @@ export const UserNav = () => {
 	const { data } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const { data: isCloud } = api.settings.isCloud.useQuery();
+	const userName =
+		`${data?.user?.firstName ?? ""} ${data?.user?.lastName ?? ""}`.trim() ||
+		data?.user?.email ||
+		"User";
 
 	// const { mutateAsync } = api.auth.logout.useMutation();
 
@@ -33,13 +37,11 @@ export const UserNav = () => {
 						<Avatar className="h-8 w-8 rounded-lg">
 							<AvatarImage
 								className="object-cover"
-								src={data?.user?.image || ""}
-								alt={data?.user?.image || ""}
+								src={data?.user?.image || undefined}
+								alt={`${userName} avatar`}
 							/>
 							<AvatarFallback className="rounded-lg">
-								{getFallbackAvatarInitials(
-									`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
-								)}
+								{getFallbackAvatarInitials(userName)}
 							</AvatarFallback>
 						</Avatar>
 						<div className="grid flex-1 text-left text-sm leading-tight">

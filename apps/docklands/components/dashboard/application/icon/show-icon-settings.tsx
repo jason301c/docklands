@@ -1,12 +1,12 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
 import DOMPurify from "dompurify";
 import { GlobeIcon, Pencil, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Dropzone } from "@/components/shared/dropzone";
-import { Input } from "@cloudflare/kumo/components/input";
+import { toast } from "@/components/shared/toast";
 import { type BundledIcon, bundledIcons } from "@/shared/bundled-icons";
 
 interface ShowIconSettingsProps {
@@ -157,28 +157,28 @@ export const ShowIconSettings = ({
 
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
-			<Dialog.Trigger render={(
-
-				<button
-					type="button"
-					className="relative group flex items-center justify-center"
-				>
-					{icon ? (
-						// biome-ignore lint/performance/noImgElement: icon is data URL or base64
-						<img
-							src={icon}
-							alt="Application icon"
-							className="h-8 w-8 object-contain"
-						/>
-					) : (
-						<GlobeIcon className="h-6 w-6 text-muted-foreground" />
-					)}
-					<div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-						<Pencil className="h-3 w-3 text-white" />
-					</div>
-				</button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<button
+						type="button"
+						aria-label="Change application icon"
+						className="relative group flex items-center justify-center"
+					>
+						{icon ? (
+							<img
+								src={icon}
+								alt="Application icon"
+								className="h-8 w-8 object-contain"
+							/>
+						) : (
+							<GlobeIcon className="h-6 w-6 text-muted-foreground" />
+						)}
+						<div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+							<Pencil className="h-3 w-3 text-white" />
+						</div>
+					</button>
+				}
+			/>
 			<Dialog className="max-w-2xl">
 				<div>
 					<Dialog.Title className="flex items-center justify-between">

@@ -153,7 +153,7 @@ export const ShowVolumeBackups = ({
 											serverId={serverId || undefined}
 										>
 											<Button
-												aria-label="View volume backup deployments"
+												aria-label="View volume backup build history"
 												variant="ghost"
 												shape="square"
 											>

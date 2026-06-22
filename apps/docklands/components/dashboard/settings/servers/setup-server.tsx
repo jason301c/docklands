@@ -157,6 +157,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 												Copy Public Key ({server?.sshKey?.name})
 												<button
 													type="button"
+													aria-label={`Copy public key ${server?.sshKey?.name ?? ""}`.trim()}
 													className="right-2 top-8"
 													onClick={() => {
 														copy(

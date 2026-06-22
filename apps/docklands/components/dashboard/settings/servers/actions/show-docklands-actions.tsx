@@ -85,14 +85,14 @@ export const ShowDocklandsActions = () => {
 						onClick={async () => {
 							await cleanAllDeploymentQueue()
 								.then(() => {
-									toast.success("Deployment queue cleaned");
+									toast.success("Build queue cleaned");
 								})
 								.catch(() => {
-									toast.error("Error cleaning deployment queue");
+									toast.error("Error cleaning build queue");
 								});
 						}}
 					>
-						Clean all deployment queue
+						Clean all build queue
 					</DropdownMenu.Item>
 
 					<DropdownMenu.Item

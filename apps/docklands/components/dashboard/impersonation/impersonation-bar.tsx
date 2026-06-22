@@ -54,6 +54,10 @@ export const ImpersonationBar = () => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [showBar, setShowBar] = useState(false);
 	const { data } = api.user.get.useQuery();
+	const impersonatedUserName =
+		`${data?.user?.firstName ?? ""} ${data?.user?.lastName ?? ""}`.trim() ||
+		data?.user?.email ||
+		"User";
 
 	const fetchUsers = async (search?: string) => {
 		try {
@@ -287,14 +291,12 @@ export const ImpersonationBar = () => {
 									<Avatar className="h-10 w-10">
 										<AvatarImage
 											className="object-cover"
-											src={data?.user?.image || ""}
-											alt={
-												`${data?.user?.firstName} ${data?.user?.lastName}`.trim() ||
-												""
-											}
+											src={data?.user?.image || undefined}
+											alt={`${impersonatedUserName} avatar`}
 										/>
 										<AvatarFallback>
 											{`${data?.user?.firstName?.[0] || ""}${data?.user?.lastName?.[0] || ""}`.toUpperCase() ||
+												impersonatedUserName[0]?.toUpperCase() ||
 												"U"}
 										</AvatarFallback>
 									</Avatar>

@@ -1,10 +1,9 @@
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import copy from "copy-to-clipboard";
 import { CopyIcon, Loader2 } from "lucide-react";
-import { toast } from "@/components/shared/toast";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { toast } from "@/components/shared/toast";
 
 interface Props {
 	serverId?: string;
@@ -32,6 +31,7 @@ export const AddWorker = ({ serverId }: Props) => {
 							curl https://get.docker.com | sh -s -- --version {data?.version}
 							<button
 								type="button"
+								aria-label="Copy Docker install command"
 								className="self-center"
 								onClick={() => {
 									copy(
@@ -55,6 +55,7 @@ export const AddWorker = ({ serverId }: Props) => {
 							{data?.command}
 							<button
 								type="button"
+								aria-label="Copy worker join command"
 								className="self-start"
 								onClick={() => {
 									copy(data?.command || "");

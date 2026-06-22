@@ -54,10 +54,10 @@ export const ComposeFreeMonitoring = ({
 				<p>Watch the usage of your compose</p>
 			</div>
 			<div className="flex flex-col gap-4">
-				<Label>Select a container to watch the monitoring</Label>
+				<Label>Select a container to inspect metrics</Label>
 				<div className="flex flex-row gap-4">
 					<Select
-						aria-label="Compose monitoring container"
+						aria-label="Compose metrics container"
 						onValueChange={(value) => {
 							if (value === null) return;
 							setContainerAppName(value);

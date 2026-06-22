@@ -1,6 +1,6 @@
+import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { TerminalLine } from "../dashboard/docker/logs/terminal-line";
 import type { LogLine } from "../dashboard/docker/logs/utils";
 
@@ -42,8 +42,10 @@ export const DrawerLogs = ({ isOpen, onClose, filteredLogs }: Props) => {
 			}}
 		>
 			<Dialog size="xl" className="flex flex-col">
-				<Dialog.Title>Deployment Logs</Dialog.Title>
-				<Dialog.Description>Details of the request log entry.</Dialog.Description>
+				<Dialog.Title>Build Logs</Dialog.Title>
+				<Dialog.Description>
+					Details of the request log entry.
+				</Dialog.Description>
 				<div
 					ref={scrollRef}
 					onScroll={handleScroll}
