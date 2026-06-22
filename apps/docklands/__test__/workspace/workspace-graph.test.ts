@@ -211,4 +211,86 @@ describe("workspace graph helpers", () => {
 			height: 560,
 		});
 	});
+
+	it("keeps independent connection groups separate and sorted by canvas position", () => {
+		const nodes = [
+			{
+				serviceId: "api",
+				serviceType: "application" as const,
+				x: 640,
+				y: 420,
+				width: 280,
+				height: 164,
+			},
+			{
+				serviceId: "api_db",
+				serviceType: "postgres" as const,
+				x: 980,
+				y: 420,
+				width: 280,
+				height: 164,
+			},
+			{
+				serviceId: "web",
+				serviceType: "application" as const,
+				x: 100,
+				y: 80,
+				width: 280,
+				height: 164,
+			},
+			{
+				serviceId: "web_cache",
+				serviceType: "redis" as const,
+				x: 440,
+				y: 80,
+				width: 280,
+				height: 164,
+			},
+			{
+				serviceId: "orphan",
+				serviceType: "mysql" as const,
+				x: 1320,
+				y: 80,
+				width: 280,
+				height: 164,
+			},
+		];
+
+		const groups = resolveWorkspaceConnectionGroups(
+			nodes,
+			[
+				{
+					sourceServiceId: "api_db",
+					sourceServiceType: "postgres",
+					targetServiceId: "api",
+					targetServiceType: "application",
+				},
+				{
+					sourceServiceId: "web_cache",
+					sourceServiceType: "redis",
+					targetServiceId: "web",
+					targetServiceType: "application",
+				},
+			],
+			32,
+		);
+
+		expect(groups).toHaveLength(2);
+		expect(groups.map((group) => group.nodeKeys)).toEqual([
+			["application:web", "redis:web_cache"],
+			["application:api", "postgres:api_db"],
+		]);
+		expect(groups[0]).toMatchObject({
+			x: 68,
+			y: 48,
+			width: 684,
+			height: 228,
+		});
+		expect(groups[1]).toMatchObject({
+			x: 608,
+			y: 388,
+			width: 684,
+			height: 228,
+		});
+	});
 });
