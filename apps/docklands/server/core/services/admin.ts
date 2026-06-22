@@ -155,7 +155,3 @@ export const getTrustedOrigins = async () => {
 		return [];
 	}
 };
-
-export const getTrustedProviders = async () => {
-	return [];
-};

@@ -10,8 +10,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
-import { SignInWithGithub } from "@/components/auth/sign-in-with-github";
-import { SignInWithGoogle } from "@/components/auth/sign-in-with-google";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -148,17 +146,6 @@ const Register = ({ isCloud }: Props) => {
 							</AlertBlock>
 						)}
 						<div className="p-0">
-							{isCloud && (
-								<div className="flex flex-col">
-									<SignInWithGithub />
-									<SignInWithGoogle />
-								</div>
-							)}
-							{isCloud && (
-								<p className="mb-4 text-center text-xs text-muted-foreground">
-									Or register with email
-								</p>
-							)}
 							<Form {...form}>
 								<form
 									onSubmit={form.handleSubmit(onSubmit)}

@@ -10,11 +10,7 @@ import { IS_CLOUD } from "../constants/env";
 import { db } from "../db";
 import * as schema from "../db/schema";
 import { getPublicIpWithFallback } from "../runtime/host";
-import {
-	getTrustedOrigins,
-	getTrustedProviders,
-	getUserByToken,
-} from "../services/admin";
+import { getTrustedOrigins, getUserByToken } from "../services/admin";
 import { createAuditLog } from "../services/audit-log";
 import {
 	getWebServerSettings,
@@ -55,31 +51,7 @@ const { handler, api } = betterAuth({
 				},
 			}
 		: {}),
-
-	account: {
-		accountLinking: {
-			enabled: true,
-			async trustedProviders() {
-				if (isNextProductionBuild()) {
-					return ["github", "google"];
-				}
-				const fromDb = await getTrustedProviders();
-				return ["github", "google", ...fromDb];
-			},
-			allowDifferentEmails: true,
-		},
-	},
 	appName: "Docklands",
-	socialProviders: {
-		github: {
-			clientId: process.env.GITHUB_CLIENT_ID as string,
-			clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-		},
-		google: {
-			clientId: process.env.GOOGLE_CLIENT_ID as string,
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-		},
-	},
 	logger: {
 		disabled: process.env.NODE_ENV === "production",
 	},

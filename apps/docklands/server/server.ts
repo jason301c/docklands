@@ -42,10 +42,11 @@ const app = next({
 	port: PORT,
 	turbopack: true,
 });
-const handle = app.getRequestHandler();
-const handleUpgrade = app.getUpgradeHandler();
 void app.prepare().then(async () => {
 	try {
+		const handle = app.getRequestHandler();
+		const handleUpgrade = app.getUpgradeHandler();
+
 		console.log("Running DocklandsVersion: ", packageInfo.version);
 		const runtimeWorker = http.createServer((req, res) => {
 			handle(req, res);
