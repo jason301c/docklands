@@ -1,13 +1,16 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Dices } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import type z from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -17,10 +20,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { domain } from "@/server/core/db/validations/domain";
 
 type Domain = z.infer<typeof domain>;
@@ -122,7 +122,9 @@ export const AddPreviewDomain = ({
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title>Domain</Dialog.Title>
-					<Dialog.Description>{dictionary.dialogDescription}</Dialog.Description>
+					<Dialog.Description>
+						{dictionary.dialogDescription}
+					</Dialog.Description>
 				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
@@ -155,32 +157,38 @@ export const AddPreviewDomain = ({
 													/>
 												</FormControl>
 												<TooltipProvider delay={0}>
-													<Tooltip content={<>
-															<p>Generate sslip.io domain</p>
-														</>} side="left"
-															className="max-w-[10rem]"  asChild>
-															<Button
-																variant="secondary"
-																type="button"
-																loading={isLoadingGenerate}
-																onClick={() => {
-																	generateDomain({
-																		appName: previewDeployment?.appName || "",
-																		serverId:
-																			previewDeployment?.application
-																				?.serverId || "",
+													<Tooltip
+														content={
+															<>
+																<p>Generate sslip.io domain</p>
+															</>
+														}
+														side="left"
+														className="max-w-[10rem]"
+														asChild
+													>
+														<Button
+															variant="secondary"
+															type="button"
+															loading={isLoadingGenerate}
+															onClick={() => {
+																generateDomain({
+																	appName: previewDeployment?.appName || "",
+																	serverId:
+																		previewDeployment?.application?.serverId ||
+																		"",
+																})
+																	.then((domain) => {
+																		field.onChange(domain);
 																	})
-																		.then((domain) => {
-																			field.onChange(domain);
-																		})
-																		.catch((err) => {
-																			toast.error(err.message);
-																		});
-																}}
-															>
-																<Dices className="size-4 text-muted-foreground" />
-															</Button>
-														</Tooltip>
+																	.catch((err) => {
+																		toast.error(err.message);
+																	});
+															}}
+														>
+															<Dices className="size-4 text-muted-foreground" />
+														</Button>
+													</Tooltip>
 												</TooltipProvider>
 											</div>
 
@@ -259,14 +267,13 @@ export const AddPreviewDomain = ({
 										render={({ field }) => (
 											<FormItem className="col-span-2">
 												<FormLabel>Certificate Provider</FormLabel>
-												<Select aria-label="Select option"
+												<Select
+													aria-label="Preview certificate provider"
 													onValueChange={field.onChange}
 													defaultValue={field.value || ""}
 												>
 													<FormControl>
-														<>
-															
-														</>
+														<></>
 													</FormControl>
 
 													<>

@@ -519,7 +519,7 @@ export const AddDatabase = ({
 											<FormItem>
 												<FormLabel>Placement</FormLabel>
 												<Select
-													aria-label="Select option"
+													aria-label="Database placement"
 													onValueChange={field.onChange}
 													defaultValue={
 														field.value ||
@@ -634,7 +634,7 @@ export const AddDatabase = ({
 											<FormItem>
 												<FormLabel>Sqld Node</FormLabel>
 												<Select
-													aria-label="Select option"
+													aria-label="LibSQL node"
 													onValueChange={field.onChange}
 													defaultValue={field.value || "primary"}
 												>
@@ -684,7 +684,7 @@ export const AddDatabase = ({
 													<FormLabel>Enable Namespaces</FormLabel>
 													<FormControl>
 														<Select
-															aria-label="Select option"
+															aria-label="Enable LibSQL namespaces"
 															onValueChange={(value) =>
 																field.onChange(Boolean(value))
 															}

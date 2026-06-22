@@ -466,7 +466,7 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 													</div>
 												) : (
 													<Select
-														aria-label="Select option"
+														aria-label="Railpack version"
 														onValueChange={(value) => {
 															if (value === null) return;
 															if (value === "manual") {

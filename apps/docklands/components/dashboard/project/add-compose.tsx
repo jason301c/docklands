@@ -194,7 +194,7 @@ export const AddCompose = ({
 										</TooltipProvider>
 
 										<Select
-											aria-label="Select option"
+											aria-label="Compose placement"
 											onValueChange={field.onChange}
 											defaultValue={
 												field.value ||
@@ -259,7 +259,7 @@ export const AddCompose = ({
 								<FormItem>
 									<FormLabel>Compose Type</FormLabel>
 									<Select
-										aria-label="Select option"
+										aria-label="Compose type"
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 									>

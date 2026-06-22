@@ -1,13 +1,15 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -17,9 +19,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { toast } from "@/components/shared/toast";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
@@ -126,11 +126,7 @@ export const AddApiKey = () => {
 	return (
 		<>
 			<Dialog.Root open={open} onOpenChange={setOpen}>
-				<Dialog.Trigger render={(
-
-					<Button>Generate New Key</Button>
-				
-)} />
+				<Dialog.Trigger render={<Button>Generate New Key</Button>} />
 				<Dialog className="sm:max-w-xl max-h-[90vh]">
 					<div>
 						<Dialog.Title>Generate API Key</Dialog.Title>
@@ -173,7 +169,8 @@ export const AddApiKey = () => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Expiration</FormLabel>
-										<Select aria-label="Select option"
+										<Select
+											aria-label="API key expiration"
 											value={field.value?.toString() || "0"}
 											onValueChange={(value) => {
 												if (value === null) return;
@@ -181,13 +178,14 @@ export const AddApiKey = () => {
 											}}
 										>
 											<FormControl>
-												<>
-													
-												</>
+												<></>
 											</FormControl>
 											<>
 												{EXPIRATION_OPTIONS.map((option) => (
-													<Select.Option key={option.value} value={option.value}>
+													<Select.Option
+														key={option.value}
+														value={option.value}
+													>
 														{option.label}
 													</Select.Option>
 												))}
@@ -203,11 +201,13 @@ export const AddApiKey = () => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Organization</FormLabel>
-										<Select aria-label="Select option" value={field.value} onValueChange={field.onChange}>
+										<Select
+											aria-label="API key organization"
+											value={field.value}
+											onValueChange={field.onChange}
+										>
 											<FormControl>
-												<>
-													
-												</>
+												<></>
 											</FormControl>
 											<>
 												{organizations?.map((org) => (
@@ -254,7 +254,8 @@ export const AddApiKey = () => {
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel>Time Window</FormLabel>
-													<Select aria-label="Select option"
+													<Select
+														aria-label="Rate limit time window"
 														value={field.value?.toString()}
 														onValueChange={(value) => {
 															if (value === null) return;
@@ -262,9 +263,7 @@ export const AddApiKey = () => {
 														}}
 													>
 														<FormControl>
-															<>
-																
-															</>
+															<></>
 														</FormControl>
 														<>
 															{TIME_WINDOW_OPTIONS.map((option) => (
@@ -382,7 +381,8 @@ export const AddApiKey = () => {
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Refill Interval</FormLabel>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Request refill interval"
 												value={field.value?.toString()}
 												onValueChange={(value) => {
 													if (value === null) return;
@@ -390,13 +390,14 @@ export const AddApiKey = () => {
 												}}
 											>
 												<FormControl>
-													<>
-														
-													</>
+													<></>
 												</FormControl>
 												<>
 													{REFILL_INTERVAL_OPTIONS.map((option) => (
-														<Select.Option key={option.value} value={option.value}>
+														<Select.Option
+															key={option.value}
+															value={option.value}
+														>
 															{option.label}
 														</Select.Option>
 													))}

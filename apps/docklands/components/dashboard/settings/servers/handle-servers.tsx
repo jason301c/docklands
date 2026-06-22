@@ -222,7 +222,7 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 									<FormItem>
 										<FormLabel>Worker Role</FormLabel>
 										<Select
-											aria-label="Select option"
+											aria-label="Worker role"
 											onValueChange={field.onChange}
 											defaultValue={field.value}
 										>
@@ -264,7 +264,7 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 								<FormItem>
 									<FormLabel>Select a SSH Key</FormLabel>
 									<Select
-										aria-label="Select option"
+										aria-label="SSH key"
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 									>

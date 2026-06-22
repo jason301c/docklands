@@ -537,7 +537,7 @@ export const AddTemplate = ({
 																</TooltipProvider>
 
 																<Select
-																	aria-label="Select option"
+																	aria-label="Template placement"
 																	onValueChange={(e) => {
 																		if (e === null) return;
 																		setServerId(e);

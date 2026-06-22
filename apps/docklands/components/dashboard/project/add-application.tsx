@@ -183,7 +183,7 @@ export const AddApplication = ({
 										</TooltipProvider>
 
 										<Select
-											aria-label="Select option"
+											aria-label="Service placement"
 											onValueChange={field.onChange}
 											defaultValue={
 												field.value ||

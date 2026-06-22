@@ -389,7 +389,7 @@ export const HandleRegistry = ({ registryId }: Props) => {
 										</FormDescription>
 										<FormControl>
 											<Select
-												aria-label="Select option"
+												aria-label="Registry authentication worker"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>

@@ -1,3 +1,15 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
+import { Button } from "@cloudflare/kumo/components/button";
+import { Combobox } from "@cloudflare/kumo/components/combobox";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import { Select } from "@cloudflare/kumo/components/select";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import debounce from "lodash/debounce";
@@ -11,14 +23,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -27,15 +34,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
 import { ScrollArea } from "@/components/shared/scroll-area";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
+import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
 import { type LogLine, parseLogs } from "../../docker/logs/utils";
@@ -292,14 +292,14 @@ export const RestoreBackup = ({
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger render={(
-
-				<Button variant="outline">
-					<RotateCcw className="mr-2 size-4" />
-					Restore Backup
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				render={
+					<Button variant="outline">
+						<RotateCcw className="mr-2 size-4" />
+						Restore Backup
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-lg">
 				<div>
 					<Dialog.Title className="flex items-center">
@@ -532,7 +532,8 @@ export const RestoreBackup = ({
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Database Type</FormLabel>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Restore database type"
 												value={field.value}
 												onValueChange={(value) => {
 													if (value === null) return;
@@ -540,11 +541,11 @@ export const RestoreBackup = ({
 													form.setValue("metadata", {});
 												}}
 											>
+												<></>
 												<>
-													
-												</>
-												<>
-													<Select.Option value="postgres">PostgreSQL</Select.Option>
+													<Select.Option value="postgres">
+														PostgreSQL
+													</Select.Option>
 													<Select.Option value="mariadb">MariaDB</Select.Option>
 													<Select.Option value="mongo">MongoDB</Select.Option>
 													<Select.Option value="mysql">MySQL</Select.Option>
@@ -562,14 +563,13 @@ export const RestoreBackup = ({
 										<FormItem className="w-full">
 											<FormLabel>Service Name</FormLabel>
 											<div className="flex gap-2">
-												<Select aria-label="Select option"
+												<Select
+													aria-label="Restore target service"
 													onValueChange={field.onChange}
 													value={field.value || undefined}
 												>
 													<FormControl>
-														<>
-															
-														</>
+														<></>
 													</FormControl>
 
 													<>
@@ -589,53 +589,65 @@ export const RestoreBackup = ({
 													</>
 												</Select>
 												<TooltipProvider delay={0}>
-													<Tooltip content={<>
-															<p>
-																Fetch: Will clone the repository and load the
-																services
-															</p>
-														</>} side="left"
-															className="max-w-[10rem]"  asChild>
-															<Button
-																variant="secondary"
-																type="button"
-																loading={isLoadingServices}
-																onClick={() => {
-																	if (cacheType === "fetch") {
-																		refetchServices();
-																	} else {
-																		setCacheType("fetch");
-																	}
-																}}
-															>
-																<RefreshCw className="size-4 text-muted-foreground" />
-															</Button>
-														</Tooltip>
+													<Tooltip
+														content={
+															<>
+																<p>
+																	Fetch: Will clone the repository and load the
+																	services
+																</p>
+															</>
+														}
+														side="left"
+														className="max-w-[10rem]"
+														asChild
+													>
+														<Button
+															variant="secondary"
+															type="button"
+															loading={isLoadingServices}
+															onClick={() => {
+																if (cacheType === "fetch") {
+																	refetchServices();
+																} else {
+																	setCacheType("fetch");
+																}
+															}}
+														>
+															<RefreshCw className="size-4 text-muted-foreground" />
+														</Button>
+													</Tooltip>
 												</TooltipProvider>
 												<TooltipProvider delay={0}>
-													<Tooltip content={<>
-															<p>
-																Cache: If you previously deployed this compose,
-																it will read the services from the last
-																deployment/fetch from the repository
-															</p>
-														</>} side="left"
-															className="max-w-[10rem]"  asChild>
-															<Button
-																variant="secondary"
-																type="button"
-																loading={isLoadingServices}
-																onClick={() => {
-																	if (cacheType === "cache") {
-																		refetchServices();
-																	} else {
-																		setCacheType("cache");
-																	}
-																}}
-															>
-																<DatabaseZap className="size-4 text-muted-foreground" />
-															</Button>
-														</Tooltip>
+													<Tooltip
+														content={
+															<>
+																<p>
+																	Cache: If you previously deployed this
+																	compose, it will read the services from the
+																	last deployment/fetch from the repository
+																</p>
+															</>
+														}
+														side="left"
+														className="max-w-[10rem]"
+														asChild
+													>
+														<Button
+															variant="secondary"
+															type="button"
+															loading={isLoadingServices}
+															onClick={() => {
+																if (cacheType === "cache") {
+																	refetchServices();
+																} else {
+																	setCacheType("cache");
+																}
+															}}
+														>
+															<DatabaseZap className="size-4 text-muted-foreground" />
+														</Button>
+													</Tooltip>
 												</TooltipProvider>
 											</div>
 

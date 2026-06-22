@@ -306,7 +306,7 @@ export const HandleVolumeBackups = ({
 								<FormItem>
 									<FormLabel>Destination</FormLabel>
 									<Select
-										aria-label="Select option"
+										aria-label="Volume backup destination"
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 									>
@@ -350,7 +350,7 @@ export const HandleVolumeBackups = ({
 												<FormLabel>Service Name</FormLabel>
 												<div className="flex gap-2">
 													<Select
-														aria-label="Select option"
+														aria-label="Volume backup service"
 														onValueChange={field.onChange}
 														defaultValue={field.value || ""}
 													>
@@ -448,7 +448,7 @@ export const HandleVolumeBackups = ({
 											<FormItem>
 												<FormLabel>Volumes</FormLabel>
 												<Select
-													aria-label="Select option"
+													aria-label="Volume to back up"
 													onValueChange={field.onChange}
 													defaultValue={field.value || ""}
 												>
@@ -485,7 +485,7 @@ export const HandleVolumeBackups = ({
 									<FormItem>
 										<FormLabel>Volumes</FormLabel>
 										<Select
-											aria-label="Select option"
+											aria-label="Volume to restore"
 											onValueChange={field.onChange}
 											defaultValue={field.value || ""}
 										>

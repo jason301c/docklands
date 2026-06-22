@@ -1,9 +1,9 @@
-import { api } from "@/client/api/trpc";
-import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
+import { api } from "@/client/api/trpc";
+import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 
 interface Props {
 	libsqlId: string;
@@ -25,10 +25,12 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Sqld Node</Label>
-								<Select aria-label="Select option" value={data?.sqldNode} disabled>
-									<>
-										
-									</>
+								<Select
+									aria-label="LibSQL node"
+									value={data?.sqldNode}
+									disabled
+								>
+									<></>
 									<>
 										{["primary", "replica"].map((node) => (
 											<Select.Option key={node} value={node}>
@@ -68,7 +70,8 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 							</div>
 							<div className="flex flex-col gap-2">
 								<Label>Enable Namespaces</Label>
-								<Select aria-label="Select option"
+								<Select
+									aria-label="LibSQL namespaces"
 									disabled
 									defaultValue={
 										data?.enableNamespaces
@@ -76,9 +79,7 @@ export const ShowInternalLibsqlCredentials = ({ libsqlId }: Props) => {
 											: "false"
 									}
 								>
-									<>
-										
-									</>
+									<></>
 									<>
 										<Select.Group>
 											{["false", "true"].map((node) => (

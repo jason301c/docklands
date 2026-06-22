@@ -155,7 +155,7 @@ export const ScheduleFormField = <TFieldValues extends FieldValues>({
 					</FormLabel>
 					<div className="flex flex-col gap-2">
 						<Select
-							aria-label="Select option"
+							aria-label="Automation type"
 							value={selectedOption}
 							onValueChange={(value) => {
 								if (value === null) return;
@@ -365,7 +365,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 											<FormLabel>Service Name</FormLabel>
 											<div className="flex gap-2">
 												<Select
-													aria-label="Select option"
+													aria-label="Automation target service"
 													onValueChange={field.onChange}
 													defaultValue={field.value || ""}
 												>
@@ -598,7 +598,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 												Shell Type
 											</FormLabel>
 											<Select
-												aria-label="Select option"
+												aria-label="Automation shell command"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>

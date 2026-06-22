@@ -198,7 +198,7 @@ export const WebDomain = () => {
 												<FormItem className="col-span-2">
 													<FormLabel>Certificate Provider</FormLabel>
 													<Select
-														aria-label="Select option"
+														aria-label="Server certificate provider"
 														onValueChange={field.onChange}
 														value={field.value}
 													>

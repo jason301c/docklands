@@ -222,7 +222,7 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 																	</FormLabel>
 																	<FormControl>
 																		<Select
-																			aria-label="Select option"
+																			aria-label="Ingress port protocol"
 																			onValueChange={field.onChange}
 																			defaultValue={field.value}
 																		>

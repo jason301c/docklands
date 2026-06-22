@@ -354,7 +354,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																</FormControl>
 															) : (
 																<Select
-																	aria-label="Select option"
+																	aria-label="Domain service"
 																	onValueChange={field.onChange}
 																	defaultValue={field.value || ""}
 																>
@@ -724,7 +724,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 													<FormItem>
 														<FormLabel>Certificate Provider</FormLabel>
 														<Select
-															aria-label="Select option"
+															aria-label="Certificate provider"
 															onValueChange={(value) => {
 																if (value === null) return;
 																field.onChange(value);

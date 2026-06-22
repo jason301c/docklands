@@ -363,7 +363,7 @@ export const HandleBackup = ({
 										<FormItem>
 											<FormLabel>Database Type</FormLabel>
 											<Select
-												aria-label="Select option"
+												aria-label="Database type"
 												value={field.value}
 												onValueChange={(value) => {
 													if (value === null) return;
@@ -471,7 +471,7 @@ export const HandleBackup = ({
 												<FormLabel>Service Name</FormLabel>
 												<div className="flex gap-2">
 													<Select
-														aria-label="Select option"
+														aria-label="Database service"
 														onValueChange={field.onChange}
 														value={field.value || undefined}
 													>

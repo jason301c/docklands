@@ -1,13 +1,14 @@
+import { Button } from "@cloudflare/kumo/components/button";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Input } from "@cloudflare/kumo/components/input";
+import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	Form,
 	FormControl,
@@ -17,8 +18,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 const addInvitation = z
 	.object({
@@ -168,13 +168,14 @@ export const AddInvitation = () => {
 
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
-			<Dialog.Trigger className="" render={(
-
-				<Button>
-					<PlusIcon className="h-4 w-4" /> Add Invitation
-				</Button>
-			
-)} />
+			<Dialog.Trigger
+				className=""
+				render={
+					<Button>
+						<PlusIcon className="h-4 w-4" /> Add Invitation
+					</Button>
+				}
+			/>
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title>Add Invitation</Dialog.Title>
@@ -200,14 +201,13 @@ export const AddInvitation = () => {
 									return (
 										<FormItem>
 											<FormLabel>Invite Method</FormLabel>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Invite method"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>
 												<FormControl>
-													<>
-														
-													</>
+													<></>
 												</FormControl>
 												<>
 													<Select.Option value="invitation">
@@ -255,14 +255,13 @@ export const AddInvitation = () => {
 								return (
 									<FormItem>
 										<FormLabel>Role</FormLabel>
-										<Select aria-label="Select option"
+										<Select
+											aria-label="Invitation role"
 											onValueChange={field.onChange}
 											defaultValue={field.value}
 										>
 											<FormControl>
-												<>
-													
-												</>
+												<></>
 											</FormControl>
 											<>
 												<Select.Option value="member">Member</Select.Option>
@@ -291,14 +290,13 @@ export const AddInvitation = () => {
 									return (
 										<FormItem>
 											<FormLabel>Email Provider</FormLabel>
-											<Select aria-label="Select option"
+											<Select
+												aria-label="Invitation email provider"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 											>
 												<FormControl>
-													<>
-														
-													</>
+													<></>
 												</FormControl>
 												<>
 													{emailProviders?.map((provider) => (

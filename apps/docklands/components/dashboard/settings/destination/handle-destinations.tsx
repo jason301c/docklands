@@ -275,7 +275,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 										<FormLabel>Provider</FormLabel>
 										<FormControl>
 											<Select
-												aria-label="Select option"
+												aria-label="Storage provider"
 												onValueChange={field.onChange}
 												defaultValue={field.value}
 												value={field.value}
@@ -442,7 +442,7 @@ export const HandleDestinations = ({ destinationId }: Props) => {
 											<FormLabel>Runtime Worker (Optional)</FormLabel>
 											<FormControl>
 												<Select
-													aria-label="Select option"
+													aria-label="Destination test worker"
 													onValueChange={field.onChange}
 													defaultValue={field.value}
 												>

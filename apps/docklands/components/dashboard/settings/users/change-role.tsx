@@ -1,13 +1,13 @@
-import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "@/components/shared/toast";
-import { z } from "zod";
-import { api } from "@/client/api/trpc";
-import { AlertBlock } from "@/components/shared/alert-block";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
+import { Select } from "@cloudflare/kumo/components/select";
+import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { api } from "@/client/api/trpc";
+import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
 	FormControl,
@@ -17,7 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Select } from "@cloudflare/kumo/components/select";
+import { toast } from "@/components/shared/toast";
 
 const changeRoleSchema = z.object({
 	role: z.string().min(1),
@@ -74,16 +74,17 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			<Dialog.Trigger className="" render={(
-
-				<DropdownMenu.Item
-					className="w-full cursor-pointer"
-					onSelect={(e) => e.preventDefault()}
-				>
-					Change Role
-				</DropdownMenu.Item>
-			
-)} />
+			<Dialog.Trigger
+				className=""
+				render={
+					<DropdownMenu.Item
+						className="w-full cursor-pointer"
+						onSelect={(e) => e.preventDefault()}
+					>
+						Change Role
+					</DropdownMenu.Item>
+				}
+			/>
 			<Dialog className="max-h-[85vh] sm:max-w-lg">
 				<div>
 					<Dialog.Title>Change User Role</Dialog.Title>
@@ -105,14 +106,13 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Role</FormLabel>
-									<Select aria-label="Select option"
+									<Select
+										aria-label="User role"
 										onValueChange={field.onChange}
 										defaultValue={field.value}
 									>
 										<FormControl>
-											<>
-												
-											</>
+											<></>
 										</FormControl>
 										<>
 											<Select.Option value="admin">Admin</Select.Option>

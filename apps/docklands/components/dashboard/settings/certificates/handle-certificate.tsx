@@ -221,7 +221,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 										</FormLabel>
 
 										<Select
-											aria-label="Select option"
+											aria-label="Certificate placement"
 											onValueChange={field.onChange}
 											defaultValue={
 												field.value || (!isCloud ? "docklands" : undefined)

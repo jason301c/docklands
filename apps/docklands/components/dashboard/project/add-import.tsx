@@ -237,7 +237,7 @@ export const AddImport = ({
 												</Tooltip>
 											</TooltipProvider>
 											<Select
-												aria-label="Select option"
+												aria-label="Import placement"
 												onValueChange={field.onChange}
 												defaultValue={
 													field.value || (!isCloud ? "docklands" : undefined)

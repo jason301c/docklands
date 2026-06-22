@@ -335,7 +335,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 												<FormItem>
 													<FormLabel>Certificate Provider</FormLabel>
 													<Select
-														aria-label="Select option"
+														aria-label="Preview certificate provider"
 														onValueChange={field.onChange}
 														defaultValue={field.value || ""}
 													>
