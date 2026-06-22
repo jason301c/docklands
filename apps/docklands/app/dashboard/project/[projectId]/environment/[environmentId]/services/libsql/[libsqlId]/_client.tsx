@@ -19,8 +19,8 @@ import { ShowExternalLibsqlCredentials } from "@/components/dashboard/libsql/gen
 import { ShowGeneralLibsql } from "@/components/dashboard/libsql/general/show-general-libsql";
 import { ShowInternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-internal-libsql-credentials";
 import { UpdateLibsql } from "@/components/dashboard/libsql/update-libsql";
-import { ContainerFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-container-monitoring";
-import { ContainerPaidMonitoring } from "@/components/dashboard/monitoring/paid/container/show-paid-container-monitoring";
+import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
+import { ContainerPaidMonitoring } from "@/components/dashboard/metrics/paid/container/show-paid-container-monitoring";
 import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/shared/show-database-advanced-settings";
 import { LibsqlIcon } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";

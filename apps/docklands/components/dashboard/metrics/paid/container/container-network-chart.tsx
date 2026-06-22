@@ -1,5 +1,5 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
 	type ChartConfig,
 	ChartContainer,
@@ -113,7 +113,7 @@ export const ContainerNetworkChart = ({ data }: Props) => {
 						<ChartTooltip
 							cursor={false}
 							content={({ active, payload, label }: any) => {
-								if (active && payload && payload.length) {
+								if (active && payload?.length) {
 									const data = payload?.[0]?.payload;
 									return (
 										<div className="rounded-lg border bg-background p-2 shadow-sm">

@@ -19,8 +19,8 @@ import { ShowExternalMariadbCredentials } from "@/components/dashboard/mariadb/g
 import { ShowGeneralMariadb } from "@/components/dashboard/mariadb/general/show-general-mariadb";
 import { ShowInternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-internal-mariadb-credentials";
 import { UpdateMariadb } from "@/components/dashboard/mariadb/update-mariadb";
-import { ContainerFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-container-monitoring";
-import { ContainerPaidMonitoring } from "@/components/dashboard/monitoring/paid/container/show-paid-container-monitoring";
+import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
+import { ContainerPaidMonitoring } from "@/components/dashboard/metrics/paid/container/show-paid-container-monitoring";
 import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/shared/show-database-advanced-settings";
 import { MariadbIcon } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";

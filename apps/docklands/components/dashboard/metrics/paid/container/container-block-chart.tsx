@@ -1,5 +1,5 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
 	type ChartConfig,
 	ChartContainer,
@@ -11,7 +11,12 @@ import { formatTimestamp } from "@/shared/utils";
 
 interface ContainerMetric {
 	timestamp: string;
-	CPU: number;
+	BlockIO: {
+		read: number;
+		write: number;
+		readUnit: string;
+		writeUnit: string;
+	};
 }
 
 interface Props {
@@ -19,28 +24,42 @@ interface Props {
 }
 
 const chartConfig = {
-	cpu: {
-		label: "CPU",
-		color: "hsl(var(--chart-1))",
+	read: {
+		label: "Read",
+		color: "hsl(217, 91%, 60%)", // Azul brillante
+	},
+	write: {
+		label: "Write",
+		color: "hsl(142, 71%, 45%)", // Verde brillante
 	},
 } satisfies ChartConfig;
 
-export const ContainerCPUChart = ({ data }: Props) => {
+export const ContainerBlockChart = ({ data }: Props) => {
 	const formattedData = data.map((metric) => ({
 		timestamp: metric.timestamp,
-		cpu: metric.CPU,
+		read: metric.BlockIO.read,
+		write: metric.BlockIO.write,
+		readUnit: metric.BlockIO.readUnit,
+		writeUnit: metric.BlockIO.writeUnit,
 	}));
 
 	const latestData = formattedData[formattedData.length - 1] || {
 		timestamp: "",
-		cpu: 0,
+		read: 0,
+		write: 0,
+		readUnit: "B",
+		writeUnit: "B",
 	};
 
 	return (
 		<LayerCard className="bg-transparent">
 			<div className="border-b py-5">
-				<h3>CPU</h3>
-				<p>CPU Usage: {latestData.cpu}%</p>
+				<h3>Block I/O</h3>
+				<p>
+					Read: {latestData.read}
+					{latestData.readUnit} / Write: {latestData.write}
+					{latestData.writeUnit}
+				</p>
 			</div>
 			<div className="px-2 pt-4 sm:px-6 sm:pt-6">
 				<ChartContainer
@@ -49,15 +68,27 @@ export const ContainerCPUChart = ({ data }: Props) => {
 				>
 					<AreaChart data={formattedData}>
 						<defs>
-							<linearGradient id="fillCPU" x1="0" y1="0" x2="0" y2="1">
+							<linearGradient id="fillRead" x1="0" y1="0" x2="0" y2="1">
 								<stop
 									offset="5%"
-									stopColor="hsl(var(--chart-1))"
-									stopOpacity={0.8}
+									stopColor="hsl(217, 91%, 60%)"
+									stopOpacity={0.3}
 								/>
 								<stop
 									offset="95%"
-									stopColor="hsl(var(--chart-1))"
+									stopColor="hsl(217, 91%, 60%)"
+									stopOpacity={0.1}
+								/>
+							</linearGradient>
+							<linearGradient id="fillWrite" x1="0" y1="0" x2="0" y2="1">
+								<stop
+									offset="5%"
+									stopColor="hsl(142, 71%, 45%)"
+									stopOpacity={0.3}
+								/>
+								<stop
+									offset="95%"
+									stopColor="hsl(142, 71%, 45%)"
 									stopOpacity={0.1}
 								/>
 							</linearGradient>
@@ -71,11 +102,11 @@ export const ContainerCPUChart = ({ data }: Props) => {
 							minTickGap={32}
 							tickFormatter={(value) => formatTimestamp(value)}
 						/>
-						<YAxis tickFormatter={(value) => `${value}%`} domain={[0, 100]} />
+						<YAxis />
 						<ChartTooltip
 							cursor={false}
 							content={({ active, payload, label }: any) => {
-								if (active && payload && payload.length) {
+								if (active && payload?.length) {
 									const data = payload?.[0]?.payload;
 									return (
 										<div className="rounded-lg border bg-background p-2 shadow-sm">
@@ -90,9 +121,21 @@ export const ContainerCPUChart = ({ data }: Props) => {
 												</div>
 												<div className="flex flex-col">
 													<span className="text-[0.70rem] uppercase text-muted-foreground">
-														CPU
+														Read
 													</span>
-													<span className="font-bold">{data.cpu}%</span>
+													<span className="font-bold">
+														{data.read}
+														{data.readUnit}
+													</span>
+												</div>
+												<div className="flex flex-col">
+													<span className="text-[0.70rem] uppercase text-muted-foreground">
+														Write
+													</span>
+													<span className="font-bold">
+														{data.write}
+														{data.writeUnit}
+													</span>
 												</div>
 											</div>
 										</div>
@@ -102,12 +145,22 @@ export const ContainerCPUChart = ({ data }: Props) => {
 							}}
 						/>
 						<Area
-							name="CPU"
-							dataKey="cpu"
+							name="Write"
+							dataKey="write"
 							type="monotone"
-							fill="url(#fillCPU)"
-							stroke="hsl(var(--chart-1))"
+							fill="url(#fillWrite)"
+							stroke="hsl(142, 71%, 45%)"
 							strokeWidth={2}
+							fillOpacity={0.3}
+						/>
+						<Area
+							name="Read"
+							dataKey="read"
+							type="monotone"
+							fill="url(#fillRead)"
+							stroke="hsl(217, 91%, 60%)"
+							strokeWidth={2}
+							fillOpacity={0.3}
 						/>
 						<ChartLegend
 							content={<ChartLegendContent />}

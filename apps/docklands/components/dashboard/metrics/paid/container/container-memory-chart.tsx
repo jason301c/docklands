@@ -1,5 +1,5 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
 	type ChartConfig,
 	ChartContainer,
@@ -9,42 +9,70 @@ import {
 } from "@/components/shared/chart";
 import { formatTimestamp } from "@/shared/utils";
 
-interface CPUChartProps {
-	data: any[];
+interface ContainerMetric {
+	timestamp: string;
+	Memory: {
+		percentage: number;
+		used: number;
+		total: number;
+		usedUnit: string;
+		totalUnit: string;
+	};
+}
+
+interface Props {
+	data: ContainerMetric[];
 }
 
 const chartConfig = {
-	cpu: {
-		label: "CPU",
-		color: "hsl(var(--chart-1))",
+	memory: {
+		label: "Memory",
+		color: "hsl(var(--chart-2))",
 	},
 } satisfies ChartConfig;
 
-export function CPUChart({ data }: CPUChartProps) {
-	const latestData = data[data.length - 1] || {};
+const formatMemoryValue = (value: number) => {
+	return value.toLocaleString("en-US", {
+		minimumFractionDigits: 1,
+		maximumFractionDigits: 2,
+	});
+};
+
+export const ContainerMemoryChart = ({ data }: Props) => {
+	const formattedData = data.map((metric) => ({
+		timestamp: metric.timestamp,
+		memory: metric.Memory.percentage,
+		usage: `${formatMemoryValue(metric.Memory.used)}${metric.Memory.usedUnit} / ${formatMemoryValue(metric.Memory.total)}${metric.Memory.totalUnit}`,
+	}));
+
+	const latestData = formattedData[formattedData.length - 1] || {
+		timestamp: "",
+		memory: 0,
+		usage: "0 / 0 B",
+	};
 
 	return (
 		<LayerCard className="bg-transparent">
 			<div className="border-b py-5">
-				<h3>CPU</h3>
-				<p>CPU Usage: {latestData.cpu}%</p>
+				<h3>Memory</h3>
+				<p>Memory Usage: {latestData.usage}</p>
 			</div>
 			<div className="px-2 pt-4 sm:px-6 sm:pt-6">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-auto h-[250px] w-full"
 				>
-					<AreaChart data={data}>
+					<AreaChart data={formattedData}>
 						<defs>
-							<linearGradient id="fillCPU" x1="0" y1="0" x2="0" y2="1">
+							<linearGradient id="fillMemory" x1="0" y1="0" x2="0" y2="1">
 								<stop
 									offset="5%"
-									stopColor="hsl(var(--chart-1))"
+									stopColor="hsl(var(--chart-2))"
 									stopOpacity={0.8}
 								/>
 								<stop
 									offset="95%"
-									stopColor="hsl(var(--chart-1))"
+									stopColor="hsl(var(--chart-2))"
 									stopOpacity={0.1}
 								/>
 							</linearGradient>
@@ -62,7 +90,7 @@ export function CPUChart({ data }: CPUChartProps) {
 						<ChartTooltip
 							cursor={false}
 							content={({ active, payload, label }: any) => {
-								if (active && payload && payload.length) {
+								if (active && payload?.length) {
 									const data = payload?.[0]?.payload;
 									return (
 										<div className="rounded-lg border bg-background p-2 shadow-sm">
@@ -77,9 +105,15 @@ export function CPUChart({ data }: CPUChartProps) {
 												</div>
 												<div className="flex flex-col">
 													<span className="text-[0.70rem] uppercase text-muted-foreground">
-														CPU
+														Memory
 													</span>
-													<span className="font-bold">{data.cpu}%</span>
+													<span className="font-bold">{data.memory}%</span>
+												</div>
+												<div className="flex flex-col col-span-2">
+													<span className="text-[0.70rem] uppercase text-muted-foreground">
+														Usage
+													</span>
+													<span className="font-bold">{data.usage}</span>
 												</div>
 											</div>
 										</div>
@@ -89,11 +123,11 @@ export function CPUChart({ data }: CPUChartProps) {
 							}}
 						/>
 						<Area
-							name="CPU"
-							dataKey="cpu"
+							name="Memory"
+							dataKey="memory"
 							type="monotone"
-							fill="url(#fillCPU)"
-							stroke="hsl(var(--chart-1))"
+							fill="url(#fillMemory)"
+							stroke="hsl(var(--chart-2))"
 							strokeWidth={2}
 						/>
 						<ChartLegend
@@ -106,4 +140,4 @@ export function CPUChart({ data }: CPUChartProps) {
 			</div>
 		</LayerCard>
 	);
-}
+};

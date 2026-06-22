@@ -1,5 +1,5 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
 	type ChartConfig,
 	ChartContainer,
@@ -9,61 +9,55 @@ import {
 } from "@/components/shared/chart";
 import { formatTimestamp } from "@/shared/utils";
 
-interface NetworkChartProps {
-	data: any[];
+interface ContainerMetric {
+	timestamp: string;
+	CPU: number;
+}
+
+interface Props {
+	data: ContainerMetric[];
 }
 
 const chartConfig = {
-	networkIn: {
-		label: "Network In",
-		color: "hsl(var(--chart-3))",
-	},
-	networkOut: {
-		label: "Network Out",
-		color: "hsl(var(--chart-4))",
+	cpu: {
+		label: "CPU",
+		color: "hsl(var(--chart-1))",
 	},
 } satisfies ChartConfig;
 
-export function NetworkChart({ data }: NetworkChartProps) {
-	const latestData = data[data.length - 1] || {};
+export const ContainerCPUChart = ({ data }: Props) => {
+	const formattedData = data.map((metric) => ({
+		timestamp: metric.timestamp,
+		cpu: metric.CPU,
+	}));
+
+	const latestData = formattedData[formattedData.length - 1] || {
+		timestamp: "",
+		cpu: 0,
+	};
 
 	return (
 		<LayerCard className="bg-transparent">
 			<div className="border-b py-5">
-				<h3>Network</h3>
-				<p>
-					Network Traffic: ↑ {latestData.networkOut} KB/s ↓{" "}
-					{latestData.networkIn} KB/s
-				</p>
+				<h3>CPU</h3>
+				<p>CPU Usage: {latestData.cpu}%</p>
 			</div>
 			<div className="px-2 pt-4 sm:px-6 sm:pt-6">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-auto h-[250px] w-full"
 				>
-					<AreaChart data={data}>
+					<AreaChart data={formattedData}>
 						<defs>
-							<linearGradient id="fillNetworkIn" x1="0" y1="0" x2="0" y2="1">
+							<linearGradient id="fillCPU" x1="0" y1="0" x2="0" y2="1">
 								<stop
 									offset="5%"
-									stopColor="hsl(var(--chart-3))"
+									stopColor="hsl(var(--chart-1))"
 									stopOpacity={0.8}
 								/>
 								<stop
 									offset="95%"
-									stopColor="hsl(var(--chart-3))"
-									stopOpacity={0.1}
-								/>
-							</linearGradient>
-							<linearGradient id="fillNetworkOut" x1="0" y1="0" x2="0" y2="1">
-								<stop
-									offset="5%"
-									stopColor="hsl(var(--chart-4))"
-									stopOpacity={0.8}
-								/>
-								<stop
-									offset="95%"
-									stopColor="hsl(var(--chart-4))"
+									stopColor="hsl(var(--chart-1))"
 									stopOpacity={0.1}
 								/>
 							</linearGradient>
@@ -77,11 +71,11 @@ export function NetworkChart({ data }: NetworkChartProps) {
 							minTickGap={32}
 							tickFormatter={(value) => formatTimestamp(value)}
 						/>
-						<YAxis tickFormatter={(value) => `${value} KB/s`} />
+						<YAxis tickFormatter={(value) => `${value}%`} domain={[0, 100]} />
 						<ChartTooltip
 							cursor={false}
 							content={({ active, payload, label }: any) => {
-								if (active && payload && payload.length) {
+								if (active && payload?.length) {
 									const data = payload?.[0]?.payload;
 									return (
 										<div className="rounded-lg border bg-background p-2 shadow-sm">
@@ -96,12 +90,9 @@ export function NetworkChart({ data }: NetworkChartProps) {
 												</div>
 												<div className="flex flex-col">
 													<span className="text-[0.70rem] uppercase text-muted-foreground">
-														Network
+														CPU
 													</span>
-													<span className="font-bold">
-														↑ {data.networkOut} KB/s
-														<br />↓ {data.networkIn} KB/s
-													</span>
+													<span className="font-bold">{data.cpu}%</span>
 												</div>
 											</div>
 										</div>
@@ -111,19 +102,11 @@ export function NetworkChart({ data }: NetworkChartProps) {
 							}}
 						/>
 						<Area
-							name="Network In"
-							dataKey="networkIn"
+							name="CPU"
+							dataKey="cpu"
 							type="monotone"
-							fill="url(#fillNetworkIn)"
-							stroke="hsl(var(--chart-3))"
-							strokeWidth={2}
-						/>
-						<Area
-							name="Network Out"
-							dataKey="networkOut"
-							type="monotone"
-							fill="url(#fillNetworkOut)"
-							stroke="hsl(var(--chart-4))"
+							fill="url(#fillCPU)"
+							stroke="hsl(var(--chart-1))"
 							strokeWidth={2}
 						/>
 						<ChartLegend
@@ -136,4 +119,4 @@ export function NetworkChart({ data }: NetworkChartProps) {
 			</div>
 		</LayerCard>
 	);
-}
+};

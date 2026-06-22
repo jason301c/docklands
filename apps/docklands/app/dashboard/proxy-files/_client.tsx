@@ -1,6 +1,6 @@
 "use client";
 
-import { ShowTraefikSystem } from "@/components/dashboard/file-system/show-traefik-system";
+import { ShowTraefikSystem } from "@/components/dashboard/proxy-files/show-traefik-system";
 import { ServerFilter } from "@/components/shared/server-filter";
 
 const Dashboard = () => {

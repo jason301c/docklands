@@ -1,5 +1,5 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
 	type ChartConfig,
 	ChartContainer,
@@ -9,70 +9,61 @@ import {
 } from "@/components/shared/chart";
 import { formatTimestamp } from "@/shared/utils";
 
-interface ContainerMetric {
-	timestamp: string;
-	Memory: {
-		percentage: number;
-		used: number;
-		total: number;
-		usedUnit: string;
-		totalUnit: string;
-	};
-}
-
-interface Props {
-	data: ContainerMetric[];
+interface NetworkChartProps {
+	data: any[];
 }
 
 const chartConfig = {
-	memory: {
-		label: "Memory",
-		color: "hsl(var(--chart-2))",
+	networkIn: {
+		label: "Network In",
+		color: "hsl(var(--chart-3))",
+	},
+	networkOut: {
+		label: "Network Out",
+		color: "hsl(var(--chart-4))",
 	},
 } satisfies ChartConfig;
 
-const formatMemoryValue = (value: number) => {
-	return value.toLocaleString("en-US", {
-		minimumFractionDigits: 1,
-		maximumFractionDigits: 2,
-	});
-};
-
-export const ContainerMemoryChart = ({ data }: Props) => {
-	const formattedData = data.map((metric) => ({
-		timestamp: metric.timestamp,
-		memory: metric.Memory.percentage,
-		usage: `${formatMemoryValue(metric.Memory.used)}${metric.Memory.usedUnit} / ${formatMemoryValue(metric.Memory.total)}${metric.Memory.totalUnit}`,
-	}));
-
-	const latestData = formattedData[formattedData.length - 1] || {
-		timestamp: "",
-		memory: 0,
-		usage: "0 / 0 B",
-	};
+export function NetworkChart({ data }: NetworkChartProps) {
+	const latestData = data[data.length - 1] || {};
 
 	return (
 		<LayerCard className="bg-transparent">
 			<div className="border-b py-5">
-				<h3>Memory</h3>
-				<p>Memory Usage: {latestData.usage}</p>
+				<h3>Network</h3>
+				<p>
+					Network Traffic: ↑ {latestData.networkOut} KB/s ↓{" "}
+					{latestData.networkIn} KB/s
+				</p>
 			</div>
 			<div className="px-2 pt-4 sm:px-6 sm:pt-6">
 				<ChartContainer
 					config={chartConfig}
 					className="aspect-auto h-[250px] w-full"
 				>
-					<AreaChart data={formattedData}>
+					<AreaChart data={data}>
 						<defs>
-							<linearGradient id="fillMemory" x1="0" y1="0" x2="0" y2="1">
+							<linearGradient id="fillNetworkIn" x1="0" y1="0" x2="0" y2="1">
 								<stop
 									offset="5%"
-									stopColor="hsl(var(--chart-2))"
+									stopColor="hsl(var(--chart-3))"
 									stopOpacity={0.8}
 								/>
 								<stop
 									offset="95%"
-									stopColor="hsl(var(--chart-2))"
+									stopColor="hsl(var(--chart-3))"
+									stopOpacity={0.1}
+								/>
+							</linearGradient>
+							<linearGradient id="fillNetworkOut" x1="0" y1="0" x2="0" y2="1">
+								<stop
+									offset="5%"
+									stopColor="hsl(var(--chart-4))"
+									stopOpacity={0.8}
+								/>
+								<stop
+									offset="95%"
+									stopColor="hsl(var(--chart-4))"
 									stopOpacity={0.1}
 								/>
 							</linearGradient>
@@ -86,11 +77,11 @@ export const ContainerMemoryChart = ({ data }: Props) => {
 							minTickGap={32}
 							tickFormatter={(value) => formatTimestamp(value)}
 						/>
-						<YAxis tickFormatter={(value) => `${value}%`} domain={[0, 100]} />
+						<YAxis tickFormatter={(value) => `${value} KB/s`} />
 						<ChartTooltip
 							cursor={false}
 							content={({ active, payload, label }: any) => {
-								if (active && payload && payload.length) {
+								if (active && payload?.length) {
 									const data = payload?.[0]?.payload;
 									return (
 										<div className="rounded-lg border bg-background p-2 shadow-sm">
@@ -105,15 +96,12 @@ export const ContainerMemoryChart = ({ data }: Props) => {
 												</div>
 												<div className="flex flex-col">
 													<span className="text-[0.70rem] uppercase text-muted-foreground">
-														Memory
+														Network
 													</span>
-													<span className="font-bold">{data.memory}%</span>
-												</div>
-												<div className="flex flex-col col-span-2">
-													<span className="text-[0.70rem] uppercase text-muted-foreground">
-														Usage
+													<span className="font-bold">
+														↑ {data.networkOut} KB/s
+														<br />↓ {data.networkIn} KB/s
 													</span>
-													<span className="font-bold">{data.usage}</span>
 												</div>
 											</div>
 										</div>
@@ -123,11 +111,19 @@ export const ContainerMemoryChart = ({ data }: Props) => {
 							}}
 						/>
 						<Area
-							name="Memory"
-							dataKey="memory"
+							name="Network In"
+							dataKey="networkIn"
 							type="monotone"
-							fill="url(#fillMemory)"
-							stroke="hsl(var(--chart-2))"
+							fill="url(#fillNetworkIn)"
+							stroke="hsl(var(--chart-3))"
+							strokeWidth={2}
+						/>
+						<Area
+							name="Network Out"
+							dataKey="networkOut"
+							type="monotone"
+							fill="url(#fillNetworkOut)"
+							stroke="hsl(var(--chart-4))"
 							strokeWidth={2}
 						/>
 						<ChartLegend
@@ -140,4 +136,4 @@ export const ContainerMemoryChart = ({ data }: Props) => {
 			</div>
 		</LayerCard>
 	);
-};
+}

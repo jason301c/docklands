@@ -4,8 +4,8 @@ import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { Rocket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShowDeploymentsTable } from "@/components/dashboard/deployments/show-deployments-table";
-import { ShowQueueTable } from "@/components/dashboard/deployments/show-queue-table";
+import { ShowDeploymentsTable } from "@/components/dashboard/builds/show-deployments-table";
+import { ShowQueueTable } from "@/components/dashboard/builds/show-queue-table";
 
 const TAB_VALUES = ["deployments", "queue"] as const;
 type TabValue = (typeof TAB_VALUES)[number];

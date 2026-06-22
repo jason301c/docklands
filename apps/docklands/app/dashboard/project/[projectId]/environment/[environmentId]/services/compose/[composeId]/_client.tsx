@@ -28,8 +28,8 @@ import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show"
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
 import { UpdateCompose } from "@/components/dashboard/compose/update-compose";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
-import { ComposeFreeMonitoring } from "@/components/dashboard/monitoring/free/container/show-free-compose-monitoring";
-import { ComposePaidMonitoring } from "@/components/dashboard/monitoring/paid/container/show-paid-compose-monitoring";
+import { ComposeFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-compose-monitoring";
+import { ComposePaidMonitoring } from "@/components/dashboard/metrics/paid/container/show-paid-compose-monitoring";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
