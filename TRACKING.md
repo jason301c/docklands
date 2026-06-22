@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Product navigation vocabulary
+- Latest checkpoint: Shared workspace placement selector
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -47,6 +47,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Rehomed old settings `destination`, `cluster/registry`, and `cluster/nodes` UI modules into `settings/storage`, `settings/image-registry`, and `settings/cluster-nodes`, keeping backend permission/API compatibility names intact.
 - Added a bundler guard so Docklands fails fast if scripts, dependencies, Next config, or the custom server opt back into Webpack instead of Turbopack.
 - Tightened the sidebar and command palette vocabulary around Docklands product nouns: Ingress, Build Workers, Image Registry, Cluster Nodes, Runtime Workers, Container Runtime, Cluster Runtime, Ingress Requests, and Host Metrics.
+- Centralized the workspace service creation placement selector so application, compose, database, import, and template flows all use the same automatic-placement/runtime-worker UI and copy.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
 - Recorded the first upstream PR security audit under `outputs/docklands-pr-security-audit.md` outside the repo.
 
@@ -161,6 +162,12 @@ git diff --check
   - `bun --filter docklands build`
 - Current product navigation vocabulary checkpoint
   - `bun --filter docklands test --run __test__/navigation/dashboard-nav.test.ts`
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
+- Current shared workspace placement selector checkpoint
+  - `bun --filter docklands test --run __test__/workspace/placement-copy.test.ts __test__/workspace/workspace-graph.test.ts`
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`

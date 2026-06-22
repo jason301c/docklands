@@ -4,21 +4,17 @@ import { Combobox } from "@cloudflare/kumo/components/combobox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Label } from "@cloudflare/kumo/components/label";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@cloudflare/kumo/components/popover";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	Bookmark,
 	BookText,
 	CheckIcon,
 	ChevronsUpDown,
 	Globe,
-	HelpCircle,
 	LayoutGrid,
 	List,
 	Loader2,
@@ -33,6 +29,7 @@ import { AlertBlock } from "@/components/shared/alert-block";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
+import { PlacementSelect } from "./placement-select";
 
 const Command = Combobox;
 const CommandInput = Combobox.TriggerInput;
@@ -98,6 +95,10 @@ export const AddTemplate = ({
 		},
 	);
 	const { data: isCloud } = api.settings.isCloud.useQuery();
+	const { data: webServerSettings } =
+		api.settings.getWebServerSettings.useQuery();
+	const showAutomaticPlacement =
+		!isCloud && !webServerSettings?.remoteServersOnly;
 	const { data: servers } = api.server.withSSHKey.useQuery();
 	const { data: tags, isPending: isLoadingTags } = api.compose.getTags.useQuery(
 		{ baseUrl: customBaseUrl },
@@ -163,9 +164,6 @@ export const AddTemplate = ({
 		}) || [];
 
 	const hasServers = servers && servers.length > 0;
-	// Show dropdown logic based on cloud environment
-	// Cloud: show only if there are remote servers (no Docklands option)
-	// Self-hosted: show only if there are remote servers (Docklands is default, hide if no remote servers)
 	const shouldShowServerDropdown = hasServers;
 
 	const handleToggleBookmark = async (
@@ -512,74 +510,15 @@ export const AddTemplate = ({
 														</Dialog.Description>
 
 														{shouldShowServerDropdown && (
-															<div>
-																<TooltipProvider delay={0}>
-																	<Tooltip
-																		content={
-																			<>
-																				<span>
-																					Docklands uses automatic placement by
-																					default. Choose a worker only when
-																					this template needs manual placement.
-																				</span>
-																			</>
-																		}
-																		className="z-[999] w-[300px]"
-																		align="start"
-																		side="top"
-																		asChild
-																	>
-																		<Label className="break-all w-fit flex flex-row gap-1 items-center pb-2 pt-3.5">
-																			Placement {!isCloud ? "(Optional)" : ""}
-																			<HelpCircle className="size-4 text-muted-foreground" />
-																		</Label>
-																	</Tooltip>
-																</TooltipProvider>
-
-																<Select
-																	aria-label="Template placement"
-																	onValueChange={(e) => {
-																		if (e === null) return;
-																		setServerId(e);
-																	}}
-																	defaultValue={
-																		!isCloud ? "docklands" : undefined
-																	}
-																>
-																	<></>
-																	<>
-																		<Select.Group>
-																			{!isCloud && (
-																				<Select.Option value="docklands">
-																					<span className="flex items-center gap-2 justify-between w-full">
-																						<span>Automatic placement</span>
-																						<span className="text-muted-foreground text-xs self-center">
-																							Default
-																						</span>
-																					</span>
-																				</Select.Option>
-																			)}
-																			{servers?.map((server) => (
-																				<Select.Option
-																					key={server.serverId}
-																					value={server.serverId}
-																				>
-																					<span className="flex items-center gap-2 justify-between w-full">
-																						<span>{server.name}</span>
-																						<span className="text-muted-foreground text-xs self-center">
-																							{server.ipAddress}
-																						</span>
-																					</span>
-																				</Select.Option>
-																			))}
-																			<Select.GroupLabel>
-																				Runtime workers (
-																				{servers?.length + (!isCloud ? 1 : 0)})
-																			</Select.GroupLabel>
-																		</Select.Group>
-																	</>
-																</Select>
-															</div>
+															<PlacementSelect
+																ariaLabel="Template placement"
+																value={serverId}
+																onValueChange={setServerId}
+																workers={servers}
+																showAutomaticPlacement={showAutomaticPlacement}
+																optional={showAutomaticPlacement}
+																description="Docklands uses automatic placement by default. Choose a runtime worker only when this template needs manual placement."
+															/>
 														)}
 													</div>
 													<div>

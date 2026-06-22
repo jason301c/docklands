@@ -31,6 +31,7 @@ import {
 import { toast } from "@/components/shared/toast";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
+import { PlacementFormField } from "./placement-select";
 
 type DbType = z.infer<typeof mySchema>["type"];
 
@@ -512,51 +513,14 @@ export const AddDatabase = ({
 									)}
 								/>
 								{shouldShowServerDropdown && (
-									<FormField
+									<PlacementFormField
 										control={form.control}
 										name="serverId"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Placement</FormLabel>
-												<Select
-													aria-label="Database placement"
-													onValueChange={field.onChange}
-													defaultValue={
-														field.value ||
-														(showLocalOption ? "docklands" : undefined)
-													}
-												>
-													<></>
-													<>
-														<Select.Group>
-															{showLocalOption && (
-																<Select.Option value="docklands">
-																	<span className="flex items-center gap-2 justify-between w-full">
-																		<span>Automatic placement</span>
-																		<span className="text-muted-foreground text-xs self-center">
-																			Default
-																		</span>
-																	</span>
-																</Select.Option>
-															)}
-															{servers?.map((server) => (
-																<Select.Option
-																	key={server.serverId}
-																	value={server.serverId}
-																>
-																	{server.name}
-																</Select.Option>
-															))}
-															<Select.GroupLabel>
-																Runtime workers (
-																{servers?.length + (showLocalOption ? 1 : 0)})
-															</Select.GroupLabel>
-														</Select.Group>
-													</>
-												</Select>
-												<FormMessage />
-											</FormItem>
-										)}
+										ariaLabel="Database placement"
+										workers={servers}
+										showAutomaticPlacement={showLocalOption}
+										optional={showLocalOption}
+										description="Docklands uses automatic placement by default. Choose a runtime worker only when this database needs manual placement."
 									/>
 								)}
 								<FormField

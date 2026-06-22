@@ -2,7 +2,6 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Folder, HelpCircle } from "lucide-react";
@@ -22,6 +21,7 @@ import {
 import { toast } from "@/components/shared/toast";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
+import { PlacementFormField } from "./placement-select";
 
 const AddTemplateSchema = z.object({
 	name: z.string().min(1, {
@@ -154,78 +154,14 @@ export const AddApplication = ({
 							)}
 						/>
 						{shouldShowServerDropdown && (
-							<FormField
+							<PlacementFormField
 								control={form.control}
 								name="serverId"
-								render={({ field }) => (
-									<FormItem>
-										<TooltipProvider delay={0}>
-											<Tooltip
-												content={
-													<>
-														<span>
-															Docklands uses automatic placement by default.
-															Choose a worker only when this service needs
-															manual placement.
-														</span>
-													</>
-												}
-												className="z-[999] w-[300px]"
-												align="start"
-												side="top"
-												asChild
-											>
-												<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
-													Placement {showLocalOption ? "(Optional)" : ""}
-													<HelpCircle className="size-4 text-muted-foreground" />
-												</FormLabel>
-											</Tooltip>
-										</TooltipProvider>
-
-										<Select
-											aria-label="Service placement"
-											onValueChange={field.onChange}
-											defaultValue={
-												field.value ||
-												(showLocalOption ? "docklands" : undefined)
-											}
-										>
-											<></>
-											<>
-												<Select.Group>
-													{showLocalOption && (
-														<Select.Option value="docklands">
-															<span className="flex items-center gap-2 justify-between w-full">
-																<span>Automatic placement</span>
-																<span className="text-muted-foreground text-xs self-center">
-																	Default
-																</span>
-															</span>
-														</Select.Option>
-													)}
-													{servers?.map((server) => (
-														<Select.Option
-															key={server.serverId}
-															value={server.serverId}
-														>
-															<span className="flex items-center gap-2 justify-between w-full">
-																<span>{server.name}</span>
-																<span className="text-muted-foreground text-xs self-center">
-																	{server.ipAddress}
-																</span>
-															</span>
-														</Select.Option>
-													))}
-													<Select.GroupLabel>
-														Runtime workers (
-														{servers?.length + (showLocalOption ? 1 : 0)})
-													</Select.GroupLabel>
-												</Select.Group>
-											</>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
+								ariaLabel="Service placement"
+								workers={servers}
+								showAutomaticPlacement={showLocalOption}
+								optional={showLocalOption}
+								description="Docklands uses automatic placement by default. Choose a runtime worker only when this service needs manual placement."
 							/>
 						)}
 						<FormField
