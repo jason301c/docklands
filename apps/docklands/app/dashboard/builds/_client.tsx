@@ -4,10 +4,10 @@ import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { Rocket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShowDeploymentsTable } from "@/components/dashboard/builds/show-deployments-table";
+import { ShowBuildsTable } from "@/components/dashboard/builds/show-builds-table";
 import { ShowQueueTable } from "@/components/dashboard/builds/show-queue-table";
 
-const TAB_VALUES = ["deployments", "queue"] as const;
+const TAB_VALUES = ["history", "queue"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
 
 function isValidTab(t: string): t is TabValue {
@@ -18,7 +18,12 @@ function BuildsPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const tabParam = searchParams?.get("tab");
-	const tab = tabParam && isValidTab(tabParam) ? tabParam : "deployments";
+	const tab =
+		tabParam === "deployments"
+			? "history"
+			: tabParam && isValidTab(tabParam)
+				? tabParam
+				: "history";
 
 	const setTab = (value: string) => {
 		if (!isValidTab(value)) return;
@@ -46,13 +51,13 @@ function BuildsPage() {
 							}
 							className="mt-2 w-full"
 							tabs={[
-								{ value: "deployments", label: "History" },
+								{ value: "history", label: "History" },
 								{ value: "queue", label: "Worker queue" },
 							]}
 						/>
-						{tab === "deployments" && (
+						{tab === "history" && (
 							<div className="mt-0 pt-4">
-								<ShowDeploymentsTable />
+								<ShowBuildsTable />
 							</div>
 						)}
 						{tab === "queue" && (
