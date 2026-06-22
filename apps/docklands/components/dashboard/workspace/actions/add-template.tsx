@@ -22,7 +22,7 @@ import {
 	SearchIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
@@ -38,11 +38,8 @@ const CommandGroup = Combobox.Group;
 const CommandItem = Combobox.Item;
 const CommandEmpty = Combobox.Empty;
 
-const TEMPLATE_BASE_URL_KEY = "docklands_template_base_url";
-
 interface Props {
 	environmentId: string;
-	baseUrl?: string;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
 	hideTrigger?: boolean;
@@ -50,7 +47,6 @@ interface Props {
 
 export const AddTemplate = ({
 	environmentId,
-	baseUrl,
 	open: controlledOpen,
 	onOpenChange,
 	hideTrigger = false,
@@ -62,26 +58,9 @@ export const AddTemplate = ({
 	const [viewMode, setViewMode] = useState<"detailed" | "icon">("detailed");
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
-	const [customBaseUrl, setCustomBaseUrl] = useState<string | undefined>(() => {
-		// Try to get from props first, then localStorage
-		if (baseUrl) return baseUrl;
-		if (typeof window !== "undefined") {
-			return localStorage.getItem(TEMPLATE_BASE_URL_KEY) || undefined;
-		}
-		return undefined;
-	});
 
 	// Get environment data to extract the backing workspace id.
 	const { data: environment } = api.environment.one.useQuery({ environmentId });
-
-	// Save to localStorage when customBaseUrl changes
-	useEffect(() => {
-		if (customBaseUrl) {
-			localStorage.setItem(TEMPLATE_BASE_URL_KEY, customBaseUrl);
-		} else {
-			localStorage.removeItem(TEMPLATE_BASE_URL_KEY);
-		}
-	}, [customBaseUrl]);
 
 	const {
 		data,
@@ -89,7 +68,7 @@ export const AddTemplate = ({
 		error: errorTemplates,
 		isError: isErrorTemplates,
 	} = api.compose.templates.useQuery(
-		{ baseUrl: customBaseUrl },
+		{},
 		{
 			enabled: open,
 		},
@@ -101,7 +80,7 @@ export const AddTemplate = ({
 		!isCloud && !webServerSettings?.remoteServersOnly;
 	const { data: runtimeWorkers } = api.runtimeWorker.withSSHKey.useQuery();
 	const { data: tags, isPending: isLoadingTags } = api.compose.getTags.useQuery(
-		{ baseUrl: customBaseUrl },
+		{},
 		{
 			enabled: open,
 		},
@@ -205,14 +184,6 @@ export const AddTemplate = ({
 									onChange={(e) => setQuery(e.target.value)}
 									className="w-full"
 									value={query}
-								/>
-								<Input
-									placeholder="Base URL (optional)"
-									onChange={(e) =>
-										setCustomBaseUrl(e.target.value || undefined)
-									}
-									className="w-full sm:w-[300px]"
-									value={customBaseUrl || ""}
 								/>
 								<Popover modal={true}>
 									<PopoverTrigger asChild>
@@ -408,7 +379,7 @@ export const AddTemplate = ({
 											)}
 										>
 											<img
-												src={`${customBaseUrl || "https://templates.docklands.dev"}/blueprints/${template?.id}/${template?.logo}`}
+												src={template?.logo}
 												className={cn(
 													"object-contain",
 													viewMode === "detailed" ? "size-24" : "size-16",
@@ -541,7 +512,6 @@ export const AddTemplate = ({
 																					: runtimeWorkerId,
 																			environmentId,
 																			id: template.id,
-																			baseUrl: customBaseUrl,
 																		});
 																		toast.promise(promise, {
 																			loading: "Setting up...",

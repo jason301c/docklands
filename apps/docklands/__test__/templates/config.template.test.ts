@@ -1,542 +1,252 @@
 import { describe, expect, it } from "vitest";
-import type { Schema } from "@/server/core/templates";
-import type { CompleteTemplate } from "@/server/core/templates/processors";
-import { processTemplate } from "@/server/core/templates/processors";
+import {
+	loadTemplateCatalog,
+	loadTemplateDefinition,
+} from "@/server/core/templates/catalog";
+import { processComposeTemplate } from "@/server/core/templates/processors";
 
-describe("processTemplate", () => {
-	// Mock schema for testing
-	const mockSchema: Schema = {
-		projectName: "test",
-		serverIp: "127.0.0.1",
+const mockOptions = {
+	appName: "demo-directus",
+	projectName: "demo-directus",
+	serverIp: "127.0.0.1",
+	defaultPort: 80,
+};
+
+function decodeJwtPayload(jwt: string) {
+	const payload = jwt.split(".")[1];
+	if (!payload) throw new Error("JWT payload segment is missing");
+	return JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as {
+		iss?: string;
+		role?: string;
 	};
+}
 
-	describe("variables processing", () => {
-		it("should process basic variables with utility functions", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {
-					main_domain: "${domain}",
-					secret_base: "${base64:64}",
-					totp_key: "${base64:32}",
-					password: "${password:32}",
-					hash: "${hash:16}",
-				},
-				config: {
-					domains: [],
-					env: {},
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.envs).toHaveLength(0);
-			expect(result.domains).toHaveLength(0);
-			expect(result.mounts).toHaveLength(0);
+describe("compose template catalog", () => {
+	it("loads the vendored local template catalog", async () => {
+		const templates = await loadTemplateCatalog();
+		expect(templates.length).toBeGreaterThan(300);
+		expect(
+			templates.find((template) => template.id === "directus"),
+		).toMatchObject({
+			id: "directus",
+			logo: "/templates/svgs/directus.svg",
 		});
+		expect(
+			templates.find((template) => template.id === "posthog"),
+		).toBeUndefined();
+	});
 
-		it("should allow referencing variables in other variables", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {
-					main_domain: "${domain}",
-					api_domain: "api.${main_domain}",
-				},
-				config: {
-					domains: [],
-					env: {},
-				},
-			};
+	it("loads a template definition by id", async () => {
+		const template = await loadTemplateDefinition("directus-with-postgresql");
+		expect(template.metadata.id).toBe("directus-with-postgresql");
+		expect(template.compose).toContain("services:");
+		expect(template.compose).toContain("SERVICE_URL_DIRECTUS_8055");
+	});
+});
 
-			const result = processTemplate(template, mockSchema);
-			expect(result.envs).toHaveLength(0);
-			expect(result.domains).toHaveLength(0);
-			expect(result.mounts).toHaveLength(0);
+describe("processComposeTemplate", () => {
+	it("generates env, URL/FQDN pairs, and domain records from magic service variables", () => {
+		const compose = `
+services:
+  directus:
+    image: directus/directus:11
+    container_name: directus
+    environment:
+      - SERVICE_URL_DIRECTUS_8055=/admin
+      - PUBLIC_URL=$SERVICE_URL_DIRECTUS_8055
+      - DOMAIN_NAME=\${SERVICE_FQDN_DIRECTUS_8055}
+      - ADMIN_PASSWORD=$SERVICE_PASSWORD_ADMIN
+      - DB_PASSWORD=\${SERVICE_PASSWORD_POSTGRESQL}
+    exclude_from_hc: true
+  postgresql:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=\${SERVICE_USER_POSTGRESQL}
+      - POSTGRES_PASSWORD=\${SERVICE_PASSWORD_POSTGRESQL}
+`;
+
+		const result = processComposeTemplate(compose, mockOptions);
+
+		expect(result.domains).toHaveLength(1);
+		expect(result.domains[0]).toMatchObject({
+			serviceName: "directus",
+			port: 8055,
+			path: "/admin",
 		});
+		expect(result.domains[0]?.host).toContain("directus-demo-directus");
 
-		it("should allow creation of real jwt secret", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {
-					jwt_secret: "cQsdycq1hDLopQonF6jUTqgQc5WEZTwWLL02J6XJ",
-					anon_payload: JSON.stringify({
-						role: "tester",
-						iss: "dockploy",
-						iat: "${timestamps:2025-01-01T00:00:00Z}",
-						exp: "${timestamps:2030-01-01T00:00:00Z}",
-					}),
-					anon_key: "${jwt:jwt_secret:anon_payload}",
-				},
-				config: {
-					domains: [],
-					env: {
-						ANON_KEY: "${anon_key}",
-					},
-				},
-			};
-			const result = processTemplate(template, mockSchema);
-			expect(result.envs).toHaveLength(1);
-			expect(result.envs).toContain(
-				"ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOiIxNzM1Njg5NjAwIiwiZXhwIjoiMTg5MzQ1NjAwMCIsInJvbGUiOiJ0ZXN0ZXIiLCJpc3MiOiJkb2NrcGxveSJ9.BG5JoxL2_NaTFbPgyZdm3kRWenf_O3su_HIRKGCJ_kY",
-			);
-			expect(result.mounts).toHaveLength(0);
-			expect(result.domains).toHaveLength(0);
+		expect(result.envs).toContain("APP_NAME=demo-directus");
+		expect(result.envs).toContain("COMPOSE_PROJECT_NAME=demo-directus");
+		expect(result.envs).toContain("SERVICE_NAME_DIRECTUS=directus");
+		expect(result.envs).toContain("SERVICE_NAME_POSTGRESQL=postgresql");
+		expect(
+			result.envs.some((env) =>
+				env.startsWith("SERVICE_URL_DIRECTUS_8055=http://"),
+			),
+		).toBe(true);
+		expect(
+			result.envs.some((env) =>
+				env.startsWith("SERVICE_FQDN_DIRECTUS_8055=directus-demo-directus"),
+			),
+		).toBe(true);
+		expect(
+			result.envs.some((env) => env.match(/^SERVICE_PASSWORD_ADMIN=.{32,}$/)),
+		).toBe(true);
+		expect(
+			result.envs.some((env) =>
+				env.match(/^SERVICE_PASSWORD_POSTGRESQL=.{32,}$/),
+			),
+		).toBe(true);
+		expect(
+			result.envs.some((env) => env.match(/^SERVICE_USER_POSTGRESQL=.{16}$/)),
+		).toBe(true);
+
+		expect(result.compose).not.toContain("container_name:");
+		expect(result.compose).not.toContain("exclude_from_hc");
+	});
+
+	it("extracts default and required compose env variables into .env content", () => {
+		const compose = `
+services:
+  app:
+    image: example/app
+    environment:
+      - LOG_LEVEL=\${LOG_LEVEL:-info}
+      - API_KEY=\${API_KEY:?}
+      - HARD_CODED=ship
+`;
+
+		const result = processComposeTemplate(compose, mockOptions);
+
+		expect(result.envs).toContain("LOG_LEVEL=info");
+		expect(result.envs).toContain("API_KEY=");
+		expect(result.envs).not.toContain("HARD_CODED=ship");
+	});
+
+	it("generates lowercase users and Supabase JWT service keys", () => {
+		const compose = `
+services:
+  supabase-kong:
+    image: kong:2
+    environment:
+      - SERVICE_URL_SUPABASEKONG_8000
+      - DB_USER=\${SERVICE_LOWERCASEUSER_POSTGRES}
+      - JWT_SECRET=\${SERVICE_PASSWORD_JWT}
+      - SUPABASE_ANON_KEY=\${SERVICE_SUPABASEANON_KEY}
+      - SUPABASE_SERVICE_KEY=\${SERVICE_SUPABASESERVICE_KEY}
+`;
+
+		const result = processComposeTemplate(compose, mockOptions);
+		const envs = Object.fromEntries(
+			result.envs.map((env) => {
+				const index = env.indexOf("=");
+				return [env.slice(0, index), env.slice(index + 1)];
+			}),
+		);
+
+		expect(envs.SERVICE_LOWERCASEUSER_POSTGRES).toMatch(/^[a-z0-9]{16}$/);
+		expect(envs.SERVICE_PASSWORD_JWT).toMatch(/^[a-z0-9]{32}$/);
+		expect(decodeJwtPayload(envs.SERVICE_SUPABASEANON_KEY || "")).toMatchObject(
+			{
+				iss: "supabase",
+				role: "anon",
+			},
+		);
+		expect(
+			decodeJwtPayload(envs.SERVICE_SUPABASESERVICE_KEY || ""),
+		).toMatchObject({
+			iss: "supabase",
+			role: "service_role",
 		});
 	});
 
-	describe("domains processing", () => {
-		it("should process domains with explicit host", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {
-					main_domain: "${domain}",
-				},
-				config: {
-					domains: [
-						{
-							serviceName: "plausible",
-							port: 8000,
-							host: "${main_domain}",
-						},
-					],
-					env: {},
-				},
-			};
+	it("resolves nested Compose defaults that reference magic variables", () => {
+		const compose = `
+services:
+  healthchecks:
+    image: healthchecks/healthchecks
+    environment:
+      - SERVICE_URL_HEALTHCHECKS_8000
+      - SECRET_KEY=\${SECRET_KEY:?\${SERVICE_PASSWORD_64_HEALTHCHECKS}}
+      - SITE_ROOT=\${SITE_ROOT:-\${SERVICE_URL_HEALTHCHECKS}}
+`;
 
-			const result = processTemplate(template, mockSchema);
-			expect(result.domains).toHaveLength(1);
-			const domain = result.domains[0];
-			expect(domain).toBeDefined();
-			if (!domain) return;
-			expect(domain).toMatchObject({
-				serviceName: "plausible",
+		const result = processComposeTemplate(compose, mockOptions);
+		const envs = Object.fromEntries(
+			result.envs.map((env) => {
+				const index = env.indexOf("=");
+				return [env.slice(0, index), env.slice(index + 1)];
+			}),
+		);
+
+		expect(envs.SERVICE_PASSWORD_64_HEALTHCHECKS).toMatch(/^[a-z0-9]{64}$/);
+		expect(envs.SECRET_KEY).toBe(envs.SERVICE_PASSWORD_64_HEALTHCHECKS);
+		expect(envs.SITE_ROOT).toBe(envs.SERVICE_URL_HEALTHCHECKS);
+		expect(envs.SERVICE_URL_HEALTHCHECKS).toBe(
+			envs.SERVICE_URL_HEALTHCHECKS_8000,
+		);
+		expect(result.domains).toEqual([
+			expect.objectContaining({
+				serviceName: "healthchecks",
 				port: 8000,
-			});
-			expect(domain.host).toBeDefined();
-			expect(domain.host).toContain(mockSchema.projectName);
-		});
-
-		it("should generate random domain if host is not specified", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					domains: [
-						{
-							serviceName: "plausible",
-							port: 8000,
-						},
-					],
-					env: {},
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.domains).toHaveLength(1);
-			const domain = result.domains[0];
-			expect(domain).toBeDefined();
-			if (!domain || !domain.host) return;
-			expect(domain.host).toBeDefined();
-			expect(domain.host).toContain(mockSchema.projectName);
-		});
-
-		it("should allow using ${domain} directly in host", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					domains: [
-						{
-							serviceName: "plausible",
-							port: 8000,
-							host: "${domain}",
-						},
-					],
-					env: {},
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.domains).toHaveLength(1);
-			const domain = result.domains[0];
-			expect(domain).toBeDefined();
-			if (!domain || !domain.host) return;
-			expect(domain.host).toBeDefined();
-			expect(domain.host).toContain(mockSchema.projectName);
-		});
+			}),
+		]);
 	});
 
-	describe("environment variables processing", () => {
-		it("should process env vars with variable references", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {
-					main_domain: "${domain}",
-					secret_base: "${base64:64}",
-				},
-				config: {
-					domains: [],
-					env: {
-						BASE_URL: "http://${main_domain}",
-						SECRET_KEY_BASE: "${secret_base}",
-					},
-				},
-			};
+	it("turns custom content and directory bind mounts into managed files", () => {
+		const compose = `
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage
+    volumes:
+      - type: bind
+        source: ./config/settings.yaml
+        target: /app/config/settings.yaml
+        content: |
+          title: Docklands
+      - type: bind
+        source: ./config/logs
+        target: /app/logs
+        is_directory: true
+`;
 
-			const result = processTemplate(template, mockSchema);
-			expect(result.envs).toHaveLength(2);
-			const baseUrl = result.envs.find((env: string) =>
-				env.startsWith("BASE_URL="),
-			);
-			const secretKey = result.envs.find((env: string) =>
-				env.startsWith("SECRET_KEY_BASE="),
-			);
+		const result = processComposeTemplate(compose, mockOptions);
 
-			expect(baseUrl).toBeDefined();
-			expect(secretKey).toBeDefined();
-			if (!baseUrl || !secretKey) return;
-
-			expect(baseUrl).toContain(mockSchema.projectName);
-			const base64Value = secretKey.split("=")[1];
-			expect(base64Value).toBeDefined();
-			if (!base64Value) return;
-			expect(base64Value).toMatch(/^[A-Za-z0-9+/]+={0,2}$/);
-			expect(base64Value.length).toBeGreaterThanOrEqual(86);
-			expect(base64Value.length).toBeLessThanOrEqual(88);
-		});
-
-		it("should process env vars when provided as an array", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					domains: [],
-					env: [
-						'CLOUDFLARE_TUNNEL_TOKEN="<INSERT TOKEN>"',
-						'ANOTHER_VAR="some value"',
-						"DOMAIN=${domain}",
-					],
-					mounts: [],
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.envs).toHaveLength(3);
-
-			// Should preserve exact format for static values
-			expect(result.envs[0]).toBe('CLOUDFLARE_TUNNEL_TOKEN="<INSERT TOKEN>"');
-			expect(result.envs[1]).toBe('ANOTHER_VAR="some value"');
-
-			// Should process variables in array items
-			expect(result.envs[2]).toContain(mockSchema.projectName);
-		});
-
-		it("should allow using utility functions directly in env vars", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					domains: [],
-					env: {
-						RANDOM_DOMAIN: "${domain}",
-						SECRET_KEY: "${base64:32}",
-					},
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.envs).toHaveLength(2);
-			const randomDomainEnv = result.envs.find((env: string) =>
-				env.startsWith("RANDOM_DOMAIN="),
-			);
-			const secretKeyEnv = result.envs.find((env: string) =>
-				env.startsWith("SECRET_KEY="),
-			);
-			expect(randomDomainEnv).toBeDefined();
-			expect(secretKeyEnv).toBeDefined();
-			if (!randomDomainEnv || !secretKeyEnv) return;
-
-			expect(randomDomainEnv).toContain(mockSchema.projectName);
-			const base64Value = secretKeyEnv.split("=")[1];
-			expect(base64Value).toBeDefined();
-			if (!base64Value) return;
-			expect(base64Value).toMatch(/^[A-Za-z0-9+/]+={0,2}$/);
-			expect(base64Value.length).toBeGreaterThanOrEqual(42);
-			expect(base64Value.length).toBeLessThanOrEqual(44);
-		});
-
-		it("should handle boolean values in env vars when provided as an array", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					domains: [],
-					env: [
-						"ENABLE_USER_SIGN_UP=false",
-						"DEBUG_MODE=true",
-						"SOME_NUMBER=42",
-					],
-					mounts: [],
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.envs).toHaveLength(3);
-			expect(result.envs).toContain("ENABLE_USER_SIGN_UP=false");
-			expect(result.envs).toContain("DEBUG_MODE=true");
-			expect(result.envs).toContain("SOME_NUMBER=42");
-		});
-
-		it("should handle boolean values in env vars when provided as an object", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					domains: [],
-					env: {
-						ENABLE_USER_SIGN_UP: false,
-						DEBUG_MODE: true,
-						SOME_NUMBER: 42,
-					},
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.envs).toHaveLength(3);
-			expect(result.envs).toContain("ENABLE_USER_SIGN_UP=false");
-			expect(result.envs).toContain("DEBUG_MODE=true");
-			expect(result.envs).toContain("SOME_NUMBER=42");
-		});
+		expect(result.mounts).toEqual([
+			{
+				filePath: "config/settings.yaml",
+				mountPath: "/app/config/settings.yaml",
+				content: "title: Docklands\n",
+			},
+			{
+				filePath: "config/logs/",
+				mountPath: "/app/logs",
+				content: "",
+			},
+		]);
+		expect(result.compose).toContain("source: ../files/config/settings.yaml");
+		expect(result.compose).toContain("source: ../files/config/logs");
+		expect(result.compose).not.toContain("content:");
+		expect(result.compose).not.toContain("is_directory");
 	});
 
-	describe("mounts processing", () => {
-		it("should process mounts with variable references", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {
-					config_path: "/etc/config",
-					secret_key: "${base64:32}",
-				},
-				config: {
-					domains: [],
-					env: {},
-					mounts: [
-						{
-							filePath: "${config_path}/config.xml",
-							content: "secret_key=${secret_key}",
-						},
-					],
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.mounts).toHaveLength(1);
-			const mount = result.mounts[0];
-			expect(mount).toBeDefined();
-			if (!mount) return;
-			expect(mount.filePath).toContain("/etc/config");
-			expect(mount.content).toMatch(/secret_key=[A-Za-z0-9+/]{32}/);
+	it("processes a real vendored Coolify-style template", async () => {
+		const template = await loadTemplateDefinition("directus-with-postgresql");
+		const result = processComposeTemplate(template.compose, {
+			...mockOptions,
+			defaultPort: template.metadata.port,
 		});
 
-		it("should allow using utility functions directly in mount content", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					domains: [],
-					env: {},
-					mounts: [
-						{
-							filePath: "/config/secrets.txt",
-							content: "random_domain=${domain}\nsecret=${base64:32}",
-						},
-					],
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.mounts).toHaveLength(1);
-			const mount = result.mounts[0];
-			expect(mount).toBeDefined();
-			if (!mount) return;
-			expect(mount.content).toContain(mockSchema.projectName);
-			expect(mount.content).toMatch(/secret=[A-Za-z0-9+/]{32}/);
-		});
-	});
-
-	describe("complex template processing", () => {
-		it("should process a complete template with all features", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {
-					main_domain: "${domain}",
-					secret_base: "${base64:64}",
-					totp_key: "${base64:32}",
-				},
-				config: {
-					domains: [
-						{
-							serviceName: "plausible",
-							port: 8000,
-							host: "${main_domain}",
-						},
-						{
-							serviceName: "api",
-							port: 3000,
-							host: "api.${main_domain}",
-						},
-					],
-					env: {
-						BASE_URL: "http://${main_domain}",
-						SECRET_KEY_BASE: "${secret_base}",
-						TOTP_VAULT_KEY: "${totp_key}",
-					},
-					mounts: [
-						{
-							filePath: "/config/app.conf",
-							content: `
-                domain=\${main_domain}
-                secret=\${secret_base}
-                totp=\${totp_key}
-              `,
-						},
-					],
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-
-			// Check domains
-			expect(result.domains).toHaveLength(2);
-			const [domain1, domain2] = result.domains;
-			expect(domain1).toBeDefined();
-			expect(domain2).toBeDefined();
-			if (!domain1 || !domain2) return;
-			expect(domain1.host).toBeDefined();
-			expect(domain1.host).toContain(mockSchema.projectName);
-			expect(domain2.host).toContain("api.");
-			expect(domain2.host).toContain(mockSchema.projectName);
-
-			// Check env vars
-			expect(result.envs).toHaveLength(3);
-			const baseUrl = result.envs.find((env: string) =>
-				env.startsWith("BASE_URL="),
-			);
-			const secretKey = result.envs.find((env: string) =>
-				env.startsWith("SECRET_KEY_BASE="),
-			);
-			const totpKey = result.envs.find((env: string) =>
-				env.startsWith("TOTP_VAULT_KEY="),
-			);
-
-			expect(baseUrl).toBeDefined();
-			expect(secretKey).toBeDefined();
-			expect(totpKey).toBeDefined();
-			if (!baseUrl || !secretKey || !totpKey) return;
-
-			expect(baseUrl).toContain(mockSchema.projectName);
-
-			// Check base64 lengths and format
-			const secretKeyValue = secretKey.split("=")[1];
-			const totpKeyValue = totpKey.split("=")[1];
-
-			expect(secretKeyValue).toBeDefined();
-			expect(totpKeyValue).toBeDefined();
-			if (!secretKeyValue || !totpKeyValue) return;
-
-			expect(secretKeyValue).toMatch(/^[A-Za-z0-9+/]+={0,2}$/);
-			expect(secretKeyValue.length).toBeGreaterThanOrEqual(86);
-			expect(secretKeyValue.length).toBeLessThanOrEqual(88);
-
-			expect(totpKeyValue).toMatch(/^[A-Za-z0-9+/]+={0,2}$/);
-			expect(totpKeyValue.length).toBeGreaterThanOrEqual(42);
-			expect(totpKeyValue.length).toBeLessThanOrEqual(44);
-
-			// Check mounts
-			expect(result.mounts).toHaveLength(1);
-			const mount = result.mounts[0];
-			expect(mount).toBeDefined();
-			if (!mount) return;
-			expect(mount.content).toContain(mockSchema.projectName);
-			expect(mount.content).toMatch(/secret=[A-Za-z0-9+/]{86,88}/);
-			expect(mount.content).toMatch(/totp=[A-Za-z0-9+/]{42,44}/);
-		});
-	});
-
-	describe("Should populate envs, domains and mounts in the case we didn't used any variable", () => {
-		it("should populate envs, domains and mounts in the case we didn't used any variable", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					domains: [
-						{
-							serviceName: "plausible",
-							port: 8000,
-							host: "${hash}",
-						},
-					],
-					env: {
-						BASE_URL: "http://${domain}",
-						SECRET_KEY_BASE: "${password:32}",
-						TOTP_VAULT_KEY: "${base64:128}",
-					},
-					mounts: [
-						{
-							filePath: "/config/secrets.txt",
-							content: "random_domain=${domain}\nsecret=${password:32}",
-						},
-					],
-				},
-			};
-
-			const result = processTemplate(template, mockSchema);
-			expect(result.envs).toHaveLength(3);
-			expect(result.domains).toHaveLength(1);
-			expect(result.mounts).toHaveLength(1);
-		});
-	});
-
-	describe("isolated deployment config", () => {
-		it("should default to isolated=true when not specified", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					domains: [],
-					env: {},
-				},
-			};
-
-			expect(template.config.isolated).toBeUndefined();
-			// undefined !== false => isolatedDeployment = true
-			expect(template.config.isolated !== false).toBe(true);
-		});
-
-		it("should be isolated when isolated=true is explicitly set", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					isolated: true,
-					domains: [],
-					env: {},
-				},
-			};
-
-			expect(template.config.isolated !== false).toBe(true);
-		});
-
-		it("should disable isolated deployment when isolated=false", () => {
-			const template: CompleteTemplate = {
-				metadata: {} as any,
-				variables: {},
-				config: {
-					isolated: false,
-					domains: [],
-					env: {},
-				},
-			};
-
-			expect(template.config.isolated !== false).toBe(false);
-		});
+		expect(result.compose).toContain("directus/directus");
+		expect(result.domains).toContainEqual(
+			expect.objectContaining({
+				serviceName: "directus",
+				port: 8055,
+			}),
+		);
+		expect(
+			result.envs.some((env) => env.startsWith("SERVICE_PASSWORD_POSTGRESQL=")),
+		).toBe(true);
+		expect(result.compose).not.toContain("SERVICE_URL_DIRECTUS_8055\n");
 	});
 });

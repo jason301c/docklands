@@ -14,3 +14,10 @@ to keep open application flows compiling while replacement features are designed
 
 This product also vendors MIT-licensed OpenAPI helper code originally published
 as @dokploy/trpc-openapi, copyright 2024 Mario Campa.
+
+Docklands vendors and ports portions of the Apache-2.0 licensed Coolify v4.x
+template catalog and Docker Compose template-processing behavior from:
+
+    https://github.com/coollabsio/coolify
+
+Coolify and its contributors retain copyright in their original contributions.

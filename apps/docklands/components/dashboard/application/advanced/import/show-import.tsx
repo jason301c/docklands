@@ -81,7 +81,7 @@ export const ShowImport = ({ composeId }: Props) => {
 	const onSubmit = async () => {
 		const base64 = form.getValues("base64");
 		if (!base64) {
-			toast.error("Please enter a base64 template");
+			toast.error("Please enter a base64 Compose file");
 			return;
 		}
 
@@ -90,20 +90,20 @@ export const ShowImport = ({ composeId }: Props) => {
 				composeId,
 				base64,
 			});
-			toast.success("Template imported successfully");
+			toast.success("Compose imported successfully");
 			await utils.compose.one.invalidate({
 				composeId,
 			});
 			setShowModal(false);
 		} catch {
-			toast.error("Error importing template");
+			toast.error("Error importing compose file");
 		}
 	};
 
 	const handleLoadTemplate = async () => {
 		const base64 = form.getValues("base64");
 		if (!base64) {
-			toast.error("Please enter a base64 template");
+			toast.error("Please enter a base64 Compose file");
 			return;
 		}
 
@@ -115,7 +115,7 @@ export const ShowImport = ({ composeId }: Props) => {
 			setTemplateInfo(result);
 			setShowModal(true);
 		} catch {
-			toast.error("Error processing template");
+			toast.error("Error processing compose file");
 		}
 	};
 
@@ -131,13 +131,13 @@ export const ShowImport = ({ composeId }: Props) => {
 		<>
 			<LayerCard className="bg-background">
 				<div>
-					<h3 className="text-xl">Import</h3>
-					<p>Import your Template configuration</p>
+					<h3 className="text-xl">Import Compose</h3>
+					<p>Import a base64-encoded Docker Compose file</p>
 				</div>
 				<div className="flex flex-col gap-4">
 					<AlertBlock type="warning">
-						Warning: Importing a template will remove all existing environment
-						variables, mounts, and domains from this service.
+						Warning: Importing a compose file will remove all existing
+						environment variables, mounts, and domains from this service.
 					</AlertBlock>
 					<Form {...form}>
 						<form
@@ -149,10 +149,10 @@ export const ShowImport = ({ composeId }: Props) => {
 								name="base64"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Configuration (Base64)</FormLabel>
+										<FormLabel>Compose (Base64)</FormLabel>
 										<FormControl>
 											<Textarea
-												placeholder="Enter your Base64 configuration here..."
+												placeholder="Paste your base64-encoded Docker Compose file here..."
 												className="font-mono min-h-[200px]"
 												{...field}
 											/>

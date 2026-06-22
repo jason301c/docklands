@@ -248,10 +248,10 @@ export const AddImport = ({
 								name="base64"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Configuration (Base64)</FormLabel>
+										<FormLabel>Compose (Base64)</FormLabel>
 										<FormControl>
 											<Textarea
-												placeholder="Paste your base64-encoded compose export here..."
+												placeholder="Paste your base64-encoded Docker Compose file here..."
 												className="font-mono resize-none h-32"
 												{...field}
 											/>

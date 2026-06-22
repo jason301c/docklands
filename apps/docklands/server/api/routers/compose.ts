@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import _ from "lodash";
 import { nanoid } from "nanoid";
-import { parse } from "toml";
 import { stringify } from "yaml";
 import { z } from "zod";
 import { IS_CLOUD } from "@/server/core/constants/env";
@@ -60,11 +59,10 @@ import { getWebServerSettings } from "@/server/core/services/web-server-settings
 import { findWorkspaceById } from "@/server/core/services/workspace";
 import { generatePassword } from "@/server/core/templates";
 import {
-	type CompleteTemplate,
-	fetchTemplateFiles,
-	fetchTemplatesList,
-} from "@/server/core/templates/github";
-import { processTemplate } from "@/server/core/templates/processors";
+	loadTemplateCatalog,
+	loadTemplateDefinition,
+} from "@/server/core/templates/catalog";
+import { processComposeTemplate } from "@/server/core/templates/processors";
 import { createCommand } from "@/server/core/utils/builders/compose";
 import { randomizeIsolatedDeploymentComposeFile } from "@/server/core/utils/docker/collision";
 import { randomizeComposeFile } from "@/server/core/utils/docker/compose";
@@ -87,6 +85,60 @@ import {
 import { slugify } from "@/shared/slug";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { audit } from "../utils/audit";
+
+const decodeComposeTemplatePayload = (base64: string) => {
+	const decodedData = Buffer.from(base64, "base64").toString("utf-8");
+	try {
+		const parsed = JSON.parse(decodedData) as unknown;
+		if (
+			parsed &&
+			typeof parsed === "object" &&
+			"compose" in parsed &&
+			typeof (parsed as { compose?: unknown }).compose === "string"
+		) {
+			return (parsed as { compose: string }).compose;
+		}
+	} catch {}
+	return decodedData;
+};
+
+const getTemplateServerIp = async (runtimeWorkerId?: string) => {
+	if (runtimeWorkerId) {
+		const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
+		return runtimeWorker.ipAddress;
+	}
+	if (process.env.NODE_ENV === "development") {
+		return "127.0.0.1";
+	}
+	const settings = await getWebServerSettings();
+	return settings?.serverIp || "127.0.0.1";
+};
+
+const persistProcessedTemplateRecords = async (
+	composeId: string,
+	processed: ReturnType<typeof processComposeTemplate>,
+) => {
+	for (const mount of processed.mounts) {
+		await createMount({
+			filePath: mount.filePath,
+			mountPath: mount.mountPath || "/",
+			content: mount.content,
+			serviceId: composeId,
+			serviceType: "compose",
+			type: "file",
+		});
+	}
+
+	for (const domain of processed.domains) {
+		await createDomain({
+			...domain,
+			domainType: "compose",
+			certificateType: "none",
+			composeId,
+			host: domain.host,
+		});
+	}
+};
 
 export const composeRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -583,7 +635,6 @@ export const composeRouter = createTRPCRouter({
 				environmentId: z.string(),
 				runtimeWorkerId: z.string().optional(),
 				id: z.string(),
-				baseUrl: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
@@ -612,75 +663,32 @@ export const composeRouter = createTRPCRouter({
 				}
 			}
 
-			const template = await fetchTemplateFiles(input.id, input.baseUrl);
-
-			let serverIp = "127.0.0.1";
-
 			const workspace = await findWorkspaceById(environment.workspaceId);
-
-			if (input.runtimeWorkerId) {
-				const runtimeWorker = await findRuntimeWorkerById(
-					input.runtimeWorkerId,
-				);
-				serverIp = runtimeWorker.ipAddress;
-			} else if (process.env.NODE_ENV === "development") {
-				serverIp = "127.0.0.1";
-			} else {
-				const settings = await getWebServerSettings();
-				serverIp = settings?.serverIp || "127.0.0.1";
-			}
+			const template = await loadTemplateDefinition(input.id);
+			const serverIp = await getTemplateServerIp(input.runtimeWorkerId);
 
 			const projectName = slugify(`${workspace.name} ${input.id}`);
 			const appName = `${projectName}-${generatePassword(6)}`;
-			const config = {
-				...template.config,
-				variables: {
-					APP_NAME: appName,
-					...template.config.variables,
-				},
-			};
-			const generate = processTemplate(config, {
-				serverIp: serverIp,
-				projectName: projectName,
+			const processed = processComposeTemplate(template.compose, {
+				appName,
+				serverIp,
+				projectName,
+				defaultPort: template.metadata.port,
 			});
 
 			const compose = await createComposeByTemplate({
 				...input,
-				composeFile: template.dockerCompose,
-				env: generate.envs?.join("\n"),
+				composeFile: processed.compose,
+				env: processed.envs.join("\n"),
 				runtimeWorkerId: input.runtimeWorkerId,
-				name: input.id,
+				name: template.metadata.name,
 				sourceType: "raw",
 				appName: appName,
-				isolatedDeployment: template.config.config?.isolated !== false,
+				isolatedDeployment: true,
 			});
 
 			await addNewService(ctx, compose.composeId);
-
-			if (generate.mounts && generate.mounts?.length > 0) {
-				for (const mount of generate.mounts) {
-					await createMount({
-						filePath: mount.filePath,
-						mountPath: "",
-						content: mount.content,
-						serviceId: compose.composeId,
-						serviceType: "compose",
-						type: "file",
-					});
-				}
-			}
-
-			if (generate.domains && generate.domains?.length > 0) {
-				for (const domain of generate.domains) {
-					await createDomain({
-						...domain,
-						domainType: "compose",
-						certificateType: "none",
-						composeId: compose.composeId,
-						host: domain.host || "",
-					});
-				}
-			}
+			await persistProcessedTemplateRecords(compose.composeId, processed);
 
 			await audit(ctx, {
 				action: "create",
@@ -691,36 +699,29 @@ export const composeRouter = createTRPCRouter({
 			return compose;
 		}),
 
-	templates: protectedProcedure
-		.input(z.object({ baseUrl: z.string().optional() }))
-		.query(async ({ input }) => {
-			try {
-				const githubTemplates = await fetchTemplatesList(input.baseUrl);
+	templates: protectedProcedure.input(z.object({})).query(async () => {
+		try {
+			const templates = await loadTemplateCatalog();
 
-				if (githubTemplates.length > 0) {
-					return githubTemplates;
-				}
-			} catch (error) {
-				console.warn(
-					"Failed to fetch templates from GitHub, falling back to local templates:",
-					error,
-				);
+			if (templates.length > 0) {
+				return templates;
 			}
+		} catch (error) {
+			console.warn("Failed to read local templates:", error);
+		}
+		return [];
+	}),
+
+	getTags: protectedProcedure.input(z.object({})).query(async () => {
+		try {
+			const templates = await loadTemplateCatalog();
+			const allTags = templates.flatMap((template) => template.tags);
+			return _.uniq(allTags);
+		} catch (error) {
+			console.warn("Failed to fetch template tags:", error);
 			return [];
-		}),
-
-	getTags: protectedProcedure
-		.input(z.object({ baseUrl: z.string().optional() }))
-		.query(async ({ input }) => {
-			try {
-				const githubTemplates = await fetchTemplatesList(input.baseUrl);
-				const allTags = githubTemplates.flatMap((template) => template.tags);
-				return _.uniq(allTags);
-			} catch (error) {
-				console.warn("Failed to fetch template tags:", error);
-				return [];
-			}
-		}),
+		}
+	}),
 	disconnectGitProvider: protectedProcedure
 		.input(apiFindCompose)
 		.mutation(async ({ input, ctx }) => {
@@ -823,49 +824,18 @@ export const composeRouter = createTRPCRouter({
 					service: ["create"],
 				});
 				const compose = await findComposeById(input.composeId);
-
-				const decodedData = Buffer.from(input.base64, "base64").toString(
-					"utf-8",
+				const composeContent = decodeComposeTemplatePayload(input.base64);
+				const serverIp = await getTemplateServerIp(
+					compose.runtimeWorkerId || undefined,
 				);
-				let serverIp = "127.0.0.1";
-
-				if (compose.runtimeWorkerId) {
-					const runtimeWorker = await findRuntimeWorkerById(
-						compose.runtimeWorkerId,
-					);
-					serverIp = runtimeWorker.ipAddress;
-				} else if (process.env.NODE_ENV === "development") {
-					serverIp = "127.0.0.1";
-				} else {
-					const settings = await getWebServerSettings();
-					serverIp = settings?.serverIp || "127.0.0.1";
-				}
-				const templateData = JSON.parse(decodedData);
-				const config = parse(templateData.config) as CompleteTemplate;
-
-				if (!templateData.compose || !config) {
-					throw new TRPCError({
-						code: "BAD_REQUEST",
-						message:
-							"Invalid template format. Must contain compose and config fields",
-					});
-				}
-
-				const configModified = {
-					...config,
-					variables: {
-						APP_NAME: compose.appName,
-						...config.variables,
-					},
-				};
-
-				const processedTemplate = processTemplate(configModified, {
-					serverIp: serverIp,
+				const processedTemplate = processComposeTemplate(composeContent, {
+					appName: compose.appName,
+					serverIp,
 					projectName: compose.appName,
 				});
 
 				return {
-					compose: templateData.compose,
+					compose: processedTemplate.compose,
 					template: processedTemplate,
 				};
 			} catch (error) {
@@ -898,48 +868,16 @@ export const composeRouter = createTRPCRouter({
 					}
 				}
 
-				const decodedData = Buffer.from(input.base64, "base64").toString(
-					"utf-8",
-				);
-
-				let serverIp = "127.0.0.1";
-
-				if (input.runtimeWorkerId) {
-					const runtimeWorker = await findRuntimeWorkerById(
-						input.runtimeWorkerId,
-					);
-					serverIp = runtimeWorker.ipAddress;
-				} else if (process.env.NODE_ENV !== "development") {
-					const settings = await getWebServerSettings();
-					serverIp = settings?.serverIp || "127.0.0.1";
-				}
-
-				const templateData = JSON.parse(decodedData);
-				const config = parse(templateData.config) as CompleteTemplate;
-
-				if (!templateData.compose || !config) {
-					throw new TRPCError({
-						code: "BAD_REQUEST",
-						message:
-							"Invalid template format. Must contain compose and config fields",
-					});
-				}
-
-				const configModified = {
-					...config,
-					variables: {
-						APP_NAME: input.appName,
-						...config.variables,
-					},
-				};
-
-				const processedTemplate = processTemplate(configModified, {
+				const composeContent = decodeComposeTemplatePayload(input.base64);
+				const serverIp = await getTemplateServerIp(input.runtimeWorkerId);
+				const processedTemplate = processComposeTemplate(composeContent, {
+					appName: input.appName,
 					serverIp,
 					projectName: input.appName,
 				});
 
 				return {
-					compose: templateData.compose,
+					compose: processedTemplate.compose,
 					template: processedTemplate,
 				};
 			} catch (error) {
@@ -963,9 +901,7 @@ export const composeRouter = createTRPCRouter({
 					service: ["create"],
 				});
 				const compose = await findComposeById(input.composeId);
-				const decodedData = Buffer.from(input.base64, "base64").toString(
-					"utf-8",
-				);
+				const composeContent = decodeComposeTemplatePayload(input.base64);
 
 				for (const mount of compose.mounts) {
 					await deleteMount(mount.mountId);
@@ -975,76 +911,25 @@ export const composeRouter = createTRPCRouter({
 					await removeDomainById(domain.domainId);
 				}
 
-				let serverIp = "127.0.0.1";
-
-				if (compose.runtimeWorkerId) {
-					const runtimeWorker = await findRuntimeWorkerById(
-						compose.runtimeWorkerId,
-					);
-					serverIp = runtimeWorker.ipAddress;
-				} else if (process.env.NODE_ENV === "development") {
-					serverIp = "127.0.0.1";
-				} else {
-					const settings = await getWebServerSettings();
-					serverIp = settings?.serverIp || "127.0.0.1";
-				}
-
-				const templateData = JSON.parse(decodedData);
-
-				const config = parse(templateData.config) as CompleteTemplate;
-
-				if (!templateData.compose || !config) {
-					throw new TRPCError({
-						code: "BAD_REQUEST",
-						message:
-							"Invalid template format. Must contain compose and config fields",
-					});
-				}
-
-				const configModified = {
-					...config,
-					variables: {
-						APP_NAME: compose.appName,
-						...config.variables,
-					},
-				};
-
-				const processedTemplate = processTemplate(configModified, {
-					serverIp: serverIp,
+				const serverIp = await getTemplateServerIp(
+					compose.runtimeWorkerId || undefined,
+				);
+				const processedTemplate = processComposeTemplate(composeContent, {
+					appName: compose.appName,
+					serverIp,
 					projectName: compose.appName,
 				});
 
 				await updateCompose(input.composeId, {
-					composeFile: templateData.compose,
+					composeFile: processedTemplate.compose,
 					sourceType: "raw",
-					env: processedTemplate.envs?.join("\n"),
+					env: processedTemplate.envs.join("\n"),
 					isolatedDeployment: true,
 				});
-
-				if (processedTemplate.mounts && processedTemplate.mounts.length > 0) {
-					for (const mount of processedTemplate.mounts) {
-						await createMount({
-							filePath: mount.filePath,
-							mountPath: "",
-							content: mount.content,
-							serviceId: compose.composeId,
-							serviceType: "compose",
-							type: "file",
-						});
-					}
-				}
-
-				if (processedTemplate.domains && processedTemplate.domains.length > 0) {
-					for (const domain of processedTemplate.domains) {
-						await createDomain({
-							...domain,
-							domainType: "compose",
-							certificateType: "none",
-							composeId: compose.composeId,
-							host: domain.host || "",
-						});
-					}
-				}
+				await persistProcessedTemplateRecords(
+					compose.composeId,
+					processedTemplate,
+				);
 
 				await audit(ctx, {
 					action: "update",

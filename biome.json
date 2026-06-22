@@ -13,6 +13,8 @@
 			"!**/.next",
 			"!**/dist",
 			"!**/drizzle",
+			"!apps/docklands/templates",
+			"!apps/docklands/public/templates",
 			"!apps/docklands/server/core/openapi",
 			"!node_modules"
 		],
