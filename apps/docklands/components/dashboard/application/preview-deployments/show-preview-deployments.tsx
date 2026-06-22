@@ -247,6 +247,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 															domainId={deployment.domain?.domainId}
 														>
 															<Button
+																aria-label="Edit preview domain"
 																variant="ghost"
 																size="sm"
 																className="gap-2"

@@ -196,6 +196,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 												</span>
 												<button
 													type="button"
+													aria-label="Copy SSH login command"
 													onClick={() => {
 														copy(
 															`ssh ${server?.username}@${server?.ipAddress}`,
@@ -218,6 +219,7 @@ export const SetupServer = ({ serverId, asButton = false }: Props) => {
 													/>
 													<button
 														type="button"
+														aria-label="Copy authorized keys command"
 														className="absolute right-2 top-2"
 														onClick={() => {
 															copy(

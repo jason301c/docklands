@@ -112,6 +112,7 @@ export const UpdateServerIp = ({ children }: Props) => {
 													asChild
 												>
 													<Button
+														aria-label="Set current public IP"
 														variant="secondary"
 														type="button"
 														onClick={setCurrentIp}

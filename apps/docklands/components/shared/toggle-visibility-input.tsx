@@ -12,6 +12,7 @@ export const ToggleVisibilityInput = ({ ...props }: InputProps) => {
 		<div className="flex w-full items-center space-x-2">
 			<Input ref={inputRef} {...props} type="password" />
 			<Button
+				aria-label="Copy hidden input value"
 				variant={"secondary"}
 				onClick={() => {
 					copy(inputRef.current?.value || "");

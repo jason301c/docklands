@@ -404,6 +404,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 														asChild
 													>
 														<Button
+															aria-label="Fetch compose services"
 															variant="secondary"
 															type="button"
 															loading={isLoadingServices}
@@ -435,6 +436,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 														asChild
 													>
 														<Button
+															aria-label="Load cached compose services"
 															variant="secondary"
 															type="button"
 															loading={isLoadingServices}
