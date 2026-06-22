@@ -246,7 +246,7 @@ const serviceSortOptions: { value: ServiceSort; label: string }[] = [
 	{ value: "name-asc", label: "Name" },
 	{ value: "type-asc", label: "Type" },
 	{ value: "status-asc", label: "Status" },
-	{ value: "last-deploy-desc", label: "Recent deploy" },
+	{ value: "last-deploy-desc", label: "Recent build" },
 ];
 
 const serviceTypeDescriptions: Record<WorkspaceServiceType, string> = {
@@ -527,10 +527,10 @@ const getServiceSettingsHref = (
 ) =>
 	`/dashboard/project/${projectId}/environment/${environmentId}/services/${service.type}/${service.id}`;
 
-const formatLastDeploy = (lastDeployAt?: string | null) =>
+const formatLastBuild = (lastDeployAt?: string | null) =>
 	lastDeployAt
 		? formatDistanceToNow(new Date(lastDeployAt), { addSuffix: true })
-		: "No deploys yet";
+		: "No builds yet";
 
 const getDatabaseBackupType = (service: WorkspaceService) =>
 	databaseBackupServiceTypes.has(service.type)
@@ -1620,7 +1620,7 @@ export const EnvironmentCanvas = ({
 			success: async () => {
 				await utils.workspace.byEnvironment.invalidate({ environmentId });
 				return action === "deploy"
-					? `${service.name} queued for deployment`
+					? `${service.name} queued for build`
 					: `${service.name} ${action === "start" ? "started" : "stopped"}`;
 			},
 			error: (error) =>
@@ -1655,7 +1655,7 @@ export const EnvironmentCanvas = ({
 			if (succeeded > 0) {
 				toast.success(
 					action === "deploy"
-						? `${succeeded} services queued for deployment`
+						? `${succeeded} services queued for build`
 						: `${succeeded} services ${action === "start" ? "started" : "stopped"}`,
 				);
 			}
@@ -2053,7 +2053,7 @@ export const EnvironmentCanvas = ({
 						label: "New application",
 						detail: "Create a deployable app service",
 						search:
-							"new create application app service deploy git docker image builder",
+							"new create application app service build git docker image builder",
 						icon: <Folder className="size-5 text-muted-foreground" />,
 						run: () => openCreateDialog("application"),
 					},
@@ -2131,9 +2131,9 @@ export const EnvironmentCanvas = ({
 					{
 						id: "create:template",
 						group: "Create" as const,
-						label: "Deploy template",
-						detail: "Browse and deploy a template",
-						search: "new create deploy template catalog starter marketplace",
+						label: "Create from template",
+						detail: "Browse templates and create a service",
+						search: "new create build template catalog starter marketplace",
 						icon: <PuzzleIcon className="size-5 text-muted-foreground" />,
 						run: () => openCreateDialog("template"),
 					},
@@ -2222,8 +2222,8 @@ export const EnvironmentCanvas = ({
 				{
 					id: `deploy:${service.type}:${service.id}`,
 					group: "Actions" as const,
-					label: `Deploy ${service.name}`,
-					detail: `${serviceTypeLabels[service.type]} · queue deployment`,
+					label: `Run build for ${service.name}`,
+					detail: `${serviceTypeLabels[service.type]} · queue build`,
 					search: `${baseSearch} deploy redeploy build release`,
 					icon: <RefreshCw className="size-5 text-muted-foreground" />,
 					run: () => {
@@ -3018,7 +3018,7 @@ export const EnvironmentCanvas = ({
 									disabled={selectedBulkServices.length === 0}
 								>
 									<RefreshCw className="size-4" />
-									Deploy
+									Run build
 								</Button>
 							</div>
 						</div>
@@ -3434,8 +3434,8 @@ export const EnvironmentCanvas = ({
 															<RefreshCw className="size-3 shrink-0" />
 															<span className="truncate">
 																{service.lastDeployAt
-																	? `Deployed ${formatLastDeploy(service.lastDeployAt)}`
-																	: "No deploys yet"}
+																	? `Built ${formatLastBuild(service.lastDeployAt)}`
+																	: "No builds yet"}
 															</span>
 														</div>
 													</div>
@@ -3551,7 +3551,7 @@ export const EnvironmentCanvas = ({
 										}
 									>
 										<RefreshCw className="size-4" />
-										Deploy
+										Run build
 									</Button>
 								</div>
 
@@ -3573,9 +3573,9 @@ export const EnvironmentCanvas = ({
 												</span>
 											</div>
 											<div className="flex items-center justify-between gap-4">
-												<span>Last deploy</span>
+												<span>Last build</span>
 												<span className="truncate">
-													{formatLastDeploy(selectedServiceModel.lastDeployAt)}
+													{formatLastBuild(selectedServiceModel.lastDeployAt)}
 												</span>
 											</div>
 										</div>
