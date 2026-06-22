@@ -38,11 +38,11 @@
 		--radius: 0.5rem;
 		--overlay: rgba(0, 0, 0, 0.2);
 
-		--chart-1: 173 58% 39%;
-		--chart-2: 12 76% 61%;
-		--chart-3: 197 37% 24%;
-		--chart-4: 43 74% 66%;
-		--chart-5: 27 87% 67%;
+		--chart-1: var(--color-kumo-brand);
+		--chart-2: var(--color-kumo-success);
+		--chart-3: var(--color-kumo-info);
+		--chart-4: var(--color-kumo-warning);
+		--chart-5: var(--color-kumo-danger);
 		--sidebar-background: 0 0% 98%;
 		--sidebar-foreground: 240 5.3% 26.1%;
 		--sidebar-primary: 240 5.9% 10%;
@@ -86,11 +86,6 @@
 
 		--overlay: rgba(0, 0, 0, 0.5);
 
-		--chart-1: 220 70% 50%;
-		--chart-5: 160 60% 45%;
-		--chart-3: 30 80% 55%;
-		--chart-4: 280 65% 60%;
-		--chart-2: 340 75% 55%;
 		--sidebar-background: 240 5.9% 10%;
 		--sidebar-foreground: 240 4.8% 95.9%;
 		--sidebar-primary: 224.3 76.3% 48%;

@@ -27,7 +27,7 @@ const chartConfig = {
 	},
 	count: {
 		label: "Count",
-		color: "hsl(var(--chart-1))",
+		color: "var(--chart-1)",
 	},
 } satisfies ChartConfig;
 
@@ -101,9 +101,9 @@ export const RequestDistributionChart = ({
 						<Area
 							dataKey="count"
 							type="monotone"
-							fill="hsl(var(--chart-1))"
+							fill="var(--chart-1)"
 							fillOpacity={0.4}
-							stroke="hsl(var(--chart-1))"
+							stroke="var(--chart-1)"
 						/>
 					</AreaChart>
 				</ChartContainer>
