@@ -43,9 +43,9 @@ export const VerifyEmailTemplate = ({
 						{/* Header */}
 						<Section className="bg-[#09090b] rounded-t-xl px-[40px] py-[32px] text-center">
 							<Img
-								src="https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/logo.png"
-								width="190"
-								height="120"
+								src="https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/icon.svg"
+								width="96"
+								height="96"
 								alt="Docklands"
 								className="my-0 mx-auto"
 							/>

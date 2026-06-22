@@ -40,10 +40,10 @@ export const DocklandsRestartEmail = ({
 						<Section className="mt-[32px]">
 							<Img
 								src={
-									"https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/logo.png"
+									"https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/icon.svg"
 								}
-								width="100"
-								height="50"
+								width="72"
+								height="72"
 								alt="Docklands"
 								className="my-0 mx-auto"
 							/>
