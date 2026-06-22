@@ -31,7 +31,7 @@ interface ColumnsProps {
 	handleValidateDomain: (host: string) => Promise<void>;
 	handleDeleteDomain: (domainId: string) => Promise<void>;
 	isDeleting: boolean;
-	serverIp?: string;
+	ingressAddress?: string;
 	canCreateDomain: boolean;
 	canDeleteDomain: boolean;
 }
@@ -43,7 +43,7 @@ export const createColumns = ({
 	handleValidateDomain,
 	handleDeleteDomain,
 	isDeleting,
-	serverIp,
+	ingressAddress,
 	canCreateDomain,
 	canDeleteDomain,
 }: ColumnsProps): ColumnDef<Domain>[] => [
@@ -263,7 +263,7 @@ export const createColumns = ({
 								https: domain.https,
 								path: domain.path || undefined,
 							}}
-							serverIp={serverIp}
+							ingressAddress={ingressAddress}
 						/>
 					)}
 					{canCreateDomain && (

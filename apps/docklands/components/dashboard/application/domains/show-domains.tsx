@@ -177,7 +177,8 @@ export const ShowDomains = ({ id, type }: Props) => {
 		handleValidateDomain,
 		handleDeleteDomain,
 		isDeleting: isRemoving,
-		serverIp: application?.server?.ipAddress?.toString() || ip?.toString(),
+		ingressAddress:
+			application?.server?.ipAddress?.toString() || ip?.toString(),
 		canCreateDomain,
 		canDeleteDomain,
 	});
@@ -410,7 +411,7 @@ export const ShowDomains = ({ id, type }: Props) => {
 																	https: item.https,
 																	path: item.path || undefined,
 																}}
-																serverIp={
+																ingressAddress={
 																	application?.server?.ipAddress?.toString() ||
 																	ip?.toString()
 																}

@@ -1,6 +1,6 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { Copy, HelpCircle, Server } from "lucide-react";
+import { Copy, Globe, HelpCircle } from "lucide-react";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { toast } from "@/components/shared/toast";
 
@@ -10,13 +10,13 @@ interface Props {
 		https: boolean;
 		path?: string;
 	};
-	serverIp?: string;
+	ingressAddress?: string;
 }
 
-export const DnsHelperModal = ({ domain, serverIp }: Props) => {
+export const DnsHelperModal = ({ domain, ingressAddress }: Props) => {
 	const copyToClipboard = (text: string) => {
 		navigator.clipboard.writeText(text);
-		toast.success("Copied to clipboard!");
+		toast.success("Ingress address copied");
 	};
 
 	return (
@@ -34,7 +34,7 @@ export const DnsHelperModal = ({ domain, serverIp }: Props) => {
 			<Dialog className="sm:max-w-2xl">
 				<div>
 					<Dialog.Title className="flex items-center gap-2">
-						<Server className="size-5" />
+						<Globe className="size-5" />
 						DNS Configuration Guide
 					</Dialog.Title>
 					<Dialog.Description>
@@ -54,8 +54,8 @@ export const DnsHelperModal = ({ domain, serverIp }: Props) => {
 							<h3 className="font-medium mb-2">1. Add A Record</h3>
 							<div className="flex flex-col gap-3">
 								<p className="text-sm text-muted-foreground">
-									Create an A record that points your domain to the server's IP
-									address:
+									Create an A record that points your domain to the Docklands
+									ingress address:
 								</p>
 								<div className="flex flex-col gap-2">
 									<div className="flex items-center justify-between gap-2 bg-muted p-3 rounded-md">
@@ -65,15 +65,15 @@ export const DnsHelperModal = ({ domain, serverIp }: Props) => {
 												Name: @ or {domain.host.split(".")[0]}
 											</p>
 											<p className="text-sm">
-												Value: {serverIp || "Your server IP"}
+												Value: {ingressAddress || "Your ingress address"}
 											</p>
 										</div>
 										<Button
-											aria-label="Copy server IP"
+											aria-label="Copy ingress address"
 											variant="ghost"
 											shape="square"
-											onClick={() => copyToClipboard(serverIp || "")}
-											disabled={!serverIp}
+											onClick={() => copyToClipboard(ingressAddress || "")}
+											disabled={!ingressAddress}
 										>
 											<Copy className="size-4" />
 										</Button>
