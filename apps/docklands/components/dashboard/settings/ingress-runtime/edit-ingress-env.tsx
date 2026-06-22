@@ -29,7 +29,7 @@ interface Props {
 	serverId?: string;
 }
 
-export const EditTraefikEnv = ({ children, serverId }: Props) => {
+export const EditIngressEnv = ({ children, serverId }: Props) => {
 	const [canEdit, setCanEdit] = useState(true);
 
 	const { data } = api.settings.readTraefikEnv.useQuery({
@@ -110,7 +110,7 @@ export const EditTraefikEnv = ({ children, serverId }: Props) => {
 
 				<Form {...form}>
 					<form
-						id="hook-form-update-server-traefik-config"
+						id="hook-form-update-ingress-env"
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="w-full space-y-4 relative overflow-auto"
 					>
@@ -162,7 +162,7 @@ TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_HTTP_CHALLENGE_DNS_PROVIDER=cloudflare
 						<Button
 							loading={isPending || isHealthCheckExecuting}
 							disabled={canEdit || isPending || isHealthCheckExecuting}
-							form="hook-form-update-server-traefik-config"
+							form="hook-form-update-ingress-env"
 							type="submit"
 						>
 							Update

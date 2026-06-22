@@ -34,17 +34,17 @@ const PortSchema = z.object({
 	protocol: z.enum(["tcp", "udp", "sctp"]),
 });
 
-const TraefikPortsSchema = z.object({
+const IngressPortsSchema = z.object({
 	ports: z.array(PortSchema),
 });
 
-type TraefikPortsForm = z.infer<typeof TraefikPortsSchema>;
+type IngressPortsForm = z.infer<typeof IngressPortsSchema>;
 
-export const ManageTraefikPorts = ({ children, serverId }: Props) => {
+export const ManageIngressPorts = ({ children, serverId }: Props) => {
 	const [open, setOpen] = useState(false);
 
-	const form = useForm<TraefikPortsForm>({
-		resolver: zodResolver(TraefikPortsSchema),
+	const form = useForm<IngressPortsForm>({
+		resolver: zodResolver(IngressPortsSchema),
 		defaultValues: {
 			ports: [],
 		},
@@ -90,7 +90,7 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 		append({ targetPort: 0, publishedPort: 0, protocol: "tcp" });
 	};
 
-	const onSubmit = async (data: TraefikPortsForm) => {
+	const onSubmit = async (data: IngressPortsForm) => {
 		try {
 			await executeWithHealthCheck(() =>
 				updatePorts({
@@ -318,4 +318,4 @@ export const ManageTraefikPorts = ({ children, serverId }: Props) => {
 	);
 };
 
-export default ManageTraefikPorts;
+export default ManageIngressPorts;

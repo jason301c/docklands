@@ -3,12 +3,12 @@ import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Download } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { RuntimeUpdateDialog } from "@/components/dashboard/settings/ingress-runtime/runtime-update-dialog";
 import type { IUpdateData } from "@/server/core/services/settings";
-import UpdateServer from "../dashboard/settings/web-server/update-server";
 
 const AUTO_CHECK_UPDATES_INTERVAL_MINUTES = 7;
 
-export const UpdateServerButton = () => {
+export const RuntimeUpdateButton = () => {
 	const [updateData, setUpdateData] = useState<IUpdateData>({
 		latestVersion: null,
 		updateAvailable: false,
@@ -70,7 +70,7 @@ export const UpdateServerButton = () => {
 
 	return !isCloud && updateData.updateAvailable ? (
 		<div className="border-t pt-4">
-			<UpdateServer
+			<RuntimeUpdateDialog
 				updateData={updateData}
 				isOpen={isOpen}
 				onOpenChange={setIsOpen}
@@ -105,7 +105,7 @@ export const UpdateServerButton = () => {
 						}
 					/>
 				</TooltipProvider>
-			</UpdateServer>
+			</RuntimeUpdateDialog>
 		</div>
 	) : null;
 };

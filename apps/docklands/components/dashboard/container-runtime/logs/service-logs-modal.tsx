@@ -26,7 +26,7 @@ interface Props {
 	type?: "standalone" | "swarm";
 }
 
-export const ShowModalLogs = ({
+export const ServiceLogsModal = ({
 	appName,
 	children,
 	serverId,

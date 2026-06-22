@@ -15,8 +15,8 @@ import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { toast } from "@/components/shared/toast";
 import type { IUpdateData } from "@/server/core/services/settings";
+import { ApplyRuntimeUpdate } from "./apply-runtime-update";
 import { ToggleAutoCheckUpdates } from "./toggle-auto-check-updates";
-import { UpdateWebServer } from "./update-webserver";
 
 interface Props {
 	updateData?: IUpdateData;
@@ -25,7 +25,7 @@ interface Props {
 	onOpenChange?: (open: boolean) => void;
 }
 
-export const UpdateServer = ({
+export const RuntimeUpdateDialog = ({
 	updateData,
 	children,
 	isOpen: isOpenProp,
@@ -163,7 +163,7 @@ export const UpdateServer = ({
 
 						<div className="space-y-4 text-muted-foreground">
 							<p className="text">
-								A new version of the server software is available. Consider
+								A new version of the Docklands runtime is available. Consider
 								updating if you:
 							</p>
 							<ul className="space-y-3">
@@ -197,7 +197,7 @@ export const UpdateServer = ({
 									You are using the latest version
 								</h3>
 								<p className="text text-muted-foreground">
-									Your server is up to date with all the latest features and
+									Your runtime is up to date with all the latest features and
 									security improvements.
 								</p>
 							</div>
@@ -251,7 +251,7 @@ export const UpdateServer = ({
 							Cancel
 						</Button>
 						{isUpdateAvailable ? (
-							<UpdateWebServer />
+							<ApplyRuntimeUpdate />
 						) : (
 							<Button
 								variant="secondary"
@@ -278,4 +278,4 @@ export const UpdateServer = ({
 	);
 };
 
-export default UpdateServer;
+export default RuntimeUpdateDialog;

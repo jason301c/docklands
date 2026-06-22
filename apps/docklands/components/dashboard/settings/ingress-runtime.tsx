@@ -3,14 +3,14 @@ import copy from "copy-to-clipboard";
 import { CopyIcon, ServerIcon } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { toast } from "@/components/shared/toast";
+import { RuntimeUpdateDialog } from "./ingress-runtime/runtime-update-dialog";
 import { ShowDocklandsActions } from "./runtime/actions/show-docklands-actions";
+import { ShowIngressActions } from "./runtime/actions/show-ingress-actions";
 import { ShowStorageActions } from "./runtime/actions/show-storage-actions";
-import { ShowTraefikActions } from "./runtime/actions/show-traefik-actions";
 import { ToggleDockerCleanup } from "./runtime/actions/toggle-docker-cleanup";
-import { UpdateServer } from "./web-server/update-server";
 
-export const WebServer = () => {
-	const { data: webServerSettings } =
+export const IngressRuntime = () => {
+	const { data: ingressSettings } =
 		api.settings.getWebServerSettings.useQuery();
 
 	const { data: docklandsVersion } =
@@ -31,20 +31,20 @@ export const WebServer = () => {
 				<div className="space-y-6 py-6 border-t">
 					<div className="grid md:grid-cols-2 gap-4">
 						<ShowDocklandsActions />
-						<ShowTraefikActions />
+						<ShowIngressActions />
 						<ShowStorageActions />
 
-						<UpdateServer />
+						<RuntimeUpdateDialog />
 					</div>
 
 					<div className="flex items-center flex-wrap justify-between gap-4">
 						<span className="text-sm text-muted-foreground flex items-center gap-1.5">
-							Public IP: {webServerSettings?.serverIp}
-							{webServerSettings?.serverIp && (
+							Public IP: {ingressSettings?.serverIp}
+							{ingressSettings?.serverIp && (
 								<CopyIcon
 									className="size-3.5 cursor-pointer hover:text-foreground transition-colors"
 									onClick={() => {
-										copy(webServerSettings.serverIp ?? "");
+										copy(ingressSettings.serverIp ?? "");
 										toast.success("Copied to clipboard");
 									}}
 								/>

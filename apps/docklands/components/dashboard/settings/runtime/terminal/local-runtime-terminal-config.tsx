@@ -27,8 +27,8 @@ const DEFAULT_LOCAL_SERVER_DATA: Schema = {
 	username: "root",
 };
 
-/** Returns local server data for use with local server terminal */
-export const getLocalServerData = () => {
+/** Returns local runtime data for use with the local runtime terminal. */
+export const getLocalRuntimeTerminalData = () => {
 	try {
 		const localServerData = localStorage.getItem("localServerData");
 		const parsedLocalServerData = localServerData
@@ -45,9 +45,9 @@ interface Props {
 	onSave: () => void;
 }
 
-const LocalServerConfig = ({ onSave }: Props) => {
+export const LocalRuntimeTerminalConfig = ({ onSave }: Props) => {
 	const form = useForm<Schema>({
-		defaultValues: getLocalServerData(),
+		defaultValues: getLocalRuntimeTerminalData(),
 		resolver: zodResolver(Schema),
 	});
 
@@ -81,7 +81,7 @@ const LocalServerConfig = ({ onSave }: Props) => {
 			<Collapsible.Panel className="px-1 flex flex-col gap-2">
 				<Form {...form}>
 					<form
-						id="hook-form-add-server"
+						id="hook-form-local-runtime-terminal"
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="w-full grid grid-cols-2 gap-4"
 					>
@@ -131,7 +131,7 @@ const LocalServerConfig = ({ onSave }: Props) => {
 				</Form>
 
 				<Button
-					form="hook-form-add-server"
+					form="hook-form-local-runtime-terminal"
 					type="submit"
 					className={cn("ml-auto")}
 					disabled={!form.formState.isDirty}
@@ -142,5 +142,3 @@ const LocalServerConfig = ({ onSave }: Props) => {
 		</Collapsible.Root>
 	);
 };
-
-export default LocalServerConfig;

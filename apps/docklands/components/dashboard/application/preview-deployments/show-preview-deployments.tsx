@@ -14,12 +14,12 @@ import {
 	Trash2,
 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { ServiceLogsModal } from "@/components/dashboard/container-runtime/logs/service-logs-modal";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
-import { ShowModalLogs } from "../../settings/web-server/show-modal-logs";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { AddPreviewDomain } from "./add-preview-domain";
 import { ShowPreviewSettings } from "./show-preview-settings";
@@ -163,7 +163,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 															<GithubIcon className="size-4" />
 															Pull Request
 														</Button>
-														<ShowModalLogs
+														<ServiceLogsModal
 															appName={deployment.appName}
 															serverId={data?.serverId || ""}
 														>
@@ -175,7 +175,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 																<FileText className="size-4" />
 																Logs
 															</Button>
-														</ShowModalLogs>
+														</ServiceLogsModal>
 
 														<ShowDeploymentsModal
 															id={deployment.previewDeploymentId}

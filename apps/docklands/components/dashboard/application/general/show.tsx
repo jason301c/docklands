@@ -14,10 +14,10 @@ import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
 import { ShowBuildChooseForm } from "@/components/dashboard/application/build/show";
 import { ShowProviderForm } from "@/components/dashboard/application/general/generic/show";
+import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { workspaceServicePath } from "@/shared/routes";
-import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
 interface Props {
 	applicationId: string;
@@ -276,7 +276,7 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 							</DialogAction>
 						) : null}
 					</TooltipProvider>
-					<DockerTerminalModal
+					<ServiceTerminalModal
 						appName={data?.appName || ""}
 						serverId={data?.serverId || ""}
 					>
@@ -287,7 +287,7 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 							<Terminal className="size-4 mr-1" />
 							Open Terminal
 						</Button>
-					</DockerTerminalModal>
+					</ServiceTerminalModal>
 					{canUpdateService && (
 						<div className="flex flex-row items-center gap-2 justify-between rounded-md px-4 py-2 border col-span-2 md:col-span-1">
 							<span className="text-sm font-medium">Autobuild</span>

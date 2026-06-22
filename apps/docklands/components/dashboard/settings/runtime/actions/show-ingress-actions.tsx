@@ -2,17 +2,17 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { api } from "@/client/api/trpc";
 import { useHealthCheckAfterMutation } from "@/client/hooks/use-health-check-after-mutation";
+import { ServiceLogsModal } from "@/components/dashboard/container-runtime/logs/service-logs-modal";
+import { EditIngressEnv } from "@/components/dashboard/settings/ingress-runtime/edit-ingress-env";
+import { ManageIngressPorts } from "@/components/dashboard/settings/ingress-runtime/manage-ingress-ports";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
-import { EditTraefikEnv } from "../../web-server/edit-traefik-env";
-import { ManageTraefikPorts } from "../../web-server/manage-traefik-ports";
-import { ShowModalLogs } from "../../web-server/show-modal-logs";
 
 interface Props {
 	serverId?: string;
 }
-export const ShowTraefikActions = ({ serverId }: Props) => {
+export const ShowIngressActions = ({ serverId }: Props) => {
 	const { mutateAsync: reloadTraefik, isPending: reloadTraefikIsLoading } =
 		api.settings.reloadTraefik.useMutation();
 
@@ -90,7 +90,7 @@ export const ShowTraefikActions = ({ serverId }: Props) => {
 					>
 						<span>Reload</span>
 					</DropdownMenu.Item>
-					<ShowModalLogs
+					<ServiceLogsModal
 						appName="docklands-traefik"
 						serverId={serverId}
 						type="standalone"
@@ -101,15 +101,15 @@ export const ShowTraefikActions = ({ serverId }: Props) => {
 						>
 							View Logs
 						</DropdownMenu.Item>
-					</ShowModalLogs>
-					<EditTraefikEnv serverId={serverId}>
+					</ServiceLogsModal>
+					<EditIngressEnv serverId={serverId}>
 						<DropdownMenu.Item
 							onSelect={(e) => e.preventDefault()}
 							className="cursor-pointer"
 						>
 							<span>Modify Environment</span>
 						</DropdownMenu.Item>
-					</EditTraefikEnv>
+					</EditIngressEnv>
 
 					<DialogAction
 						title={
@@ -159,14 +159,14 @@ export const ShowTraefikActions = ({ serverId }: Props) => {
 							</span>
 						</DropdownMenu.Item>
 					</DialogAction>
-					<ManageTraefikPorts serverId={serverId}>
+					<ManageIngressPorts serverId={serverId}>
 						<DropdownMenu.Item
 							onSelect={(e) => e.preventDefault()}
 							className="cursor-pointer"
 						>
 							<span>Additional Port Mappings</span>
 						</DropdownMenu.Item>
-					</ManageTraefikPorts>
+					</ManageIngressPorts>
 				</DropdownMenu.Group>
 			</DropdownMenu.Content>
 		</DropdownMenu>

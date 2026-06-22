@@ -1,10 +1,10 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { api } from "@/client/api/trpc";
-import { UpdateServerIp } from "@/components/dashboard/settings/web-server/update-server-ip";
+import { ServiceLogsModal } from "@/components/dashboard/container-runtime/logs/service-logs-modal";
+import { UpdatePublicIp } from "@/components/dashboard/settings/ingress-runtime/update-public-ip";
+import { RuntimeTerminalModal } from "@/components/dashboard/settings/runtime/terminal/runtime-terminal-modal";
 import { toast } from "@/components/shared/toast";
-import { ShowModalLogs } from "../../web-server/show-modal-logs";
-import { TerminalModal } from "../../web-server/terminal-modal";
 import { GPUSupportModal } from "../gpu-support-modal";
 
 export const ShowDocklandsActions = () => {
@@ -44,26 +44,26 @@ export const ShowDocklandsActions = () => {
 					>
 						<span>Reload</span>
 					</DropdownMenu.Item>
-					<TerminalModal serverId="local">
+					<RuntimeTerminalModal serverId="local">
 						<span>Terminal</span>
-					</TerminalModal>
-					<ShowModalLogs appName="docklands">
+					</RuntimeTerminalModal>
+					<ServiceLogsModal appName="docklands">
 						<DropdownMenu.Item
 							className="cursor-pointer"
 							onSelect={(e) => e.preventDefault()}
 						>
 							View Logs
 						</DropdownMenu.Item>
-					</ShowModalLogs>
+					</ServiceLogsModal>
 					<GPUSupportModal />
-					<UpdateServerIp>
+					<UpdatePublicIp>
 						<DropdownMenu.Item
 							className="cursor-pointer"
 							onSelect={(e) => e.preventDefault()}
 						>
 							Update public IP
 						</DropdownMenu.Item>
-					</UpdateServerIp>
+					</UpdatePublicIp>
 
 					<DropdownMenu.Item
 						className="cursor-pointer"

@@ -4,11 +4,11 @@ import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
 import { toast } from "@/components/shared/toast";
 import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
-import { DockerTerminalModal } from "../../settings/web-server/docker-terminal-modal";
 
 interface Props {
 	mariadbId: string;
@@ -232,7 +232,7 @@ export const ShowGeneralMariadb = ({ mariadbId }: Props) => {
 									</DialogAction>
 								</TooltipProvider>
 							))}
-						<DockerTerminalModal
+						<ServiceTerminalModal
 							appName={data?.appName || ""}
 							serverId={data?.serverId || ""}
 						>
@@ -255,7 +255,7 @@ export const ShowGeneralMariadb = ({ mariadbId }: Props) => {
 									</div>
 								</Tooltip>
 							</Button>
-						</DockerTerminalModal>
+						</ServiceTerminalModal>
 					</div>
 				</LayerCard>
 				<DrawerLogs

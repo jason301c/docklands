@@ -3,8 +3,8 @@ import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Activity } from "lucide-react";
 import { useState } from "react";
+import { ShowIngressActions } from "./show-ingress-actions";
 import { ShowStorageActions } from "./show-storage-actions";
-import { ShowTraefikActions } from "./show-traefik-actions";
 import { ToggleDockerCleanup } from "./toggle-docker-cleanup";
 
 interface Props {
@@ -52,7 +52,7 @@ export const ShowRuntimeWorkerActions = ({
 				</div>
 
 				<div className="grid grid-cols-2 w-full gap-4">
-					<ShowTraefikActions serverId={serverId} />
+					<ShowIngressActions serverId={serverId} />
 					<ShowStorageActions serverId={serverId} />
 					<ToggleDockerCleanup serverId={serverId} />
 				</div>

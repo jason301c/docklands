@@ -30,7 +30,7 @@ interface Props {
 	serverId?: string;
 }
 
-export const UpdateServerIp = ({ children }: Props) => {
+export const UpdatePublicIp = ({ children }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 
 	const { data, refetch } = api.settings.getWebServerSettings.useQuery();
@@ -87,7 +87,7 @@ export const UpdateServerIp = ({ children }: Props) => {
 
 				<Form {...form}>
 					<form
-						id="hook-form-update-server-ip"
+						id="hook-form-update-public-ip"
 						onSubmit={form.handleSubmit(onSubmit)}
 					>
 						<FormField
@@ -135,7 +135,7 @@ export const UpdateServerIp = ({ children }: Props) => {
 						<Button
 							loading={isPending}
 							disabled={isPending}
-							form="hook-form-update-server-ip"
+							form="hook-form-update-public-ip"
 							type="submit"
 						>
 							Update

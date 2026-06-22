@@ -68,6 +68,7 @@ import { ShowComposeContainers } from "@/components/dashboard/compose/containers
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
+import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
 import { ShowExternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-external-libsql-credentials";
 import { ShowInternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-internal-libsql-credentials";
@@ -83,7 +84,6 @@ import { ShowExternalPostgresCredentials } from "@/components/dashboard/postgres
 import { ShowInternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-internal-postgres-credentials";
 import { ShowExternalRedisCredentials } from "@/components/dashboard/redis/general/show-external-redis-credentials";
 import { ShowInternalRedisCredentials } from "@/components/dashboard/redis/general/show-internal-redis-credentials";
-import { DockerTerminalModal } from "@/components/dashboard/settings/web-server/docker-terminal-modal";
 import { AddApplication } from "@/components/dashboard/workspace/actions/add-application";
 import { AddCompose } from "@/components/dashboard/workspace/actions/add-compose";
 import { AddDatabase } from "@/components/dashboard/workspace/actions/add-database";
@@ -618,7 +618,7 @@ const ServiceTerminalButton = ({
 	if (!service.appName) return null;
 
 	return (
-		<DockerTerminalModal
+		<ServiceTerminalModal
 			appName={service.appName}
 			serverId={service.serverId || ""}
 			appType={
@@ -631,7 +631,7 @@ const ServiceTerminalButton = ({
 				<SquareTerminal className="size-4" />
 				Open terminal
 			</Button>
-		</DockerTerminalModal>
+		</ServiceTerminalModal>
 	);
 };
 
@@ -2638,7 +2638,7 @@ export const EnvironmentCanvas = ({
 		})),
 		...[
 			{
-				id: "system:web-server",
+				id: "system:ingress",
 				label: "Ingress",
 				detail: "Domains, TLS, cleanup, and proxy",
 				path: "/dashboard/settings/ingress",

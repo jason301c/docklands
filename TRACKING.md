@@ -5,7 +5,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 ## Current Baseline
 
 - Branch: `canary`
-- Latest checkpoint: Move legacy dashboard aliases to config redirects
+- Latest checkpoint: Rehome ingress runtime settings UI
 - Product direction: self-hosted VM control plane, not hosted Docklands-as-a-service.
 - Primary app: `apps/docklands`, a Next.js 16 App Router app with a colocated backend under `server/`.
 - Canonical workspace entry: `/dashboard/workspace`
@@ -43,6 +43,7 @@ This file tracks the ongoing move from the inherited Dokploy admin dashboard to 
 - Rehomed the service advanced ingress config UI from `components/dashboard/application/advanced/traefik/*` to `components/dashboard/application/advanced/ingress/*` and renamed exported component symbols to ingress language while preserving backend Traefik config API fields.
 - Renamed the proxy-files UI modules from `show-traefik-*` to `show-ingress-*` so the file-management surface matches the Ingress Files product language while preserving literal Traefik runtime paths and APIs.
 - Moved redirect-only dashboard aliases out of the App Router tree and into temporary `next.config.mjs` redirects so the built route surface now favors Docklands product routes.
+- Rehomed the old settings `web-server` UI modules into product-named ingress runtime, runtime terminal, and container runtime modal modules while preserving backend API/schema compatibility names.
 - Improved development setup by making Postgres readiness check the configured `DATABASE_URL` and fail fast for role/database/password problems.
 - Recorded the first upstream PR security audit under `outputs/docklands-pr-security-audit.md` outside the repo.
 
@@ -139,6 +140,11 @@ git diff --check
   - `bun --filter docklands build`
 - Current app-route alias cleanup checkpoint
   - `bun --filter docklands test --run __test__/navigation/legacy-route-redirects.test.ts __test__/navigation/dashboard-routes.test.ts __test__/navigation/dashboard-nav.test.ts`
+  - `bun --filter docklands format-and-lint:fix`
+  - `bun --filter docklands typecheck`
+  - `bun --filter docklands test:ci`
+  - `bun --filter docklands build`
+- Current ingress-runtime settings source-layout checkpoint
   - `bun --filter docklands format-and-lint:fix`
   - `bun --filter docklands typecheck`
   - `bun --filter docklands test:ci`

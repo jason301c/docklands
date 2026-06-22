@@ -26,7 +26,7 @@ interface Props {
 	appType?: "stack" | "docker-compose";
 }
 
-export const DockerTerminalModal = ({
+export const ServiceTerminalModal = ({
 	children,
 	appName,
 	serverId,

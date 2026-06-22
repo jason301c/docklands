@@ -52,7 +52,7 @@ const addServerDomain = z
 
 type AddServerDomain = z.infer<typeof addServerDomain>;
 
-export const WebDomain = () => {
+export const IngressDomain = () => {
 	const { data, refetch } = api.settings.getWebServerSettings.useQuery();
 	const { mutateAsync, isPending } =
 		api.settings.assignDomainServer.useMutation();

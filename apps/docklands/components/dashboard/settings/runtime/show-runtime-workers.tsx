@@ -19,10 +19,10 @@ import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
-import { TerminalModal } from "../web-server/terminal-modal";
 import { ShowRuntimeWorkerActions } from "./actions/show-runtime-worker-actions";
 import { HandleRuntimeWorker } from "./handle-runtime-worker";
 import { SetupRuntimeWorker } from "./setup-runtime-worker";
+import { RuntimeTerminalModal } from "./terminal/runtime-terminal-modal";
 
 export const ShowRuntimeWorkers = () => {
 	const { data, refetch, isPending } = api.server.all.useQuery();
@@ -224,7 +224,7 @@ export const ShowRuntimeWorkers = () => {
 																					asChild
 																				>
 																					<div>
-																						<TerminalModal
+																						<RuntimeTerminalModal
 																							serverId={server.serverId}
 																							asButton={true}
 																						>
@@ -236,7 +236,7 @@ export const ShowRuntimeWorkers = () => {
 																							>
 																								<Terminal className="h-4 w-4" />
 																							</Button>
-																						</TerminalModal>
+																						</RuntimeTerminalModal>
 																					</div>
 																				</Tooltip>
 																			)}

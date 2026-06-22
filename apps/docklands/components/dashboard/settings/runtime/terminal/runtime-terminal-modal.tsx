@@ -4,11 +4,14 @@ import dynamic from "next/dynamic";
 import type React from "react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
-import LocalServerConfig from "./local-server-config";
+import { LocalRuntimeTerminalConfig } from "./local-runtime-terminal-config";
 
-const Terminal = dynamic(() => import("./terminal").then((e) => e.Terminal), {
-	ssr: false,
-});
+const RuntimeTerminal = dynamic(
+	() => import("./runtime-terminal").then((e) => e.RuntimeTerminal),
+	{
+		ssr: false,
+	},
+);
 
 const getTerminalKey = () => {
 	return `terminal-${Date.now()}`;
@@ -20,24 +23,24 @@ interface Props {
 	asButton?: boolean;
 }
 
-export const TerminalModal = ({
+export const RuntimeTerminalModal = ({
 	children,
 	serverId,
 	asButton = false,
 }: Props) => {
 	const [terminalKey, setTerminalKey] = useState<string>(getTerminalKey());
 	const [isOpen, setIsOpen] = useState(false);
-	const isLocalServer = serverId === "local";
+	const isLocalRuntime = serverId === "local";
 
 	const { data } = api.server.one.useQuery(
 		{
 			serverId,
 		},
-		{ enabled: !!serverId && !isLocalServer },
+		{ enabled: !!serverId && !isLocalRuntime },
 	);
 
-	const handleLocalServerConfigSave = () => {
-		// Rerender Terminal component to reconnect using new component key when saving local server config
+	const handleLocalRuntimeConfigSave = () => {
+		// Rerender the terminal to reconnect using the updated local runtime settings.
 		setTerminalKey(getTerminalKey());
 	};
 
@@ -59,15 +62,21 @@ export const TerminalModal = ({
 			<Dialog className="sm:max-w-7xl">
 				<div className="flex flex-col gap-1">
 					<Dialog.Title>Terminal ({data?.name ?? serverId})</Dialog.Title>
-					<Dialog.Description>Easy way to access the server</Dialog.Description>
+					<Dialog.Description>
+						Open an SSH session to this runtime worker.
+					</Dialog.Description>
 				</div>
 
-				{isLocalServer && (
-					<LocalServerConfig onSave={handleLocalServerConfigSave} />
+				{isLocalRuntime && (
+					<LocalRuntimeTerminalConfig onSave={handleLocalRuntimeConfigSave} />
 				)}
 
 				<div className="flex flex-col gap-4 h-[552px]">
-					<Terminal id="terminal" key={terminalKey} serverId={serverId} />
+					<RuntimeTerminal
+						id="terminal"
+						key={terminalKey}
+						serverId={serverId}
+					/>
 				</div>
 			</Dialog>
 		</Dialog.Root>

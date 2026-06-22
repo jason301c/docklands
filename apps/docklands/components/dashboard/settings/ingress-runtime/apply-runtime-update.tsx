@@ -45,7 +45,7 @@ const ServiceStatusItem = ({
 	</div>
 );
 
-export const UpdateWebServer = () => {
+export const ApplyRuntimeUpdate = () => {
 	const [modalState, setModalState] = useState<ModalState>("idle");
 	const [open, setOpen] = useState(false);
 	const [healthResult, setHealthResult] = useState<HealthResult | null>(null);
@@ -85,7 +85,7 @@ export const UpdateWebServer = () => {
 			}
 
 			toast.success(
-				"The server has been updated. The page will be reloaded to reflect the changes...",
+				"The runtime has been updated. The page will be reloaded to reflect the changes...",
 			);
 
 			setTimeout(() => {
@@ -107,9 +107,9 @@ export const UpdateWebServer = () => {
 			await checkIsUpdateFinished();
 		} catch (error) {
 			setModalState("results");
-			console.error("Error updating server:", error);
+			console.error("Error updating runtime:", error);
 			toast.error(
-				"An error occurred while updating the server, please try again.",
+				"An error occurred while updating the runtime, please try again.",
 			);
 		}
 	};
@@ -136,7 +136,7 @@ export const UpdateWebServer = () => {
 							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
 							<span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
 						</span>
-						Update Server
+						Update Runtime
 					</Button>
 				}
 			/>
@@ -218,7 +218,7 @@ export const UpdateWebServer = () => {
 							{modalState === "updating" && (
 								<span className="flex items-center gap-2">
 									<Loader2 className="animate-spin h-4 w-4" />
-									The server is being updated, please wait...
+									The runtime is being updated, please wait...
 								</span>
 							)}
 						</div>

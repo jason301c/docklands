@@ -6,14 +6,14 @@ import "@xterm/xterm/css/xterm.css";
 import { AttachAddon } from "@xterm/addon-attach";
 import { ClipboardAddon } from "@xterm/addon-clipboard";
 import { useTheme } from "next-themes";
-import { getLocalServerData } from "./local-server-config";
+import { getLocalRuntimeTerminalData } from "./local-runtime-terminal-config";
 
 interface Props {
 	id: string;
 	serverId: string;
 }
 
-export const Terminal: React.FC<Props> = ({ id, serverId }) => {
+export const RuntimeTerminal: React.FC<Props> = ({ id, serverId }) => {
 	const termRef = useRef<HTMLDivElement>(null);
 	const initialized = useRef<boolean>(false);
 	const { resolvedTheme } = useTheme();
@@ -47,7 +47,7 @@ export const Terminal: React.FC<Props> = ({ id, serverId }) => {
 		urlParams.set("serverId", serverId);
 
 		if (serverId === "local") {
-			const { port, username } = getLocalServerData();
+			const { port, username } = getLocalRuntimeTerminalData();
 			urlParams.set("port", port.toString());
 			urlParams.set("username", username);
 		}

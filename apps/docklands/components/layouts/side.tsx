@@ -47,7 +47,7 @@ import { cn } from "@/shared/utils";
 import { AddOrganization } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
 import { Logo } from "../shared/logo";
-import { UpdateServerButton } from "./update-server";
+import { RuntimeUpdateButton } from "./runtime-update";
 import { UserNav } from "./user-nav";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
@@ -664,7 +664,7 @@ export default function Page({ children }: Props) {
 					<SidebarMenu className="flex flex-col gap-2">
 						{!isCloud && permissions?.organization.update && (
 							<SidebarMenuItem>
-								<UpdateServerButton />
+								<RuntimeUpdateButton />
 							</SidebarMenuItem>
 						)}
 						<SidebarMenuItem>

@@ -28,20 +28,23 @@ export const BuildsConcurrency = ({ serverId, label }: Props) => {
 		{ serverId: serverId ?? "" },
 		{ enabled: !!serverId },
 	);
-	const webServerQuery = api.settings.getWebServerSettings.useQuery(undefined, {
-		enabled: !serverId,
-	});
+	const localRuntimeQuery = api.settings.getWebServerSettings.useQuery(
+		undefined,
+		{
+			enabled: !serverId,
+		},
+	);
 
 	const current = serverId
 		? serverQuery.data?.buildsConcurrency
-		: webServerQuery.data?.buildsConcurrency;
-	const refetch = serverId ? serverQuery.refetch : webServerQuery.refetch;
+		: localRuntimeQuery.data?.buildsConcurrency;
+	const refetch = serverId ? serverQuery.refetch : localRuntimeQuery.refetch;
 
 	const updateServer = api.server.updateBuildsConcurrency.useMutation();
-	const updateWebServer = api.settings.updateBuildsConcurrency.useMutation();
+	const updateLocalRuntime = api.settings.updateBuildsConcurrency.useMutation();
 	const isPending = serverId
 		? updateServer.isPending
-		: updateWebServer.isPending;
+		: updateLocalRuntime.isPending;
 
 	const [value, setValue] = useState("1");
 
@@ -63,7 +66,7 @@ export const BuildsConcurrency = ({ serverId, label }: Props) => {
 			if (serverId) {
 				await updateServer.mutateAsync({ serverId, buildsConcurrency: parsed });
 			} else {
-				await updateWebServer.mutateAsync({ buildsConcurrency: parsed });
+				await updateLocalRuntime.mutateAsync({ buildsConcurrency: parsed });
 			}
 			await refetch();
 			toast.success("Builds concurrency updated");
