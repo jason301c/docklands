@@ -158,8 +158,8 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 						{serverId ? "Edit" : "Create"} Runtime Worker
 					</Dialog.Title>
 					<Dialog.Description>
-						{serverId ? "Edit" : "Create"} a worker to run deployments on a
-						remote machine.
+						{serverId ? "Edit" : "Create"} a worker to run services on a remote
+						machine.
 					</Dialog.Description>
 				</div>
 				<div>
@@ -228,7 +228,7 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 										>
 											<Select.Group>
 												<Select.Option value="deploy">
-													Deploy Worker
+													Runtime Worker
 												</Select.Option>
 												<Select.Option value="build">
 													Build Worker
@@ -239,18 +239,17 @@ export const HandleServers = ({ serverId, asButton = false }: Props) => {
 										<FormMessage />
 										{serverTypeValue === "deploy" && (
 											<AlertBlock type="info" className="mt-2">
-												Deploy workers are used to run your applications,
-												databases, and services. They handle the deployment and
-												execution of your projects.
+												Runtime workers run your applications, databases, and
+												services. They handle runtime execution for your
+												projects.
 											</AlertBlock>
 										)}
 										{serverTypeValue === "build" && (
 											<AlertBlock type="info" className="mt-2">
 												Build workers are dedicated to building your
 												applications. They handle the compilation and build
-												process, offloading this work from your deployment
-												workers. Build workers won't appear in deployment
-												options.
+												process, offloading this work from your runtime workers.
+												Build workers won't appear in runtime options.
 											</AlertBlock>
 										)}
 									</FormItem>

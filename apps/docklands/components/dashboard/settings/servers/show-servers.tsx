@@ -40,7 +40,7 @@ export const ShowServers = () => {
 							<ServerIcon className="size-6 text-muted-foreground self-center" />
 							Runtime Workers
 						</h3>
-						<p>Add workers to run deployments on remote machines.</p>
+						<p>Add workers to run services on remote machines.</p>
 					</div>
 					<div className="space-y-2 py-8 border-t">
 						{isPending ? (
@@ -69,8 +69,8 @@ export const ShowServers = () => {
 											<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
 												<ServerIcon className="size-8 self-center text-muted-foreground" />
 												<span className="text-base text-muted-foreground">
-													Start adding workers to deploy your applications
-													across remote machines.
+													Start adding workers to run your applications across
+													remote machines.
 												</span>
 												{permissions?.server.create && <HandleServers />}
 											</div>
@@ -113,8 +113,7 @@ export const ShowServers = () => {
 																									This worker is currently
 																									marked inactive. Update its
 																									status or connection details
-																									before deploying services to
-																									it.
+																									before running services on it.
 																								</p>
 																							}
 																							render={
@@ -203,7 +202,7 @@ export const ShowServers = () => {
 																									Configure and initialize your
 																									runtime worker with Docker,
 																									ingress, and other essential
-																									services
+																									runtime services
 																								</p>
 																							</div>
 																						</>

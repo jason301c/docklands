@@ -38,7 +38,7 @@ export const ValidateServer = ({ serverId }: Props) => {
 									<PcCase className="size-5" />
 									<h3 className="text-xl">Setup Validation</h3>
 								</div>
-								<p>Check if your server is ready for deployment</p>
+								<p>Check if your worker is ready for builds and runtime</p>
 							</div>
 							<Button
 								loading={isRefreshing}
