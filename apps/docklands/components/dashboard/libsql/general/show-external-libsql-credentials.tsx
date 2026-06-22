@@ -61,7 +61,7 @@ export const ShowExternalLibsqlCredentials = ({ libsqlId }: Props) => {
 	const { mutateAsync, isPending } = api.libsql.saveExternalPorts.useMutation();
 	const [connectionUrl, setConnectionUrl] = useState("");
 	const [connectionGRPCUrl, setGRPCConnectionUrl] = useState("");
-	const getIp = data?.server?.ipAddress || ip;
+	const getIp = data?.runtimeWorker?.ipAddress || ip;
 
 	const form = useForm({
 		defaultValues: {},

@@ -6,7 +6,7 @@ import { api } from "@/client/api/trpc";
 
 interface Props {
 	containerId: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
 interface Mount {
@@ -20,11 +20,14 @@ interface Mount {
 	Driver?: string;
 }
 
-export const ShowContainerMounts = ({ containerId, serverId }: Props) => {
+export const ShowContainerMounts = ({
+	containerId,
+	runtimeWorkerId,
+}: Props) => {
 	const { data } = api.docker.getConfig.useQuery(
 		{
 			containerId,
-			serverId,
+			runtimeWorkerId,
 		},
 		{
 			enabled: !!containerId,

@@ -99,7 +99,7 @@ export const AddTemplate = ({
 		api.settings.getWebServerSettings.useQuery();
 	const showAutomaticPlacement =
 		!isCloud && !webServerSettings?.remoteServersOnly;
-	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
+	const { data: runtimeWorkers } = api.runtimeWorker.withSSHKey.useQuery();
 	const { data: tags, isPending: isLoadingTags } = api.compose.getTags.useQuery(
 		{ baseUrl: customBaseUrl },
 		{
@@ -145,7 +145,9 @@ export const AddTemplate = ({
 			},
 		});
 
-	const [serverId, setServerId] = useState<string | undefined>(undefined);
+	const [runtimeWorkerId, setRuntimeWorkerId] = useState<string | undefined>(
+		undefined,
+	);
 	const { mutateAsync, isPending, error, isError } =
 		api.compose.deployTemplate.useMutation();
 
@@ -163,8 +165,8 @@ export const AddTemplate = ({
 			return matchesTags && matchesQuery && matchesBookmarks;
 		}) || [];
 
-	const hasServers = servers && servers.length > 0;
-	const shouldShowServerDropdown = hasServers;
+	const hasRuntimeWorkers = runtimeWorkers && runtimeWorkers.length > 0;
+	const shouldShowRuntimeWorkerDropdown = hasRuntimeWorkers;
 
 	const handleToggleBookmark = async (
 		e: React.MouseEvent,
@@ -509,12 +511,12 @@ export const AddTemplate = ({
 															workspace.
 														</Dialog.Description>
 
-														{shouldShowServerDropdown && (
+														{shouldShowRuntimeWorkerDropdown && (
 															<PlacementSelect
 																ariaLabel="Template placement"
-																value={serverId}
-																onValueChange={setServerId}
-																workers={servers}
+																value={runtimeWorkerId}
+																onValueChange={setRuntimeWorkerId}
+																workers={runtimeWorkers}
 																showAutomaticPlacement={showAutomaticPlacement}
 																optional={showAutomaticPlacement}
 																description="Docklands uses automatic placement by default. Choose a runtime worker only when this template needs manual placement."
@@ -533,10 +535,10 @@ export const AddTemplate = ({
 																	disabled={isPending}
 																	onClick={async () => {
 																		const promise = mutateAsync({
-																			serverId:
-																				serverId === "docklands"
+																			runtimeWorkerId:
+																				runtimeWorkerId === "docklands"
 																					? undefined
-																					: serverId,
+																					: runtimeWorkerId,
 																			environmentId,
 																			id: template.id,
 																			baseUrl: customBaseUrl,

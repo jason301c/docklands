@@ -13,7 +13,7 @@ import { z } from "zod";
 import { backups } from "./backups";
 import { environments } from "./environment";
 import { mounts } from "./mount";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 import {
 	applicationStatus,
 	type EndpointSpecSwarm,
@@ -89,9 +89,12 @@ export const libsql = pgTable("libsql", {
 	environmentId: text("environmentId")
 		.notNull()
 		.references(() => environments.environmentId, { onDelete: "cascade" }),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 });
 
 export const libsqlRelations = relations(libsql, ({ one, many }) => ({
@@ -101,9 +104,9 @@ export const libsqlRelations = relations(libsql, ({ one, many }) => ({
 	}),
 	backups: many(backups),
 	mounts: many(mounts),
-	server: one(server, {
-		fields: [libsql.serverId],
-		references: [server.serverId],
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [libsql.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
 	}),
 }));
 
@@ -134,7 +137,7 @@ const createSchema = createInsertSchema(libsql, {
 	externalGRPCPort: z.number().nullish(),
 	externalAdminPort: z.number().nullish(),
 	description: z.string().nullish(),
-	serverId: z.string().nullish(),
+	runtimeWorkerId: z.string().nullish(),
 	healthCheckSwarm: HealthCheckSwarmSchema.nullable(),
 	restartPolicySwarm: RestartPolicySwarmSchema.nullable(),
 	placementSwarm: PlacementSwarmSchema.nullable(),
@@ -159,7 +162,7 @@ export const apiCreateLibsql = createSchema
 		sqldNode: true,
 		sqldPrimaryUrl: true,
 		enableNamespaces: true,
-		serverId: true,
+		runtimeWorkerId: true,
 	})
 	.required()
 	.superRefine((data, ctx) => {
@@ -239,7 +242,7 @@ export const apiUpdateLibsql = createSchema
 	.extend({
 		libsqlId: z.string().min(1),
 	})
-	.omit({ serverId: true });
+	.omit({ runtimeWorkerId: true });
 
 export const apiRebuildLibsql = createSchema
 	.pick({

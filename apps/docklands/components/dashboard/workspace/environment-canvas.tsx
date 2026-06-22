@@ -124,7 +124,7 @@ import {
 	type WorkspaceServiceType,
 } from "@/shared/workspace-graph";
 
-type WorkspaceData = RouterOutputs["workspace"]["byEnvironment"];
+type WorkspaceData = RouterOutputs["workspaceGraph"]["byEnvironment"];
 type WorkspaceConnection = WorkspaceData["connections"][number];
 
 type SelectedServiceRef = {
@@ -367,7 +367,7 @@ const ConnectionVariablePreview = ({
 	connectionId: string;
 	enabled: boolean;
 }) => {
-	const variablesQuery = api.workspace.connectionVariables.useQuery(
+	const variablesQuery = api.workspaceGraph.connectionVariables.useQuery(
 		{ connectionId },
 		{ enabled },
 	);
@@ -526,12 +526,12 @@ const getDeleteInput = (service: WorkspaceService, deleteVolumes: boolean) => {
 };
 
 const getServiceSettingsHref = (
-	projectId: string,
+	workspaceId: string,
 	environmentId: string,
 	service: WorkspaceService,
 ) =>
 	workspaceServicePath({
-		workspaceId: projectId,
+		workspaceId: workspaceId,
 		environmentId,
 		serviceType: service.type,
 		serviceId: service.id,
@@ -620,7 +620,7 @@ const ServiceTerminalButton = ({
 	return (
 		<ServiceTerminalModal
 			appName={service.appName}
-			serverId={service.serverId || ""}
+			runtimeWorkerId={service.runtimeWorkerId || ""}
 			appType={
 				service.type === "compose"
 					? service.composeType || "docker-compose"
@@ -636,10 +636,10 @@ const ServiceTerminalButton = ({
 };
 
 export const EnvironmentCanvas = ({
-	projectId,
+	workspaceId,
 	environmentId,
 }: {
-	projectId: string;
+	workspaceId: string;
 	environmentId: string;
 }) => {
 	const router = useRouter();
@@ -647,7 +647,7 @@ export const EnvironmentCanvas = ({
 	const searchParams = useSearchParams();
 	const utils = api.useUtils();
 	const { data: permissions } = api.user.getPermissions.useQuery();
-	const workspaceQuery = api.workspace.byEnvironment.useQuery({
+	const workspaceQuery = api.workspaceGraph.byEnvironment.useQuery({
 		environmentId,
 	});
 	const workspace = workspaceQuery.data;
@@ -697,8 +697,8 @@ export const EnvironmentCanvas = ({
 	const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false);
 	const [deleteComposeVolumes, setDeleteComposeVolumes] = useState(false);
 	const [duplicateMode, setDuplicateMode] = useState<
-		"new-project" | "existing-environment"
-	>("new-project");
+		"new-workspace" | "existing-environment"
+	>("new-workspace");
 	const [duplicateName, setDuplicateName] = useState("");
 	const [duplicateDescription, setDuplicateDescription] = useState("");
 	const [duplicateTargetProject, setDuplicateTargetProject] = useState("");
@@ -713,31 +713,32 @@ export const EnvironmentCanvas = ({
 	} | null>(null);
 	const dragState = useRef<DragState | null>(null);
 	const suppressClick = useRef(false);
-	const { data: allProjects } = api.workspaces.all.useQuery(undefined, {
+	const { data: allWorkspaces } = api.workspaces.all.useQuery(undefined, {
 		enabled: isSelectionMode,
 	});
-	const { data: projectEnvironments } = api.environment.byProjectId.useQuery(
-		{ projectId },
-		{ enabled: commandOpen },
-	);
+	const { data: workspaceEnvironments } =
+		api.environment.byWorkspaceId.useQuery(
+			{ workspaceId },
+			{ enabled: commandOpen },
+		);
 	const { data: selectedProjectEnvironments } =
-		api.environment.byProjectId.useQuery(
-			{ projectId: selectedTargetProject },
+		api.environment.byWorkspaceId.useQuery(
+			{ workspaceId: selectedTargetProject },
 			{ enabled: isMoveDialogOpen && !!selectedTargetProject },
 		);
 	const { data: duplicateProjectEnvironments } =
-		api.environment.byProjectId.useQuery(
-			{ projectId: duplicateTargetProject },
+		api.environment.byWorkspaceId.useQuery(
+			{ workspaceId: duplicateTargetProject },
 			{ enabled: isDuplicateDialogOpen && !!duplicateTargetProject },
 		);
 
-	const updateNode = api.workspace.updateNode.useMutation();
-	const connect = api.workspace.connect.useMutation();
-	const removeConnection = api.workspace.removeConnection.useMutation();
+	const updateNode = api.workspaceGraph.updateNode.useMutation();
+	const connect = api.workspaceGraph.connect.useMutation();
+	const removeConnection = api.workspaceGraph.removeConnection.useMutation();
 	const applyConnectionVariables =
-		api.workspace.applyConnectionVariables.useMutation();
+		api.workspaceGraph.applyConnectionVariables.useMutation();
 	const syncConnectionVariables =
-		api.workspace.syncServiceConnectionVariables.useMutation();
+		api.workspaceGraph.syncServiceConnectionVariables.useMutation();
 	const duplicateProject = api.workspaces.duplicate.useMutation();
 	const duplicateEnvironment = api.environment.duplicate.useMutation();
 
@@ -1331,9 +1332,9 @@ export const EnvironmentCanvas = ({
 				width: node.width,
 				height: node.height,
 			});
-			await utils.workspace.byEnvironment.invalidate({ environmentId });
+			await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
 		},
-		[environmentId, updateNode, utils.workspace.byEnvironment],
+		[environmentId, updateNode, utils.workspaceGraph.byEnvironment],
 	);
 
 	const onNodePointerDown = (
@@ -1475,7 +1476,7 @@ export const EnvironmentCanvas = ({
 						: "Private network",
 					applyVariables: canApplyVariables,
 				});
-				await utils.workspace.byEnvironment.invalidate({ environmentId });
+				await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
 				if (result.variablesApplied > 0) {
 					await invalidateServiceEnvironment({
 						serviceId: result.connection.targetServiceId,
@@ -1604,7 +1605,7 @@ export const EnvironmentCanvas = ({
 
 	const resetDuplicateDialog = () => {
 		setIsDuplicateDialogOpen(false);
-		setDuplicateMode("new-project");
+		setDuplicateMode("new-workspace");
 		setDuplicateName("");
 		setDuplicateDescription("");
 		setDuplicateTargetProject("");
@@ -1612,7 +1613,7 @@ export const EnvironmentCanvas = ({
 	};
 
 	const openMoveDialog = () => {
-		setSelectedTargetProject(projectId);
+		setSelectedTargetProject(workspaceId);
 		setSelectedTargetEnvironment("");
 		setIsMoveDialogOpen(true);
 	};
@@ -1633,7 +1634,7 @@ export const EnvironmentCanvas = ({
 					? `Queuing ${service.name}...`
 					: `${action === "start" ? "Starting" : "Stopping"} ${service.name}...`,
 			success: async () => {
-				await utils.workspace.byEnvironment.invalidate({ environmentId });
+				await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
 				return action === "deploy"
 					? `${service.name} deployment queued`
 					: `${service.name} ${action === "start" ? "started" : "stopped"}`;
@@ -1668,7 +1669,7 @@ export const EnvironmentCanvas = ({
 				}
 			}
 
-			await utils.workspace.byEnvironment.invalidate({ environmentId });
+			await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
 			if (succeeded > 0) {
 				const deploymentNoun = succeeded === 1 ? "deployment" : "deployments";
 				toast.success(
@@ -1727,8 +1728,8 @@ export const EnvironmentCanvas = ({
 				}
 			}
 
-			await utils.workspace.byEnvironment.invalidate({ environmentId });
-			await utils.project.all.invalidate();
+			await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
+			await utils.workspaces.all.invalidate();
 			if (succeeded > 0) {
 				toast.success(`${succeeded} services moved`);
 			}
@@ -1771,8 +1772,8 @@ export const EnvironmentCanvas = ({
 				}
 			}
 
-			await utils.workspace.byEnvironment.invalidate({ environmentId });
-			await utils.project.all.invalidate();
+			await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
+			await utils.workspaces.all.invalidate();
 			if (succeeded > 0) {
 				toast.success(`${succeeded} services deleted`);
 			}
@@ -1790,7 +1791,7 @@ export const EnvironmentCanvas = ({
 
 	const runBulkDuplicate = async () => {
 		if (selectedBulkServices.length === 0) return;
-		if (duplicateMode === "new-project" && !duplicateName.trim()) {
+		if (duplicateMode === "new-workspace" && !duplicateName.trim()) {
 			toast.error("Workspace name is required");
 			return;
 		}
@@ -1820,24 +1821,24 @@ export const EnvironmentCanvas = ({
 				duplicateInSameProject: duplicateMode === "existing-environment",
 			});
 
-			await utils.project.all.invalidate();
+			await utils.workspaces.all.invalidate();
 			if (
 				duplicateMode === "existing-environment" &&
 				duplicateTargetEnvironment === environmentId
 			) {
-				await utils.workspace.byEnvironment.invalidate({ environmentId });
+				await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
 			}
 			toast.success(
-				duplicateMode === "new-project"
+				duplicateMode === "new-workspace"
 					? "Services duplicated to a new workspace"
 					: "Services duplicated",
 			);
 			resetDuplicateDialog();
 
-			if (duplicateMode === "new-project" && newEnvironment?.projectId) {
+			if (duplicateMode === "new-workspace" && newEnvironment?.workspaceId) {
 				router.push(
 					workspaceEnvironmentPath({
-						workspaceId: newEnvironment.projectId,
+						workspaceId: newEnvironment.workspaceId,
 						environmentId: newEnvironment.environmentId,
 					}),
 				);
@@ -1853,7 +1854,7 @@ export const EnvironmentCanvas = ({
 		await removeConnection.mutateAsync({
 			connectionId: connection.connectionId,
 		});
-		await utils.workspace.byEnvironment.invalidate({ environmentId });
+		await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
 		toast.success("Connection removed");
 	};
 
@@ -1998,7 +1999,9 @@ export const EnvironmentCanvas = ({
 			{
 				loading: "Arranging workspace...",
 				success: async () => {
-					await utils.workspace.byEnvironment.invalidate({ environmentId });
+					await utils.workspaceGraph.byEnvironment.invalidate({
+						environmentId,
+					});
 					return "Workspace arranged";
 				},
 				error: (error) =>
@@ -2038,11 +2041,11 @@ export const EnvironmentCanvas = ({
 			{
 				loading: "Creating preview environment...",
 				success: async (result) => {
-					await utils.project.all.invalidate();
-					await utils.environment.byProjectId.invalidate({ projectId });
+					await utils.workspaces.all.invalidate();
+					await utils.environment.byWorkspaceId.invalidate({ workspaceId });
 					router.push(
 						workspaceEnvironmentPath({
-							workspaceId: projectId,
+							workspaceId: workspaceId,
 							environmentId: result.environmentId,
 						}),
 					);
@@ -2190,7 +2193,7 @@ export const EnvironmentCanvas = ({
 				void duplicateCurrentEnvironment();
 			},
 		},
-		...(projectEnvironments?.map((environment) => {
+		...(workspaceEnvironments?.map((environment) => {
 			const serviceCount =
 				environment.applications.length +
 				environment.compose.length +
@@ -2216,7 +2219,7 @@ export const EnvironmentCanvas = ({
 					setCommandQuery("");
 					router.push(
 						workspaceEnvironmentPath({
-							workspaceId: projectId,
+							workspaceId: workspaceId,
 							environmentId: environment.environmentId,
 						}),
 					);
@@ -2592,7 +2595,7 @@ export const EnvironmentCanvas = ({
 					run: () => {
 						setCommandOpen(false);
 						router.push(
-							getServiceSettingsHref(projectId, environmentId, service),
+							getServiceSettingsHref(workspaceId, environmentId, service),
 						);
 					},
 				},
@@ -2746,10 +2749,10 @@ export const EnvironmentCanvas = ({
 						<div className="min-w-0">
 							<div className="flex flex-wrap items-center gap-2">
 								<h1 className="truncate text-lg font-semibold">
-									{workspace.project.name}
+									{workspace.workspace.name}
 								</h1>
 								<AdvancedEnvironmentSelector
-									projectId={projectId}
+									workspaceId={workspaceId}
 									currentEnvironmentId={environmentId}
 								/>
 							</div>
@@ -2930,7 +2933,7 @@ export const EnvironmentCanvas = ({
 							</DropdownMenu.Content>
 						</DropdownMenu>
 
-						<WorkspaceVariables projectId={projectId}>
+						<WorkspaceVariables workspaceId={workspaceId}>
 							<Button variant="outline">
 								<Box className="size-4" />
 								Workspace vars
@@ -2965,20 +2968,20 @@ export const EnvironmentCanvas = ({
 									</DropdownMenu.Label>
 									<DropdownMenu.Separator />
 									<AddApplication
-										projectName={workspace.project.name}
+										projectName={workspace.workspace.name}
 										environmentId={environmentId}
 									/>
 									<AddDatabase
-										projectName={workspace.project.name}
+										projectName={workspace.workspace.name}
 										environmentId={environmentId}
 									/>
 									<AddCompose
-										projectName={workspace.project.name}
+										projectName={workspace.workspace.name}
 										environmentId={environmentId}
 									/>
 									<AddTemplate environmentId={environmentId} />
 									<AddImport
-										projectName={workspace.project.name}
+										projectName={workspace.workspace.name}
 										environmentId={environmentId}
 									/>
 								</DropdownMenu.Content>
@@ -3652,7 +3655,7 @@ export const EnvironmentCanvas = ({
 									</Button>
 									<Link
 										href={getServiceSettingsHref(
-											projectId,
+											workspaceId,
 											environmentId,
 											selectedServiceModel,
 										)}
@@ -3783,7 +3786,7 @@ export const EnvironmentCanvas = ({
 								<ShowDeployments
 									id={selectedServiceModel.id}
 									type={selectedServiceModel.type}
-									serverId={selectedServiceModel.serverId || ""}
+									runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
 									refreshToken={selectedServiceModel.refreshToken || ""}
 								/>
 							)}
@@ -3863,7 +3866,7 @@ export const EnvironmentCanvas = ({
 								<ShowVolumeBackups
 									id={selectedServiceModel.id}
 									type={selectedServiceModel.type}
-									serverId={selectedServiceModel.serverId || ""}
+									runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
 								/>
 							)}
 
@@ -3872,12 +3875,16 @@ export const EnvironmentCanvas = ({
 								{selectedServiceModel.type === "compose" ? (
 									selectedServiceModel.composeType === "stack" ? (
 										<ShowDockerLogsStack
-											serverId={selectedServiceModel.serverId || ""}
+											runtimeWorkerId={
+												selectedServiceModel.runtimeWorkerId || ""
+											}
 											appName={selectedServiceModel.appName}
 										/>
 									) : (
 										<ShowDockerLogsCompose
-											serverId={selectedServiceModel.serverId || ""}
+											runtimeWorkerId={
+												selectedServiceModel.runtimeWorkerId || ""
+											}
 											appName={selectedServiceModel.appName}
 											appType={
 												selectedServiceModel.composeType || "docker-compose"
@@ -3886,7 +3893,7 @@ export const EnvironmentCanvas = ({
 									)
 								) : (
 									<ShowDockerLogs
-										serverId={selectedServiceModel.serverId || ""}
+										runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
 										appName={selectedServiceModel.appName}
 									/>
 								)}
@@ -3911,7 +3918,7 @@ export const EnvironmentCanvas = ({
 							selectedServiceModel.type === "compose" &&
 							selectedServiceModel.appName && (
 								<ShowComposeContainers
-									serverId={selectedServiceModel.serverId || ""}
+									runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
 									appName={selectedServiceModel.appName}
 									appType={selectedServiceModel.composeType || "docker-compose"}
 								/>
@@ -3921,7 +3928,7 @@ export const EnvironmentCanvas = ({
 							<div className="space-y-3">
 								{selectedServiceModel.type === "compose" ? (
 									<ComposeFreeMonitoring
-										serverId={selectedServiceModel.serverId || ""}
+										runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
 										appName={selectedServiceModel.appName}
 										appType={
 											selectedServiceModel.composeType || "docker-compose"
@@ -4051,12 +4058,12 @@ export const EnvironmentCanvas = ({
 									setSelectedTargetEnvironment("");
 								}}
 							>
-								{allProjects?.map((project) => (
+								{allWorkspaces?.map((workspace) => (
 									<Select.Option
-										key={project.projectId}
-										value={project.projectId}
+										key={workspace.workspaceId}
+										value={workspace.workspaceId}
 									>
-										{project.name}
+										{workspace.name}
 									</Select.Option>
 								))}
 							</Select>
@@ -4208,10 +4215,10 @@ export const EnvironmentCanvas = ({
 						<div className="grid grid-cols-2 gap-2">
 							<Button
 								variant={
-									duplicateMode === "new-project" ? "primary" : "outline"
+									duplicateMode === "new-workspace" ? "primary" : "outline"
 								}
 								onClick={() => {
-									setDuplicateMode("new-project");
+									setDuplicateMode("new-workspace");
 									setDuplicateTargetProject("");
 									setDuplicateTargetEnvironment("");
 								}}
@@ -4230,17 +4237,17 @@ export const EnvironmentCanvas = ({
 							</Button>
 						</div>
 
-						{duplicateMode === "new-project" ? (
+						{duplicateMode === "new-workspace" ? (
 							<div className="space-y-3">
 								<div className="space-y-2">
 									<label
 										className="text-sm font-medium"
-										htmlFor="duplicate-project-name"
+										htmlFor="duplicate-workspace-name"
 									>
 										Workspace name
 									</label>
 									<Input
-										id="duplicate-project-name"
+										id="duplicate-workspace-name"
 										value={duplicateName}
 										onChange={(event) => setDuplicateName(event.target.value)}
 										placeholder="New workspace"
@@ -4249,12 +4256,12 @@ export const EnvironmentCanvas = ({
 								<div className="space-y-2">
 									<label
 										className="text-sm font-medium"
-										htmlFor="duplicate-project-description"
+										htmlFor="duplicate-workspace-description"
 									>
 										Description
 									</label>
 									<Input
-										id="duplicate-project-description"
+										id="duplicate-workspace-description"
 										value={duplicateDescription}
 										onChange={(event) =>
 											setDuplicateDescription(event.target.value)
@@ -4276,12 +4283,12 @@ export const EnvironmentCanvas = ({
 											setDuplicateTargetEnvironment("");
 										}}
 									>
-										{allProjects?.map((project) => (
+										{allWorkspaces?.map((workspace) => (
 											<Select.Option
-												key={project.projectId}
-												value={project.projectId}
+												key={workspace.workspaceId}
+												value={workspace.workspaceId}
 											>
-												{project.name}
+												{workspace.name}
 											</Select.Option>
 										))}
 									</Select>
@@ -4332,7 +4339,7 @@ export const EnvironmentCanvas = ({
 							loading={duplicateProject.isPending}
 							disabled={
 								selectedBulkServices.length === 0 ||
-								(duplicateMode === "new-project" && !duplicateName.trim()) ||
+								(duplicateMode === "new-workspace" && !duplicateName.trim()) ||
 								(duplicateMode === "existing-environment" &&
 									!duplicateTargetEnvironment)
 							}
@@ -4415,18 +4422,18 @@ export const EnvironmentCanvas = ({
 			{permissions?.service.create && workspace && (
 				<>
 					<AddApplication
-						projectName={workspace.project.name}
+						projectName={workspace.workspace.name}
 						environmentId={environmentId}
 						{...getCreateDialogProps("application")}
 					/>
 					<AddDatabase
-						projectName={workspace.project.name}
+						projectName={workspace.workspace.name}
 						environmentId={environmentId}
 						initialType={createDatabaseType}
 						{...getCreateDialogProps("database")}
 					/>
 					<AddCompose
-						projectName={workspace.project.name}
+						projectName={workspace.workspace.name}
 						environmentId={environmentId}
 						{...getCreateDialogProps("compose")}
 					/>
@@ -4435,7 +4442,7 @@ export const EnvironmentCanvas = ({
 						{...getCreateDialogProps("template")}
 					/>
 					<AddImport
-						projectName={workspace.project.name}
+						projectName={workspace.workspace.name}
 						environmentId={environmentId}
 						{...getCreateDialogProps("import")}
 					/>

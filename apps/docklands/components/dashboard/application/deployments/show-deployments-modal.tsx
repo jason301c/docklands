@@ -11,11 +11,11 @@ interface Props {
 		| "application"
 		| "compose"
 		| "schedule"
-		| "server"
+		| "runtimeWorker"
 		| "backup"
 		| "previewDeployment"
 		| "volumeBackup";
-	serverId?: string;
+	runtimeWorkerId?: string;
 	refreshToken?: string;
 	children?: React.ReactNode;
 }
@@ -30,7 +30,7 @@ export const formatDuration = (seconds: number) => {
 export const ShowDeploymentsModal = ({
 	id,
 	type,
-	serverId,
+	runtimeWorkerId,
 	refreshToken,
 	children,
 }: Props) => {
@@ -55,12 +55,12 @@ export const ShowDeploymentsModal = ({
 				<ShowDeployments
 					id={id}
 					type={type}
-					serverId={serverId}
+					runtimeWorkerId={runtimeWorkerId}
 					refreshToken={refreshToken}
 				/>
 			</Dialog>
 			<ShowDeployment
-				serverId={serverId || ""}
+				runtimeWorkerId={runtimeWorkerId || ""}
 				open={Boolean(activeLog && activeLog.logPath !== null)}
 				onClose={() => setActiveLog(null)}
 				logPath={activeLog?.logPath || ""}

@@ -21,7 +21,7 @@ export const restoreComposeBackup = async (
 		if (backupInput.databaseType === "web-server") {
 			return;
 		}
-		const { serverId, appName, composeType } = compose;
+		const { runtimeWorkerId, appName, composeType } = compose;
 
 		const rcloneFlags = getS3Credentials(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
@@ -81,8 +81,8 @@ export const restoreComposeBackup = async (
 			`Restoring database: ${backupInput.databaseName} from ${backupInput.backupFile}`,
 		);
 
-		if (serverId) {
-			await execAsyncRemote(serverId, restoreCommand);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, restoreCommand);
 		} else {
 			await execAsync(restoreCommand);
 		}

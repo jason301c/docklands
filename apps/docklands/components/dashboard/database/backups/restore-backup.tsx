@@ -54,7 +54,7 @@ type DatabaseType =
 interface Props {
 	id: string;
 	databaseType?: DatabaseType;
-	serverId?: string | null;
+	runtimeWorkerId?: string | null;
 	backupType?: "database" | "compose";
 }
 
@@ -180,7 +180,7 @@ export const formatBytes = (bytes: number): string => {
 export const RestoreBackup = ({
 	id,
 	databaseType,
-	serverId,
+	runtimeWorkerId,
 	backupType = "database",
 }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -224,7 +224,7 @@ export const RestoreBackup = ({
 		{
 			destinationId: destinationId,
 			search: debouncedSearchTerm,
-			serverId: serverId ?? "",
+			runtimeWorkerId: runtimeWorkerId ?? "",
 		},
 		{
 			enabled: isOpen && !!destinationId,

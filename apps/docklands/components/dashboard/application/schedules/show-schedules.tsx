@@ -19,7 +19,11 @@ import { HandleSchedules } from "./handle-schedules";
 
 interface Props {
 	id: string;
-	scheduleType?: "application" | "compose" | "server" | "docklands-server";
+	scheduleType?:
+		| "application"
+		| "compose"
+		| "runtimeWorker"
+		| "docklands-server";
 }
 
 export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
@@ -87,10 +91,10 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 				) : schedules && schedules.length > 0 ? (
 					<div className="grid xl:grid-cols-2 gap-4 grid-cols-1 h-full">
 						{schedules.map((schedule) => {
-							const serverId =
-								schedule.serverId ||
-								schedule.application?.serverId ||
-								schedule.compose?.serverId;
+							const runtimeWorkerId =
+								schedule.runtimeWorkerId ||
+								schedule.application?.runtimeWorkerId ||
+								schedule.compose?.runtimeWorkerId;
 							return (
 								<div
 									key={schedule.scheduleId}
@@ -124,7 +128,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 												>
 													Cron: {schedule.cronExpression}
 												</Badge>
-												{schedule.scheduleType !== "server" &&
+												{schedule.scheduleType !== "runtimeWorker" &&
 													schedule.scheduleType !== "docklands-server" && (
 														<>
 															<span className="text-xs text-muted-foreground/50">
@@ -153,7 +157,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 										<ShowDeploymentsModal
 											id={schedule.scheduleId}
 											type="schedule"
-											serverId={serverId || undefined}
+											runtimeWorkerId={runtimeWorkerId || undefined}
 										>
 											<Button
 												aria-label="View automation build history"

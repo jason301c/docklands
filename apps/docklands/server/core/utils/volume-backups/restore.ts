@@ -10,11 +10,11 @@ export const restoreVolume = async (
 	destinationId: string,
 	volumeName: string,
 	backupFileName: string,
-	serverId: string,
+	runtimeWorkerId: string,
 	serviceType: "application" | "compose",
 ) => {
 	const destination = await findDestinationById(destinationId);
-	const { VOLUME_BACKUPS_PATH } = paths(!!serverId);
+	const { VOLUME_BACKUPS_PATH } = paths(!!runtimeWorkerId);
 	const volumeBackupPath = path.join(VOLUME_BACKUPS_PATH, volumeName);
 	const rcloneFlags = getS3Credentials(destination);
 	const bucketPath = `:s3:${destination.bucket}`;
@@ -77,8 +77,8 @@ export const restoreVolume = async (
 				if echo "$labels" | grep -q "com.docker.swarm.service.name="; then
 					SERVICE_NAME=$(echo "$labels" | grep -o "com.docker.swarm.service.name=[^,]*" | cut -d'=' -f2)
 					echo "      Type: Docker Swarm Service ($SERVICE_NAME)"
-				elif echo "$labels" | grep -q "com.docker.compose.project="; then
-					PROJECT_NAME=$(echo "$labels" | grep -o "com.docker.compose.project=[^,]*" | cut -d'=' -f2)
+				elif echo "$labels" | grep -q "com.docker.compose.workspace="; then
+					PROJECT_NAME=$(echo "$labels" | grep -o "com.docker.compose.workspace=[^,]*" | cut -d'=' -f2)
 					echo "      Type: Docker Compose ($PROJECT_NAME)"
 				else
 					echo "      Type: Regular Container"

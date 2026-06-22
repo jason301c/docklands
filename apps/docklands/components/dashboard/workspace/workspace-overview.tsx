@@ -35,10 +35,10 @@ const countEnvironmentServices = (environment: EnvironmentWithServices) =>
 		0,
 	);
 
-const countProjectServices = (project: {
+const countProjectServices = (workspace: {
 	environments: EnvironmentWithServices[];
 }) =>
-	project.environments.reduce(
+	workspace.environments.reduce(
 		(total, environment) => total + countEnvironmentServices(environment),
 		0,
 	);
@@ -53,26 +53,26 @@ const statusDotClass: Record<string, string> = {
 function getServiceInfo(d: any) {
 	const app = d.application;
 	const comp = d.compose;
-	if (app?.environment?.project && app.environment) {
+	if (app?.environment?.workspace && app.environment) {
 		return {
 			name: app.name as string,
 			environment: app.environment.name as string,
-			projectName: app.environment.project.name as string,
+			projectName: app.environment.workspace.name as string,
 			href: workspaceServicePath({
-				workspaceId: app.environment.project.projectId,
+				workspaceId: app.environment.workspace.workspaceId,
 				environmentId: app.environment.environmentId,
 				serviceType: "application",
 				serviceId: app.applicationId,
 			}),
 		};
 	}
-	if (comp?.environment?.project && comp.environment) {
+	if (comp?.environment?.workspace && comp.environment) {
 		return {
 			name: comp.name as string,
 			environment: comp.environment.name as string,
-			projectName: comp.environment.project.name as string,
+			projectName: comp.environment.workspace.name as string,
 			href: workspaceServicePath({
-				workspaceId: comp.environment.project.projectId,
+				workspaceId: comp.environment.workspace.workspaceId,
 				environmentId: comp.environment.environmentId,
 				serviceType: "compose",
 				serviceId: comp.composeId,
@@ -204,9 +204,9 @@ function FirstRunWorkspacePanel({
 export const WorkspaceOverview = () => {
 	const { data: auth } = api.user.get.useQuery();
 	const { data: homeStats } = api.workspaces.homeStats.useQuery();
-	const { data: projects } = api.workspaces.all.useQuery();
+	const { data: workspaces } = api.workspaces.all.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
-	const canCreateWorkspaces = !!permissions?.project.create;
+	const canCreateWorkspaces = !!permissions?.workspace.create;
 	const canReadDeployments = !!permissions?.deployment.read;
 	const { data: deployments } = api.deployment.allCentralized.useQuery(
 		undefined,
@@ -219,7 +219,7 @@ export const WorkspaceOverview = () => {
 	const firstName = auth?.user?.firstName?.trim();
 
 	const totals = homeStats ?? {
-		projects: 0,
+		workspaces: 0,
 		environments: 0,
 		applications: 0,
 		compose: 0,
@@ -272,30 +272,30 @@ export const WorkspaceOverview = () => {
 	}, [deployments]);
 
 	const recentProjects = useMemo(() => {
-		if (!projects) return [];
+		if (!workspaces) return [];
 
-		return [...projects]
+		return [...workspaces]
 			.sort(
 				(a, b) =>
 					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 			)
 			.slice(0, 6)
-			.map((project) => {
+			.map((workspace) => {
 				const environment =
-					project.environments.find((item) => item.isDefault) ||
-					project.environments[0];
+					workspace.environments.find((item) => item.isDefault) ||
+					workspace.environments[0];
 
 				return {
-					project,
+					workspace,
 					environment,
-					services: countProjectServices(project),
+					services: countProjectServices(workspace),
 				};
 			});
-	}, [projects]);
+	}, [workspaces]);
 
-	const hasWorkspaceData = projects !== undefined || homeStats !== undefined;
+	const hasWorkspaceData = workspaces !== undefined || homeStats !== undefined;
 	const showFirstRun =
-		hasWorkspaceData && totals.projects === 0 && recentProjects.length === 0;
+		hasWorkspaceData && totals.workspaces === 0 && recentProjects.length === 0;
 	const isDeploymentsLoading = canReadDeployments && deployments === undefined;
 	const isWorkspacesLoading = !hasWorkspaceData;
 
@@ -326,7 +326,7 @@ export const WorkspaceOverview = () => {
 						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 							<StatCard
 								label="Workspaces"
-								value={String(totals.projects)}
+								value={String(totals.workspaces)}
 								delta={`${totals.environments} ${totals.environments === 1 ? "environment" : "environments"}`}
 							/>
 							<StatCard
@@ -468,13 +468,13 @@ export const WorkspaceOverview = () => {
 								) : (
 									<ul className="divide-y">
 										{recentProjects.map(
-											({ project, environment, services }) => (
-												<li key={project.projectId}>
+											({ workspace, environment, services }) => (
+												<li key={workspace.workspaceId}>
 													<Link
 														href={
 															environment
 																? workspaceEnvironmentPath({
-																		workspaceId: project.projectId,
+																		workspaceId: workspace.workspaceId,
 																		environmentId: environment.environmentId,
 																	})
 																: workspaceListPath
@@ -486,7 +486,7 @@ export const WorkspaceOverview = () => {
 														</span>
 														<div className="flex flex-col min-w-0 flex-1">
 															<span className="text-sm truncate">
-																{project.name}
+																{workspace.name}
 															</span>
 															<span className="text-xs text-muted-foreground truncate">
 																{environment?.name ?? "No environment"} ·{" "}

@@ -80,7 +80,7 @@ export const destinationRouter = createTRPCRouter({
 				const rcloneDestination = `:s3:${bucket}`;
 				const rcloneCommand = `rclone ls ${rcloneFlags.join(" ")} "${rcloneDestination}"`;
 
-				if (IS_CLOUD && !input.serverId) {
+				if (IS_CLOUD && !input.runtimeWorkerId) {
 					throw new TRPCError({
 						code: "NOT_FOUND",
 						message: "Server not found",
@@ -88,7 +88,7 @@ export const destinationRouter = createTRPCRouter({
 				}
 
 				if (IS_CLOUD) {
-					await execAsyncRemote(input.serverId || "", rcloneCommand);
+					await execAsyncRemote(input.runtimeWorkerId || "", rcloneCommand);
 				} else {
 					await execAsync(rcloneCommand);
 				}

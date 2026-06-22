@@ -6,7 +6,7 @@ import { z } from "zod";
 import { backups } from "./backups";
 import { environments } from "./environment";
 import { mounts } from "./mount";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 import {
 	applicationStatus,
 	type EndpointSpecSwarm,
@@ -82,9 +82,12 @@ export const mysql = pgTable("mysql", {
 	environmentId: text("environmentId")
 		.notNull()
 		.references(() => environments.environmentId, { onDelete: "cascade" }),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 });
 
 export const mysqlRelations = relations(mysql, ({ one, many }) => ({
@@ -94,9 +97,9 @@ export const mysqlRelations = relations(mysql, ({ one, many }) => ({
 	}),
 	backups: many(backups),
 	mounts: many(mounts),
-	server: one(server, {
-		fields: [mysql.serverId],
-		references: [server.serverId],
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [mysql.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
 	}),
 }));
 
@@ -132,7 +135,7 @@ const createSchema = createInsertSchema(mysql, {
 	applicationStatus: z.enum(["idle", "running", "done", "error"]),
 	externalPort: z.number().nullish(),
 	description: z.string().nullish(),
-	serverId: z.string().nullish(),
+	runtimeWorkerId: z.string().nullish(),
 	healthCheckSwarm: HealthCheckSwarmSchema.nullable(),
 	restartPolicySwarm: RestartPolicySwarmSchema.nullable(),
 	placementSwarm: PlacementSwarmSchema.nullable(),
@@ -156,7 +159,7 @@ export const apiCreateMySql = createSchema.pick({
 	databaseUser: true,
 	databasePassword: true,
 	databaseRootPassword: true,
-	serverId: true,
+	runtimeWorkerId: true,
 });
 
 export const apiFindOneMySql = z.object({
@@ -203,7 +206,7 @@ export const apiUpdateMySql = createSchema
 		mysqlId: z.string().min(1),
 		dockerImage: z.string().optional(),
 	})
-	.omit({ serverId: true });
+	.omit({ runtimeWorkerId: true });
 
 export const apiRebuildMysql = createSchema
 	.pick({

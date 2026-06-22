@@ -7,7 +7,7 @@ import { organization } from "./account";
 import { applications } from "./application";
 import { compose } from "./compose";
 import { deployments } from "./deployment";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 import { generateAppName } from "./utils";
 
 export const shellTypes = pgEnum("shellType", ["bash", "sh"]);
@@ -15,7 +15,7 @@ export const shellTypes = pgEnum("shellType", ["bash", "sh"]);
 export const scheduleType = pgEnum("scheduleType", [
 	"application",
 	"compose",
-	"server",
+	"runtimeWorker",
 	"docklands-server",
 ]);
 
@@ -44,9 +44,12 @@ export const schedules = pgTable("schedule", {
 	composeId: text("composeId").references(() => compose.composeId, {
 		onDelete: "cascade",
 	}),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 	organizationId: text("organizationId").references(() => organization.id, {
 		onDelete: "cascade",
 	}),
@@ -68,9 +71,9 @@ export const schedulesRelations = relations(schedules, ({ one, many }) => ({
 		fields: [schedules.composeId],
 		references: [compose.composeId],
 	}),
-	server: one(server, {
-		fields: [schedules.serverId],
-		references: [server.serverId],
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [schedules.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
 	}),
 	organization: one(organization, {
 		fields: [schedules.organizationId],

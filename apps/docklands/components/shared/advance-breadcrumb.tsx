@@ -41,7 +41,7 @@ const CommandGroup = Combobox.Group;
 const CommandItem = Combobox.Item;
 const CommandEmpty = Combobox.Empty;
 
-type WorkspaceItem = RouterOutputs["project"]["all"][number];
+type WorkspaceItem = RouterOutputs["workspaces"]["all"][number];
 type WorkspaceEnvironment = WorkspaceItem["environments"][number];
 type EnvironmentDetails = RouterOutputs["environment"]["one"];
 
@@ -171,18 +171,18 @@ const extractServicesFromEnvironment = (
 };
 
 const getTargetEnvironmentId = (
-	project: WorkspaceItem,
+	workspace: WorkspaceItem,
 	selectedEnvironmentId?: string,
 ) => {
 	if (selectedEnvironmentId) return selectedEnvironmentId;
 
-	const productionEnvironment = project.environments.find(
+	const productionEnvironment = workspace.environments.find(
 		(environment) => environment.name === "production",
 	);
 
 	return (
 		productionEnvironment?.environmentId ??
-		project.environments[0]?.environmentId
+		workspace.environments[0]?.environmentId
 	);
 };
 
@@ -191,7 +191,7 @@ export const AdvanceBreadcrumb = () => {
 	const params = useParams<Record<string, string | string[] | undefined>>();
 
 	// Read IDs from URL (dynamic route segments)
-	const projectId = getStringQueryParam(params.projectId);
+	const workspaceId = getStringQueryParam(params.workspaceId);
 	const environmentId = getStringQueryParam(params.environmentId);
 	const serviceId =
 		getStringQueryParam(params.serviceId) ??
@@ -200,23 +200,23 @@ export const AdvanceBreadcrumb = () => {
 		) ??
 		null;
 
-	const [projectOpen, setProjectOpen] = useState(false);
+	const [workspaceOpen, setWorkspaceOpen] = useState(false);
 	const [serviceOpen, setServiceOpen] = useState(false);
 	const [environmentOpen, setEnvironmentOpen] = useState(false);
-	const [projectSearch, setProjectSearch] = useState("");
+	const [workspaceSearch, setWorkspaceSearch] = useState("");
 	const [serviceSearch, setServiceSearch] = useState("");
 	const [environmentSearch, setEnvironmentSearch] = useState("");
-	const [expandedProjectId, setExpandedProjectId] = useState<string | null>(
+	const [expandedWorkspaceId, setExpandedWorkspaceId] = useState<string | null>(
 		null,
 	);
 
-	// Fetch all projects
-	const { data: allProjects } = api.workspaces.all.useQuery();
+	// Fetch all workspaces
+	const { data: allWorkspaces } = api.workspaces.all.useQuery();
 
-	// Fetch current project data
-	const { data: currentProject } = api.workspaces.one.useQuery(
-		{ projectId: projectId ?? "" },
-		{ enabled: !!projectId },
+	// Fetch current workspace data
+	const { data: currentWorkspace } = api.workspaces.one.useQuery(
+		{ workspaceId: workspaceId ?? "" },
+		{ enabled: !!workspaceId },
 	);
 
 	// Fetch current environment
@@ -225,17 +225,18 @@ export const AdvanceBreadcrumb = () => {
 		{ enabled: !!environmentId },
 	);
 
-	// Fetch environments for current project
-	const { data: projectEnvironments } = api.environment.byProjectId.useQuery(
-		{ projectId: projectId ?? "" },
-		{ enabled: !!projectId },
-	);
+	// Fetch environments for current workspace
+	const { data: workspaceEnvironments } =
+		api.environment.byWorkspaceId.useQuery(
+			{ workspaceId: workspaceId ?? "" },
+			{ enabled: !!workspaceId },
+		);
 
 	// Close dropdowns on escape key
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
-				setProjectOpen(false);
+				setWorkspaceOpen(false);
 				setServiceOpen(false);
 				setEnvironmentOpen(false);
 			}
@@ -254,38 +255,40 @@ export const AdvanceBreadcrumb = () => {
 		[serviceId, services],
 	);
 
-	// Navigate to project's default environment
-	const handleProjectSelect = (
-		selectedProjectId: string,
+	// Navigate to workspace's default environment
+	const handleWorkspaceSelect = (
+		selectedWorkspaceId: string,
 		selectedEnvironmentId?: string,
 	) => {
-		const project = allProjects?.find((p) => p.projectId === selectedProjectId);
-		if (project) {
+		const workspace = allWorkspaces?.find(
+			(p) => p.workspaceId === selectedWorkspaceId,
+		);
+		if (workspace) {
 			const targetEnvironmentId = getTargetEnvironmentId(
-				project,
+				workspace,
 				selectedEnvironmentId,
 			);
 
 			if (targetEnvironmentId) {
 				router.push(
 					workspaceEnvironmentPath({
-						workspaceId: selectedProjectId,
+						workspaceId: selectedWorkspaceId,
 						environmentId: targetEnvironmentId,
 					}),
 				);
 			}
 		}
-		setProjectOpen(false);
-		setExpandedProjectId(null);
+		setWorkspaceOpen(false);
+		setExpandedWorkspaceId(null);
 	};
 
 	// Navigate to environment
 	const handleEnvironmentSelect = (envId: string) => {
-		if (!projectId) return;
+		if (!workspaceId) return;
 
 		router.push(
 			workspaceEnvironmentPath({
-				workspaceId: projectId,
+				workspaceId: workspaceId,
 				environmentId: envId,
 			}),
 		);
@@ -294,11 +297,11 @@ export const AdvanceBreadcrumb = () => {
 
 	// Navigate to service
 	const handleServiceSelect = (service: ServiceItem) => {
-		if (!projectId || !environmentId) return;
+		if (!workspaceId || !environmentId) return;
 
 		router.push(
 			workspaceServicePath({
-				workspaceId: projectId,
+				workspaceId: workspaceId,
 				environmentId,
 				serviceType: service.type,
 				serviceId: service.id,
@@ -307,14 +310,14 @@ export const AdvanceBreadcrumb = () => {
 		setServiceOpen(false);
 	};
 
-	const filteredProjects = useMemo(
+	const filteredWorkspaces = useMemo(
 		() =>
-			(allProjects ?? []).filter(
-				(project) =>
-					includesSearch(project.name, projectSearch) ||
-					includesSearch(project.description, projectSearch),
+			(allWorkspaces ?? []).filter(
+				(workspace) =>
+					includesSearch(workspace.name, workspaceSearch) ||
+					includesSearch(workspace.description, workspaceSearch),
 			),
-		[allProjects, projectSearch],
+		[allWorkspaces, workspaceSearch],
 	);
 
 	const filteredServices = useMemo(
@@ -325,14 +328,14 @@ export const AdvanceBreadcrumb = () => {
 
 	const filteredEnvironments = useMemo(
 		() =>
-			(projectEnvironments ?? []).filter((environment) =>
+			(workspaceEnvironments ?? []).filter((environment) =>
 				includesSearch(environment.name, environmentSearch),
 			),
-		[environmentSearch, projectEnvironments],
+		[environmentSearch, workspaceEnvironments],
 	);
 
-	// If we're just on the projects page, show simple breadcrumb
-	if (!projectId) {
+	// If we're just on the workspaces page, show simple breadcrumb
+	if (!workspaceId) {
 		return (
 			<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
 				<div className="flex items-center gap-2">
@@ -355,16 +358,16 @@ export const AdvanceBreadcrumb = () => {
 
 				<div className="flex items-center">
 					{/* Workspace selector */}
-					<Popover open={projectOpen} onOpenChange={setProjectOpen}>
+					<Popover open={workspaceOpen} onOpenChange={setWorkspaceOpen}>
 						<PopoverTrigger asChild>
 							<Button
 								variant="ghost"
-								aria-expanded={projectOpen}
+								aria-expanded={workspaceOpen}
 								className="h-auto px-2 py-1.5 hover:bg-accent gap-2"
 							>
 								<FolderInput className="size-4 text-muted-foreground" />
 								<span className="font-medium max-w-[50px] md:max-w-[150px] truncate">
-									{currentProject?.name || "Select workspace"}
+									{currentWorkspace?.name || "Select workspace"}
 								</span>
 								<ChevronDown className="size-4 text-muted-foreground" />
 							</Button>
@@ -378,8 +381,8 @@ export const AdvanceBreadcrumb = () => {
 								<div className="relative">
 									<CommandInput
 										placeholder="Find workspace..."
-										value={projectSearch}
-										onChange={(event) => setProjectSearch(event.target.value)}
+										value={workspaceSearch}
+										onChange={(event) => setWorkspaceSearch(event.target.value)}
 										className="w-full focus-visible:ring-0"
 									/>
 									<kbd className="pointer-events-none h-5 absolute right-2 top-1/2 -translate-y-1/2 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
@@ -390,41 +393,42 @@ export const AdvanceBreadcrumb = () => {
 									<CommandEmpty>No workspaces found.</CommandEmpty>
 									<CommandGroup>
 										<ScrollArea className="h-[300px]">
-											{filteredProjects.map((project) => {
-												const totalServices = project.environments.reduce(
+											{filteredWorkspaces.map((workspace) => {
+												const totalServices = workspace.environments.reduce(
 													(total, env) => total + countEnvironmentServices(env),
 													0,
 												);
-												const isSelected = project.projectId === projectId;
+												const isSelected =
+													workspace.workspaceId === workspaceId;
 												const isExpanded =
-													expandedProjectId === project.projectId;
+													expandedWorkspaceId === workspace.workspaceId;
 
 												return (
-													<div key={project.projectId}>
+													<div key={workspace.workspaceId}>
 														<CommandItem
-															value={project.projectId}
+															value={workspace.workspaceId}
 															onSelect={() => {
-																if (project.environments.length > 1) {
-																	setExpandedProjectId(
-																		isExpanded ? null : project.projectId,
+																if (workspace.environments.length > 1) {
+																	setExpandedWorkspaceId(
+																		isExpanded ? null : workspace.workspaceId,
 																	);
 																} else {
-																	handleProjectSelect(project.projectId);
+																	handleWorkspaceSelect(workspace.workspaceId);
 																}
 															}}
 															className="flex items-center justify-between py-3 px-2 cursor-pointer"
 														>
 															<div className="flex items-center gap-3">
 																<div className="flex items-center justify-center size-8 rounded-md bg-muted text-xs font-semibold uppercase">
-																	{project.name.slice(0, 2)}
+																	{workspace.name.slice(0, 2)}
 																</div>
 																<div className="flex flex-col">
 																	<span className="font-medium">
-																		{project.name}
+																		{workspace.name}
 																	</span>
 																	<span className="text-muted-foreground">
-																		{project.environments.length} env
-																		{project.environments.length !== 1
+																		{workspace.environments.length} env
+																		{workspace.environments.length !== 1
 																			? "s"
 																			: ""}{" "}
 																		· {totalServices} service
@@ -436,7 +440,7 @@ export const AdvanceBreadcrumb = () => {
 																{isSelected && (
 																	<Check className="size-4 text-primary" />
 																)}
-																{project.environments.length > 1 && (
+																{workspace.environments.length > 1 && (
 																	<ChevronRight
 																		className={`size-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`}
 																	/>
@@ -447,7 +451,7 @@ export const AdvanceBreadcrumb = () => {
 														{/* Expanded environments */}
 														{isExpanded && (
 															<div className="ml-11 border-l pl-3 py-1 space-y-1">
-																{project.environments.map((env) => {
+																{workspace.environments.map((env) => {
 																	const envServices =
 																		countEnvironmentServices(env);
 																	const isEnvSelected =
@@ -458,8 +462,8 @@ export const AdvanceBreadcrumb = () => {
 																			key={env.environmentId}
 																			value={env.environmentId}
 																			onSelect={() =>
-																				handleProjectSelect(
-																					project.projectId,
+																				handleWorkspaceSelect(
+																					workspace.workspaceId,
 																					env.environmentId,
 																				)
 																			}
@@ -491,7 +495,7 @@ export const AdvanceBreadcrumb = () => {
 					</Popover>
 
 					{/* Environment Selector */}
-					{projectEnvironments && projectEnvironments.length > 1 && (
+					{workspaceEnvironments && workspaceEnvironments.length > 1 && (
 						<Popover open={environmentOpen} onOpenChange={setEnvironmentOpen}>
 							<PopoverTrigger asChild>
 								<Button
@@ -555,7 +559,7 @@ export const AdvanceBreadcrumb = () => {
 						</Popover>
 					)}
 
-					{projectEnvironments && projectEnvironments.length === 1 && (
+					{workspaceEnvironments && workspaceEnvironments.length === 1 && (
 						<p className="text-sm font-normal ml-1 max-w-[50px] md:max-w-[150px] truncate">
 							{currentEnvironment?.name || "production"}
 						</p>
@@ -645,11 +649,11 @@ export const AdvanceBreadcrumb = () => {
 								shape="square"
 								className="size-7 ml-1 hidden md:flex"
 								onClick={() => {
-									if (!projectId || !environmentId) return;
+									if (!workspaceId || !environmentId) return;
 
 									router.push(
 										workspaceEnvironmentPath({
-											workspaceId: projectId,
+											workspaceId: workspaceId,
 											environmentId,
 										}),
 									);

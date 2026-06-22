@@ -4,7 +4,7 @@ import { WebSocketServer } from "ws";
 import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { getDockerHost } from "@/server/core/runtime/docker";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { getRuntimeWorkerIdParam, setupLocalServerSSHKey } from "./utils";
 
 const COMMAND_TO_ALLOW_LOCAL_ACCESS = `
@@ -24,14 +24,17 @@ sudo chown -R $USER:$USER /etc/docklands/ssh
 `;
 
 export const setupTerminalWebSocketServer = (
-	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
+	runtimeWorker: http.Server<
+		typeof http.IncomingMessage,
+		typeof http.ServerResponse
+	>,
 ) => {
 	const wssTerm = new WebSocketServer({
 		noServer: true,
 		path: "/terminal",
 	});
 
-	server.on("upgrade", (req, socket, head) => {
+	runtimeWorker.on("upgrade", (req, socket, head) => {
 		const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
 		if (pathname === "/terminal") {
 			wssTerm.handleUpgrade(req, socket, head, function done(ws) {
@@ -42,16 +45,16 @@ export const setupTerminalWebSocketServer = (
 
 	wssTerm.on("connection", async (ws, req) => {
 		const url = new URL(req.url || "", `http://${req.headers.host}`);
-		const serverId = getRuntimeWorkerIdParam(url);
+		const runtimeWorkerId = getRuntimeWorkerIdParam(url);
 		const { user, session } = await validateRequest(req);
-		if (!user || !session || !serverId) {
+		if (!user || !session || !runtimeWorkerId) {
 			ws.close();
 			return;
 		}
 
 		let connectionDetails: ConnectConfig = {};
 
-		const isLocalServer = serverId === "local";
+		const isLocalServer = runtimeWorkerId === "local";
 
 		if (isLocalServer) {
 			if (IS_CLOUD) {
@@ -95,7 +98,7 @@ export const setupTerminalWebSocketServer = (
 					error.message.includes("Permission denied")
 				) {
 					ws.send(
-						`Please run the following command on your server to grant permission access and then reopen this window to reconnect:${COMMAND_TO_GRANT_PERMISSION_ACCESS}`,
+						`Please run the following command on your runtimeWorker to grant permission access and then reopen this window to reconnect:${COMMAND_TO_GRANT_PERMISSION_ACCESS}`,
 					);
 				}
 
@@ -103,22 +106,28 @@ export const setupTerminalWebSocketServer = (
 				return;
 			}
 		} else {
-			const server = await findServerById(serverId);
+			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 
-			if (!server) {
+			if (!runtimeWorker) {
 				ws.close();
 				return;
 			}
 
-			if (server.organizationId !== session.activeOrganizationId) {
+			if (runtimeWorker.organizationId !== session.activeOrganizationId) {
 				ws.close();
 				return;
 			}
 
-			const { ipAddress: host, port, username, sshKey, sshKeyId } = server;
+			const {
+				ipAddress: host,
+				port,
+				username,
+				sshKey,
+				sshKeyId,
+			} = runtimeWorker;
 
 			if (!sshKeyId) {
-				throw new Error("No SSH key available for this server");
+				throw new Error("No SSH key available for this runtimeWorker");
 			}
 
 			connectionDetails = {
@@ -183,7 +192,7 @@ export const setupTerminalWebSocketServer = (
 				if (err.level === "client-authentication") {
 					if (isLocalServer) {
 						ws.send(
-							`Authentication failed: Please run the command below on your server to allow access. Make sure to run it as the same user as the one configured in connection settings:${COMMAND_TO_ALLOW_LOCAL_ACCESS}\nAfter running the command, reopen this window to reconnect. This procedure is required only once.`,
+							`Authentication failed: Please run the command below on your runtimeWorker to allow access. Make sure to run it as the same user as the one configured in connection settings:${COMMAND_TO_ALLOW_LOCAL_ACCESS}\nAfter running the command, reopen this window to reconnect. This procedure is required only once.`,
 						);
 					} else {
 						ws.send(

@@ -13,7 +13,8 @@ export const restoreMariadbBackup = async (
 	emit: (log: string) => void,
 ) => {
 	try {
-		const { appName, serverId, databaseUser, databasePassword } = mariadb;
+		const { appName, runtimeWorkerId, databaseUser, databasePassword } =
+			mariadb;
 
 		const rcloneFlags = getS3Credentials(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
@@ -38,8 +39,8 @@ export const restoreMariadbBackup = async (
 			`Restoring database: ${backupInput.databaseName} from ${backupInput.backupFile}`,
 		);
 
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}

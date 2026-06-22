@@ -81,7 +81,7 @@ describe("workspace visible product copy", () => {
 
 		for (const form of serviceForms) {
 			expect(form).toContain("Description for this service...");
-			expect(form).not.toContain("Description about your project...");
+			expect(form).not.toContain("Description about your workspace...");
 		}
 
 		for (const source of [

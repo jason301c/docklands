@@ -231,7 +231,7 @@ Enter to preview settings and disable the security check.
 <summary>🛡️ Learn more about this security feature</summary>
 
 This protection prevents unauthorized users from:
-- Executing malicious code on the deployment server
+- Executing malicious code on the deployment runtimeWorker
 - Accessing environment variables and secrets
 - Potentially compromising the infrastructure
 

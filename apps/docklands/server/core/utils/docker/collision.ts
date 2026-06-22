@@ -32,15 +32,15 @@ export const randomizeIsolatedDeploymentComposeFile = async (
 	const compose = await findComposeById(composeId);
 
 	const command = await cloneCompose(compose);
-	if (compose.serverId) {
-		await execAsyncRemote(compose.serverId, command);
+	if (compose.runtimeWorkerId) {
+		await execAsyncRemote(compose.runtimeWorkerId, command);
 	} else {
 		await execAsync(command);
 	}
 
 	let composeData: ComposeSpecification | null;
 
-	if (compose.serverId) {
+	if (compose.runtimeWorkerId) {
 		composeData = await loadDockerComposeRemote(compose);
 	} else {
 		composeData = await loadDockerCompose(compose);

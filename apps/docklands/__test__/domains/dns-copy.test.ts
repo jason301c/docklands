@@ -19,8 +19,8 @@ describe("domain DNS copy", () => {
 		expect(source).toContain("Your ingress address");
 		expect(source).toContain("Copy ingress address");
 		expect(source).toContain("Ingress address copied");
-		expect(source).not.toContain("server IP");
-		expect(source).not.toContain("Your server IP");
-		expect(source).not.toContain("Copy server IP");
+		expect(source).not.toContain("runtimeWorker IP");
+		expect(source).not.toContain("Your runtimeWorker IP");
+		expect(source).not.toContain("Copy runtimeWorker IP");
 	});
 });

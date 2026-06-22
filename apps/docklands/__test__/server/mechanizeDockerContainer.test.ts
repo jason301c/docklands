@@ -53,13 +53,13 @@ const createApplication = (
 		dockerImage: "example:latest",
 		registry: null,
 		environment: {
-			project: { env: null },
+			workspace: { env: null },
 			env: null,
 		},
 		replicas: 1,
 		stopGracePeriodSwarm: 0,
 		ulimitsSwarm: null,
-		serverId: "server-id",
+		runtimeWorkerId: "runtimeWorker-id",
 		...overrides,
 	}) as unknown as ApplicationNested;
 

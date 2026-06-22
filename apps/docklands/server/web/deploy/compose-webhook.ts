@@ -36,7 +36,7 @@ export async function handleComposeDeployWebhook(
 			with: {
 				environment: {
 					with: {
-						project: true,
+						workspace: true,
 					},
 				},
 				bitbucket: true,
@@ -174,11 +174,11 @@ export async function handleComposeDeployWebhook(
 				type: "deploy",
 				applicationType: "compose",
 				descriptionLog: `Hash: ${deploymentHash}`,
-				server: !!composeResult.serverId,
+				runtimeWorker: !!composeResult.runtimeWorkerId,
 			};
 
-			if (IS_CLOUD && composeResult.serverId) {
-				jobData.serverId = composeResult.serverId;
+			if (IS_CLOUD && composeResult.runtimeWorkerId) {
+				jobData.runtimeWorkerId = composeResult.runtimeWorkerId;
 				deploy(jobData).catch((error) => {
 					console.error("Background deployment failed:", error);
 				});

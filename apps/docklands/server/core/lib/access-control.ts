@@ -20,7 +20,7 @@ export const statements = {
 	ac: ["create", "read", "update", "delete"],
 
 	// Docklands core resources
-	project: ["create", "delete"],
+	workspace: ["create", "delete"],
 	service: ["create", "read", "delete"],
 	environment: ["create", "read", "delete"],
 	docker: ["read"],
@@ -33,9 +33,9 @@ export const statements = {
 	volume: ["read", "create", "delete"],
 	deployment: ["read", "create", "cancel"],
 	envVars: ["read", "write"],
-	projectEnvVars: ["read", "write"],
+	workspaceEnvVars: ["read", "write"],
 	environmentEnvVars: ["read", "write"],
-	server: ["read", "create", "delete"],
+	runtimeWorker: ["read", "create", "delete"],
 	registry: ["read", "create", "delete"],
 	certificate: ["read", "create", "update", "delete"],
 	backup: ["read", "create", "update", "delete", "restore"],
@@ -61,7 +61,7 @@ export const ownerRole = ac.newRole({
 	invitation: ["create", "cancel"],
 	team: ["create", "update", "delete"],
 	ac: ["create", "read", "update", "delete"],
-	project: ["create", "delete"],
+	workspace: ["create", "delete"],
 	service: ["create", "read", "delete"],
 	environment: ["create", "read", "delete"],
 	docker: ["read"],
@@ -72,9 +72,9 @@ export const ownerRole = ac.newRole({
 	volume: ["read", "create", "delete"],
 	deployment: ["read", "create", "cancel"],
 	envVars: ["read", "write"],
-	projectEnvVars: ["read", "write"],
+	workspaceEnvVars: ["read", "write"],
 	environmentEnvVars: ["read", "write"],
-	server: ["read", "create", "delete"],
+	runtimeWorker: ["read", "create", "delete"],
 	registry: ["read", "create", "delete"],
 	certificate: ["read", "create", "update", "delete"],
 	backup: ["read", "create", "update", "delete", "restore"],
@@ -98,7 +98,7 @@ export const adminRole = ac.newRole({
 	invitation: ["create", "cancel"],
 	team: ["create", "update", "delete"],
 	ac: ["create", "read", "update", "delete"],
-	project: ["create", "delete"],
+	workspace: ["create", "delete"],
 	service: ["create", "read", "delete"],
 	environment: ["create", "read", "delete"],
 	docker: ["read"],
@@ -109,9 +109,9 @@ export const adminRole = ac.newRole({
 	volume: ["read", "create", "delete"],
 	deployment: ["read", "create", "cancel"],
 	envVars: ["read", "write"],
-	projectEnvVars: ["read", "write"],
+	workspaceEnvVars: ["read", "write"],
 	environmentEnvVars: ["read", "write"],
-	server: ["read", "create", "delete"],
+	runtimeWorker: ["read", "create", "delete"],
 	registry: ["read", "create", "delete"],
 	certificate: ["read", "create", "update", "delete"],
 	backup: ["read", "create", "update", "delete", "restore"],
@@ -128,7 +128,7 @@ export const adminRole = ac.newRole({
 
 /**
  * Member role — read-only base permissions.
- * Members can read projects/services/environments they have access to,
+ * Members can read workspaces/services/environments they have access to,
  * but cannot create, delete, or access admin resources.
  */
 export const memberRole = ac.newRole({
@@ -137,7 +137,7 @@ export const memberRole = ac.newRole({
 	invitation: [],
 	team: [],
 	ac: ["read"],
-	project: [],
+	workspace: [],
 	service: ["read"],
 	environment: ["read"],
 	docker: [],
@@ -149,7 +149,7 @@ export const memberRole = ac.newRole({
 	volume: ["read", "create", "delete"],
 	deployment: ["read", "create", "cancel"],
 	envVars: ["read", "write"],
-	projectEnvVars: ["read", "write"],
+	workspaceEnvVars: ["read", "write"],
 	environmentEnvVars: ["read", "write"],
 	backup: ["read", "create", "update", "delete", "restore"],
 	volumeBackup: ["read", "create", "update", "delete", "restore"],
@@ -158,7 +158,7 @@ export const memberRole = ac.newRole({
 	logs: ["read"],
 	monitoring: ["read"],
 	// Org-level resources — member cannot manage these
-	server: [],
+	runtimeWorker: [],
 	registry: [],
 	certificate: [],
 	destination: [],

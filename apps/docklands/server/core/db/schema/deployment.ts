@@ -14,8 +14,8 @@ import { backups } from "./backups";
 import { compose } from "./compose";
 import { previewDeployments } from "./preview-deployments";
 import { rollbacks } from "./rollbacks";
+import { runtimeWorkers } from "./runtime-worker";
 import { schedules } from "./schedule";
-import { server } from "./server";
 import { volumeBackups } from "./volume-backups";
 
 export const deploymentStatus = pgEnum("deploymentStatus", [
@@ -42,9 +42,12 @@ export const deployments = pgTable("deployment", {
 	composeId: text("composeId").references(() => compose.composeId, {
 		onDelete: "cascade",
 	}),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 	isPreviewDeployment: boolean("isPreviewDeployment").default(false),
 	previewDeploymentId: text("previewDeploymentId").references(
 		(): AnyPgColumn => previewDeployments.previewDeploymentId,
@@ -71,9 +74,12 @@ export const deployments = pgTable("deployment", {
 		(): AnyPgColumn => volumeBackups.volumeBackupId,
 		{ onDelete: "cascade" },
 	),
-	buildServerId: text("buildServerId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	buildRuntimeWorkerId: text("buildRuntimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 });
 
 export const deploymentsRelations = relations(deployments, ({ one }) => ({
@@ -85,15 +91,15 @@ export const deploymentsRelations = relations(deployments, ({ one }) => ({
 		fields: [deployments.composeId],
 		references: [compose.composeId],
 	}),
-	server: one(server, {
-		fields: [deployments.serverId],
-		references: [server.serverId],
-		relationName: "deploymentServer",
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [deployments.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
+		relationName: "deploymentRuntimeWorker",
 	}),
-	buildServer: one(server, {
-		fields: [deployments.buildServerId],
-		references: [server.serverId],
-		relationName: "deploymentBuildServer",
+	buildRuntimeWorker: one(runtimeWorkers, {
+		fields: [deployments.buildRuntimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
+		relationName: "deploymentBuildRuntimeWorker",
 	}),
 	previewDeployment: one(previewDeployments, {
 		fields: [deployments.previewDeploymentId],
@@ -125,7 +131,7 @@ const schema = createInsertSchema(deployments, {
 	composeId: z.string().nullish(),
 	description: z.string().nullish(),
 	previewDeploymentId: z.string().nullish(),
-	buildServerId: z.string().nullish(),
+	buildRuntimeWorkerId: z.string().nullish(),
 });
 export const apiCreateDeployment = schema
 	.pick({
@@ -181,11 +187,11 @@ export const apiCreateDeploymentServer = schema
 		title: true,
 		status: true,
 		logPath: true,
-		serverId: true,
+		runtimeWorkerId: true,
 		description: true,
 	})
 	.extend({
-		serverId: z.string().min(1),
+		runtimeWorkerId: z.string().min(1),
 	});
 
 export const apiCreateDeploymentSchedule = schema
@@ -218,8 +224,8 @@ export const apiFindAllByCompose = z.object({
 	composeId: z.string().min(1),
 });
 
-export const apiFindAllByServer = z.object({
-	serverId: z.string().min(1),
+export const apiFindAllByRuntimeWorker = z.object({
+	runtimeWorkerId: z.string().min(1),
 });
 
 export const apiFindAllByType = z.object({
@@ -227,7 +233,7 @@ export const apiFindAllByType = z.object({
 	type: z.enum([
 		"application",
 		"compose",
-		"server",
+		"runtimeWorker",
 		"schedule",
 		"previewDeployment",
 		"backup",

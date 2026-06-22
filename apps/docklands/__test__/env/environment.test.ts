@@ -39,7 +39,7 @@ SERVICE_PORT=4000
 		]);
 	});
 
-	it("resolves both project and environment variables", () => {
+	it("resolves both workspace and environment variables", () => {
 		const serviceWithBoth = `
 ENVIRONMENT=\${{workspace.ENVIRONMENT}}
 NODE_ENV=\${{environment.NODE_ENV}}
@@ -137,10 +137,10 @@ AUTH_SECRET=\${{environment.JWT_SECRET}}
 		]);
 	});
 
-	it("maintains precedence: service > environment > project", () => {
+	it("maintains precedence: service > environment > workspace", () => {
 		const conflictingProjectEnv = `
 NODE_ENV=production-workspace
-API_URL=https://project.api.com
+API_URL=https://workspace.api.com
 DATABASE_NAME=workspace_db
 `;
 

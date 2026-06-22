@@ -37,7 +37,7 @@ const AddComposeSchema = z.object({
 			message: APP_NAME_MESSAGE,
 		}),
 	description: z.string().optional(),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
 type AddCompose = z.infer<typeof AddComposeSchema>;
@@ -95,7 +95,8 @@ export const AddCompose = ({
 			environmentId,
 			composeType: data.composeType,
 			appName: data.appName,
-			serverId: data.serverId === "docklands" ? undefined : data.serverId,
+			runtimeWorkerId:
+				data.runtimeWorkerId === "docklands" ? undefined : data.runtimeWorkerId,
 		})
 			.then(async () => {
 				toast.success("Compose Created");
@@ -105,7 +106,7 @@ export const AddCompose = ({
 					environmentId,
 				});
 				// Refresh workspace data for the breadcrumb.
-				await utils.project.all.invalidate();
+				await utils.workspaces.all.invalidate();
 			})
 			.catch(() => {
 				toast.error("Error creating the compose");
@@ -167,7 +168,7 @@ export const AddCompose = ({
 						{shouldShowServerDropdown && (
 							<PlacementFormField
 								control={form.control}
-								name="serverId"
+								name="runtimeWorkerId"
 								ariaLabel="Compose placement"
 								workers={servers}
 								showAutomaticPlacement={showLocalOption}

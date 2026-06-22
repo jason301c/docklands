@@ -361,7 +361,8 @@ export const userRouter = createTRPCRouter({
 					});
 				}
 
-				const { id, accessedGitProviders, accessedServers, ...rest } = input;
+				const { id, accessedGitProviders, accessedRuntimeWorkers, ...rest } =
+					input;
 
 				await db
 					.update(member)
@@ -370,7 +371,9 @@ export const userRouter = createTRPCRouter({
 						...(accessedGitProviders !== undefined
 							? { accessedGitProviders }
 							: {}),
-						...(accessedServers !== undefined ? { accessedServers } : {}),
+						...(accessedRuntimeWorkers !== undefined
+							? { accessedRuntimeWorkers }
+							: {}),
 					})
 					.where(
 						and(

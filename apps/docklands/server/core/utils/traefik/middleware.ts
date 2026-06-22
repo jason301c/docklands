@@ -46,11 +46,11 @@ export const deleteMiddleware = (
 };
 
 export const deleteAllMiddlewares = async (application: ApplicationNested) => {
-	const { security, appName, redirects, serverId } = application;
+	const { security, appName, redirects, runtimeWorkerId } = application;
 	let config: FileConfig;
 
-	if (serverId) {
-		config = await loadRemoteMiddlewares(serverId);
+	if (runtimeWorkerId) {
+		config = await loadRemoteMiddlewares(runtimeWorkerId);
 	} else {
 		config = loadMiddlewares<FileConfig>();
 	}
@@ -68,8 +68,8 @@ export const deleteAllMiddlewares = async (application: ApplicationNested) => {
 		}
 	}
 
-	if (serverId) {
-		await writeTraefikConfigRemote(config, "middlewares", serverId);
+	if (runtimeWorkerId) {
+		await writeTraefikConfigRemote(config, "middlewares", runtimeWorkerId);
 	} else {
 		writeMiddleware(config);
 	}
@@ -86,13 +86,13 @@ export const loadMiddlewares = <T>() => {
 	return config;
 };
 
-export const loadRemoteMiddlewares = async (serverId: string) => {
+export const loadRemoteMiddlewares = async (runtimeWorkerId: string) => {
 	const { DYNAMIC_TRAEFIK_PATH } = paths(true);
 	const configPath = join(DYNAMIC_TRAEFIK_PATH, "middlewares.yml");
 
 	try {
 		const { stdout, stderr } = await execAsyncRemote(
-			serverId,
+			runtimeWorkerId,
 			`cat ${configPath}`,
 		);
 
@@ -131,9 +131,9 @@ export const createPathMiddlewares = async (
 
 	let config: FileConfig;
 
-	if (app.serverId) {
+	if (app.runtimeWorkerId) {
 		try {
-			config = await loadRemoteMiddlewares(app.serverId);
+			config = await loadRemoteMiddlewares(app.runtimeWorkerId);
 		} catch {
 			config = { http: { middlewares: {} } };
 		}
@@ -174,8 +174,8 @@ export const createPathMiddlewares = async (
 		};
 	}
 
-	if (app.serverId) {
-		await writeTraefikConfigRemote(config, "middlewares", app.serverId);
+	if (app.runtimeWorkerId) {
+		await writeTraefikConfigRemote(config, "middlewares", app.runtimeWorkerId);
 	} else {
 		writeMiddleware(config);
 	}
@@ -187,9 +187,9 @@ export const removePathMiddlewares = async (
 ) => {
 	let config: FileConfig;
 
-	if (app.serverId) {
+	if (app.runtimeWorkerId) {
 		try {
-			config = await loadRemoteMiddlewares(app.serverId);
+			config = await loadRemoteMiddlewares(app.runtimeWorkerId);
 		} catch {
 			return;
 		}
@@ -232,8 +232,8 @@ export const removePathMiddlewares = async (
 		config = {};
 	}
 
-	if (app.serverId) {
-		await writeTraefikConfigRemote(config, "middlewares", app.serverId);
+	if (app.runtimeWorkerId) {
+		await writeTraefikConfigRemote(config, "middlewares", app.runtimeWorkerId);
 	} else {
 		writeMiddleware(config);
 	}

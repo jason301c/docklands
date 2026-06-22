@@ -1,6 +1,6 @@
 // Docklands embeds some secrets directly into the shell commands it runs: the
 // SSH key written to /tmp/id_rsa when cloning over SSH, and the base64 TLS key
-// piped to `base64 -d` when provisioning certificates on a remote server. When
+// piped to `base64 -d` when provisioning certificates on a remote runtimeWorker. When
 // such a command fails, its ExecError (command/stdout/stderr) is logged, which
 // would otherwise persist the secret in plain text. These helpers strip that
 // material before it can reach the logs.

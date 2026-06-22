@@ -92,7 +92,7 @@ export const Enable2FA = () => {
 			}
 
 			if (!result.data) {
-				throw new Error("No response received from server");
+				throw new Error("No response received from runtimeWorker");
 			}
 
 			toast.success("2FA configured successfully");
@@ -175,7 +175,7 @@ export const Enable2FA = () => {
 				setStep("verify");
 				toast.success("Scan the QR code with your authenticator app");
 			} else {
-				throw new Error("No TOTP URI received from server");
+				throw new Error("No TOTP URI received from runtimeWorker");
 			}
 		} catch (error) {
 			toast.error(

@@ -1,18 +1,18 @@
 import Dockerode from "dockerode";
 import { docker } from "@/server/core/constants/docker";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 
-export const getRemoteDocker = async (serverId?: string | null) => {
-	if (!serverId) return docker;
-	const server = await findServerById(serverId);
-	if (!server.sshKeyId) return docker;
+export const getRemoteDocker = async (runtimeWorkerId?: string | null) => {
+	if (!runtimeWorkerId) return docker;
+	const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
+	if (!runtimeWorker.sshKeyId) return docker;
 	const dockerode = new Dockerode({
-		host: server.ipAddress,
-		port: server.port,
-		username: server.username,
+		host: runtimeWorker.ipAddress,
+		port: runtimeWorker.port,
+		username: runtimeWorker.username,
 		protocol: "ssh",
 		sshOptions: {
-			privateKey: server.sshKey?.privateKey,
+			privateKey: runtimeWorker.sshKey?.privateKey,
 		},
 	});
 

@@ -121,16 +121,16 @@ const createMockApplication = (overrides = {}) => ({
 	buildType: "nixpacks" as const,
 	buildPath: "/astro",
 	env: "NODE_ENV=production",
-	serverId: null,
+	runtimeWorkerId: null,
 	rollbackActive: false,
 	enableSubmodules: false,
 	environmentId: "env-id",
 	environment: {
-		projectId: "project-id",
+		workspaceId: "workspace-id",
 		env: "",
 		name: "production",
-		project: {
-			name: "Test Project",
+		workspace: {
+			name: "Test Workspace",
 			organizationId: "org-id",
 			env: "",
 		},

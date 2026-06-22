@@ -16,7 +16,7 @@ export interface ApplicationList {
 	DesiredState: string;
 	Error: string;
 	Node: string;
-	serverId: string;
+	runtimeWorkerId: string;
 }
 
 export const columns: ColumnDef<ApplicationList>[] = [
@@ -232,7 +232,7 @@ export const columns: ColumnDef<ApplicationList>[] = [
 							<DropdownMenu.Label>Actions</DropdownMenu.Label>
 							<ShowDockerModalStackLogs
 								containerId={row.original.ID}
-								serverId={row.original.serverId}
+								runtimeWorkerId={row.original.runtimeWorkerId}
 							>
 								View Logs
 							</ShowDockerModalStackLogs>

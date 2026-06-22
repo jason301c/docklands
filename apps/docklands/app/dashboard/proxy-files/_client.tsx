@@ -6,7 +6,9 @@ import { RuntimeWorkerFilter } from "@/components/shared/runtime-worker-filter";
 const Dashboard = () => {
 	return (
 		<RuntimeWorkerFilter>
-			{(serverId) => <ShowIngressFiles serverId={serverId} />}
+			{(runtimeWorkerId) => (
+				<ShowIngressFiles runtimeWorkerId={runtimeWorkerId} />
+			)}
 		</RuntimeWorkerFilter>
 	);
 };

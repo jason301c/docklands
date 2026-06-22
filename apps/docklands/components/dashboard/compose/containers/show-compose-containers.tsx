@@ -26,21 +26,21 @@ const DockerLogsId = dynamic(
 
 interface Props {
 	appName: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 	appType: "stack" | "docker-compose";
 }
 
 export const ShowComposeContainers = ({
 	appName,
 	appType,
-	serverId,
+	runtimeWorkerId,
 }: Props) => {
 	const { data, isPending, refetch } =
 		api.docker.getContainersByAppNameMatch.useQuery(
 			{
 				appName,
 				appType,
-				serverId,
+				runtimeWorkerId,
 			},
 			{
 				enabled: !!appName,
@@ -95,7 +95,7 @@ export const ShowComposeContainers = ({
 									<ContainerRow
 										key={container.containerId}
 										container={container}
-										serverId={serverId}
+										runtimeWorkerId={runtimeWorkerId}
 										onActionComplete={() => refetch()}
 									/>
 								))}
@@ -115,13 +115,13 @@ interface ContainerRowProps {
 		state: string;
 		status: string;
 	};
-	serverId?: string;
+	runtimeWorkerId?: string;
 	onActionComplete: () => void;
 }
 
 const ContainerRow = ({
 	container,
-	serverId,
+	runtimeWorkerId,
 	onActionComplete,
 }: ContainerRowProps) => {
 	const [logsOpen, setLogsOpen] = useState(false);
@@ -140,7 +140,7 @@ const ContainerRow = ({
 		try {
 			await mutationFn.mutateAsync({
 				containerId: container.containerId,
-				serverId,
+				runtimeWorkerId,
 			});
 			toast.success(`Container ${action} successfully`);
 			onActionComplete();
@@ -205,19 +205,19 @@ const ContainerRow = ({
 							/>
 							<ShowContainerConfig
 								containerId={container.containerId}
-								serverId={serverId || ""}
+								runtimeWorkerId={runtimeWorkerId || ""}
 							/>
 							<ShowContainerMounts
 								containerId={container.containerId}
-								serverId={serverId || ""}
+								runtimeWorkerId={runtimeWorkerId || ""}
 							/>
 							<ShowContainerNetworks
 								containerId={container.containerId}
-								serverId={serverId || ""}
+								runtimeWorkerId={runtimeWorkerId || ""}
 							/>
 							<DockerTerminalModal
 								containerId={container.containerId}
-								serverId={serverId || ""}
+								runtimeWorkerId={runtimeWorkerId || ""}
 							>
 								Terminal
 							</DockerTerminalModal>
@@ -260,7 +260,7 @@ const ContainerRow = ({
 						<div className="flex flex-col gap-4 pt-2.5">
 							<DockerLogsId
 								containerId={container.containerId}
-								serverId={serverId}
+								runtimeWorkerId={runtimeWorkerId}
 								runType="native"
 							/>
 						</div>

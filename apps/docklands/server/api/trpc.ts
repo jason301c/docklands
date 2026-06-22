@@ -3,7 +3,7 @@
  * 1. You want to modify request context (see Part 1).
  * 2. You want to create a new middleware or type of procedure (see Part 3).
  *
- * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
+ * TL;DR - This is where all the tRPC runtimeWorker stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
 
@@ -260,7 +260,7 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
  * - custom roles use organization-defined permissions
  *
  * Usage:
- *   create: withPermission("project", "create")
+ *   create: withPermission("workspace", "create")
  *     .input(...)
  *     .mutation(async ({ ctx, input }) => { ... })
  */

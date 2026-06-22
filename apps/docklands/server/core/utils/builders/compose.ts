@@ -12,11 +12,11 @@ import {
 
 export type ComposeNested = InferResultType<
 	"compose",
-	{ environment: { with: { project: true } }; mounts: true; domains: true }
+	{ environment: { with: { workspace: true } }; mounts: true; domains: true }
 >;
 
 export const getBuildComposeCommand = async (compose: ComposeNested) => {
-	const { COMPOSE_PATH } = paths(!!compose.serverId);
+	const { COMPOSE_PATH } = paths(!!compose.runtimeWorkerId);
 	const { sourceType, appName, mounts, composeType, domains } = compose;
 	const command = createCommand(compose);
 	const envCommand = getCreateEnvFileCommand(compose);
@@ -97,7 +97,7 @@ export const createCommand = (compose: ComposeNested) => {
 };
 
 export const getCreateEnvFileCommand = (compose: ComposeNested) => {
-	const { COMPOSE_PATH } = paths(!!compose.serverId);
+	const { COMPOSE_PATH } = paths(!!compose.runtimeWorkerId);
 	const { env, composePath, appName } = compose;
 	const composeFilePath =
 		join(COMPOSE_PATH, appName, "code", composePath) ||
@@ -118,7 +118,7 @@ export const getCreateEnvFileCommand = (compose: ComposeNested) => {
 
 	const envFileContent = prepareEnvironmentVariables(
 		envContent,
-		compose.environment.project.env,
+		compose.environment.workspace.env,
 		compose.environment.env,
 	).join("\n");
 
@@ -134,7 +134,7 @@ const getExportEnvCommand = (compose: ComposeNested) => {
 
 	const envVars = getEnvironmentVariablesObject(
 		compose.env,
-		compose.environment.project.env,
+		compose.environment.workspace.env,
 		compose.environment.env,
 	);
 	const exports = Object.entries(envVars)

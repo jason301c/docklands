@@ -19,7 +19,7 @@ import {
 	compose,
 	deployments,
 	environments,
-	projects,
+	workspaces,
 } from "@/server/core/db/schema";
 import { removeDirectoryIfExistsContent } from "@/server/core/utils/filesystem/directory";
 import {
@@ -40,20 +40,20 @@ import {
 	updatePreviewDeployment,
 } from "./preview-deployment";
 import { removeRollbackById } from "./rollbacks";
+import { findRuntimeWorkerById, type RuntimeWorker } from "./runtime-worker";
 import { findScheduleById } from "./schedule";
-import { findServerById, type Server } from "./server";
 import { findVolumeBackupById } from "./volume-backups";
 
 export type ServicePath = { href: string | null; label: string };
 
 export const getDeploymentErrorMessage = async ({
 	logPath,
-	serverId,
+	runtimeWorkerId,
 	fallback,
 	maxLines = 50,
 }: {
 	logPath: string;
-	serverId: string | null;
+	runtimeWorkerId: string | null;
 	fallback: string;
 	maxLines?: number;
 }): Promise<string> => {
@@ -65,9 +65,9 @@ export const getDeploymentErrorMessage = async ({
 				: 50;
 
 		let content = "";
-		if (serverId) {
+		if (runtimeWorkerId) {
 			const { stdout } = await execAsyncRemote(
-				serverId,
+				runtimeWorkerId,
 				`tail -n ${safeMaxLines} ${quote([logPath])}`,
 			);
 			content = stdout;
@@ -93,12 +93,12 @@ export async function resolveServicePath(
 		const composeId = data?.composeId as string | undefined;
 		if (applicationId) {
 			const app = await findApplicationById(applicationId);
-			if (app.environment.project.organizationId !== orgId) {
+			if (app.environment.workspace.organizationId !== orgId) {
 				return { href: null, label: "Application" };
 			}
 			return {
 				href: workspaceServicePath({
-					workspaceId: app.environment.project.projectId,
+					workspaceId: app.environment.workspace.workspaceId,
 					environmentId: app.environment.environmentId,
 					serviceType: "application",
 					serviceId: app.applicationId,
@@ -108,12 +108,12 @@ export async function resolveServicePath(
 		}
 		if (composeId) {
 			const comp = await findComposeById(composeId);
-			if (comp.environment.project.organizationId !== orgId) {
+			if (comp.environment.workspace.organizationId !== orgId) {
 				return { href: null, label: "Compose" };
 			}
 			return {
 				href: workspaceServicePath({
-					workspaceId: comp.environment.project.projectId,
+					workspaceId: comp.environment.workspace.workspaceId,
 					environmentId: comp.environment.environmentId,
 					serviceType: "compose",
 					serviceId: comp.composeId,
@@ -170,26 +170,27 @@ export const createDeployment = async (
 	await removeLastTenDeployments(
 		deployment.applicationId,
 		"application",
-		application.serverId,
+		application.runtimeWorkerId,
 	);
 	try {
-		const serverId = application.buildServerId || application.serverId;
+		const runtimeWorkerId =
+			application.buildRuntimeWorkerId || application.runtimeWorkerId;
 
-		const { LOGS_PATH } = paths(!!serverId);
+		const { LOGS_PATH } = paths(!!runtimeWorkerId);
 		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
 		const fileName = `${application.appName}-${formattedDateTime}.log`;
 		const logFilePath = path.join(LOGS_PATH, application.appName, fileName);
 
-		if (serverId) {
-			const server = await findServerById(serverId);
+		if (runtimeWorkerId) {
+			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 
 			const command = `
 				mkdir -p ${LOGS_PATH}/${application.appName};
             	echo "Initializing deployment" >> ${logFilePath};
-			    echo "Building on ${serverId ? "Build Server" : "Docklands Server"}" >> ${logFilePath};
+			    echo "Building on ${runtimeWorkerId ? "Build Server" : "Docklands Server"}" >> ${logFilePath};
 			`;
 
-			await execAsyncRemote(server.serverId, command);
+			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
 		} else {
 			await fsPromises.mkdir(path.join(LOGS_PATH, application.appName), {
 				recursive: true,
@@ -206,8 +207,8 @@ export const createDeployment = async (
 				logPath: logFilePath,
 				description: deployment.description || "",
 				startedAt: new Date().toISOString(),
-				...(application.buildServerId && {
-					buildServerId: application.buildServerId,
+				...(application.buildRuntimeWorkerId && {
+					buildRuntimeWorkerId: application.buildRuntimeWorkerId,
 				}),
 			})
 			.returning();
@@ -253,18 +254,20 @@ export const createDeploymentPreview = async (
 	await removeLastTenDeployments(
 		deployment.previewDeploymentId,
 		"previewDeployment",
-		previewDeployment?.application?.serverId,
+		previewDeployment?.application?.runtimeWorkerId,
 	);
 	try {
 		const appName = `${previewDeployment.appName}`;
-		const { LOGS_PATH } = paths(!!previewDeployment?.application?.serverId);
+		const { LOGS_PATH } = paths(
+			!!previewDeployment?.application?.runtimeWorkerId,
+		);
 		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
 		const fileName = `${appName}-${formattedDateTime}.log`;
 		const logFilePath = path.join(LOGS_PATH, appName, fileName);
 
-		if (previewDeployment?.application?.serverId) {
-			const server = await findServerById(
-				previewDeployment?.application?.serverId,
+		if (previewDeployment?.application?.runtimeWorkerId) {
+			const runtimeWorker = await findRuntimeWorkerById(
+				previewDeployment?.application?.runtimeWorkerId,
 			);
 
 			const command = `
@@ -272,7 +275,7 @@ export const createDeploymentPreview = async (
             	echo "Initializing deployment" >> ${logFilePath};
 			`;
 
-			await execAsyncRemote(server.serverId, command);
+			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
 		} else {
 			await fsPromises.mkdir(path.join(LOGS_PATH, appName), {
 				recursive: true,
@@ -333,23 +336,25 @@ export const createDeploymentCompose = async (
 	await removeLastTenDeployments(
 		deployment.composeId,
 		"compose",
-		compose.serverId,
+		compose.runtimeWorkerId,
 	);
 	try {
-		const { LOGS_PATH } = paths(!!compose.serverId);
+		const { LOGS_PATH } = paths(!!compose.runtimeWorkerId);
 		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
 		const fileName = `${compose.appName}-${formattedDateTime}.log`;
 		const logFilePath = path.join(LOGS_PATH, compose.appName, fileName);
 
-		if (compose.serverId) {
-			const server = await findServerById(compose.serverId);
+		if (compose.runtimeWorkerId) {
+			const runtimeWorker = await findRuntimeWorkerById(
+				compose.runtimeWorkerId,
+			);
 
 			const command = `
 mkdir -p ${LOGS_PATH}/${compose.appName};
 echo "Initializing deployment\n" >> ${logFilePath};
 `;
 
-			await execAsyncRemote(server.serverId, command);
+			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
 		} else {
 			await fsPromises.mkdir(path.join(LOGS_PATH, compose.appName), {
 				recursive: true,
@@ -408,32 +413,36 @@ export const createDeploymentBackup = async (
 ) => {
 	const backup = await findBackupById(deployment.backupId);
 
-	let serverId: string | null | undefined;
+	let runtimeWorkerId: string | null | undefined;
 	if (backup.backupType === "database") {
-		serverId =
-			backup.postgres?.serverId ||
-			backup.mariadb?.serverId ||
-			backup.mysql?.serverId ||
-			backup.mongo?.serverId;
+		runtimeWorkerId =
+			backup.postgres?.runtimeWorkerId ||
+			backup.mariadb?.runtimeWorkerId ||
+			backup.mysql?.runtimeWorkerId ||
+			backup.mongo?.runtimeWorkerId;
 	} else if (backup.backupType === "compose") {
-		serverId = backup.compose?.serverId;
+		runtimeWorkerId = backup.compose?.runtimeWorkerId;
 	}
-	await removeLastTenDeployments(deployment.backupId, "backup", serverId);
+	await removeLastTenDeployments(
+		deployment.backupId,
+		"backup",
+		runtimeWorkerId,
+	);
 	try {
-		const { LOGS_PATH } = paths(!!serverId);
+		const { LOGS_PATH } = paths(!!runtimeWorkerId);
 		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
 		const fileName = `${backup.appName}-${formattedDateTime}.log`;
 		const logFilePath = path.join(LOGS_PATH, backup.appName, fileName);
 
-		if (serverId) {
-			const server = await findServerById(serverId);
+		if (runtimeWorkerId) {
+			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 
 			const command = `
 mkdir -p ${LOGS_PATH}/${backup.appName};
 echo "Initializing backup\n" >> ${logFilePath};
 `;
 
-			await execAsyncRemote(server.serverId, command);
+			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
 		} else {
 			await fsPromises.mkdir(path.join(LOGS_PATH, backup.appName), {
 				recursive: true,
@@ -488,26 +497,30 @@ export const createDeploymentSchedule = async (
 ) => {
 	const schedule = await findScheduleById(deployment.scheduleId);
 
-	const serverId =
-		schedule.application?.serverId ||
-		schedule.compose?.serverId ||
-		schedule.server?.serverId;
-	await removeLastTenDeployments(deployment.scheduleId, "schedule", serverId);
+	const runtimeWorkerId =
+		schedule.application?.runtimeWorkerId ||
+		schedule.compose?.runtimeWorkerId ||
+		schedule.runtimeWorker?.runtimeWorkerId;
+	await removeLastTenDeployments(
+		deployment.scheduleId,
+		"schedule",
+		runtimeWorkerId,
+	);
 	try {
-		const { SCHEDULES_PATH } = paths(!!serverId);
+		const { SCHEDULES_PATH } = paths(!!runtimeWorkerId);
 		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
 		const fileName = `${schedule.appName}-${formattedDateTime}.log`;
 		const logFilePath = path.join(SCHEDULES_PATH, schedule.appName, fileName);
 
-		if (serverId) {
-			const server = await findServerById(serverId);
+		if (runtimeWorkerId) {
+			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 
 			const command = `
 				mkdir -p ${SCHEDULES_PATH}/${schedule.appName};
             	echo "Initializing schedule" >> ${logFilePath};
 			`;
 
-			await execAsyncRemote(server.serverId, command);
+			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
 		} else {
 			await fsPromises.mkdir(path.join(SCHEDULES_PATH, schedule.appName), {
 				recursive: true,
@@ -564,15 +577,16 @@ export const createDeploymentVolumeBackup = async (
 ) => {
 	const volumeBackup = await findVolumeBackupById(deployment.volumeBackupId);
 
-	const serverId =
-		volumeBackup.application?.serverId || volumeBackup.compose?.serverId;
+	const runtimeWorkerId =
+		volumeBackup.application?.runtimeWorkerId ||
+		volumeBackup.compose?.runtimeWorkerId;
 	await removeLastTenDeployments(
 		deployment.volumeBackupId,
 		"volumeBackup",
-		serverId,
+		runtimeWorkerId,
 	);
 	try {
-		const { VOLUME_BACKUPS_PATH } = paths(!!serverId);
+		const { VOLUME_BACKUPS_PATH } = paths(!!runtimeWorkerId);
 		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
 		const fileName = `${volumeBackup.appName}-${formattedDateTime}.log`;
 		const logFilePath = path.join(
@@ -581,15 +595,15 @@ export const createDeploymentVolumeBackup = async (
 			fileName,
 		);
 
-		if (serverId) {
-			const server = await findServerById(serverId);
+		if (runtimeWorkerId) {
+			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 
 			const command = `
 				mkdir -p ${VOLUME_BACKUPS_PATH}/${volumeBackup.appName};
             	echo "Initializing volume backup" >> ${logFilePath};
 			`;
 
-			await execAsyncRemote(server.serverId, command);
+			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
 		} else {
 			await fsPromises.mkdir(
 				path.join(VOLUME_BACKUPS_PATH, volumeBackup.appName),
@@ -656,8 +670,8 @@ export const removeDeployment = async (deploymentId: string) => {
 		const logPath = path.join(deployment.logPath);
 		if (logPath && logPath !== ".") {
 			const command = `rm -f ${logPath};`;
-			if (deployment.serverId) {
-				await execAsyncRemote(deployment.serverId, command);
+			if (deployment.runtimeWorkerId) {
+				await execAsyncRemote(deployment.runtimeWorkerId, command);
 			} else {
 				await execAsync(command);
 			}
@@ -688,7 +702,7 @@ const getDeploymentsByType = async (
 	type:
 		| "application"
 		| "compose"
-		| "server"
+		| "runtimeWorker"
 		| "schedule"
 		| "previewDeployment"
 		| "backup"
@@ -706,10 +720,10 @@ const getDeploymentsByType = async (
 
 export const removeDeployments = async (application: Application) => {
 	const { appName, applicationId } = application;
-	const { LOGS_PATH } = paths(!!application.serverId);
+	const { LOGS_PATH } = paths(!!application.runtimeWorkerId);
 	const logsPath = path.join(LOGS_PATH, appName);
-	if (application.serverId) {
-		await execAsyncRemote(application.serverId, `rm -rf ${logsPath}`);
+	if (application.runtimeWorkerId) {
+		await execAsyncRemote(application.runtimeWorkerId, `rm -rf ${logsPath}`);
 	} else {
 		await removeDirectoryIfExistsContent(logsPath);
 	}
@@ -721,17 +735,17 @@ const removeLastTenDeployments = async (
 	type:
 		| "application"
 		| "compose"
-		| "server"
+		| "runtimeWorker"
 		| "schedule"
 		| "previewDeployment"
 		| "backup"
 		| "volumeBackup",
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
 	const deploymentList = await getDeploymentsByType(id, type);
 	if (deploymentList.length > 10) {
 		const deploymentsToDelete = deploymentList.slice(10);
-		if (serverId) {
+		if (runtimeWorkerId) {
 			let command = "";
 			for (const oldDeployment of deploymentsToDelete) {
 				try {
@@ -753,7 +767,7 @@ const removeLastTenDeployments = async (
 			}
 
 			if (command) {
-				await execAsyncRemote(serverId, command);
+				await execAsyncRemote(runtimeWorkerId, command);
 			}
 		} else {
 			for (const oldDeployment of deploymentsToDelete) {
@@ -784,13 +798,13 @@ const removeLastTenDeployments = async (
 
 export const removeDeploymentsByPreviewDeploymentId = async (
 	previewDeployment: PreviewDeployment,
-	serverId: string | null,
+	runtimeWorkerId: string | null,
 ) => {
 	const { appName } = previewDeployment;
-	const { LOGS_PATH } = paths(!!serverId);
+	const { LOGS_PATH } = paths(!!runtimeWorkerId);
 	const logsPath = path.join(LOGS_PATH, appName);
-	if (serverId) {
-		await execAsyncRemote(serverId, `rm -rf ${logsPath}`);
+	if (runtimeWorkerId) {
+		await execAsyncRemote(runtimeWorkerId, `rm -rf ${logsPath}`);
 	} else {
 		await removeDirectoryIfExistsContent(logsPath);
 	}
@@ -808,10 +822,10 @@ export const removeDeploymentsByPreviewDeploymentId = async (
 
 export const removeDeploymentsByComposeId = async (compose: Compose) => {
 	const { appName } = compose;
-	const { LOGS_PATH } = paths(!!compose.serverId);
+	const { LOGS_PATH } = paths(!!compose.runtimeWorkerId);
 	const logsPath = path.join(LOGS_PATH, appName);
-	if (compose.serverId) {
-		await execAsyncRemote(compose.serverId, `rm -rf ${logsPath}`);
+	if (compose.runtimeWorkerId) {
+		await execAsyncRemote(compose.runtimeWorkerId, `rm -rf ${logsPath}`);
 	} else {
 		await removeDirectoryIfExistsContent(logsPath);
 	}
@@ -847,16 +861,16 @@ const centralizedDeploymentsWith = {
 			environment: {
 				columns: { environmentId: true, name: true },
 				with: {
-					project: {
-						columns: { projectId: true, name: true },
+					workspace: {
+						columns: { workspaceId: true, name: true },
 					},
 				},
 			},
-			server: {
-				columns: { serverId: true, name: true, serverType: true },
+			runtimeWorker: {
+				columns: { runtimeWorkerId: true, name: true, runtimeWorkerType: true },
 			},
 			buildServer: {
-				columns: { serverId: true, name: true, serverType: true },
+				columns: { runtimeWorkerId: true, name: true, runtimeWorkerType: true },
 			},
 		},
 	},
@@ -866,21 +880,21 @@ const centralizedDeploymentsWith = {
 			environment: {
 				columns: { environmentId: true, name: true },
 				with: {
-					project: {
-						columns: { projectId: true, name: true },
+					workspace: {
+						columns: { workspaceId: true, name: true },
 					},
 				},
 			},
-			server: {
-				columns: { serverId: true, name: true, serverType: true },
+			runtimeWorker: {
+				columns: { runtimeWorkerId: true, name: true, runtimeWorkerType: true },
 			},
 		},
 	},
-	server: {
-		columns: { serverId: true, name: true, serverType: true },
+	runtimeWorker: {
+		columns: { runtimeWorkerId: true, name: true, runtimeWorkerType: true },
 	},
 	buildServer: {
-		columns: { serverId: true, name: true, serverType: true },
+		columns: { runtimeWorkerId: true, name: true, runtimeWorkerType: true },
 	},
 } as const;
 
@@ -895,14 +909,14 @@ async function getApplicationIdsInOrg(
 			environments,
 			eq(applications.environmentId, environments.environmentId),
 		)
-		.innerJoin(projects, eq(environments.projectId, projects.projectId))
+		.innerJoin(workspaces, eq(environments.workspaceId, workspaces.workspaceId))
 		.where(
 			accessedServices !== null
 				? and(
-						eq(projects.organizationId, orgId),
+						eq(workspaces.organizationId, orgId),
 						inArray(applications.applicationId, accessedServices),
 					)
-				: eq(projects.organizationId, orgId),
+				: eq(workspaces.organizationId, orgId),
 		);
 	return rows.map((r) => r.applicationId);
 }
@@ -918,14 +932,14 @@ async function getComposeIdsInOrg(
 			environments,
 			eq(compose.environmentId, environments.environmentId),
 		)
-		.innerJoin(projects, eq(environments.projectId, projects.projectId))
+		.innerJoin(workspaces, eq(environments.workspaceId, workspaces.workspaceId))
 		.where(
 			accessedServices !== null
 				? and(
-						eq(projects.organizationId, orgId),
+						eq(workspaces.organizationId, orgId),
 						inArray(compose.composeId, accessedServices),
 					)
-				: eq(projects.organizationId, orgId),
+				: eq(workspaces.organizationId, orgId),
 		);
 	return rows.map((r) => r.composeId);
 }
@@ -1012,19 +1026,21 @@ export const createServerDeployment = async (
 	try {
 		const { LOGS_PATH } = paths();
 
-		const server = await findServerById(deployment.serverId);
-		await removeLastFiveDeployments(deployment.serverId);
+		const runtimeWorker = await findRuntimeWorkerById(
+			deployment.runtimeWorkerId,
+		);
+		await removeLastFiveDeployments(deployment.runtimeWorkerId);
 		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
-		const fileName = `${server.appName}-${formattedDateTime}.log`;
-		const logFilePath = path.join(LOGS_PATH, server.appName, fileName);
-		await fsPromises.mkdir(path.join(LOGS_PATH, server.appName), {
+		const fileName = `${runtimeWorker.appName}-${formattedDateTime}.log`;
+		const logFilePath = path.join(LOGS_PATH, runtimeWorker.appName, fileName);
+		await fsPromises.mkdir(path.join(LOGS_PATH, runtimeWorker.appName), {
 			recursive: true,
 		});
 		await fsPromises.writeFile(logFilePath, "Initializing Setup Server");
 		const deploymentCreate = await db
 			.insert(deployments)
 			.values({
-				serverId: server.serverId,
+				runtimeWorkerId: runtimeWorker.runtimeWorkerId,
 				title: deployment.title || "Deployment",
 				description: deployment.description || "",
 				status: "running",
@@ -1048,9 +1064,9 @@ export const createServerDeployment = async (
 	}
 };
 
-export const removeLastFiveDeployments = async (serverId: string) => {
+export const removeLastFiveDeployments = async (runtimeWorkerId: string) => {
 	const deploymentList = await db.query.deployments.findMany({
-		where: eq(deployments.serverId, serverId),
+		where: eq(deployments.runtimeWorkerId, runtimeWorkerId),
 		orderBy: desc(deployments.createdAt),
 	});
 	if (deploymentList.length >= 5) {
@@ -1065,20 +1081,22 @@ export const removeLastFiveDeployments = async (serverId: string) => {
 	}
 };
 
-export const removeDeploymentsByServerId = async (server: Server) => {
+export const removeDeploymentsByRuntimeWorkerId = async (
+	runtimeWorker: RuntimeWorker,
+) => {
 	const { LOGS_PATH } = paths();
-	const { appName } = server;
+	const { appName } = runtimeWorker;
 	const logsPath = path.join(LOGS_PATH, appName);
 	await removeDirectoryIfExistsContent(logsPath);
 	await db
 		.delete(deployments)
-		.where(eq(deployments.serverId, server.serverId))
+		.where(eq(deployments.runtimeWorkerId, runtimeWorker.runtimeWorkerId))
 		.returning();
 };
 
-export const findAllDeploymentsByServerId = async (serverId: string) => {
+export const findAllDeploymentsByServerId = async (runtimeWorkerId: string) => {
 	const deploymentsList = await db.query.deployments.findMany({
-		where: eq(deployments.serverId, serverId),
+		where: eq(deployments.runtimeWorkerId, runtimeWorkerId),
 		orderBy: desc(deployments.createdAt),
 	});
 	return deploymentsList;
@@ -1086,15 +1104,15 @@ export const findAllDeploymentsByServerId = async (serverId: string) => {
 
 export const clearOldDeployments = async (
 	appName: string,
-	serverId: string | null,
+	runtimeWorkerId: string | null,
 ) => {
-	const { LOGS_PATH } = paths(!!serverId);
+	const { LOGS_PATH } = paths(!!runtimeWorkerId);
 	const folder = path.join(LOGS_PATH, appName);
 	const command = `
 		rm -rf ${folder};
 	`;
-	if (serverId) {
-		await execAsyncRemote(serverId, command);
+	if (runtimeWorkerId) {
+		await execAsyncRemote(runtimeWorkerId, command);
 	} else {
 		await execAsync(command);
 	}

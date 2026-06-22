@@ -20,31 +20,34 @@ import { SecurityAudit } from "./security-audit";
 import { ValidateRuntimeWorker } from "./validate-runtime-worker";
 
 interface Props {
-	serverId: string;
+	runtimeWorkerId: string;
 	asButton?: boolean;
 }
 
-export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
+export const SetupRuntimeWorker = ({
+	runtimeWorkerId,
+	asButton = false,
+}: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [setupTab, setSetupTab] = useState("ssh-keys");
-	const { data: server } = api.runtimeWorker.one.useQuery(
+	const { data: runtimeWorker } = api.runtimeWorker.one.useQuery(
 		{
-			serverId,
+			runtimeWorkerId,
 		},
 		{
-			enabled: !!serverId,
+			enabled: !!runtimeWorkerId,
 		},
 	);
 
 	const [activeLog, setActiveLog] = useState<string | null>(null);
 	const { data: isCloud } = api.settings.isCloud.useQuery();
-	const isBuildServer = server?.serverType === "build";
+	const isBuildServer = runtimeWorker?.runtimeWorkerType === "build";
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 	const [filteredLogs, setFilteredLogs] = useState<LogLine[]>([]);
 	const [isDeploying, setIsDeploying] = useState(false);
 	api.runtimeWorker.setupWithLogs.useSubscription(
 		{
-			serverId: serverId,
+			runtimeWorkerId: runtimeWorkerId,
 		},
 		{
 			enabled: isDeploying,
@@ -103,7 +106,7 @@ export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 						</p>
 					</div>
 				</div>
-				{!server?.sshKeyId ? (
+				{!runtimeWorker?.sshKeyId ? (
 					<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
 						<AlertBlock type="warning">
 							Please add an SSH key to this worker before setup. You can assign
@@ -154,14 +157,15 @@ export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 									<div className="flex flex-col gap-4 w-full overflow-auto">
 										<div className="flex relative flex-col gap-2 overflow-y-auto">
 											<div className="text-sm text-primary flex flex-row gap-2 items-center">
-												Copy Public Key ({server?.sshKey?.name})
+												Copy Public Key ({runtimeWorker?.sshKey?.name})
 												<button
 													type="button"
-													aria-label={`Copy public key ${server?.sshKey?.name ?? ""}`.trim()}
+													aria-label={`Copy public key ${runtimeWorker?.sshKey?.name ?? ""}`.trim()}
 													className="right-2 top-8"
 													onClick={() => {
 														copy(
-															server?.sshKey?.publicKey || "Generate a SSH Key",
+															runtimeWorker?.sshKey?.publicKey ||
+																"Generate a SSH Key",
 														);
 														toast.success("SSH Copied to clipboard");
 													}}
@@ -192,14 +196,15 @@ export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 											<li className="items-center flex gap-1">
 												1. Log in to your worker{" "}
 												<span className="text-primary bg-secondary p-1 rounded-lg">
-													ssh {server?.username}@{server?.ipAddress}
+													ssh {runtimeWorker?.username}@
+													{runtimeWorker?.ipAddress}
 												</span>
 												<button
 													type="button"
 													aria-label="Copy SSH login command"
 													onClick={() => {
 														copy(
-															`ssh ${server?.username}@${server?.ipAddress}`,
+															`ssh ${runtimeWorker?.username}@${runtimeWorker?.ipAddress}`,
 														);
 														toast.success("Copied to clipboard");
 													}}
@@ -213,7 +218,7 @@ export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 													<CodeEditor
 														lineWrapping
 														language="properties"
-														value={`echo "${server?.sshKey?.publicKey}" >> ~/.ssh/authorized_keys`}
+														value={`echo "${runtimeWorker?.sshKey?.publicKey}" >> ~/.ssh/authorized_keys`}
 														readOnly
 														className="font-mono opacity-60"
 													/>
@@ -223,7 +228,7 @@ export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 														className="absolute right-2 top-2"
 														onClick={() => {
 															copy(
-																`echo "${server?.sshKey?.publicKey}" >> ~/.ssh/authorized_keys`,
+																`echo "${runtimeWorker?.sshKey?.publicKey}" >> ~/.ssh/authorized_keys`,
 															);
 															toast.success("Copied to clipboard");
 														}}
@@ -286,7 +291,11 @@ export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 														adjust it before execution.
 													</span>
 													<div className="flex flex-row gap-2">
-														<EditScript serverId={server?.serverId || ""} />
+														<EditScript
+															runtimeWorkerId={
+																runtimeWorker?.runtimeWorkerId || ""
+															}
+														/>
 														<DialogAction
 															title={"Set Up Worker?"}
 															type="default"
@@ -314,7 +323,7 @@ export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 						{setupTab === "validate" && (
 							<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 								<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
-									<ValidateRuntimeWorker serverId={serverId} />
+									<ValidateRuntimeWorker runtimeWorkerId={runtimeWorkerId} />
 								</div>
 							</div>
 						)}
@@ -323,14 +332,14 @@ export const SetupRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 								{setupTab === "audit" && (
 									<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 										<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
-											<SecurityAudit serverId={serverId} />
+											<SecurityAudit runtimeWorkerId={runtimeWorkerId} />
 										</div>
 									</div>
 								)}
 								{setupTab === "gpu-setup" && (
 									<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
 										<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
-											<GPUSupport serverId={serverId} />
+											<GPUSupport runtimeWorkerId={runtimeWorkerId} />
 										</div>
 									</div>
 								)}

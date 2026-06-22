@@ -62,7 +62,7 @@ export type AuditAction =
 	| "move";
 
 export type AuditResourceType =
-	| "project"
+	| "workspace"
 	| "service"
 	| "environment"
 	| "deployment"
@@ -71,7 +71,7 @@ export type AuditResourceType =
 	| "domain"
 	| "certificate"
 	| "registry"
-	| "server"
+	| "runtimeWorker"
 	| "sshKey"
 	| "gitProvider"
 	| "destination"

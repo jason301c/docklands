@@ -173,7 +173,8 @@ export const sendDocklandsRestartNotifications = async () => {
 					try {
 						await sendCustomNotification(custom, {
 							title: "Docklands Server Restarted",
-							message: "Docklands server has been restarted successfully",
+							message:
+								"Docklands runtimeWorker has been restarted successfully",
 							timestamp: date.toISOString(),
 							date: date.toLocaleString(),
 							status: "success",

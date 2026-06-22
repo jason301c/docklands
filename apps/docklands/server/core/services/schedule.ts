@@ -26,7 +26,7 @@ export const createSchedule = async (
 	if (
 		newSchedule &&
 		(newSchedule.scheduleType === "docklands-server" ||
-			newSchedule.scheduleType === "server")
+			newSchedule.scheduleType === "runtimeWorker")
 	) {
 		await handleScript(newSchedule);
 	}
@@ -42,7 +42,7 @@ export const findScheduleById = async (scheduleId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},
@@ -51,12 +51,12 @@ export const findScheduleById = async (scheduleId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},
 			},
-			server: {
+			runtimeWorker: {
 				with: {
 					organization: true,
 				},
@@ -77,13 +77,13 @@ export const findScheduleOrganizationId = async (scheduleId: string) => {
 	const schedule = await findScheduleById(scheduleId);
 
 	if (schedule?.application) {
-		return schedule?.application?.environment?.project?.organizationId;
+		return schedule?.application?.environment?.workspace?.organizationId;
 	}
 	if (schedule?.compose) {
-		return schedule?.compose?.environment?.project?.organizationId;
+		return schedule?.compose?.environment?.workspace?.organizationId;
 	}
-	if (schedule?.server) {
-		return schedule?.server?.organization?.id;
+	if (schedule?.runtimeWorker) {
+		return schedule?.runtimeWorker?.organization?.id;
 	}
 	if (schedule?.organizationId) {
 		return schedule.organizationId;
@@ -93,16 +93,16 @@ export const findScheduleOrganizationId = async (scheduleId: string) => {
 
 export const deleteSchedule = async (scheduleId: string) => {
 	const schedule = await findScheduleById(scheduleId);
-	const serverId =
-		schedule?.serverId ||
-		schedule?.application?.serverId ||
-		schedule?.compose?.serverId;
-	const { SCHEDULES_PATH } = paths(!!serverId);
+	const runtimeWorkerId =
+		schedule?.runtimeWorkerId ||
+		schedule?.application?.runtimeWorkerId ||
+		schedule?.compose?.runtimeWorkerId;
+	const { SCHEDULES_PATH } = paths(!!runtimeWorkerId);
 
 	const fullPath = path.join(SCHEDULES_PATH, schedule?.appName || "");
 	const command = `rm -rf ${fullPath}`;
-	if (serverId) {
-		await execAsyncRemote(serverId, command);
+	if (runtimeWorkerId) {
+		await execAsyncRemote(runtimeWorkerId, command);
 	} else {
 		await execAsync(command);
 	}
@@ -139,7 +139,7 @@ export const updateSchedule = async (
 
 	if (
 		updatedSchedule?.scheduleType === "docklands-server" ||
-		updatedSchedule?.scheduleType === "server"
+		updatedSchedule?.scheduleType === "runtimeWorker"
 	) {
 		await handleScript(updatedSchedule);
 	}
@@ -148,7 +148,7 @@ export const updateSchedule = async (
 };
 
 const handleScript = async (schedule: Schedule) => {
-	const { SCHEDULES_PATH } = paths(!!schedule?.serverId);
+	const { SCHEDULES_PATH } = paths(!!schedule?.runtimeWorkerId);
 	const fullPath = path.join(SCHEDULES_PATH, schedule?.appName || "");
 
 	// Add PID and Schedule ID echo by default to all scripts
@@ -166,7 +166,7 @@ ${schedule?.script || ""}`;
 
 	if (schedule?.scheduleType === "docklands-server") {
 		await execAsync(script);
-	} else if (schedule?.scheduleType === "server") {
-		await execAsyncRemote(schedule?.serverId || "", script);
+	} else if (schedule?.scheduleType === "runtimeWorker") {
+		await execAsyncRemote(schedule?.runtimeWorkerId || "", script);
 	}
 };

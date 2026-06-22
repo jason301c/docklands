@@ -44,7 +44,7 @@ import {
 	updateDeploymentStatus,
 } from "./deployment";
 import { generateApplyPatchesCommand } from "./patch";
-import { validUniqueServerAppName } from "./project";
+import { validUniqueServerAppName } from "./workspace";
 
 export type Compose = typeof compose.$inferSelect;
 
@@ -120,7 +120,7 @@ export const findComposeById = async (composeId: string) => {
 		with: {
 			environment: {
 				with: {
-					project: true,
+					workspace: true,
 				},
 			},
 			deployments: true,
@@ -130,7 +130,7 @@ export const findComposeById = async (composeId: string) => {
 			gitlab: true,
 			bitbucket: true,
 			gitea: true,
-			server: true,
+			runtimeWorker: true,
 			backups: {
 				with: {
 					destination: {
@@ -161,8 +161,8 @@ export const loadServices = async (
 
 	if (type === "fetch") {
 		const command = await cloneCompose(compose);
-		if (compose.serverId) {
-			await execAsyncRemote(compose.serverId, command);
+		if (compose.runtimeWorkerId) {
+			await execAsyncRemote(compose.runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -170,7 +170,7 @@ export const loadServices = async (
 
 	let composeData: ComposeSpecification | null;
 
-	if (compose.serverId) {
+	if (compose.runtimeWorkerId) {
 		composeData = await loadDockerComposeRemote(compose);
 	} else {
 		composeData = await loadDockerCompose(compose);
@@ -224,7 +224,7 @@ export const deployCompose = async ({
 	const compose = await findComposeById(composeId);
 
 	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
-		workspaceId: compose.environment.projectId,
+		workspaceId: compose.environment.workspaceId,
 		environmentId: compose.environmentId,
 		serviceType: "compose",
 		serviceId: compose.composeId,
@@ -257,8 +257,8 @@ export const deployCompose = async ({
 		}
 
 		let commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-		if (compose.serverId) {
-			await execAsyncRemote(compose.serverId, commandWithLog);
+		if (compose.runtimeWorkerId) {
+			await execAsyncRemote(compose.runtimeWorkerId, commandWithLog);
 		} else {
 			await execAsync(commandWithLog);
 		}
@@ -267,11 +267,11 @@ export const deployCompose = async ({
 			command += await generateApplyPatchesCommand({
 				id: compose.composeId,
 				type: "compose",
-				serverId: compose.serverId,
+				runtimeWorkerId: compose.runtimeWorkerId,
 			});
 			commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-			if (compose.serverId) {
-				await execAsyncRemote(compose.serverId, commandWithLog);
+			if (compose.runtimeWorkerId) {
+				await execAsyncRemote(compose.runtimeWorkerId, commandWithLog);
 			} else {
 				await execAsync(commandWithLog);
 			}
@@ -280,8 +280,8 @@ export const deployCompose = async ({
 		command = "set -e;";
 		command += await getBuildComposeCommand(entity);
 		commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-		if (compose.serverId) {
-			await execAsyncRemote(compose.serverId, commandWithLog);
+		if (compose.runtimeWorkerId) {
+			await execAsyncRemote(compose.runtimeWorkerId, commandWithLog);
 		} else {
 			await execAsync(commandWithLog);
 		}
@@ -292,11 +292,11 @@ export const deployCompose = async ({
 		});
 
 		await sendBuildSuccessNotifications({
-			projectName: compose.environment.project.name,
+			projectName: compose.environment.workspace.name,
 			applicationName: compose.name,
 			applicationType: "compose",
 			buildLink,
-			organizationId: compose.environment.project.organizationId,
+			organizationId: compose.environment.workspace.organizationId,
 			domains: compose.domains,
 			environmentName: compose.environment.name,
 		});
@@ -311,8 +311,8 @@ export const deployCompose = async ({
 		}
 
 		command += `echo "\nError occurred ❌, check the logs for details." >> ${deployment.logPath};`;
-		if (compose.serverId) {
-			await execAsyncRemote(compose.serverId, command);
+		if (compose.runtimeWorkerId) {
+			await execAsyncRemote(compose.runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -322,17 +322,17 @@ export const deployCompose = async ({
 		});
 		const errorMessage = await getDeploymentErrorMessage({
 			logPath: deployment.logPath,
-			serverId: compose.serverId,
+			runtimeWorkerId: compose.runtimeWorkerId,
 			fallback: "Error building, check the logs for details.",
 		});
 
 		await sendBuildErrorNotifications({
-			projectName: compose.environment.project.name,
+			projectName: compose.environment.workspace.name,
 			applicationName: compose.name,
 			applicationType: "compose",
 			errorMessage,
 			buildLink,
-			organizationId: compose.environment.project.organizationId,
+			organizationId: compose.environment.workspace.organizationId,
 		});
 		throw error;
 	} finally {
@@ -375,8 +375,8 @@ export const rebuildCompose = async ({
 		}
 
 		let commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-		if (compose.serverId) {
-			await execAsyncRemote(compose.serverId, commandWithLog);
+		if (compose.runtimeWorkerId) {
+			await execAsyncRemote(compose.runtimeWorkerId, commandWithLog);
 		} else {
 			await execAsync(commandWithLog);
 		}
@@ -386,11 +386,11 @@ export const rebuildCompose = async ({
 			command += await generateApplyPatchesCommand({
 				id: compose.composeId,
 				type: "compose",
-				serverId: compose.serverId,
+				runtimeWorkerId: compose.runtimeWorkerId,
 			});
 			commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-			if (compose.serverId) {
-				await execAsyncRemote(compose.serverId, commandWithLog);
+			if (compose.runtimeWorkerId) {
+				await execAsyncRemote(compose.runtimeWorkerId, commandWithLog);
 			} else {
 				await execAsync(commandWithLog);
 			}
@@ -399,8 +399,8 @@ export const rebuildCompose = async ({
 		command = "set -e;";
 		command += await getBuildComposeCommand(compose);
 		commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-		if (compose.serverId) {
-			await execAsyncRemote(compose.serverId, commandWithLog);
+		if (compose.runtimeWorkerId) {
+			await execAsyncRemote(compose.runtimeWorkerId, commandWithLog);
 		} else {
 			await execAsync(commandWithLog);
 		}
@@ -420,8 +420,8 @@ export const rebuildCompose = async ({
 		}
 
 		command += `echo "\nError occurred ❌, check the logs for details." >> ${deployment.logPath};`;
-		if (compose.serverId) {
-			await execAsyncRemote(compose.serverId, command);
+		if (compose.runtimeWorkerId) {
+			await execAsyncRemote(compose.runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -440,7 +440,7 @@ export const removeCompose = async (
 	deleteVolumes: boolean,
 ) => {
 	try {
-		const { COMPOSE_PATH } = paths(!!compose.serverId);
+		const { COMPOSE_PATH } = paths(!!compose.runtimeWorkerId);
 		const projectPath = join(COMPOSE_PATH, compose.appName);
 
 		if (compose.composeType === "stack") {
@@ -449,8 +449,8 @@ export const removeCompose = async (
 			docker stack rm ${compose.appName};
 			rm -rf ${projectPath}`;
 
-			if (compose.serverId) {
-				await execAsyncRemote(compose.serverId, command);
+			if (compose.runtimeWorkerId) {
+				await execAsyncRemote(compose.runtimeWorkerId, command);
 			} else {
 				await execAsync(command);
 			}
@@ -462,8 +462,8 @@ export const removeCompose = async (
 			};
 			rm -rf ${projectPath}`;
 
-			if (compose.serverId) {
-				await execAsyncRemote(compose.serverId, command);
+			if (compose.runtimeWorkerId) {
+				await execAsyncRemote(compose.runtimeWorkerId, command);
 			} else {
 				await execAsync(command);
 			}
@@ -478,16 +478,16 @@ export const removeCompose = async (
 export const startCompose = async (composeId: string) => {
 	const compose = await findComposeById(composeId);
 	try {
-		const { COMPOSE_PATH } = paths(!!compose.serverId);
+		const { COMPOSE_PATH } = paths(!!compose.runtimeWorkerId);
 
 		const projectPath = join(COMPOSE_PATH, compose.appName, "code");
 		const path =
 			compose.sourceType === "raw" ? "docker-compose.yml" : compose.composePath;
 		const baseCommand = `env -i PATH="$PATH" docker compose -p ${compose.appName} -f ${path} up -d`;
 		if (compose.composeType === "docker-compose") {
-			if (compose.serverId) {
+			if (compose.runtimeWorkerId) {
 				await execAsyncRemote(
-					compose.serverId,
+					compose.runtimeWorkerId,
 					`cd ${projectPath} && ${baseCommand}`,
 				);
 			} else {
@@ -513,11 +513,11 @@ export const startCompose = async (composeId: string) => {
 export const stopCompose = async (composeId: string) => {
 	const compose = await findComposeById(composeId);
 	try {
-		const { COMPOSE_PATH } = paths(!!compose.serverId);
+		const { COMPOSE_PATH } = paths(!!compose.runtimeWorkerId);
 		if (compose.composeType === "docker-compose") {
-			if (compose.serverId) {
+			if (compose.runtimeWorkerId) {
 				await execAsyncRemote(
-					compose.serverId,
+					compose.runtimeWorkerId,
 					`cd ${join(COMPOSE_PATH, compose.appName)} && env -i PATH="$PATH" docker compose -p ${
 						compose.appName
 					} stop`,
@@ -533,9 +533,9 @@ export const stopCompose = async (composeId: string) => {
 		}
 
 		if (compose.composeType === "stack") {
-			if (compose.serverId) {
+			if (compose.runtimeWorkerId) {
 				await execAsyncRemote(
-					compose.serverId,
+					compose.runtimeWorkerId,
 					`docker stack rm ${compose.appName}`,
 				);
 			} else {

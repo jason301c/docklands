@@ -33,7 +33,7 @@ export const finPortById = async (portId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},

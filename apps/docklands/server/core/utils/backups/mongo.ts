@@ -6,7 +6,7 @@ import {
 import { findDestinationById } from "@/server/core/services/destination";
 import { findEnvironmentById } from "@/server/core/services/environment";
 import type { Mongo } from "@/server/core/services/mongo";
-import { findProjectById } from "@/server/core/services/project";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { sendDatabaseBackupNotifications } from "../notifications/database-backup";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import {
@@ -19,7 +19,7 @@ import {
 export const runMongoBackup = async (mongo: Mongo, backup: BackupSchedule) => {
 	const { environmentId, name, appName } = mongo;
 	const environment = await findEnvironmentById(environmentId);
-	const project = await findProjectById(environment.projectId);
+	const workspace = await findWorkspaceById(environment.workspaceId);
 	const { prefix } = backup;
 	const destination = await findDestinationById(backup.destinationId);
 	const backupFileName = `${getBackupTimestamp()}.bson.gz`;
@@ -40,8 +40,8 @@ export const runMongoBackup = async (mongo: Mongo, backup: BackupSchedule) => {
 			deployment.logPath,
 		);
 
-		if (mongo.serverId) {
-			await execAsyncRemote(mongo.serverId, backupCommand);
+		if (mongo.runtimeWorkerId) {
+			await execAsyncRemote(mongo.runtimeWorkerId, backupCommand);
 		} else {
 			await execAsync(backupCommand, {
 				shell: "/bin/bash",
@@ -50,10 +50,10 @@ export const runMongoBackup = async (mongo: Mongo, backup: BackupSchedule) => {
 
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: "mongodb",
 			type: "success",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "done");
@@ -61,12 +61,12 @@ export const runMongoBackup = async (mongo: Mongo, backup: BackupSchedule) => {
 		console.log(error);
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: "mongodb",
 			type: "error",
 			// @ts-expect-error
 			errorMessage: error?.message || "Error message not provided",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "error");

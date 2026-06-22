@@ -8,18 +8,18 @@ import {
 } from "../../server/wss/utils";
 
 describe("getRuntimeWorkerIdParam", () => {
-	it("prefers runtimeWorkerId over legacy serverId", () => {
+	it("reads the canonical runtimeWorkerId query param", () => {
 		const url = new URL(
-			"http://docklands.test/terminal?serverId=legacy&runtimeWorkerId=worker_1",
+			"http://docklands.test/terminal?runtimeWorkerId=worker_1",
 		);
 
 		expect(getRuntimeWorkerIdParam(url)).toBe("worker_1");
 	});
 
-	it("keeps accepting legacy serverId", () => {
+	it("does not accept the old serverId query param", () => {
 		const url = new URL("http://docklands.test/terminal?serverId=legacy");
 
-		expect(getRuntimeWorkerIdParam(url)).toBe("legacy");
+		expect(getRuntimeWorkerIdParam(url)).toBeNull();
 	});
 
 	it("returns null when no runtime worker query is present", () => {

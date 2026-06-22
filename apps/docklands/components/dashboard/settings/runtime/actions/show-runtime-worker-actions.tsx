@@ -8,12 +8,12 @@ import { ShowStorageActions } from "./show-storage-actions";
 import { ToggleDockerCleanup } from "./toggle-docker-cleanup";
 
 interface Props {
-	serverId: string;
+	runtimeWorkerId: string;
 	asButton?: boolean;
 }
 
 export const ShowRuntimeWorkerActions = ({
-	serverId,
+	runtimeWorkerId,
 	asButton = false,
 }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -52,9 +52,9 @@ export const ShowRuntimeWorkerActions = ({
 				</div>
 
 				<div className="grid grid-cols-2 w-full gap-4">
-					<ShowIngressActions serverId={serverId} />
-					<ShowStorageActions serverId={serverId} />
-					<ToggleDockerCleanup serverId={serverId} />
+					<ShowIngressActions runtimeWorkerId={runtimeWorkerId} />
+					<ShowStorageActions runtimeWorkerId={runtimeWorkerId} />
+					<ToggleDockerCleanup runtimeWorkerId={runtimeWorkerId} />
 				</div>
 			</Dialog>
 		</Dialog.Root>

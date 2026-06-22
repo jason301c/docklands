@@ -44,7 +44,7 @@ export const ShowExternalRedisCredentials = ({ redisId }: Props) => {
 	const { data, refetch } = api.redis.one.useQuery({ redisId });
 	const { mutateAsync, isPending } = api.redis.saveExternalPort.useMutation();
 	const [connectionUrl, setConnectionUrl] = useState("");
-	const getIp = data?.server?.ipAddress || ip;
+	const getIp = data?.runtimeWorker?.ipAddress || ip;
 
 	const form = useForm({
 		defaultValues: {},

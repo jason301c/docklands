@@ -3,17 +3,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mockMemberData = (
 	role: string,
 	accessedServices: string[] = [],
-	accessedProjects: string[] = [],
+	accessedWorkspaces: string[] = [],
 ) => ({
 	id: "member-1",
 	role,
 	userId: "user-1",
 	organizationId: "org-1",
-	accessedProjects,
+	accessedWorkspaces,
 	accessedServices,
 	accessedEnvironments: [] as string[],
-	canCreateProjects: false,
-	canDeleteProjects: false,
+	canCreateWorkspaces: false,
+	canDeleteWorkspaces: false,
 	canCreateServices: false,
 	canDeleteServices: false,
 	canCreateEnvironments: false,
@@ -122,7 +122,7 @@ describe("checkServiceAccess", () => {
 	it("owner bypasses all access checks", async () => {
 		memberToReturn = mockMemberData("owner", [], []);
 		await expect(
-			checkServiceAccess(ctx, "project-1", "create"),
+			checkServiceAccess(ctx, "workspace-1", "create"),
 		).resolves.toBeUndefined();
 	});
 });

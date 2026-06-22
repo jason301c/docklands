@@ -4,9 +4,9 @@ import type { DeploymentJob } from "./queue-types";
  * In-memory deployment queue for self-hosted instances.
  *
  * Replaces BullMQ/Redis for deployments. The model is per-group FIFO with a
- * configurable concurrency per partition (server):
+ * configurable concurrency per partition (runtimeWorker):
  *
- * - Jobs are partitioned by `serverId` (the local web server uses the
+ * - Jobs are partitioned by `runtimeWorkerId` (the local web server uses the
  *   `LOCAL_PARTITION` key). Each partition runs up to `concurrency` jobs at
  *   the same time, so two different applications can build concurrently.
  * - Within a partition, jobs that belong to the same group (same application
@@ -39,9 +39,9 @@ export interface InMemoryJob {
 
 type Processor = (job: InMemoryJob) => Promise<void>;
 
-/** Resolve the partition key (serverId) a job belongs to. */
+/** Resolve the partition key (runtimeWorkerId) a job belongs to. */
 export const getPartition = (data: DeploymentJob): string =>
-	data.serverId ?? LOCAL_PARTITION;
+	data.runtimeWorkerId ?? LOCAL_PARTITION;
 
 /** Resolve the FIFO group a job belongs to (the service being deployed). */
 export const getGroup = (data: DeploymentJob): string => {

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
-import { server } from "@/server/core/db/schema";
+import { runtimeWorkers } from "@/server/core/db/schema";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { LOCAL_PARTITION } from "./in-memory-queue";
 
@@ -9,8 +9,8 @@ import { LOCAL_PARTITION } from "./in-memory-queue";
  *
  * - `LOCAL_PARTITION` -> concurrency stored on the web server settings (the
  *   local Docklands web server).
- * - any other partition -> concurrency stored on the matching `server` row,
- *   scoped to that remote server.
+ * - any other partition -> concurrency stored on the matching `runtimeWorkers` row,
+ *   scoped to that remote runtime worker.
  */
 export const resolveBuildsConcurrency = async (
 	partition: string,
@@ -19,7 +19,7 @@ export const resolveBuildsConcurrency = async (
 		if (partition === LOCAL_PARTITION) {
 			return await resolveLocalConcurrency();
 		}
-		return await resolveServerConcurrency(partition);
+		return await resolveRuntimeWorkerConcurrency(partition);
 	} catch (error) {
 		console.error(
 			"Failed to resolve builds concurrency, defaulting to 1",
@@ -50,13 +50,15 @@ const resolveLocalConcurrency = async (): Promise<number> => {
 	return normalizeConcurrency(buildsConcurrency);
 };
 
-const resolveServerConcurrency = async (serverId: string): Promise<number> => {
-	const currentServer = await db.query.server.findFirst({
-		where: eq(server.serverId, serverId),
+const resolveRuntimeWorkerConcurrency = async (
+	runtimeWorkerId: string,
+): Promise<number> => {
+	const currentRuntimeWorker = await db.query.runtimeWorkers.findFirst({
+		where: eq(runtimeWorkers.runtimeWorkerId, runtimeWorkerId),
 		columns: { buildsConcurrency: true },
 	});
 
-	if (!currentServer) return 1;
+	if (!currentRuntimeWorker) return 1;
 
-	return normalizeConcurrency(currentServer.buildsConcurrency);
+	return normalizeConcurrency(currentRuntimeWorker.buildsConcurrency);
 };

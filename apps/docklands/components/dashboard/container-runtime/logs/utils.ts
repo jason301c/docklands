@@ -44,10 +44,10 @@ const LOG_STYLES: Record<LogType, LogStyle> = {
 export function parseLogs(logString: string): LogLine[] {
 	// Regex to match the log line format
 	// Example of return :
-	// 1 2024-12-10T10:00:00.000Z The server is running on port 8080
+	// 1 2024-12-10T10:00:00.000Z The runtimeWorker is running on port 8080
 	// Should return :
 	// { timestamp: new Date("2024-12-10T10:00:00.000Z"),
-	// message: "The server is running on port 8080" }
+	// message: "The runtimeWorker is running on port 8080" }
 	const logRegex =
 		/^(?:(?<lineNumber>\d+)\s+)?(?<timestamp>(?:\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z|\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3} UTC))?\s*(?<message>[\s\S]*)$/;
 
@@ -168,7 +168,7 @@ export const getLogType = (message: string): LogStyle => {
 
 	if (
 		/(?:^|\s)(?:info|inf):?\s/i.test(lowerMessage) ||
-		/\[(info|log|debug|trace|server|db|api|http|request|response)\]/i.test(
+		/\[(info|log|debug|trace|runtimeWorker|db|api|http|request|response)\]/i.test(
 			lowerMessage,
 		) ||
 		/\b(?:version|config|import|load|get|HTTP|PATCH|POST|debug)\b:?/i.test(

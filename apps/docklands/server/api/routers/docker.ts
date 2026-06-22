@@ -15,7 +15,7 @@ import {
 	getStackContainersByAppName,
 	uploadFileToContainer,
 } from "@/server/core/services/docker";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { uploadFileToContainerSchema } from "@/shared/validation/schema";
 import { createTRPCRouter, withPermission } from "../trpc";
 
@@ -25,17 +25,21 @@ export const dockerRouter = createTRPCRouter({
 	getContainers: withPermission("docker", "read")
 		.input(
 			z.object({
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			return await getContainers(input.serverId);
+			return await getContainers(input.runtimeWorkerId);
 		}),
 
 	restartContainer: withPermission("docker", "read")
@@ -45,17 +49,21 @@ export const dockerRouter = createTRPCRouter({
 					.string()
 					.min(1)
 					.regex(containerIdRegex, "Invalid container id."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			await containerRestart(input.containerId, input.serverId);
+			await containerRestart(input.containerId, input.runtimeWorkerId);
 			await audit(ctx, {
 				action: "start",
 				resourceType: "docker",
@@ -71,17 +79,21 @@ export const dockerRouter = createTRPCRouter({
 					.string()
 					.min(1)
 					.regex(containerIdRegex, "Invalid container id."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			await containerStart(input.containerId, input.serverId);
+			await containerStart(input.containerId, input.runtimeWorkerId);
 			await audit(ctx, {
 				action: "start",
 				resourceType: "docker",
@@ -97,17 +109,21 @@ export const dockerRouter = createTRPCRouter({
 					.string()
 					.min(1)
 					.regex(containerIdRegex, "Invalid container id."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			await containerStop(input.containerId, input.serverId);
+			await containerStop(input.containerId, input.runtimeWorkerId);
 			await audit(ctx, {
 				action: "stop",
 				resourceType: "docker",
@@ -123,17 +139,21 @@ export const dockerRouter = createTRPCRouter({
 					.string()
 					.min(1)
 					.regex(containerIdRegex, "Invalid container id."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			await containerKill(input.containerId, input.serverId);
+			await containerKill(input.containerId, input.runtimeWorkerId);
 			await audit(ctx, {
 				action: "stop",
 				resourceType: "docker",
@@ -149,17 +169,21 @@ export const dockerRouter = createTRPCRouter({
 					.string()
 					.min(1)
 					.regex(containerIdRegex, "Invalid container id."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			await containerRemove(input.containerId, input.serverId);
+			await containerRemove(input.containerId, input.runtimeWorkerId);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "docker",
@@ -175,17 +199,21 @@ export const dockerRouter = createTRPCRouter({
 					.string()
 					.min(1)
 					.regex(containerIdRegex, "Invalid container id."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			return await getConfig(input.containerId, input.serverId);
+			return await getConfig(input.containerId, input.runtimeWorkerId);
 		}),
 
 	getContainersByAppNameMatch: withPermission("service", "read")
@@ -193,20 +221,24 @@ export const dockerRouter = createTRPCRouter({
 			z.object({
 				appType: z.enum(["stack", "docker-compose"]).optional(),
 				appName: z.string().min(1).regex(containerIdRegex, "Invalid app name."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
 			return await getContainersByAppNameMatch(
 				input.appName,
 				input.appType,
-				input.serverId,
+				input.runtimeWorkerId,
 			);
 		}),
 
@@ -214,21 +246,25 @@ export const dockerRouter = createTRPCRouter({
 		.input(
 			z.object({
 				appName: z.string().min(1).regex(containerIdRegex, "Invalid app name."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 				type: z.enum(["standalone", "swarm"]),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
 			return await getContainersByAppLabel(
 				input.appName,
 				input.type,
-				input.serverId,
+				input.runtimeWorkerId,
 			);
 		}),
 
@@ -236,42 +272,60 @@ export const dockerRouter = createTRPCRouter({
 		.input(
 			z.object({
 				appName: z.string().min(1).regex(containerIdRegex, "Invalid app name."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			return await getStackContainersByAppName(input.appName, input.serverId);
+			return await getStackContainersByAppName(
+				input.appName,
+				input.runtimeWorkerId,
+			);
 		}),
 
 	getServiceContainersByAppName: withPermission("docker", "read")
 		.input(
 			z.object({
 				appName: z.string().min(1).regex(containerIdRegex, "Invalid app name."),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			return await getServiceContainersByAppName(input.appName, input.serverId);
+			return await getServiceContainersByAppName(
+				input.appName,
+				input.runtimeWorkerId,
+			);
 		}),
 
 	uploadFileToContainer: withPermission("docker", "read")
 		.input(uploadFileToContainerSchema)
 		.mutation(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
@@ -293,7 +347,7 @@ export const dockerRouter = createTRPCRouter({
 				fileBuffer,
 				file.name,
 				input.destinationPath,
-				input.serverId || null,
+				input.runtimeWorkerId || null,
 			);
 
 			return { success: true, message: "File uploaded successfully" };

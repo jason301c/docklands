@@ -99,12 +99,12 @@ export const DeleteService = ({ id, type }: Props) => {
 			})
 				.then((result) => {
 					if (
-						result?.environment?.projectId &&
+						result?.environment?.workspaceId &&
 						result.environment.environmentId
 					) {
 						push(
 							workspaceEnvironmentPath({
-								workspaceId: result.environment.projectId,
+								workspaceId: result.environment.workspaceId,
 								environmentId: result.environment.environmentId,
 							}),
 						);

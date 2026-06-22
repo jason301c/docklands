@@ -52,7 +52,7 @@ type TabState =
 
 const Service = (props: {
 	composeId: string;
-	projectId: string;
+	workspaceId: string;
 	environmentId: string;
 	activeTab: TabState;
 }) => {
@@ -61,7 +61,7 @@ const Service = (props: {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const selectedTab = searchParams?.get("tab");
-	const { projectId, environmentId } = props;
+	const { workspaceId, environmentId } = props;
 	const [tab, setTab] = useState<TabState>(activeTab);
 
 	useEffect(() => {
@@ -76,14 +76,14 @@ const Service = (props: {
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: serverIp } = api.settings.getIp.useQuery();
-	const { data: environments } = api.environment.byProjectId.useQuery({
-		projectId: data?.environment?.projectId || "",
+	const { data: environments } = api.environment.byWorkspaceId.useQuery({
+		workspaceId: data?.environment?.workspaceId || "",
 	});
 	const environmentDropdownItems =
 		environments?.map((env) => ({
 			name: env.name,
 			href: workspaceEnvironmentPath({
-				workspaceId: projectId,
+				workspaceId: workspaceId,
 				environmentId: env.environmentId,
 			}),
 		})) || [];
@@ -109,7 +109,7 @@ const Service = (props: {
 		permissions?.logs.read ? { value: "logs", label: "Logs" } : null,
 		data?.sourceType !== "raw" ? { value: "patches", label: "Patches" } : null,
 		permissions?.monitoring.read &&
-		((data?.serverId && isCloud) || !data?.server)
+		((data?.runtimeWorkerId && isCloud) || !data?.runtimeWorker)
 			? { value: "monitoring", label: "Metrics" }
 			: null,
 		permissions?.service.create
@@ -145,8 +145,8 @@ const Service = (props: {
 							<div className="flex flex-col h-fit w-fit gap-2">
 								<RuntimePlacementStatus
 									fallbackIp={serverIp}
-									server={data?.server}
-									serverId={data?.serverId}
+									runtimeWorker={data?.runtimeWorker}
+									runtimeWorkerId={data?.runtimeWorkerId}
 								/>
 
 								<div className="flex flex-row gap-2 justify-end">
@@ -162,7 +162,7 @@ const Service = (props: {
 						</div>
 					</div>
 					<div className="space-y-2 py-8 border-t">
-						{data?.server?.serverStatus === "inactive" ? (
+						{data?.runtimeWorker?.runtimeWorkerStatus === "inactive" ? (
 							<RuntimeWorkerInactiveState />
 						) : (
 							<div className="w-full">
@@ -173,7 +173,7 @@ const Service = (props: {
 										if (e === null) return;
 										setTab(e as TabState);
 										const newPath = workspaceServicePath({
-											workspaceId: projectId,
+											workspaceId: workspaceId,
 											environmentId,
 											serviceType: "compose",
 											serviceId: composeId,
@@ -219,7 +219,7 @@ const Service = (props: {
 											<ShowVolumeBackups
 												id={composeId}
 												type="compose"
-												serverId={data?.serverId || ""}
+												runtimeWorkerId={data?.runtimeWorkerId || ""}
 											/>
 										</div>
 									</div>
@@ -228,7 +228,7 @@ const Service = (props: {
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
 											<ShowComposeContainers
-												serverId={data?.serverId || undefined}
+												runtimeWorkerId={data?.runtimeWorkerId || undefined}
 												appName={data?.appName || ""}
 												appType={data?.composeType || "docker-compose"}
 											/>
@@ -240,13 +240,14 @@ const Service = (props: {
 									<div>
 										<div className="pt-2.5">
 											<div className="flex flex-col border rounded-lg ">
-												{data?.serverId && isCloud ? (
+												{data?.runtimeWorkerId && isCloud ? (
 													<ComposePaidMonitoring
-														serverId={data?.serverId || ""}
-														baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
+														runtimeWorkerId={data?.runtimeWorkerId || ""}
+														baseUrl={`${data?.runtimeWorkerId ? `http://${data?.runtimeWorker?.ipAddress}:${data?.runtimeWorker?.metricsConfig?.runtimeWorker?.port}` : "http://localhost:4500"}`}
 														appName={data?.appName || ""}
 														token={
-															data?.server?.metricsConfig?.server?.token || ""
+															data?.runtimeWorker?.metricsConfig?.runtimeWorker
+																?.token || ""
 														}
 														appType={data?.composeType || "docker-compose"}
 													/>
@@ -254,7 +255,7 @@ const Service = (props: {
 													<>
 														{/* {monitoring?.enabledFeatures &&
 															isCloud &&
-															data?.serverId && (
+															data?.runtimeWorkerId && (
 																<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2 m-4">
 																	<Label className="text-muted-foreground">
 																		Metrics source
@@ -269,16 +270,16 @@ const Service = (props: {
 														{toggleMonitoring ? (
 															<ComposePaidMonitoring
 																appName={data?.appName || ""}
-																baseUrl={`http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.server?.port}`}
+																baseUrl={`http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.runtimeWorker?.port}`}
 																token={
-																	monitoring?.metricsConfig?.server?.token || ""
+																	monitoring?.metricsConfig?.runtimeWorker?.token || ""
 																}
 																appType={data?.composeType || "docker-compose"}
 															/>
 														) : ( */}
 														{/* <div> */}
 														<ComposeFreeMonitoring
-															serverId={data?.serverId || ""}
+															runtimeWorkerId={data?.runtimeWorkerId || ""}
 															appName={data?.appName || ""}
 															appType={data?.composeType || "docker-compose"}
 														/>
@@ -296,13 +297,13 @@ const Service = (props: {
 										<div className="flex flex-col gap-4 pt-2.5">
 											{data?.composeType === "docker-compose" ? (
 												<ShowDockerLogsCompose
-													serverId={data?.serverId || ""}
+													runtimeWorkerId={data?.runtimeWorkerId || ""}
 													appName={data?.appName || ""}
 													appType={data?.composeType || "docker-compose"}
 												/>
 											) : (
 												<ShowDockerLogsStack
-													serverId={data?.serverId || ""}
+													runtimeWorkerId={data?.runtimeWorkerId || ""}
 													appName={data?.appName || ""}
 												/>
 											)}
@@ -316,7 +317,7 @@ const Service = (props: {
 											<ShowDeployments
 												id={composeId}
 												type="compose"
-												serverId={data?.serverId || ""}
+												runtimeWorkerId={data?.runtimeWorkerId || ""}
 												refreshToken={data?.refreshToken || ""}
 											/>
 										</div>

@@ -6,7 +6,7 @@ import {
 import { findDestinationById } from "@/server/core/services/destination";
 import { findEnvironmentById } from "@/server/core/services/environment";
 import type { MySql } from "@/server/core/services/mysql";
-import { findProjectById } from "@/server/core/services/project";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { sendDatabaseBackupNotifications } from "../notifications/database-backup";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import {
@@ -19,7 +19,7 @@ import {
 export const runMySqlBackup = async (mysql: MySql, backup: BackupSchedule) => {
 	const { environmentId, name, appName } = mysql;
 	const environment = await findEnvironmentById(environmentId);
-	const project = await findProjectById(environment.projectId);
+	const workspace = await findWorkspaceById(environment.workspaceId);
 	const { prefix } = backup;
 	const destination = await findDestinationById(backup.destinationId);
 	const backupFileName = `${getBackupTimestamp()}.sql.gz`;
@@ -42,8 +42,8 @@ export const runMySqlBackup = async (mysql: MySql, backup: BackupSchedule) => {
 			deployment.logPath,
 		);
 
-		if (mysql.serverId) {
-			await execAsyncRemote(mysql.serverId, backupCommand);
+		if (mysql.runtimeWorkerId) {
+			await execAsyncRemote(mysql.runtimeWorkerId, backupCommand);
 		} else {
 			await execAsync(backupCommand, {
 				shell: "/bin/bash",
@@ -51,10 +51,10 @@ export const runMySqlBackup = async (mysql: MySql, backup: BackupSchedule) => {
 		}
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: "mysql",
 			type: "success",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "done");
@@ -62,12 +62,12 @@ export const runMySqlBackup = async (mysql: MySql, backup: BackupSchedule) => {
 		console.log(error);
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: "mysql",
 			type: "error",
 			// @ts-expect-error
 			errorMessage: error?.message || "Error message not provided",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "error");

@@ -9,6 +9,9 @@ export default async function Page({ params }: PageProps) {
 	await requireUser();
 	const { workspaceId, environmentId } = await params;
 	return (
-		<EnvironmentCanvas projectId={workspaceId} environmentId={environmentId} />
+		<EnvironmentCanvas
+			workspaceId={workspaceId}
+			environmentId={environmentId}
+		/>
 	);
 }

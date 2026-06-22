@@ -192,15 +192,15 @@ export const patchRouter = createTRPCRouter({
 			await checkServicePermissionAndAccess(ctx, input.id, {
 				service: ["read"],
 			});
-			let serverId: string | null = null;
+			let runtimeWorkerId: string | null = null;
 			if (input.type === "application") {
 				const app = await findApplicationById(input.id);
-				serverId = app.serverId;
+				runtimeWorkerId = app.runtimeWorkerId;
 			} else {
 				const compose = await findComposeById(input.id);
-				serverId = compose.serverId;
+				runtimeWorkerId = compose.runtimeWorkerId;
 			}
-			return await readPatchRepoDirectory(input.repoPath, serverId);
+			return await readPatchRepoDirectory(input.repoPath, runtimeWorkerId);
 		}),
 
 	readRepoFile: protectedProcedure
@@ -215,13 +215,13 @@ export const patchRouter = createTRPCRouter({
 			await checkServicePermissionAndAccess(ctx, input.id, {
 				service: ["read"],
 			});
-			let serverId: string | null = null;
+			let runtimeWorkerId: string | null = null;
 			if (input.type === "application") {
 				const app = await findApplicationById(input.id);
-				serverId = app.serverId;
+				runtimeWorkerId = app.runtimeWorkerId;
 			} else {
 				const compose = await findComposeById(input.id);
-				serverId = compose.serverId;
+				runtimeWorkerId = compose.runtimeWorkerId;
 			}
 			const existingPatch = await findPatchByFilePath(
 				input.filePath,
@@ -320,13 +320,13 @@ export const patchRouter = createTRPCRouter({
 		}),
 
 	cleanPatchRepos: adminProcedure
-		.input(z.object({ serverId: z.string().optional() }))
+		.input(z.object({ runtimeWorkerId: z.string().optional() }))
 		.mutation(async ({ input, ctx }) => {
-			await cleanPatchRepos(input.serverId);
+			await cleanPatchRepos(input.runtimeWorkerId);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "settings",
-				resourceId: input.serverId || "local",
+				resourceId: input.runtimeWorkerId || "local",
 				metadata: { type: "cleanPatchRepos" },
 			});
 			return true;

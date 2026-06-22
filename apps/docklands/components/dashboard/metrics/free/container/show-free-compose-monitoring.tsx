@@ -11,20 +11,20 @@ import { ContainerFreeMonitoring } from "./show-free-container-monitoring";
 
 interface Props {
 	appName: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 	appType: "stack" | "docker-compose";
 }
 
 export const ComposeFreeMonitoring = ({
 	appName,
 	appType = "stack",
-	serverId,
+	runtimeWorkerId,
 }: Props) => {
 	const { data, isPending } = api.docker.getContainersByAppNameMatch.useQuery(
 		{
 			appName: appName,
 			appType,
-			serverId,
+			runtimeWorkerId,
 		},
 		{
 			enabled: !!appName,

@@ -20,13 +20,13 @@ import { RestoreVolumeBackups } from "./restore-volume-backups";
 interface Props {
 	id: string;
 	type?: "application" | "compose";
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
 export const ShowVolumeBackups = ({
 	id,
 	type = "application",
-	serverId,
+	runtimeWorkerId,
 }: Props) => {
 	const [runningBackups, setRunningBackups] = useState<Set<string>>(new Set());
 	const {
@@ -86,7 +86,7 @@ export const ShowVolumeBackups = ({
 									<RestoreVolumeBackups
 										id={id}
 										type={type}
-										serverId={serverId}
+										runtimeWorkerId={runtimeWorkerId}
 									/>
 								</div>
 							</>
@@ -105,14 +105,14 @@ export const ShowVolumeBackups = ({
 				) : volumeBackups && volumeBackups.length > 0 ? (
 					<div className="grid xl:grid-cols-2 gap-4 grid-cols-1 h-full">
 						{volumeBackups.map((volumeBackup) => {
-							const serverId =
-								volumeBackup.application?.serverId ||
-								volumeBackup.postgres?.serverId ||
-								volumeBackup.mysql?.serverId ||
-								volumeBackup.mariadb?.serverId ||
-								volumeBackup.mongo?.serverId ||
-								volumeBackup.redis?.serverId ||
-								volumeBackup.compose?.serverId;
+							const runtimeWorkerId =
+								volumeBackup.application?.runtimeWorkerId ||
+								volumeBackup.postgres?.runtimeWorkerId ||
+								volumeBackup.mysql?.runtimeWorkerId ||
+								volumeBackup.mariadb?.runtimeWorkerId ||
+								volumeBackup.mongo?.runtimeWorkerId ||
+								volumeBackup.redis?.runtimeWorkerId ||
+								volumeBackup.compose?.runtimeWorkerId;
 							return (
 								<div
 									key={volumeBackup.volumeBackupId}
@@ -150,7 +150,7 @@ export const ShowVolumeBackups = ({
 										<ShowDeploymentsModal
 											id={volumeBackup.volumeBackupId}
 											type="volumeBackup"
-											serverId={serverId || undefined}
+											runtimeWorkerId={runtimeWorkerId || undefined}
 										>
 											<Button
 												aria-label="View volume backup build history"
@@ -233,7 +233,11 @@ export const ShowVolumeBackups = ({
 						</p>
 						<div className="flex items-center gap-2">
 							<HandleVolumeBackups id={id} volumeBackupType={type} />
-							<RestoreVolumeBackups id={id} type={type} serverId={serverId} />
+							<RestoreVolumeBackups
+								id={id}
+								type={type}
+								runtimeWorkerId={runtimeWorkerId}
+							/>
 						</div>
 					</div>
 				)}

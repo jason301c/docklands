@@ -13,7 +13,7 @@ interface CloneGitRepository {
 	customGitBranch?: string | null;
 	customGitSSHKeyId?: string | null;
 	enableSubmodules?: boolean;
-	serverId: string | null;
+	runtimeWorkerId: string | null;
 	type?: "application" | "compose";
 	outputPathOverride?: string;
 }
@@ -29,10 +29,12 @@ export const cloneGitRepository = async ({
 		customGitBranch,
 		customGitSSHKeyId,
 		enableSubmodules,
-		serverId,
+		runtimeWorkerId,
 		outputPathOverride,
 	} = entity;
-	const { SSH_PATH, COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!serverId);
+	const { SSH_PATH, COMPOSE_PATH, APPLICATIONS_PATH } = paths(
+		!!runtimeWorkerId,
+	);
 
 	if (!customGitUrl || !customGitBranch) {
 		command += `echo "Error: ❌ Repository not found"; exit 1;`;
@@ -156,15 +158,15 @@ const sanitizeRepoPathSSH = (input: string) => {
 interface Props {
 	appName: string;
 	type?: "application" | "compose";
-	serverId: string | null;
+	runtimeWorkerId: string | null;
 }
 
 export const getGitCommitInfo = async ({
 	appName,
 	type = "application",
-	serverId,
+	runtimeWorkerId,
 }: Props) => {
-	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!serverId);
+	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!runtimeWorkerId);
 	const basePath = type === "compose" ? COMPOSE_PATH : APPLICATIONS_PATH;
 	const outputPath = join(basePath, appName, "code");
 	let stdoutResult = "";
@@ -174,8 +176,8 @@ export const getGitCommitInfo = async ({
 	};
 	try {
 		const gitCommand = `git -C ${outputPath} log -1 --pretty=format:"%H---DELIMITER---%B"`;
-		if (serverId) {
-			const { stdout } = await execAsyncRemote(serverId, gitCommand);
+		if (runtimeWorkerId) {
+			const { stdout } = await execAsyncRemote(runtimeWorkerId, gitCommand);
 			stdoutResult = stdout.trim();
 		} else {
 			const { stdout } = await execAsync(gitCommand);

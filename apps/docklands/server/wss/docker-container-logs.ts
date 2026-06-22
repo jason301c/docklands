@@ -4,7 +4,7 @@ import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
 import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	getRuntimeWorkerIdParam,
 	getShell,
@@ -15,14 +15,17 @@ import {
 } from "./utils";
 
 export const setupDockerContainerLogsWebSocketServer = (
-	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
+	runtimeWorker: http.Server<
+		typeof http.IncomingMessage,
+		typeof http.ServerResponse
+	>,
 ) => {
 	const wssTerm = new WebSocketServer({
 		noServer: true,
 		path: "/docker-container-logs",
 	});
 
-	server.on("upgrade", (req, socket, head) => {
+	runtimeWorker.on("upgrade", (req, socket, head) => {
 		const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
 
 		if (pathname === "/docker-container-logs") {
@@ -39,7 +42,7 @@ export const setupDockerContainerLogsWebSocketServer = (
 		const tail = url.searchParams.get("tail") ?? "100";
 		const search = url.searchParams.get("search") ?? "";
 		const since = url.searchParams.get("since") ?? "all";
-		const serverId = getRuntimeWorkerIdParam(url);
+		const runtimeWorkerId = getRuntimeWorkerIdParam(url);
 		const runType = url.searchParams.get("runType");
 		const { user, session } = await validateRequest(req);
 
@@ -82,15 +85,15 @@ export const setupDockerContainerLogsWebSocketServer = (
 			}
 		}, 45000); // 45 seconds
 		try {
-			if (serverId) {
-				const server = await findServerById(serverId);
+			if (runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 
-				if (server.organizationId !== session.activeOrganizationId) {
+				if (runtimeWorker.organizationId !== session.activeOrganizationId) {
 					ws.close();
 					return;
 				}
 
-				if (!server.sshKeyId) return;
+				if (!runtimeWorker.sshKeyId) return;
 				const client = new Client();
 				client
 					.once("ready", () => {
@@ -133,10 +136,10 @@ export const setupDockerContainerLogsWebSocketServer = (
 						client.end();
 					})
 					.connect({
-						host: server.ipAddress,
-						port: server.port,
-						username: server.username,
-						privateKey: server.sshKey?.privateKey,
+						host: runtimeWorker.ipAddress,
+						port: runtimeWorker.port,
+						username: runtimeWorker.username,
+						privateKey: runtimeWorker.sshKey?.privateKey,
 					});
 				ws.on("close", () => {
 					clearInterval(pingInterval);

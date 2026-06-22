@@ -38,14 +38,14 @@ type TabState =
 
 const Mongo = (props: {
 	mongoId: string;
-	projectId: string;
+	workspaceId: string;
 	environmentId: string;
 	activeTab: TabState;
 }) => {
 	const [_toggleMonitoring, _setToggleMonitoring] = useState(false);
 	const { mongoId, activeTab } = props;
 	const router = useRouter();
-	const { projectId, environmentId } = props;
+	const { workspaceId, environmentId } = props;
 	const [tab, setSab] = useState<TabState>(activeTab);
 	const { data } = api.mongo.one.useQuery({ mongoId });
 
@@ -54,14 +54,14 @@ const Mongo = (props: {
 
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: serverIp } = api.settings.getIp.useQuery();
-	const { data: environments } = api.environment.byProjectId.useQuery({
-		projectId: data?.environment?.projectId || "",
+	const { data: environments } = api.environment.byWorkspaceId.useQuery({
+		workspaceId: data?.environment?.workspaceId || "",
 	});
 	const environmentDropdownItems =
 		environments?.map((env) => ({
 			name: env.name,
 			href: workspaceEnvironmentPath({
-				workspaceId: projectId,
+				workspaceId: workspaceId,
 				environmentId: env.environmentId,
 			}),
 		})) || [];
@@ -93,8 +93,8 @@ const Mongo = (props: {
 						<div className="flex flex-col h-fit w-fit gap-2">
 							<RuntimePlacementStatus
 								fallbackIp={serverIp}
-								server={data?.server}
-								serverId={data?.serverId}
+								runtimeWorker={data?.runtimeWorker}
+								runtimeWorkerId={data?.runtimeWorkerId}
 							/>
 
 							<div className="flex flex-row gap-2 justify-end">
@@ -108,7 +108,7 @@ const Mongo = (props: {
 						</div>
 					</div>
 					<div className="space-y-2 py-8 border-t">
-						{data?.server?.serverStatus === "inactive" ? (
+						{data?.runtimeWorker?.runtimeWorkerStatus === "inactive" ? (
 							<RuntimeWorkerInactiveState />
 						) : (
 							<div className="w-full">
@@ -119,7 +119,7 @@ const Mongo = (props: {
 										if (e === null) return;
 										setSab(e as TabState);
 										const newPath = workspaceServicePath({
-											workspaceId: projectId,
+											workspaceId: workspaceId,
 											environmentId,
 											serviceType: "mongo",
 											serviceId: mongoId,
@@ -138,7 +138,8 @@ const Mongo = (props: {
 												? { value: "logs", label: "Logs" }
 												: null,
 											permissions?.monitoring.read &&
-											((data?.serverId && isCloud) || !data?.server)
+											((data?.runtimeWorkerId && isCloud) ||
+												!data?.runtimeWorker)
 												? { value: "monitoring", label: "Metrics" }
 												: null,
 											{ value: "backups", label: "Backups" },
@@ -168,12 +169,13 @@ const Mongo = (props: {
 									<div>
 										<div className="pt-2.5">
 											<div className="flex flex-col gap-4 border rounded-lg p-6">
-												{data?.serverId && isCloud ? (
+												{data?.runtimeWorkerId && isCloud ? (
 													<ContainerPaidMonitoring
 														appName={data?.appName || ""}
-														baseUrl={`${data?.serverId ? `http://${data?.server?.ipAddress}:${data?.server?.metricsConfig?.server?.port}` : "http://localhost:4500"}`}
+														baseUrl={`${data?.runtimeWorkerId ? `http://${data?.runtimeWorker?.ipAddress}:${data?.runtimeWorker?.metricsConfig?.runtimeWorker?.port}` : "http://localhost:4500"}`}
 														token={
-															data?.server?.metricsConfig?.server?.token || ""
+															data?.runtimeWorker?.metricsConfig?.runtimeWorker
+																?.token || ""
 														}
 													/>
 												) : (
@@ -193,9 +195,9 @@ const Mongo = (props: {
 														{toggleMonitoring ? (
 															<ContainerPaidMonitoring
 																appName={data?.appName || ""}
-																baseUrl={`http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.server?.port}`}
+																baseUrl={`http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.runtimeWorker?.port}`}
 																token={
-																	monitoring?.metricsConfig?.server?.token || ""
+																	monitoring?.metricsConfig?.runtimeWorker?.token || ""
 																}
 															/>
 														) : (
@@ -215,7 +217,7 @@ const Mongo = (props: {
 									<div>
 										<div className="flex flex-col gap-4  pt-2.5">
 											<ShowDockerLogs
-												serverId={data?.serverId || ""}
+												runtimeWorkerId={data?.runtimeWorkerId || ""}
 												appName={data?.appName || ""}
 											/>
 										</div>

@@ -116,7 +116,7 @@ export const sendDatabaseBackupNotifications = async ({
 					color: type === "success" ? 0x57f287 : 0xed4245,
 					fields: [
 						{
-							name: decorate("`🛠️`", "Project"),
+							name: decorate("`🛠️`", "Workspace"),
 							value: projectName,
 							inline: true,
 						},
@@ -238,7 +238,7 @@ export const sendDatabaseBackupNotifications = async ({
 										]
 									: []),
 								{
-									title: "Project",
+									title: "Workspace",
 									value: projectName,
 									short: true,
 								},
@@ -434,7 +434,7 @@ export const sendDatabaseBackupNotifications = async ({
 
 			if (teams) {
 				const facts = [
-					{ name: "Project", value: projectName },
+					{ name: "Workspace", value: projectName },
 					{ name: "Application", value: applicationName },
 					{ name: "Database Type", value: databaseType },
 					{ name: "Database Name", value: databaseName },

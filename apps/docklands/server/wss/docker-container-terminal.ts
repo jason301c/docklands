@@ -4,7 +4,7 @@ import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
 import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	getRuntimeWorkerIdParam,
 	isValidContainerId,
@@ -12,14 +12,17 @@ import {
 } from "./utils";
 
 export const setupDockerContainerTerminalWebSocketServer = (
-	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
+	runtimeWorker: http.Server<
+		typeof http.IncomingMessage,
+		typeof http.ServerResponse
+	>,
 ) => {
 	const wssTerm = new WebSocketServer({
 		noServer: true,
 		path: "/docker-container-terminal",
 	});
 
-	server.on("upgrade", (req, socket, head) => {
+	runtimeWorker.on("upgrade", (req, socket, head) => {
 		const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
 
 		if (pathname === "/docker-container-terminal") {
@@ -34,7 +37,7 @@ export const setupDockerContainerTerminalWebSocketServer = (
 		const url = new URL(req.url || "", `http://${req.headers.host}`);
 		const containerId = url.searchParams.get("containerId");
 		const activeWay = url.searchParams.get("activeWay");
-		const serverId = getRuntimeWorkerIdParam(url);
+		const runtimeWorkerId = getRuntimeWorkerIdParam(url);
 		const { user, session } = await validateRequest(req);
 
 		if (!containerId) {
@@ -62,16 +65,16 @@ export const setupDockerContainerTerminalWebSocketServer = (
 			return;
 		}
 		try {
-			if (serverId) {
-				const server = await findServerById(serverId);
+			if (runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 
-				if (server.organizationId !== session.activeOrganizationId) {
+				if (runtimeWorker.organizationId !== session.activeOrganizationId) {
 					ws.close();
 					return;
 				}
 
-				if (!server.sshKeyId)
-					throw new Error("No SSH key available for this server");
+				if (!runtimeWorker.sshKeyId)
+					throw new Error("No SSH key available for this runtimeWorker");
 
 				const conn = new Client();
 				let _stdout = "";
@@ -143,10 +146,10 @@ export const setupDockerContainerTerminalWebSocketServer = (
 						conn.end();
 					})
 					.connect({
-						host: server.ipAddress,
-						port: server.port,
-						username: server.username,
-						privateKey: server.sshKey?.privateKey,
+						host: runtimeWorker.ipAddress,
+						port: runtimeWorker.port,
+						username: runtimeWorker.username,
+						privateKey: runtimeWorker.sshKey?.privateKey,
 					});
 			} else {
 				if (IS_CLOUD) {

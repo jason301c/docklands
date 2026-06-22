@@ -9,19 +9,19 @@ import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { toast } from "@/components/shared/toast";
-import type { findEnvironmentsByProjectId } from "@/server/core/services/environment";
+import type { findEnvironmentsByWorkspaceId } from "@/server/core/services/environment";
 import { workspaceEnvironmentPath, workspaceListPath } from "@/shared/routes";
 
 type Environment = Awaited<
-	ReturnType<typeof findEnvironmentsByProjectId>
+	ReturnType<typeof findEnvironmentsByWorkspaceId>
 >[number];
 interface AdvancedEnvironmentSelectorProps {
-	projectId: string;
+	workspaceId: string;
 	currentEnvironmentId?: string;
 }
 
 export const AdvancedEnvironmentSelector = ({
-	projectId,
+	workspaceId,
 	currentEnvironmentId,
 }: AdvancedEnvironmentSelectorProps) => {
 	const router = useRouter();
@@ -31,10 +31,10 @@ export const AdvancedEnvironmentSelector = ({
 	const [selectedEnvironment, setSelectedEnvironment] =
 		useState<Environment | null>(null);
 
-	const { data: environments } = api.environment.byProjectId.useQuery(
-		{ projectId: projectId },
+	const { data: environments } = api.environment.byWorkspaceId.useQuery(
+		{ workspaceId: workspaceId },
 		{
-			enabled: !!projectId,
+			enabled: !!workspaceId,
 		},
 	);
 
@@ -65,21 +65,21 @@ export const AdvancedEnvironmentSelector = ({
 	const deleteEnvironment = api.environment.remove.useMutation();
 	const duplicateEnvironment = api.environment.duplicate.useMutation();
 
-	// Refetch project data
+	// Refetch workspace data
 	const utils = api.useUtils();
 
 	const handleCreateEnvironment = async () => {
 		try {
 			await createEnvironment.mutateAsync({
-				projectId,
+				workspaceId,
 				name: name.trim(),
 				description: description.trim() || undefined,
 			});
 
 			toast.success("Environment created successfully");
-			utils.environment.byProjectId.invalidate({ projectId });
+			utils.environment.byWorkspaceId.invalidate({ workspaceId });
 			// Refresh workspace data for the breadcrumb.
-			utils.project.all.invalidate();
+			utils.workspaces.all.invalidate();
 			setIsCreateDialogOpen(false);
 			setName("");
 			setDescription("");
@@ -101,7 +101,7 @@ export const AdvancedEnvironmentSelector = ({
 			});
 
 			toast.success("Environment updated successfully");
-			utils.environment.byProjectId.invalidate({ projectId });
+			utils.environment.byWorkspaceId.invalidate({ workspaceId });
 			setIsEditDialogOpen(false);
 			setSelectedEnvironment(null);
 			setName("");
@@ -122,7 +122,7 @@ export const AdvancedEnvironmentSelector = ({
 			});
 
 			toast.success("Environment deleted successfully");
-			utils.environment.byProjectId.invalidate({ projectId });
+			utils.environment.byWorkspaceId.invalidate({ workspaceId });
 			setIsDeleteDialogOpen(false);
 			setSelectedEnvironment(null);
 
@@ -134,7 +134,7 @@ export const AdvancedEnvironmentSelector = ({
 				if (firstEnv) {
 					router.push(
 						workspaceEnvironmentPath({
-							workspaceId: projectId,
+							workspaceId: workspaceId,
 							environmentId: firstEnv.environmentId,
 						}),
 					);
@@ -157,12 +157,12 @@ export const AdvancedEnvironmentSelector = ({
 			});
 
 			toast.success("Environment duplicated successfully");
-			utils.project.one.invalidate({ projectId });
+			utils.workspaces.one.invalidate({ workspaceId });
 
 			// Navigate to the new duplicated environment
 			router.push(
 				workspaceEnvironmentPath({
-					workspaceId: projectId,
+					workspaceId: workspaceId,
 					environmentId: result.environmentId,
 				}),
 			);
@@ -224,7 +224,7 @@ export const AdvancedEnvironmentSelector = ({
 									onClick={() => {
 										router.push(
 											workspaceEnvironmentPath({
-												workspaceId: projectId,
+												workspaceId: workspaceId,
 												environmentId: environment.environmentId,
 											}),
 										);

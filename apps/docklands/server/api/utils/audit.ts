@@ -19,7 +19,7 @@ interface AuditEvent {
  * Extracts userId, userEmail, userRole and organizationId automatically.
  *
  * Usage:
- *   await audit(ctx, { action: "create", resourceType: "project", resourceName: "my-app" });
+ *   await audit(ctx, { action: "create", resourceType: "workspace", resourceName: "my-app" });
  */
 export const audit = (ctx: AuditCtx, event: AuditEvent) =>
 	createAuditLog({

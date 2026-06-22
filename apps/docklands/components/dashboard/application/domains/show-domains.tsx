@@ -143,7 +143,9 @@ export const ShowDomains = ({ id, type }: Props) => {
 			const result = await validateDomain({
 				domain: host,
 				serverIp:
-					application?.server?.ipAddress?.toString() || ip?.toString() || "",
+					application?.runtimeWorker?.ipAddress?.toString() ||
+					ip?.toString() ||
+					"",
 			});
 
 			setValidationStates((prev) => ({
@@ -178,7 +180,7 @@ export const ShowDomains = ({ id, type }: Props) => {
 		handleDeleteDomain,
 		isDeleting: isRemoving,
 		ingressAddress:
-			application?.server?.ipAddress?.toString() || ip?.toString(),
+			application?.runtimeWorker?.ipAddress?.toString() || ip?.toString(),
 		canCreateDomain,
 		canDeleteDomain,
 	});
@@ -412,7 +414,7 @@ export const ShowDomains = ({ id, type }: Props) => {
 																	path: item.path || undefined,
 																}}
 																ingressAddress={
-																	application?.server?.ipAddress?.toString() ||
+																	application?.runtimeWorker?.ipAddress?.toString() ||
 																	ip?.toString()
 																}
 															/>

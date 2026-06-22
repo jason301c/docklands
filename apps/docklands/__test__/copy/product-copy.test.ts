@@ -9,7 +9,7 @@ const sourceFile = (relativePath: string) =>
 	);
 
 describe("Docklands product copy", () => {
-	it("keeps runtime worker UI and setup copy out of inherited server wording", () => {
+	it("keeps runtime worker UI and setup copy out of inherited runtimeWorker wording", () => {
 		const files = [
 			"components/dashboard/impersonation/impersonation-bar.tsx",
 			"components/dashboard/settings/image-registry/handle-image-registry.tsx",
@@ -17,22 +17,22 @@ describe("Docklands product copy", () => {
 			"components/dashboard/settings/ssh-keys/show-ssh-keys.tsx",
 			"components/dashboard/settings/notifications/handle-notifications.tsx",
 			"app/(onboarding)/register/_client.tsx",
-			"server/core/setup/server-setup.ts",
+			"server/core/setup/runtime-worker-setup.ts",
 			"server/core/utils/notifications/server-threshold.ts",
 		].map(sourceFile);
 
 		for (const source of files) {
 			expect(source).not.toContain("Servers:");
-			expect(source).not.toContain("Please select a server");
+			expect(source).not.toContain("Please select a runtimeWorker");
 			expect(source).not.toContain("access your servers");
-			expect(source).not.toContain("Setup the server");
-			expect(source).not.toContain("setup the server");
+			expect(source).not.toContain("Setup the runtimeWorker");
+			expect(source).not.toContain("setup the runtimeWorker");
 			expect(source).not.toContain("Setup Server");
 			expect(source).not.toContain("Server Dependencies");
 			expect(source).not.toContain("Server Type");
 			expect(source).not.toContain("Server Name");
 			expect(source).not.toContain("Server Monitoring Alert");
-			expect(source).not.toContain("server threshold");
+			expect(source).not.toContain("runtimeWorker threshold");
 		}
 	});
 
@@ -46,10 +46,10 @@ describe("Docklands product copy", () => {
 			"server/api/routers/mysql.ts",
 			"server/api/routers/mariadb.ts",
 			"server/api/routers/postgres.ts",
-			"server/api/routers/server.ts",
+			"server/api/routers/runtime-worker.ts",
 			"server/api/routers/backup.ts",
 			"server/api/routers/settings.ts",
-			"server/api/routers/project.ts",
+			"server/api/routers/workspace.ts",
 			"server/api/routers/tag.ts",
 		].map(sourceFile);
 

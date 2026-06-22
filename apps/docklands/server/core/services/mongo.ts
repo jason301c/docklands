@@ -13,7 +13,7 @@ import { generatePassword } from "@/server/core/templates";
 import { buildMongo } from "@/server/core/utils/databases/mongo";
 import { pullImage } from "@/server/core/utils/docker/utils";
 import { execAsyncRemote } from "@/server/core/utils/process/execAsync";
-import { validUniqueServerAppName } from "./project";
+import { validUniqueServerAppName } from "./workspace";
 
 export type Mongo = typeof mongo.$inferSelect;
 
@@ -56,11 +56,11 @@ export const findMongoById = async (mongoId: string) => {
 		with: {
 			environment: {
 				with: {
-					project: true,
+					workspace: true,
 				},
 			},
 			mounts: true,
-			server: true,
+			runtimeWorker: true,
 			backups: {
 				with: {
 					destination: {
@@ -157,9 +157,9 @@ export const deployMongo = async (
 		});
 
 		onData?.("Starting mongo deployment...");
-		if (mongo.serverId) {
+		if (mongo.runtimeWorkerId) {
 			await execAsyncRemote(
-				mongo.serverId,
+				mongo.runtimeWorkerId,
 				`docker pull ${mongo.dockerImage}`,
 				onData,
 			);

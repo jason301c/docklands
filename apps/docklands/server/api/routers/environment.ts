@@ -11,14 +11,14 @@ import {
 	apiRemoveEnvironment,
 	apiUpdateEnvironment,
 	environments,
-	projects,
+	workspaces,
 } from "@/server/core/db/schema";
 import {
 	createEnvironment,
 	deleteEnvironment,
 	duplicateEnvironment,
 	findEnvironmentById,
-	findEnvironmentsByProjectId,
+	findEnvironmentsByWorkspaceId,
 	updateEnvironmentById,
 } from "@/server/core/services/environment";
 import {
@@ -66,7 +66,7 @@ export const environmentRouter = createTRPCRouter({
 		.input(apiCreateEnvironment)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await checkEnvironmentCreationPermission(ctx, input.projectId);
+				await checkEnvironmentCreationPermission(ctx, input.workspaceId);
 
 				if (input.name === "production") {
 					throw new TRPCError({
@@ -103,7 +103,8 @@ export const environmentRouter = createTRPCRouter({
 		.query(async ({ input, ctx }) => {
 			const environment = await findEnvironmentById(input.environmentId);
 			if (
-				environment.project.organizationId !== ctx.session.activeOrganizationId
+				environment.workspace.organizationId !==
+				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
@@ -136,16 +137,18 @@ export const environmentRouter = createTRPCRouter({
 			return environment;
 		}),
 
-	byProjectId: protectedProcedure
-		.input(z.object({ projectId: z.string() }))
+	byWorkspaceId: protectedProcedure
+		.input(z.object({ workspaceId: z.string() }))
 		.query(async ({ input, ctx }) => {
 			try {
-				const environments = await findEnvironmentsByProjectId(input.projectId);
+				const environments = await findEnvironmentsByWorkspaceId(
+					input.workspaceId,
+				);
 
 				if (
 					environments.some(
 						(environment) =>
-							environment.project.organizationId !==
+							environment.workspace.organizationId !==
 							ctx.session.activeOrganizationId,
 					)
 				) {
@@ -188,7 +191,7 @@ export const environmentRouter = createTRPCRouter({
 			try {
 				const environment = await findEnvironmentById(input.environmentId);
 				if (
-					environment.project.organizationId !==
+					environment.workspace.organizationId !==
 					ctx.session.activeOrganizationId
 				) {
 					throw new TRPCError({
@@ -204,7 +207,7 @@ export const environmentRouter = createTRPCRouter({
 					});
 				}
 
-				await checkEnvironmentDeletionPermission(ctx, environment.projectId);
+				await checkEnvironmentDeletionPermission(ctx, environment.workspaceId);
 
 				await checkEnvironmentAccess(ctx, input.environmentId, "read");
 
@@ -249,7 +252,7 @@ export const environmentRouter = createTRPCRouter({
 					});
 				}
 				if (
-					currentEnvironment.project.organizationId !==
+					currentEnvironment.workspace.organizationId !==
 					ctx.session.activeOrganizationId
 				) {
 					throw new TRPCError({
@@ -302,7 +305,7 @@ export const environmentRouter = createTRPCRouter({
 				await checkEnvironmentAccess(ctx, input.environmentId, "read");
 				const environment = await findEnvironmentById(input.environmentId);
 				if (
-					environment.project.organizationId !==
+					environment.workspace.organizationId !==
 					ctx.session.activeOrganizationId
 				) {
 					throw new TRPCError({
@@ -348,18 +351,18 @@ export const environmentRouter = createTRPCRouter({
 				q: z.string().optional(),
 				name: z.string().optional(),
 				description: z.string().optional(),
-				projectId: z.string().optional(),
+				workspaceId: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				offset: z.number().min(0).default(0),
 			}),
 		)
 		.query(async ({ ctx, input }) => {
 			const baseConditions = [
-				eq(projects.organizationId, ctx.session.activeOrganizationId),
+				eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 			];
 
-			if (input.projectId) {
-				baseConditions.push(eq(environments.projectId, input.projectId));
+			if (input.workspaceId) {
+				baseConditions.push(eq(environments.workspaceId, input.workspaceId));
 			}
 
 			if (input.q?.trim()) {
@@ -408,11 +411,14 @@ export const environmentRouter = createTRPCRouter({
 						description: environments.description,
 						createdAt: environments.createdAt,
 						env: environments.env,
-						projectId: environments.projectId,
+						workspaceId: environments.workspaceId,
 						isDefault: environments.isDefault,
 					})
 					.from(environments)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where)
 					.orderBy(desc(environments.createdAt))
 					.limit(input.limit)
@@ -420,7 +426,10 @@ export const environmentRouter = createTRPCRouter({
 				db
 					.select({ count: sql<number>`count(*)::int` })
 					.from(environments)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where),
 			]);
 

@@ -35,7 +35,7 @@ const baseApp: ApplicationNested = {
 	bitbucketRepositorySlug: "",
 	herokuVersion: "",
 	giteaBranch: "",
-	buildServerId: "",
+	buildRuntimeWorkerId: "",
 	buildRegistryId: "",
 	buildRegistry: null,
 	args: [],
@@ -55,7 +55,7 @@ const baseApp: ApplicationNested = {
 	appName: "",
 	autoDeploy: true,
 	endpointSpecSwarm: null,
-	serverId: "",
+	runtimeWorkerId: "",
 	registryUrl: "",
 	branch: null,
 	dockerBuildStage: "",
@@ -77,14 +77,14 @@ const baseApp: ApplicationNested = {
 		name: "",
 		createdAt: "",
 		description: "",
-		projectId: "",
-		project: {
+		workspaceId: "",
+		workspace: {
 			env: "",
 			organizationId: "",
 			name: "",
 			description: "",
 			createdAt: "",
-			projectId: "",
+			workspaceId: "",
 		},
 	},
 	buildArgs: null,
@@ -210,7 +210,7 @@ describe("security: existing symlink escape", () => {
 		const outside = path.join(APPLICATIONS_PATH, "..", "outside");
 		await fs.mkdir(outside, { recursive: true });
 
-		// attacker-controlled symlink inside project
+		// attacker-controlled symlink inside workspace
 		await fs.symlink(outside, path.join(output, "logs"));
 
 		// zip looks totally harmless

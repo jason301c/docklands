@@ -87,7 +87,7 @@ export const RandomizeCompose = ({ composeId }: Props) => {
 			composeId,
 			suffix,
 		}).then(async (data) => {
-			await utils.project.all.invalidate();
+			await utils.workspaces.all.invalidate();
 			setCompose(data);
 		});
 	};
@@ -122,7 +122,7 @@ export const RandomizeCompose = ({ composeId }: Props) => {
 			<Form {...form}>
 				<form
 					onSubmit={form.handleSubmit(onSubmit)}
-					id="hook-form-add-project"
+					id="hook-form-add-workspace"
 					className="grid w-full gap-4"
 				>
 					{isError && (
@@ -176,7 +176,7 @@ export const RandomizeCompose = ({ composeId }: Props) => {
 
 						<div className="flex flex-col lg:flex-row  gap-4 w-full items-end justify-end">
 							<Button
-								form="hook-form-add-project"
+								form="hook-form-add-workspace"
 								type="submit"
 								className="lg:w-fit"
 							>

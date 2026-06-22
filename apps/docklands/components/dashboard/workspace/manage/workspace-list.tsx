@@ -57,18 +57,18 @@ const countEnvironmentServices = (environment: EnvironmentWithServices) =>
 		0,
 	);
 
-const countProjectServices = (project: {
+const countProjectServices = (workspace: {
 	environments: EnvironmentWithServices[];
 }) =>
-	project.environments.reduce(
+	workspace.environments.reduce(
 		(total, environment) => total + countEnvironmentServices(environment),
 		0,
 	);
 
-const countProjectServiceTypes = (project: {
+const countProjectServiceTypes = (workspace: {
 	environments: EnvironmentWithServices[];
 }) =>
-	project.environments.reduce(
+	workspace.environments.reduce(
 		(total, environment) => ({
 			applications: total.applications + environment.applications.length,
 			compose: total.compose + environment.compose.length,
@@ -156,23 +156,23 @@ export const WorkspaceList = () => {
 		});
 	}, [currentPathname, debouncedSearchQuery, router, searchParams]);
 
-	const filteredProjects = useMemo(() => {
+	const filteredWorkspaces = useMemo(() => {
 		if (!data) return [];
 
 		let filtered = data.filter(
-			(project) =>
-				project.name
+			(workspace) =>
+				workspace.name
 					.toLowerCase()
 					.includes(debouncedSearchQuery.toLowerCase()) ||
-				project.description
+				workspace.description
 					?.toLowerCase()
 					.includes(debouncedSearchQuery.toLowerCase()),
 		);
 
 		// Filter by selected tags (OR logic: show workspaces with ANY selected tag).
 		if (selectedTagIds.length > 0) {
-			filtered = filtered.filter((project) =>
-				project.projectTags?.some((pt) =>
+			filtered = filtered.filter((workspace) =>
+				workspace.workspaceTags?.some((pt) =>
 					selectedTagIds.includes(pt.tag.tagId),
 				),
 			);
@@ -201,17 +201,17 @@ export const WorkspaceList = () => {
 		});
 	}, [data, debouncedSearchQuery, sortBy, selectedTagIds]);
 
-	const visibleServicesCount = filteredProjects.reduce(
-		(total, project) => total + countProjectServices(project),
+	const visibleServicesCount = filteredWorkspaces.reduce(
+		(total, workspace) => total + countProjectServices(workspace),
 		0,
 	);
-	const visibleEnvironmentCount = filteredProjects.reduce(
-		(total, project) => total + project.environments.length,
+	const visibleEnvironmentCount = filteredWorkspaces.reduce(
+		(total, workspace) => total + workspace.environments.length,
 		0,
 	);
-	const visibleServiceCounts = filteredProjects.reduce(
-		(total, project) => {
-			const counts = countProjectServiceTypes(project);
+	const visibleServiceCounts = filteredWorkspaces.reduce(
+		(total, workspace) => {
+			const counts = countProjectServiceTypes(workspace);
 			return {
 				applications: total.applications + counts.applications,
 				compose: total.compose + counts.compose,
@@ -238,11 +238,11 @@ export const WorkspaceList = () => {
 								Workspaces
 							</h3>
 							<p className="text-sm text-muted-foreground">
-								{filteredProjects.length} visible · {visibleServicesCount}{" "}
+								{filteredWorkspaces.length} visible · {visibleServicesCount}{" "}
 								services
 							</p>
 						</div>
-						{permissions?.project.create && (
+						{permissions?.workspace.create && (
 							<div className="">
 								<HandleWorkspace />
 							</div>
@@ -263,7 +263,7 @@ export const WorkspaceList = () => {
 											Visible workspaces
 										</p>
 										<p className="mt-2 text-2xl font-semibold tabular-nums">
-											{filteredProjects.length}
+											{filteredWorkspaces.length}
 										</p>
 										<p className="mt-2 text-xs text-muted-foreground">
 											{visibleEnvironmentCount} environments
@@ -358,7 +358,7 @@ export const WorkspaceList = () => {
 										</div>
 									</div>
 								</div>
-								{filteredProjects?.length === 0 && (
+								{filteredWorkspaces?.length === 0 && (
 									<div className="mt-6 flex h-[50vh] w-full flex-col items-center justify-center space-y-4">
 										<FolderInput className="size-8 self-center text-muted-foreground" />
 										<span className="text-center font-medium text-muted-foreground">
@@ -367,32 +367,33 @@ export const WorkspaceList = () => {
 									</div>
 								)}
 								<div className="w-full grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5 flex-wrap gap-5">
-									{filteredProjects?.map((project) => {
-										const totalServices = countProjectServices(project);
-										const serviceCounts = countProjectServiceTypes(project);
+									{filteredWorkspaces?.map((workspace) => {
+										const totalServices = countProjectServices(workspace);
+										const serviceCounts = countProjectServiceTypes(workspace);
 										const emptyServices = totalServices === 0;
 										const accessibleEnvironment =
-											project?.environments.find((env) => env.isDefault) ||
-											project?.environments?.[0];
-										const visibleEnvironments = project.environments.slice(
+											workspace?.environments.find((env) => env.isDefault) ||
+											workspace?.environments?.[0];
+										const visibleEnvironments = workspace.environments.slice(
 											0,
 											3,
 										);
 										const hiddenEnvironmentCount = Math.max(
 											0,
-											project.environments.length - visibleEnvironments.length,
+											workspace.environments.length -
+												visibleEnvironments.length,
 										);
 										const hasNoEnvironments = !accessibleEnvironment;
 										const workspaceHref = hasNoEnvironments
 											? null
 											: workspaceEnvironmentPath({
-													workspaceId: project.projectId,
+													workspaceId: workspace.workspaceId,
 													environmentId: accessibleEnvironment.environmentId,
 												});
 
 										return (
 											<LayerCard
-												key={project.projectId}
+												key={workspace.workspaceId}
 												className="group flex h-full min-h-[230px] flex-col bg-background transition-colors hover:bg-muted/30"
 											>
 												<div className="flex items-start justify-between gap-3">
@@ -404,17 +405,17 @@ export const WorkspaceList = () => {
 																	href={workspaceHref}
 																	className="truncate text-base font-medium leading-none hover:underline"
 																>
-																	{project.name}
+																	{workspace.name}
 																</Link>
 															) : (
 																<span className="truncate text-base font-medium leading-none">
-																	{project.name}
+																	{workspace.name}
 																</span>
 															)}
 														</div>
-														{project.description && (
+														{workspace.description && (
 															<p className="line-clamp-2 text-sm text-muted-foreground">
-																{project.description}
+																{workspace.description}
 															</p>
 														)}
 													</div>
@@ -442,17 +443,17 @@ export const WorkspaceList = () => {
 															</DropdownMenu.Label>
 															<div onClick={(e) => e.stopPropagation()}>
 																<WorkspaceVariables
-																	projectId={project.projectId}
+																	workspaceId={workspace.workspaceId}
 																/>
 															</div>
 															<div onClick={(e) => e.stopPropagation()}>
 																<HandleWorkspace
-																	projectId={project.projectId}
+																	workspaceId={workspace.workspaceId}
 																/>
 															</div>
 
 															<div onClick={(e) => e.stopPropagation()}>
-																{permissions?.project.delete && (
+																{permissions?.workspace.delete && (
 																	<Dialog.Root role="alertdialog">
 																		<Dialog.Trigger className="w-full">
 																			<DropdownMenu.Item
@@ -488,7 +489,8 @@ export const WorkspaceList = () => {
 																					onClick={async () => {
 																						try {
 																							await mutateAsync({
-																								projectId: project.projectId,
+																								workspaceId:
+																									workspace.workspaceId,
 																							});
 																							toast.success(
 																								"Workspace deleted",
@@ -498,7 +500,7 @@ export const WorkspaceList = () => {
 																								"Error deleting this workspace",
 																							);
 																						} finally {
-																							await utils.project.all.invalidate();
+																							await utils.workspaces.all.invalidate();
 																						}
 																					}}
 																				>
@@ -513,10 +515,10 @@ export const WorkspaceList = () => {
 													</DropdownMenu>
 												</div>
 
-												{project.projectTags &&
-													project.projectTags.length > 0 && (
+												{workspace.workspaceTags &&
+													workspace.workspaceTags.length > 0 && (
 														<div className="mt-4 flex flex-wrap gap-1.5">
-															{project.projectTags.map((pt) => (
+															{workspace.workspaceTags.map((pt) => (
 																<TagBadge
 																	key={pt.tag.tagId}
 																	name={pt.tag.name}
@@ -582,12 +584,12 @@ export const WorkspaceList = () => {
 															<FolderInput className="size-4 text-muted-foreground" />
 															<div className="text-muted-foreground">Envs</div>
 															<div className="text-lg font-semibold tabular-nums">
-																{project.environments.length}
+																{workspace.environments.length}
 															</div>
 														</div>
 													</div>
 													<div className="mt-4 flex items-center justify-between gap-3">
-														<DateTooltip date={project.createdAt}>
+														<DateTooltip date={workspace.createdAt}>
 															Created
 														</DateTooltip>
 														{workspaceHref ? (

@@ -6,7 +6,7 @@ import {
 	createServerDeployment,
 	updateDeploymentStatus,
 } from "@/server/core/services/deployment";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	getDefaultMiddlewares,
 	getDefaultServerTraefikConfig,
@@ -31,30 +31,30 @@ export const slugify = (text: string | undefined) => {
 	});
 };
 
-export const serverSetup = async (
-	serverId: string,
+export const runtimeWorkerSetup = async (
+	runtimeWorkerId: string,
 	onData?: (data: any) => void,
 ) => {
-	const server = await findServerById(serverId);
+	const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 	const { LOGS_PATH } = paths();
-	const isBuildServer = server.serverType === "build";
+	const isBuildServer = runtimeWorker.runtimeWorkerType === "build";
 	const workerKind = isBuildServer ? "Build Worker" : "Runtime Worker";
 
-	const slugifyName = slugify(`${workerKind} ${server.name}`);
+	const slugifyName = slugify(`${workerKind} ${runtimeWorker.name}`);
 
 	const fullPath = path.join(LOGS_PATH, slugifyName);
 
 	await recreateDirectory(fullPath);
 
 	const deployment = await createServerDeployment({
-		serverId: server.serverId,
+		runtimeWorkerId: runtimeWorker.runtimeWorkerId,
 		title: `Setup ${workerKind}`,
 		description: `Setup ${workerKind}`,
 	});
 
 	try {
 		onData?.(`\nInstalling ${workerKind} Dependencies: ✅\n`);
-		await installRequirements(serverId, onData);
+		await installRequirements(runtimeWorkerId, onData);
 
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 
@@ -232,22 +232,22 @@ ${setupPermissions()}
 };
 
 const installRequirements = async (
-	serverId: string,
+	runtimeWorkerId: string,
 	onData?: (data: any) => void,
 ) => {
 	const client = new Client();
-	const server = await findServerById(serverId);
-	if (!server.sshKeyId) {
+	const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
+	if (!runtimeWorker.sshKeyId) {
 		onData?.("❌ No SSH Key found, please assign one to this worker");
 		throw new Error("No SSH Key found");
 	}
 
-	const isBuildServer = server.serverType === "build";
+	const isBuildServer = runtimeWorker.runtimeWorkerType === "build";
 
 	return new Promise<void>((resolve, reject) => {
 		client
 			.once("ready", () => {
-				const command = server.command || defaultCommand(isBuildServer);
+				const command = runtimeWorker.command || defaultCommand(isBuildServer);
 				client.exec(command, (err, stream) => {
 					if (err) {
 						onData?.(err.message);
@@ -310,10 +310,10 @@ const installRequirements = async (
 				}
 			})
 			.connect({
-				host: server.ipAddress,
-				port: server.port,
-				username: server.username,
-				privateKey: server.sshKey?.privateKey,
+				host: runtimeWorker.ipAddress,
+				port: runtimeWorker.port,
+				username: runtimeWorker.username,
+				privateKey: runtimeWorker.sshKey?.privateKey,
 			});
 	});
 };

@@ -52,7 +52,7 @@ import {
 	findPreviewDeploymentById,
 	updatePreviewDeployment,
 } from "./preview-deployment";
-import { validUniqueServerAppName } from "./project";
+import { validUniqueServerAppName } from "./workspace";
 
 export type Application = typeof applications.$inferSelect;
 
@@ -98,7 +98,7 @@ export const findApplicationById = async (applicationId: string) => {
 	const application = await db.query.applications.findFirst({
 		where: eq(applications.applicationId, applicationId),
 		with: {
-			environment: { with: { project: true } },
+			environment: { with: { workspace: true } },
 			domains: true,
 			deployments: true,
 			mounts: true,
@@ -109,7 +109,7 @@ export const findApplicationById = async (applicationId: string) => {
 			github: true,
 			bitbucket: true,
 			gitea: true,
-			server: true,
+			runtimeWorker: true,
 			previewDeployments: true,
 			registry: { columns: { password: false } },
 			buildRegistry: { columns: { password: false } },
@@ -174,14 +174,15 @@ export const deployApplication = async ({
 	descriptionLog: string;
 }) => {
 	const application = await findApplicationById(applicationId);
-	const serverId = application.buildServerId || application.serverId;
+	const runtimeWorkerId =
+		application.buildRuntimeWorkerId || application.runtimeWorkerId;
 	const applicationEntity = {
 		...application,
-		serverId: serverId,
+		runtimeWorkerId: runtimeWorkerId,
 	};
 
 	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
-		workspaceId: application.environment.projectId,
+		workspaceId: application.environment.workspaceId,
 		environmentId: application.environmentId,
 		serviceType: "application",
 		serviceId: application.applicationId,
@@ -213,15 +214,15 @@ export const deployApplication = async ({
 			command += await generateApplyPatchesCommand({
 				id: application.applicationId,
 				type: "application",
-				serverId,
+				runtimeWorkerId,
 			});
 		}
 
 		command += await getBuildCommand(application);
 
 		const commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-		if (serverId) {
-			await execAsyncRemote(serverId, commandWithLog);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, commandWithLog);
 		} else {
 			await execAsync(commandWithLog);
 		}
@@ -231,11 +232,11 @@ export const deployApplication = async ({
 		await updateApplicationStatus(applicationId, "done");
 
 		await sendBuildSuccessNotifications({
-			projectName: application.environment.project.name,
+			projectName: application.environment.workspace.name,
 			applicationName: application.name,
 			applicationType: "application",
 			buildLink,
-			organizationId: application.environment.project.organizationId,
+			organizationId: application.environment.workspace.organizationId,
 			domains: application.domains,
 			environmentName: application.environment.name,
 		});
@@ -250,8 +251,8 @@ export const deployApplication = async ({
 		}
 
 		command += `echo "\nError occurred ❌, check the logs for details." >> ${deployment.logPath};`;
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -260,17 +261,17 @@ export const deployApplication = async ({
 
 		const errorMessage = await getDeploymentErrorMessage({
 			logPath: deployment.logPath,
-			serverId,
+			runtimeWorkerId,
 			fallback: "Error building, check the logs for details.",
 		});
 
 		await sendBuildErrorNotifications({
-			projectName: application.environment.project.name,
+			projectName: application.environment.workspace.name,
 			applicationName: application.name,
 			applicationType: "application",
 			errorMessage,
 			buildLink,
-			organizationId: application.environment.project.organizationId,
+			organizationId: application.environment.workspace.organizationId,
 		});
 
 		throw error;
@@ -280,7 +281,7 @@ export const deployApplication = async ({
 			const commitInfo = await getGitCommitInfo({
 				appName: application.appName,
 				type: "application",
-				serverId: serverId,
+				runtimeWorkerId: runtimeWorkerId,
 			});
 			if (commitInfo) {
 				await updateDeployment(deployment.deploymentId, {
@@ -303,9 +304,10 @@ export const rebuildApplication = async ({
 	descriptionLog: string;
 }) => {
 	const application = await findApplicationById(applicationId);
-	const serverId = application.buildServerId || application.serverId;
+	const runtimeWorkerId =
+		application.buildRuntimeWorkerId || application.runtimeWorkerId;
 	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
-		workspaceId: application.environment.projectId,
+		workspaceId: application.environment.workspaceId,
 		environmentId: application.environmentId,
 		serviceType: "application",
 		serviceId: application.applicationId,
@@ -323,8 +325,8 @@ export const rebuildApplication = async ({
 		// Check case for docker only
 		command += await getBuildCommand(application);
 		const commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-		if (serverId) {
-			await execAsyncRemote(serverId, commandWithLog);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, commandWithLog);
 		} else {
 			await execAsync(commandWithLog);
 		}
@@ -333,11 +335,11 @@ export const rebuildApplication = async ({
 		await updateApplicationStatus(applicationId, "done");
 
 		await sendBuildSuccessNotifications({
-			projectName: application.environment.project.name,
+			projectName: application.environment.workspace.name,
 			applicationName: application.name,
 			applicationType: "application",
 			buildLink,
-			organizationId: application.environment.project.organizationId,
+			organizationId: application.environment.workspace.organizationId,
 			domains: application.domains,
 			environmentName: application.environment.name,
 		});
@@ -352,8 +354,8 @@ export const rebuildApplication = async ({
 		}
 
 		command += `echo "\nError occurred ❌, check the logs for details." >> ${deployment.logPath};`;
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -449,8 +451,8 @@ export const deployPreviewApplication = async ({
 			command += await getBuildCommand(application);
 
 			const commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-			if (application.serverId) {
-				await execAsyncRemote(application.serverId, commandWithLog);
+			if (application.runtimeWorkerId) {
+				await execAsyncRemote(application.runtimeWorkerId, commandWithLog);
 			} else {
 				await execAsync(commandWithLog);
 			}
@@ -558,13 +560,13 @@ export const rebuildPreviewApplication = async ({
 		application.rollbackRegistry = null;
 		application.registry = null;
 
-		const serverId = application.serverId;
+		const runtimeWorkerId = application.runtimeWorkerId;
 		let command = "set -e;";
 		// Only rebuild, don't clone repository
 		command += await getBuildCommand(application);
 		const commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-		if (serverId) {
-			await execAsyncRemote(serverId, commandWithLog);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, commandWithLog);
 		} else {
 			await execAsync(commandWithLog);
 		}
@@ -594,9 +596,10 @@ export const rebuildPreviewApplication = async ({
 		}
 
 		command += `echo "\nError occurred ❌, check the logs for details." >> ${deployment.logPath};`;
-		const serverId = application.buildServerId || application.serverId;
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		const runtimeWorkerId =
+			application.buildRuntimeWorkerId || application.runtimeWorkerId;
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}

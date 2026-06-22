@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1782059216241,
+      "when": 1782118650519,
       "tag": "0000_docklands_baseline",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1782070369682,
-      "tag": "0001_next_riptide",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1782113804567,
-      "tag": "0002_remove_legacy_project_env_and_bitbucket_password",
       "breakpoints": true
     }
   ]

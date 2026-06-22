@@ -58,10 +58,14 @@ export const createRegistry = async (
 			});
 		}
 
-		if (IS_CLOUD && !input.serverId && input.serverId !== "none") {
+		if (
+			IS_CLOUD &&
+			!input.runtimeWorkerId &&
+			input.runtimeWorkerId !== "none"
+		) {
 			throw new TRPCError({
 				code: "NOT_FOUND",
-				message: "Select a server to add the registry",
+				message: "Select a runtimeWorker to add the registry",
 			});
 		}
 		const loginCommand = safeDockerLoginCommand(
@@ -70,8 +74,8 @@ export const createRegistry = async (
 			input.password,
 		);
 		try {
-			if (input.serverId && input.serverId !== "none") {
-				await execAsyncRemote(input.serverId, loginCommand);
+			if (input.runtimeWorkerId && input.runtimeWorkerId !== "none") {
+				await execAsyncRemote(input.runtimeWorkerId, loginCommand);
 			} else if (newRegistry.registryType === "cloud") {
 				await execAsync(loginCommand);
 			}
@@ -115,7 +119,7 @@ export const removeRegistry = async (registryId: string) => {
 
 export const updateRegistry = async (
 	registryId: string,
-	registryData: Partial<Registry> & { serverId?: string | null },
+	registryData: Partial<Registry> & { runtimeWorkerId?: string | null },
 ) => {
 	try {
 		const response = await db
@@ -135,18 +139,21 @@ export const updateRegistry = async (
 
 		if (
 			IS_CLOUD &&
-			!registryData?.serverId &&
-			registryData?.serverId !== "none"
+			!registryData?.runtimeWorkerId &&
+			registryData?.runtimeWorkerId !== "none"
 		) {
 			throw new TRPCError({
 				code: "NOT_FOUND",
-				message: "Select a server to add the registry",
+				message: "Select a runtimeWorker to add the registry",
 			});
 		}
 
 		try {
-			if (registryData?.serverId && registryData?.serverId !== "none") {
-				await execAsyncRemote(registryData.serverId, loginCommand);
+			if (
+				registryData?.runtimeWorkerId &&
+				registryData?.runtimeWorkerId !== "none"
+			) {
+				await execAsyncRemote(registryData.runtimeWorkerId, loginCommand);
 			} else if (response?.registryType === "cloud") {
 				await execAsync(loginCommand);
 			}

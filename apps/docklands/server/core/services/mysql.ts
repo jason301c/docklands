@@ -12,7 +12,7 @@ import { generatePassword } from "@/server/core/templates";
 import { buildMysql } from "@/server/core/utils/databases/mysql";
 import { pullImage } from "@/server/core/utils/docker/utils";
 import { execAsyncRemote } from "@/server/core/utils/process/execAsync";
-import { validUniqueServerAppName } from "./project";
+import { validUniqueServerAppName } from "./workspace";
 
 export type MySql = typeof mysql.$inferSelect;
 
@@ -59,11 +59,11 @@ export const findMySqlById = async (mysqlId: string) => {
 		with: {
 			environment: {
 				with: {
-					project: true,
+					workspace: true,
 				},
 			},
 			mounts: true,
-			server: true,
+			runtimeWorker: true,
 			backups: {
 				with: {
 					destination: {
@@ -140,9 +140,9 @@ export const deployMySql = async (
 			applicationStatus: "running",
 		});
 		onData?.("Starting mysql deployment...");
-		if (mysql.serverId) {
+		if (mysql.runtimeWorkerId) {
 			await execAsyncRemote(
-				mysql.serverId,
+				mysql.runtimeWorkerId,
 				`docker pull ${mysql.dockerImage}`,
 				onData,
 			);

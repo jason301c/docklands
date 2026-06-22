@@ -20,16 +20,16 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 
-/** Shape returned by project.allForPermissions (admin only). Used for the permissions UI. */
+/** Shape returned by workspace.allForPermissions (admin only). Used for the permissions UI. */
 type ProjectForPermissions =
-	RouterOutputs["project"]["allForPermissions"][number];
+	RouterOutputs["workspaces"]["allForPermissions"][number];
 type EnvironmentForPermissions = ProjectForPermissions["environments"][number];
 
 type Environment = EnvironmentForPermissions;
 
 export type Services = {
 	appName: string;
-	serverId?: string | null;
+	runtimeWorkerId?: string | null;
 	name: string;
 	type:
 		| "mariadb"
@@ -55,7 +55,7 @@ export const extractServices = (data: Environment | undefined) => {
 		createdAt: item.createdAt,
 		status: item.applicationStatus,
 		description: item.description,
-		serverId: item.serverId,
+		runtimeWorkerId: item.runtimeWorkerId,
 	})) ?? []) as Services[];
 
 	const mariadb: Services[] =
@@ -67,7 +67,7 @@ export const extractServices = (data: Environment | undefined) => {
 			createdAt: item.createdAt,
 			status: item.applicationStatus,
 			description: item.description,
-			serverId: item.serverId,
+			runtimeWorkerId: item.runtimeWorkerId,
 		})) || [];
 
 	const postgres: Services[] =
@@ -79,7 +79,7 @@ export const extractServices = (data: Environment | undefined) => {
 			createdAt: item.createdAt,
 			status: item.applicationStatus,
 			description: item.description,
-			serverId: item.serverId,
+			runtimeWorkerId: item.runtimeWorkerId,
 		})) || [];
 
 	const mongo: Services[] =
@@ -91,7 +91,7 @@ export const extractServices = (data: Environment | undefined) => {
 			createdAt: item.createdAt,
 			status: item.applicationStatus,
 			description: item.description,
-			serverId: item.serverId,
+			runtimeWorkerId: item.runtimeWorkerId,
 		})) || [];
 
 	const redis: Services[] =
@@ -103,7 +103,7 @@ export const extractServices = (data: Environment | undefined) => {
 			createdAt: item.createdAt,
 			status: item.applicationStatus,
 			description: item.description,
-			serverId: item.serverId,
+			runtimeWorkerId: item.runtimeWorkerId,
 		})) || [];
 
 	const mysql: Services[] =
@@ -115,7 +115,7 @@ export const extractServices = (data: Environment | undefined) => {
 			createdAt: item.createdAt,
 			status: item.applicationStatus,
 			description: item.description,
-			serverId: item.serverId,
+			runtimeWorkerId: item.runtimeWorkerId,
 		})) || [];
 
 	const compose: Services[] = (data?.compose?.map((item) => ({
@@ -126,7 +126,7 @@ export const extractServices = (data: Environment | undefined) => {
 		createdAt: item.createdAt,
 		status: item.composeStatus,
 		description: item.description,
-		serverId: item.serverId,
+		runtimeWorkerId: item.runtimeWorkerId,
 	})) ?? []) as Services[];
 
 	const libsql: Services[] =
@@ -138,7 +138,7 @@ export const extractServices = (data: Environment | undefined) => {
 			createdAt: item.createdAt,
 			status: item.applicationStatus,
 			description: item.description,
-			serverId: item.serverId,
+			runtimeWorkerId: item.runtimeWorkerId,
 		})) || [];
 
 	applications.push(
@@ -159,14 +159,14 @@ export const extractServices = (data: Environment | undefined) => {
 };
 
 const addPermissions = z.object({
-	accessedProjects: z.array(z.string()).optional(),
+	accessedWorkspaces: z.array(z.string()).optional(),
 	accessedEnvironments: z.array(z.string()).optional(),
 	accessedServices: z.array(z.string()).optional(),
 	accessedGitProviders: z.array(z.string()).optional(),
-	accessedServers: z.array(z.string()).optional(),
-	canCreateProjects: z.boolean().optional().default(false),
+	accessedRuntimeWorkers: z.array(z.string()).optional(),
+	canCreateWorkspaces: z.boolean().optional().default(false),
 	canCreateServices: z.boolean().optional().default(false),
-	canDeleteProjects: z.boolean().optional().default(false),
+	canDeleteWorkspaces: z.boolean().optional().default(false),
 	canDeleteServices: z.boolean().optional().default(false),
 	canDeleteEnvironments: z.boolean().optional().default(false),
 	canAccessToTraefikFiles: z.boolean().optional().default(false),
@@ -187,7 +187,7 @@ interface Props {
 export const AddUserPermissions = ({ userId, role }: Props) => {
 	const isCustomRole = !!role && !["owner", "admin", "member"].includes(role);
 	const [isOpen, setIsOpen] = useState(false);
-	const { data: projects } = api.workspaces.allForPermissions.useQuery(
+	const { data: workspaces } = api.workspaces.allForPermissions.useQuery(
 		undefined,
 		{
 			enabled: isOpen,
@@ -200,7 +200,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 		},
 	);
 
-	const { data: servers } = api.runtimeWorker.allForPermissions.useQuery(
+	const { data: runtimeWorkers } = api.runtimeWorker.allForPermissions.useQuery(
 		undefined,
 		{
 			enabled: isOpen,
@@ -221,15 +221,15 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 
 	const form = useForm({
 		defaultValues: {
-			accessedProjects: [],
+			accessedWorkspaces: [],
 			accessedEnvironments: [],
 			accessedServices: [],
 			accessedGitProviders: [],
-			accessedServers: [],
+			accessedRuntimeWorkers: [],
 			canDeleteEnvironments: false,
-			canCreateProjects: false,
+			canCreateWorkspaces: false,
 			canCreateServices: false,
-			canDeleteProjects: false,
+			canDeleteWorkspaces: false,
 			canDeleteServices: false,
 			canAccessToTraefikFiles: false,
 			canAccessToDocker: false,
@@ -244,14 +244,14 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 	useEffect(() => {
 		if (data && isOpen) {
 			form.reset({
-				accessedProjects: data.accessedProjects || [],
+				accessedWorkspaces: data.accessedWorkspaces || [],
 				accessedEnvironments: data.accessedEnvironments || [],
 				accessedServices: data.accessedServices || [],
 				accessedGitProviders: data.accessedGitProviders || [],
-				accessedServers: data.accessedServers || [],
-				canCreateProjects: data.canCreateProjects,
+				accessedRuntimeWorkers: data.accessedRuntimeWorkers || [],
+				canCreateWorkspaces: data.canCreateWorkspaces,
 				canCreateServices: data.canCreateServices,
-				canDeleteProjects: data.canDeleteProjects,
+				canDeleteWorkspaces: data.canDeleteWorkspaces,
 				canDeleteServices: data.canDeleteServices,
 				canDeleteEnvironments: data.canDeleteEnvironments || false,
 				canAccessToTraefikFiles: data.canAccessToTraefikFiles,
@@ -268,16 +268,16 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 		await mutateAsync({
 			id: userId,
 			canCreateServices: data.canCreateServices,
-			canCreateProjects: data.canCreateProjects,
+			canCreateWorkspaces: data.canCreateWorkspaces,
 			canDeleteServices: data.canDeleteServices,
-			canDeleteProjects: data.canDeleteProjects,
+			canDeleteWorkspaces: data.canDeleteWorkspaces,
 			canDeleteEnvironments: data.canDeleteEnvironments,
 			canAccessToTraefikFiles: data.canAccessToTraefikFiles,
-			accessedProjects: data.accessedProjects || [],
+			accessedWorkspaces: data.accessedWorkspaces || [],
 			accessedEnvironments: data.accessedEnvironments || [],
 			accessedServices: data.accessedServices || [],
 			accessedGitProviders: data.accessedGitProviders || [],
-			accessedServers: data.accessedServers || [],
+			accessedRuntimeWorkers: data.accessedRuntimeWorkers || [],
 			canAccessToDocker: data.canAccessToDocker,
 			canAccessToAPI: data.canAccessToAPI,
 			canAccessToSSHKeys: data.canAccessToSSHKeys,
@@ -330,7 +330,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 							<>
 								<FormField
 									control={form.control}
-									name="canCreateProjects"
+									name="canCreateWorkspaces"
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 											<div className="space-y-0.5">
@@ -350,7 +350,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 								/>
 								<FormField
 									control={form.control}
-									name="canDeleteProjects"
+									name="canDeleteWorkspaces"
 									render={({ field }) => (
 										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
 											<div className="space-y-0.5">
@@ -552,7 +552,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 						)}
 						<FormField
 							control={form.control}
-							name="accessedProjects"
+							name="accessedWorkspaces"
 							render={() => (
 								<FormItem className="md:col-span-2">
 									<div className="mb-4">
@@ -561,22 +561,22 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 											Select the workspaces that the user can access
 										</FormDescription>
 									</div>
-									{projects?.length === 0 && (
+									{workspaces?.length === 0 && (
 										<p className="text-sm text-muted-foreground">
 											No workspaces found
 										</p>
 									)}
 									<div className="grid md:grid-cols-1 gap-4">
-										{projects?.map((project, projectIndex) => {
+										{workspaces?.map((workspace, projectIndex) => {
 											return (
 												<FormField
-													key={`project-${projectIndex}`}
+													key={`workspace-${projectIndex}`}
 													control={form.control}
-													name="accessedProjects"
+													name="accessedWorkspaces"
 													render={({ field }) => {
 														return (
 															<FormItem
-																key={project.projectId}
+																key={workspace.workspaceId}
 																className="flex flex-col items-start rounded-lg p-4 border"
 															>
 																{/* Workspace header */}
@@ -584,25 +584,25 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																	<FormControl>
 																		<Checkbox
 																			checked={field.value?.includes(
-																				project.projectId,
+																				workspace.workspaceId,
 																			)}
 																			onCheckedChange={(checked) => {
 																				if (checked) {
-																					// Add the project
+																					// Add the workspace
 																					field.onChange([
 																						...(field.value || []),
-																						project.projectId,
+																						workspace.workspaceId,
 																					]);
 																				} else {
-																					// Remove the project
+																					// Remove the workspace
 																					field.onChange(
 																						field.value?.filter(
 																							(value) =>
-																								value !== project.projectId,
+																								value !== workspace.workspaceId,
 																						),
 																					);
 
-																					// Also remove all environments and services from this project
+																					// Also remove all environments and services from this workspace
 																					const currentEnvs =
 																						form.getValues(
 																							"accessedEnvironments",
@@ -612,22 +612,22 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																							"accessedServices",
 																						) || [];
 
-																					// Get all environment IDs from this project
+																					// Get all environment IDs from this workspace
 																					const projectEnvIds =
-																						project.environments.map(
+																						workspace.environments.map(
 																							(env) => env.environmentId,
 																						);
 
-																					// Get all service IDs from this project
+																					// Get all service IDs from this workspace
 																					const projectServiceIds =
-																						project.environments.flatMap(
+																						workspace.environments.flatMap(
 																							(env) =>
 																								extractServices(env).map(
 																									(service) => service.id,
 																								),
 																						);
 
-																					// Remove environments and services from this project
+																					// Remove environments and services from this workspace
 																					form.setValue(
 																						"accessedEnvironments",
 																						currentEnvs.filter(
@@ -649,18 +649,18 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																		/>
 																	</FormControl>
 																	<FormLabel className="text-base font-semibold text-primary">
-																		{project.name}
+																		{workspace.name}
 																	</FormLabel>
 																</div>
 
 																{/* Environments */}
 																<div className="ml-6 w-full space-y-3">
-																	{project.environments.length === 0 && (
+																	{workspace.environments.length === 0 && (
 																		<p className="text-sm text-muted-foreground">
 																			No environments found
 																		</p>
 																	)}
-																	{project.environments.map(
+																	{workspace.environments.map(
 																		(environment, envIndex) => {
 																			const services =
 																				extractServices(environment);
@@ -692,21 +692,21 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																													environment.environmentId,
 																												]);
 
-																												// Auto-select the project if not already selected
-																												const currentProjects =
+																												// Auto-select the workspace if not already selected
+																												const currentWorkspaces =
 																													form.getValues(
-																														"accessedProjects",
+																														"accessedWorkspaces",
 																													) || [];
 																												if (
-																													!currentProjects.includes(
-																														project.projectId,
+																													!currentWorkspaces.includes(
+																														workspace.workspaceId,
 																													)
 																												) {
 																													form.setValue(
-																														"accessedProjects",
+																														"accessedWorkspaces",
 																														[
-																															...currentProjects,
-																															project.projectId,
+																															...currentWorkspaces,
+																															workspace.workspaceId,
 																														],
 																													);
 																												}
@@ -815,21 +815,21 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																																	);
 																																}
 
-																																// Auto-select the project if not already selected
-																																const currentProjects =
+																																// Auto-select the workspace if not already selected
+																																const currentWorkspaces =
 																																	form.getValues(
-																																		"accessedProjects",
+																																		"accessedWorkspaces",
 																																	) || [];
 																																if (
-																																	!currentProjects.includes(
-																																		project.projectId,
+																																	!currentWorkspaces.includes(
+																																		workspace.workspaceId,
 																																	)
 																																) {
 																																	form.setValue(
-																																		"accessedProjects",
+																																		"accessedWorkspaces",
 																																		[
-																																			...currentProjects,
-																																			project.projectId,
+																																			...currentWorkspaces,
+																																			workspace.workspaceId,
 																																		],
 																																	);
 																																}
@@ -953,7 +953,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 						/>
 						<FormField
 							control={form.control}
-							name="accessedServers"
+							name="accessedRuntimeWorkers"
 							render={() => (
 								<FormItem className="md:col-span-2">
 									<div className="mb-4">
@@ -962,32 +962,35 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 											Select the runtime workers that the user can access
 										</FormDescription>
 									</div>
-									{servers?.length === 0 && (
+									{runtimeWorkers?.length === 0 && (
 										<p className="text-sm text-muted-foreground">
 											No runtime workers found
 										</p>
 									)}
 									<div className="grid md:grid-cols-1 gap-2">
-										{servers?.map((s) => (
+										{runtimeWorkers?.map((runtimeWorker) => (
 											<FormField
-												key={s.serverId}
+												key={runtimeWorker.runtimeWorkerId}
 												control={form.control}
-												name="accessedServers"
+												name="accessedRuntimeWorkers"
 												render={({ field }) => (
 													<FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3">
 														<FormControl>
 															<Checkbox
-																checked={field.value?.includes(s.serverId)}
+																checked={field.value?.includes(
+																	runtimeWorker.runtimeWorkerId,
+																)}
 																onCheckedChange={(checked) => {
 																	if (checked) {
 																		field.onChange([
 																			...(field.value || []),
-																			s.serverId,
+																			runtimeWorker.runtimeWorkerId,
 																		]);
 																	} else {
 																		field.onChange(
 																			field.value?.filter(
-																				(v) => v !== s.serverId,
+																				(v) =>
+																					v !== runtimeWorker.runtimeWorkerId,
 																			),
 																		);
 																	}
@@ -996,13 +999,13 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 														</FormControl>
 														<div className="flex items-center gap-2">
 															<FormLabel className="text-sm cursor-pointer">
-																{s.name}
+																{runtimeWorker.name}
 															</FormLabel>
 															<span className="text-xs text-muted-foreground">
-																({s.ipAddress})
+																({runtimeWorker.ipAddress})
 															</span>
 															<span className="text-xs text-muted-foreground capitalize">
-																{s.serverType}
+																{runtimeWorker.runtimeWorkerType}
 															</span>
 														</div>
 													</FormItem>

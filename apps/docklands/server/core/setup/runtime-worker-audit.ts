@@ -1,5 +1,5 @@
 import { Client } from "ssh2";
-import { findServerById } from "../services/server";
+import { findRuntimeWorkerById } from "../services/runtime-worker";
 
 // Thanks for the idea to https://github.com/healthyhost/audit-vps-script/tree/main
 const validateUfw = () => `
@@ -81,10 +81,10 @@ const validateFail2ban = () => `
   fi
 `;
 
-export const serverAudit = async (serverId: string) => {
+export const runtimeWorkerAudit = async (runtimeWorkerId: string) => {
 	const client = new Client();
-	const server = await findServerById(serverId);
-	if (!server.sshKeyId) {
+	const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
+	if (!runtimeWorker.sshKeyId) {
 		throw new Error("No SSH Key found");
 	}
 
@@ -142,10 +142,10 @@ export const serverAudit = async (serverId: string) => {
 				}
 			})
 			.connect({
-				host: server.ipAddress,
-				port: server.port,
-				username: server.username,
-				privateKey: server.sshKey?.privateKey,
+				host: runtimeWorker.ipAddress,
+				port: runtimeWorker.port,
+				username: runtimeWorker.username,
+				privateKey: runtimeWorker.sshKey?.privateKey,
 			});
 	});
 };

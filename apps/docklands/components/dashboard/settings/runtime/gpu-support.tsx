@@ -8,10 +8,10 @@ import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 
 interface GPUSupportProps {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export function GPUSupport({ serverId }: GPUSupportProps) {
+export function GPUSupport({ runtimeWorkerId }: GPUSupportProps) {
 	const [isLoading, setIsLoading] = useState(false);
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const utils = api.useUtils();
@@ -21,9 +21,9 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 		isLoading: isChecking,
 		refetch,
 	} = api.settings.checkGPUStatus.useQuery(
-		{ serverId },
+		{ runtimeWorkerId },
 		{
-			enabled: serverId !== undefined,
+			enabled: runtimeWorkerId !== undefined,
 		},
 	);
 
@@ -34,7 +34,7 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 		onSuccess: async () => {
 			toast.success("GPU support enabled successfully");
 			setIsLoading(false);
-			await utils.settings.checkGPUStatus.invalidate({ serverId });
+			await utils.settings.checkGPUStatus.invalidate({ runtimeWorkerId });
 		},
 		onError: (error) => {
 			toast.error(
@@ -48,7 +48,7 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 	const handleRefresh = async () => {
 		setIsRefreshing(true);
 		try {
-			await utils.settings.checkGPUStatus.invalidate({ serverId });
+			await utils.settings.checkGPUStatus.invalidate({ runtimeWorkerId });
 			await refetch();
 		} catch {
 			toast.error("Failed to refresh GPU status");
@@ -61,13 +61,13 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 	}, []);
 
 	const handleEnableGPU = async () => {
-		if (serverId === undefined) {
+		if (runtimeWorkerId === undefined) {
 			toast.error("No runtime selected");
 			return;
 		}
 
 		try {
-			await setupGPU.mutateAsync({ serverId });
+			await setupGPU.mutateAsync({ runtimeWorkerId });
 		} catch {
 			// Error handling is done in mutation's onError
 		}
@@ -94,7 +94,9 @@ export function GPUSupport({ serverId }: GPUSupportProps) {
 								>
 									<Button
 										loading={isLoading}
-										disabled={isLoading || serverId === undefined || isChecking}
+										disabled={
+											isLoading || runtimeWorkerId === undefined || isChecking
+										}
 									>
 										{isLoading
 											? "Loading..."

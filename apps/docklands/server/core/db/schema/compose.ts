@@ -13,8 +13,8 @@ import { github } from "./github";
 import { gitlab } from "./gitlab";
 import { mounts } from "./mount";
 import { patch } from "./patch";
+import { runtimeWorkers } from "./runtime-worker";
 import { schedules } from "./schedule";
-import { server } from "./server";
 import { applicationStatus, triggerType } from "./shared";
 import { sshKeys } from "./ssh-key";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX, generateAppName } from "./utils";
@@ -106,9 +106,12 @@ export const compose = pgTable("compose", {
 	giteaId: text("giteaId").references(() => gitea.giteaId, {
 		onDelete: "set null",
 	}),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 });
 
 export const composeRelations = relations(compose, ({ one, many }) => ({
@@ -139,9 +142,9 @@ export const composeRelations = relations(compose, ({ one, many }) => ({
 		fields: [compose.giteaId],
 		references: [gitea.giteaId],
 	}),
-	server: one(server, {
-		fields: [compose.serverId],
-		references: [server.serverId],
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [compose.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
 	}),
 	backups: many(backups),
 	schedules: many(schedules),
@@ -178,7 +181,7 @@ export const apiCreateCompose = createSchema.pick({
 	environmentId: true,
 	composeType: true,
 	appName: true,
-	serverId: true,
+	runtimeWorkerId: true,
 	composeFile: true,
 });
 
@@ -188,7 +191,7 @@ export const apiCreateComposeByTemplate = createSchema
 	})
 	.extend({
 		id: z.string().min(1),
-		serverId: z.string().optional(),
+		runtimeWorkerId: z.string().optional(),
 	});
 
 export const apiFindCompose = z.object({
@@ -224,7 +227,7 @@ export const apiUpdateCompose = createSchema
 		composeFile: z.string().optional(),
 		command: z.string().optional(),
 	})
-	.omit({ serverId: true });
+	.omit({ runtimeWorkerId: true });
 
 export const apiSaveEnvironmentVariablesCompose = createSchema
 	.pick({

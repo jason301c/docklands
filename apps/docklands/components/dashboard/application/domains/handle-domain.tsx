@@ -161,7 +161,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 
 	const { data: canGenerateTraefikMeDomains } =
 		api.domain.canGenerateTraefikMeDomains.useQuery({
-			serverId: application?.serverId || "",
+			runtimeWorkerId: application?.runtimeWorkerId || "",
 		});
 
 	const {
@@ -538,7 +538,8 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 															onClick={() => {
 																generateDomain({
 																	appName: application?.appName || "",
-																	serverId: application?.serverId || "",
+																	runtimeWorkerId:
+																		application?.runtimeWorkerId || "",
 																})
 																	.then((domain) => {
 																		field.onChange(domain);

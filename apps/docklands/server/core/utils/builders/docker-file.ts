@@ -44,7 +44,7 @@ export const getDockerCommand = (application: ApplicationNested) => {
 
 		const args = prepareEnvironmentVariablesForShell(
 			buildArgs,
-			application.environment.project.env,
+			application.environment.workspace.env,
 			application.environment.env,
 		);
 
@@ -54,7 +54,7 @@ export const getDockerCommand = (application: ApplicationNested) => {
 
 		const secrets = getEnvironmentVariablesObject(
 			buildSecrets,
-			application.environment.project.env,
+			application.environment.workspace.env,
 			application.environment.env,
 		);
 
@@ -72,7 +72,7 @@ export const getDockerCommand = (application: ApplicationNested) => {
 			command += createEnvFileCommand(
 				dockerFilePath,
 				env,
-				application.environment.project.env,
+				application.environment.workspace.env,
 				application.environment.env,
 			);
 		}

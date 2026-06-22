@@ -113,7 +113,7 @@ export const DASHBOARD_MENU: Menu = {
 			url: "/dashboard/settings/build-workers",
 			icon: Boxes,
 			isEnabled: ({ permissions, isCloud }) =>
-				!!(permissions?.server.read && !isCloud),
+				!!(permissions?.runtimeWorker.read && !isCloud),
 		},
 		{
 			isSingle: true,
@@ -188,7 +188,7 @@ export const DASHBOARD_MENU: Menu = {
 					title: "Runtime Workers",
 					url: "/dashboard/settings/runtime",
 					icon: Server,
-					isEnabled: ({ permissions }) => !!permissions?.server.read,
+					isEnabled: ({ permissions }) => !!permissions?.runtimeWorker.read,
 				},
 				{
 					isSingle: true,

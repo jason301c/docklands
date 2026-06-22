@@ -25,7 +25,7 @@ export const GPUSupportModal = () => {
 					</Dialog.Title>
 				</div>
 
-				<GPUSupport serverId="" />
+				<GPUSupport runtimeWorkerId="" />
 			</Dialog>
 		</Dialog.Root>
 	);

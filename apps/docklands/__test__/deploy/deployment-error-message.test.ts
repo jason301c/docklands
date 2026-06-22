@@ -37,7 +37,7 @@ describe("getDeploymentErrorMessage", () => {
 		await fsPromises.rm(tmpDir, { recursive: true, force: true });
 	});
 
-	describe("local deployments (no serverId)", () => {
+	describe("local deployments (no runtimeWorkerId)", () => {
 		it("returns the real build error from the log, not the fallback", async () => {
 			const logPath = path.join(tmpDir, "build.log");
 			const realError = [
@@ -49,7 +49,7 @@ describe("getDeploymentErrorMessage", () => {
 
 			const result = await getDeploymentErrorMessage({
 				logPath,
-				serverId: null,
+				runtimeWorkerId: null,
 				fallback: FALLBACK,
 			});
 
@@ -69,7 +69,7 @@ describe("getDeploymentErrorMessage", () => {
 
 			const result = await getDeploymentErrorMessage({
 				logPath,
-				serverId: null,
+				runtimeWorkerId: null,
 				fallback: FALLBACK,
 			});
 
@@ -81,7 +81,7 @@ describe("getDeploymentErrorMessage", () => {
 		it("returns the fallback when the log file does not exist", async () => {
 			const result = await getDeploymentErrorMessage({
 				logPath: path.join(tmpDir, "does-not-exist.log"),
-				serverId: null,
+				runtimeWorkerId: null,
 				fallback: FALLBACK,
 			});
 
@@ -94,7 +94,7 @@ describe("getDeploymentErrorMessage", () => {
 
 			const result = await getDeploymentErrorMessage({
 				logPath,
-				serverId: null,
+				runtimeWorkerId: null,
 				fallback: FALLBACK,
 			});
 
@@ -105,14 +105,14 @@ describe("getDeploymentErrorMessage", () => {
 			expect(
 				await getDeploymentErrorMessage({
 					logPath: "",
-					serverId: null,
+					runtimeWorkerId: null,
 					fallback: FALLBACK,
 				}),
 			).toBe(FALLBACK);
 			expect(
 				await getDeploymentErrorMessage({
 					logPath: ".",
-					serverId: null,
+					runtimeWorkerId: null,
 					fallback: FALLBACK,
 				}),
 			).toBe(FALLBACK);
@@ -125,7 +125,7 @@ describe("getDeploymentErrorMessage", () => {
 
 			const result = await getDeploymentErrorMessage({
 				logPath,
-				serverId: null,
+				runtimeWorkerId: null,
 				fallback: FALLBACK,
 				maxLines: 10,
 			});
@@ -137,22 +137,22 @@ describe("getDeploymentErrorMessage", () => {
 		});
 	});
 
-	describe("remote deployments (with serverId)", () => {
+	describe("remote deployments (with runtimeWorkerId)", () => {
 		it("reads the log tail over SSH and returns it", async () => {
 			vi.mocked(execProcess.execAsyncRemote).mockResolvedValue({
-				stdout: "#5 ERROR: failed to build on remote server\n",
+				stdout: "#5 ERROR: failed to build on remote runtimeWorker\n",
 				stderr: "",
 			});
 
 			const result = await getDeploymentErrorMessage({
 				logPath: "/etc/docklands/logs/test/build.log",
-				serverId: "server-1",
+				runtimeWorkerId: "runtimeWorker-1",
 				fallback: FALLBACK,
 			});
 
-			expect(result).toBe("#5 ERROR: failed to build on remote server");
+			expect(result).toBe("#5 ERROR: failed to build on remote runtimeWorker");
 			expect(execProcess.execAsyncRemote).toHaveBeenCalledWith(
-				"server-1",
+				"runtimeWorker-1",
 				expect.stringContaining(
 					"tail -n 50 /etc/docklands/logs/test/build.log",
 				),
@@ -161,14 +161,14 @@ describe("getDeploymentErrorMessage", () => {
 
 		it("quotes remote log paths before shelling out", async () => {
 			vi.mocked(execProcess.execAsyncRemote).mockResolvedValue({
-				stdout: "#5 ERROR: failed to build on remote server\n",
+				stdout: "#5 ERROR: failed to build on remote runtimeWorker\n",
 				stderr: "",
 			});
 
 			const logPath = "/etc/docklands/logs/test/build;touch /tmp/leak.log";
 			await getDeploymentErrorMessage({
 				logPath,
-				serverId: "server-1",
+				runtimeWorkerId: "runtimeWorker-1",
 				fallback: FALLBACK,
 			});
 
@@ -185,7 +185,7 @@ describe("getDeploymentErrorMessage", () => {
 
 			const result = await getDeploymentErrorMessage({
 				logPath: "/etc/docklands/logs/test/build.log",
-				serverId: "server-1",
+				runtimeWorkerId: "runtimeWorker-1",
 				fallback: FALLBACK,
 			});
 
@@ -200,7 +200,7 @@ describe("getDeploymentErrorMessage", () => {
 
 			const result = await getDeploymentErrorMessage({
 				logPath: "/etc/docklands/logs/test/build.log",
-				serverId: "server-1",
+				runtimeWorkerId: "runtimeWorker-1",
 				fallback: FALLBACK,
 			});
 

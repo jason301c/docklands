@@ -12,7 +12,7 @@ import { ContainerPaidMonitoring } from "./show-paid-container-monitoring";
 
 interface Props {
 	appName: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 	appType: "stack" | "docker-compose";
 	baseUrl: string;
 	token: string;
@@ -21,7 +21,7 @@ interface Props {
 export const ComposePaidMonitoring = ({
 	appName,
 	appType = "stack",
-	serverId,
+	runtimeWorkerId,
 	baseUrl,
 	token,
 }: Props) => {
@@ -29,7 +29,7 @@ export const ComposePaidMonitoring = ({
 		{
 			appName: appName,
 			appType,
-			serverId,
+			runtimeWorkerId,
 		},
 		{
 			enabled: !!appName,

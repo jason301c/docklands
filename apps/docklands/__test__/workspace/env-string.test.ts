@@ -9,7 +9,7 @@ describe("parseEnvironmentVariables", () => {
 		expect(
 			parseEnvironmentVariables(
 				[
-					"# project",
+					"# workspace",
 					"PORT=3000",
 					"export DATABASE_URL=postgres://user:password@db:5432/app",
 					'QUOTED="hello=world"',

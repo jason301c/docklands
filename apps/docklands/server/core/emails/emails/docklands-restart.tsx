@@ -18,7 +18,7 @@ export type TemplateProps = {
 export const DocklandsRestartEmail = ({
 	date = "2023-05-01T00:00:00.000Z",
 }: TemplateProps) => {
-	const previewText = "Your docklands server was restarted";
+	const previewText = "Your docklands runtimeWorker was restarted";
 	return (
 		<Html>
 			<Preview>{previewText}</Preview>
@@ -55,7 +55,7 @@ export const DocklandsRestartEmail = ({
 							Hello,
 						</Text>
 						<Text className="text-black text-[14px] leading-[24px]">
-							Your docklands server was restarted ✅
+							Your docklands runtimeWorker was restarted ✅
 						</Text>
 
 						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">

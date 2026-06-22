@@ -120,7 +120,7 @@ export const sendVolumeBackupNotifications = async ({
 					color: type === "success" ? 0x57f287 : 0xed4245,
 					fields: [
 						{
-							name: decorate("`🛠️`", "Project"),
+							name: decorate("`🛠️`", "Workspace"),
 							value: projectName,
 							inline: true,
 						},
@@ -256,7 +256,7 @@ export const sendVolumeBackupNotifications = async ({
 										]
 									: []),
 								{
-									title: "Project",
+									title: "Workspace",
 									value: projectName,
 									short: true,
 								},
@@ -446,7 +446,7 @@ export const sendVolumeBackupNotifications = async ({
 
 			if (teams) {
 				const facts = [
-					{ name: "Project", value: projectName },
+					{ name: "Workspace", value: projectName },
 					{ name: "Application", value: applicationName },
 					{ name: "Volume Name", value: volumeName },
 					{ name: "Service Type", value: serviceType },

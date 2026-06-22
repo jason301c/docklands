@@ -32,10 +32,10 @@ import {
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
 } from "@/server/core/services/permission";
-import { findProjectById } from "@/server/core/services/project";
-import { getAccessibleServerIds } from "@/server/core/services/server";
+import { getAccessibleRuntimeWorkerIds } from "@/server/core/services/runtime-worker";
 import { checkPortInUse } from "@/server/core/services/settings";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { rebuildDatabase } from "@/server/core/utils/databases/rebuild";
 import {
 	removeService,
@@ -51,14 +51,14 @@ export const libsqlRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const environment = await findEnvironmentById(input.environmentId);
-				const project = await findProjectById(environment.projectId);
+				const workspace = await findWorkspaceById(environment.workspaceId);
 
-				await checkServiceAccess(ctx, project.projectId, "create");
+				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
 				if (
 					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.serverId
+					!input.runtimeWorkerId
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -66,16 +66,18 @@ export const libsqlRouter = createTRPCRouter({
 					});
 				}
 
-				if (project.organizationId !== ctx.session.activeOrganizationId) {
+				if (workspace.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this workspace",
 					});
 				}
 
-				if (input.serverId) {
-					const accessibleIds = await getAccessibleServerIds(ctx.session);
-					if (!accessibleIds.has(input.serverId)) {
+				if (input.runtimeWorkerId) {
+					const accessibleIds = await getAccessibleRuntimeWorkerIds(
+						ctx.session,
+					);
+					if (!accessibleIds.has(input.runtimeWorkerId)) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
 							message: "You are not authorized to access this runtime worker",
@@ -114,7 +116,7 @@ export const libsqlRouter = createTRPCRouter({
 
 			const libsql = await findLibsqlById(input.libsqlId);
 			if (
-				libsql.environment.project.organizationId !==
+				libsql.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -133,8 +135,8 @@ export const libsqlRouter = createTRPCRouter({
 			});
 			const libsql = await findLibsqlById(input.libsqlId);
 
-			if (libsql.serverId) {
-				await startServiceRemote(libsql.serverId, libsql.appName);
+			if (libsql.runtimeWorkerId) {
+				await startServiceRemote(libsql.runtimeWorkerId, libsql.appName);
 			} else {
 				await startService(libsql.appName);
 			}
@@ -158,8 +160,8 @@ export const libsqlRouter = createTRPCRouter({
 			});
 			const libsql = await findLibsqlById(input.libsqlId);
 
-			if (libsql.serverId) {
-				await stopServiceRemote(libsql.serverId, libsql.appName);
+			if (libsql.runtimeWorkerId) {
+				await stopServiceRemote(libsql.runtimeWorkerId, libsql.appName);
 			} else {
 				await stopService(libsql.appName);
 			}
@@ -212,7 +214,7 @@ export const libsqlRouter = createTRPCRouter({
 				if (port && port !== current) {
 					const portCheck = await checkPortInUse(
 						port,
-						libsql.serverId || undefined,
+						libsql.runtimeWorkerId || undefined,
 					);
 					if (portCheck.isInUse) {
 						throw new TRPCError({
@@ -315,7 +317,7 @@ export const libsqlRouter = createTRPCRouter({
 			const libsql = await findLibsqlById(input.libsqlId);
 
 			if (
-				libsql.environment.project.organizationId !==
+				libsql.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -330,7 +332,8 @@ export const libsqlRouter = createTRPCRouter({
 				resourceName: libsql.appName,
 			});
 			const cleanupOperations = [
-				async () => await removeService(libsql?.appName, libsql.serverId),
+				async () =>
+					await removeService(libsql?.appName, libsql.runtimeWorkerId),
 				async () => await removeLibsqlById(input.libsqlId),
 			];
 
@@ -373,8 +376,8 @@ export const libsqlRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const libsql = await findLibsqlById(input.libsqlId);
-			if (libsql.serverId) {
-				await stopServiceRemote(libsql.serverId, libsql.appName);
+			if (libsql.runtimeWorkerId) {
+				await stopServiceRemote(libsql.runtimeWorkerId, libsql.appName);
 			} else {
 				await stopService(libsql.appName);
 			}
@@ -382,8 +385,8 @@ export const libsqlRouter = createTRPCRouter({
 				applicationStatus: "idle",
 			});
 
-			if (libsql.serverId) {
-				await startServiceRemote(libsql.serverId, libsql.appName);
+			if (libsql.runtimeWorkerId) {
+				await startServiceRemote(libsql.runtimeWorkerId, libsql.appName);
 			} else {
 				await startService(libsql.appName);
 			}
@@ -494,7 +497,7 @@ export const libsqlRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.libsqlId, "read");
 			const libsql = await findLibsqlById(input.libsqlId);
 			if (
-				libsql.environment.project.organizationId !==
+				libsql.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -507,7 +510,7 @@ export const libsqlRouter = createTRPCRouter({
 				input.tail,
 				input.since,
 				input.search,
-				libsql.serverId,
+				libsql.runtimeWorkerId,
 			);
 		}),
 });

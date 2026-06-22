@@ -45,7 +45,7 @@ import {
 	findPostgresByBackupId,
 	findPostgresById,
 } from "@/server/core/services/postgres";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { runComposeBackup } from "@/server/core/utils/backups/compose";
 import { keepLatestNBackups } from "@/server/core/utils/backups/index";
 import { runLibsqlBackup } from "@/server/core/utils/backups/libsql";
@@ -109,26 +109,38 @@ export const backupRouter = createTRPCRouter({
 
 				if (IS_CLOUD && backup.enabled) {
 					const databaseType = backup.databaseType;
-					let serverId = "";
-					if (databaseType === "postgres" && backup.postgres?.serverId) {
-						serverId = backup.postgres.serverId;
-					} else if (databaseType === "mysql" && backup.mysql?.serverId) {
-						serverId = backup.mysql.serverId;
-					} else if (databaseType === "mongo" && backup.mongo?.serverId) {
-						serverId = backup.mongo.serverId;
-					} else if (databaseType === "mariadb" && backup.mariadb?.serverId) {
-						serverId = backup.mariadb.serverId;
-					} else if (databaseType === "libsql" && backup.libsql?.serverId) {
-						serverId = backup.libsql.serverId;
+					let runtimeWorkerId = "";
+					if (databaseType === "postgres" && backup.postgres?.runtimeWorkerId) {
+						runtimeWorkerId = backup.postgres.runtimeWorkerId;
+					} else if (
+						databaseType === "mysql" &&
+						backup.mysql?.runtimeWorkerId
+					) {
+						runtimeWorkerId = backup.mysql.runtimeWorkerId;
+					} else if (
+						databaseType === "mongo" &&
+						backup.mongo?.runtimeWorkerId
+					) {
+						runtimeWorkerId = backup.mongo.runtimeWorkerId;
+					} else if (
+						databaseType === "mariadb" &&
+						backup.mariadb?.runtimeWorkerId
+					) {
+						runtimeWorkerId = backup.mariadb.runtimeWorkerId;
+					} else if (
+						databaseType === "libsql" &&
+						backup.libsql?.runtimeWorkerId
+					) {
+						runtimeWorkerId = backup.libsql.runtimeWorkerId;
 					} else if (
 						backup.backupType === "compose" &&
-						backup.compose?.serverId
+						backup.compose?.runtimeWorkerId
 					) {
-						serverId = backup.compose.serverId;
+						runtimeWorkerId = backup.compose.runtimeWorkerId;
 					}
-					const server = await findServerById(serverId);
+					const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 
-					if (server.serverStatus === "inactive") {
+					if (runtimeWorker.runtimeWorkerStatus === "inactive") {
 						throw new TRPCError({
 							code: "NOT_FOUND",
 							message: "Runtime worker is inactive",
@@ -293,7 +305,7 @@ export const backupRouter = createTRPCRouter({
 				}
 				const postgres = await findPostgresByBackupId(backup.backupId);
 				await runPostgresBackup(postgres, backup);
-				await keepLatestNBackups(backup, postgres?.serverId);
+				await keepLatestNBackups(backup, postgres?.runtimeWorkerId);
 				await audit(ctx, {
 					action: "run",
 					resourceType: "backup",
@@ -324,7 +336,7 @@ export const backupRouter = createTRPCRouter({
 				}
 				const mysql = await findMySqlByBackupId(backup.backupId);
 				await runMySqlBackup(mysql, backup);
-				await keepLatestNBackups(backup, mysql?.serverId);
+				await keepLatestNBackups(backup, mysql?.runtimeWorkerId);
 				await audit(ctx, {
 					action: "run",
 					resourceType: "backup",
@@ -351,7 +363,7 @@ export const backupRouter = createTRPCRouter({
 				}
 				const mariadb = await findMariadbByBackupId(backup.backupId);
 				await runMariadbBackup(mariadb, backup);
-				await keepLatestNBackups(backup, mariadb?.serverId);
+				await keepLatestNBackups(backup, mariadb?.runtimeWorkerId);
 				await audit(ctx, {
 					action: "run",
 					resourceType: "backup",
@@ -378,7 +390,7 @@ export const backupRouter = createTRPCRouter({
 				}
 				const compose = await findComposeByBackupId(backup.backupId);
 				await runComposeBackup(compose, backup);
-				await keepLatestNBackups(backup, compose?.serverId);
+				await keepLatestNBackups(backup, compose?.runtimeWorkerId);
 				await audit(ctx, {
 					action: "run",
 					resourceType: "backup",
@@ -405,7 +417,7 @@ export const backupRouter = createTRPCRouter({
 				}
 				const mongo = await findMongoByBackupId(backup.backupId);
 				await runMongoBackup(mongo, backup);
-				await keepLatestNBackups(backup, mongo?.serverId);
+				await keepLatestNBackups(backup, mongo?.runtimeWorkerId);
 				await audit(ctx, {
 					action: "run",
 					resourceType: "backup",
@@ -432,7 +444,7 @@ export const backupRouter = createTRPCRouter({
 				}
 				const libsql = await findLibsqlByBackupId(backup.backupId);
 				await runLibsqlBackup(libsql, backup);
-				await keepLatestNBackups(backup, libsql?.serverId);
+				await keepLatestNBackups(backup, libsql?.runtimeWorkerId);
 				await audit(ctx, {
 					action: "run",
 					resourceType: "backup",
@@ -465,7 +477,7 @@ export const backupRouter = createTRPCRouter({
 			z.object({
 				destinationId: z.string(),
 				search: z.string(),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
@@ -477,8 +489,10 @@ export const backupRouter = createTRPCRouter({
 						message: "You don't have access to this destination.",
 					});
 				}
-				if (input.serverId) {
-					const targetServer = await findServerById(input.serverId);
+				if (input.runtimeWorkerId) {
+					const targetServer = await findRuntimeWorkerById(
+						input.runtimeWorkerId,
+					);
 					if (
 						targetServer.organizationId !== ctx.session.activeOrganizationId
 					) {
@@ -506,8 +520,11 @@ export const backupRouter = createTRPCRouter({
 
 				let stdout = "";
 
-				if (input.serverId) {
-					const result = await execAsyncRemote(input.serverId, listCommand);
+				if (input.runtimeWorkerId) {
+					const result = await execAsyncRemote(
+						input.runtimeWorkerId,
+						listCommand,
+					);
 					stdout = result.stdout;
 				} else {
 					const result = await execAsync(listCommand);

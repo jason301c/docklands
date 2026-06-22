@@ -57,7 +57,7 @@ export const priorities = [
 	},
 	{
 		label: "500 - 599",
-		value: "server",
+		value: "runtimeWorker",
 		icon: Server,
 	},
 ];

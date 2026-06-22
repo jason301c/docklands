@@ -5,14 +5,17 @@ import { CodeEditor } from "@/components/shared/code-editor";
 
 interface Props {
 	containerId: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const ShowContainerConfig = ({ containerId, serverId }: Props) => {
+export const ShowContainerConfig = ({
+	containerId,
+	runtimeWorkerId,
+}: Props) => {
 	const { data } = api.docker.getConfig.useQuery(
 		{
 			containerId,
-			serverId,
+			runtimeWorkerId,
 		},
 		{
 			enabled: !!containerId,

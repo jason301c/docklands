@@ -40,7 +40,7 @@ export const uploadImageRemoteCommand = async (
 			commands.push(`echo "🔑 [Enabled Build Registry]"`);
 			commands.push(getRegistryCommands(r, imageName, buildRegistryTag));
 			commands.push(
-				`echo "⚠️ INFO: After the build is finished, you need to wait a few seconds for the server to download the image and run the container."`,
+				`echo "⚠️ INFO: After the build is finished, you need to wait a few seconds for the runtimeWorker to download the image and run the container."`,
 			);
 			commands.push(
 				`echo "📊 Check the Logs tab to see when the container starts running."`,

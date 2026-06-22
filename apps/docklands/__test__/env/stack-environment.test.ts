@@ -36,7 +36,7 @@ BAZ=test
 		});
 	});
 
-	it("resolves both project and environment variables for Stack compose", () => {
+	it("resolves both workspace and environment variables for Stack compose", () => {
 		const serviceEnv = `
 ENVIRONMENT=\${{workspace.ENVIRONMENT}}
 NODE_ENV=\${{environment.NODE_ENV}}
@@ -130,10 +130,10 @@ COMPLEX_VAR=\${{SERVICE_NAME}}-\${{environment.NODE_ENV}}-\${{workspace.ENVIRONM
 		});
 	});
 
-	it("maintains precedence: service > environment > project in Stack compose", () => {
+	it("maintains precedence: service > environment > workspace in Stack compose", () => {
 		const conflictingProjectEnv = `
 NODE_ENV=production-workspace
-API_URL=https://project.api.com
+API_URL=https://workspace.api.com
 DATABASE_NAME=workspace_db
 `;
 

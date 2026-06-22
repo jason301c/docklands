@@ -2,20 +2,17 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const migration = readFileSync(
+const baseline = readFileSync(
 	fileURLToPath(
-		new URL(
-			"../../drizzle/0002_remove_legacy_project_env_and_bitbucket_password.sql",
-			import.meta.url,
-		),
+		new URL("../../drizzle/0000_docklands_baseline.sql", import.meta.url),
 	),
 	"utf8",
 );
 
 describe("workspace env migration", () => {
-	it("rewrites stored project env references before removing old credential storage", () => {
+	it("keeps the reset baseline on workspace env names without old credential storage", () => {
 		for (const [table, column] of [
-			["project", "env"],
+			["workspace", "env"],
 			["environment", "env"],
 			["application", "env"],
 			["application", "previewEnv"],
@@ -27,13 +24,11 @@ describe("workspace env migration", () => {
 			["postgres", "env"],
 			["redis", "env"],
 		]) {
-			expect(migration).toContain(
-				`UPDATE "${table}" SET "${column}" = replace("${column}", '\${{project.', '\${{workspace.')`,
-			);
+			expect(baseline).toContain(`"${column}" text`);
+			expect(baseline).not.toContain(`UPDATE "${table}" SET "${column}"`);
 		}
 
-		expect(migration).toContain(
-			'ALTER TABLE "bitbucket" DROP COLUMN "appPassword";',
-		);
+		expect(baseline).not.toContain("${{project.");
+		expect(baseline).not.toContain('"appPassword"');
 	});
 });

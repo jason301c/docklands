@@ -34,11 +34,19 @@ describe("product API roots", () => {
 		];
 
 		expect(sourceFiles.length).toBeGreaterThan(0);
+		let combinedSource = "";
 
 		for (const file of sourceFiles) {
 			const source = readFileSync(file, "utf8");
+			combinedSource += source;
 			expect(source, file).not.toContain("api.project.");
 			expect(source, file).not.toContain("api.server.");
+			expect(source, file).not.toContain("utils.project.");
+			expect(source, file).not.toContain("utils.server.");
 		}
+
+		expect(combinedSource).toContain("api.workspaces.");
+		expect(combinedSource).toContain("api.workspaceGraph.");
+		expect(combinedSource).toContain("api.runtimeWorker.");
 	});
 });

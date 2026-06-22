@@ -7,10 +7,10 @@ import { organization } from "./account";
 import { applications } from "./application";
 
 /**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
+ * This is an example of how to use the multi-workspace schema feature of Drizzle ORM. Use the same
+ * database instance for multiple workspaces.
  *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
+ * @see https://orm.drizzle.team/docs/goodies#multi-workspace-schema
  */
 export const registryType = pgEnum("RegistryType", ["selfHosted", "cloud"]);
 
@@ -85,7 +85,7 @@ export const apiCreateRegistry = createSchema
 	})
 	.required()
 	.extend({
-		serverId: z.string().optional(),
+		runtimeWorkerId: z.string().optional(),
 	});
 
 export const apiTestRegistry = createSchema.pick({}).extend({
@@ -95,7 +95,7 @@ export const apiTestRegistry = createSchema.pick({}).extend({
 	registryUrl: registryUrlSchema,
 	registryType: z.enum(["cloud"]),
 	imagePrefix: z.string().nullable().optional(),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
 export const apiTestRegistryById = createSchema
@@ -103,7 +103,7 @@ export const apiTestRegistryById = createSchema
 		registryId: true,
 	})
 	.extend({
-		serverId: z.string().optional(),
+		runtimeWorkerId: z.string().optional(),
 	});
 
 export const apiRemoveRegistry = createSchema
@@ -118,7 +118,7 @@ export const apiFindOneRegistry = z.object({
 
 export const apiUpdateRegistry = createSchema.partial().extend({
 	registryId: z.string().min(1),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
 export const apiEnableSelfHostedRegistry = createSchema

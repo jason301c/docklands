@@ -12,7 +12,7 @@ export const restoreLibsqlBackup = async (
 	emit: (log: string) => void,
 ) => {
 	try {
-		const { appName, serverId } = libsql;
+		const { appName, runtimeWorkerId } = libsql;
 
 		const rcloneFlags = getS3Credentials(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
@@ -29,8 +29,8 @@ export const restoreLibsqlBackup = async (
 		emit("Starting restore...");
 		emit(`Restoring libsql from ${backupInput.backupFile}`);
 
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}

@@ -29,7 +29,7 @@ import {
 	apiUpdateApplication,
 	applications,
 	environments,
-	projects,
+	workspaces,
 } from "@/server/core/db/schema";
 import { cancelDeployment, deploy } from "@/server/core/runtime/deploy";
 import {
@@ -53,9 +53,9 @@ import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
-import { findProjectById } from "@/server/core/services/project";
-import { getAccessibleServerIds } from "@/server/core/services/server";
+import { getAccessibleRuntimeWorkerIds } from "@/server/core/services/runtime-worker";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { unzipDrop } from "@/server/core/utils/builders/drop";
 import { mechanizeDockerContainer } from "@/server/core/utils/builders/index";
 import {
@@ -90,14 +90,14 @@ export const applicationRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const environment = await findEnvironmentById(input.environmentId);
-				const project = await findProjectById(environment.projectId);
+				const workspace = await findWorkspaceById(environment.workspaceId);
 
-				await checkServiceAccess(ctx, project.projectId, "create");
+				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
 				if (
 					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.serverId
+					!input.runtimeWorkerId
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -106,16 +106,18 @@ export const applicationRouter = createTRPCRouter({
 					});
 				}
 
-				if (project.organizationId !== ctx.session.activeOrganizationId) {
+				if (workspace.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this workspace",
 					});
 				}
 
-				if (input.serverId) {
-					const accessibleIds = await getAccessibleServerIds(ctx.session);
-					if (!accessibleIds.has(input.serverId)) {
+				if (input.runtimeWorkerId) {
+					const accessibleIds = await getAccessibleRuntimeWorkerIds(
+						ctx.session,
+					);
+					if (!accessibleIds.has(input.runtimeWorkerId)) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
 							message: "You are not authorized to access this runtime worker",
@@ -151,7 +153,7 @@ export const applicationRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.applicationId, "read");
 			const application = await findApplicationById(input.applicationId);
 			if (
-				application.environment.project.organizationId !==
+				application.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -234,7 +236,7 @@ export const applicationRouter = createTRPCRouter({
 			const application = await findApplicationById(input.applicationId);
 
 			if (
-				application.environment.project.organizationId !==
+				application.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -256,16 +258,25 @@ export const applicationRouter = createTRPCRouter({
 				async () => await deleteAllMiddlewares(application),
 				async () => await removeDeployments(application),
 				async () =>
-					await removeDirectoryCode(application.appName, application.serverId),
+					await removeDirectoryCode(
+						application.appName,
+						application.runtimeWorkerId,
+					),
 				async () =>
 					await removeMonitoringDirectory(
 						application.appName,
-						application.serverId,
+						application.runtimeWorkerId,
 					),
 				async () =>
-					await removeTraefikConfig(application.appName, application.serverId),
+					await removeTraefikConfig(
+						application.appName,
+						application.runtimeWorkerId,
+					),
 				async () =>
-					await removeService(application?.appName, application.serverId),
+					await removeService(
+						application?.appName,
+						application.runtimeWorkerId,
+					),
 			];
 
 			for (const operation of cleanupOperations) {
@@ -290,8 +301,8 @@ export const applicationRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const service = await findApplicationById(input.applicationId);
-			if (service.serverId) {
-				await stopServiceRemote(service.serverId, service.appName);
+			if (service.runtimeWorkerId) {
+				await stopServiceRemote(service.runtimeWorkerId, service.appName);
 			} else {
 				await stopService(service.appName);
 			}
@@ -312,8 +323,8 @@ export const applicationRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const service = await findApplicationById(input.applicationId);
-			if (service.serverId) {
-				await startServiceRemote(service.serverId, service.appName);
+			if (service.runtimeWorkerId) {
+				await startServiceRemote(service.runtimeWorkerId, service.appName);
 			} else {
 				await startService(service.appName);
 			}
@@ -340,11 +351,11 @@ export const applicationRouter = createTRPCRouter({
 				descriptionLog: input.description || "",
 				type: "redeploy",
 				applicationType: "application",
-				server: !!application.serverId,
-				serverId: application.serverId ?? undefined,
+				runtimeWorker: !!application.runtimeWorkerId,
+				runtimeWorkerId: application.runtimeWorkerId ?? undefined,
 			};
 
-			if (IS_CLOUD && application.serverId) {
+			if (IS_CLOUD && application.runtimeWorkerId) {
 				deploy(jobData).catch((error) => {
 					console.error("Background deployment failed:", error);
 				});
@@ -648,9 +659,9 @@ export const applicationRouter = createTRPCRouter({
 				service: ["create"],
 			});
 
-			if (input.buildServerId) {
-				const accessibleIds = await getAccessibleServerIds(ctx.session);
-				if (!accessibleIds.has(input.buildServerId)) {
+			if (input.buildRuntimeWorkerId) {
+				const accessibleIds = await getAccessibleRuntimeWorkerIds(ctx.session);
+				if (!accessibleIds.has(input.buildRuntimeWorkerId)) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this build worker",
@@ -708,10 +719,10 @@ export const applicationRouter = createTRPCRouter({
 				descriptionLog: input.description || "",
 				type: "deploy",
 				applicationType: "application",
-				server: !!application.serverId,
-				serverId: application.serverId ?? undefined,
+				runtimeWorker: !!application.runtimeWorkerId,
+				runtimeWorkerId: application.runtimeWorkerId ?? undefined,
 			};
-			if (IS_CLOUD && application.serverId) {
+			if (IS_CLOUD && application.runtimeWorkerId) {
 				deploy(jobData).catch((error) => {
 					console.error("Background deployment failed:", error);
 				});
@@ -754,7 +765,10 @@ export const applicationRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const application = await findApplicationById(input.applicationId);
-			await clearOldDeployments(application.appName, application.serverId);
+			await clearOldDeployments(
+				application.appName,
+				application.runtimeWorkerId,
+			);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "application",
@@ -770,7 +784,7 @@ export const applicationRouter = createTRPCRouter({
 				deployment: ["cancel"],
 			});
 			const application = await findApplicationById(input.applicationId);
-			await killDockerBuild("application", application.serverId);
+			await killDockerBuild("application", application.runtimeWorkerId);
 			await audit(ctx, {
 				action: "stop",
 				resourceType: "application",
@@ -786,9 +800,9 @@ export const applicationRouter = createTRPCRouter({
 			});
 			const application = await findApplicationById(input.applicationId);
 			let traefikConfig = null;
-			if (application.serverId) {
+			if (application.runtimeWorkerId) {
 				traefikConfig = await readRemoteConfig(
-					application.serverId,
+					application.runtimeWorkerId,
 					application.appName,
 				);
 			} else {
@@ -827,10 +841,10 @@ export const applicationRouter = createTRPCRouter({
 				descriptionLog: "",
 				type: "deploy",
 				applicationType: "application",
-				server: !!app.serverId,
-				serverId: app.serverId ?? undefined,
+				runtimeWorker: !!app.runtimeWorkerId,
+				runtimeWorkerId: app.runtimeWorkerId ?? undefined,
 			};
-			if (IS_CLOUD && app.serverId) {
+			if (IS_CLOUD && app.runtimeWorkerId) {
 				deploy(jobData).catch((error) => {
 					console.error("Background deployment failed:", error);
 				});
@@ -860,9 +874,9 @@ export const applicationRouter = createTRPCRouter({
 				traefikFiles: ["write"],
 			});
 			const application = await findApplicationById(input.applicationId);
-			if (application.serverId) {
+			if (application.runtimeWorkerId) {
 				await writeConfigRemote(
-					application.serverId,
+					application.runtimeWorkerId,
 					application.appName,
 					input.traefikConfig,
 				);
@@ -979,7 +993,7 @@ export const applicationRouter = createTRPCRouter({
 				repository: z.string().optional(),
 				owner: z.string().optional(),
 				dockerImage: z.string().optional(),
-				projectId: z.string().optional(),
+				workspaceId: z.string().optional(),
 				environmentId: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				offset: z.number().min(0).default(0),
@@ -987,11 +1001,11 @@ export const applicationRouter = createTRPCRouter({
 		)
 		.query(async ({ ctx, input }) => {
 			const baseConditions = [
-				eq(projects.organizationId, ctx.session.activeOrganizationId),
+				eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 			];
 
-			if (input.projectId) {
-				baseConditions.push(eq(environments.projectId, input.projectId));
+			if (input.workspaceId) {
+				baseConditions.push(eq(environments.workspaceId, input.workspaceId));
 			}
 			if (input.environmentId) {
 				baseConditions.push(
@@ -1079,7 +1093,10 @@ export const applicationRouter = createTRPCRouter({
 						environments,
 						eq(applications.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where)
 					.orderBy(desc(applications.createdAt))
 					.limit(input.limit)
@@ -1091,7 +1108,10 @@ export const applicationRouter = createTRPCRouter({
 						environments,
 						eq(applications.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where),
 			]);
 
@@ -1119,7 +1139,7 @@ export const applicationRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.applicationId, "read");
 			const application = await findApplicationById(input.applicationId);
 			if (
-				application.environment.project.organizationId !==
+				application.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -1132,7 +1152,7 @@ export const applicationRouter = createTRPCRouter({
 				input.tail,
 				input.since,
 				input.search,
-				application.serverId,
+				application.runtimeWorkerId,
 			);
 		}),
 });

@@ -73,7 +73,7 @@ describe("getBackupCommand", () => {
 		postgres: {
 			appName: "my-app",
 			databaseUser: "postgres",
-			serverId: null,
+			runtimeWorkerId: null,
 		},
 	} as unknown as BackupSchedule;
 

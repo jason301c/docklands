@@ -9,10 +9,10 @@ import { AddClusterManager } from "./manager/add-cluster-manager";
 import { AddClusterWorker } from "./workers/add-cluster-worker";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const AddClusterNode = ({ serverId }: Props) => {
+export const AddClusterNode = ({ runtimeWorkerId }: Props) => {
 	const [activeTab, setActiveTab] = useState("worker");
 
 	return (
@@ -67,12 +67,12 @@ export const AddClusterNode = ({ serverId }: Props) => {
 					/>
 					{activeTab === "worker" && (
 						<div className="pt-4 overflow-hidden">
-							<AddClusterWorker serverId={serverId} />
+							<AddClusterWorker runtimeWorkerId={runtimeWorkerId} />
 						</div>
 					)}
 					{activeTab === "manager" && (
 						<div className="pt-4 overflow-hidden">
-							<AddClusterManager serverId={serverId} />
+							<AddClusterManager runtimeWorkerId={runtimeWorkerId} />
 						</div>
 					)}
 				</div>

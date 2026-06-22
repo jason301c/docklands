@@ -47,11 +47,11 @@ const handleUpgrade = app.getUpgradeHandler();
 void app.prepare().then(async () => {
 	try {
 		console.log("Running DocklandsVersion: ", packageInfo.version);
-		const server = http.createServer((req, res) => {
+		const runtimeWorker = http.createServer((req, res) => {
 			handle(req, res);
 		});
 
-		server.on("upgrade", (req, socket, head) => {
+		runtimeWorker.on("upgrade", (req, socket, head) => {
 			const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
 
 			if (pathname.startsWith("/_next/")) {
@@ -60,16 +60,16 @@ void app.prepare().then(async () => {
 		});
 
 		// WEBSOCKET
-		setupDrawerLogsWebSocketServer(server);
-		setupDeploymentLogsWebSocketServer(server);
-		setupDockerContainerLogsWebSocketServer(server);
-		setupDockerContainerTerminalWebSocketServer(server);
-		setupTerminalWebSocketServer(server);
+		setupDrawerLogsWebSocketServer(runtimeWorker);
+		setupDeploymentLogsWebSocketServer(runtimeWorker);
+		setupDockerContainerLogsWebSocketServer(runtimeWorker);
+		setupDockerContainerTerminalWebSocketServer(runtimeWorker);
+		setupTerminalWebSocketServer(runtimeWorker);
 		if (!IS_CLOUD) {
-			setupDockerStatsMonitoringSocketServer(server);
+			setupDockerStatsMonitoringSocketServer(runtimeWorker);
 		}
 
-		server.listen(PORT, HOST);
+		runtimeWorker.listen(PORT, HOST);
 		console.log(`Server Started on: http://${HOST}:${PORT}`);
 		if (process.env.NODE_ENV === "production" && !IS_CLOUD) {
 			createDefaultMiddlewares();

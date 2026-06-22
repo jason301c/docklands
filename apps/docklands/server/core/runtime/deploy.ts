@@ -1,4 +1,4 @@
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import {
 	cleanQueuesByApplication,
@@ -7,9 +7,11 @@ import {
 } from "@/server/queues/queueSetup";
 
 export const deploy = async (jobData: DeploymentJob) => {
-	if (jobData.serverId) {
-		const server = await findServerById(jobData.serverId as string);
-		if (server.serverStatus === "inactive") {
+	if (jobData.runtimeWorkerId) {
+		const runtimeWorker = await findRuntimeWorkerById(
+			jobData.runtimeWorkerId as string,
+		);
+		if (runtimeWorker.runtimeWorkerStatus === "inactive") {
 			throw new Error("Server is inactive");
 		}
 	}
@@ -53,12 +55,12 @@ export type QueueJobRow = {
 };
 
 export const fetchDeployApiJobs = async (
-	serverId: string,
+	runtimeWorkerId: string,
 ): Promise<QueueJobRow[]> => {
 	const jobs = await myQueue.getJobs();
 	const rows = await Promise.all(
 		jobs
-			.filter((job) => job.data.serverId === serverId)
+			.filter((job) => job.data.runtimeWorkerId === runtimeWorkerId)
 			.map(async (job) => ({
 				id: String(job.id),
 				name: job.name ?? undefined,

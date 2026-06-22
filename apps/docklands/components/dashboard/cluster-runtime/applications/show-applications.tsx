@@ -6,12 +6,12 @@ import { type ApplicationList, columns } from "./columns";
 import { DataTable } from "./data-table";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const ShowNodeApplications = ({ serverId }: Props) => {
+export const ShowNodeApplications = ({ runtimeWorkerId }: Props) => {
 	const { data: NodeApps, isPending: NodeAppsLoading } =
-		api.swarm.getNodeApps.useQuery({ serverId });
+		api.swarm.getNodeApps.useQuery({ runtimeWorkerId });
 
 	let applicationList: string[] = [];
 
@@ -20,7 +20,10 @@ export const ShowNodeApplications = ({ serverId }: Props) => {
 	}
 
 	const { data: NodeAppDetails, isPending: NodeAppDetailsLoading } =
-		api.swarm.getAppInfos.useQuery({ appName: applicationList, serverId });
+		api.swarm.getAppInfos.useQuery({
+			appName: applicationList,
+			runtimeWorkerId,
+		});
 
 	if (NodeAppsLoading || NodeAppDetailsLoading) {
 		return (
@@ -70,7 +73,7 @@ export const ShowNodeApplications = ({ serverId }: Props) => {
 			Error: detail.Error,
 			Node: detail.Node,
 			Ports: detail.Ports || app.Ports,
-			serverId: serverId || "",
+			runtimeWorkerId: runtimeWorkerId || "",
 		}));
 	});
 

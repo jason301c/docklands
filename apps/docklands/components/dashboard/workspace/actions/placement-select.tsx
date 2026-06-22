@@ -6,7 +6,7 @@ import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { FormField, FormItem, FormMessage } from "@/components/shared/form";
 
 type RuntimeWorkerOption = {
-	serverId: string;
+	runtimeWorkerId: string;
 	name: string;
 	ipAddress?: string | null;
 };
@@ -76,7 +76,10 @@ export const PlacementSelect = ({
 							</Select.Option>
 						)}
 						{workers?.map((worker) => (
-							<Select.Option key={worker.serverId} value={worker.serverId}>
+							<Select.Option
+								key={worker.runtimeWorkerId}
+								value={worker.runtimeWorkerId}
+							>
 								<span className="flex items-center gap-2 justify-between w-full">
 									<span>{worker.name}</span>
 									{worker.ipAddress && (

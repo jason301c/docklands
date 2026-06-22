@@ -174,9 +174,9 @@ export const AddPreviewDomain = ({
 															onClick={() => {
 																generateDomain({
 																	appName: previewDeployment?.appName || "",
-																	serverId:
-																		previewDeployment?.application?.serverId ||
-																		"",
+																	runtimeWorkerId:
+																		previewDeployment?.application
+																			?.runtimeWorkerId || "",
 																})
 																	.then((domain) => {
 																		field.onChange(domain);

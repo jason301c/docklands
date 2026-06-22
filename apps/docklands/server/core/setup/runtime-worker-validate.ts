@@ -1,5 +1,5 @@
 import { Client } from "ssh2";
-import { findServerById } from "../services/server";
+import { findRuntimeWorkerById } from "../services/runtime-worker";
 
 export const validateDocker = () => `
   if command_exists docker; then
@@ -97,10 +97,10 @@ export const validateDockerGroup = () => `
   fi
 `;
 
-export const serverValidate = async (serverId: string) => {
+export const runtimeWorkerValidate = async (runtimeWorkerId: string) => {
 	const client = new Client();
-	const server = await findServerById(serverId);
-	if (!server.sshKeyId) {
+	const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
+	if (!runtimeWorker.sshKeyId) {
 		throw new Error("No SSH Key found");
 	}
 
@@ -181,10 +181,10 @@ export const serverValidate = async (serverId: string) => {
 				}
 			})
 			.connect({
-				host: server.ipAddress,
-				port: server.port,
-				username: server.username,
-				privateKey: server.sshKey?.privateKey,
+				host: runtimeWorker.ipAddress,
+				port: runtimeWorker.port,
+				username: runtimeWorker.username,
+				privateKey: runtimeWorker.sshKey?.privateKey,
 			});
 	});
 };

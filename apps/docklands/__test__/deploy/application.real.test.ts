@@ -108,16 +108,16 @@ const createMockApplication = (
 		customGitBuildPath: "/astro",
 		buildType: "nixpacks" as const,
 		env: "NODE_ENV=production",
-		serverId: null,
+		runtimeWorkerId: null,
 		rollbackActive: false,
 		enableSubmodules: false,
 		environmentId: "env-id",
 		environment: {
-			projectId: "project-id",
+			workspaceId: "workspace-id",
 			env: "",
 			name: "production",
-			project: {
-				name: "Test Project",
+			workspace: {
+				name: "Test Workspace",
 				organizationId: "org-id",
 				env: "",
 			},
@@ -132,7 +132,7 @@ const createMockApplication = (
 	}) as ApplicationNested;
 
 const createMockDeployment = async (appName: string) => {
-	const { LOGS_PATH } = paths(false); // false = local, no remote server
+	const { LOGS_PATH } = paths(false); // false = local, no remote runtimeWorker
 	const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
 	const fileName = `${appName}-${formattedDateTime}.log`;
 	const logFilePath = path.join(LOGS_PATH, appName, fileName);

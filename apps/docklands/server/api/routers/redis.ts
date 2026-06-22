@@ -18,8 +18,8 @@ import {
 	DATABASE_PASSWORD_MESSAGE,
 	DATABASE_PASSWORD_REGEX,
 	environments,
-	projects,
 	redis as redisTable,
+	workspaces,
 } from "@/server/core/db/schema";
 import { getContainerLogs } from "@/server/core/services/docker";
 import { findEnvironmentById } from "@/server/core/services/environment";
@@ -30,7 +30,6 @@ import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
-import { findProjectById } from "@/server/core/services/project";
 import {
 	createRedis,
 	deployRedis,
@@ -38,9 +37,10 @@ import {
 	removeRedisById,
 	updateRedisById,
 } from "@/server/core/services/redis";
-import { getAccessibleServerIds } from "@/server/core/services/server";
+import { getAccessibleRuntimeWorkerIds } from "@/server/core/services/runtime-worker";
 import { checkPortInUse } from "@/server/core/services/settings";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { getServiceContainerCommand } from "@/server/core/utils/backups/utils";
 import { rebuildDatabase } from "@/server/core/utils/databases/rebuild";
 import {
@@ -61,14 +61,14 @@ export const redisRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const environment = await findEnvironmentById(input.environmentId);
-				const project = await findProjectById(environment.projectId);
+				const workspace = await findWorkspaceById(environment.workspaceId);
 
-				await checkServiceAccess(ctx, project.projectId, "create");
+				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
 				if (
 					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.serverId
+					!input.runtimeWorkerId
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -76,16 +76,18 @@ export const redisRouter = createTRPCRouter({
 					});
 				}
 
-				if (project.organizationId !== ctx.session.activeOrganizationId) {
+				if (workspace.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this workspace",
 					});
 				}
 
-				if (input.serverId) {
-					const accessibleIds = await getAccessibleServerIds(ctx.session);
-					if (!accessibleIds.has(input.serverId)) {
+				if (input.runtimeWorkerId) {
+					const accessibleIds = await getAccessibleRuntimeWorkerIds(
+						ctx.session,
+					);
+					if (!accessibleIds.has(input.runtimeWorkerId)) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
 							message: "You are not authorized to access this runtime worker",
@@ -124,7 +126,7 @@ export const redisRouter = createTRPCRouter({
 
 			const redis = await findRedisById(input.redisId);
 			if (
-				redis.environment.project.organizationId !==
+				redis.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -143,8 +145,8 @@ export const redisRouter = createTRPCRouter({
 			});
 			const redis = await findRedisById(input.redisId);
 
-			if (redis.serverId) {
-				await startServiceRemote(redis.serverId, redis.appName);
+			if (redis.runtimeWorkerId) {
+				await startServiceRemote(redis.runtimeWorkerId, redis.appName);
 			} else {
 				await startService(redis.appName);
 			}
@@ -167,8 +169,8 @@ export const redisRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const redis = await findRedisById(input.redisId);
-			if (redis.serverId) {
-				await stopServiceRemote(redis.serverId, redis.appName);
+			if (redis.runtimeWorkerId) {
+				await stopServiceRemote(redis.runtimeWorkerId, redis.appName);
 			} else {
 				await stopService(redis.appName);
 			}
@@ -176,8 +178,8 @@ export const redisRouter = createTRPCRouter({
 				applicationStatus: "idle",
 			});
 
-			if (redis.serverId) {
-				await startServiceRemote(redis.serverId, redis.appName);
+			if (redis.runtimeWorkerId) {
+				await startServiceRemote(redis.runtimeWorkerId, redis.appName);
 			} else {
 				await startService(redis.appName);
 			}
@@ -200,8 +202,8 @@ export const redisRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const redis = await findRedisById(input.redisId);
-			if (redis.serverId) {
-				await stopServiceRemote(redis.serverId, redis.appName);
+			if (redis.runtimeWorkerId) {
+				await stopServiceRemote(redis.runtimeWorkerId, redis.appName);
 			} else {
 				await stopService(redis.appName);
 			}
@@ -228,7 +230,7 @@ export const redisRouter = createTRPCRouter({
 			if (input.externalPort) {
 				const portCheck = await checkPortInUse(
 					input.externalPort,
-					redis.serverId || undefined,
+					redis.runtimeWorkerId || undefined,
 				);
 				if (portCheck.isInUse) {
 					throw new TRPCError({
@@ -328,7 +330,7 @@ export const redisRouter = createTRPCRouter({
 			const redis = await findRedisById(input.redisId);
 
 			if (
-				redis.environment.project.organizationId !==
+				redis.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -343,7 +345,7 @@ export const redisRouter = createTRPCRouter({
 				resourceName: redis.appName,
 			});
 			const cleanupOperations = [
-				async () => await removeService(redis?.appName, redis.serverId),
+				async () => await removeService(redis?.appName, redis.runtimeWorkerId),
 				async () => await removeRedisById(input.redisId),
 			];
 
@@ -421,7 +423,7 @@ export const redisRouter = createTRPCRouter({
 			});
 
 			const rd = await findRedisById(redisId);
-			const { appName, serverId, databasePassword } = rd;
+			const { appName, runtimeWorkerId, databasePassword } = rd;
 
 			const containerCmd = getServiceContainerCommand(appName);
 			const command = `
@@ -439,8 +441,8 @@ export const redisRouter = createTRPCRouter({
 					.set({ databasePassword: password })
 					.where(eq(redisTable.redisId, redisId));
 
-				if (serverId) {
-					await execAsyncRemote(serverId, command);
+				if (runtimeWorkerId) {
+					await execAsyncRemote(runtimeWorkerId, command);
 				} else {
 					await execAsync(command, { shell: "/bin/bash" });
 				}
@@ -513,7 +515,7 @@ export const redisRouter = createTRPCRouter({
 				name: z.string().optional(),
 				appName: z.string().optional(),
 				description: z.string().optional(),
-				projectId: z.string().optional(),
+				workspaceId: z.string().optional(),
 				environmentId: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				offset: z.number().min(0).default(0),
@@ -521,10 +523,10 @@ export const redisRouter = createTRPCRouter({
 		)
 		.query(async ({ ctx, input }) => {
 			const baseConditions = [
-				eq(projects.organizationId, ctx.session.activeOrganizationId),
+				eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 			];
-			if (input.projectId) {
-				baseConditions.push(eq(environments.projectId, input.projectId));
+			if (input.workspaceId) {
+				baseConditions.push(eq(environments.workspaceId, input.workspaceId));
 			}
 			if (input.environmentId) {
 				baseConditions.push(eq(redisTable.environmentId, input.environmentId));
@@ -581,7 +583,10 @@ export const redisRouter = createTRPCRouter({
 						environments,
 						eq(redisTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where)
 					.orderBy(desc(redisTable.createdAt))
 					.limit(input.limit)
@@ -593,7 +598,10 @@ export const redisRouter = createTRPCRouter({
 						environments,
 						eq(redisTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where),
 			]);
 			return { items, total: countResult[0]?.count ?? 0 };
@@ -617,7 +625,7 @@ export const redisRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.redisId, "read");
 			const redis = await findRedisById(input.redisId);
 			if (
-				redis.environment.project.organizationId !==
+				redis.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -630,7 +638,7 @@ export const redisRouter = createTRPCRouter({
 				input.tail,
 				input.since,
 				input.search,
-				redis.serverId,
+				redis.runtimeWorkerId,
 			);
 		}),
 });

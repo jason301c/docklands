@@ -26,24 +26,24 @@ const updateWorkspaceSchema = z.object({
 type UpdateWorkspace = z.infer<typeof updateWorkspaceSchema>;
 
 interface Props {
-	projectId: string;
+	workspaceId: string;
 	children?: React.ReactNode;
 }
 
-export const WorkspaceVariables = ({ projectId, children }: Props) => {
+export const WorkspaceVariables = ({ workspaceId, children }: Props) => {
 	const { data: permissions } = api.user.getPermissions.useQuery();
-	const canRead = permissions?.projectEnvVars.read ?? false;
-	const canWrite = permissions?.projectEnvVars.write ?? false;
+	const canRead = permissions?.workspaceEnvVars.read ?? false;
+	const canWrite = permissions?.workspaceEnvVars.write ?? false;
 	const [isOpen, setIsOpen] = useState(false);
 	const utils = api.useUtils();
 	const { mutateAsync, error, isError, isPending } =
 		api.workspaces.update.useMutation();
 	const { data } = api.workspaces.one.useQuery(
 		{
-			projectId,
+			workspaceId,
 		},
 		{
-			enabled: !!projectId,
+			enabled: !!workspaceId,
 		},
 	);
 
@@ -64,11 +64,11 @@ export const WorkspaceVariables = ({ projectId, children }: Props) => {
 	const onSubmit = async (formData: UpdateWorkspace) => {
 		await mutateAsync({
 			env: formData.env || "",
-			projectId: projectId,
+			workspaceId: workspaceId,
 		})
 			.then(() => {
 				toast.success("Workspace variables updated");
-				utils.project.all.invalidate();
+				utils.workspaces.all.invalidate();
 			})
 			.catch(() => {
 				toast.error("Error updating workspace variables");

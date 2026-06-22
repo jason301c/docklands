@@ -66,7 +66,7 @@ export const isValidShell = (shell: string): boolean => {
 };
 
 export const getRuntimeWorkerIdParam = (url: URL) =>
-	url.searchParams.get("runtimeWorkerId") ?? url.searchParams.get("serverId");
+	url.searchParams.get("runtimeWorkerId");
 
 export const getShell = () => {
 	if (IS_CLOUD) {
@@ -82,7 +82,7 @@ export const getShell = () => {
 	}
 };
 
-/** Returns private SSH key for docklands local server terminal. Uses already created SSH key or generates a new SSH key.
+/** Returns private SSH key for docklands local runtimeWorker terminal. Uses already created SSH key or generates a new SSH key.
  */
 export const setupLocalServerSSHKey = async () => {
 	const { SSH_PATH } = paths(true);

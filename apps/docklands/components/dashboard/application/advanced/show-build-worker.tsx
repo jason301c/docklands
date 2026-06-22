@@ -25,14 +25,14 @@ interface Props {
 
 const schema = z
 	.object({
-		buildServerId: z.string().optional(),
+		buildRuntimeWorkerId: z.string().optional(),
 		buildRegistryId: z.string().optional(),
 	})
 	.refine(
 		(data) => {
 			// Both empty/none is valid
 			const buildServerIsNone =
-				!data.buildServerId || data.buildServerId === "none";
+				!data.buildRuntimeWorkerId || data.buildRuntimeWorkerId === "none";
 			const buildRegistryIsNone =
 				!data.buildRegistryId || data.buildRegistryId === "none";
 
@@ -45,7 +45,7 @@ const schema = z
 		{
 			message:
 				"Both Build Worker and Build Registry must be selected together, or both set to None",
-			path: ["buildServerId"],
+			path: ["buildRuntimeWorkerId"],
 		},
 	);
 
@@ -56,14 +56,14 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 		{ applicationId },
 		{ enabled: !!applicationId },
 	);
-	const { data: buildWorkers } = api.runtimeWorker.buildServers.useQuery();
+	const { data: buildWorkers } = api.runtimeWorker.buildWorkers.useQuery();
 	const { data: registries } = api.registry.all.useQuery();
 
 	const { mutateAsync, isPending } = api.application.update.useMutation();
 
 	const form = useForm<Schema>({
 		defaultValues: {
-			buildServerId: data?.buildServerId || "",
+			buildRuntimeWorkerId: data?.buildRuntimeWorkerId || "",
 			buildRegistryId: data?.buildRegistryId || "",
 		},
 		resolver: zodResolver(schema),
@@ -72,7 +72,7 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 	useEffect(() => {
 		if (data) {
 			form.reset({
-				buildServerId: data?.buildServerId || "",
+				buildRuntimeWorkerId: data?.buildRuntimeWorkerId || "",
 				buildRegistryId: data?.buildRegistryId || "",
 			});
 		}
@@ -81,10 +81,11 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 	const onSubmit = async (formData: Schema) => {
 		await mutateAsync({
 			applicationId,
-			buildServerId:
-				formData?.buildServerId === "none" || !formData?.buildServerId
+			buildRuntimeWorkerId:
+				formData?.buildRuntimeWorkerId === "none" ||
+				!formData?.buildRuntimeWorkerId
 					? null
-					: formData?.buildServerId,
+					: formData?.buildRuntimeWorkerId,
 			buildRegistryId:
 				formData?.buildRegistryId === "none" || !formData?.buildRegistryId
 					? null
@@ -150,7 +151,7 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 					>
 						<FormField
 							control={form.control}
-							name="buildServerId"
+							name="buildRuntimeWorkerId"
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Build Worker</FormLabel>
@@ -171,15 +172,15 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 													<span>None</span>
 												</span>
 											</Select.Option>
-											{buildWorkers?.map((server) => (
+											{buildWorkers?.map((runtimeWorker) => (
 												<Select.Option
-													key={server.serverId}
-													value={server.serverId}
+													key={runtimeWorker.runtimeWorkerId}
+													value={runtimeWorker.runtimeWorkerId}
 												>
 													<span className="flex items-center gap-2 justify-between w-full">
-														<span>{server.name}</span>
+														<span>{runtimeWorker.name}</span>
 														<span className="text-muted-foreground text-xs">
-															{server.ipAddress}
+															{runtimeWorker.ipAddress}
 														</span>
 													</span>
 												</Select.Option>
@@ -210,7 +211,7 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 											if (value === null) return;
 											field.onChange(value);
 											if (value === "none") {
-												form.setValue("buildServerId", "none");
+												form.setValue("buildRuntimeWorkerId", "none");
 											}
 										}}
 										value={field.value || "none"}

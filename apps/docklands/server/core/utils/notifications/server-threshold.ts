@@ -191,7 +191,7 @@ export const sendServerThresholdNotifications = async (
 					timestamp: date.toISOString(),
 					date: date.toLocaleString(),
 					status: "alert",
-					alertType: "server-threshold",
+					alertType: "runtimeWorker-threshold",
 				});
 			}
 

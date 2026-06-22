@@ -12,7 +12,7 @@ import { generatePassword } from "@/server/core/templates";
 import { buildLibsql } from "@/server/core/utils/databases/libsql";
 import { pullImage } from "@/server/core/utils/docker/utils";
 import { execAsyncRemote } from "@/server/core/utils/process/execAsync";
-import { validUniqueServerAppName } from "./project";
+import { validUniqueServerAppName } from "./workspace";
 
 export type Libsql = typeof libsql.$inferSelect;
 
@@ -56,11 +56,11 @@ export const findLibsqlById = async (libsqlId: string) => {
 		with: {
 			environment: {
 				with: {
-					project: true,
+					workspace: true,
 				},
 			},
 			mounts: true,
-			server: true,
+			runtimeWorker: true,
 			backups: {
 				with: {
 					destination: {
@@ -137,9 +137,9 @@ export const deployLibsql = async (
 			applicationStatus: "running",
 		});
 		onData?.("Starting libsql deployment...");
-		if (libsql.serverId) {
+		if (libsql.runtimeWorkerId) {
 			await execAsyncRemote(
-				libsql.serverId,
+				libsql.runtimeWorkerId,
 				`docker pull ${libsql.dockerImage}`,
 				onData,
 			);

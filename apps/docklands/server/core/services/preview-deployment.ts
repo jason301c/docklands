@@ -32,7 +32,7 @@ export const findPreviewDeploymentById = async (
 			application: {
 				columns: {
 					applicationId: true,
-					serverId: true,
+					runtimeWorkerId: true,
 				},
 			},
 		},
@@ -57,16 +57,22 @@ export const removePreviewDeployment = async (previewDeploymentId: string) => {
 		application.appName = previewDeployment.appName;
 		const cleanupOperations = [
 			async () =>
-				await removeService(application?.appName, application?.serverId),
+				await removeService(application?.appName, application?.runtimeWorkerId),
 			async () =>
 				await removeDeploymentsByPreviewDeploymentId(
 					previewDeployment,
-					application?.serverId,
+					application?.runtimeWorkerId,
 				),
 			async () =>
-				await removeDirectoryCode(application?.appName, application?.serverId),
+				await removeDirectoryCode(
+					application?.appName,
+					application?.runtimeWorkerId,
+				),
 			async () =>
-				await removeTraefikConfig(application?.appName, application?.serverId),
+				await removeTraefikConfig(
+					application?.appName,
+					application?.runtimeWorkerId,
+				),
 			async () =>
 				await db
 					.delete(previewDeployments)
@@ -133,12 +139,15 @@ export const createPreviewDeployment = async (
 	const appName = `preview-${application.appName}-${generatePassword(6)}`;
 
 	const org = await db.query.organization.findFirst({
-		where: eq(organization.id, application.environment.project.organizationId),
+		where: eq(
+			organization.id,
+			application.environment.workspace.organizationId,
+		),
 	});
 	const generateDomain = await generateWildcardDomain(
 		application.previewWildcard || "*.sslip.io",
 		appName,
-		application.server?.ipAddress || "",
+		application.runtimeWorker?.ipAddress || "",
 		org?.ownerId || "",
 	);
 

@@ -8,11 +8,11 @@ const mockMemberData = (
 	role,
 	userId: "user-1",
 	organizationId: "org-1",
-	accessedProjects: [] as string[],
+	accessedWorkspaces: [] as string[],
 	accessedServices: [] as string[],
 	accessedEnvironments: [] as string[],
-	canCreateProjects: overrides.canCreateProjects ?? false,
-	canDeleteProjects: overrides.canDeleteProjects ?? false,
+	canCreateWorkspaces: overrides.canCreateWorkspaces ?? false,
+	canDeleteWorkspaces: overrides.canDeleteWorkspaces ?? false,
 	canCreateServices: overrides.canCreateServices ?? false,
 	canDeleteServices: overrides.canDeleteServices ?? false,
 	canCreateEnvironments: overrides.canCreateEnvironments ?? false,
@@ -93,7 +93,7 @@ describe("static roles", () => {
 		expect(perms.domain.read).toBe(true);
 		expect(perms.logs.read).toBe(true);
 		expect(perms.monitoring.read).toBe(true);
-		expect(perms.server.read).toBe(false);
+		expect(perms.runtimeWorker.read).toBe(false);
 		expect(perms.registry.read).toBe(false);
 		expect(perms.certificate.read).toBe(false);
 		expect(perms.destination.read).toBe(false);
@@ -103,15 +103,15 @@ describe("static roles", () => {
 });
 
 describe("member permission flags", () => {
-	it("member gets project.create=false without a permission flag", async () => {
+	it("member gets workspace.create=false without a permission flag", async () => {
 		const perms = await resolvePermissions(ctx);
-		expect(perms.project.create).toBe(false);
+		expect(perms.workspace.create).toBe(false);
 	});
 
-	it("member gets project.create=true with canCreateProjects", async () => {
-		memberToReturn = mockMemberData("member", { canCreateProjects: true });
+	it("member gets workspace.create=true with canCreateWorkspaces", async () => {
+		memberToReturn = mockMemberData("member", { canCreateWorkspaces: true });
 		const perms = await resolvePermissions(ctx);
-		expect(perms.project.create).toBe(true);
+		expect(perms.workspace.create).toBe(true);
 	});
 
 	it("member gets docker.read=true with canAccessToDocker", async () => {
@@ -127,7 +127,7 @@ describe("custom roles", () => {
 		organizationRolesToReturn = [
 			{
 				permission: JSON.stringify({
-					server: ["read"],
+					runtimeWorker: ["read"],
 					registry: ["create"],
 				}),
 			},
@@ -135,8 +135,8 @@ describe("custom roles", () => {
 
 		const perms = await resolvePermissions(ctx);
 
-		expect(perms.server.read).toBe(true);
+		expect(perms.runtimeWorker.read).toBe(true);
 		expect(perms.registry.create).toBe(true);
-		expect(perms.project.create).toBe(false);
+		expect(perms.workspace.create).toBe(false);
 	});
 });

@@ -51,10 +51,10 @@ describe("readValidDirectory (path traversal)", () => {
 		expect(readValidDirectory(`${BASE}/foo/../bar`)).toBe(true);
 	});
 
-	it("accepts serverId for remote base path", () => {
-		// With our mock, serverId doesn't change BASE_PATH; just ensure it doesn't throw
-		expect(readValidDirectory(BASE, "server-1")).toBe(true);
-		expect(readValidDirectory("/etc/passwd", "server-1")).toBe(false);
+	it("accepts runtimeWorkerId for remote base path", () => {
+		// With our mock, runtimeWorkerId doesn't change BASE_PATH; just ensure it doesn't throw
+		expect(readValidDirectory(BASE, "runtimeWorker-1")).toBe(true);
+		expect(readValidDirectory("/etc/passwd", "runtimeWorker-1")).toBe(false);
 	});
 
 	it("returns false for null/undefined-like paths that resolve outside", () => {

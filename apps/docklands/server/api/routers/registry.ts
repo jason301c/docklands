@@ -115,16 +115,16 @@ export const registryRouter = createTRPCRouter({
 					"--password-stdin",
 				];
 
-				if (IS_CLOUD && !input.serverId) {
+				if (IS_CLOUD && !input.runtimeWorkerId) {
 					throw new TRPCError({
 						code: "NOT_FOUND",
-						message: "Select a server to test the registry",
+						message: "Select a runtimeWorker to test the registry",
 					});
 				}
 
-				if (input.serverId && input.serverId !== "none") {
+				if (input.runtimeWorkerId && input.runtimeWorkerId !== "none") {
 					await execAsyncRemote(
-						input.serverId,
+						input.runtimeWorkerId,
 						`echo ${input.password} | docker ${args.join(" ")}`,
 					);
 				} else {
@@ -175,16 +175,16 @@ export const registryRouter = createTRPCRouter({
 					"--password-stdin",
 				];
 
-				if (IS_CLOUD && !input.serverId) {
+				if (IS_CLOUD && !input.runtimeWorkerId) {
 					throw new TRPCError({
 						code: "NOT_FOUND",
-						message: "Select a server to test the registry",
+						message: "Select a runtimeWorker to test the registry",
 					});
 				}
 
-				if (input.serverId && input.serverId !== "none") {
+				if (input.runtimeWorkerId && input.runtimeWorkerId !== "none") {
 					await execAsyncRemote(
-						input.serverId,
+						input.runtimeWorkerId,
 						`echo ${registryData.password} | docker ${args.join(" ")}`,
 					);
 				} else {

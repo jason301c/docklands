@@ -44,7 +44,7 @@ export const ShowExternalMysqlCredentials = ({ mysqlId }: Props) => {
 	const { data, refetch } = api.mysql.one.useQuery({ mysqlId });
 	const { mutateAsync, isPending } = api.mysql.saveExternalPort.useMutation();
 	const [connectionUrl, setConnectionUrl] = useState("");
-	const getIp = data?.server?.ipAddress || ip;
+	const getIp = data?.runtimeWorker?.ipAddress || ip;
 	const form = useForm({
 		defaultValues: {},
 		resolver: zodResolver(DockerProviderSchema),

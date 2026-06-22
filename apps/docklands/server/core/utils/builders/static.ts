@@ -17,7 +17,7 @@ http {
   access_log /dev/stdout;
   error_log /dev/stderr;
 
-  server {
+  runtimeWorker {
     listen 80;
     location / {
       root   /usr/share/nginx/html;

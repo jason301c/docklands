@@ -40,12 +40,12 @@ const Dashboard = () => {
 							<ShowPaidMonitoring
 								BASE_URL={
 									process.env.NODE_ENV === "production"
-										? `http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.server?.port}/metrics`
+										? `http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.runtimeWorker?.port}/metrics`
 										: BASE_URL
 								}
 								token={
 									process.env.NODE_ENV === "production"
-										? monitoring?.metricsConfig?.server?.token
+										? monitoring?.metricsConfig?.runtimeWorker?.token
 										: DEFAULT_TOKEN
 								}
 							/>

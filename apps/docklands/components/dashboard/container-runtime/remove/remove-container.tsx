@@ -5,10 +5,13 @@ import { toast } from "@/components/shared/toast";
 
 interface Props {
 	containerId: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const RemoveContainerDialog = ({ containerId, serverId }: Props) => {
+export const RemoveContainerDialog = ({
+	containerId,
+	runtimeWorkerId,
+}: Props) => {
 	const utils = api.useUtils();
 	const { mutateAsync, isPending } = api.docker.removeContainer.useMutation();
 
@@ -39,7 +42,7 @@ export const RemoveContainerDialog = ({ containerId, serverId }: Props) => {
 					<Dialog.Close
 						disabled={isPending}
 						onClick={async () => {
-							await mutateAsync({ containerId, serverId })
+							await mutateAsync({ containerId, runtimeWorkerId })
 								.then(async () => {
 									toast.success("Container removed successfully");
 									await utils.docker.getContainers.invalidate();

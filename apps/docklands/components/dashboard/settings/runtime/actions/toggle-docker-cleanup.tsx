@@ -6,28 +6,28 @@ import { api } from "@/client/api/trpc";
 import { toast } from "@/components/shared/toast";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
-export const ToggleDockerCleanup = ({ serverId }: Props) => {
+export const ToggleDockerCleanup = ({ runtimeWorkerId }: Props) => {
 	const { data, refetch } = api.settings.getWebServerSettings.useQuery(
 		undefined,
 		{
-			enabled: !serverId,
+			enabled: !runtimeWorkerId,
 		},
 	);
 
-	const { data: server, refetch: refetchServer } =
+	const { data: runtimeWorker, refetch: refetchServer } =
 		api.runtimeWorker.one.useQuery(
 			{
-				serverId: serverId || "",
+				runtimeWorkerId: runtimeWorkerId || "",
 			},
 			{
-				enabled: !!serverId,
+				enabled: !!runtimeWorkerId,
 			},
 		);
 
-	const enabled = serverId
-		? server?.enableDockerCleanup
+	const enabled = runtimeWorkerId
+		? runtimeWorker?.enableDockerCleanup
 		: data?.enableDockerCleanup;
 
 	const { mutateAsync } = api.settings.updateDockerCleanup.useMutation();
@@ -36,12 +36,12 @@ export const ToggleDockerCleanup = ({ serverId }: Props) => {
 		try {
 			await mutateAsync({
 				enableDockerCleanup: checked,
-				...(serverId && { serverId }),
+				...(runtimeWorkerId && { runtimeWorkerId }),
 			} as {
 				enableDockerCleanup: boolean;
-				serverId?: string;
+				runtimeWorkerId?: string;
 			});
-			if (serverId) {
+			if (runtimeWorkerId) {
 				await refetchServer();
 			} else {
 				await refetch();

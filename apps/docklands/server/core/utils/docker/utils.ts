@@ -56,7 +56,7 @@ export const pullImage = async (
 
 export const pullRemoteImage = async (
 	dockerImage: string,
-	serverId: string,
+	runtimeWorkerId: string,
 	onData?: (data: any) => void,
 	authConfig?: Partial<RegistryAuth>,
 ): Promise<void> => {
@@ -65,7 +65,7 @@ export const pullRemoteImage = async (
 			throw new Error("Docker image not found");
 		}
 
-		const remoteDocker = await getRemoteDocker(serverId);
+		const remoteDocker = await getRemoteDocker(runtimeWorkerId);
 
 		await new Promise((resolve, reject) => {
 			remoteDocker.pull(
@@ -118,9 +118,15 @@ export const stopService = async (appName: string) => {
 	}
 };
 
-export const stopServiceRemote = async (serverId: string, appName: string) => {
+export const stopServiceRemote = async (
+	runtimeWorkerId: string,
+	appName: string,
+) => {
 	try {
-		await execAsyncRemote(serverId, `docker service scale ${appName}=0 `);
+		await execAsyncRemote(
+			runtimeWorkerId,
+			`docker service scale ${appName}=0 `,
+		);
 	} catch (error) {
 		console.error(error);
 		return error;
@@ -182,12 +188,12 @@ const cleanupCommands = {
 	system: "docker system prune --all --force",
 };
 
-export const cleanupContainers = async (serverId?: string) => {
+export const cleanupContainers = async (runtimeWorkerId?: string) => {
 	try {
 		const command = cleanupCommands.containers;
 
-		if (serverId) {
-			await execAsyncRemote(serverId, dockerSafeExec(command));
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, dockerSafeExec(command));
 		} else {
 			await execAsync(dockerSafeExec(command));
 		}
@@ -198,12 +204,12 @@ export const cleanupContainers = async (serverId?: string) => {
 	}
 };
 
-export const cleanupImages = async (serverId?: string) => {
+export const cleanupImages = async (runtimeWorkerId?: string) => {
 	try {
 		const command = cleanupCommands.images;
 
-		if (serverId) {
-			await execAsyncRemote(serverId, dockerSafeExec(command));
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, dockerSafeExec(command));
 		} else await execAsync(dockerSafeExec(command));
 	} catch (error) {
 		console.error(error);
@@ -212,12 +218,12 @@ export const cleanupImages = async (serverId?: string) => {
 	}
 };
 
-export const cleanupVolumes = async (serverId?: string) => {
+export const cleanupVolumes = async (runtimeWorkerId?: string) => {
 	try {
 		const command = cleanupCommands.volumes;
 
-		if (serverId) {
-			await execAsyncRemote(serverId, dockerSafeExec(command));
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, dockerSafeExec(command));
 		} else {
 			await execAsync(dockerSafeExec(command));
 		}
@@ -228,12 +234,12 @@ export const cleanupVolumes = async (serverId?: string) => {
 	}
 };
 
-export const cleanupBuilders = async (serverId?: string) => {
+export const cleanupBuilders = async (runtimeWorkerId?: string) => {
 	try {
 		const command = cleanupCommands.builders;
 
-		if (serverId) {
-			await execAsyncRemote(serverId, dockerSafeExec(command));
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, dockerSafeExec(command));
 		} else {
 			await execAsync(dockerSafeExec(command));
 		}
@@ -244,12 +250,12 @@ export const cleanupBuilders = async (serverId?: string) => {
 	}
 };
 
-export const cleanupSystem = async (serverId?: string) => {
+export const cleanupSystem = async (runtimeWorkerId?: string) => {
 	try {
 		const command = cleanupCommands.system;
 
-		if (serverId) {
-			await execAsyncRemote(serverId, dockerSafeExec(command));
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, dockerSafeExec(command));
 		} else {
 			await execAsync(dockerSafeExec(command));
 		}
@@ -311,7 +317,7 @@ const excludedCleanupAllCommands: (keyof typeof cleanupCommands)[] = [
 	"volumes",
 ];
 
-export const cleanupAll = async (serverId?: string) => {
+export const cleanupAll = async (runtimeWorkerId?: string) => {
 	for (const [key, command] of Object.entries(cleanupCommands) as [
 		keyof typeof cleanupCommands,
 		string,
@@ -319,8 +325,8 @@ export const cleanupAll = async (serverId?: string) => {
 		if (excludedCleanupAllCommands.includes(key)) continue;
 
 		try {
-			if (serverId) {
-				await execAsyncRemote(serverId, dockerSafeExec(command));
+			if (runtimeWorkerId) {
+				await execAsyncRemote(runtimeWorkerId, dockerSafeExec(command));
 			} else {
 				await execAsync(dockerSafeExec(command));
 			}
@@ -328,7 +334,7 @@ export const cleanupAll = async (serverId?: string) => {
 	}
 };
 
-export const cleanupAllBackground = async (serverId?: string) => {
+export const cleanupAllBackground = async (runtimeWorkerId?: string) => {
 	Promise.allSettled(
 		(
 			Object.entries(cleanupCommands) as [
@@ -338,8 +344,8 @@ export const cleanupAllBackground = async (serverId?: string) => {
 		)
 			.filter(([key]) => !excludedCleanupAllCommands.includes(key))
 			.map(async ([, command]) => {
-				if (serverId) {
-					await execAsyncRemote(serverId, dockerSafeExec(command));
+				if (runtimeWorkerId) {
+					await execAsyncRemote(runtimeWorkerId, dockerSafeExec(command));
 				} else {
 					await execAsync(dockerSafeExec(command));
 				}
@@ -370,9 +376,15 @@ export const startService = async (appName: string) => {
 	}
 };
 
-export const startServiceRemote = async (serverId: string, appName: string) => {
+export const startServiceRemote = async (
+	runtimeWorkerId: string,
+	appName: string,
+) => {
 	try {
-		await execAsyncRemote(serverId, `docker service scale ${appName}=1 `);
+		await execAsyncRemote(
+			runtimeWorkerId,
+			`docker service scale ${appName}=1 `,
+		);
 	} catch (error) {
 		console.error(error);
 		throw error;
@@ -381,14 +393,14 @@ export const startServiceRemote = async (serverId: string, appName: string) => {
 
 export const removeService = async (
 	appName: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 	_deleteVolumes = false,
 ) => {
 	try {
 		const command = `docker service rm ${appName}`;
 
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -409,7 +421,7 @@ export const prepareEnvironmentVariables = (
 	const resolvedVars = Object.entries(serviceVars).map(([key, value]) => {
 		let resolvedValue = value;
 
-		// Replace workspace variables backed by the workspace/project env store.
+		// Replace variables backed by the workspace env store.
 		if (workspaceVars) {
 			resolvedValue = resolvedValue.replace(
 				/\$\{\{workspace\.(.*?)\}\}/g,
@@ -440,7 +452,7 @@ export const prepareEnvironmentVariables = (
 		const legacyProjectRef = resolvedValue.match(/\$\{\{project\.(.*?)\}\}/);
 		if (legacyProjectRef?.[1]) {
 			throw new Error(
-				`Unsupported project environment variable namespace: project.${legacyProjectRef[1]}. Use workspace.${legacyProjectRef[1]} instead.`,
+				`Unsupported workspace environment variable namespace: project.${legacyProjectRef[1]}. Use workspace.${legacyProjectRef[1]} instead.`,
 			);
 		}
 
@@ -671,7 +683,7 @@ export const generateFileMounts = (
 		| RedisNested,
 ) => {
 	const { mounts } = service;
-	const { APPLICATIONS_PATH } = paths(!!service.serverId);
+	const { APPLICATIONS_PATH } = paths(!!service.runtimeWorkerId);
 	if (!mounts || mounts.length === 0) {
 		return [];
 	}
@@ -733,14 +745,14 @@ export const getCreateFileCommand = (
 
 export const getServiceContainer = async (
 	appName: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
 	try {
 		const filter = {
 			status: ["running"],
 			label: [`com.docker.swarm.service.name=${appName}`],
 		};
-		const remoteDocker = await getRemoteDocker(serverId);
+		const remoteDocker = await getRemoteDocker(runtimeWorkerId);
 		const containers = await remoteDocker.listContainers({
 			filters: JSON.stringify(filter),
 		});
@@ -762,7 +774,7 @@ export const getComposeContainer = async (
 	serviceName: string,
 ) => {
 	try {
-		const { appName, composeType, serverId } = compose;
+		const { appName, composeType, runtimeWorkerId } = compose;
 		// 1. Determine the correct labels based on composeType
 		const labels: string[] = [];
 		if (composeType === "stack") {
@@ -770,8 +782,8 @@ export const getComposeContainer = async (
 			labels.push(`com.docker.stack.namespace=${appName}`);
 			labels.push(`com.docker.swarm.service.name=${appName}_${serviceName}`);
 		} else {
-			// Labels for Docker Compose projects (default)
-			labels.push(`com.docker.compose.project=${appName}`);
+			// Labels for Docker Compose workspaces (default)
+			labels.push(`com.docker.compose.workspace=${appName}`);
 			labels.push(`com.docker.compose.service=${serviceName}`);
 		}
 		const filter = {
@@ -779,7 +791,7 @@ export const getComposeContainer = async (
 			label: labels,
 		};
 
-		const remoteDocker = await getRemoteDocker(serverId);
+		const remoteDocker = await getRemoteDocker(runtimeWorkerId);
 		const containers = await remoteDocker.listContainers({
 			filters: JSON.stringify(filter),
 			limit: 1,

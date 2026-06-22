@@ -64,7 +64,7 @@ export const AddGithubProvider = () => {
 					</Dialog.Title>
 				</div>
 
-				<div id="hook-form-add-project" className="grid w-full gap-1">
+				<div id="hook-form-add-workspace" className="grid w-full gap-1">
 					<div className="p-0">
 						<div className="flex flex-col ">
 							<p className="text-muted-foreground text-sm">

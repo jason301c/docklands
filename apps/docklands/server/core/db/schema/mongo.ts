@@ -13,7 +13,7 @@ import { z } from "zod";
 import { backups } from "./backups";
 import { environments } from "./environment";
 import { mounts } from "./mount";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 import {
 	applicationStatus,
 	type EndpointSpecSwarm,
@@ -87,9 +87,12 @@ export const mongo = pgTable("mongo", {
 	environmentId: text("environmentId")
 		.notNull()
 		.references(() => environments.environmentId, { onDelete: "cascade" }),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 	replicaSets: boolean("replicaSets").default(false),
 });
 
@@ -100,9 +103,9 @@ export const mongoRelations = relations(mongo, ({ one, many }) => ({
 	}),
 	backups: many(backups),
 	mounts: many(mounts),
-	server: one(server, {
-		fields: [mongo.serverId],
-		references: [server.serverId],
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [mongo.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
 	}),
 }));
 
@@ -132,7 +135,7 @@ const createSchema = createInsertSchema(mongo, {
 	applicationStatus: z.enum(["idle", "running", "done", "error"]),
 	externalPort: z.number().nullish(),
 	description: z.string().nullish(),
-	serverId: z.string().nullish(),
+	runtimeWorkerId: z.string().nullish(),
 	replicaSets: z.boolean().nullish().default(false),
 	healthCheckSwarm: HealthCheckSwarmSchema.nullable(),
 	restartPolicySwarm: RestartPolicySwarmSchema.nullable(),
@@ -155,7 +158,7 @@ export const apiCreateMongo = createSchema.pick({
 	description: true,
 	databaseUser: true,
 	databasePassword: true,
-	serverId: true,
+	runtimeWorkerId: true,
 	replicaSets: true,
 });
 
@@ -196,7 +199,7 @@ export const apiUpdateMongo = createSchema
 		mongoId: z.string().min(1),
 		dockerImage: z.string().optional(),
 	})
-	.omit({ serverId: true });
+	.omit({ runtimeWorkerId: true });
 
 export const apiResetMongo = createSchema
 	.pick({

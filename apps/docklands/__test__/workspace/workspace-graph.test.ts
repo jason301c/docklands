@@ -20,7 +20,7 @@ describe("workspace graph helpers", () => {
 					description: "frontend",
 					applicationStatus: "running",
 					createdAt: "2026-06-20T00:00:00.000Z",
-					serverId: "srv_1",
+					runtimeWorkerId: "srv_1",
 					refreshToken: "app_refresh_token",
 					deployments: [
 						{

@@ -1,20 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getWebServerSettings = vi.fn();
-const findFirstServer = vi.fn();
+const findFirstRuntimeWorker = vi.fn();
 
 vi.mock("@/server/core/db", () => ({
 	db: {
 		query: {
-			server: {
-				findFirst: (...args: unknown[]) => findFirstServer(...args),
+			runtimeWorkers: {
+				findFirst: (...args: unknown[]) => findFirstRuntimeWorker(...args),
 			},
 		},
 	},
 }));
 
 vi.mock("@/server/core/db/schema", () => ({
-	server: {},
+	runtimeWorkers: {},
 }));
 
 vi.mock("@/server/core/services/web-server-settings", () => ({
@@ -54,21 +54,25 @@ describe("resolveBuildsConcurrency", () => {
 		});
 	});
 
-	describe("remote server partition", () => {
-		it("returns the server concurrency", async () => {
-			findFirstServer.mockResolvedValue({ buildsConcurrency: 4 });
+	describe("remote runtime worker partition", () => {
+		it("returns the runtime worker concurrency", async () => {
+			findFirstRuntimeWorker.mockResolvedValue({ buildsConcurrency: 4 });
 
-			await expect(resolveBuildsConcurrency("server-1")).resolves.toBe(4);
+			await expect(resolveBuildsConcurrency("runtimeWorker-1")).resolves.toBe(
+				4,
+			);
 		});
 
-		it("floors remote server concurrency to 1", async () => {
-			findFirstServer.mockResolvedValue({ buildsConcurrency: -3 });
+		it("floors remote runtime worker concurrency to 1", async () => {
+			findFirstRuntimeWorker.mockResolvedValue({ buildsConcurrency: -3 });
 
-			await expect(resolveBuildsConcurrency("server-1")).resolves.toBe(1);
+			await expect(resolveBuildsConcurrency("runtimeWorker-1")).resolves.toBe(
+				1,
+			);
 		});
 
-		it("defaults to 1 for an unknown server", async () => {
-			findFirstServer.mockResolvedValue(undefined);
+		it("defaults to 1 for an unknown runtime worker", async () => {
+			findFirstRuntimeWorker.mockResolvedValue(undefined);
 
 			await expect(resolveBuildsConcurrency("ghost")).resolves.toBe(1);
 		});

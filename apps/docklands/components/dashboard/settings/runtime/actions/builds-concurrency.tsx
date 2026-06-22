@@ -11,38 +11,40 @@ interface Props {
 	 * When provided, configures concurrency for that remote worker. When
 	 * omitted, configures the local Docklands runtime.
 	 */
-	serverId?: string;
+	runtimeWorkerId?: string;
 	/** Optional title override (e.g. the worker name in a list). */
 	label?: string;
 }
 
 /**
  * Control to set the number of concurrent builds, either for a remote worker
- * (`serverId` provided) or the local runtime (omitted). Available to
+ * (`runtimeWorkerId` provided) or the local runtime (omitted). Available to
  * self-hosted instances.
  */
-export const BuildsConcurrency = ({ serverId, label }: Props) => {
+export const BuildsConcurrency = ({ runtimeWorkerId, label }: Props) => {
 	const { data: isCloud } = api.settings.isCloud.useQuery();
 
 	const serverQuery = api.runtimeWorker.one.useQuery(
-		{ serverId: serverId ?? "" },
-		{ enabled: !!serverId },
+		{ runtimeWorkerId: runtimeWorkerId ?? "" },
+		{ enabled: !!runtimeWorkerId },
 	);
 	const localRuntimeQuery = api.settings.getWebServerSettings.useQuery(
 		undefined,
 		{
-			enabled: !serverId,
+			enabled: !runtimeWorkerId,
 		},
 	);
 
-	const current = serverId
+	const current = runtimeWorkerId
 		? serverQuery.data?.buildsConcurrency
 		: localRuntimeQuery.data?.buildsConcurrency;
-	const refetch = serverId ? serverQuery.refetch : localRuntimeQuery.refetch;
+	const refetch = runtimeWorkerId
+		? serverQuery.refetch
+		: localRuntimeQuery.refetch;
 
 	const updateServer = api.runtimeWorker.updateBuildsConcurrency.useMutation();
 	const updateLocalRuntime = api.settings.updateBuildsConcurrency.useMutation();
-	const isPending = serverId
+	const isPending = runtimeWorkerId
 		? updateServer.isPending
 		: updateLocalRuntime.isPending;
 
@@ -63,8 +65,11 @@ export const BuildsConcurrency = ({ serverId, label }: Props) => {
 		const parsed = clamp(Number.parseInt(value, 10) || 1);
 		setValue(String(parsed));
 		try {
-			if (serverId) {
-				await updateServer.mutateAsync({ serverId, buildsConcurrency: parsed });
+			if (runtimeWorkerId) {
+				await updateServer.mutateAsync({
+					runtimeWorkerId,
+					buildsConcurrency: parsed,
+				});
 			} else {
 				await updateLocalRuntime.mutateAsync({ buildsConcurrency: parsed });
 			}
@@ -86,7 +91,7 @@ export const BuildsConcurrency = ({ serverId, label }: Props) => {
 							{label ?? serverQuery.data?.name ?? "Local runtime worker"}
 						</p>
 						<span className="text-xs text-muted-foreground rounded border px-1.5 py-0.5">
-							{serverId
+							{runtimeWorkerId
 								? (serverQuery.data?.ipAddress ?? "remote worker")
 								: "local worker"}
 						</span>

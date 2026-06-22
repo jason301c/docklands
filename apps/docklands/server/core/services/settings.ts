@@ -49,7 +49,7 @@ export const getServiceImageDigest = async () => {
 	return currentDigest;
 };
 
-/** Returns latest version number and information whether server update is available by comparing current image's digest against digest for provided image tag via Docker hub API. */
+/** Returns latest version number and information whether runtimeWorker update is available by comparing current image's digest against digest for provided image tag via Docker hub API. */
 export const getUpdateData = async (
 	currentVersion: string,
 ): Promise<IUpdateData> => {
@@ -148,11 +148,11 @@ interface TreeDataItem {
 
 export const readDirectory = async (
 	dirPath: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ): Promise<TreeDataItem[]> => {
-	if (serverId) {
+	if (runtimeWorkerId) {
 		const { stdout } = await execAsyncRemote(
-			serverId,
+			runtimeWorkerId,
 			`
 process_items() {
     local parent_dir="$1"
@@ -249,7 +249,7 @@ echo "$json_output"
 
 export const getDockerResourceType = async (
 	resourceName: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	try {
 		let result = "";
@@ -263,8 +263,8 @@ else
 	echo "unknown"
 fi`;
 
-		if (serverId) {
-			const { stdout } = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const { stdout } = await execAsyncRemote(runtimeWorkerId, command);
 			result = stdout.trim();
 		} else {
 			const { stdout } = await execAsync(command);
@@ -285,10 +285,13 @@ fi`;
 
 export const reloadDockerResource = async (
 	resourceName: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 	version?: string,
 ) => {
-	const resourceType = await getDockerResourceType(resourceName, serverId);
+	const resourceType = await getDockerResourceType(
+		resourceName,
+		runtimeWorkerId,
+	);
 	let command = "";
 	if (resourceType === "service") {
 		if (resourceName === "docklands") {
@@ -307,8 +310,8 @@ export const reloadDockerResource = async (
 	} else {
 		throw new Error("Resource type not found");
 	}
-	if (serverId) {
-		await execAsyncRemote(serverId, command);
+	if (runtimeWorkerId) {
+		await execAsyncRemote(runtimeWorkerId, command);
 	} else {
 		await execAsync(command);
 	}
@@ -316,9 +319,12 @@ export const reloadDockerResource = async (
 
 export const readEnvironmentVariables = async (
 	resourceName: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
-	const resourceType = await getDockerResourceType(resourceName, serverId);
+	const resourceType = await getDockerResourceType(
+		resourceName,
+		runtimeWorkerId,
+	);
 	let command = "";
 	if (resourceType === "service") {
 		command = `docker service inspect ${resourceName} --format '{{json .Spec.TaskTemplate.ContainerSpec.Env}}'`;
@@ -326,8 +332,8 @@ export const readEnvironmentVariables = async (
 		command = `docker container inspect ${resourceName} --format '{{json .Config.Env}}'`;
 	}
 	let result = "";
-	if (serverId) {
-		const { stdout } = await execAsyncRemote(serverId, command);
+	if (runtimeWorkerId) {
+		const { stdout } = await execAsyncRemote(runtimeWorkerId, command);
 		result = stdout.trim();
 	} else {
 		const { stdout } = await execAsync(command);
@@ -341,11 +347,14 @@ export const readEnvironmentVariables = async (
 
 export const readPorts = async (
 	resourceName: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ): Promise<
 	{ targetPort: number; publishedPort: number; protocol?: string }[]
 > => {
-	const resourceType = await getDockerResourceType(resourceName, serverId);
+	const resourceType = await getDockerResourceType(
+		resourceName,
+		runtimeWorkerId,
+	);
 	let command = "";
 	if (resourceType === "service") {
 		command = `docker service inspect ${resourceName} --format '{{json .Spec.EndpointSpec.Ports}}'`;
@@ -355,8 +364,8 @@ export const readPorts = async (
 		throw new Error("Resource type not found");
 	}
 	let result = "";
-	if (serverId) {
-		const { stdout } = await execAsyncRemote(serverId, command);
+	if (runtimeWorkerId) {
+		const { stdout } = await execAsyncRemote(runtimeWorkerId, command);
 		result = stdout.trim();
 	} else {
 		const { stdout } = await execAsync(command);
@@ -413,13 +422,13 @@ export const readPorts = async (
 
 export const checkPortInUse = async (
 	port: number,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ): Promise<{ isInUse: boolean; conflictingContainer?: string }> => {
 	try {
 		// Check if port is in use by a Docker container
 		const dockerCommand = `docker ps -a --format '{{.Names}}' | grep -v '^docklands-traefik$' | while read name; do docker port "$name" 2>/dev/null | grep -q ':${port}' && echo "$name" && break; done || true`;
-		const { stdout: dockerOut } = serverId
-			? await execAsyncRemote(serverId, dockerCommand)
+		const { stdout: dockerOut } = runtimeWorkerId
+			? await execAsyncRemote(runtimeWorkerId, dockerCommand)
 			: await execAsync(dockerCommand);
 
 		const container = dockerOut.trim();
@@ -436,8 +445,8 @@ export const checkPortInUse = async (
 		// with --net=host to share the host's network stack and use nc -z to
 		// check if something is listening on the port
 		const hostCommand = `docker run --rm --net=host busybox sh -c 'nc -z 0.0.0.0 ${port} 2>/dev/null && echo in_use || echo free'`;
-		const { stdout: hostOut } = serverId
-			? await execAsyncRemote(serverId, hostCommand)
+		const { stdout: hostOut } = runtimeWorkerId
+			? await execAsyncRemote(runtimeWorkerId, hostCommand)
 			: await execAsync(hostCommand);
 
 		if (hostOut.includes("in_use")) {
@@ -457,33 +466,35 @@ export const checkPortInUse = async (
 export const writeTraefikSetup = async (input: TraefikOptions) => {
 	const resourceType = await getDockerResourceType(
 		"docklands-traefik",
-		input.serverId,
+		input.runtimeWorkerId,
 	);
 
 	if (resourceType === "service") {
 		await initializeTraefikService({
 			env: input.env,
 			additionalPorts: input.additionalPorts,
-			serverId: input.serverId,
+			runtimeWorkerId: input.runtimeWorkerId,
 		});
-		await reconnectServicesToTraefik(input.serverId);
+		await reconnectServicesToTraefik(input.runtimeWorkerId);
 	} else if (resourceType === "standalone") {
 		await initializeStandaloneTraefik({
 			env: input.env,
 			additionalPorts: input.additionalPorts,
-			serverId: input.serverId,
+			runtimeWorkerId: input.runtimeWorkerId,
 		});
 
-		await reconnectServicesToTraefik(input.serverId);
+		await reconnectServicesToTraefik(input.runtimeWorkerId);
 	} else {
 		throw new Error("Traefik resource type not found");
 	}
 };
 
-export const reconnectServicesToTraefik = async (serverId?: string) => {
+export const reconnectServicesToTraefik = async (runtimeWorkerId?: string) => {
 	const composeResult = await db.query.compose.findMany({
 		where: and(
-			...(serverId ? [eq(compose.serverId, serverId)] : []),
+			...(runtimeWorkerId
+				? [eq(compose.runtimeWorkerId, runtimeWorkerId)]
+				: []),
 			eq(compose.isolatedDeployment, true),
 		),
 	});
@@ -497,8 +508,8 @@ export const reconnectServicesToTraefik = async (serverId?: string) => {
 		commands += `docker network connect ${compose.appName} $(docker ps --filter "name=docklands-traefik" -q) >/dev/null 2>&1\n`;
 	}
 
-	if (serverId) {
-		await execAsyncRemote(serverId, commands);
+	if (runtimeWorkerId) {
+		await execAsyncRemote(runtimeWorkerId, commands);
 	} else {
 		await execAsync(commands);
 	}

@@ -10,7 +10,7 @@ import { api } from "@/client/api/trpc";
 const LOCAL_RUNTIME_WORKER = "docklands-local-runtime";
 
 interface Props {
-	children: (serverId?: string) => ReactNode;
+	children: (runtimeWorkerId?: string) => ReactNode;
 }
 
 export const RuntimeWorkerFilter = ({ children }: Props) => {
@@ -18,30 +18,28 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 	const currentPathname = pathname ?? "/dashboard/workspace";
-	const { data: servers, isLoading: isLoadingServers } =
+	const { data: runtimeWorkers, isLoading: isLoadingRuntimeWorkers } =
 		api.runtimeWorker.withSSHKey.useQuery();
 	const { data: isCloud, isLoading: isLoadingCloud } =
 		api.settings.isCloud.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
-	const queryServerId =
-		searchParams?.get("runtimeWorkerId") ??
-		searchParams?.get("serverId") ??
-		undefined;
+	const queryRuntimeWorkerId =
+		searchParams?.get("runtimeWorkerId") ?? undefined;
 
-	const selectedServer = servers?.find(
-		(server) => server.serverId === queryServerId,
+	const selectedRuntimeWorker = runtimeWorkers?.find(
+		(runtimeWorker) => runtimeWorker.runtimeWorkerId === queryRuntimeWorkerId,
 	);
 	// Cloud has no local runtime, so fall back to the first remote runtime.
-	const serverId = selectedServer
-		? selectedServer.serverId
+	const runtimeWorkerId = selectedRuntimeWorker
+		? selectedRuntimeWorker.runtimeWorkerId
 		: isCloud
-			? servers?.[0]?.serverId
+			? runtimeWorkers?.[0]?.runtimeWorkerId
 			: undefined;
 
-	const setServerId = (value: string) => {
+	const setRuntimeWorkerId = (value: string) => {
 		const query = new URLSearchParams(searchParams?.toString() ?? "");
-		query.delete("serverId");
+		query.delete("runtimeWorkerId");
 		if (value === LOCAL_RUNTIME_WORKER) {
 			query.delete("runtimeWorkerId");
 		} else {
@@ -53,7 +51,7 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 		});
 	};
 
-	if (isLoadingServers || isLoadingCloud) {
+	if (isLoadingRuntimeWorkers || isLoadingCloud) {
 		return (
 			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-2 rounded-lg border bg-background">
 				<span className="text-lg font-medium text-muted-foreground">
@@ -64,7 +62,7 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 		);
 	}
 
-	if (isCloud && !servers?.length) {
+	if (isCloud && !runtimeWorkers?.length) {
 		return (
 			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-5 rounded-lg border border-dashed bg-background px-4">
 				<div className="flex size-16 items-center justify-center rounded-full bg-muted">
@@ -73,12 +71,12 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 				<div className="flex max-w-md flex-col items-center gap-1.5 text-center">
 					<span className="text-lg font-medium">No runtime workers yet</span>
 					<span className="text-sm text-muted-foreground">
-						{permissions?.server.create
+						{permissions?.runtimeWorker.create
 							? "This section works on remote runtime workers. Add your first worker to start managing it from here."
 							: "This section works on remote runtime workers. Ask an administrator to add a worker to your organization."}
 					</span>
 				</div>
-				{permissions?.server.create && (
+				{permissions?.runtimeWorker.create && (
 					<LinkButton href="/dashboard/settings/runtime">
 						<PlusIcon className="size-4" />
 						Add worker
@@ -90,7 +88,7 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 
 	return (
 		<div className="flex w-full flex-col gap-4">
-			{!!servers?.length && (
+			{!!runtimeWorkers?.length && (
 				<div className="flex w-full items-center justify-end gap-3">
 					<Label
 						htmlFor="runtime-worker-filter"
@@ -100,9 +98,9 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 					</Label>
 					<Select
 						aria-label="Runtime worker filter"
-						value={serverId ?? LOCAL_RUNTIME_WORKER}
+						value={runtimeWorkerId ?? LOCAL_RUNTIME_WORKER}
 						onValueChange={(value) =>
-							value !== null && setServerId(value as never)
+							value !== null && setRuntimeWorkerId(value as never)
 						}
 					>
 						<>
@@ -126,12 +124,15 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 										</div>
 									</Select.Option>
 								)}
-								{servers.map((server) => (
-									<Select.Option key={server.serverId} value={server.serverId}>
+								{runtimeWorkers.map((runtimeWorker) => (
+									<Select.Option
+										key={runtimeWorker.runtimeWorkerId}
+										value={runtimeWorker.runtimeWorkerId}
+									>
 										<div className="flex items-center gap-2">
-											<span>{server.name}</span>
+											<span>{runtimeWorker.name}</span>
 											<span className="text-xs text-muted-foreground">
-												{server.ipAddress}
+												{runtimeWorker.ipAddress}
 											</span>
 										</div>
 									</Select.Option>
@@ -141,8 +142,8 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 					</Select>
 				</div>
 			)}
-			<Fragment key={serverId ?? LOCAL_RUNTIME_WORKER}>
-				{children(serverId)}
+			<Fragment key={runtimeWorkerId ?? LOCAL_RUNTIME_WORKER}>
+				{children(runtimeWorkerId)}
 			</Fragment>
 		</div>
 	);

@@ -6,7 +6,7 @@ import {
 } from "@/server/core/services/deployment";
 import { findDestinationById } from "@/server/core/services/destination";
 import { findEnvironmentById } from "@/server/core/services/environment";
-import { findProjectById } from "@/server/core/services/project";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { sendDatabaseBackupNotifications } from "../notifications/database-backup";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import {
@@ -22,7 +22,7 @@ export const runComposeBackup = async (
 ) => {
 	const { environmentId, name, appName } = compose;
 	const environment = await findEnvironmentById(environmentId);
-	const project = await findProjectById(environment.projectId);
+	const workspace = await findWorkspaceById(environment.workspaceId);
 	const { prefix, databaseType, serviceName } = backup;
 	const destination = await findDestinationById(backup.destinationId);
 	const backupFileName = `${getBackupTimestamp()}.${databaseType === "mongo" ? "bson" : "sql"}.gz`;
@@ -44,8 +44,8 @@ export const runComposeBackup = async (
 			rcloneCommand,
 			deployment.logPath,
 		);
-		if (compose.serverId) {
-			await execAsyncRemote(compose.serverId, backupCommand);
+		if (compose.runtimeWorkerId) {
+			await execAsyncRemote(compose.runtimeWorkerId, backupCommand);
 		} else {
 			await execAsync(backupCommand, {
 				shell: "/bin/bash",
@@ -54,10 +54,10 @@ export const runComposeBackup = async (
 
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: getDatabaseType(databaseType),
 			type: "success",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 
@@ -66,12 +66,12 @@ export const runComposeBackup = async (
 		console.log(error);
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: getDatabaseType(databaseType),
 			type: "error",
 			// @ts-expect-error
 			errorMessage: error?.message || "Error message not provided",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 

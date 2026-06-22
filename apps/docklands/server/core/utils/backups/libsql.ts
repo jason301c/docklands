@@ -6,7 +6,7 @@ import {
 import { findDestinationById } from "@/server/core/services/destination";
 import { findEnvironmentById } from "@/server/core/services/environment";
 import type { Libsql } from "@/server/core/services/libsql";
-import { findProjectById } from "@/server/core/services/project";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { sendDatabaseBackupNotifications } from "../notifications/database-backup";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import {
@@ -22,7 +22,7 @@ export const runLibsqlBackup = async (
 ) => {
 	const { name, environmentId, appName } = libsql;
 	const environment = await findEnvironmentById(environmentId);
-	const project = await findProjectById(environment.projectId);
+	const workspace = await findWorkspaceById(environment.workspaceId);
 
 	const deployment = await createDeploymentBackup({
 		backupId: backup.backupId,
@@ -44,8 +44,8 @@ export const runLibsqlBackup = async (
 			rcloneCommand,
 			deployment.logPath,
 		);
-		if (libsql.serverId) {
-			await execAsyncRemote(libsql.serverId, backupCommand);
+		if (libsql.runtimeWorkerId) {
+			await execAsyncRemote(libsql.runtimeWorkerId, backupCommand);
 		} else {
 			await execAsync(backupCommand, {
 				shell: "/bin/bash",
@@ -54,10 +54,10 @@ export const runLibsqlBackup = async (
 
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: "libsql",
 			type: "success",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 
@@ -65,12 +65,12 @@ export const runLibsqlBackup = async (
 	} catch (error) {
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: "libsql",
 			type: "error",
 			// @ts-expect-error
 			errorMessage: error?.message || "Error message not provided",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 

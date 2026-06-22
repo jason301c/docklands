@@ -7,7 +7,7 @@ import { sshKeyCreate, sshKeyType } from "../validations";
 import { organization } from "./account";
 import { applications } from "./application";
 import { compose } from "./compose";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 
 export const sshKeys = pgTable("ssh-key", {
 	sshKeyId: text("sshKeyId")
@@ -30,7 +30,7 @@ export const sshKeys = pgTable("ssh-key", {
 export const sshKeysRelations = relations(sshKeys, ({ many, one }) => ({
 	applications: many(applications),
 	compose: many(compose),
-	servers: many(server),
+	runtimeWorkers: many(runtimeWorkers),
 	organization: one(organization, {
 		fields: [sshKeys.organizationId],
 		references: [organization.id],

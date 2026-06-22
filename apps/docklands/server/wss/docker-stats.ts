@@ -11,14 +11,17 @@ import {
 import { execAsync } from "@/server/core/utils/process/execAsync";
 
 export const setupDockerStatsMonitoringSocketServer = (
-	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
+	runtimeWorker: http.Server<
+		typeof http.IncomingMessage,
+		typeof http.ServerResponse
+	>,
 ) => {
 	const wssTerm = new WebSocketServer({
 		noServer: true,
 		path: "/listen-docker-stats-monitoring",
 	});
 
-	server.on("upgrade", (req, socket, head) => {
+	runtimeWorker.on("upgrade", (req, socket, head) => {
 		const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
 
 		if (pathname === "/listen-docker-stats-monitoring") {

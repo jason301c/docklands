@@ -37,11 +37,11 @@ const Page = () => {
 						</p>
 						{servers && servers.length > 0 ? (
 							<div className="flex flex-col gap-3">
-								{servers.map((server) => (
+								{servers.map((runtimeWorker) => (
 									<BuildsConcurrency
-										key={server.serverId}
-										serverId={server.serverId}
-										label={server.name}
+										key={runtimeWorker.runtimeWorkerId}
+										runtimeWorkerId={runtimeWorker.runtimeWorkerId}
+										label={runtimeWorker.name}
 									/>
 								))}
 							</div>

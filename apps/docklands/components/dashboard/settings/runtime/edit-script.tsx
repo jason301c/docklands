@@ -19,7 +19,7 @@ import {
 import { toast } from "@/components/shared/toast";
 
 interface Props {
-	serverId: string;
+	runtimeWorkerId: string;
 }
 
 const schema = z.object({
@@ -30,14 +30,14 @@ const schema = z.object({
 
 type Schema = z.infer<typeof schema>;
 
-export const EditScript = ({ serverId }: Props) => {
+export const EditScript = ({ runtimeWorkerId }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
-	const { data: server } = api.runtimeWorker.one.useQuery(
+	const { data: runtimeWorker } = api.runtimeWorker.one.useQuery(
 		{
-			serverId,
+			runtimeWorkerId,
 		},
 		{
-			enabled: !!serverId,
+			enabled: !!runtimeWorkerId,
 		},
 	);
 
@@ -45,10 +45,10 @@ export const EditScript = ({ serverId }: Props) => {
 
 	const { data: defaultCommand } = api.runtimeWorker.getDefaultCommand.useQuery(
 		{
-			serverId,
+			runtimeWorkerId,
 		},
 		{
-			enabled: !!serverId,
+			enabled: !!runtimeWorkerId,
 		},
 	);
 
@@ -60,19 +60,19 @@ export const EditScript = ({ serverId }: Props) => {
 	});
 
 	useEffect(() => {
-		if (server) {
+		if (runtimeWorker) {
 			form.reset({
-				command: server.command || defaultCommand,
+				command: runtimeWorker.command || defaultCommand,
 			});
 		}
-	}, [server, defaultCommand]);
+	}, [runtimeWorker, defaultCommand]);
 
 	const onSubmit = async (formData: Schema) => {
-		if (server) {
+		if (runtimeWorker) {
 			await mutateAsync({
-				...server,
+				...runtimeWorker,
 				command: formData.command || "",
-				serverId,
+				runtimeWorkerId,
 			})
 				.then((_data) => {
 					toast.success("Script modified successfully");

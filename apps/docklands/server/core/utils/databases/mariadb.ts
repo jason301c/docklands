@@ -12,7 +12,7 @@ import { getRemoteDocker } from "../servers/remote-docker";
 
 export type MariadbNested = InferResultType<
 	"mariadb",
-	{ mounts: true; environment: { with: { project: true } } }
+	{ mounts: true; environment: { with: { workspace: true } } }
 >;
 export const buildMariadb = async (mariadb: MariadbNested) => {
 	const {
@@ -58,14 +58,14 @@ export const buildMariadb = async (mariadb: MariadbNested) => {
 	});
 	const envVariables = prepareEnvironmentVariables(
 		defaultMariadbEnv,
-		mariadb.environment.project.env,
+		mariadb.environment.workspace.env,
 		mariadb.environment.env,
 	);
 	const volumesMount = generateVolumeMounts(mounts);
 	const bindsMount = generateBindMounts(mounts);
 	const filesMount = generateFileMounts(appName, mariadb);
 
-	const docker = await getRemoteDocker(mariadb.serverId);
+	const docker = await getRemoteDocker(mariadb.runtimeWorkerId);
 
 	const settings: CreateServiceOptions = {
 		Name: appName,

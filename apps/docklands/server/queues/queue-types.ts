@@ -3,29 +3,29 @@ type DeployJob =
 			applicationId: string;
 			titleLog: string;
 			descriptionLog: string;
-			server?: boolean;
+			runtimeWorker?: boolean;
 			type: "deploy" | "redeploy";
 			applicationType: "application";
-			serverId?: string;
+			runtimeWorkerId?: string;
 	  }
 	| {
 			composeId: string;
 			titleLog: string;
 			descriptionLog: string;
-			server?: boolean;
+			runtimeWorker?: boolean;
 			type: "deploy" | "redeploy";
 			applicationType: "compose";
-			serverId?: string;
+			runtimeWorkerId?: string;
 	  }
 	| {
 			applicationId: string;
 			titleLog: string;
 			descriptionLog: string;
-			server?: boolean;
+			runtimeWorker?: boolean;
 			type: "deploy" | "redeploy";
 			applicationType: "application-preview";
 			previewDeploymentId: string;
-			serverId?: string;
+			runtimeWorkerId?: string;
 	  };
 
 export type DeploymentJob = DeployJob;

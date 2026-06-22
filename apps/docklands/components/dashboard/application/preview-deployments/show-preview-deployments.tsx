@@ -165,7 +165,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 														</Button>
 														<ServiceLogsModal
 															appName={deployment.appName}
-															serverId={data?.serverId || ""}
+															runtimeWorkerId={data?.runtimeWorkerId || ""}
 														>
 															<Button
 																variant="outline"
@@ -180,7 +180,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 														<ShowDeploymentsModal
 															id={deployment.previewDeploymentId}
 															type="previewDeployment"
-															serverId={data?.serverId || ""}
+															runtimeWorkerId={data?.runtimeWorkerId || ""}
 														>
 															<Button
 																variant="outline"

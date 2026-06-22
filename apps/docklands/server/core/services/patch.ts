@@ -130,19 +130,19 @@ export const markPatchForDeletion = async (
 interface ApplyPatchesOptions {
 	id: string;
 	type: "application" | "compose";
-	serverId: string | null;
+	runtimeWorkerId: string | null;
 }
 
 export const generateApplyPatchesCommand = async ({
 	id,
 	type,
-	serverId,
+	runtimeWorkerId,
 }: ApplyPatchesOptions) => {
 	const entity =
 		type === "application"
 			? await findApplicationById(id)
 			: await findComposeById(id);
-	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!serverId);
+	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!runtimeWorkerId);
 	const basePath = type === "compose" ? COMPOSE_PATH : APPLICATIONS_PATH;
 	const codePath = join(basePath, entity.appName, "code");
 

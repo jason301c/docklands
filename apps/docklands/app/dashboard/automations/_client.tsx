@@ -6,12 +6,14 @@ import { RuntimeWorkerFilter } from "@/components/shared/runtime-worker-filter";
 function SchedulesPage() {
 	return (
 		<RuntimeWorkerFilter>
-			{(serverId) => (
+			{(runtimeWorkerId) => (
 				<div className="w-full">
 					<div className="min-h-[45vh] rounded-lg border bg-background">
 						<ShowSchedules
-							scheduleType={serverId ? "server" : "docklands-server"}
-							id={serverId ?? "docklands-server"}
+							scheduleType={
+								runtimeWorkerId ? "runtimeWorker" : "docklands-server"
+							}
+							id={runtimeWorkerId ?? "docklands-server"}
 						/>
 					</div>
 				</div>

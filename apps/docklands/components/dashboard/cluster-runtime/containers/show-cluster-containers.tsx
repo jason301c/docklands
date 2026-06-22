@@ -21,10 +21,10 @@ import { SummaryCards } from "./summary-cards";
 import type { ClusterNode, ContainerInfo, ContainerStat } from "./types";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const ShowClusterContainers = ({ serverId }: Props) => {
+export const ShowClusterContainers = ({ runtimeWorkerId }: Props) => {
 	const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
 	const {
@@ -33,7 +33,7 @@ export const ShowClusterContainers = ({ serverId }: Props) => {
 		isError: nodesError,
 		error: nodesErrorDetail,
 		refetch: refetchNodes,
-	} = api.swarm.getNodes.useQuery({ serverId });
+	} = api.swarm.getNodes.useQuery({ runtimeWorkerId });
 
 	const {
 		data: nodeApps,
@@ -42,7 +42,7 @@ export const ShowClusterContainers = ({ serverId }: Props) => {
 		error: appsErrorDetail,
 		refetch: refetchApps,
 	} = api.swarm.getNodeApps.useQuery(
-		{ serverId },
+		{ runtimeWorkerId },
 		{ enabled: !nodesError && nodes !== undefined },
 	);
 
@@ -56,13 +56,13 @@ export const ShowClusterContainers = ({ serverId }: Props) => {
 		isLoading: detailsLoading,
 		refetch: refetchDetails,
 	} = api.swarm.getAppInfos.useQuery(
-		{ appName: applicationList, serverId },
+		{ appName: applicationList, runtimeWorkerId },
 		{ enabled: applicationList.length > 0 },
 	);
 
 	const { data: stats, isLoading: statsLoading } =
 		api.swarm.getContainerStats.useQuery(
-			{ serverId },
+			{ runtimeWorkerId },
 			{
 				refetchInterval: 5000,
 				enabled: applicationList.length > 0 && !nodesError && !appsError,

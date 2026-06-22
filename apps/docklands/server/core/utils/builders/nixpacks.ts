@@ -12,7 +12,7 @@ export const getNixpacksCommand = (application: ApplicationNested) => {
 	const buildContainerId = `${appName}-${nanoid(10)}`;
 	const envVariables = prepareEnvironmentVariablesForShell(
 		env,
-		application.environment.project.env,
+		application.environment.workspace.env,
 		application.environment.env,
 	);
 

@@ -11,7 +11,7 @@ const Dashboard = () => {
 
 	return (
 		<RuntimeWorkerFilter>
-			{(serverId) => (
+			{(runtimeWorkerId) => (
 				<div className="space-y-4">
 					<Tabs
 						value={activeTab}
@@ -25,12 +25,12 @@ const Dashboard = () => {
 					/>
 					{activeTab === "overview" && (
 						<div>
-							<ClusterMonitorCard serverId={serverId} />
+							<ClusterMonitorCard runtimeWorkerId={runtimeWorkerId} />
 						</div>
 					)}
 					{activeTab === "containers" && (
 						<div className="rounded-lg border bg-background p-6">
-							<ShowClusterContainers serverId={serverId} />
+							<ShowClusterContainers runtimeWorkerId={runtimeWorkerId} />
 						</div>
 					)}
 				</div>

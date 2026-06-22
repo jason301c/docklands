@@ -22,21 +22,21 @@ const Terminal = dynamic(
 interface Props {
 	appName: string;
 	children?: React.ReactNode;
-	serverId?: string;
+	runtimeWorkerId?: string;
 	appType?: "stack" | "docker-compose";
 }
 
 export const ServiceTerminalModal = ({
 	children,
 	appName,
-	serverId,
+	runtimeWorkerId,
 	appType,
 }: Props) => {
 	const { data, isPending } = api.docker.getContainersByAppNameMatch.useQuery(
 		{
 			appName,
 			appType,
-			serverId,
+			runtimeWorkerId,
 		},
 		{
 			enabled: !!appName,
@@ -116,7 +116,7 @@ export const ServiceTerminalModal = ({
 					</>
 				</Select>
 				<Terminal
-					serverId={serverId || ""}
+					runtimeWorkerId={runtimeWorkerId || ""}
 					id="terminal"
 					containerId={containerId || "select-a-container"}
 				/>

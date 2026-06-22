@@ -234,7 +234,7 @@ export const ShowGeneralMariadb = ({ mariadbId }: Props) => {
 							))}
 						<ServiceTerminalModal
 							appName={data?.appName || ""}
-							serverId={data?.serverId || ""}
+							runtimeWorkerId={data?.runtimeWorkerId || ""}
 						>
 							<Button
 								variant="outline"

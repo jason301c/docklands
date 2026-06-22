@@ -13,7 +13,7 @@ export const restoreMySqlBackup = async (
 	emit: (log: string) => void,
 ) => {
 	try {
-		const { appName, databaseRootPassword, serverId } = mysql;
+		const { appName, databaseRootPassword, runtimeWorkerId } = mysql;
 
 		const rcloneFlags = getS3Credentials(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
@@ -37,8 +37,8 @@ export const restoreMySqlBackup = async (
 			`Restoring database: ${backupInput.databaseName} from ${backupInput.backupFile}`,
 		);
 
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}

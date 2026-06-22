@@ -25,7 +25,7 @@ import { toast } from "@/components/shared/toast";
 
 interface Props {
 	children: React.ReactNode;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
 const PortSchema = z.object({
@@ -40,7 +40,7 @@ const IngressPortsSchema = z.object({
 
 type IngressPortsForm = z.infer<typeof IngressPortsSchema>;
 
-export const ManageIngressPorts = ({ children, serverId }: Props) => {
+export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 	const [open, setOpen] = useState(false);
 
 	const form = useForm<IngressPortsForm>({
@@ -57,7 +57,7 @@ export const ManageIngressPorts = ({ children, serverId }: Props) => {
 
 	const { data: currentPorts, refetch: refetchPorts } =
 		api.settings.getTraefikPorts.useQuery({
-			serverId,
+			runtimeWorkerId,
 		});
 
 	const { mutateAsync: updatePorts, isPending } =
@@ -94,7 +94,7 @@ export const ManageIngressPorts = ({ children, serverId }: Props) => {
 		try {
 			await executeWithHealthCheck(() =>
 				updatePorts({
-					serverId,
+					runtimeWorkerId,
 					additionalPorts: data.ports,
 				}),
 			);

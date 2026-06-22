@@ -116,7 +116,7 @@ export const sendBuildSuccessNotifications = async ({
 					color: 0x57f287,
 					fields: [
 						{
-							name: decorate("`🛠️`", "Project"),
+							name: decorate("`🛠️`", "Workspace"),
 							value: projectName,
 							inline: true,
 						},
@@ -232,7 +232,7 @@ export const sendBuildSuccessNotifications = async ({
 							pretext: ":white_check_mark: *Build Success*",
 							fields: [
 								{
-									title: "Project",
+									title: "Workspace",
 									value: projectName,
 									short: true,
 								},
@@ -414,7 +414,7 @@ export const sendBuildSuccessNotifications = async ({
 				await sendTeamsNotification(teams, {
 					title: "✅ Build Success",
 					facts: [
-						{ name: "Project", value: projectName },
+						{ name: "Workspace", value: projectName },
 						{ name: "Application", value: applicationName },
 						{ name: "Environment", value: environmentName },
 						{ name: "Type", value: applicationType },

@@ -24,11 +24,15 @@ import {
 
 interface Props {
 	containerId: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 	children?: React.ReactNode;
 }
 
-export const UploadFileModal = ({ children, containerId, serverId }: Props) => {
+export const UploadFileModal = ({
+	children,
+	containerId,
+	runtimeWorkerId,
+}: Props) => {
 	const [open, setOpen] = useState(false);
 
 	const { mutateAsync: uploadFile, isPending: isLoading } =
@@ -48,7 +52,7 @@ export const UploadFileModal = ({ children, containerId, serverId }: Props) => {
 		defaultValues: {
 			containerId,
 			destinationPath: "/",
-			serverId: serverId || undefined,
+			runtimeWorkerId: runtimeWorkerId || undefined,
 		},
 	});
 
@@ -64,8 +68,8 @@ export const UploadFileModal = ({ children, containerId, serverId }: Props) => {
 		formData.append("containerId", values.containerId);
 		formData.append("file", values.file);
 		formData.append("destinationPath", values.destinationPath);
-		if (values.serverId) {
-			formData.append("serverId", values.serverId);
+		if (values.runtimeWorkerId) {
+			formData.append("runtimeWorkerId", values.runtimeWorkerId);
 		}
 
 		await uploadFile(formData);

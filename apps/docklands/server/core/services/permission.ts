@@ -128,9 +128,9 @@ const getMemberPermissionFlags = (
 	memberRecord: Awaited<ReturnType<typeof findMemberByUserId>>,
 ): Partial<Record<string, Record<string, boolean>>> => {
 	return {
-		project: {
-			create: !!memberRecord.canCreateProjects,
-			delete: !!memberRecord.canDeleteProjects,
+		workspace: {
+			create: !!memberRecord.canCreateWorkspaces,
+			delete: !!memberRecord.canDeleteWorkspaces,
 		},
 		service: {
 			create: !!memberRecord.canCreateServices,
@@ -195,27 +195,27 @@ export const resolvePermissions = async (
 	return result;
 };
 
-export const checkProjectAccess = async (
+export const checkWorkspaceAccess = async (
 	ctx: PermissionCtx,
 	action: "create" | "delete",
-	projectId?: string,
+	workspaceId?: string,
 ) => {
 	const userId = ctx.user.id;
 	const organizationId = ctx.session.activeOrganizationId;
 	const memberRecord = await findMemberByUserId(userId, organizationId);
 
-	await checkPermission(ctx, { project: [action] });
+	await checkPermission(ctx, { workspace: [action] });
 
 	if (
 		action !== "create" &&
-		projectId &&
+		workspaceId &&
 		memberRecord.role !== "owner" &&
 		memberRecord.role !== "admin"
 	) {
-		if (!memberRecord.accessedProjects.includes(projectId)) {
+		if (!memberRecord.accessedWorkspaces.includes(workspaceId)) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",
-				message: "You don't have access to this project",
+				message: "You don't have access to this workspace",
 			});
 		}
 	}
@@ -253,10 +253,10 @@ export const checkServiceAccess = async (
 
 	if (memberRecord.role !== "owner" && memberRecord.role !== "admin") {
 		if (action === "create") {
-			if (!memberRecord.accessedProjects.includes(serviceId)) {
+			if (!memberRecord.accessedWorkspaces.includes(serviceId)) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
-					message: "You don't have access to this project",
+					message: "You don't have access to this workspace",
 				});
 			}
 		} else {
@@ -297,7 +297,7 @@ export const checkEnvironmentAccess = async (
 
 export const checkEnvironmentCreationPermission = async (
 	ctx: PermissionCtx,
-	projectId: string,
+	workspaceId: string,
 ) => {
 	const userId = ctx.user.id;
 	const organizationId = ctx.session.activeOrganizationId;
@@ -306,10 +306,10 @@ export const checkEnvironmentCreationPermission = async (
 	await checkPermission(ctx, { environment: ["create"] });
 
 	if (memberRecord.role !== "owner" && memberRecord.role !== "admin") {
-		if (!memberRecord.accessedProjects.includes(projectId)) {
+		if (!memberRecord.accessedWorkspaces.includes(workspaceId)) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",
-				message: "You don't have access to this project",
+				message: "You don't have access to this workspace",
 			});
 		}
 	}
@@ -317,7 +317,7 @@ export const checkEnvironmentCreationPermission = async (
 
 export const checkEnvironmentDeletionPermission = async (
 	ctx: PermissionCtx,
-	projectId: string,
+	workspaceId: string,
 ) => {
 	const userId = ctx.user.id;
 	const organizationId = ctx.session.activeOrganizationId;
@@ -326,23 +326,26 @@ export const checkEnvironmentDeletionPermission = async (
 	await checkPermission(ctx, { environment: ["delete"] });
 
 	if (memberRecord.role !== "owner" && memberRecord.role !== "admin") {
-		if (!memberRecord.accessedProjects.includes(projectId)) {
+		if (!memberRecord.accessedWorkspaces.includes(workspaceId)) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",
-				message: "You don't have access to this project",
+				message: "You don't have access to this workspace",
 			});
 		}
 	}
 };
 
-export const addNewProject = async (ctx: PermissionCtx, projectId: string) => {
+export const addNewWorkspace = async (
+	ctx: PermissionCtx,
+	workspaceId: string,
+) => {
 	const userId = ctx.user.id;
 	const organizationId = ctx.session.activeOrganizationId;
 	const memberRecord = await findMemberByUserId(userId, organizationId);
 	await db
 		.update(member)
 		.set({
-			accessedProjects: [...memberRecord.accessedProjects, projectId],
+			accessedWorkspaces: [...memberRecord.accessedWorkspaces, workspaceId],
 		})
 		.where(
 			and(

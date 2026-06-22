@@ -122,7 +122,7 @@ interface CloneGithubRepository {
 	repository: string | null;
 	type?: "application" | "compose";
 	enableSubmodules: boolean;
-	serverId: string | null;
+	runtimeWorkerId: string | null;
 	outputPathOverride?: string;
 }
 export const cloneGithubRepository = async ({
@@ -138,10 +138,10 @@ export const cloneGithubRepository = async ({
 		branch,
 		githubId,
 		enableSubmodules,
-		serverId,
+		runtimeWorkerId,
 		outputPathOverride,
 	} = entity;
-	const { APPLICATIONS_PATH, COMPOSE_PATH } = paths(!!serverId);
+	const { APPLICATIONS_PATH, COMPOSE_PATH } = paths(!!runtimeWorkerId);
 
 	if (!githubId) {
 		command += `echo "Error: ❌ Github Provider not found"; exit 1;`;

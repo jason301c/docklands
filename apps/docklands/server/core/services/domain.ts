@@ -10,7 +10,7 @@ import { manageDomain } from "@/server/core/utils/traefik/domain";
 import { type apiCreateDomain, domains } from "../db/schema";
 import { findApplicationById } from "./application";
 import { detectCDNProvider } from "./cdn";
-import { findServerById } from "./server";
+import { findRuntimeWorkerById } from "./runtime-worker";
 
 export type Domain = typeof domains.$inferSelect;
 
@@ -46,12 +46,12 @@ export const createDomain = async (input: z.infer<typeof apiCreateDomain>) => {
 export const generateTraefikMeDomain = async (
 	appName: string,
 	_userId: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
-	if (serverId) {
-		const server = await findServerById(serverId);
+	if (runtimeWorkerId) {
+		const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 		return generateRandomDomain({
-			serverIp: server.ipAddress,
+			serverIp: runtimeWorker.ipAddress,
 			projectName: appName,
 		});
 	}

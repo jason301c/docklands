@@ -13,14 +13,14 @@ const Terminal = dynamic(
 
 interface Props {
 	containerId: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 	children?: React.ReactNode;
 }
 
 export const DockerTerminalModal = ({
 	children,
 	containerId,
-	serverId,
+	runtimeWorkerId,
 }: Props) => {
 	const [mainDialogOpen, setMainDialogOpen] = useState(false);
 	const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
@@ -67,7 +67,7 @@ export const DockerTerminalModal = ({
 				<Terminal
 					id="terminal"
 					containerId={containerId}
-					serverId={serverId || ""}
+					runtimeWorkerId={runtimeWorkerId || ""}
 				/>
 				<Dialog.Root
 					open={confirmDialogOpen}

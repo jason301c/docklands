@@ -56,7 +56,7 @@ const AddRegistrySchema = z.object({
 			},
 		),
 	imagePrefix: z.string(),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 	isEditing: z.boolean().optional(),
 });
 
@@ -84,9 +84,9 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 	const { mutateAsync, error, isError } = registryId
 		? api.registry.update.useMutation()
 		: api.registry.create.useMutation();
-	const { data: deployServers } = api.runtimeWorker.withSSHKey.useQuery();
-	const { data: buildServers } = api.runtimeWorker.buildServers.useQuery();
-	const servers = [...(deployServers || []), ...(buildServers || [])];
+	const { data: deployWorkers } = api.runtimeWorker.withSSHKey.useQuery();
+	const { data: buildWorkers } = api.runtimeWorker.buildWorkers.useQuery();
+	const runtimeWorkers = [...(deployWorkers || []), ...(buildWorkers || [])];
 	const {
 		mutateAsync: testRegistry,
 		isPending,
@@ -106,7 +106,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 			registryUrl: "",
 			imagePrefix: "",
 			registryName: "",
-			serverId: "",
+			runtimeWorkerId: "",
 			isEditing: !!registryId,
 		},
 		resolver: zodResolver(
@@ -134,9 +134,9 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 	const registryUrl = form.watch("registryUrl");
 	const registryName = form.watch("registryName");
 	const imagePrefix = form.watch("imagePrefix");
-	const serverId = form.watch("serverId");
-	const selectedServer = servers?.find(
-		(server) => server.serverId === serverId,
+	const runtimeWorkerId = form.watch("runtimeWorkerId");
+	const selectedRuntimeWorker = runtimeWorkers?.find(
+		(runtimeWorker) => runtimeWorker.runtimeWorkerId === runtimeWorkerId,
 	);
 
 	useEffect(() => {
@@ -155,7 +155,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 				password: "",
 				registryUrl: "",
 				imagePrefix: "",
-				serverId: "",
+				runtimeWorkerId: "",
 				isEditing: false,
 			});
 		}
@@ -168,7 +168,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 			registryUrl: data.registryUrl || "",
 			registryType: "cloud",
 			imagePrefix: data.imagePrefix,
-			serverId: data.serverId,
+			runtimeWorkerId: data.runtimeWorkerId,
 			registryId: registryId || "",
 		};
 
@@ -349,7 +349,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 						<div className="col-span-2">
 							<FormField
 								control={form.control}
-								name="serverId"
+								name="runtimeWorkerId"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>
@@ -358,11 +358,14 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 										<FormDescription>
 											{!isCloud ? (
 												<>
-													{serverId && serverId !== "none" && selectedServer ? (
+													{runtimeWorkerId &&
+													runtimeWorkerId !== "none" &&
+													selectedRuntimeWorker ? (
 														<>
 															Authentication will be performed on{" "}
-															<strong>{selectedServer.name}</strong>. This
-															registry will be available on this runtime worker.
+															<strong>{selectedRuntimeWorker.name}</strong>.
+															This registry will be available on this runtime
+															worker.
 														</>
 													) : (
 														<>
@@ -375,11 +378,14 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 												</>
 											) : (
 												<>
-													{serverId && serverId !== "none" && selectedServer ? (
+													{runtimeWorkerId &&
+													runtimeWorkerId !== "none" &&
+													selectedRuntimeWorker ? (
 														<>
 															Authentication will be performed on{" "}
-															<strong>{selectedServer.name}</strong>. This
-															registry will be available on this runtime worker.
+															<strong>{selectedRuntimeWorker.name}</strong>.
+															This registry will be available on this runtime
+															worker.
 														</>
 													) : (
 														<>
@@ -399,32 +405,32 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 											>
 												<></>
 												<>
-													{deployServers && deployServers.length > 0 && (
+													{deployWorkers && deployWorkers.length > 0 && (
 														<Select.Group>
 															<Select.GroupLabel>
 																Runtime Workers
 															</Select.GroupLabel>
-															{deployServers.map((server) => (
+															{deployWorkers.map((runtimeWorker) => (
 																<Select.Option
-																	key={server.serverId}
-																	value={server.serverId}
+																	key={runtimeWorker.runtimeWorkerId}
+																	value={runtimeWorker.runtimeWorkerId}
 																>
-																	{server.name}
+																	{runtimeWorker.name}
 																</Select.Option>
 															))}
 														</Select.Group>
 													)}
-													{buildServers && buildServers.length > 0 && (
+													{buildWorkers && buildWorkers.length > 0 && (
 														<Select.Group>
 															<Select.GroupLabel>
 																Build Workers
 															</Select.GroupLabel>
-															{buildServers.map((server) => (
+															{buildWorkers.map((runtimeWorker) => (
 																<Select.Option
-																	key={server.serverId}
-																	value={server.serverId}
+																	key={runtimeWorker.runtimeWorkerId}
+																	value={runtimeWorker.runtimeWorkerId}
 																>
-																	{server.name}
+																	{runtimeWorker.name}
 																</Select.Option>
 															))}
 														</Select.Group>
@@ -453,7 +459,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 										if (registryId && (!password || password.length === 0)) {
 											await testRegistryById({
 												registryId: registryId || "",
-												...(serverId && { serverId }),
+												...(runtimeWorkerId && { runtimeWorkerId }),
 											})
 												.then((data) => {
 													if (data) {
@@ -484,7 +490,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 											registryUrl,
 											registryName: "Docklands Registry",
 											imagePrefix,
-											serverId,
+											runtimeWorkerId,
 											isEditing: !!registryId,
 										});
 
@@ -505,7 +511,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 											registryName: registryName,
 											registryType: "cloud",
 											imagePrefix: imagePrefix,
-											serverId: serverId,
+											runtimeWorkerId: runtimeWorkerId,
 										})
 											.then((data) => {
 												if (data) {

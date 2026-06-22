@@ -8,9 +8,9 @@ import {
 	timestamp,
 } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
-import { projects } from "./project";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 import { user } from "./user";
+import { workspaces } from "./workspace";
 
 export const account = pgTable("account", {
 	id: text("id")
@@ -106,8 +106,8 @@ export const organizationRelations = relations(
 			fields: [organization.ownerId],
 			references: [user.id],
 		}),
-		servers: many(server),
-		projects: many(projects),
+		runtimeWorkers: many(runtimeWorkers),
+		workspaces: many(workspaces),
 		members: many(member),
 		roles: many(organizationRole),
 	}),
@@ -130,10 +130,10 @@ export const member = pgTable("member", {
 	teamId: text("team_id"),
 	isDefault: boolean("is_default").notNull().default(false),
 	// Permissions
-	canCreateProjects: boolean("canCreateProjects").notNull().default(false),
+	canCreateWorkspaces: boolean("canCreateWorkspaces").notNull().default(false),
 	canAccessToSSHKeys: boolean("canAccessToSSHKeys").notNull().default(false),
 	canCreateServices: boolean("canCreateServices").notNull().default(false),
-	canDeleteProjects: boolean("canDeleteProjects").notNull().default(false),
+	canDeleteWorkspaces: boolean("canDeleteWorkspaces").notNull().default(false),
 	canDeleteServices: boolean("canDeleteServices").notNull().default(false),
 	canAccessToDocker: boolean("canAccessToDocker").notNull().default(false),
 	canAccessToAPI: boolean("canAccessToAPI").notNull().default(false),
@@ -149,7 +149,7 @@ export const member = pgTable("member", {
 	canCreateEnvironments: boolean("canCreateEnvironments")
 		.notNull()
 		.default(false),
-	accessedProjects: text("accesedProjects")
+	accessedWorkspaces: text("accessedWorkspaces")
 		.array()
 		.notNull()
 		.default(sql`ARRAY[]::text[]`),
@@ -165,7 +165,7 @@ export const member = pgTable("member", {
 		.array()
 		.notNull()
 		.default(sql`ARRAY[]::text[]`),
-	accessedServers: text("accessedServers")
+	accessedRuntimeWorkers: text("accessedRuntimeWorkers")
 		.array()
 		.notNull()
 		.default(sql`ARRAY[]::text[]`),

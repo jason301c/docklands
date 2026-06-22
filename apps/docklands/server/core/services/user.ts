@@ -13,9 +13,9 @@ import { auth } from "../lib/auth";
 
 export type User = typeof user.$inferSelect;
 
-export const addNewProject = async (
+export const addNewWorkspace = async (
 	userId: string,
-	projectId: string,
+	workspaceId: string,
 	organizationId: string,
 ) => {
 	const userR = await findMemberById(userId, organizationId);
@@ -23,7 +23,7 @@ export const addNewProject = async (
 	await db
 		.update(member)
 		.set({
-			accessedProjects: [...userR.accessedProjects, projectId],
+			accessedWorkspaces: [...userR.accessedWorkspaces, workspaceId],
 		})
 		.where(
 			and(eq(member.id, userR.id), eq(member.organizationId, organizationId)),
@@ -65,14 +65,14 @@ export const addNewService = async (
 
 export const canPerformCreationService = async (
 	userId: string,
-	projectId: string,
+	workspaceId: string,
 	organizationId: string,
 ) => {
-	const { accessedProjects, canCreateServices } = await findMemberById(
+	const { accessedWorkspaces, canCreateServices } = await findMemberById(
 		userId,
 		organizationId,
 	);
-	const haveAccessToProject = accessedProjects.includes(projectId);
+	const haveAccessToProject = accessedWorkspaces.includes(workspaceId);
 
 	if (canCreateServices && haveAccessToProject) {
 		return true;
@@ -118,9 +118,9 @@ export const canPerformCreationProject = async (
 	userId: string,
 	organizationId: string,
 ) => {
-	const { canCreateProjects } = await findMemberById(userId, organizationId);
+	const { canCreateWorkspaces } = await findMemberById(userId, organizationId);
 
-	if (canCreateProjects) {
+	if (canCreateWorkspaces) {
 		return true;
 	}
 
@@ -131,9 +131,9 @@ export const canPerformDeleteProject = async (
 	userId: string,
 	organizationId: string,
 ) => {
-	const { canDeleteProjects } = await findMemberById(userId, organizationId);
+	const { canDeleteWorkspaces } = await findMemberById(userId, organizationId);
 
-	if (canDeleteProjects) {
+	if (canDeleteWorkspaces) {
 		return true;
 	}
 
@@ -142,12 +142,12 @@ export const canPerformDeleteProject = async (
 
 export const canPerformAccessProject = async (
 	userId: string,
-	projectId: string,
+	workspaceId: string,
 	organizationId: string,
 ) => {
-	const { accessedProjects } = await findMemberById(userId, organizationId);
+	const { accessedWorkspaces } = await findMemberById(userId, organizationId);
 
-	const haveAccessToProject = accessedProjects.includes(projectId);
+	const haveAccessToProject = accessedWorkspaces.includes(workspaceId);
 
 	if (haveAccessToProject) {
 		return true;
@@ -172,14 +172,14 @@ export const canPerformAccessEnvironment = async (
 
 export const canPerformDeleteEnvironment = async (
 	userId: string,
-	projectId: string,
+	workspaceId: string,
 	organizationId: string,
 ) => {
-	const { accessedProjects, canDeleteEnvironments } = await findMemberById(
+	const { accessedWorkspaces, canDeleteEnvironments } = await findMemberById(
 		userId,
 		organizationId,
 	);
-	const haveAccessToProject = accessedProjects.includes(projectId);
+	const haveAccessToProject = accessedWorkspaces.includes(workspaceId);
 
 	if (canDeleteEnvironments && haveAccessToProject) {
 		return true;
@@ -267,7 +267,7 @@ export const checkEnvironmentAccess = async (
 
 export const checkEnvironmentDeletionPermission = async (
 	userId: string,
-	projectId: string,
+	workspaceId: string,
 	organizationId: string,
 ) => {
 	const member = await findMemberById(userId, organizationId);
@@ -290,29 +290,29 @@ export const checkEnvironmentDeletionPermission = async (
 		});
 	}
 
-	const hasProjectAccess = member.accessedProjects.includes(projectId);
+	const hasProjectAccess = member.accessedWorkspaces.includes(workspaceId);
 	if (!hasProjectAccess) {
 		throw new TRPCError({
 			code: "UNAUTHORIZED",
-			message: "You don't have access to this project",
+			message: "You don't have access to this workspace",
 		});
 	}
 
 	return true;
 };
 
-export const checkProjectAccess = async (
+export const checkWorkspaceAccess = async (
 	authId: string,
 	action: "create" | "delete" | "access",
 	organizationId: string,
-	projectId?: string,
+	workspaceId?: string,
 ) => {
 	let hasPermission = false;
 	switch (action) {
 		case "access":
 			hasPermission = await canPerformAccessProject(
 				authId,
-				projectId as string,
+				workspaceId as string,
 				organizationId,
 			);
 			break;
@@ -335,7 +335,7 @@ export const checkProjectAccess = async (
 
 export const checkEnvironmentCreationPermission = async (
 	userId: string,
-	projectId: string,
+	workspaceId: string,
 	organizationId: string,
 ) => {
 	// Get user's member record
@@ -361,12 +361,12 @@ export const checkEnvironmentCreationPermission = async (
 		});
 	}
 
-	// Check if user has access to the project
-	const hasProjectAccess = member.accessedProjects.includes(projectId);
+	// Check if user has access to the workspace
+	const hasProjectAccess = member.accessedWorkspaces.includes(workspaceId);
 	if (!hasProjectAccess) {
 		throw new TRPCError({
 			code: "UNAUTHORIZED",
-			message: "You don't have access to this project",
+			message: "You don't have access to this workspace",
 		});
 	}
 

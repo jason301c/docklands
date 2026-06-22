@@ -4,7 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { organization } from "./account";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 import { generateAppName } from "./utils";
 
 export const certificates = pgTable("certificate", {
@@ -23,15 +23,18 @@ export const certificates = pgTable("certificate", {
 	organizationId: text("organizationId")
 		.notNull()
 		.references(() => organization.id, { onDelete: "cascade" }),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 });
 
 export const certificatesRelations = relations(certificates, ({ one }) => ({
-	server: one(server, {
-		fields: [certificates.serverId],
-		references: [server.serverId],
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [certificates.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
 	}),
 	organization: one(organization, {
 		fields: [certificates.organizationId],
@@ -44,7 +47,7 @@ export const apiCreateCertificate = createInsertSchema(certificates, {
 	certificateData: z.string().min(1),
 	privateKey: z.string().min(1),
 	autoRenew: z.boolean().optional(),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
 export const apiFindCertificate = z.object({

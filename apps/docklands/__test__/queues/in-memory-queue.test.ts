@@ -7,22 +7,28 @@ import {
 } from "../../server/queues/in-memory-queue";
 import type { DeploymentJob } from "../../server/queues/queue-types";
 
-const appJob = (applicationId: string, serverId?: string): DeploymentJob => ({
+const appJob = (
+	applicationId: string,
+	runtimeWorkerId?: string,
+): DeploymentJob => ({
 	applicationId,
 	titleLog: "deploy",
 	descriptionLog: "",
 	type: "deploy",
 	applicationType: "application",
-	serverId,
+	runtimeWorkerId,
 });
 
-const composeJob = (composeId: string, serverId?: string): DeploymentJob => ({
+const composeJob = (
+	composeId: string,
+	runtimeWorkerId?: string,
+): DeploymentJob => ({
 	composeId,
 	titleLog: "deploy",
 	descriptionLog: "",
 	type: "deploy",
 	applicationType: "compose",
-	serverId,
+	runtimeWorkerId,
 });
 
 /** A controllable async task: resolves only when `release()` is called. */
@@ -37,9 +43,11 @@ const deferred = () => {
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
 describe("getPartition / getGroup", () => {
-	it("partitions by serverId, falling back to the local partition", () => {
+	it("partitions by runtimeWorkerId, falling back to the local partition", () => {
 		expect(getPartition(appJob("a"))).toBe(LOCAL_PARTITION);
-		expect(getPartition(appJob("a", "server-1"))).toBe("server-1");
+		expect(getPartition(appJob("a", "runtimeWorker-1"))).toBe(
+			"runtimeWorker-1",
+		);
 	});
 
 	it("groups applications and compose by their id", () => {
@@ -113,17 +121,17 @@ describe("InMemoryQueue concurrency", () => {
 		expect(started).toEqual([1, 2]);
 	});
 
-	it("isolates concurrency per server partition", async () => {
+	it("isolates concurrency per runtimeWorker partition", async () => {
 		const started: string[] = [];
 		const tasks = new Map<string, ReturnType<typeof deferred>>();
 
-		// server-1 allows 1, server-2 allows 1, but they are independent.
+		// runtimeWorker-1 allows 1, runtimeWorker-2 allows 1, but they are independent.
 		const queue = new InMemoryQueue({
 			resolveConcurrency: () => 1,
 			now,
 		});
 		queue.process(async (job) => {
-			const id = `${job.data.serverId}:${(job.data as any).applicationId}`;
+			const id = `${job.data.runtimeWorkerId}:${(job.data as any).applicationId}`;
 			started.push(id);
 			const d = deferred();
 			tasks.set(id, d);
@@ -131,25 +139,26 @@ describe("InMemoryQueue concurrency", () => {
 		});
 		await queue.run();
 
-		await queue.add(appJob("a", "server-1"));
-		await queue.add(appJob("b", "server-2"));
+		await queue.add(appJob("a", "runtimeWorker-1"));
+		await queue.add(appJob("b", "runtimeWorker-2"));
 		await flush();
 
 		// One per partition runs in parallel despite concurrency 1 each.
-		expect(started.sort()).toEqual(["server-1:a", "server-2:b"]);
+		expect(started.sort()).toEqual(["runtimeWorker-1:a", "runtimeWorker-2:b"]);
 	});
 
-	it("honors a different concurrency per server", async () => {
+	it("honors a different concurrency per runtimeWorker", async () => {
 		const started: string[] = [];
 		const tasks = new Map<string, ReturnType<typeof deferred>>();
 
-		// server-fast allows 2, server-slow allows 1.
+		// runtimeWorker-fast allows 2, runtimeWorker-slow allows 1.
 		const queue = new InMemoryQueue({
-			resolveConcurrency: (partition) => (partition === "server-fast" ? 2 : 1),
+			resolveConcurrency: (partition) =>
+				partition === "runtimeWorker-fast" ? 2 : 1,
 			now,
 		});
 		queue.process(async (job) => {
-			const id = `${job.data.serverId}:${(job.data as any).applicationId}`;
+			const id = `${job.data.runtimeWorkerId}:${(job.data as any).applicationId}`;
 			started.push(id);
 			const d = deferred();
 			tasks.set(id, d);
@@ -157,26 +166,26 @@ describe("InMemoryQueue concurrency", () => {
 		});
 		await queue.run();
 
-		await queue.add(appJob("a", "server-fast"));
-		await queue.add(appJob("b", "server-fast"));
-		await queue.add(appJob("c", "server-slow"));
-		await queue.add(appJob("d", "server-slow"));
+		await queue.add(appJob("a", "runtimeWorker-fast"));
+		await queue.add(appJob("b", "runtimeWorker-fast"));
+		await queue.add(appJob("c", "runtimeWorker-slow"));
+		await queue.add(appJob("d", "runtimeWorker-slow"));
 		await flush();
 
-		// server-fast runs 2 in parallel; server-slow only 1.
+		// runtimeWorker-fast runs 2 in parallel; runtimeWorker-slow only 1.
 		expect(started.sort()).toEqual([
-			"server-fast:a",
-			"server-fast:b",
-			"server-slow:c",
+			"runtimeWorker-fast:a",
+			"runtimeWorker-fast:b",
+			"runtimeWorker-slow:c",
 		]);
 
-		// Free a server-slow slot -> its queued app starts.
-		tasks.get("server-slow:c")!.release();
+		// Free a runtimeWorker-slow slot -> its queued app starts.
+		tasks.get("runtimeWorker-slow:c")!.release();
 		await flush();
-		expect(started).toContain("server-slow:d");
+		expect(started).toContain("runtimeWorker-slow:d");
 	});
 
-	it("serializes the same app on a server even with spare concurrency", async () => {
+	it("serializes the same app on a runtimeWorker even with spare concurrency", async () => {
 		const started: number[] = [];
 		const tasks: Array<ReturnType<typeof deferred>> = [];
 		let counter = 0;
@@ -191,8 +200,8 @@ describe("InMemoryQueue concurrency", () => {
 		});
 		await queue.run();
 
-		await queue.add(appJob("app-x", "server-1"));
-		await queue.add(appJob("app-x", "server-1"));
+		await queue.add(appJob("app-x", "runtimeWorker-1"));
+		await queue.add(appJob("app-x", "runtimeWorker-1"));
 		await flush();
 
 		// Only one build of app-x runs despite 2 free slots.

@@ -44,10 +44,10 @@ type SearchGroup = {
 	items: SearchItem[];
 };
 
-const extractAllServicesFromProject = (project: any): SearchServices[] => {
+const extractAllServicesFromProject = (workspace: any): SearchServices[] => {
 	const allServices: SearchServices[] = [];
 
-	project.environments?.forEach((environment: any) => {
+	workspace.environments?.forEach((environment: any) => {
 		const environmentServices = extractServices(environment);
 		const servicesWithEnvironmentId: SearchServices[] = environmentServices.map(
 			(service) => ({
@@ -122,24 +122,24 @@ export const SearchCommand = () => {
 			setOpen(false);
 		};
 
-		const projects: SearchItem[] =
-			data?.flatMap((project) => {
+		const workspaces: SearchItem[] =
+			data?.flatMap((workspace) => {
 				const defaultEnvironment =
-					project.environments.find((environment) => environment.isDefault) ||
-					project.environments?.[0];
+					workspace.environments.find((environment) => environment.isDefault) ||
+					workspace.environments?.[0];
 				if (!defaultEnvironment) return [];
 
-				const title = `${project.name} / ${defaultEnvironment.name}`;
+				const title = `${workspace.name} / ${defaultEnvironment.name}`;
 				return [
 					{
-						id: `project-${project.projectId}`,
+						id: `workspace-${workspace.workspaceId}`,
 						title,
 						searchText: title.toLowerCase(),
 						icon: <BookIcon className="size-4 text-muted-foreground mr-2" />,
 						onSelect: () =>
 							navigate(
 								workspaceEnvironmentPath({
-									workspaceId: project.projectId,
+									workspaceId: workspace.workspaceId,
 									environmentId: defaultEnvironment.environmentId,
 								}),
 							),
@@ -148,9 +148,9 @@ export const SearchCommand = () => {
 			}) ?? [];
 
 		const services: SearchItem[] =
-			data?.flatMap((project) =>
-				extractAllServicesFromProject(project).map((service) => {
-					const title = `${project.name} / ${service.environmentName} / ${service.name}`;
+			data?.flatMap((workspace) =>
+				extractAllServicesFromProject(workspace).map((service) => {
+					const title = `${workspace.name} / ${service.environmentName} / ${service.name}`;
 					return {
 						id: `service-${service.type}-${service.id}`,
 						title,
@@ -160,7 +160,7 @@ export const SearchCommand = () => {
 						onSelect: () =>
 							navigate(
 								workspaceServicePath({
-									workspaceId: project.projectId,
+									workspaceId: workspace.workspaceId,
 									environmentId: service.environmentId,
 									serviceType: service.type,
 									serviceId: service.id,
@@ -180,7 +180,7 @@ export const SearchCommand = () => {
 			{
 				id: "app-workspaces",
 				title: "Workspaces",
-				searchText: "workspaces projects list",
+				searchText: "workspaces workspaces list",
 				onSelect: () => navigate(workspaceListPath),
 			},
 			{
@@ -262,7 +262,7 @@ export const SearchCommand = () => {
 		];
 
 		return [
-			{ label: "Workspaces", items: projects },
+			{ label: "Workspaces", items: workspaces },
 			{ label: "Services", items: services },
 			{ label: "Application", items: applicationItems },
 		].filter((group) => group.items.length > 0);

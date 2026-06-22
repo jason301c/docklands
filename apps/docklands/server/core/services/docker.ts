@@ -3,15 +3,15 @@ import {
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
 
-export const getContainers = async (serverId?: string | null) => {
+export const getContainers = async (runtimeWorkerId?: string | null) => {
 	try {
 		const command =
 			"docker ps -a --format 'CONTAINER ID : {{.ID}} | Name: {{.Names}} | Image: {{.Image}} | Ports: {{.Ports}} | State: {{.State}} | Status: {{.Status}}'";
 		let stdout = "";
 		let stderr = "";
 
-		if (serverId) {
-			const result = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const result = await execAsyncRemote(runtimeWorkerId, command);
 
 			stdout = result.stdout;
 			stderr = result.stderr;
@@ -55,7 +55,7 @@ export const getContainers = async (serverId?: string | null) => {
 					ports,
 					state,
 					status,
-					serverId,
+					runtimeWorkerId,
 				};
 			})
 			.filter(
@@ -74,14 +74,14 @@ export const getContainers = async (serverId?: string | null) => {
 
 export const getConfig = async (
 	containerId: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
 	try {
 		const command = `docker inspect ${containerId} --format='{{json .}}'`;
 		let stdout = "";
 		let stderr = "";
-		if (serverId) {
-			const result = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const result = await execAsyncRemote(runtimeWorkerId, command);
 			stdout = result.stdout;
 			stderr = result.stderr;
 		} else {
@@ -104,7 +104,7 @@ export const getConfig = async (
 export const getContainersByAppNameMatch = async (
 	appName: string,
 	appType?: "stack" | "docker-compose",
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	try {
 		let result: string[] = [];
@@ -113,10 +113,13 @@ export const getContainersByAppNameMatch = async (
 
 		const command =
 			appType === "docker-compose"
-				? `${cmd} --filter='label=com.docker.compose.project=${appName}'`
+				? `${cmd} --filter='label=com.docker.compose.workspace=${appName}'`
 				: `${cmd} | grep '^.*Name: ${appName}'`;
-		if (serverId) {
-			const { stdout, stderr } = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const { stdout, stderr } = await execAsyncRemote(
+				runtimeWorkerId,
+				command,
+			);
 
 			if (stderr) {
 				return [];
@@ -167,7 +170,7 @@ export const getContainersByAppNameMatch = async (
 
 export const getStackContainersByAppName = async (
 	appName: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	try {
 		let result: string[] = [];
@@ -175,8 +178,11 @@ export const getStackContainersByAppName = async (
 		const command = `docker stack ps ${appName} --no-trunc --format 'CONTAINER ID : {{.ID}} | Name: {{.Name}} | State: {{.DesiredState}} | Node: {{.Node}} | CurrentState: {{.CurrentState}} | Error: {{.Error}}'`;
 
 		console.log("command	", command);
-		if (serverId) {
-			const { stdout, stderr } = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const { stdout, stderr } = await execAsyncRemote(
+				runtimeWorkerId,
+				command,
+			);
 
 			if (stderr) {
 				return [];
@@ -233,14 +239,17 @@ export const getStackContainersByAppName = async (
 
 export const getServiceContainersByAppName = async (
 	appName: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	try {
 		let result: string[] = [];
 
 		const command = `docker service ps ${appName} --no-trunc --format 'CONTAINER ID : {{.ID}} | Name: {{.Name}} | State: {{.DesiredState}} | Node: {{.Node}} | CurrentState: {{.CurrentState}} | Error: {{.Error}}'`;
-		if (serverId) {
-			const { stdout, stderr } = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const { stdout, stderr } = await execAsyncRemote(
+				runtimeWorkerId,
+				command,
+			);
 
 			if (stderr) {
 				return [];
@@ -300,7 +309,7 @@ export const getServiceContainersByAppName = async (
 export const getContainersByAppLabel = async (
 	appName: string,
 	type: "standalone" | "swarm",
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	try {
 		let stdout = "";
@@ -311,9 +320,9 @@ export const getContainersByAppLabel = async (
 				? `docker ps --filter "label=com.docker.swarm.service.name=${appName}" --format 'CONTAINER ID : {{.ID}} | Name: {{.Names}} | State: {{.State}}'`
 				: type === "standalone"
 					? `docker ps --filter "name=${appName}" --format 'CONTAINER ID : {{.ID}} | Name: {{.Names}} | State: {{.State}}'`
-					: `docker ps --filter "label=com.docker.compose.project=${appName}" --format 'CONTAINER ID : {{.ID}} | Name: {{.Names}} | State: {{.State}}'`;
-		if (serverId) {
-			const result = await execAsyncRemote(serverId, command);
+					: `docker ps --filter "label=com.docker.compose.workspace=${appName}" --format 'CONTAINER ID : {{.ID}} | Name: {{.Names}} | State: {{.State}}'`;
+		if (runtimeWorkerId) {
+			const result = await execAsyncRemote(runtimeWorkerId, command);
 			stdout = result.stdout;
 			stderr = result.stderr;
 		} else {
@@ -359,11 +368,11 @@ export const getContainerLogs = async (
 	tail = 100,
 	since = "all",
 	search?: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 	useContainerIdDirectly = false,
 ): Promise<string> => {
 	const exec = (cmd: string) =>
-		serverId ? execAsyncRemote(serverId, cmd) : execAsync(cmd);
+		runtimeWorkerId ? execAsyncRemote(runtimeWorkerId, cmd) : execAsync(cmd);
 
 	let target = appNameOrId;
 	let isService = false;
@@ -419,11 +428,11 @@ export const getContainerLogs = async (
 
 export const containerRestart = async (
 	containerId: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	const command = `docker container restart ${containerId}`;
-	const { stderr } = serverId
-		? await execAsyncRemote(serverId, command)
+	const { stderr } = runtimeWorkerId
+		? await execAsyncRemote(runtimeWorkerId, command)
 		: await execAsync(command);
 
 	if (stderr) {
@@ -434,11 +443,11 @@ export const containerRestart = async (
 
 export const containerStart = async (
 	containerId: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	const command = `docker container start ${containerId}`;
-	const { stderr } = serverId
-		? await execAsyncRemote(serverId, command)
+	const { stderr } = runtimeWorkerId
+		? await execAsyncRemote(runtimeWorkerId, command)
 		: await execAsync(command);
 
 	if (stderr) {
@@ -447,10 +456,13 @@ export const containerStart = async (
 	}
 };
 
-export const containerStop = async (containerId: string, serverId?: string) => {
+export const containerStop = async (
+	containerId: string,
+	runtimeWorkerId?: string,
+) => {
 	const command = `docker container stop ${containerId}`;
-	const { stderr } = serverId
-		? await execAsyncRemote(serverId, command)
+	const { stderr } = runtimeWorkerId
+		? await execAsyncRemote(runtimeWorkerId, command)
 		: await execAsync(command);
 
 	if (stderr) {
@@ -459,10 +471,13 @@ export const containerStop = async (containerId: string, serverId?: string) => {
 	}
 };
 
-export const containerKill = async (containerId: string, serverId?: string) => {
+export const containerKill = async (
+	containerId: string,
+	runtimeWorkerId?: string,
+) => {
 	const command = `docker container kill ${containerId}`;
-	const { stderr } = serverId
-		? await execAsyncRemote(serverId, command)
+	const { stderr } = runtimeWorkerId
+		? await execAsyncRemote(runtimeWorkerId, command)
 		: await execAsync(command);
 
 	if (stderr) {
@@ -473,11 +488,11 @@ export const containerKill = async (containerId: string, serverId?: string) => {
 
 export const containerRemove = async (
 	containerId: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	const command = `docker rm -f ${containerId}`;
-	const { stderr } = serverId
-		? await execAsyncRemote(serverId, command)
+	const { stderr } = runtimeWorkerId
+		? await execAsyncRemote(runtimeWorkerId, command)
 		: await execAsync(command);
 
 	if (stderr) {
@@ -486,14 +501,14 @@ export const containerRemove = async (
 	}
 };
 
-export const getSwarmNodes = async (serverId?: string) => {
+export const getSwarmNodes = async (runtimeWorkerId?: string) => {
 	try {
 		let stdout = "";
 		let stderr = "";
 		const command = "docker node ls --format '{{json .}}'";
 
-		if (serverId) {
-			const result = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const result = await execAsyncRemote(runtimeWorkerId, command);
 			stdout = result.stdout;
 			stderr = result.stderr;
 		} else {
@@ -517,13 +532,13 @@ export const getSwarmNodes = async (serverId?: string) => {
 	}
 };
 
-export const getNodeInfo = async (nodeId: string, serverId?: string) => {
+export const getNodeInfo = async (nodeId: string, runtimeWorkerId?: string) => {
 	try {
 		const command = `docker node inspect ${nodeId} --format '{{json .}}'`;
 		let stdout = "";
 		let stderr = "";
-		if (serverId) {
-			const result = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const result = await execAsyncRemote(runtimeWorkerId, command);
 			stdout = result.stdout;
 			stderr = result.stderr;
 		} else {
@@ -543,14 +558,14 @@ export const getNodeInfo = async (nodeId: string, serverId?: string) => {
 	} catch {}
 };
 
-export const getNodeApplications = async (serverId?: string) => {
+export const getNodeApplications = async (runtimeWorkerId?: string) => {
 	try {
 		let stdout = "";
 		let stderr = "";
 		const command = `docker service ls --format '{{json .}}'`;
 
-		if (serverId) {
-			const result = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const result = await execAsyncRemote(runtimeWorkerId, command);
 			stdout = result.stdout;
 			stderr = result.stderr;
 		} else {
@@ -584,7 +599,7 @@ export const getNodeApplications = async (serverId?: string) => {
 
 export const getApplicationInfo = async (
 	appNames: string[],
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	if (appNames.length === 0) {
 		return [];
@@ -594,8 +609,8 @@ export const getApplicationInfo = async (
 		let stderr = "";
 		const command = `docker service ps ${appNames.join(" ")} --format '{{json .}}' --no-trunc`;
 
-		if (serverId) {
-			const result = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const result = await execAsyncRemote(runtimeWorkerId, command);
 			stdout = result.stdout;
 			stderr = result.stderr;
 		} else {
@@ -625,14 +640,14 @@ export const getApplicationInfo = async (
 	}
 };
 
-export const getAllContainerStats = async (serverId?: string) => {
+export const getAllContainerStats = async (runtimeWorkerId?: string) => {
 	try {
 		let stdout = "";
 		const command =
 			'docker stats --no-stream --format \'{"BlockIO":"{{.BlockIO}}","CPUPerc":"{{.CPUPerc}}","Container":"{{.Container}}","ID":"{{.ID}}","MemPerc":"{{.MemPerc}}","MemUsage":"{{.MemUsage}}","Name":"{{.Name}}","NetIO":"{{.NetIO}}"}\'';
 
-		if (serverId) {
-			const result = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const result = await execAsyncRemote(runtimeWorkerId, command);
 			stdout = result.stdout;
 		} else {
 			const result = await execAsync(command);
@@ -662,7 +677,7 @@ export const uploadFileToContainer = async (
 	fileBuffer: Buffer,
 	fileName: string,
 	destinationPath: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ): Promise<void> => {
 	const containerIdRegex = /^[a-zA-Z0-9.\-_]+$/;
 	if (!containerIdRegex.test(containerId)) {
@@ -686,8 +701,8 @@ export const uploadFileToContainer = async (
 	const command = `echo '${base64Content}' | base64 -d > "${tempPath}" && docker cp "${tempPath}" "${containerId}:${normalizedPath}" ; rm -f "${tempPath}"`;
 
 	try {
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}

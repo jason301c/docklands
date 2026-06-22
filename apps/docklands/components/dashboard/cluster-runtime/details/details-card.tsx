@@ -18,13 +18,13 @@ export interface ClusterNodeSummary {
 
 interface Props {
 	node: ClusterNodeSummary;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export function NodeCard({ node, serverId }: Props) {
+export function NodeCard({ node, runtimeWorkerId }: Props) {
 	const { data, isPending } = api.swarm.getNodeInfo.useQuery({
 		nodeId: node.ID,
-		serverId,
+		runtimeWorkerId,
 	});
 
 	if (isPending) {
@@ -111,8 +111,11 @@ export function NodeCard({ node, serverId }: Props) {
 					</div>
 
 					<div className="flex justify-end w-full space-x-4">
-						<ShowNodeConfig nodeId={node.ID} serverId={serverId} />
-						<ShowNodeApplications serverId={serverId} />
+						<ShowNodeConfig
+							nodeId={node.ID}
+							runtimeWorkerId={runtimeWorkerId}
+						/>
+						<ShowNodeApplications runtimeWorkerId={runtimeWorkerId} />
 					</div>
 				</div>
 			</div>

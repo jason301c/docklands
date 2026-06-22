@@ -4,7 +4,7 @@ import type { Compose } from "@/server/core/services/compose";
 import { encodeBase64 } from "../docker/utils";
 
 export const getCreateComposeFileCommand = (compose: Compose) => {
-	const { COMPOSE_PATH } = paths(!!compose.serverId);
+	const { COMPOSE_PATH } = paths(!!compose.runtimeWorkerId);
 	const { appName, composeFile } = compose;
 	const outputPath = join(COMPOSE_PATH, appName, "code");
 	const filePath = join(outputPath, "docker-compose.yml");

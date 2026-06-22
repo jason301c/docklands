@@ -19,7 +19,7 @@ import {
 	DATABASE_PASSWORD_REGEX,
 	environments,
 	mysql as mysqlTable,
-	projects,
+	workspaces,
 } from "@/server/core/db/schema";
 import { cancelJobs } from "@/server/core/runtime/backup";
 import { findBackupsByDbId } from "@/server/core/services/backup";
@@ -39,10 +39,10 @@ import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
-import { findProjectById } from "@/server/core/services/project";
-import { getAccessibleServerIds } from "@/server/core/services/server";
+import { getAccessibleRuntimeWorkerIds } from "@/server/core/services/runtime-worker";
 import { checkPortInUse } from "@/server/core/services/settings";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { getServiceContainerCommand } from "@/server/core/utils/backups/utils";
 import { rebuildDatabase } from "@/server/core/utils/databases/rebuild";
 import {
@@ -63,14 +63,14 @@ export const mysqlRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const environment = await findEnvironmentById(input.environmentId);
-				const project = await findProjectById(environment.projectId);
+				const workspace = await findWorkspaceById(environment.workspaceId);
 
-				await checkServiceAccess(ctx, project.projectId, "create");
+				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
 				if (
 					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.serverId
+					!input.runtimeWorkerId
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -78,16 +78,18 @@ export const mysqlRouter = createTRPCRouter({
 					});
 				}
 
-				if (project.organizationId !== ctx.session.activeOrganizationId) {
+				if (workspace.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this workspace",
 					});
 				}
 
-				if (input.serverId) {
-					const accessibleIds = await getAccessibleServerIds(ctx.session);
-					if (!accessibleIds.has(input.serverId)) {
+				if (input.runtimeWorkerId) {
+					const accessibleIds = await getAccessibleRuntimeWorkerIds(
+						ctx.session,
+					);
+					if (!accessibleIds.has(input.runtimeWorkerId)) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
 							message: "You are not authorized to access this runtime worker",
@@ -132,7 +134,7 @@ export const mysqlRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.mysqlId, "read");
 			const mysql = await findMySqlById(input.mysqlId);
 			if (
-				mysql.environment.project.organizationId !==
+				mysql.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -151,8 +153,8 @@ export const mysqlRouter = createTRPCRouter({
 			});
 			const service = await findMySqlById(input.mysqlId);
 
-			if (service.serverId) {
-				await startServiceRemote(service.serverId, service.appName);
+			if (service.runtimeWorkerId) {
+				await startServiceRemote(service.runtimeWorkerId, service.appName);
 			} else {
 				await startService(service.appName);
 			}
@@ -175,8 +177,8 @@ export const mysqlRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const mongo = await findMySqlById(input.mysqlId);
-			if (mongo.serverId) {
-				await stopServiceRemote(mongo.serverId, mongo.appName);
+			if (mongo.runtimeWorkerId) {
+				await stopServiceRemote(mongo.runtimeWorkerId, mongo.appName);
 			} else {
 				await stopService(mongo.appName);
 			}
@@ -203,7 +205,7 @@ export const mysqlRouter = createTRPCRouter({
 			if (input.externalPort) {
 				const portCheck = await checkPortInUse(
 					input.externalPort,
-					mysql.serverId || undefined,
+					mysql.runtimeWorkerId || undefined,
 				);
 				if (portCheck.isInUse) {
 					throw new TRPCError({
@@ -303,16 +305,16 @@ export const mysqlRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const mysql = await findMySqlById(input.mysqlId);
-			if (mysql.serverId) {
-				await stopServiceRemote(mysql.serverId, mysql.appName);
+			if (mysql.runtimeWorkerId) {
+				await stopServiceRemote(mysql.runtimeWorkerId, mysql.appName);
 			} else {
 				await stopService(mysql.appName);
 			}
 			await updateMySqlById(input.mysqlId, {
 				applicationStatus: "idle",
 			});
-			if (mysql.serverId) {
-				await startServiceRemote(mysql.serverId, mysql.appName);
+			if (mysql.runtimeWorkerId) {
+				await startServiceRemote(mysql.runtimeWorkerId, mysql.appName);
 			} else {
 				await startService(mysql.appName);
 			}
@@ -333,7 +335,7 @@ export const mysqlRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.mysqlId, "delete");
 			const mongo = await findMySqlById(input.mysqlId);
 			if (
-				mongo.environment.project.organizationId !==
+				mongo.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -350,7 +352,7 @@ export const mysqlRouter = createTRPCRouter({
 			});
 			const backups = await findBackupsByDbId(input.mysqlId, "mysql");
 			const cleanupOperations = [
-				async () => await removeService(mongo?.appName, mongo.serverId),
+				async () => await removeService(mongo?.appName, mongo.runtimeWorkerId),
 				async () => await cancelJobs(backups),
 				async () => await removeMySqlById(input.mysqlId),
 			];
@@ -430,7 +432,8 @@ export const mysqlRouter = createTRPCRouter({
 			});
 
 			const my = await findMySqlById(mysqlId);
-			const { appName, serverId, databaseUser, databaseRootPassword } = my;
+			const { appName, runtimeWorkerId, databaseUser, databaseRootPassword } =
+				my;
 
 			const containerCmd = getServiceContainerCommand(appName);
 			const targetUser = type === "root" ? "root" : databaseUser;
@@ -454,8 +457,8 @@ export const mysqlRouter = createTRPCRouter({
 					.set(setData)
 					.where(eq(mysqlTable.mysqlId, mysqlId));
 
-				if (serverId) {
-					await execAsyncRemote(serverId, command);
+				if (runtimeWorkerId) {
+					await execAsyncRemote(runtimeWorkerId, command);
 				} else {
 					await execAsync(command, { shell: "/bin/bash" });
 				}
@@ -529,7 +532,7 @@ export const mysqlRouter = createTRPCRouter({
 				name: z.string().optional(),
 				appName: z.string().optional(),
 				description: z.string().optional(),
-				projectId: z.string().optional(),
+				workspaceId: z.string().optional(),
 				environmentId: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				offset: z.number().min(0).default(0),
@@ -537,10 +540,10 @@ export const mysqlRouter = createTRPCRouter({
 		)
 		.query(async ({ ctx, input }) => {
 			const baseConditions = [
-				eq(projects.organizationId, ctx.session.activeOrganizationId),
+				eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 			];
-			if (input.projectId) {
-				baseConditions.push(eq(environments.projectId, input.projectId));
+			if (input.workspaceId) {
+				baseConditions.push(eq(environments.workspaceId, input.workspaceId));
 			}
 			if (input.environmentId) {
 				baseConditions.push(eq(mysqlTable.environmentId, input.environmentId));
@@ -597,7 +600,10 @@ export const mysqlRouter = createTRPCRouter({
 						environments,
 						eq(mysqlTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where)
 					.orderBy(desc(mysqlTable.createdAt))
 					.limit(input.limit)
@@ -609,7 +615,10 @@ export const mysqlRouter = createTRPCRouter({
 						environments,
 						eq(mysqlTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where),
 			]);
 			return { items, total: countResult[0]?.count ?? 0 };
@@ -633,7 +642,7 @@ export const mysqlRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.mysqlId, "read");
 			const mysql = await findMySqlById(input.mysqlId);
 			if (
-				mysql.environment.project.organizationId !==
+				mysql.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -646,7 +655,7 @@ export const mysqlRouter = createTRPCRouter({
 				input.tail,
 				input.since,
 				input.search,
-				mysql.serverId,
+				mysql.runtimeWorkerId,
 			);
 		}),
 });

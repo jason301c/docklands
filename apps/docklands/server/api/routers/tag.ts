@@ -7,9 +7,9 @@ import {
 	apiFindOneTag,
 	apiRemoveTag,
 	apiUpdateTag,
-	projects,
-	projectTags,
 	tags,
+	workspaces,
+	workspaceTags,
 } from "@/server/core/db/schema";
 import { findMemberByUserId } from "@/server/core/services/permission";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
@@ -162,7 +162,7 @@ export const tagRouter = createTRPCRouter({
 					});
 				}
 
-				// Delete the tag - cascade delete will handle projectTags associations
+				// Delete the tag - cascade delete will handle workspaceTags associations
 				await db.delete(tags).where(eq(tags.tagId, input.tagId));
 
 				return { success: true };
@@ -178,10 +178,10 @@ export const tagRouter = createTRPCRouter({
 			}
 		}),
 
-	assignToProject: protectedProcedure
+	assignToWorkspace: protectedProcedure
 		.input(
 			z.object({
-				projectId: z.string().min(1),
+				workspaceId: z.string().min(1),
 				tagId: z.string().min(1),
 			}),
 		)
@@ -192,15 +192,15 @@ export const tagRouter = createTRPCRouter({
 					ctx.session.activeOrganizationId,
 				);
 
-				// Verify the project belongs to the user's organization
-				const project = await db.query.projects.findFirst({
+				// Verify the workspace belongs to the user's organization
+				const workspace = await db.query.workspaces.findFirst({
 					where: and(
-						eq(projects.projectId, input.projectId),
-						eq(projects.organizationId, ctx.session.activeOrganizationId),
+						eq(workspaces.workspaceId, input.workspaceId),
+						eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 					),
 				});
 
-				if (!project) {
+				if (!workspace) {
 					throw new TRPCError({
 						code: "NOT_FOUND",
 						message:
@@ -208,15 +208,15 @@ export const tagRouter = createTRPCRouter({
 					});
 				}
 
-				// Verify the member has access to the project
+				// Verify the member has access to the workspace
 				if (
 					memberRecord.role !== "owner" &&
 					memberRecord.role !== "admin" &&
-					!memberRecord.accessedProjects.includes(input.projectId)
+					!memberRecord.accessedWorkspaces.includes(input.workspaceId)
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You don't have access to this project",
+						message: "You don't have access to this workspace",
 					});
 				}
 
@@ -235,11 +235,11 @@ export const tagRouter = createTRPCRouter({
 					});
 				}
 
-				// Insert the project-tag association
+				// Insert the workspace-tag association
 				const newAssociation = await db
-					.insert(projectTags)
+					.insert(workspaceTags)
 					.values({
-						projectId: input.projectId,
+						workspaceId: input.workspaceId,
 						tagId: input.tagId,
 					})
 					.returning();
@@ -251,7 +251,7 @@ export const tagRouter = createTRPCRouter({
 				}
 				if (
 					error instanceof Error &&
-					error.message.includes("unique_project_tag")
+					error.message.includes("unique_workspace_tag")
 				) {
 					throw new TRPCError({
 						code: "CONFLICT",
@@ -260,16 +260,16 @@ export const tagRouter = createTRPCRouter({
 				}
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: `Error assigning tag to project: ${error instanceof Error ? error.message : error}`,
+					message: `Error assigning tag to workspace: ${error instanceof Error ? error.message : error}`,
 					cause: error,
 				});
 			}
 		}),
 
-	removeFromProject: protectedProcedure
+	removeFromWorkspace: protectedProcedure
 		.input(
 			z.object({
-				projectId: z.string().min(1),
+				workspaceId: z.string().min(1),
 				tagId: z.string().min(1),
 			}),
 		)
@@ -280,15 +280,15 @@ export const tagRouter = createTRPCRouter({
 					ctx.session.activeOrganizationId,
 				);
 
-				// Verify the project belongs to the user's organization
-				const project = await db.query.projects.findFirst({
+				// Verify the workspace belongs to the user's organization
+				const workspace = await db.query.workspaces.findFirst({
 					where: and(
-						eq(projects.projectId, input.projectId),
-						eq(projects.organizationId, ctx.session.activeOrganizationId),
+						eq(workspaces.workspaceId, input.workspaceId),
+						eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 					),
 				});
 
-				if (!project) {
+				if (!workspace) {
 					throw new TRPCError({
 						code: "NOT_FOUND",
 						message:
@@ -296,15 +296,15 @@ export const tagRouter = createTRPCRouter({
 					});
 				}
 
-				// Verify the member has access to the project
+				// Verify the member has access to the workspace
 				if (
 					memberRecord.role !== "owner" &&
 					memberRecord.role !== "admin" &&
-					!memberRecord.accessedProjects.includes(input.projectId)
+					!memberRecord.accessedWorkspaces.includes(input.workspaceId)
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You don't have access to this project",
+						message: "You don't have access to this workspace",
 					});
 				}
 
@@ -323,13 +323,13 @@ export const tagRouter = createTRPCRouter({
 					});
 				}
 
-				// Delete the project-tag association
+				// Delete the workspace-tag association
 				await db
-					.delete(projectTags)
+					.delete(workspaceTags)
 					.where(
 						and(
-							eq(projectTags.projectId, input.projectId),
-							eq(projectTags.tagId, input.tagId),
+							eq(workspaceTags.workspaceId, input.workspaceId),
+							eq(workspaceTags.tagId, input.tagId),
 						),
 					);
 
@@ -349,7 +349,7 @@ export const tagRouter = createTRPCRouter({
 	bulkAssign: protectedProcedure
 		.input(
 			z.object({
-				projectId: z.string().min(1),
+				workspaceId: z.string().min(1),
 				tagIds: z.array(z.string().min(1)),
 			}),
 		)
@@ -360,15 +360,15 @@ export const tagRouter = createTRPCRouter({
 					ctx.session.activeOrganizationId,
 				);
 
-				// Verify the project belongs to the user's organization
-				const project = await db.query.projects.findFirst({
+				// Verify the workspace belongs to the user's organization
+				const workspace = await db.query.workspaces.findFirst({
 					where: and(
-						eq(projects.projectId, input.projectId),
-						eq(projects.organizationId, ctx.session.activeOrganizationId),
+						eq(workspaces.workspaceId, input.workspaceId),
+						eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 					),
 				});
 
-				if (!project) {
+				if (!workspace) {
 					throw new TRPCError({
 						code: "NOT_FOUND",
 						message:
@@ -376,15 +376,15 @@ export const tagRouter = createTRPCRouter({
 					});
 				}
 
-				// Verify the member has access to the project
+				// Verify the member has access to the workspace
 				if (
 					memberRecord.role !== "owner" &&
 					memberRecord.role !== "admin" &&
-					!memberRecord.accessedProjects.includes(input.projectId)
+					!memberRecord.accessedWorkspaces.includes(input.workspaceId)
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "You don't have access to this project",
+						message: "You don't have access to this workspace",
 					});
 				}
 
@@ -409,16 +409,16 @@ export const tagRouter = createTRPCRouter({
 					}
 				}
 
-				// Delete all existing tag associations for this project
+				// Delete all existing tag associations for this workspace
 				await db
-					.delete(projectTags)
-					.where(eq(projectTags.projectId, input.projectId));
+					.delete(workspaceTags)
+					.where(eq(workspaceTags.workspaceId, input.workspaceId));
 
 				// Insert new tag associations
 				if (input.tagIds.length > 0) {
-					await db.insert(projectTags).values(
+					await db.insert(workspaceTags).values(
 						input.tagIds.map((tagId) => ({
-							projectId: input.projectId,
+							workspaceId: input.workspaceId,
 							tagId,
 						})),
 					);
@@ -431,7 +431,7 @@ export const tagRouter = createTRPCRouter({
 				}
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: `Error bulk assigning tags to project: ${error instanceof Error ? error.message : error}`,
+					message: `Error bulk assigning tags to workspace: ${error instanceof Error ? error.message : error}`,
 					cause: error,
 				});
 			}

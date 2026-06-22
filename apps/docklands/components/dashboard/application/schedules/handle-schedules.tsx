@@ -76,7 +76,7 @@ const formSchema = z
 		scheduleType: z.enum([
 			"application",
 			"compose",
-			"server",
+			"runtimeWorker",
 			"docklands-server",
 		]),
 		script: z.string(),
@@ -93,7 +93,7 @@ const formSchema = z
 
 		if (
 			(data.scheduleType === "docklands-server" ||
-				data.scheduleType === "server") &&
+				data.scheduleType === "runtimeWorker") &&
 			!data.script
 		) {
 			ctx.addIssue({
@@ -119,7 +119,11 @@ const formSchema = z
 interface Props {
 	id?: string;
 	scheduleId?: string;
-	scheduleType?: "application" | "compose" | "server" | "docklands-server";
+	scheduleType?:
+		| "application"
+		| "compose"
+		| "runtimeWorker"
+		| "docklands-server";
 }
 
 export const ScheduleFormField = <TFieldValues extends FieldValues>({
@@ -283,8 +287,8 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 			...(scheduleType === "compose" && {
 				composeId: id || "",
 			}),
-			...(scheduleType === "server" && {
-				serverId: id || "",
+			...(scheduleType === "runtimeWorker" && {
+				runtimeWorkerId: id || "",
 			}),
 			...(scheduleType === "docklands-server" && {
 				userId: id || "",
@@ -333,7 +337,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 			<Dialog
 				className={cn(
 					scheduleTypeForm === "docklands-server" ||
-						scheduleTypeForm === "server"
+						scheduleTypeForm === "runtimeWorker"
 						? "sm:max-w-2xl"
 						: "sm:max-w-lg",
 				)}
@@ -644,7 +648,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 						)}
 
 						{(scheduleTypeForm === "docklands-server" ||
-							scheduleTypeForm === "server") && (
+							scheduleTypeForm === "runtimeWorker") && (
 							<FormField
 								control={form.control}
 								name="script"

@@ -7,7 +7,7 @@ import { db } from "@/server/core/db";
 import {
 	apiFindAllByApplication,
 	apiFindAllByCompose,
-	apiFindAllByServer,
+	apiFindAllByRuntimeWorker,
 	apiFindAllByType,
 	deployments,
 } from "@/server/core/db/schema";
@@ -25,7 +25,7 @@ import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	execAsync,
 	execAsyncRemote,
@@ -52,16 +52,16 @@ export const deploymentRouter = createTRPCRouter({
 			return await findAllDeploymentsByComposeId(input.composeId);
 		}),
 	allByServer: withPermission("deployment", "read")
-		.input(apiFindAllByServer)
+		.input(apiFindAllByRuntimeWorker)
 		.query(async ({ input, ctx }) => {
-			const targetServer = await findServerById(input.serverId);
+			const targetServer = await findRuntimeWorkerById(input.runtimeWorkerId);
 			if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
 					message: "You don't have access to this runtime worker.",
 				});
 			}
-			return await findAllDeploymentsByServerId(input.serverId);
+			return await findAllDeploymentsByServerId(input.runtimeWorkerId);
 		}),
 	allCentralized: withPermission("deployment", "read").query(
 		async ({ ctx }) => {
@@ -136,8 +136,10 @@ export const deploymentRouter = createTRPCRouter({
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					deployment: ["cancel"],
 				});
-			} else if (deployment.schedule?.serverId) {
-				const targetServer = await findServerById(deployment.schedule.serverId);
+			} else if (deployment.schedule?.runtimeWorkerId) {
+				const targetServer = await findRuntimeWorkerById(
+					deployment.schedule.runtimeWorkerId,
+				);
 				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -154,8 +156,8 @@ export const deploymentRouter = createTRPCRouter({
 			}
 
 			const command = `kill -9 ${deployment.pid}`;
-			if (deployment.schedule?.serverId) {
-				await execAsyncRemote(deployment.schedule.serverId, command);
+			if (deployment.schedule?.runtimeWorkerId) {
+				await execAsyncRemote(deployment.schedule.runtimeWorkerId, command);
 			} else {
 				await execAsync(command);
 			}
@@ -181,8 +183,10 @@ export const deploymentRouter = createTRPCRouter({
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					deployment: ["cancel"],
 				});
-			} else if (deployment.schedule?.serverId) {
-				const targetServer = await findServerById(deployment.schedule.serverId);
+			} else if (deployment.schedule?.runtimeWorkerId) {
+				const targetServer = await findRuntimeWorkerById(
+					deployment.schedule.runtimeWorkerId,
+				);
 				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -213,8 +217,10 @@ export const deploymentRouter = createTRPCRouter({
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					deployment: ["read"],
 				});
-			} else if (deployment.schedule?.serverId) {
-				const targetServer = await findServerById(deployment.schedule.serverId);
+			} else if (deployment.schedule?.runtimeWorkerId) {
+				const targetServer = await findRuntimeWorkerById(
+					deployment.schedule.runtimeWorkerId,
+				);
 				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -228,9 +234,10 @@ export const deploymentRouter = createTRPCRouter({
 			}
 
 			const command = `tail -n ${input.tail} "${deployment.logPath}" 2>/dev/null || echo ""`;
-			const serverId = deployment.serverId || deployment.schedule?.serverId;
-			if (serverId) {
-				const { stdout } = await execAsyncRemote(serverId, command);
+			const runtimeWorkerId =
+				deployment.runtimeWorkerId || deployment.schedule?.runtimeWorkerId;
+			if (runtimeWorkerId) {
+				const { stdout } = await execAsyncRemote(runtimeWorkerId, command);
 				return stdout;
 			}
 

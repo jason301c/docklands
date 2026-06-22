@@ -24,7 +24,7 @@ export const TRAEFIK_VERSION = process.env.TRAEFIK_VERSION || "3.6.20";
 
 export interface TraefikOptions {
 	env?: string[];
-	serverId?: string;
+	runtimeWorkerId?: string;
 	additionalPorts?: {
 		targetPort: number;
 		publishedPort: number;
@@ -34,10 +34,10 @@ export interface TraefikOptions {
 
 export const initializeStandaloneTraefik = async ({
 	env,
-	serverId,
+	runtimeWorkerId,
 	additionalPorts = [],
 }: TraefikOptions = {}) => {
-	const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths(!!serverId);
+	const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths(!!runtimeWorkerId);
 	const imageName = `traefik:v${TRAEFIK_VERSION}`;
 	const containerName = "docklands-traefik";
 
@@ -93,7 +93,7 @@ export const initializeStandaloneTraefik = async ({
 		Env: env,
 	};
 
-	const docker = await getRemoteDocker(serverId);
+	const docker = await getRemoteDocker(runtimeWorkerId);
 	try {
 		await docker.pull(imageName);
 		await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -120,9 +120,9 @@ export const initializeStandaloneTraefik = async ({
 export const initializeTraefikService = async ({
 	env,
 	additionalPorts = [],
-	serverId,
+	runtimeWorkerId,
 }: TraefikOptions) => {
-	const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths(!!serverId);
+	const { MAIN_TRAEFIK_PATH, DYNAMIC_TRAEFIK_PATH } = paths(!!runtimeWorkerId);
 	const imageName = `traefik:v${TRAEFIK_VERSION}`;
 	const appName = "docklands-traefik";
 
@@ -190,7 +190,7 @@ export const initializeTraefikService = async ({
 			],
 		},
 	};
-	const docker = await getRemoteDocker(serverId);
+	const docker = await getRemoteDocker(runtimeWorkerId);
 	try {
 		const service = docker.getService(appName);
 		const inspect = await service.inspect();

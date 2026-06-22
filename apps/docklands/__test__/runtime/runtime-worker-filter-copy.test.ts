@@ -24,7 +24,7 @@ describe("runtime worker filter copy", () => {
 		expect(source).toContain("No runtime workers yet");
 		expect(source).toContain("Local runtime worker");
 		expect(source).toContain('"runtimeWorkerId"');
-		expect(source).not.toContain('query.set("serverId"');
+		expect(source).toContain('query.set("runtimeWorkerId"');
 		expect(source).not.toContain("ServerFilter");
 		expect(source).not.toContain("DOCKLANDS_SERVER");
 		expect(source).not.toContain("server-filter");
@@ -55,7 +55,7 @@ describe("runtime worker filter copy", () => {
 		}
 	});
 
-	it("removes the old shared server filter module", () => {
+	it("removes the old shared runtimeWorker filter module", () => {
 		expect(existsSync(sharedFilterPath)).toBe(true);
 		expect(
 			existsSync(
@@ -78,9 +78,7 @@ describe("runtime worker filter copy", () => {
 			const source = sourceFile(client);
 
 			expect(source).toContain("runtimeWorkerId");
-			expect(source).not.toContain('urlParams.set("serverId"');
-			expect(source).not.toContain('params.append("serverId"');
-			expect(source).not.toContain("&serverId=");
+			expect(source).not.toContain("serverId");
 		}
 	});
 });

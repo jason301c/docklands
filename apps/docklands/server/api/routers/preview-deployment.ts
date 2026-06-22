@@ -85,11 +85,11 @@ export const previewDeploymentRouter = createTRPCRouter({
 				type: "redeploy",
 				applicationType: "application-preview",
 				previewDeploymentId: input.previewDeploymentId,
-				server: !!application.serverId,
-				serverId: application.serverId ?? undefined,
+				runtimeWorker: !!application.runtimeWorkerId,
+				runtimeWorkerId: application.runtimeWorkerId ?? undefined,
 			};
 
-			if (IS_CLOUD && application.serverId) {
+			if (IS_CLOUD && application.runtimeWorkerId) {
 				deploy(jobData).catch((error) => {
 					console.error("Background deployment failed:", error);
 				});

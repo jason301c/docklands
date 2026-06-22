@@ -6,7 +6,7 @@ import {
 import { findDestinationById } from "@/server/core/services/destination";
 import { findEnvironmentById } from "@/server/core/services/environment";
 import type { Mariadb } from "@/server/core/services/mariadb";
-import { findProjectById } from "@/server/core/services/project";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { sendDatabaseBackupNotifications } from "../notifications/database-backup";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import {
@@ -22,7 +22,7 @@ export const runMariadbBackup = async (
 ) => {
 	const { environmentId, name, appName } = mariadb;
 	const environment = await findEnvironmentById(environmentId);
-	const project = await findProjectById(environment.projectId);
+	const workspace = await findWorkspaceById(environment.workspaceId);
 	const { prefix } = backup;
 	const destination = await findDestinationById(backup.destinationId);
 	const backupFileName = `${getBackupTimestamp()}.sql.gz`;
@@ -42,8 +42,8 @@ export const runMariadbBackup = async (
 			rcloneCommand,
 			deployment.logPath,
 		);
-		if (mariadb.serverId) {
-			await execAsyncRemote(mariadb.serverId, backupCommand);
+		if (mariadb.runtimeWorkerId) {
+			await execAsyncRemote(mariadb.runtimeWorkerId, backupCommand);
 		} else {
 			await execAsync(backupCommand, {
 				shell: "/bin/bash",
@@ -52,10 +52,10 @@ export const runMariadbBackup = async (
 
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: "mariadb",
 			type: "success",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "done");
@@ -63,12 +63,12 @@ export const runMariadbBackup = async (
 		console.log(error);
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
-			projectName: project.name,
+			projectName: workspace.name,
 			databaseType: "mariadb",
 			type: "error",
 			// @ts-expect-error
 			errorMessage: error?.message || "Error message not provided",
-			organizationId: project.organizationId,
+			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "error");

@@ -16,11 +16,11 @@ const baseCompose = {
 	isolatedDeployment: false,
 	randomize: false,
 	suffix: "",
-	serverId: null,
+	runtimeWorkerId: null,
 	env: "",
 	mounts: [],
 	domains: [],
-	environment: { project: { env: "" }, env: "" },
+	environment: { workspace: { env: "" }, env: "" },
 } as unknown as Parameters<typeof getBuildComposeCommand>[0];
 
 // Regression coverage for #4401: the deploy command runs under `env -i`, which

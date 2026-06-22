@@ -71,18 +71,22 @@ export const ShowRuntimeWorkers = () => {
 												Start adding workers to run your applications across
 												remote machines.
 											</span>
-											{permissions?.server.create && <HandleRuntimeWorker />}
+											{permissions?.runtimeWorker.create && (
+												<HandleRuntimeWorker />
+											)}
 										</div>
 									) : (
 										<div className="flex flex-col gap-4 min-h-[25vh]">
 											<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-												{data?.map((server) => {
-													const canDelete = server.totalSum === 0;
-													const isActive = server.serverStatus === "active";
-													const isBuildServer = server.serverType === "build";
+												{data?.map((runtimeWorker) => {
+													const canDelete = runtimeWorker.totalSum === 0;
+													const isActive =
+														runtimeWorker.runtimeWorkerStatus === "active";
+													const isBuildServer =
+														runtimeWorker.runtimeWorkerType === "build";
 													return (
 														<LayerCard
-															key={server.serverId}
+															key={runtimeWorker.runtimeWorkerId}
 															className="relative hover:shadow-lg transition-shadow flex flex-col bg-transparent"
 														>
 															<div className="pb-3">
@@ -90,7 +94,7 @@ export const ShowRuntimeWorkers = () => {
 																	<div className="flex min-w-0 items-center gap-2">
 																		<ServerIcon className="size-5 shrink-0 text-muted-foreground" />
 																		<h3 className="text-lg break-words min-w-0">
-																			{server.name}
+																			{runtimeWorker.name}
 																		</h3>
 																	</div>
 																</div>
@@ -98,9 +102,10 @@ export const ShowRuntimeWorkers = () => {
 																	<div className="flex gap-2 mt-2 flex-wrap">
 																		{isCloud && (
 																			<>
-																				{server.serverStatus === "active" ? (
+																				{runtimeWorker.runtimeWorkerStatus ===
+																				"active" ? (
 																					<Badge variant="primary">
-																						{server.serverStatus}
+																						{runtimeWorker.runtimeWorkerStatus}
 																					</Badge>
 																				) : (
 																					<Tooltip
@@ -121,7 +126,9 @@ export const ShowRuntimeWorkers = () => {
 																									variant="error"
 																									className="cursor-help"
 																								>
-																									{server.serverStatus}
+																									{
+																										runtimeWorker.runtimeWorkerStatus
+																									}
 																								</Badge>
 																							</span>
 																						}
@@ -136,7 +143,7 @@ export const ShowRuntimeWorkers = () => {
 																					: "secondary"
 																			}
 																		>
-																			{server.serverType}
+																			{runtimeWorker.runtimeWorkerType}
 																		</Badge>
 																	</div>
 																</TooltipProvider>
@@ -148,13 +155,13 @@ export const ShowRuntimeWorkers = () => {
 																		IP:
 																	</span>
 																	<Badge variant="outline">
-																		{server.ipAddress}
+																		{runtimeWorker.ipAddress}
 																	</Badge>
 																	<span className="text-muted-foreground">
 																		Port:
 																	</span>
 																	<span className="font-medium">
-																		{server.port}
+																		{runtimeWorker.port}
 																	</span>
 																</div>
 																<div className="flex items-center gap-2 text-sm">
@@ -163,7 +170,7 @@ export const ShowRuntimeWorkers = () => {
 																		User:
 																	</span>
 																	<span className="font-medium">
-																		{server.username}
+																		{runtimeWorker.username}
 																	</span>
 																</div>
 																<div className="flex items-center gap-2 text-sm">
@@ -172,14 +179,17 @@ export const ShowRuntimeWorkers = () => {
 																		SSH Key:
 																	</span>
 																	<span className="font-medium">
-																		{server.sshKeyId ? "Yes" : "No"}
+																		{runtimeWorker.sshKeyId ? "Yes" : "No"}
 																	</span>
 																</div>
 																<div className="flex items-center gap-2 text-sm pt-2 border-t">
 																	<Clock className="size-4 text-muted-foreground" />
 																	<span className="text-xs text-muted-foreground">
 																		Created{" "}
-																		{format(new Date(server.createdAt), "PPp")}
+																		{format(
+																			new Date(runtimeWorker.createdAt),
+																			"PPp",
+																		)}
 																	</span>
 																</div>
 
@@ -208,13 +218,15 @@ export const ShowRuntimeWorkers = () => {
 																				asChild
 																			>
 																				<SetupRuntimeWorker
-																					serverId={server.serverId}
+																					runtimeWorkerId={
+																						runtimeWorker.runtimeWorkerId
+																					}
 																				/>
 																			</Tooltip>
 																		</div>
 
 																		<TooltipProvider>
-																			{server.sshKeyId && (
+																			{runtimeWorker.sshKeyId && (
 																				<Tooltip
 																					content={
 																						<>
@@ -225,7 +237,9 @@ export const ShowRuntimeWorkers = () => {
 																				>
 																					<div>
 																						<RuntimeTerminalModal
-																							serverId={server.serverId}
+																							runtimeWorkerId={
+																								runtimeWorker.runtimeWorkerId
+																							}
 																							asButton={true}
 																						>
 																							<Button
@@ -251,33 +265,38 @@ export const ShowRuntimeWorkers = () => {
 																			>
 																				<div>
 																					<HandleRuntimeWorker
-																						serverId={server.serverId}
+																						runtimeWorkerId={
+																							runtimeWorker.runtimeWorkerId
+																						}
 																						asButton={true}
 																					/>
 																				</div>
 																			</Tooltip>
 
-																			{server.sshKeyId && !isBuildServer && (
-																				<Tooltip
-																					content={
-																						<>
-																							<p>Ingress runtime actions</p>
-																						</>
-																					}
-																					asChild
-																				>
-																					<div>
-																						<ShowRuntimeWorkerActions
-																							serverId={server.serverId}
-																							asButton={true}
-																						/>
-																					</div>
-																				</Tooltip>
-																			)}
+																			{runtimeWorker.sshKeyId &&
+																				!isBuildServer && (
+																					<Tooltip
+																						content={
+																							<>
+																								<p>Ingress runtime actions</p>
+																							</>
+																						}
+																						asChild
+																					>
+																						<div>
+																							<ShowRuntimeWorkerActions
+																								runtimeWorkerId={
+																									runtimeWorker.runtimeWorkerId
+																								}
+																								asButton={true}
+																							/>
+																						</div>
+																					</Tooltip>
+																				)}
 
 																			<div className="flex-1" />
 
-																			{permissions?.server.delete && (
+																			{permissions?.runtimeWorker.delete && (
 																				<Tooltip
 																					content={
 																						<>
@@ -317,12 +336,13 @@ export const ShowRuntimeWorkers = () => {
 																							}
 																							onClick={async () => {
 																								await mutateAsync({
-																									serverId: server.serverId,
+																									runtimeWorkerId:
+																										runtimeWorker.runtimeWorkerId,
 																								})
 																									.then(() => {
 																										refetch();
 																										toast.success(
-																											`Worker ${server.name} deleted successfully`,
+																											`Worker ${runtimeWorker.name} deleted successfully`,
 																										);
 																									})
 																									.catch((err) => {
@@ -331,7 +351,7 @@ export const ShowRuntimeWorkers = () => {
 																							}}
 																						>
 																							<Button
-																								aria-label={`Delete worker ${server.name}`}
+																								aria-label={`Delete worker ${runtimeWorker.name}`}
 																								variant="ghost"
 																								shape="square"
 																								className={`h-9 w-9 ${canDelete ? "text-destructive hover:text-destructive hover:bg-destructive/10" : "text-muted-foreground hover:bg-muted"}`}
@@ -351,7 +371,7 @@ export const ShowRuntimeWorkers = () => {
 												})}
 											</div>
 
-											{permissions?.server.create && (
+											{permissions?.runtimeWorker.create && (
 												<div className="flex flex-row gap-2 flex-wrap w-full justify-end mt-4">
 													{data && data?.length > 0 && (
 														<div>

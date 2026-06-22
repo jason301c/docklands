@@ -4,7 +4,7 @@ import { CLEANUP_CRON_JOB } from "@/server/core/constants/cleanup";
 import { member } from "@/server/core/db/schema";
 import type { BackupSchedule } from "@/server/core/services/backup";
 import { findDestinationById } from "@/server/core/services/destination";
-import { getAllServers } from "@/server/core/services/server";
+import { getAllRuntimeWorkers } from "@/server/core/services/runtime-worker";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { db } from "../../db/index";
 import { startLogCleanup } from "../access-log/handler";
@@ -46,22 +46,22 @@ export const initCronJobs = async () => {
 		}
 	}
 
-	const servers = await getAllServers();
+	const servers = await getAllRuntimeWorkers();
 
-	for (const server of servers) {
-		const { serverId, enableDockerCleanup, name } = server;
+	for (const runtimeWorker of servers) {
+		const { runtimeWorkerId, enableDockerCleanup, name } = runtimeWorker;
 		if (enableDockerCleanup) {
 			try {
-				scheduleJob(serverId, CLEANUP_CRON_JOB, async () => {
+				scheduleJob(runtimeWorkerId, CLEANUP_CRON_JOB, async () => {
 					console.log(
 						`SERVER-BACKUP[${new Date().toLocaleString()}] Running Cleanup ${name}`,
 					);
 
-					await cleanupAll(serverId);
+					await cleanupAll(runtimeWorkerId);
 
 					await sendDockerCleanupNotifications(
 						admin.user.id,
-						`Docker cleanup for Server ${name} (${serverId})`,
+						`Docker cleanup for Server ${name} (${runtimeWorkerId})`,
 					);
 				});
 			} catch (error) {
@@ -126,7 +126,7 @@ const getServiceAppName = (backup: BackupSchedule): string => {
 
 export const keepLatestNBackups = async (
 	backup: BackupSchedule,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
 	// 0 also immediately returns which is good as the empty "keep latest" field in the UI
 	// is saved as 0 in the database
@@ -148,8 +148,8 @@ export const keepLatestNBackups = async (
 
 		const rcloneCommand = `${rcloneList} | ${sortAndPickUnwantedBackups} ${rcloneDelete}`;
 
-		if (serverId) {
-			await execAsyncRemote(serverId, rcloneCommand);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, rcloneCommand);
 		} else {
 			await execAsync(rcloneCommand);
 		}

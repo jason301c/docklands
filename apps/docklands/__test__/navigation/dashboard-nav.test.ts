@@ -17,7 +17,7 @@ const fullPermissions = {
 	notification: { read: true },
 	organization: { update: true },
 	registry: { read: true },
-	server: { read: true },
+	runtimeWorker: { read: true },
 	sshKeys: { read: true },
 	tag: { read: true },
 	traefikFiles: { read: true },

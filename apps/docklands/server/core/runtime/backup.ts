@@ -3,8 +3,8 @@ import {
 	type BackupScheduleList,
 	findBackupById,
 } from "@/server/core/services/backup";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { findScheduleById } from "@/server/core/services/schedule";
-import { findServerById } from "@/server/core/services/server";
 import {
 	removeScheduleBackup,
 	scheduleBackup,
@@ -27,9 +27,9 @@ type QueueJob =
 			backupId: string;
 	  }
 	| {
-			type: "server";
+			type: "runtimeWorker";
 			cronSchedule: string;
-			serverId: string;
+			runtimeWorkerId: string;
 	  }
 	| {
 			type: "schedule";
@@ -44,13 +44,13 @@ type QueueJob =
 	  };
 
 const scheduleServerCleanup = async (
-	job: Extract<QueueJob, { type: "server" }>,
+	job: Extract<QueueJob, { type: "runtimeWorker" }>,
 ) => {
-	const server = await findServerById(job.serverId);
-	scheduleNodeJob(job.serverId, job.cronSchedule, async () => {
+	const runtimeWorker = await findRuntimeWorkerById(job.runtimeWorkerId);
+	scheduleNodeJob(job.runtimeWorkerId, job.cronSchedule, async () => {
 		console.log(`Docker Cleanup ${new Date().toLocaleString()}] Running...`);
-		await cleanupAll(job.serverId);
-		await sendDockerCleanupNotifications(server.organizationId);
+		await cleanupAll(job.runtimeWorkerId);
+		await sendDockerCleanupNotifications(runtimeWorker.organizationId);
 	});
 };
 
@@ -92,7 +92,7 @@ export const removeJob = async (job: QueueJob) => {
 		return true;
 	}
 
-	scheduledJobs[job.serverId]?.cancel();
+	scheduledJobs[job.runtimeWorkerId]?.cancel();
 	return true;
 };
 

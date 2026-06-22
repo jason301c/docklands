@@ -59,7 +59,7 @@ SERVICE_PORT=4000
 		);
 	});
 
-	it("rejects the old project variable namespace", () => {
+	it("rejects the old workspace variable namespace", () => {
 		const invalidServiceEnv = `
 		OLD_VAR=\${{project.ENVIRONMENT}}
 		`;
@@ -67,7 +67,7 @@ SERVICE_PORT=4000
 		expect(() =>
 			prepareEnvironmentVariables(invalidServiceEnv, projectEnv),
 		).toThrow(
-			"Unsupported project environment variable namespace: project.ENVIRONMENT. Use workspace.ENVIRONMENT instead.",
+			"Unsupported workspace environment variable namespace: project.ENVIRONMENT. Use workspace.ENVIRONMENT instead.",
 		);
 	});
 
@@ -139,7 +139,7 @@ SERVICE_PORT=3000
 	it("overrides workspace variables with service-specific values", () => {
 		const projectEnv = `
 ENVIRONMENT=staging
-DATABASE_URL=postgres://project:project@localhost:5432/workspace_db
+DATABASE_URL=postgres://workspace:workspace@localhost:5432/workspace_db
 `;
 		const serviceEnv = `
 ENVIRONMENT=\${{workspace.ENVIRONMENT}}

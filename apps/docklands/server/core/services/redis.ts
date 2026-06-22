@@ -11,7 +11,7 @@ import { generatePassword } from "@/server/core/templates";
 import { buildRedis } from "@/server/core/utils/databases/redis";
 import { pullImage } from "@/server/core/utils/docker/utils";
 import { execAsyncRemote } from "@/server/core/utils/process/execAsync";
-import { validUniqueServerAppName } from "./project";
+import { validUniqueServerAppName } from "./workspace";
 
 export type Redis = typeof redis.$inferSelect;
 
@@ -55,11 +55,11 @@ export const findRedisById = async (redisId: string) => {
 		with: {
 			environment: {
 				with: {
-					project: true,
+					workspace: true,
 				},
 			},
 			mounts: true,
-			server: true,
+			runtimeWorker: true,
 		},
 	});
 	if (!result) {
@@ -107,9 +107,9 @@ export const deployRedis = async (
 		});
 
 		onData?.("Starting redis deployment...");
-		if (redis.serverId) {
+		if (redis.runtimeWorkerId) {
 			await execAsyncRemote(
-				redis.serverId,
+				redis.runtimeWorkerId,
 				`docker pull ${redis.dockerImage}`,
 				onData,
 			);

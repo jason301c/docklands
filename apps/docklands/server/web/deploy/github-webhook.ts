@@ -129,11 +129,11 @@ export async function handleGithubDeployWebhook(request: Request) {
 					descriptionLog: `Hash: ${deploymentHash}`,
 					type: "deploy",
 					applicationType: "application",
-					server: !!app.serverId,
+					runtimeWorker: !!app.runtimeWorkerId,
 				};
 
-				if (IS_CLOUD && app.serverId) {
-					jobData.serverId = app.serverId;
+				if (IS_CLOUD && app.runtimeWorkerId) {
+					jobData.runtimeWorkerId = app.runtimeWorkerId;
 					deploy(jobData).catch((error) => {
 						console.error("Background deployment failed:", error);
 					});
@@ -168,11 +168,11 @@ export async function handleGithubDeployWebhook(request: Request) {
 					type: "deploy",
 					applicationType: "compose",
 					descriptionLog: `Hash: ${deploymentHash}`,
-					server: !!composeApp.serverId,
+					runtimeWorker: !!composeApp.runtimeWorkerId,
 				};
 
-				if (IS_CLOUD && composeApp.serverId) {
-					jobData.serverId = composeApp.serverId;
+				if (IS_CLOUD && composeApp.runtimeWorkerId) {
+					jobData.runtimeWorkerId = composeApp.runtimeWorkerId;
 					deploy(jobData).catch((error) => {
 						console.error("Background deployment failed:", error);
 					});
@@ -240,7 +240,7 @@ export async function handleGithubDeployWebhook(request: Request) {
 					descriptionLog: `Hash: ${deploymentHash}`,
 					type: "deploy",
 					applicationType: "application",
-					server: !!app.serverId,
+					runtimeWorker: !!app.runtimeWorkerId,
 				};
 
 				const shouldDeployPaths = shouldDeploy(
@@ -252,8 +252,8 @@ export async function handleGithubDeployWebhook(request: Request) {
 					continue;
 				}
 
-				if (IS_CLOUD && app.serverId) {
-					jobData.serverId = app.serverId;
+				if (IS_CLOUD && app.runtimeWorkerId) {
+					jobData.runtimeWorkerId = app.runtimeWorkerId;
 					deploy(jobData).catch((error) => {
 						console.error("Background deployment failed:", error);
 					});
@@ -288,7 +288,7 @@ export async function handleGithubDeployWebhook(request: Request) {
 					type: "deploy",
 					applicationType: "compose",
 					descriptionLog: `Hash: ${deploymentHash}`,
-					server: !!composeApp.serverId,
+					runtimeWorker: !!composeApp.runtimeWorkerId,
 				};
 
 				const shouldDeployPaths = shouldDeploy(
@@ -299,8 +299,8 @@ export async function handleGithubDeployWebhook(request: Request) {
 				if (!shouldDeployPaths) {
 					continue;
 				}
-				if (IS_CLOUD && composeApp.serverId) {
-					jobData.serverId = composeApp.serverId;
+				if (IS_CLOUD && composeApp.runtimeWorkerId) {
+					jobData.runtimeWorkerId = composeApp.runtimeWorkerId;
 					deploy(jobData).catch((error) => {
 						console.error("Background deployment failed:", error);
 					});
@@ -504,13 +504,13 @@ export async function handleGithubDeployWebhook(request: Request) {
 					descriptionLog: `Hash: ${deploymentHash}`,
 					type: "deploy",
 					applicationType: "application-preview",
-					server: !!app.serverId,
+					runtimeWorker: !!app.runtimeWorkerId,
 					previewDeploymentId,
 				};
 
 				if (previewDeploymentId) {
-					if (IS_CLOUD && app.serverId) {
-						jobData.serverId = app.serverId;
+					if (IS_CLOUD && app.runtimeWorkerId) {
+						jobData.runtimeWorkerId = app.runtimeWorkerId;
 						deploy(jobData).catch((error) => {
 							console.error("Background deployment failed:", error);
 						});

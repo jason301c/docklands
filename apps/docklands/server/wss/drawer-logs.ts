@@ -6,7 +6,10 @@ import { appRouter } from "../api/root";
 import { createWebSocketTRPCContext } from "../api/trpc";
 
 export const setupDrawerLogsWebSocketServer = (
-	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
+	runtimeWorker: http.Server<
+		typeof http.IncomingMessage,
+		typeof http.ServerResponse
+	>,
 ) => {
 	const wssTerm = new WebSocketServer({
 		noServer: true,
@@ -20,7 +23,7 @@ export const setupDrawerLogsWebSocketServer = (
 		createContext: createWebSocketTRPCContext,
 	});
 
-	server.on("upgrade", (req, socket, head) => {
+	runtimeWorker.on("upgrade", (req, socket, head) => {
 		const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
 
 		if (pathname === "/drawer-logs") {

@@ -10,10 +10,10 @@ import { getLocalRuntimeTerminalData } from "./local-runtime-terminal-config";
 
 interface Props {
 	id: string;
-	serverId: string;
+	runtimeWorkerId: string;
 }
 
-export const RuntimeTerminal: React.FC<Props> = ({ id, serverId }) => {
+export const RuntimeTerminal: React.FC<Props> = ({ id, runtimeWorkerId }) => {
 	const termRef = useRef<HTMLDivElement>(null);
 	const initialized = useRef<boolean>(false);
 	const { resolvedTheme } = useTheme();
@@ -44,9 +44,9 @@ export const RuntimeTerminal: React.FC<Props> = ({ id, serverId }) => {
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 
 		const urlParams = new URLSearchParams();
-		urlParams.set("runtimeWorkerId", serverId);
+		urlParams.set("runtimeWorkerId", runtimeWorkerId);
 
-		if (serverId === "local") {
+		if (runtimeWorkerId === "local") {
 			const { port, username } = getLocalRuntimeTerminalData();
 			urlParams.set("port", port.toString());
 			urlParams.set("username", username);
@@ -67,7 +67,7 @@ export const RuntimeTerminal: React.FC<Props> = ({ id, serverId }) => {
 		return () => {
 			ws.readyState === WebSocket.OPEN && ws.close();
 		};
-	}, [id, serverId]);
+	}, [id, runtimeWorkerId]);
 
 	return (
 		<div className="flex flex-col gap-4">

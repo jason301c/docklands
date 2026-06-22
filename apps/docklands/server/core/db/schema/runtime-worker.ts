@@ -25,11 +25,17 @@ import { schedules } from "./schedule";
 import { sshKeys } from "./ssh-key";
 import { generateAppName } from "./utils";
 
-export const serverStatus = pgEnum("serverStatus", ["active", "inactive"]);
-export const serverType = pgEnum("serverType", ["deploy", "build"]);
+export const runtimeWorkerStatus = pgEnum("runtimeWorkerStatus", [
+	"active",
+	"inactive",
+]);
+export const runtimeWorkerType = pgEnum("runtimeWorkerType", [
+	"deploy",
+	"build",
+]);
 
-export const server = pgTable("server", {
-	serverId: text("serverId")
+export const runtimeWorkers = pgTable("runtimeWorker", {
+	runtimeWorkerId: text("runtimeWorkerId")
 		.notNull()
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
@@ -40,22 +46,26 @@ export const server = pgTable("server", {
 	username: text("username").notNull().default("root"),
 	appName: text("appName")
 		.notNull()
-		.$defaultFn(() => generateAppName("server")),
+		.$defaultFn(() => generateAppName("runtime-worker")),
 	enableDockerCleanup: boolean("enableDockerCleanup").notNull().default(false),
 	buildsConcurrency: integer("buildsConcurrency").notNull().default(1),
 	createdAt: text("createdAt").notNull(),
 	organizationId: text("organizationId")
 		.notNull()
 		.references(() => organization.id, { onDelete: "cascade" }),
-	serverStatus: serverStatus("serverStatus").notNull().default("active"),
-	serverType: serverType("serverType").notNull().default("deploy"),
+	runtimeWorkerStatus: runtimeWorkerStatus("runtimeWorkerStatus")
+		.notNull()
+		.default("active"),
+	runtimeWorkerType: runtimeWorkerType("runtimeWorkerType")
+		.notNull()
+		.default("deploy"),
 	command: text("command").notNull().default(""),
 	sshKeyId: text("sshKeyId").references(() => sshKeys.sshKeyId, {
 		onDelete: "set null",
 	}),
 	metricsConfig: jsonb("metricsConfig")
 		.$type<{
-			server: {
+			runtimeWorker: {
 				type: "Docklands" | "Remote";
 				refreshRate: number;
 				port: number;
@@ -78,7 +88,7 @@ export const server = pgTable("server", {
 		}>()
 		.notNull()
 		.default({
-			server: {
+			runtimeWorker: {
 				type: "Remote",
 				refreshRate: 60,
 				port: 4500,
@@ -101,47 +111,50 @@ export const server = pgTable("server", {
 		}),
 });
 
-export const serverRelations = relations(server, ({ one, many }) => ({
-	deployments: many(deployments, {
-		relationName: "deploymentServer",
+export const runtimeWorkerRelations = relations(
+	runtimeWorkers,
+	({ one, many }) => ({
+		deployments: many(deployments, {
+			relationName: "deploymentRuntimeWorker",
+		}),
+		buildDeployments: many(deployments, {
+			relationName: "deploymentBuildRuntimeWorker",
+		}),
+		sshKey: one(sshKeys, {
+			fields: [runtimeWorkers.sshKeyId],
+			references: [sshKeys.sshKeyId],
+		}),
+		applications: many(applications, {
+			relationName: "applicationRuntimeWorker",
+		}),
+		buildApplications: many(applications, {
+			relationName: "applicationBuildRuntimeWorker",
+		}),
+		compose: many(compose),
+		libsql: many(libsql),
+		redis: many(redis),
+		mariadb: many(mariadb),
+		mongo: many(mongo),
+		mysql: many(mysql),
+		postgres: many(postgres),
+		certificates: many(certificates),
+		organization: one(organization, {
+			fields: [runtimeWorkers.organizationId],
+			references: [organization.id],
+		}),
+		schedules: many(schedules),
 	}),
-	buildDeployments: many(deployments, {
-		relationName: "deploymentBuildServer",
-	}),
-	sshKey: one(sshKeys, {
-		fields: [server.sshKeyId],
-		references: [sshKeys.sshKeyId],
-	}),
-	applications: many(applications, {
-		relationName: "applicationServer",
-	}),
-	buildApplications: many(applications, {
-		relationName: "applicationBuildServer",
-	}),
-	compose: many(compose),
-	libsql: many(libsql),
-	redis: many(redis),
-	mariadb: many(mariadb),
-	mongo: many(mongo),
-	mysql: many(mysql),
-	postgres: many(postgres),
-	certificates: many(certificates),
-	organization: one(organization, {
-		fields: [server.organizationId],
-		references: [organization.id],
-	}),
-	schedules: many(schedules),
-}));
+);
 
-const createSchema = createInsertSchema(server, {
-	serverId: z.string().min(1),
+const createSchema = createInsertSchema(runtimeWorkers, {
+	runtimeWorkerId: z.string().min(1),
 	name: z.string().min(1),
 	description: z.string().nullish(),
-	serverType: z.enum(["deploy", "build"]).optional(),
+	runtimeWorkerType: z.enum(["deploy", "build"]).optional(),
 	sshKeyId: z.string().nullish(),
 });
 
-export const apiCreateServer = createSchema
+export const apiCreateRuntimeWorker = createSchema
 	.pick({
 		name: true,
 		description: true,
@@ -149,7 +162,7 @@ export const apiCreateServer = createSchema
 		port: true,
 		username: true,
 		sshKeyId: true,
-		serverType: true,
+		runtimeWorkerType: true,
 		enableDockerCleanup: true,
 	})
 	.required()
@@ -157,26 +170,26 @@ export const apiCreateServer = createSchema
 		enableDockerCleanup: z.boolean().default(true),
 	});
 
-export const apiFindOneServer = z.object({
-	serverId: z.string().min(1),
+export const apiFindOneRuntimeWorker = z.object({
+	runtimeWorkerId: z.string().min(1),
 });
 
-export const apiRemoveServer = createSchema
+export const apiRemoveRuntimeWorker = createSchema
 	.pick({
-		serverId: true,
+		runtimeWorkerId: true,
 	})
 	.required();
 
-export const apiUpdateServer = createSchema
+export const apiUpdateRuntimeWorker = createSchema
 	.pick({
 		name: true,
 		description: true,
-		serverId: true,
+		runtimeWorkerId: true,
 		ipAddress: true,
 		port: true,
 		username: true,
 		sshKeyId: true,
-		serverType: true,
+		runtimeWorkerType: true,
 		enableDockerCleanup: true,
 	})
 	.required()
@@ -185,20 +198,20 @@ export const apiUpdateServer = createSchema
 		enableDockerCleanup: z.boolean().default(true),
 	});
 
-export const apiUpdateServerBuildsConcurrency = z.object({
-	serverId: z.string().min(1),
+export const apiUpdateRuntimeWorkerBuildsConcurrency = z.object({
+	runtimeWorkerId: z.string().min(1),
 	buildsConcurrency: z.number().int().min(1).max(100),
 });
 
-export const apiUpdateServerMonitoring = createSchema
+export const apiUpdateRuntimeWorkerMonitoring = createSchema
 	.pick({
-		serverId: true,
+		runtimeWorkerId: true,
 	})
 	.required()
 	.extend({
 		metricsConfig: z
 			.object({
-				server: z.object({
+				runtimeWorker: z.object({
 					refreshRate: z.number().min(2),
 					port: z.number().min(1),
 					token: z.string(),

@@ -20,7 +20,7 @@ import {
 	DATABASE_PASSWORD_REGEX,
 	environments,
 	mariadb as mariadbTable,
-	projects,
+	workspaces,
 } from "@/server/core/db/schema";
 import { cancelJobs } from "@/server/core/runtime/backup";
 import { findBackupsByDbId } from "@/server/core/services/backup";
@@ -40,10 +40,10 @@ import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
-import { findProjectById } from "@/server/core/services/project";
-import { getAccessibleServerIds } from "@/server/core/services/server";
+import { getAccessibleRuntimeWorkerIds } from "@/server/core/services/runtime-worker";
 import { checkPortInUse } from "@/server/core/services/settings";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { getServiceContainerCommand } from "@/server/core/utils/backups/utils";
 import { rebuildDatabase } from "@/server/core/utils/databases/rebuild";
 import {
@@ -64,14 +64,14 @@ export const mariadbRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const environment = await findEnvironmentById(input.environmentId);
-				const project = await findProjectById(environment.projectId);
+				const workspace = await findWorkspaceById(environment.workspaceId);
 
-				await checkServiceAccess(ctx, project.projectId, "create");
+				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
 				if (
 					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.serverId
+					!input.runtimeWorkerId
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -79,16 +79,18 @@ export const mariadbRouter = createTRPCRouter({
 					});
 				}
 
-				if (project.organizationId !== ctx.session.activeOrganizationId) {
+				if (workspace.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this workspace",
 					});
 				}
 
-				if (input.serverId) {
-					const accessibleIds = await getAccessibleServerIds(ctx.session);
-					if (!accessibleIds.has(input.serverId)) {
+				if (input.runtimeWorkerId) {
+					const accessibleIds = await getAccessibleRuntimeWorkerIds(
+						ctx.session,
+					);
+					if (!accessibleIds.has(input.runtimeWorkerId)) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
 							message: "You are not authorized to access this runtime worker",
@@ -129,7 +131,7 @@ export const mariadbRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.mariadbId, "read");
 			const mariadb = await findMariadbById(input.mariadbId);
 			if (
-				mariadb.environment.project.organizationId !==
+				mariadb.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -147,8 +149,8 @@ export const mariadbRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const service = await findMariadbById(input.mariadbId);
-			if (service.serverId) {
-				await startServiceRemote(service.serverId, service.appName);
+			if (service.runtimeWorkerId) {
+				await startServiceRemote(service.runtimeWorkerId, service.appName);
 			} else {
 				await startService(service.appName);
 			}
@@ -172,8 +174,8 @@ export const mariadbRouter = createTRPCRouter({
 			});
 			const mariadb = await findMariadbById(input.mariadbId);
 
-			if (mariadb.serverId) {
-				await stopServiceRemote(mariadb.serverId, mariadb.appName);
+			if (mariadb.runtimeWorkerId) {
+				await stopServiceRemote(mariadb.runtimeWorkerId, mariadb.appName);
 			} else {
 				await stopService(mariadb.appName);
 			}
@@ -200,7 +202,7 @@ export const mariadbRouter = createTRPCRouter({
 			if (input.externalPort) {
 				const portCheck = await checkPortInUse(
 					input.externalPort,
-					mariadb.serverId || undefined,
+					mariadb.runtimeWorkerId || undefined,
 				);
 				if (portCheck.isInUse) {
 					throw new TRPCError({
@@ -284,7 +286,7 @@ export const mariadbRouter = createTRPCRouter({
 
 			const mongo = await findMariadbById(input.mariadbId);
 			if (
-				mongo.environment.project.organizationId !==
+				mongo.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -301,7 +303,7 @@ export const mariadbRouter = createTRPCRouter({
 			});
 			const backups = await findBackupsByDbId(input.mariadbId, "mariadb");
 			const cleanupOperations = [
-				async () => await removeService(mongo?.appName, mongo.serverId),
+				async () => await removeService(mongo?.appName, mongo.runtimeWorkerId),
 				async () => await cancelJobs(backups),
 				async () => await removeMariadbById(input.mariadbId),
 			];
@@ -345,8 +347,8 @@ export const mariadbRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const mariadb = await findMariadbById(input.mariadbId);
-			if (mariadb.serverId) {
-				await stopServiceRemote(mariadb.serverId, mariadb.appName);
+			if (mariadb.runtimeWorkerId) {
+				await stopServiceRemote(mariadb.runtimeWorkerId, mariadb.appName);
 			} else {
 				await stopService(mariadb.appName);
 			}
@@ -354,8 +356,8 @@ export const mariadbRouter = createTRPCRouter({
 				applicationStatus: "idle",
 			});
 
-			if (mariadb.serverId) {
-				await startServiceRemote(mariadb.serverId, mariadb.appName);
+			if (mariadb.runtimeWorkerId) {
+				await startServiceRemote(mariadb.runtimeWorkerId, mariadb.appName);
 			} else {
 				await startService(mariadb.appName);
 			}
@@ -413,7 +415,8 @@ export const mariadbRouter = createTRPCRouter({
 			});
 
 			const maria = await findMariadbById(mariadbId);
-			const { appName, serverId, databaseUser, databaseRootPassword } = maria;
+			const { appName, runtimeWorkerId, databaseUser, databaseRootPassword } =
+				maria;
 
 			const containerCmd = getServiceContainerCommand(appName);
 			const targetUser = type === "root" ? "root" : databaseUser;
@@ -437,8 +440,8 @@ export const mariadbRouter = createTRPCRouter({
 					.set(setData)
 					.where(eq(mariadbTable.mariadbId, mariadbId));
 
-				if (serverId) {
-					await execAsyncRemote(serverId, command);
+				if (runtimeWorkerId) {
+					await execAsyncRemote(runtimeWorkerId, command);
 				} else {
 					await execAsync(command, { shell: "/bin/bash" });
 				}
@@ -511,7 +514,7 @@ export const mariadbRouter = createTRPCRouter({
 				name: z.string().optional(),
 				appName: z.string().optional(),
 				description: z.string().optional(),
-				projectId: z.string().optional(),
+				workspaceId: z.string().optional(),
 				environmentId: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				offset: z.number().min(0).default(0),
@@ -519,10 +522,10 @@ export const mariadbRouter = createTRPCRouter({
 		)
 		.query(async ({ ctx, input }) => {
 			const baseConditions = [
-				eq(projects.organizationId, ctx.session.activeOrganizationId),
+				eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 			];
-			if (input.projectId) {
-				baseConditions.push(eq(environments.projectId, input.projectId));
+			if (input.workspaceId) {
+				baseConditions.push(eq(environments.workspaceId, input.workspaceId));
 			}
 			if (input.environmentId) {
 				baseConditions.push(
@@ -584,7 +587,10 @@ export const mariadbRouter = createTRPCRouter({
 						environments,
 						eq(mariadbTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where)
 					.orderBy(desc(mariadbTable.createdAt))
 					.limit(input.limit)
@@ -596,7 +602,10 @@ export const mariadbRouter = createTRPCRouter({
 						environments,
 						eq(mariadbTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where),
 			]);
 			return { items, total: countResult[0]?.count ?? 0 };
@@ -620,7 +629,7 @@ export const mariadbRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.mariadbId, "read");
 			const mariadb = await findMariadbById(input.mariadbId);
 			if (
-				mariadb.environment.project.organizationId !==
+				mariadb.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -633,7 +642,7 @@ export const mariadbRouter = createTRPCRouter({
 				input.tail,
 				input.since,
 				input.search,
-				mariadb.serverId,
+				mariadb.runtimeWorkerId,
 			);
 		}),
 });

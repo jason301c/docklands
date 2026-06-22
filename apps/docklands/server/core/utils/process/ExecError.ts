@@ -6,7 +6,7 @@ export interface ExecErrorDetails {
 	stderr?: string;
 	exitCode?: number;
 	originalError?: Error;
-	serverId?: string | null;
+	runtimeWorkerId?: string | null;
 }
 
 export class ExecError extends Error {
@@ -15,7 +15,7 @@ export class ExecError extends Error {
 	public readonly stderr?: string;
 	public readonly exitCode?: number;
 	public readonly originalError?: Error;
-	public readonly serverId?: string | null;
+	public readonly runtimeWorkerId?: string | null;
 
 	constructor(message: string, details: ExecErrorDetails) {
 		super(redactSecrets(message));
@@ -31,7 +31,7 @@ export class ExecError extends Error {
 		this.originalError = details.originalError
 			? redactErrorSecrets(details.originalError)
 			: details.originalError;
-		this.serverId = details.serverId;
+		this.runtimeWorkerId = details.runtimeWorkerId;
 
 		// Maintains proper stack trace for where our error was thrown (only available on V8)
 		if (Error.captureStackTrace) {
@@ -46,7 +46,9 @@ export class ExecError extends Error {
 		const parts = [
 			`Command: ${this.command}`,
 			this.exitCode !== undefined ? `Exit Code: ${this.exitCode}` : null,
-			this.serverId ? `Server ID: ${this.serverId}` : "Location: Local",
+			this.runtimeWorkerId
+				? `Server ID: ${this.runtimeWorkerId}`
+				: "Location: Local",
 			this.stderr ? `Stderr: ${this.stderr}` : null,
 			this.stdout ? `Stdout: ${this.stdout}` : null,
 		].filter(Boolean);
@@ -58,6 +60,6 @@ export class ExecError extends Error {
 	 * Check if this error is from a remote execution
 	 */
 	isRemote(): boolean {
-		return !!this.serverId;
+		return !!this.runtimeWorkerId;
 	}
 }

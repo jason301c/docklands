@@ -6,13 +6,13 @@ import { CodeEditor } from "@/components/shared/code-editor";
 
 interface Props {
 	nodeId: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const ShowNodeConfig = ({ nodeId, serverId }: Props) => {
+export const ShowNodeConfig = ({ nodeId, runtimeWorkerId }: Props) => {
 	const { data } = api.swarm.getNodeInfo.useQuery({
 		nodeId,
-		serverId,
+		runtimeWorkerId,
 	});
 	return (
 		<Dialog.Root>

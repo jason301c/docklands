@@ -6,7 +6,7 @@ import { api } from "@/client/api/trpc";
 
 interface Props {
 	containerId: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
 interface Network {
@@ -25,11 +25,14 @@ interface Network {
 	DriverOpts: unknown;
 }
 
-export const ShowContainerNetworks = ({ containerId, serverId }: Props) => {
+export const ShowContainerNetworks = ({
+	containerId,
+	runtimeWorkerId,
+}: Props) => {
 	const { data } = api.docker.getConfig.useQuery(
 		{
 			containerId,
-			serverId,
+			runtimeWorkerId,
 		},
 		{
 			enabled: !!containerId,

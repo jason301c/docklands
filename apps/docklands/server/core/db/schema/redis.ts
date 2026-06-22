@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { environments } from "./environment";
 import { mounts } from "./mount";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 import {
 	applicationStatus,
 	type EndpointSpecSwarm,
@@ -72,9 +72,12 @@ export const redis = pgTable("redis", {
 	environmentId: text("environmentId")
 		.notNull()
 		.references(() => environments.environmentId, { onDelete: "cascade" }),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 });
 
 export const redisRelations = relations(redis, ({ one, many }) => ({
@@ -83,9 +86,9 @@ export const redisRelations = relations(redis, ({ one, many }) => ({
 		references: [environments.environmentId],
 	}),
 	mounts: many(mounts),
-	server: one(server, {
-		fields: [redis.serverId],
-		references: [server.serverId],
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [redis.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
 	}),
 }));
 
@@ -112,7 +115,7 @@ const createSchema = createInsertSchema(redis, {
 	applicationStatus: z.enum(["idle", "running", "done", "error"]),
 	externalPort: z.number().nullish(),
 	description: z.string().nullish(),
-	serverId: z.string().nullish(),
+	runtimeWorkerId: z.string().nullish(),
 	healthCheckSwarm: HealthCheckSwarmSchema.nullable(),
 	restartPolicySwarm: RestartPolicySwarmSchema.nullable(),
 	placementSwarm: PlacementSwarmSchema.nullable(),
@@ -133,7 +136,7 @@ export const apiCreateRedis = createSchema.pick({
 	dockerImage: true,
 	environmentId: true,
 	description: true,
-	serverId: true,
+	runtimeWorkerId: true,
 });
 
 export const apiFindOneRedis = z.object({
@@ -180,7 +183,7 @@ export const apiUpdateRedis = createSchema
 		redisId: z.string().min(1),
 		dockerImage: z.string().optional(),
 	})
-	.omit({ serverId: true });
+	.omit({ runtimeWorkerId: true });
 
 export const apiRebuildRedis = createSchema
 	.pick({

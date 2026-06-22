@@ -489,11 +489,11 @@ export interface ComposeSpecification {
 	 */
 	version?: string;
 	/**
-	 * define the Compose project name, until user defines one explicitly.
+	 * define the Compose workspace name, until user defines one explicitly.
 	 */
 	name?: string;
 	/**
-	 * compose sub-projects to be included.
+	 * compose sub-workspaces to be included.
 	 */
 	include?: DefinitionsInclude[];
 	services?: PropertiesServices;

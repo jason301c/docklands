@@ -19,7 +19,7 @@ import {
 	DATABASE_PASSWORD_REGEX,
 	environments,
 	postgres as postgresTable,
-	projects,
+	workspaces,
 } from "@/server/core/db/schema";
 import { cancelJobs } from "@/server/core/runtime/backup";
 import { findBackupsByDbId } from "@/server/core/services/backup";
@@ -40,10 +40,10 @@ import {
 	removePostgresById,
 	updatePostgresById,
 } from "@/server/core/services/postgres";
-import { findProjectById } from "@/server/core/services/project";
-import { getAccessibleServerIds } from "@/server/core/services/server";
+import { getAccessibleRuntimeWorkerIds } from "@/server/core/services/runtime-worker";
 import { checkPortInUse } from "@/server/core/services/settings";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { getServiceContainerCommand } from "@/server/core/utils/backups/utils";
 import { rebuildDatabase } from "@/server/core/utils/databases/rebuild";
 import {
@@ -64,14 +64,14 @@ export const postgresRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const environment = await findEnvironmentById(input.environmentId);
-				const project = await findProjectById(environment.projectId);
+				const workspace = await findWorkspaceById(environment.workspaceId);
 
-				await checkServiceAccess(ctx, project.projectId, "create");
+				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
 				if (
 					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.serverId
+					!input.runtimeWorkerId
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -79,16 +79,18 @@ export const postgresRouter = createTRPCRouter({
 					});
 				}
 
-				if (project.organizationId !== ctx.session.activeOrganizationId) {
+				if (workspace.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this workspace",
 					});
 				}
 
-				if (input.serverId) {
-					const accessibleIds = await getAccessibleServerIds(ctx.session);
-					if (!accessibleIds.has(input.serverId)) {
+				if (input.runtimeWorkerId) {
+					const accessibleIds = await getAccessibleRuntimeWorkerIds(
+						ctx.session,
+					);
+					if (!accessibleIds.has(input.runtimeWorkerId)) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
 							message: "You are not authorized to access this runtime worker",
@@ -136,7 +138,7 @@ export const postgresRouter = createTRPCRouter({
 
 			const postgres = await findPostgresById(input.postgresId);
 			if (
-				postgres.environment.project.organizationId !==
+				postgres.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -155,8 +157,8 @@ export const postgresRouter = createTRPCRouter({
 			});
 			const service = await findPostgresById(input.postgresId);
 
-			if (service.serverId) {
-				await startServiceRemote(service.serverId, service.appName);
+			if (service.runtimeWorkerId) {
+				await startServiceRemote(service.runtimeWorkerId, service.appName);
 			} else {
 				await startService(service.appName);
 			}
@@ -179,8 +181,8 @@ export const postgresRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const postgres = await findPostgresById(input.postgresId);
-			if (postgres.serverId) {
-				await stopServiceRemote(postgres.serverId, postgres.appName);
+			if (postgres.runtimeWorkerId) {
+				await stopServiceRemote(postgres.runtimeWorkerId, postgres.appName);
 			} else {
 				await stopService(postgres.appName);
 			}
@@ -207,7 +209,7 @@ export const postgresRouter = createTRPCRouter({
 			if (input.externalPort) {
 				const portCheck = await checkPortInUse(
 					input.externalPort,
-					postgres.serverId || undefined,
+					postgres.runtimeWorkerId || undefined,
 				);
 				if (portCheck.isInUse) {
 					throw new TRPCError({
@@ -309,7 +311,7 @@ export const postgresRouter = createTRPCRouter({
 			const postgres = await findPostgresById(input.postgresId);
 
 			if (
-				postgres.environment.project.organizationId !==
+				postgres.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -327,7 +329,8 @@ export const postgresRouter = createTRPCRouter({
 			const backups = await findBackupsByDbId(input.postgresId, "postgres");
 
 			const cleanupOperations = [
-				async () => await removeService(postgres?.appName, postgres.serverId),
+				async () =>
+					await removeService(postgres?.appName, postgres.runtimeWorkerId),
 				async () => await cancelJobs(backups),
 				async () => await removePostgresById(input.postgresId),
 			];
@@ -371,8 +374,8 @@ export const postgresRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const postgres = await findPostgresById(input.postgresId);
-			if (postgres.serverId) {
-				await stopServiceRemote(postgres.serverId, postgres.appName);
+			if (postgres.runtimeWorkerId) {
+				await stopServiceRemote(postgres.runtimeWorkerId, postgres.appName);
 			} else {
 				await stopService(postgres.appName);
 			}
@@ -380,8 +383,8 @@ export const postgresRouter = createTRPCRouter({
 				applicationStatus: "idle",
 			});
 
-			if (postgres.serverId) {
-				await startServiceRemote(postgres.serverId, postgres.appName);
+			if (postgres.runtimeWorkerId) {
+				await startServiceRemote(postgres.runtimeWorkerId, postgres.appName);
 			} else {
 				await startService(postgres.appName);
 			}
@@ -439,7 +442,7 @@ export const postgresRouter = createTRPCRouter({
 			});
 
 			const pg = await findPostgresById(postgresId);
-			const { appName, serverId, databaseUser } = pg;
+			const { appName, runtimeWorkerId, databaseUser } = pg;
 
 			const containerCmd = getServiceContainerCommand(appName);
 			const command = `
@@ -457,8 +460,8 @@ export const postgresRouter = createTRPCRouter({
 					.set({ databasePassword: password })
 					.where(eq(postgresTable.postgresId, postgresId));
 
-				if (serverId) {
-					await execAsyncRemote(serverId, command);
+				if (runtimeWorkerId) {
+					await execAsyncRemote(runtimeWorkerId, command);
 				} else {
 					await execAsync(command, { shell: "/bin/bash" });
 				}
@@ -532,7 +535,7 @@ export const postgresRouter = createTRPCRouter({
 				name: z.string().optional(),
 				appName: z.string().optional(),
 				description: z.string().optional(),
-				projectId: z.string().optional(),
+				workspaceId: z.string().optional(),
 				environmentId: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				offset: z.number().min(0).default(0),
@@ -540,10 +543,10 @@ export const postgresRouter = createTRPCRouter({
 		)
 		.query(async ({ ctx, input }) => {
 			const baseConditions = [
-				eq(projects.organizationId, ctx.session.activeOrganizationId),
+				eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 			];
-			if (input.projectId) {
-				baseConditions.push(eq(environments.projectId, input.projectId));
+			if (input.workspaceId) {
+				baseConditions.push(eq(environments.workspaceId, input.workspaceId));
 			}
 			if (input.environmentId) {
 				baseConditions.push(
@@ -607,7 +610,10 @@ export const postgresRouter = createTRPCRouter({
 						environments,
 						eq(postgresTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where)
 					.orderBy(desc(postgresTable.createdAt))
 					.limit(input.limit)
@@ -619,7 +625,10 @@ export const postgresRouter = createTRPCRouter({
 						environments,
 						eq(postgresTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where),
 			]);
 			return { items, total: countResult[0]?.count ?? 0 };
@@ -643,7 +652,7 @@ export const postgresRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.postgresId, "read");
 			const postgres = await findPostgresById(input.postgresId);
 			if (
-				postgres.environment.project.organizationId !==
+				postgres.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -656,7 +665,7 @@ export const postgresRouter = createTRPCRouter({
 				input.tail,
 				input.since,
 				input.search,
-				postgres.serverId,
+				postgres.runtimeWorkerId,
 			);
 		}),
 });

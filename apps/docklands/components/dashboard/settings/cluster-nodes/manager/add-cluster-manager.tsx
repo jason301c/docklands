@@ -6,12 +6,12 @@ import { AlertBlock } from "@/components/shared/alert-block";
 import { toast } from "@/components/shared/toast";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const AddClusterManager = ({ serverId }: Props) => {
+export const AddClusterManager = ({ runtimeWorkerId }: Props) => {
 	const { data, isPending, error, isError } = api.cluster.addManager.useQuery({
-		serverId,
+		runtimeWorkerId,
 	});
 
 	return (

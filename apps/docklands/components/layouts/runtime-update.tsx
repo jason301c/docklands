@@ -21,7 +21,7 @@ export const RuntimeUpdateButton = () => {
 	const checkUpdatesIntervalRef = useRef<null | NodeJS.Timeout>(null);
 
 	useEffect(() => {
-		// Handling of automatic check for server updates
+		// Handling of automatic check for runtimeWorker updates
 		if (isCloud) {
 			return;
 		}

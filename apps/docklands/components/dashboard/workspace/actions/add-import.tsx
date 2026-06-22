@@ -32,7 +32,7 @@ const AddImportSchema = z.object({
 		.min(1, { message: "App name is required" })
 		.regex(APP_NAME_REGEX, { message: APP_NAME_MESSAGE }),
 	base64: z.string().min(1, { message: "Base64 content is required" }),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
 type AddImport = z.infer<typeof AddImportSchema>;
@@ -117,7 +117,10 @@ export const AddImport = ({
 			const result = await previewTemplate({
 				appName: data.appName,
 				base64: data.base64.trim(),
-				serverId: data.serverId === "docklands" ? undefined : data.serverId,
+				runtimeWorkerId:
+					data.runtimeWorkerId === "docklands"
+						? undefined
+						: data.runtimeWorkerId,
 			});
 			setTemplateInfo(result);
 			setPreviewOpen(true);
@@ -136,7 +139,10 @@ export const AddImport = ({
 				appName: data.appName,
 				environmentId,
 				composeType: "docker-compose",
-				serverId: data.serverId === "docklands" ? undefined : data.serverId,
+				runtimeWorkerId:
+					data.runtimeWorkerId === "docklands"
+						? undefined
+						: data.runtimeWorkerId,
 			});
 			await importCompose({
 				composeId: compose.composeId,
@@ -214,7 +220,7 @@ export const AddImport = ({
 							{shouldShowServerDropdown && (
 								<PlacementFormField
 									control={form.control}
-									name="serverId"
+									name="runtimeWorkerId"
 									ariaLabel="Import placement"
 									workers={servers}
 									showAutomaticPlacement={showAutomaticPlacement}

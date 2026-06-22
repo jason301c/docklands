@@ -43,7 +43,7 @@ export const cloneCompose = async (compose: Compose) => {
 };
 
 export const getComposePath = (compose: Compose) => {
-	const { COMPOSE_PATH } = paths(!!compose.serverId);
+	const { COMPOSE_PATH } = paths(!!compose.runtimeWorkerId);
 	const { appName, sourceType, composePath } = compose;
 	let path = "";
 
@@ -76,11 +76,11 @@ export const loadDockerComposeRemote = async (
 ): Promise<ComposeSpecification | null> => {
 	const path = getComposePath(compose);
 	try {
-		if (!compose.serverId) {
+		if (!compose.runtimeWorkerId) {
 			return null;
 		}
 		const { stdout, stderr } = await execAsyncRemote(
-			compose.serverId,
+			compose.runtimeWorkerId,
 			`cat ${path}`,
 		);
 
@@ -139,7 +139,7 @@ export const addDomainToCompose = async (
 
 	let result: ComposeSpecification | null;
 
-	if (compose.serverId) {
+	if (compose.runtimeWorkerId) {
 		result = await loadDockerComposeRemote(compose);
 	} else {
 		result = await loadDockerCompose(compose);
@@ -273,7 +273,7 @@ export const createDomainLabels = (
 	const labels = [
 		`traefik.http.routers.${routerName}.rule=Host(\`${host}\`)${path && path !== "/" ? ` && PathPrefix(\`${path}\`)` : ""}`,
 		`traefik.http.routers.${routerName}.entrypoints=${entrypoint}`,
-		`traefik.http.services.${routerName}.loadbalancer.server.port=${port}`,
+		`traefik.http.services.${routerName}.loadbalancer.runtimeWorker.port=${port}`,
 		`traefik.http.routers.${routerName}.service=${routerName}`,
 	];
 

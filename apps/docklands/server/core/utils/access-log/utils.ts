@@ -164,7 +164,7 @@ const isStatusInRange = (status: number, range: string) => {
 			return status >= 300 && status <= 399;
 		case "client":
 			return status >= 400 && status <= 499;
-		case "server":
+		case "runtimeWorker":
 			return status >= 500 && status <= 599;
 		default:
 			return false;

@@ -20,7 +20,7 @@ import { getLogType, type LogLine, parseLogs } from "./utils";
 
 interface Props {
 	containerId: string;
-	serverId?: string | null;
+	runtimeWorkerId?: string | null;
 	runType: "swarm" | "native";
 }
 
@@ -49,13 +49,13 @@ export const priorities = [
 
 export const DockerLogsId: React.FC<Props> = ({
 	containerId,
-	serverId,
+	runtimeWorkerId,
 	runType,
 }) => {
 	const { data } = api.docker.getConfig.useQuery(
 		{
 			containerId,
-			serverId: serverId ?? undefined,
+			runtimeWorkerId: runtimeWorkerId ?? undefined,
 		},
 		{
 			enabled: !!containerId,
@@ -152,8 +152,8 @@ export const DockerLogsId: React.FC<Props> = ({
 			runType,
 		});
 
-		if (serverId) {
-			params.append("runtimeWorkerId", serverId);
+		if (runtimeWorkerId) {
+			params.append("runtimeWorkerId", runtimeWorkerId);
 		}
 
 		const wsUrl = `${protocol}//${
@@ -221,7 +221,7 @@ export const DockerLogsId: React.FC<Props> = ({
 				ws.close();
 			}
 		};
-	}, [containerId, serverId, lines, search, since]);
+	}, [containerId, runtimeWorkerId, lines, search, since]);
 
 	const handleDownload = () => {
 		const logContent = filteredLogs

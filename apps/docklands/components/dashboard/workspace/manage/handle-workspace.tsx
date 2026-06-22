@@ -48,24 +48,24 @@ const WorkspaceSchema = z.object({
 type WorkspaceForm = z.infer<typeof WorkspaceSchema>;
 
 interface Props {
-	projectId?: string;
+	workspaceId?: string;
 }
 
-export const HandleWorkspace = ({ projectId }: Props) => {
+export const HandleWorkspace = ({ workspaceId }: Props) => {
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
 	const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
-	const { mutateAsync, error, isError } = projectId
+	const { mutateAsync, error, isError } = workspaceId
 		? api.workspaces.update.useMutation()
 		: api.workspaces.create.useMutation();
 
 	const { data, refetch } = api.workspaces.one.useQuery(
 		{
-			projectId: projectId || "",
+			workspaceId: workspaceId || "",
 		},
 		{
-			enabled: !!projectId,
+			enabled: !!workspaceId,
 		},
 	);
 
@@ -86,9 +86,9 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 			description: data?.description ?? "",
 			name: data?.name ?? "",
 		});
-		// Load existing tags when editing a project
-		if (data?.projectTags) {
-			const tagIds = data.projectTags.map((pt) => pt.tagId);
+		// Load existing tags when editing a workspace
+		if (data?.workspaceTags) {
+			const tagIds = data.workspaceTags.map((pt) => pt.tagId);
 			setSelectedTagIds(tagIds);
 		} else {
 			setSelectedTagIds([]);
@@ -99,18 +99,20 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 		await mutateAsync({
 			name: data.name,
 			description: data.description,
-			projectId: projectId || "",
+			workspaceId: workspaceId || "",
 		})
 			.then(async (data) => {
 				// Assign tags to the workspace (both create and update).
 				const projectIdToUse =
-					projectId ||
-					(data && "project" in data ? data.project.projectId : undefined);
+					workspaceId ||
+					(data && "workspace" in data
+						? data.workspace.workspaceId
+						: undefined);
 
 				if (projectIdToUse) {
 					try {
 						await bulkAssignMutation.mutateAsync({
-							projectId: projectIdToUse,
+							workspaceId: projectIdToUse,
 							tagIds: selectedTagIds,
 						});
 					} catch (error) {
@@ -118,10 +120,10 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 					}
 				}
 
-				await utils.project.all.invalidate();
-				toast.success(projectId ? "Workspace updated" : "Workspace created");
+				await utils.workspaces.all.invalidate();
+				toast.success(workspaceId ? "Workspace updated" : "Workspace created");
 				setIsOpen(false);
-				if (!projectId) {
+				if (!workspaceId) {
 					const environmentIdToUse =
 						data && "environment" in data
 							? data.environment.environmentId
@@ -141,7 +143,7 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 			})
 			.catch(() => {
 				toast.error(
-					projectId
+					workspaceId
 						? "Error updating this workspace"
 						: "Error creating this workspace",
 				);
@@ -152,7 +154,7 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
 			<Dialog.Trigger
 				render={
-					projectId ? (
+					workspaceId ? (
 						<DropdownMenu.Item
 							className="w-full cursor-pointer space-x-3"
 							onSelect={(e) => e.preventDefault()}
@@ -173,7 +175,7 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 			<Dialog className="sm:m:max-w-lg ">
 				<div>
 					<Dialog.Title>
-						{projectId ? "Update workspace" : "Create workspace"}
+						{workspaceId ? "Update workspace" : "Create workspace"}
 					</Dialog.Title>
 					<Dialog.Description>
 						Group services, environments, and shared variables in one canvas.
@@ -182,7 +184,7 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
 					<form
-						id="hook-form-add-project"
+						id="hook-form-add-workspace"
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="grid w-full gap-4"
 					>
@@ -240,10 +242,10 @@ export const HandleWorkspace = ({ projectId }: Props) => {
 					<div>
 						<Button
 							loading={form.formState.isSubmitting}
-							form="hook-form-add-project"
+							form="hook-form-add-workspace"
 							type="submit"
 						>
-							{projectId ? "Update" : "Create"}
+							{workspaceId ? "Update" : "Create"}
 						</Button>
 					</div>
 				</Form>

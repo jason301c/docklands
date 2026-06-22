@@ -25,8 +25,8 @@ import { ports } from "./port";
 import { previewDeployments } from "./preview-deployments";
 import { redirects } from "./redirects";
 import { registry } from "./registry";
+import { runtimeWorkers } from "./runtime-worker";
 import { security } from "./security";
-import { server } from "./server";
 import {
 	applicationStatus,
 	certificateType,
@@ -217,12 +217,18 @@ export const applications = pgTable("application", {
 	bitbucketId: text("bitbucketId").references(() => bitbucket.bitbucketId, {
 		onDelete: "set null",
 	}),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
-	buildServerId: text("buildServerId").references(() => server.serverId, {
-		onDelete: "set null",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
+	buildRuntimeWorkerId: text("buildRuntimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "set null",
+		},
+	),
 	buildRegistryId: text("buildRegistryId").references(
 		() => registry.registryId,
 		{
@@ -269,15 +275,15 @@ export const applicationsRelations = relations(
 			fields: [applications.bitbucketId],
 			references: [bitbucket.bitbucketId],
 		}),
-		server: one(server, {
-			fields: [applications.serverId],
-			references: [server.serverId],
-			relationName: "applicationServer",
+		runtimeWorker: one(runtimeWorkers, {
+			fields: [applications.runtimeWorkerId],
+			references: [runtimeWorkers.runtimeWorkerId],
+			relationName: "applicationRuntimeWorker",
 		}),
-		buildServer: one(server, {
-			fields: [applications.buildServerId],
-			references: [server.serverId],
-			relationName: "applicationBuildServer",
+		buildRuntimeWorker: one(runtimeWorkers, {
+			fields: [applications.buildRuntimeWorkerId],
+			references: [runtimeWorkers.runtimeWorkerId],
+			relationName: "applicationBuildRuntimeWorker",
 		}),
 		buildRegistry: one(registry, {
 			fields: [applications.buildRegistryId],
@@ -390,7 +396,7 @@ export const apiCreateApplication = createSchema.pick({
 	appName: true,
 	description: true,
 	environmentId: true,
-	serverId: true,
+	runtimeWorkerId: true,
 });
 
 export const apiFindOneApplication = z.object({
@@ -543,4 +549,4 @@ export const apiUpdateApplication = createSchema
 	.extend({
 		applicationId: z.string().min(1),
 	})
-	.omit({ serverId: true });
+	.omit({ runtimeWorkerId: true });

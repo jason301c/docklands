@@ -6,7 +6,7 @@ import { sendDockerCleanupNotifications } from "@/server/core/utils/notification
 import { removeJob, schedule } from "./backup";
 
 export const applyDockerCleanupSchedule = async (
-	serverId: string,
+	runtimeWorkerId: string,
 	organizationId: string,
 	enable: boolean,
 ) => {
@@ -14,12 +14,12 @@ export const applyDockerCleanupSchedule = async (
 		if (IS_CLOUD) {
 			await schedule({
 				cronSchedule: CLEANUP_CRON_JOB,
-				serverId,
-				type: "server",
+				runtimeWorkerId,
+				type: "runtimeWorker",
 			});
 		} else {
-			scheduleJob(serverId, CLEANUP_CRON_JOB, async () => {
-				await cleanupAll(serverId);
+			scheduleJob(runtimeWorkerId, CLEANUP_CRON_JOB, async () => {
+				await cleanupAll(runtimeWorkerId);
 				await sendDockerCleanupNotifications(organizationId);
 			});
 		}
@@ -27,11 +27,11 @@ export const applyDockerCleanupSchedule = async (
 		if (IS_CLOUD) {
 			await removeJob({
 				cronSchedule: CLEANUP_CRON_JOB,
-				serverId,
-				type: "server",
+				runtimeWorkerId,
+				type: "runtimeWorker",
 			});
 		} else {
-			scheduledJobs[serverId]?.cancel();
+			scheduledJobs[runtimeWorkerId]?.cancel();
 		}
 	}
 };

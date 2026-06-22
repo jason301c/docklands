@@ -30,7 +30,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 			: "general";
 
 	const routeProps = {
-		projectId: workspaceId,
+		workspaceId: workspaceId,
 		environmentId,
 		activeTab: activeTab as never,
 	};

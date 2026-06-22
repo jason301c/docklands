@@ -44,7 +44,7 @@ export const ShowExternalPostgresCredentials = ({ postgresId }: Props) => {
 	const { data, refetch } = api.postgres.one.useQuery({ postgresId });
 	const { mutateAsync, isPending } =
 		api.postgres.saveExternalPort.useMutation();
-	const getIp = data?.server?.ipAddress || ip;
+	const getIp = data?.runtimeWorker?.ipAddress || ip;
 	const [connectionUrl, setConnectionUrl] = useState("");
 
 	const form = useForm({

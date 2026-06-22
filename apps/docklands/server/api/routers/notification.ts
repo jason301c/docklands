@@ -48,7 +48,7 @@ import {
 	apiUpdateTeams,
 	apiUpdateTelegram,
 	notifications,
-	server,
+	runtimeWorkers,
 } from "@/server/core/db/schema";
 import {
 	createCustomNotification,
@@ -510,8 +510,8 @@ export const notificationRouter = createTRPCRouter({
 				if (input.ServerType === "Docklands") {
 					const settings = await getWebServerSettings();
 					if (
-						!settings?.metricsConfig?.server?.token ||
-						settings.metricsConfig.server.token !== input.Token
+						!settings?.metricsConfig?.runtimeWorker?.token ||
+						settings.metricsConfig.runtimeWorker.token !== input.Token
 					) {
 						throw new TRPCError({
 							code: "BAD_REQUEST",
@@ -524,9 +524,9 @@ export const notificationRouter = createTRPCRouter({
 				} else {
 					const result = await db
 						.select()
-						.from(server)
+						.from(runtimeWorkers)
 						.where(
-							sql`${server.metricsConfig}::jsonb -> 'server' ->> 'token' = ${input.Token}`,
+							sql`${runtimeWorkers.metricsConfig}::jsonb -> 'runtimeWorker' ->> 'token' = ${input.Token}`,
 						);
 
 					if (!result?.[0]?.organizationId) {

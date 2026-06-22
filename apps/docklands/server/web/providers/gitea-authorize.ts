@@ -35,6 +35,6 @@ export async function handleGiteaAuthorize(request: Request) {
 		return redirectResponse(request, authorizationUrl);
 	} catch (error) {
 		console.error("Error initiating Gitea OAuth flow:", error);
-		return jsonResponse({ error: "Internal server error" }, 500);
+		return jsonResponse({ error: "Internal runtimeWorker error" }, 500);
 	}
 }

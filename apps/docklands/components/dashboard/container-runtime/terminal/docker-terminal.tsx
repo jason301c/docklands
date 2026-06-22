@@ -9,13 +9,13 @@ import { useTheme } from "next-themes";
 interface Props {
 	id: string;
 	containerId?: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
 export const DockerTerminal: React.FC<Props> = ({
 	id,
 	containerId,
-	serverId,
+	runtimeWorkerId,
 }) => {
 	const termRef = useRef(null);
 	const [activeWay, setActiveWay] = React.useState("bash");
@@ -38,7 +38,7 @@ export const DockerTerminal: React.FC<Props> = ({
 		const addonFit = new FitAddon();
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 
-		const wsUrl = `${protocol}//${window.location.host}/docker-container-terminal?containerId=${containerId}&activeWay=${activeWay}${serverId ? `&runtimeWorkerId=${serverId}` : ""}`;
+		const wsUrl = `${protocol}//${window.location.host}/docker-container-terminal?containerId=${containerId}&activeWay=${activeWay}${runtimeWorkerId ? `&runtimeWorkerId=${runtimeWorkerId}` : ""}`;
 
 		const ws = new WebSocket(wsUrl);
 
@@ -51,7 +51,7 @@ export const DockerTerminal: React.FC<Props> = ({
 		return () => {
 			ws.readyState === WebSocket.OPEN && ws.close();
 		};
-	}, [containerId, activeWay, id, serverId]);
+	}, [containerId, activeWay, id, runtimeWorkerId]);
 
 	return (
 		<div className="flex flex-col gap-4">

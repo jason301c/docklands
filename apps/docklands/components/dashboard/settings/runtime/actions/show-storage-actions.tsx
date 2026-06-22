@@ -4,9 +4,9 @@ import { api } from "@/client/api/trpc";
 import { toast } from "@/components/shared/toast";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
-export const ShowStorageActions = ({ serverId }: Props) => {
+export const ShowStorageActions = ({ runtimeWorkerId }: Props) => {
 	const { mutateAsync: cleanAll, isPending: cleanAllIsLoading } =
 		api.settings.cleanAll.useMutation();
 
@@ -70,7 +70,7 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanUnusedImages({
-								serverId: serverId,
+								runtimeWorkerId: runtimeWorkerId,
 							})
 								.then(async () => {
 									toast.success("Cleaned images");
@@ -86,7 +86,7 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanUnusedVolumes({
-								serverId: serverId,
+								runtimeWorkerId: runtimeWorkerId,
 							})
 								.then(async () => {
 									toast.success("Cleaned volumes");
@@ -103,7 +103,7 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanStoppedContainers({
-								serverId: serverId,
+								runtimeWorkerId: runtimeWorkerId,
 							})
 								.then(async () => {
 									toast.success("Stopped containers cleaned");
@@ -120,7 +120,7 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanPatchRepos({
-								serverId: serverId,
+								runtimeWorkerId: runtimeWorkerId,
 							})
 								.then(async () => {
 									toast.success("Cleaned Patch Caches");
@@ -137,7 +137,7 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanDockerBuilder({
-								serverId: serverId,
+								runtimeWorkerId: runtimeWorkerId,
 							})
 								.then(async () => {
 									toast.success("Cleaned build cache");
@@ -149,7 +149,7 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 					>
 						<span>Clean Build Cache & Runtime</span>
 					</DropdownMenu.Item>
-					{!serverId && (
+					{!runtimeWorkerId && (
 						<DropdownMenu.Item
 							className="w-full cursor-pointer"
 							onClick={async () => {
@@ -170,7 +170,7 @@ export const ShowStorageActions = ({ serverId }: Props) => {
 						className="w-full cursor-pointer"
 						onClick={async () => {
 							await cleanAll({
-								serverId: serverId,
+								runtimeWorkerId: runtimeWorkerId,
 							})
 								.then(async () => {
 									toast.success("Cleaning in progress... Please wait");

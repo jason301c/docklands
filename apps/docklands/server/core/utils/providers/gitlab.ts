@@ -109,7 +109,7 @@ interface CloneGitlabRepository {
 	gitlabId: string | null;
 	gitlabPathNamespace: string | null;
 	enableSubmodules: boolean;
-	serverId: string | null;
+	runtimeWorkerId: string | null;
 	type?: "application" | "compose";
 	outputPathOverride?: string;
 }
@@ -125,10 +125,10 @@ export const cloneGitlabRepository = async ({
 		gitlabId,
 		gitlabPathNamespace,
 		enableSubmodules,
-		serverId,
+		runtimeWorkerId,
 		outputPathOverride,
 	} = entity;
-	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!serverId);
+	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!runtimeWorkerId);
 
 	if (!gitlabId) {
 		command += `echo "Error: ❌ Gitlab Provider not found"; exit 1;`;
@@ -166,9 +166,9 @@ export const getGitlabRepositories = async (gitlabId?: string) => {
 
 	const gitlabProvider = await findGitlabById(gitlabId);
 
-	const allProjects = await validateGitlabProvider(gitlabProvider);
+	const allWorkspaces = await validateGitlabProvider(gitlabProvider);
 
-	const filteredRepos = allProjects.filter((repo: any) => {
+	const filteredRepos = allWorkspaces.filter((repo: any) => {
 		const { full_path, kind } = repo.namespace;
 		const groupName = gitlabProvider.groupName?.toLowerCase();
 
@@ -223,7 +223,7 @@ export const getGitlabBranches = async (input: {
 
 	while (true) {
 		const branchesResponse = await fetch(
-			`${baseUrl}/api/v4/projects/${input.id}/repository/branches?page=${page}&per_page=${perPage}`,
+			`${baseUrl}/api/v4/workspaces/${input.id}/repository/branches?page=${page}&per_page=${perPage}`,
 			{
 				headers: {
 					Authorization: `Bearer ${gitlabProvider.accessToken}`,
@@ -295,7 +295,7 @@ export const testGitlabConnection = async (
 
 export const validateGitlabProvider = async (gitlabProvider: Gitlab) => {
 	try {
-		const allProjects = [];
+		const allWorkspaces = [];
 		let page = 1;
 		const perPage = 100; // GitLab's max per page is 100
 		const baseUrl = (
@@ -304,7 +304,7 @@ export const validateGitlabProvider = async (gitlabProvider: Gitlab) => {
 
 		while (true) {
 			const response = await fetch(
-				`${baseUrl}/api/v4/projects?membership=true&page=${page}&per_page=${perPage}`,
+				`${baseUrl}/api/v4/workspaces?membership=true&page=${page}&per_page=${perPage}`,
 				{
 					headers: {
 						Authorization: `Bearer ${gitlabProvider.accessToken}`,
@@ -319,22 +319,22 @@ export const validateGitlabProvider = async (gitlabProvider: Gitlab) => {
 				});
 			}
 
-			const projects = await response.json();
+			const workspaces = await response.json();
 
-			if (projects.length === 0) {
+			if (workspaces.length === 0) {
 				break;
 			}
 
-			allProjects.push(...projects);
+			allWorkspaces.push(...workspaces);
 			page++;
 
 			const total = response.headers.get("x-total");
-			if (total && allProjects.length >= Number.parseInt(total)) {
+			if (total && allWorkspaces.length >= Number.parseInt(total)) {
 				break;
 			}
 		}
 
-		return allProjects;
+		return allWorkspaces;
 	} catch (error) {
 		throw error;
 	}

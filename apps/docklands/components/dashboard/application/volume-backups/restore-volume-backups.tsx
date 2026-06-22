@@ -42,7 +42,7 @@ const CommandEmpty = Combobox.Empty;
 interface Props {
 	id: string;
 	type: "application" | "compose";
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
 const RestoreBackupSchema = z.object({
@@ -57,7 +57,7 @@ const RestoreBackupSchema = z.object({
 	}),
 });
 
-export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
+export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [search, setSearch] = useState("");
 	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -90,7 +90,7 @@ export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
 		{
 			destinationId: destinationId,
 			search: debouncedSearchTerm,
-			serverId: serverId ?? "",
+			runtimeWorkerId: runtimeWorkerId ?? "",
 		},
 		{
 			enabled: isOpen && !!destinationId,
@@ -105,7 +105,7 @@ export const RestoreVolumeBackups = ({ id, type, serverId }: Props) => {
 		{
 			id,
 			serviceType: type,
-			serverId,
+			runtimeWorkerId,
 			destinationId,
 			volumeName,
 			backupFileName: backupFile,

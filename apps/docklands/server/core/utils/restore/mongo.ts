@@ -13,7 +13,7 @@ export const restoreMongoBackup = async (
 	emit: (log: string) => void,
 ) => {
 	try {
-		const { appName, databasePassword, databaseUser, serverId } = mongo;
+		const { appName, databasePassword, databaseUser, runtimeWorkerId } = mongo;
 
 		const rcloneFlags = getS3Credentials(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
@@ -38,8 +38,8 @@ export const restoreMongoBackup = async (
 			`Restoring database: ${backupInput.databaseName} from ${backupInput.backupFile}`,
 		);
 
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}

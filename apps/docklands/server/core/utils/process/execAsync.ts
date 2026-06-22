@@ -1,7 +1,7 @@
 import { exec, execFile } from "node:child_process";
 import util from "node:util";
 import { Client } from "ssh2";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { ExecError } from "./ExecError";
 
 // Re-export ExecError for easier imports
@@ -140,13 +140,14 @@ export const execFileAsync = async (
 };
 
 export const execAsyncRemote = async (
-	serverId: string | null,
+	runtimeWorkerId: string | null,
 	command: string,
 	onData?: (data: string) => void,
 ): Promise<{ stdout: string; stderr: string }> => {
-	if (!serverId) return { stdout: "", stderr: "" };
-	const server = await findServerById(serverId);
-	if (!server.sshKeyId) throw new Error("No SSH key available for this server");
+	if (!runtimeWorkerId) return { stdout: "", stderr: "" };
+	const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
+	if (!runtimeWorker.sshKeyId)
+		throw new Error("No SSH key available for this runtimeWorker");
 
 	let stdout = "";
 	let stderr = "";
@@ -162,7 +163,7 @@ export const execAsyncRemote = async (
 						reject(
 							new ExecError(`Remote command execution failed: ${err.message}`, {
 								command,
-								serverId,
+								runtimeWorkerId,
 								originalError: err,
 							}),
 						);
@@ -182,7 +183,7 @@ export const execAsyncRemote = async (
 											stdout,
 											stderr,
 											exitCode: code,
-											serverId,
+											runtimeWorkerId,
 										},
 									),
 								);
@@ -204,15 +205,15 @@ export const execAsyncRemote = async (
 					const technicalDetail = `Error: ${err.message} ${err.level}`;
 					const friendlyMessage = [
 						"",
-						"❌ Couldn't connect to your server — the SSH key was not accepted.",
+						"❌ Couldn't connect to your runtimeWorker — the SSH key was not accepted.",
 						"",
-						"This usually means the key doesn't match what's on the server, or the key format is invalid.",
+						"This usually means the key doesn't match what's on the runtimeWorker, or the key format is invalid.",
 						"",
 						`Technical details: ${technicalDetail}`,
 						"",
 						"💡 Hints:",
-						"  • Check that the SSH key you added in Docklands is the same one installed on the server (e.g. in ~/.ssh/authorized_keys).",
-						"  • Try generating a new SSH key in Docklands and add only the public key to the server, then try again.",
+						"  • Check that the SSH key you added in Docklands is the same one installed on the runtimeWorker (e.g. in ~/.ssh/authorized_keys).",
+						"  • Try generating a new SSH key in Docklands and add only the public key to the runtimeWorker, then try again.",
 						"  • Make sure to follow the instructions on the Setup Server Button on the SSH Keys tab and then click on deployments tab and check the logs for more details.",
 					].join("\n");
 					const errorMsg = `Authentication failed: Invalid SSH private key. ❌ Error: ${err.message} ${err.level}`;
@@ -222,7 +223,7 @@ export const execAsyncRemote = async (
 							`Authentication failed: Invalid SSH private key. ${friendlyMessage}`,
 							{
 								command,
-								serverId,
+								runtimeWorkerId,
 								originalError: err,
 							},
 						),
@@ -233,17 +234,17 @@ export const execAsyncRemote = async (
 					reject(
 						new ExecError(errorMsg, {
 							command,
-							serverId,
+							runtimeWorkerId,
 							originalError: err,
 						}),
 					);
 				}
 			})
 			.connect({
-				host: server.ipAddress,
-				port: server.port,
-				username: server.username,
-				privateKey: server.sshKey?.privateKey,
+				host: runtimeWorker.ipAddress,
+				port: runtimeWorker.port,
+				username: runtimeWorker.username,
+				privateKey: runtimeWorker.sshKey?.privateKey,
 				timeout: 99999,
 			});
 	});

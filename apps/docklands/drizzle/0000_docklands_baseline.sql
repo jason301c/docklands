@@ -13,15 +13,16 @@ CREATE TYPE "public"."notificationType" AS ENUM('slack', 'telegram', 'discord', 
 CREATE TYPE "public"."patchType" AS ENUM('create', 'update', 'delete');--> statement-breakpoint
 CREATE TYPE "public"."protocolType" AS ENUM('tcp', 'udp');--> statement-breakpoint
 CREATE TYPE "public"."publishModeType" AS ENUM('ingress', 'host');--> statement-breakpoint
+CREATE TYPE "public"."runtimeWorkerStatus" AS ENUM('active', 'inactive');--> statement-breakpoint
+CREATE TYPE "public"."runtimeWorkerType" AS ENUM('deploy', 'build');--> statement-breakpoint
 CREATE TYPE "public"."RegistryType" AS ENUM('selfHosted', 'cloud');--> statement-breakpoint
-CREATE TYPE "public"."scheduleType" AS ENUM('application', 'compose', 'server', 'docklands-server');--> statement-breakpoint
+CREATE TYPE "public"."scheduleType" AS ENUM('application', 'compose', 'runtimeWorker', 'docklands-server');--> statement-breakpoint
 CREATE TYPE "public"."shellType" AS ENUM('bash', 'sh');--> statement-breakpoint
-CREATE TYPE "public"."serverStatus" AS ENUM('active', 'inactive');--> statement-breakpoint
-CREATE TYPE "public"."serverType" AS ENUM('deploy', 'build');--> statement-breakpoint
 CREATE TYPE "public"."applicationStatus" AS ENUM('idle', 'running', 'done', 'error');--> statement-breakpoint
 CREATE TYPE "public"."certificateType" AS ENUM('letsencrypt', 'none', 'custom');--> statement-breakpoint
 CREATE TYPE "public"."sqldNode" AS ENUM('primary', 'replica');--> statement-breakpoint
 CREATE TYPE "public"."triggerType" AS ENUM('push', 'tag');--> statement-breakpoint
+CREATE TYPE "public"."workspaceServiceType" AS ENUM('application', 'compose', 'libsql', 'mariadb', 'mongo', 'mysql', 'postgres', 'redis');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
@@ -88,10 +89,10 @@ CREATE TABLE "member" (
 	"created_at" timestamp NOT NULL,
 	"team_id" text,
 	"is_default" boolean DEFAULT false NOT NULL,
-	"canCreateProjects" boolean DEFAULT false NOT NULL,
+	"canCreateWorkspaces" boolean DEFAULT false NOT NULL,
 	"canAccessToSSHKeys" boolean DEFAULT false NOT NULL,
 	"canCreateServices" boolean DEFAULT false NOT NULL,
-	"canDeleteProjects" boolean DEFAULT false NOT NULL,
+	"canDeleteWorkspaces" boolean DEFAULT false NOT NULL,
 	"canDeleteServices" boolean DEFAULT false NOT NULL,
 	"canAccessToDocker" boolean DEFAULT false NOT NULL,
 	"canAccessToAPI" boolean DEFAULT false NOT NULL,
@@ -99,11 +100,11 @@ CREATE TABLE "member" (
 	"canAccessToTraefikFiles" boolean DEFAULT false NOT NULL,
 	"canDeleteEnvironments" boolean DEFAULT false NOT NULL,
 	"canCreateEnvironments" boolean DEFAULT false NOT NULL,
-	"accesedProjects" text[] DEFAULT ARRAY[]::text[] NOT NULL,
+	"accessedWorkspaces" text[] DEFAULT ARRAY[]::text[] NOT NULL,
 	"accessedEnvironments" text[] DEFAULT ARRAY[]::text[] NOT NULL,
 	"accesedServices" text[] DEFAULT ARRAY[]::text[] NOT NULL,
 	"accessedGitProviders" text[] DEFAULT ARRAY[]::text[] NOT NULL,
-	"accessedServers" text[] DEFAULT ARRAY[]::text[] NOT NULL
+	"accessedRuntimeWorkers" text[] DEFAULT ARRAY[]::text[] NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "organization" (
@@ -239,8 +240,8 @@ CREATE TABLE "application" (
 	"gitlabId" text,
 	"giteaId" text,
 	"bitbucketId" text,
-	"serverId" text,
-	"buildServerId" text,
+	"runtimeWorkerId" text,
+	"buildRuntimeWorkerId" text,
 	"buildRegistryId" text,
 	CONSTRAINT "application_appName_unique" UNIQUE("appName")
 );
@@ -286,7 +287,6 @@ CREATE TABLE "bitbucket" (
 	"bitbucketId" text PRIMARY KEY NOT NULL,
 	"bitbucketUsername" text,
 	"bitbucketEmail" text,
-	"appPassword" text,
 	"apiToken" text,
 	"bitbucketWorkspaceName" text,
 	"gitProviderId" text NOT NULL
@@ -300,7 +300,7 @@ CREATE TABLE "certificate" (
 	"certificatePath" text NOT NULL,
 	"autoRenew" boolean,
 	"organizationId" text NOT NULL,
-	"serverId" text,
+	"runtimeWorkerId" text,
 	CONSTRAINT "certificate_certificatePath_unique" UNIQUE("certificatePath")
 );
 --> statement-breakpoint
@@ -349,7 +349,7 @@ CREATE TABLE "compose" (
 	"gitlabId" text,
 	"bitbucketId" text,
 	"giteaId" text,
-	"serverId" text
+	"runtimeWorkerId" text
 );
 --> statement-breakpoint
 CREATE TABLE "deployment" (
@@ -361,7 +361,7 @@ CREATE TABLE "deployment" (
 	"pid" text,
 	"applicationId" text,
 	"composeId" text,
-	"serverId" text,
+	"runtimeWorkerId" text,
 	"isPreviewDeployment" boolean DEFAULT false,
 	"previewDeploymentId" text,
 	"createdAt" text NOT NULL,
@@ -372,7 +372,7 @@ CREATE TABLE "deployment" (
 	"backupId" text,
 	"rollbackId" text,
 	"volumeBackupId" text,
-	"buildServerId" text
+	"buildRuntimeWorkerId" text
 );
 --> statement-breakpoint
 CREATE TABLE "destination" (
@@ -416,7 +416,7 @@ CREATE TABLE "environment" (
 	"description" text,
 	"createdAt" text NOT NULL,
 	"env" text DEFAULT '' NOT NULL,
-	"projectId" text NOT NULL,
+	"workspaceId" text NOT NULL,
 	"isDefault" boolean DEFAULT false NOT NULL
 );
 --> statement-breakpoint
@@ -505,7 +505,7 @@ CREATE TABLE "libsql" (
 	"replicas" integer DEFAULT 1 NOT NULL,
 	"createdAt" text NOT NULL,
 	"environmentId" text NOT NULL,
-	"serverId" text,
+	"runtimeWorkerId" text,
 	CONSTRAINT "libsql_appName_unique" UNIQUE("appName")
 );
 --> statement-breakpoint
@@ -542,7 +542,7 @@ CREATE TABLE "mariadb" (
 	"replicas" integer DEFAULT 1 NOT NULL,
 	"createdAt" text NOT NULL,
 	"environmentId" text NOT NULL,
-	"serverId" text,
+	"runtimeWorkerId" text,
 	CONSTRAINT "mariadb_appName_unique" UNIQUE("appName")
 );
 --> statement-breakpoint
@@ -577,7 +577,7 @@ CREATE TABLE "mongo" (
 	"replicas" integer DEFAULT 1 NOT NULL,
 	"createdAt" text NOT NULL,
 	"environmentId" text NOT NULL,
-	"serverId" text,
+	"runtimeWorkerId" text,
 	"replicaSets" boolean DEFAULT false,
 	CONSTRAINT "mongo_appName_unique" UNIQUE("appName")
 );
@@ -634,7 +634,7 @@ CREATE TABLE "mysql" (
 	"replicas" integer DEFAULT 1 NOT NULL,
 	"createdAt" text NOT NULL,
 	"environmentId" text NOT NULL,
-	"serverId" text,
+	"runtimeWorkerId" text,
 	CONSTRAINT "mysql_appName_unique" UNIQUE("appName")
 );
 --> statement-breakpoint
@@ -805,7 +805,7 @@ CREATE TABLE "postgres" (
 	"replicas" integer DEFAULT 1 NOT NULL,
 	"createdAt" text NOT NULL,
 	"environmentId" text NOT NULL,
-	"serverId" text,
+	"runtimeWorkerId" text,
 	CONSTRAINT "postgres_appName_unique" UNIQUE("appName")
 );
 --> statement-breakpoint
@@ -826,13 +826,23 @@ CREATE TABLE "preview_deployments" (
 	CONSTRAINT "preview_deployments_appName_unique" UNIQUE("appName")
 );
 --> statement-breakpoint
-CREATE TABLE "project" (
-	"projectId" text PRIMARY KEY NOT NULL,
+CREATE TABLE "runtimeWorker" (
+	"runtimeWorkerId" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
+	"ipAddress" text NOT NULL,
+	"port" integer NOT NULL,
+	"username" text DEFAULT 'root' NOT NULL,
+	"appName" text NOT NULL,
+	"enableDockerCleanup" boolean DEFAULT false NOT NULL,
+	"buildsConcurrency" integer DEFAULT 1 NOT NULL,
 	"createdAt" text NOT NULL,
 	"organizationId" text NOT NULL,
-	"env" text DEFAULT '' NOT NULL
+	"runtimeWorkerStatus" "runtimeWorkerStatus" DEFAULT 'active' NOT NULL,
+	"runtimeWorkerType" "runtimeWorkerType" DEFAULT 'deploy' NOT NULL,
+	"command" text DEFAULT '' NOT NULL,
+	"sshKeyId" text,
+	"metricsConfig" jsonb DEFAULT '{"runtimeWorker":{"type":"Remote","refreshRate":60,"port":4500,"token":"","urlCallback":"","cronJob":"","retentionDays":2,"thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "redirect" (
@@ -875,7 +885,7 @@ CREATE TABLE "redis" (
 	"ulimitsSwarm" json,
 	"replicas" integer DEFAULT 1 NOT NULL,
 	"environmentId" text NOT NULL,
-	"serverId" text,
+	"runtimeWorkerId" text,
 	CONSTRAINT "redis_appName_unique" UNIQUE("appName")
 );
 --> statement-breakpoint
@@ -913,7 +923,7 @@ CREATE TABLE "schedule" (
 	"script" text,
 	"applicationId" text,
 	"composeId" text,
-	"serverId" text,
+	"runtimeWorkerId" text,
 	"organizationId" text,
 	"enabled" boolean DEFAULT true NOT NULL,
 	"timezone" text,
@@ -927,25 +937,6 @@ CREATE TABLE "security" (
 	"createdAt" text NOT NULL,
 	"applicationId" text NOT NULL,
 	CONSTRAINT "security_username_applicationId_unique" UNIQUE("username","applicationId")
-);
---> statement-breakpoint
-CREATE TABLE "server" (
-	"serverId" text PRIMARY KEY NOT NULL,
-	"name" text NOT NULL,
-	"description" text,
-	"ipAddress" text NOT NULL,
-	"port" integer NOT NULL,
-	"username" text DEFAULT 'root' NOT NULL,
-	"appName" text NOT NULL,
-	"enableDockerCleanup" boolean DEFAULT false NOT NULL,
-	"buildsConcurrency" integer DEFAULT 1 NOT NULL,
-	"createdAt" text NOT NULL,
-	"organizationId" text NOT NULL,
-	"serverStatus" "serverStatus" DEFAULT 'active' NOT NULL,
-	"serverType" "serverType" DEFAULT 'deploy' NOT NULL,
-	"command" text DEFAULT '' NOT NULL,
-	"sshKeyId" text,
-	"metricsConfig" jsonb DEFAULT '{"server":{"type":"Remote","refreshRate":60,"port":4500,"token":"","urlCallback":"","cronJob":"","retentionDays":2,"thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
@@ -973,13 +964,6 @@ CREATE TABLE "ssh-key" (
 	"organizationId" text NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "project_tag" (
-	"id" text PRIMARY KEY NOT NULL,
-	"projectId" text NOT NULL,
-	"tagId" text NOT NULL,
-	CONSTRAINT "unique_project_tag" UNIQUE("projectId","tagId")
-);
---> statement-breakpoint
 CREATE TABLE "tag" (
 	"tagId" text PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
@@ -987,6 +971,13 @@ CREATE TABLE "tag" (
 	"createdAt" text NOT NULL,
 	"organizationId" text NOT NULL,
 	CONSTRAINT "unique_org_tag_name" UNIQUE("organizationId","name")
+);
+--> statement-breakpoint
+CREATE TABLE "workspace_tag" (
+	"id" text PRIMARY KEY NOT NULL,
+	"workspaceId" text NOT NULL,
+	"tagId" text NOT NULL,
+	CONSTRAINT "unique_workspace_tag" UNIQUE("workspaceId","tagId")
 );
 --> statement-breakpoint
 CREATE TABLE "user" (
@@ -1048,7 +1039,7 @@ CREATE TABLE "webServerSettings" (
 	"sshPrivateKey" text,
 	"enableDockerCleanup" boolean DEFAULT true NOT NULL,
 	"logCleanupCron" text DEFAULT '0 0 * * *',
-	"metricsConfig" jsonb DEFAULT '{"server":{"type":"Docklands","refreshRate":60,"port":4500,"token":"","retentionDays":2,"cronJob":"","urlCallback":"","thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb NOT NULL,
+	"metricsConfig" jsonb DEFAULT '{"runtimeWorker":{"type":"Docklands","refreshRate":60,"port":4500,"token":"","retentionDays":2,"cronJob":"","urlCallback":"","thresholds":{"cpu":0,"memory":0}},"containers":{"refreshRate":60,"services":{"include":[],"exclude":[]}}}'::jsonb NOT NULL,
 	"remoteServersOnly" boolean DEFAULT false NOT NULL,
 	"buildsConcurrency" integer DEFAULT 1 NOT NULL,
 	"cleanupCacheApplications" boolean DEFAULT false NOT NULL,
@@ -1056,6 +1047,42 @@ CREATE TABLE "webServerSettings" (
 	"cleanupCacheOnCompose" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "workspace" (
+	"workspaceId" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"description" text,
+	"createdAt" text NOT NULL,
+	"organizationId" text NOT NULL,
+	"env" text DEFAULT '' NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "workspace_service_connection" (
+	"connectionId" text PRIMARY KEY NOT NULL,
+	"environmentId" text NOT NULL,
+	"sourceServiceType" "workspaceServiceType" NOT NULL,
+	"sourceServiceId" text NOT NULL,
+	"targetServiceType" "workspaceServiceType" NOT NULL,
+	"targetServiceId" text NOT NULL,
+	"label" text,
+	"createdAt" text NOT NULL,
+	"updatedAt" text NOT NULL,
+	CONSTRAINT "unique_workspace_service_connection" UNIQUE("environmentId","sourceServiceType","sourceServiceId","targetServiceType","targetServiceId")
+);
+--> statement-breakpoint
+CREATE TABLE "workspace_service_layout" (
+	"layoutId" text PRIMARY KEY NOT NULL,
+	"environmentId" text NOT NULL,
+	"serviceType" "workspaceServiceType" NOT NULL,
+	"serviceId" text NOT NULL,
+	"x" integer NOT NULL,
+	"y" integer NOT NULL,
+	"width" integer DEFAULT 280 NOT NULL,
+	"height" integer DEFAULT 164 NOT NULL,
+	"createdAt" text NOT NULL,
+	"updatedAt" text NOT NULL,
+	CONSTRAINT "unique_workspace_service_layout" UNIQUE("environmentId","serviceType","serviceId")
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -1075,8 +1102,8 @@ ALTER TABLE "application" ADD CONSTRAINT "application_githubId_github_githubId_f
 ALTER TABLE "application" ADD CONSTRAINT "application_gitlabId_gitlab_gitlabId_fk" FOREIGN KEY ("gitlabId") REFERENCES "public"."gitlab"("gitlabId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "application" ADD CONSTRAINT "application_giteaId_gitea_giteaId_fk" FOREIGN KEY ("giteaId") REFERENCES "public"."gitea"("giteaId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "application" ADD CONSTRAINT "application_bitbucketId_bitbucket_bitbucketId_fk" FOREIGN KEY ("bitbucketId") REFERENCES "public"."bitbucket"("bitbucketId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "application" ADD CONSTRAINT "application_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "application" ADD CONSTRAINT "application_buildServerId_server_serverId_fk" FOREIGN KEY ("buildServerId") REFERENCES "public"."server"("serverId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "application" ADD CONSTRAINT "application_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "application" ADD CONSTRAINT "application_buildRuntimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("buildRuntimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "application" ADD CONSTRAINT "application_buildRegistryId_registry_registryId_fk" FOREIGN KEY ("buildRegistryId") REFERENCES "public"."registry"("registryId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_organization_id_organization_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organization"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "audit_log" ADD CONSTRAINT "audit_log_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -1090,39 +1117,39 @@ ALTER TABLE "backup" ADD CONSTRAINT "backup_libsqlId_libsql_libsqlId_fk" FOREIGN
 ALTER TABLE "backup" ADD CONSTRAINT "backup_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "bitbucket" ADD CONSTRAINT "bitbucket_gitProviderId_git_provider_gitProviderId_fk" FOREIGN KEY ("gitProviderId") REFERENCES "public"."git_provider"("gitProviderId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "certificate" ADD CONSTRAINT "certificate_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "certificate" ADD CONSTRAINT "certificate_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "certificate" ADD CONSTRAINT "certificate_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "compose" ADD CONSTRAINT "compose_customGitSSHKeyId_ssh-key_sshKeyId_fk" FOREIGN KEY ("customGitSSHKeyId") REFERENCES "public"."ssh-key"("sshKeyId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "compose" ADD CONSTRAINT "compose_environmentId_environment_environmentId_fk" FOREIGN KEY ("environmentId") REFERENCES "public"."environment"("environmentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "compose" ADD CONSTRAINT "compose_githubId_github_githubId_fk" FOREIGN KEY ("githubId") REFERENCES "public"."github"("githubId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "compose" ADD CONSTRAINT "compose_gitlabId_gitlab_gitlabId_fk" FOREIGN KEY ("gitlabId") REFERENCES "public"."gitlab"("gitlabId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "compose" ADD CONSTRAINT "compose_bitbucketId_bitbucket_bitbucketId_fk" FOREIGN KEY ("bitbucketId") REFERENCES "public"."bitbucket"("bitbucketId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "compose" ADD CONSTRAINT "compose_giteaId_gitea_giteaId_fk" FOREIGN KEY ("giteaId") REFERENCES "public"."gitea"("giteaId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "compose" ADD CONSTRAINT "compose_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "compose" ADD CONSTRAINT "compose_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "deployment" ADD CONSTRAINT "deployment_applicationId_application_applicationId_fk" FOREIGN KEY ("applicationId") REFERENCES "public"."application"("applicationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "deployment" ADD CONSTRAINT "deployment_composeId_compose_composeId_fk" FOREIGN KEY ("composeId") REFERENCES "public"."compose"("composeId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "deployment" ADD CONSTRAINT "deployment_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "deployment" ADD CONSTRAINT "deployment_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "deployment" ADD CONSTRAINT "deployment_previewDeploymentId_preview_deployments_previewDeploymentId_fk" FOREIGN KEY ("previewDeploymentId") REFERENCES "public"."preview_deployments"("previewDeploymentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "deployment" ADD CONSTRAINT "deployment_scheduleId_schedule_scheduleId_fk" FOREIGN KEY ("scheduleId") REFERENCES "public"."schedule"("scheduleId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "deployment" ADD CONSTRAINT "deployment_backupId_backup_backupId_fk" FOREIGN KEY ("backupId") REFERENCES "public"."backup"("backupId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "deployment" ADD CONSTRAINT "deployment_rollbackId_rollback_rollbackId_fk" FOREIGN KEY ("rollbackId") REFERENCES "public"."rollback"("rollbackId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "deployment" ADD CONSTRAINT "deployment_volumeBackupId_volume_backup_volumeBackupId_fk" FOREIGN KEY ("volumeBackupId") REFERENCES "public"."volume_backup"("volumeBackupId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "deployment" ADD CONSTRAINT "deployment_buildServerId_server_serverId_fk" FOREIGN KEY ("buildServerId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "deployment" ADD CONSTRAINT "deployment_buildRuntimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("buildRuntimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "destination" ADD CONSTRAINT "destination_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "domain" ADD CONSTRAINT "domain_composeId_compose_composeId_fk" FOREIGN KEY ("composeId") REFERENCES "public"."compose"("composeId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "domain" ADD CONSTRAINT "domain_applicationId_application_applicationId_fk" FOREIGN KEY ("applicationId") REFERENCES "public"."application"("applicationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "domain" ADD CONSTRAINT "domain_previewDeploymentId_preview_deployments_previewDeploymentId_fk" FOREIGN KEY ("previewDeploymentId") REFERENCES "public"."preview_deployments"("previewDeploymentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "environment" ADD CONSTRAINT "environment_projectId_project_projectId_fk" FOREIGN KEY ("projectId") REFERENCES "public"."project"("projectId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "environment" ADD CONSTRAINT "environment_workspaceId_workspace_workspaceId_fk" FOREIGN KEY ("workspaceId") REFERENCES "public"."workspace"("workspaceId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "git_provider" ADD CONSTRAINT "git_provider_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "git_provider" ADD CONSTRAINT "git_provider_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "gitea" ADD CONSTRAINT "gitea_gitProviderId_git_provider_gitProviderId_fk" FOREIGN KEY ("gitProviderId") REFERENCES "public"."git_provider"("gitProviderId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "github" ADD CONSTRAINT "github_gitProviderId_git_provider_gitProviderId_fk" FOREIGN KEY ("gitProviderId") REFERENCES "public"."git_provider"("gitProviderId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "gitlab" ADD CONSTRAINT "gitlab_gitProviderId_git_provider_gitProviderId_fk" FOREIGN KEY ("gitProviderId") REFERENCES "public"."git_provider"("gitProviderId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "libsql" ADD CONSTRAINT "libsql_environmentId_environment_environmentId_fk" FOREIGN KEY ("environmentId") REFERENCES "public"."environment"("environmentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "libsql" ADD CONSTRAINT "libsql_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "libsql" ADD CONSTRAINT "libsql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "mariadb" ADD CONSTRAINT "mariadb_environmentId_environment_environmentId_fk" FOREIGN KEY ("environmentId") REFERENCES "public"."environment"("environmentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "mariadb" ADD CONSTRAINT "mariadb_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "mariadb" ADD CONSTRAINT "mariadb_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "mongo" ADD CONSTRAINT "mongo_environmentId_environment_environmentId_fk" FOREIGN KEY ("environmentId") REFERENCES "public"."environment"("environmentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "mongo" ADD CONSTRAINT "mongo_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "mongo" ADD CONSTRAINT "mongo_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "mount" ADD CONSTRAINT "mount_applicationId_application_applicationId_fk" FOREIGN KEY ("applicationId") REFERENCES "public"."application"("applicationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "mount" ADD CONSTRAINT "mount_composeId_compose_composeId_fk" FOREIGN KEY ("composeId") REFERENCES "public"."compose"("composeId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "mount" ADD CONSTRAINT "mount_libsqlId_libsql_libsqlId_fk" FOREIGN KEY ("libsqlId") REFERENCES "public"."libsql"("libsqlId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -1132,7 +1159,7 @@ ALTER TABLE "mount" ADD CONSTRAINT "mount_mysqlId_mysql_mysqlId_fk" FOREIGN KEY 
 ALTER TABLE "mount" ADD CONSTRAINT "mount_postgresId_postgres_postgresId_fk" FOREIGN KEY ("postgresId") REFERENCES "public"."postgres"("postgresId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "mount" ADD CONSTRAINT "mount_redisId_redis_redisId_fk" FOREIGN KEY ("redisId") REFERENCES "public"."redis"("redisId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "mysql" ADD CONSTRAINT "mysql_environmentId_environment_environmentId_fk" FOREIGN KEY ("environmentId") REFERENCES "public"."environment"("environmentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "mysql" ADD CONSTRAINT "mysql_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "mysql" ADD CONSTRAINT "mysql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notification" ADD CONSTRAINT "notification_slackId_slack_slackId_fk" FOREIGN KEY ("slackId") REFERENCES "public"."slack"("slackId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notification" ADD CONSTRAINT "notification_telegramId_telegram_telegramId_fk" FOREIGN KEY ("telegramId") REFERENCES "public"."telegram"("telegramId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notification" ADD CONSTRAINT "notification_discordId_discord_discordId_fk" FOREIGN KEY ("discordId") REFERENCES "public"."discord"("discordId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -1150,27 +1177,26 @@ ALTER TABLE "patch" ADD CONSTRAINT "patch_applicationId_application_applicationI
 ALTER TABLE "patch" ADD CONSTRAINT "patch_composeId_compose_composeId_fk" FOREIGN KEY ("composeId") REFERENCES "public"."compose"("composeId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "port" ADD CONSTRAINT "port_applicationId_application_applicationId_fk" FOREIGN KEY ("applicationId") REFERENCES "public"."application"("applicationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "postgres" ADD CONSTRAINT "postgres_environmentId_environment_environmentId_fk" FOREIGN KEY ("environmentId") REFERENCES "public"."environment"("environmentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "postgres" ADD CONSTRAINT "postgres_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "postgres" ADD CONSTRAINT "postgres_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "preview_deployments" ADD CONSTRAINT "preview_deployments_applicationId_application_applicationId_fk" FOREIGN KEY ("applicationId") REFERENCES "public"."application"("applicationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "preview_deployments" ADD CONSTRAINT "preview_deployments_domainId_domain_domainId_fk" FOREIGN KEY ("domainId") REFERENCES "public"."domain"("domainId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "project" ADD CONSTRAINT "project_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "runtimeWorker" ADD CONSTRAINT "runtimeWorker_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "runtimeWorker" ADD CONSTRAINT "runtimeWorker_sshKeyId_ssh-key_sshKeyId_fk" FOREIGN KEY ("sshKeyId") REFERENCES "public"."ssh-key"("sshKeyId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "redirect" ADD CONSTRAINT "redirect_applicationId_application_applicationId_fk" FOREIGN KEY ("applicationId") REFERENCES "public"."application"("applicationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "redis" ADD CONSTRAINT "redis_environmentId_environment_environmentId_fk" FOREIGN KEY ("environmentId") REFERENCES "public"."environment"("environmentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "redis" ADD CONSTRAINT "redis_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "redis" ADD CONSTRAINT "redis_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "registry" ADD CONSTRAINT "registry_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "rollback" ADD CONSTRAINT "rollback_deploymentId_deployment_deploymentId_fk" FOREIGN KEY ("deploymentId") REFERENCES "public"."deployment"("deploymentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "schedule" ADD CONSTRAINT "schedule_applicationId_application_applicationId_fk" FOREIGN KEY ("applicationId") REFERENCES "public"."application"("applicationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "schedule" ADD CONSTRAINT "schedule_composeId_compose_composeId_fk" FOREIGN KEY ("composeId") REFERENCES "public"."compose"("composeId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "schedule" ADD CONSTRAINT "schedule_serverId_server_serverId_fk" FOREIGN KEY ("serverId") REFERENCES "public"."server"("serverId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "schedule" ADD CONSTRAINT "schedule_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk" FOREIGN KEY ("runtimeWorkerId") REFERENCES "public"."runtimeWorker"("runtimeWorkerId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "schedule" ADD CONSTRAINT "schedule_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "security" ADD CONSTRAINT "security_applicationId_application_applicationId_fk" FOREIGN KEY ("applicationId") REFERENCES "public"."application"("applicationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "server" ADD CONSTRAINT "server_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "server" ADD CONSTRAINT "server_sshKeyId_ssh-key_sshKeyId_fk" FOREIGN KEY ("sshKeyId") REFERENCES "public"."ssh-key"("sshKeyId") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "ssh-key" ADD CONSTRAINT "ssh-key_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "project_tag" ADD CONSTRAINT "project_tag_projectId_project_projectId_fk" FOREIGN KEY ("projectId") REFERENCES "public"."project"("projectId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "project_tag" ADD CONSTRAINT "project_tag_tagId_tag_tagId_fk" FOREIGN KEY ("tagId") REFERENCES "public"."tag"("tagId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "tag" ADD CONSTRAINT "tag_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspace_tag" ADD CONSTRAINT "workspace_tag_workspaceId_workspace_workspaceId_fk" FOREIGN KEY ("workspaceId") REFERENCES "public"."workspace"("workspaceId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspace_tag" ADD CONSTRAINT "workspace_tag_tagId_tag_tagId_fk" FOREIGN KEY ("tagId") REFERENCES "public"."tag"("tagId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "volume_backup" ADD CONSTRAINT "volume_backup_applicationId_application_applicationId_fk" FOREIGN KEY ("applicationId") REFERENCES "public"."application"("applicationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "volume_backup" ADD CONSTRAINT "volume_backup_postgresId_postgres_postgresId_fk" FOREIGN KEY ("postgresId") REFERENCES "public"."postgres"("postgresId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "volume_backup" ADD CONSTRAINT "volume_backup_mariadbId_mariadb_mariadbId_fk" FOREIGN KEY ("mariadbId") REFERENCES "public"."mariadb"("mariadbId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -1180,6 +1206,9 @@ ALTER TABLE "volume_backup" ADD CONSTRAINT "volume_backup_redisId_redis_redisId_
 ALTER TABLE "volume_backup" ADD CONSTRAINT "volume_backup_libsqlId_libsql_libsqlId_fk" FOREIGN KEY ("libsqlId") REFERENCES "public"."libsql"("libsqlId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "volume_backup" ADD CONSTRAINT "volume_backup_composeId_compose_composeId_fk" FOREIGN KEY ("composeId") REFERENCES "public"."compose"("composeId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "volume_backup" ADD CONSTRAINT "volume_backup_destinationId_destination_destinationId_fk" FOREIGN KEY ("destinationId") REFERENCES "public"."destination"("destinationId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspace" ADD CONSTRAINT "workspace_organizationId_organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."organization"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspace_service_connection" ADD CONSTRAINT "workspace_service_connection_environmentId_environment_environmentId_fk" FOREIGN KEY ("environmentId") REFERENCES "public"."environment"("environmentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "workspace_service_layout" ADD CONSTRAINT "workspace_service_layout_environmentId_environment_environmentId_fk" FOREIGN KEY ("environmentId") REFERENCES "public"."environment"("environmentId") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "organizationRole_organizationId_idx" ON "organization_role" USING btree ("organization_id");--> statement-breakpoint
 CREATE INDEX "organizationRole_role_idx" ON "organization_role" USING btree ("role");--> statement-breakpoint
 CREATE INDEX "auditLog_organizationId_idx" ON "audit_log" USING btree ("organization_id");--> statement-breakpoint

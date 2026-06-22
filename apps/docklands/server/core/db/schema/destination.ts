@@ -67,7 +67,7 @@ export const apiCreateDestination = createSchema
 	})
 	.required()
 	.extend({
-		serverId: z.string().optional(),
+		runtimeWorkerId: z.string().optional(),
 	});
 
 export const apiFindOneDestination = z.object({
@@ -94,5 +94,5 @@ export const apiUpdateDestination = createSchema
 	})
 	.required()
 	.extend({
-		serverId: z.string().optional(),
+		runtimeWorkerId: z.string().optional(),
 	});

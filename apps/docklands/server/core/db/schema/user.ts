@@ -12,14 +12,14 @@ import { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import { account, apikey, organization } from "./account";
 import { backups } from "./backups";
-import { projects } from "./project";
 import { schedules } from "./schedule";
+import { workspaces } from "./workspace";
 
 /**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
+ * This is an example of how to use the multi-workspace schema feature of Drizzle ORM. Use the same
+ * database instance for multiple workspaces.
  *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
+ * @see https://orm.drizzle.team/docs/goodies#multi-workspace-schema
  */
 
 // OLD TABLE
@@ -67,7 +67,7 @@ export const usersRelations = relations(user, ({ one, many }) => ({
 		references: [account.userId],
 	}),
 	organizations: many(organization),
-	projects: many(projects),
+	workspaces: many(workspaces),
 	apiKeys: many(apikey),
 	backups: many(backups),
 	schedules: many(schedules),
@@ -102,11 +102,11 @@ export const apiFindOneToken = createSchema
 export const apiAssignPermissions = createSchema
 	.pick({
 		id: true,
-		// canCreateProjects: true,
+		// canCreateWorkspaces: true,
 		// canCreateServices: true,
-		// canDeleteProjects: true,
+		// canDeleteWorkspaces: true,
 		// canDeleteServices: true,
-		// accessedProjects: true,
+		// accessedWorkspaces: true,
 		// accessedServices: true,
 		// canAccessToTraefikFiles: true,
 		// canAccessToDocker: true,
@@ -115,14 +115,14 @@ export const apiAssignPermissions = createSchema
 		// canAccessToGitProviders: true,
 	})
 	.extend({
-		accessedProjects: z.array(z.string()).optional(),
+		accessedWorkspaces: z.array(z.string()).optional(),
 		accessedEnvironments: z.array(z.string()).optional(),
 		accessedServices: z.array(z.string()).optional(),
 		accessedGitProviders: z.array(z.string()).optional(),
-		accessedServers: z.array(z.string()).optional(),
-		canCreateProjects: z.boolean().optional(),
+		accessedRuntimeWorkers: z.array(z.string()).optional(),
+		canCreateWorkspaces: z.boolean().optional(),
 		canCreateServices: z.boolean().optional(),
-		canDeleteProjects: z.boolean().optional(),
+		canDeleteWorkspaces: z.boolean().optional(),
 		canDeleteServices: z.boolean().optional(),
 		canAccessToDocker: z.boolean().optional(),
 		canAccessToTraefikFiles: z.boolean().optional(),
@@ -153,7 +153,7 @@ export const apiTraefikConfig = z.object({
 export const apiModifyTraefikConfig = z.object({
 	path: z.string().min(1),
 	traefikConfig: z.string().min(1),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 export const apiReadTraefikConfig = z.object({
 	path: z
@@ -181,17 +181,17 @@ export const apiReadTraefikConfig = z.object({
 					"Invalid path: path traversal or unauthorized directory access detected",
 			},
 		),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
 export const apiEnableDashboard = z.object({
 	enableDashboard: z.boolean().optional(),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
-export const apiServerSchema = z
+export const apiRuntimeWorkerSchema = z
 	.object({
-		serverId: z.string().optional(),
+		runtimeWorkerId: z.string().optional(),
 	})
 	.optional();
 

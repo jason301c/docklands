@@ -21,10 +21,10 @@ export const certificateRouter = createTRPCRouter({
 	create: withPermission("certificate", "create")
 		.input(apiCreateCertificate)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD && !input.serverId) {
+			if (IS_CLOUD && !input.runtimeWorkerId) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
-					message: "Please set a server to create a certificate",
+					message: "Please set a runtimeWorker to create a certificate",
 				});
 			}
 			const cert = await createCertificate(
@@ -75,7 +75,7 @@ export const certificateRouter = createTRPCRouter({
 		return await db.query.certificates.findMany({
 			where: eq(certificates.organizationId, ctx.session.activeOrganizationId),
 			with: {
-				server: true,
+				runtimeWorker: true,
 			},
 		});
 	}),

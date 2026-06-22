@@ -33,7 +33,7 @@ export type ApplicationNested = InferResultType<
 		buildRegistry: { columns: { password: false } };
 		rollbackRegistry: { columns: { password: false } };
 		deployments: true;
-		environment: { with: { project: true } };
+		environment: { with: { workspace: true } };
 	}
 >;
 
@@ -118,13 +118,13 @@ export const mechanizeDockerContainer = async (
 	const filesMount = generateFileMounts(appName, application);
 	const envVariables = prepareEnvironmentVariables(
 		env,
-		application.environment.project.env,
+		application.environment.workspace.env,
 		application.environment.env,
 	);
 
 	const image = await getImageName(application);
 	const authConfig = await getAuthConfig(application);
-	const docker = await getRemoteDocker(application.serverId);
+	const docker = await getRemoteDocker(application.runtimeWorkerId);
 
 	const settings: CreateServiceOptions = {
 		authconfig: authConfig,

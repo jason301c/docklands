@@ -9,32 +9,33 @@ import { toast } from "@/components/shared/toast";
 
 type RuntimeServer = {
 	ipAddress?: string | null;
-	serverStatus?: string | null;
+	runtimeWorkerStatus?: string | null;
 };
 
 type RuntimePlacementStatusProps = {
 	fallbackIp?: string | null;
-	server?: RuntimeServer | null;
-	serverId?: string | null;
+	runtimeWorker?: RuntimeServer | null;
+	runtimeWorkerId?: string | null;
 };
 
 export const runtimePlacementLabel = ({
-	server,
-	serverId,
-}: Pick<RuntimePlacementStatusProps, "server" | "serverId">) => {
-	if (!serverId) return "Automatic placement";
-	if (server?.serverStatus === "inactive") return "Runtime worker inactive";
+	runtimeWorker,
+	runtimeWorkerId,
+}: Pick<RuntimePlacementStatusProps, "runtimeWorker" | "runtimeWorkerId">) => {
+	if (!runtimeWorkerId) return "Automatic placement";
+	if (runtimeWorker?.runtimeWorkerStatus === "inactive")
+		return "Runtime worker inactive";
 	return "Runtime worker";
 };
 
 export const RuntimePlacementStatus = ({
 	fallbackIp,
-	server,
-	serverId,
+	runtimeWorker,
+	runtimeWorkerId,
 }: RuntimePlacementStatusProps) => {
-	const address = server?.ipAddress || fallbackIp;
-	const label = runtimePlacementLabel({ server, serverId });
-	const inactive = server?.serverStatus === "inactive";
+	const address = runtimeWorker?.ipAddress || fallbackIp;
+	const label = runtimePlacementLabel({ runtimeWorker, runtimeWorkerId });
+	const inactive = runtimeWorker?.runtimeWorkerStatus === "inactive";
 
 	return (
 		<div className="flex flex-row h-fit w-fit gap-2">

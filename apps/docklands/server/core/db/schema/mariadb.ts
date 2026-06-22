@@ -6,7 +6,7 @@ import { z } from "zod";
 import { backups } from "./backups";
 import { environments } from "./environment";
 import { mounts } from "./mount";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 import {
 	applicationStatus,
 	type EndpointSpecSwarm,
@@ -84,9 +84,12 @@ export const mariadb = pgTable("mariadb", {
 	environmentId: text("environmentId")
 		.notNull()
 		.references(() => environments.environmentId, { onDelete: "cascade" }),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 });
 
 export const mariadbRelations = relations(mariadb, ({ one, many }) => ({
@@ -96,9 +99,9 @@ export const mariadbRelations = relations(mariadb, ({ one, many }) => ({
 	}),
 	backups: many(backups),
 	mounts: many(mounts),
-	server: one(server, {
-		fields: [mariadb.serverId],
-		references: [server.serverId],
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [mariadb.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
 	}),
 }));
 
@@ -135,7 +138,7 @@ const createSchema = createInsertSchema(mariadb, {
 	applicationStatus: z.enum(["idle", "running", "done", "error"]),
 	externalPort: z.number().nullish(),
 	description: z.string().nullish(),
-	serverId: z.string().nullish(),
+	runtimeWorkerId: z.string().nullish(),
 	healthCheckSwarm: HealthCheckSwarmSchema.nullable(),
 	restartPolicySwarm: RestartPolicySwarmSchema.nullable(),
 	placementSwarm: PlacementSwarmSchema.nullable(),
@@ -159,7 +162,7 @@ export const apiCreateMariaDB = createSchema.pick({
 	databaseName: true,
 	databaseUser: true,
 	databasePassword: true,
-	serverId: true,
+	runtimeWorkerId: true,
 });
 
 export const apiFindOneMariaDB = z.object({
@@ -206,7 +209,7 @@ export const apiUpdateMariaDB = createSchema
 		mariadbId: z.string().min(1),
 		dockerImage: z.string().optional(),
 	})
-	.omit({ serverId: true });
+	.omit({ runtimeWorkerId: true });
 
 export const apiRebuildMariadb = createSchema
 	.pick({

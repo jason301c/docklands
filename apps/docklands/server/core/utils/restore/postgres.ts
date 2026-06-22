@@ -13,7 +13,7 @@ export const restorePostgresBackup = async (
 	emit: (log: string) => void,
 ) => {
 	try {
-		const { appName, databaseUser, serverId } = postgres;
+		const { appName, databaseUser, runtimeWorkerId } = postgres;
 
 		const rcloneFlags = getS3Credentials(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
@@ -38,8 +38,8 @@ export const restorePostgresBackup = async (
 			`Restoring database: ${backupInput.databaseName} from ${backupInput.backupFile}`,
 		);
 
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}

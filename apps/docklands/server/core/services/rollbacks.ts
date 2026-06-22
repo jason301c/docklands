@@ -21,12 +21,12 @@ import { type Application, findApplicationById } from "./application";
 import { findDeploymentById } from "./deployment";
 import type { Mount } from "./mount";
 import type { Port } from "./port";
-import type { Project } from "./project";
 import {
 	findRegistryByIdWithCredentials,
 	type Registry,
 	safeDockerLoginCommand,
 } from "./registry";
+import type { Workspace } from "./workspace";
 
 export const createRollback = async (
 	input: z.infer<typeof createRollbackSchema>,
@@ -111,7 +111,7 @@ export const findRollbackById = async (rollbackId: string) => {
 						with: {
 							environment: {
 								with: {
-									project: true,
+									workspace: true,
 								},
 							},
 						},
@@ -128,11 +128,14 @@ export const findRollbackById = async (rollbackId: string) => {
 	return result;
 };
 
-const deleteRollbackImage = async (image: string, serverId?: string | null) => {
+const deleteRollbackImage = async (
+	image: string,
+	runtimeWorkerId?: string | null,
+) => {
 	const command = `docker image rm ${image} --force`;
 
-	if (serverId) {
-		await execAsyncRemote(serverId, command);
+	if (runtimeWorkerId) {
+		await execAsyncRemote(runtimeWorkerId, command);
 	} else {
 		await execAsync(command);
 	}
@@ -154,7 +157,7 @@ export const removeRollbackById = async (rollbackId: string) => {
 			}
 
 			const application = await findApplicationById(deployment.applicationId);
-			await deleteRollbackImage(rollback.image, application.serverId);
+			await deleteRollbackImage(rollback.image, application.runtimeWorkerId);
 
 			await db
 				.delete(rollbacks)
@@ -186,14 +189,14 @@ export const rollback = async (rollbackId: string) => {
 	await rollbackApplication(
 		application.appName,
 		result.image || "",
-		application.serverId,
+		application.runtimeWorkerId,
 		result.fullContext,
 	);
 };
 
 const dockerLoginForRegistry = async (
 	registry: Registry,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
 	const loginCommand = safeDockerLoginCommand(
 		registry.registryUrl,
@@ -201,8 +204,8 @@ const dockerLoginForRegistry = async (
 		registry.password,
 	);
 
-	if (serverId) {
-		await execAsyncRemote(serverId, loginCommand);
+	if (runtimeWorkerId) {
+		await execAsyncRemote(runtimeWorkerId, loginCommand);
 	} else {
 		await execAsync(loginCommand);
 	}
@@ -211,10 +214,10 @@ const dockerLoginForRegistry = async (
 const rollbackApplication = async (
 	appName: string,
 	image: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 	fullContext?: Application & {
 		environment: {
-			project: Project;
+			workspace: Workspace;
 		};
 		mounts: Mount[];
 		ports: Port[];
@@ -232,10 +235,10 @@ const rollbackApplication = async (
 	// alone is not sufficient — Docker Swarm also relies on the daemon's
 	// cached credentials (~/.docker/config.json) to distribute auth to nodes.
 	if (rollbackRegistry) {
-		await dockerLoginForRegistry(rollbackRegistry, serverId);
+		await dockerLoginForRegistry(rollbackRegistry, runtimeWorkerId);
 	}
 
-	const docker = await getRemoteDocker(serverId);
+	const docker = await getRemoteDocker(runtimeWorkerId);
 
 	const {
 		env,
@@ -274,7 +277,7 @@ const rollbackApplication = async (
 	const bindsMount = generateBindMounts(mounts);
 	const envVariables = prepareEnvironmentVariables(
 		env,
-		fullContext.environment.project.env,
+		fullContext.environment.workspace.env,
 	);
 
 	let rollbackImage = image;

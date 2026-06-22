@@ -1,318 +1,1237 @@
 import { TRPCError } from "@trpc/server";
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import type { AnyPgColumn } from "drizzle-orm/pg-core";
+import { z } from "zod";
 import {
-	apiCreateWorkspaceConnection,
-	apiFindWorkspace,
-	apiRemoveWorkspaceConnection,
-	apiSyncWorkspaceServiceConnectionVariables,
-	apiUpdateWorkspaceNode,
-	apiUpdateWorkspaceServiceEnv,
-	apiWorkspaceConnectionVariables,
-	apiWorkspaceServiceEnv,
+	createTRPCRouter,
+	protectedProcedure,
+	withPermission,
+} from "@/server/api/trpc";
+import { audit } from "@/server/api/utils/audit";
+import { IS_CLOUD } from "@/server/core/constants/env";
+import { db } from "@/server/core/db";
+import {
+	apiCreateWorkspace,
+	apiFindOneWorkspace,
+	apiRemoveWorkspace,
+	apiUpdateWorkspace,
+	applications,
+	compose,
+	environments,
+	libsql,
+	mariadb,
+	mongo,
+	mysql,
+	postgres,
+	redis,
+	workspaces,
 } from "@/server/core/db/schema";
-import { findEnvironmentById } from "@/server/core/services/environment";
+import { findUserById } from "@/server/core/services/admin";
 import {
-	checkEnvironmentAccess,
+	createApplication,
+	findApplicationById,
+} from "@/server/core/services/application";
+import { createBackup } from "@/server/core/services/backup";
+import { createCompose, findComposeById } from "@/server/core/services/compose";
+import { createDomain } from "@/server/core/services/domain";
+import { findEnvironmentById } from "@/server/core/services/environment";
+import { createLibsql, findLibsqlById } from "@/server/core/services/libsql";
+import { createMariadb, findMariadbById } from "@/server/core/services/mariadb";
+import { createMongo, findMongoById } from "@/server/core/services/mongo";
+import { createMount } from "@/server/core/services/mount";
+import { createMysql, findMySqlById } from "@/server/core/services/mysql";
+import {
+	addNewEnvironment,
+	addNewWorkspace,
 	checkPermission,
+	checkWorkspaceAccess,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
+import { createPort } from "@/server/core/services/port";
 import {
-	applyWorkspaceConnectionVariables,
-	assertWorkspaceServiceExists,
-	createWorkspaceConnection,
-	findWorkspaceConnectionById,
-	getEnvironmentWorkspace,
-	getWorkspaceConnectionVariableEntries,
-	readWorkspaceServiceEnv,
-	removeWorkspaceConnection,
-	syncWorkspaceConnectionVariablesForService,
-	updateWorkspaceServiceEnv,
-	upsertWorkspaceNode,
+	createPostgres,
+	findPostgresById,
+} from "@/server/core/services/postgres";
+import { createPreviewDeployment } from "@/server/core/services/preview-deployment";
+import { createRedirect } from "@/server/core/services/redirect";
+import { createRedis, findRedisById } from "@/server/core/services/redis";
+import { createSecurity } from "@/server/core/services/security";
+import {
+	createWorkspace,
+	deleteWorkspace,
+	findWorkspaceById,
+	updateWorkspaceById,
 } from "@/server/core/services/workspace";
 
-type WorkspaceProcedureContext = {
-	user: {
-		id: string;
-		role: "member" | "admin" | "owner";
-	};
-	session: {
-		activeOrganizationId: string;
-	};
-};
-
-const assertEnvironmentBelongsToActiveOrganization = (
-	environment: Awaited<ReturnType<typeof findEnvironmentById>>,
-	organizationId: string,
-) => {
-	if (environment.project.organizationId !== organizationId) {
-		throw new TRPCError({
-			code: "FORBIDDEN",
-			message: "You are not allowed to access this environment",
-		});
-	}
-};
-
-const getAuthorizedEnvironment = async (
-	ctx: WorkspaceProcedureContext,
-	environmentId: string,
-) => {
-	await checkEnvironmentAccess(ctx, environmentId, "read");
-	const environment = await findEnvironmentById(environmentId);
-	assertEnvironmentBelongsToActiveOrganization(
-		environment,
-		ctx.session.activeOrganizationId,
-	);
-
-	if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
-		const { accessedServices } = await findMemberByUserId(
-			ctx.user.id,
-			ctx.session.activeOrganizationId,
-		);
-
-		return {
-			...environment,
-			applications: environment.applications.filter((service) =>
-				accessedServices.includes(service.applicationId),
-			),
-			compose: environment.compose.filter((service) =>
-				accessedServices.includes(service.composeId),
-			),
-			libsql: environment.libsql.filter((service) =>
-				accessedServices.includes(service.libsqlId),
-			),
-			mariadb: environment.mariadb.filter((service) =>
-				accessedServices.includes(service.mariadbId),
-			),
-			mongo: environment.mongo.filter((service) =>
-				accessedServices.includes(service.mongoId),
-			),
-			mysql: environment.mysql.filter((service) =>
-				accessedServices.includes(service.mysqlId),
-			),
-			postgres: environment.postgres.filter((service) =>
-				accessedServices.includes(service.postgresId),
-			),
-			redis: environment.redis.filter((service) =>
-				accessedServices.includes(service.redisId),
-			),
-		};
-	}
-
-	return environment;
-};
-
 export const workspaceRouter = createTRPCRouter({
-	byEnvironment: protectedProcedure
-		.input(apiFindWorkspace)
-		.query(async ({ input, ctx }) => {
-			const environment = await getAuthorizedEnvironment(
-				ctx,
-				input.environmentId,
-			);
-			return getEnvironmentWorkspace(environment);
-		}),
+	create: protectedProcedure
+		.input(apiCreateWorkspace)
+		.mutation(async ({ ctx, input }) => {
+			try {
+				await checkWorkspaceAccess(ctx, "create");
 
-	updateNode: protectedProcedure
-		.input(apiUpdateWorkspaceNode)
-		.mutation(async ({ input, ctx }) => {
-			const environment = await getAuthorizedEnvironment(
-				ctx,
-				input.environmentId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				input.serviceType,
-				input.serviceId,
-			);
+				const admin = await findUserById(ctx.user.ownerId);
 
-			return upsertWorkspaceNode(input);
-		}),
+				if (admin.serversQuantity === 0 && IS_CLOUD) {
+					throw new TRPCError({
+						code: "NOT_FOUND",
+						message: "No runtime workers available, please subscribe to a plan",
+					});
+				}
 
-	serviceEnv: protectedProcedure
-		.input(apiWorkspaceServiceEnv)
-		.query(async ({ input, ctx }) => {
-			await checkPermission(ctx, { envVars: ["read"] });
-			const environment = await getAuthorizedEnvironment(
-				ctx,
-				input.environmentId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				input.serviceType,
-				input.serviceId,
-			);
+				const workspace = await createWorkspace(
+					input,
+					ctx.session.activeOrganizationId,
+				);
+				await addNewWorkspace(ctx, workspace.workspace.workspaceId);
 
-			const service = await readWorkspaceServiceEnv(input);
-			if (!service) {
+				await addNewEnvironment(
+					ctx,
+					workspace?.environment?.environmentId || "",
+				);
+
+				await audit(ctx, {
+					action: "create",
+					resourceType: "workspace",
+					resourceId: workspace.workspace.workspaceId,
+					resourceName: workspace.workspace.name,
+				});
+				return workspace;
+			} catch (error) {
 				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "Service not found",
+					code: "BAD_REQUEST",
+					message: `Error creating the workspace: ${error instanceof Error ? error.message : error}`,
+					cause: error,
 				});
 			}
-
-			return {
-				env: service.env ?? "",
-			};
 		}),
 
-	updateServiceEnv: protectedProcedure
-		.input(apiUpdateWorkspaceServiceEnv)
-		.mutation(async ({ input, ctx }) => {
-			await checkPermission(ctx, { envVars: ["write"] });
-			const environment = await getAuthorizedEnvironment(
-				ctx,
-				input.environmentId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				input.serviceType,
-				input.serviceId,
-			);
-
-			await updateWorkspaceServiceEnv(input);
-			return {
-				env: input.env,
-			};
-		}),
-
-	connect: protectedProcedure
-		.input(apiCreateWorkspaceConnection)
-		.mutation(async ({ input, ctx }) => {
-			const environment = await getAuthorizedEnvironment(
-				ctx,
-				input.environmentId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				input.source.serviceType,
-				input.source.serviceId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				input.target.serviceType,
-				input.target.serviceId,
-			);
-
-			if (input.applyVariables) {
-				await checkPermission(ctx, { envVars: ["write"] });
-			}
-
-			const connection = await createWorkspaceConnection({
-				environmentId: input.environmentId,
-				sourceServiceType: input.source.serviceType,
-				sourceServiceId: input.source.serviceId,
-				targetServiceType: input.target.serviceType,
-				targetServiceId: input.target.serviceId,
-				label: input.label,
-			});
-
-			if (!input.applyVariables) {
-				return {
-					connection,
-					variablesApplied: 0,
-					variableKeys: [],
-				};
-			}
-
-			const entries = await getWorkspaceConnectionVariableEntries(connection);
-			if (entries.length === 0) {
-				return {
-					connection,
-					variablesApplied: 0,
-					variableKeys: [],
-				};
-			}
-
-			const result = await applyWorkspaceConnectionVariables(connection);
-			return {
-				connection,
-				variablesApplied: result.entries.length,
-				variableKeys: result.entries.map(({ key }) => key),
-			};
-		}),
-
-	removeConnection: protectedProcedure
-		.input(apiRemoveWorkspaceConnection)
-		.mutation(async ({ input, ctx }) => {
-			const connection = await findWorkspaceConnectionById(input.connectionId);
-			const environment = await getAuthorizedEnvironment(
-				ctx,
-				connection.environmentId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				connection.sourceServiceType,
-				connection.sourceServiceId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				connection.targetServiceType,
-				connection.targetServiceId,
-			);
-			return removeWorkspaceConnection(input.connectionId);
-		}),
-
-	connectionVariables: protectedProcedure
-		.input(apiWorkspaceConnectionVariables)
+	one: protectedProcedure
+		.input(apiFindOneWorkspace)
 		.query(async ({ input, ctx }) => {
-			await checkPermission(ctx, { envVars: ["read"] });
-			const connection = await findWorkspaceConnectionById(input.connectionId);
-			const environment = await getAuthorizedEnvironment(
-				ctx,
-				connection.environmentId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				connection.sourceServiceType,
-				connection.sourceServiceId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				connection.targetServiceType,
-				connection.targetServiceId,
-			);
+			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+				const { accessedServices, accessedWorkspaces } =
+					await findMemberByUserId(
+						ctx.user.id,
+						ctx.session.activeOrganizationId,
+					);
 
-			const entries = await getWorkspaceConnectionVariableEntries(connection);
-			return entries.map(({ key }) => ({ key }));
+				if (!accessedWorkspaces.includes(input.workspaceId)) {
+					throw new TRPCError({
+						code: "UNAUTHORIZED",
+						message: "You don't have access to this workspace",
+					});
+				}
+
+				const workspace = await db.query.workspaces.findFirst({
+					where: and(
+						eq(workspaces.workspaceId, input.workspaceId),
+						eq(workspaces.organizationId, ctx.session.activeOrganizationId),
+					),
+					with: {
+						environments: {
+							with: {
+								applications: {
+									where: buildServiceFilter(
+										applications.applicationId,
+										accessedServices,
+									),
+								},
+								compose: {
+									where: buildServiceFilter(
+										compose.composeId,
+										accessedServices,
+									),
+								},
+								libsql: {
+									where: buildServiceFilter(libsql.libsqlId, accessedServices),
+								},
+								mariadb: {
+									where: buildServiceFilter(
+										mariadb.mariadbId,
+										accessedServices,
+									),
+								},
+								mongo: {
+									where: buildServiceFilter(mongo.mongoId, accessedServices),
+								},
+								mysql: {
+									where: buildServiceFilter(mysql.mysqlId, accessedServices),
+								},
+								postgres: {
+									where: buildServiceFilter(
+										postgres.postgresId,
+										accessedServices,
+									),
+								},
+								redis: {
+									where: buildServiceFilter(redis.redisId, accessedServices),
+								},
+							},
+						},
+						workspaceTags: {
+							with: {
+								tag: true,
+							},
+						},
+					},
+				});
+
+				if (!workspace) {
+					throw new TRPCError({
+						code: "NOT_FOUND",
+						message: "Workspace not found",
+					});
+				}
+				return workspace;
+			}
+			const workspace = await findWorkspaceById(input.workspaceId);
+
+			if (workspace.organizationId !== ctx.session.activeOrganizationId) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "You are not authorized to access this workspace",
+				});
+			}
+			return workspace;
+		}),
+	all: protectedProcedure.query(async ({ ctx }) => {
+		if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+			const { accessedWorkspaces, accessedEnvironments, accessedServices } =
+				await findMemberByUserId(ctx.user.id, ctx.session.activeOrganizationId);
+
+			if (accessedWorkspaces.length === 0) {
+				return [];
+			}
+
+			const environmentFilter =
+				accessedEnvironments.length === 0
+					? sql`false`
+					: sql`${environments.environmentId} IN (${sql.join(
+							accessedEnvironments.map((envId) => sql`${envId}`),
+							sql`, `,
+						)})`;
+
+			return await db.query.workspaces.findMany({
+				where: and(
+					sql`${workspaces.workspaceId} IN (${sql.join(
+						accessedWorkspaces.map((workspaceId) => sql`${workspaceId}`),
+						sql`, `,
+					)})`,
+					eq(workspaces.organizationId, ctx.session.activeOrganizationId),
+				),
+				with: {
+					environments: {
+						where: environmentFilter,
+						with: {
+							applications: {
+								where: buildServiceFilter(
+									applications.applicationId,
+									accessedServices,
+								),
+								columns: {
+									applicationId: true,
+									name: true,
+									applicationStatus: true,
+								},
+							},
+							libsql: {
+								where: buildServiceFilter(libsql.libsqlId, accessedServices),
+								columns: {
+									libsqlId: true,
+									name: true,
+									applicationStatus: true,
+								},
+							},
+							mariadb: {
+								where: buildServiceFilter(mariadb.mariadbId, accessedServices),
+								columns: {
+									mariadbId: true,
+									name: true,
+									applicationStatus: true,
+								},
+							},
+							mongo: {
+								where: buildServiceFilter(mongo.mongoId, accessedServices),
+								columns: {
+									mongoId: true,
+									name: true,
+									applicationStatus: true,
+								},
+							},
+							mysql: {
+								where: buildServiceFilter(mysql.mysqlId, accessedServices),
+								columns: {
+									mysqlId: true,
+									name: true,
+									applicationStatus: true,
+								},
+							},
+							postgres: {
+								where: buildServiceFilter(
+									postgres.postgresId,
+									accessedServices,
+								),
+								columns: {
+									postgresId: true,
+									name: true,
+									applicationStatus: true,
+								},
+							},
+							redis: {
+								where: buildServiceFilter(redis.redisId, accessedServices),
+								columns: {
+									redisId: true,
+									name: true,
+									applicationStatus: true,
+								},
+							},
+							compose: {
+								where: buildServiceFilter(compose.composeId, accessedServices),
+								columns: {
+									composeId: true,
+									name: true,
+									composeStatus: true,
+								},
+							},
+						},
+						columns: {
+							environmentId: true,
+							isDefault: true,
+							name: true,
+						},
+					},
+					workspaceTags: {
+						with: {
+							tag: true,
+						},
+					},
+				},
+				orderBy: desc(workspaces.createdAt),
+			});
+		}
+
+		return await db.query.workspaces.findMany({
+			with: {
+				environments: {
+					with: {
+						applications: {
+							columns: {
+								applicationId: true,
+								name: true,
+								applicationStatus: true,
+							},
+						},
+						mariadb: {
+							columns: {
+								mariadbId: true,
+							},
+						},
+						mongo: {
+							columns: {
+								mongoId: true,
+							},
+						},
+						mysql: {
+							columns: {
+								mysqlId: true,
+							},
+						},
+						postgres: {
+							columns: {
+								postgresId: true,
+							},
+						},
+						redis: {
+							columns: {
+								redisId: true,
+							},
+						},
+						compose: {
+							columns: {
+								composeId: true,
+								name: true,
+								composeStatus: true,
+							},
+						},
+						libsql: {
+							columns: {
+								libsqlId: true,
+							},
+						},
+					},
+					columns: {
+						name: true,
+						environmentId: true,
+						isDefault: true,
+					},
+				},
+				workspaceTags: {
+					with: {
+						tag: true,
+					},
+				},
+			},
+			where: eq(workspaces.organizationId, ctx.session.activeOrganizationId),
+			orderBy: desc(workspaces.createdAt),
+		});
+	}),
+
+	allForPermissions: withPermission("member", "update").query(
+		async ({ ctx }) => {
+			return await db.query.workspaces.findMany({
+				where: eq(workspaces.organizationId, ctx.session.activeOrganizationId),
+				orderBy: desc(workspaces.createdAt),
+				columns: {
+					workspaceId: true,
+					name: true,
+				},
+				with: {
+					environments: {
+						columns: {
+							environmentId: true,
+							name: true,
+							isDefault: true,
+						},
+						with: {
+							applications: {
+								columns: {
+									applicationId: true,
+									appName: true,
+									name: true,
+									createdAt: true,
+									applicationStatus: true,
+									description: true,
+									runtimeWorkerId: true,
+								},
+							},
+							mariadb: {
+								columns: {
+									mariadbId: true,
+									appName: true,
+									name: true,
+									createdAt: true,
+									applicationStatus: true,
+									description: true,
+									runtimeWorkerId: true,
+								},
+							},
+							postgres: {
+								columns: {
+									postgresId: true,
+									appName: true,
+									name: true,
+									createdAt: true,
+									applicationStatus: true,
+									description: true,
+									runtimeWorkerId: true,
+								},
+							},
+							mysql: {
+								columns: {
+									mysqlId: true,
+									appName: true,
+									name: true,
+									createdAt: true,
+									applicationStatus: true,
+									description: true,
+									runtimeWorkerId: true,
+								},
+							},
+							mongo: {
+								columns: {
+									mongoId: true,
+									appName: true,
+									name: true,
+									createdAt: true,
+									applicationStatus: true,
+									description: true,
+									runtimeWorkerId: true,
+								},
+							},
+							redis: {
+								columns: {
+									redisId: true,
+									appName: true,
+									name: true,
+									createdAt: true,
+									applicationStatus: true,
+									description: true,
+									runtimeWorkerId: true,
+								},
+							},
+							compose: {
+								columns: {
+									composeId: true,
+									appName: true,
+									name: true,
+									createdAt: true,
+									composeStatus: true,
+									description: true,
+									runtimeWorkerId: true,
+								},
+							},
+							libsql: {
+								columns: {
+									libsqlId: true,
+									appName: true,
+									name: true,
+									createdAt: true,
+									applicationStatus: true,
+									description: true,
+									runtimeWorkerId: true,
+								},
+							},
+						},
+					},
+				},
+			});
+		},
+	),
+
+	homeStats: protectedProcedure.query(async ({ ctx }) => {
+		const isPrivileged = ctx.user.role === "owner" || ctx.user.role === "admin";
+
+		let accessedWorkspaces: string[] = [];
+		let accessedEnvironments: string[] = [];
+		let accessedServices: string[] = [];
+
+		if (!isPrivileged) {
+			const member = await findMemberByUserId(
+				ctx.user.id,
+				ctx.session.activeOrganizationId,
+			);
+			accessedWorkspaces = member.accessedWorkspaces;
+			accessedEnvironments = member.accessedEnvironments;
+			accessedServices = member.accessedServices;
+
+			if (accessedWorkspaces.length === 0) {
+				return {
+					workspaces: 0,
+					environments: 0,
+					applications: 0,
+					compose: 0,
+					databases: 0,
+					services: 0,
+					status: { running: 0, error: 0, idle: 0 },
+				};
+			}
+		}
+
+		const workspaceFilter = isPrivileged
+			? eq(workspaces.organizationId, ctx.session.activeOrganizationId)
+			: and(
+					sql`${workspaces.workspaceId} IN (${sql.join(
+						accessedWorkspaces.map((id) => sql`${id}`),
+						sql`, `,
+					)})`,
+					eq(workspaces.organizationId, ctx.session.activeOrganizationId),
+				);
+
+		const environmentFilter = isPrivileged
+			? undefined
+			: accessedEnvironments.length === 0
+				? sql`false`
+				: sql`${environments.environmentId} IN (${sql.join(
+						accessedEnvironments.map((envId) => sql`${envId}`),
+						sql`, `,
+					)})`;
+
+		const applyFilter = (col: AnyPgColumn) =>
+			isPrivileged ? undefined : buildServiceFilter(col, accessedServices);
+
+		const rows = await db.query.workspaces.findMany({
+			where: workspaceFilter,
+			columns: { workspaceId: true },
+			with: {
+				environments: {
+					where: environmentFilter,
+					columns: { environmentId: true },
+					with: {
+						applications: {
+							where: applyFilter(applications.applicationId),
+							columns: { applicationStatus: true },
+						},
+						compose: {
+							where: applyFilter(compose.composeId),
+							columns: { composeStatus: true },
+						},
+						libsql: {
+							where: applyFilter(libsql.libsqlId),
+							columns: { applicationStatus: true },
+						},
+						mariadb: {
+							where: applyFilter(mariadb.mariadbId),
+							columns: { applicationStatus: true },
+						},
+						mongo: {
+							where: applyFilter(mongo.mongoId),
+							columns: { applicationStatus: true },
+						},
+						mysql: {
+							where: applyFilter(mysql.mysqlId),
+							columns: { applicationStatus: true },
+						},
+						postgres: {
+							where: applyFilter(postgres.postgresId),
+							columns: { applicationStatus: true },
+						},
+						redis: {
+							where: applyFilter(redis.redisId),
+							columns: { applicationStatus: true },
+						},
+					},
+				},
+			},
+		});
+
+		let applicationsCount = 0;
+		let composeCount = 0;
+		let databasesCount = 0;
+		let environmentsCount = 0;
+		const status = { running: 0, error: 0, idle: 0 };
+		const bump = (s?: string | null) => {
+			if (s === "done") status.running++;
+			else if (s === "error") status.error++;
+			else status.idle++;
+		};
+
+		for (const workspace of rows) {
+			for (const env of workspace.environments) {
+				environmentsCount++;
+				applicationsCount += env.applications.length;
+				composeCount += env.compose.length;
+				databasesCount +=
+					env.libsql.length +
+					env.mariadb.length +
+					env.mongo.length +
+					env.mysql.length +
+					env.postgres.length +
+					env.redis.length;
+
+				for (const a of env.applications) bump(a.applicationStatus);
+				for (const c of env.compose) bump(c.composeStatus);
+				for (const s of env.libsql) bump(s.applicationStatus);
+				for (const s of env.mariadb) bump(s.applicationStatus);
+				for (const s of env.mongo) bump(s.applicationStatus);
+				for (const s of env.mysql) bump(s.applicationStatus);
+				for (const s of env.postgres) bump(s.applicationStatus);
+				for (const s of env.redis) bump(s.applicationStatus);
+			}
+		}
+
+		return {
+			workspaces: rows.length,
+			environments: environmentsCount,
+			applications: applicationsCount,
+			compose: composeCount,
+			databases: databasesCount,
+			services: applicationsCount + composeCount + databasesCount,
+			status,
+		};
+	}),
+
+	search: protectedProcedure
+		.input(
+			z.object({
+				q: z.string().optional(),
+				name: z.string().optional(),
+				description: z.string().optional(),
+				limit: z.number().min(1).max(100).default(20),
+				offset: z.number().min(0).default(0),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
+			const baseConditions = [
+				eq(workspaces.organizationId, ctx.session.activeOrganizationId),
+			];
+
+			if (input.q?.trim()) {
+				const term = `%${input.q.trim()}%`;
+				baseConditions.push(
+					or(
+						ilike(workspaces.name, term),
+						ilike(workspaces.description ?? "", term),
+					)!,
+				);
+			}
+
+			if (input.name?.trim()) {
+				baseConditions.push(ilike(workspaces.name, `%${input.name.trim()}%`));
+			}
+			if (input.description?.trim()) {
+				baseConditions.push(
+					ilike(workspaces.description ?? "", `%${input.description.trim()}%`),
+				);
+			}
+
+			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+				const { accessedWorkspaces } = await findMemberByUserId(
+					ctx.user.id,
+					ctx.session.activeOrganizationId,
+				);
+				if (accessedWorkspaces.length === 0) return { items: [], total: 0 };
+				baseConditions.push(
+					sql`${workspaces.workspaceId} IN (${sql.join(
+						accessedWorkspaces.map((id) => sql`${id}`),
+						sql`, `,
+					)})`,
+				);
+			}
+
+			const where = and(...baseConditions);
+
+			const [items, countResult] = await Promise.all([
+				db.query.workspaces.findMany({
+					where,
+					limit: input.limit,
+					offset: input.offset,
+					orderBy: desc(workspaces.createdAt),
+					columns: {
+						workspaceId: true,
+						name: true,
+						description: true,
+						createdAt: true,
+						organizationId: true,
+						env: true,
+					},
+				}),
+				db
+					.select({ count: sql<number>`count(*)::int` })
+					.from(workspaces)
+					.where(where),
+			]);
+
+			return {
+				items,
+				total: countResult[0]?.count ?? 0,
+			};
 		}),
 
-	applyConnectionVariables: protectedProcedure
-		.input(apiWorkspaceConnectionVariables)
+	remove: protectedProcedure
+		.input(apiRemoveWorkspace)
 		.mutation(async ({ input, ctx }) => {
-			await checkPermission(ctx, { envVars: ["write"] });
-			const connection = await findWorkspaceConnectionById(input.connectionId);
-			const environment = await getAuthorizedEnvironment(
-				ctx,
-				connection.environmentId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				connection.sourceServiceType,
-				connection.sourceServiceId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				connection.targetServiceType,
-				connection.targetServiceId,
-			);
+			try {
+				const currentWorkspace = await findWorkspaceById(input.workspaceId);
+				if (
+					currentWorkspace.organizationId !== ctx.session.activeOrganizationId
+				) {
+					throw new TRPCError({
+						code: "UNAUTHORIZED",
+						message: "You are not authorized to delete this workspace",
+					});
+				}
+				await checkWorkspaceAccess(ctx, "delete", input.workspaceId);
+				const deletedWorkspace = await deleteWorkspace(input.workspaceId);
 
-			return applyWorkspaceConnectionVariables(connection);
+				await audit(ctx, {
+					action: "delete",
+					resourceType: "workspace",
+					resourceId: currentWorkspace.workspaceId,
+					resourceName: currentWorkspace.name,
+				});
+				return deletedWorkspace;
+			} catch (error) {
+				throw error;
+			}
 		}),
-
-	syncServiceConnectionVariables: protectedProcedure
-		.input(apiSyncWorkspaceServiceConnectionVariables)
+	update: protectedProcedure
+		.input(apiUpdateWorkspace)
 		.mutation(async ({ input, ctx }) => {
-			await checkPermission(ctx, { envVars: ["write"] });
-			const environment = await getAuthorizedEnvironment(
-				ctx,
-				input.environmentId,
-			);
-			assertWorkspaceServiceExists(
-				environment,
-				input.serviceType,
-				input.serviceId,
-			);
+			try {
+				const currentWorkspace = await findWorkspaceById(input.workspaceId);
+				if (
+					currentWorkspace.organizationId !== ctx.session.activeOrganizationId
+				) {
+					throw new TRPCError({
+						code: "UNAUTHORIZED",
+						message: "You are not authorized to update this workspace",
+					});
+				}
 
-			return syncWorkspaceConnectionVariablesForService(input);
+				if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+					const { accessedWorkspaces } = await findMemberByUserId(
+						ctx.user.id,
+						ctx.session.activeOrganizationId,
+					);
+					if (!accessedWorkspaces.includes(input.workspaceId)) {
+						throw new TRPCError({
+							code: "UNAUTHORIZED",
+							message: "You don't have access to this workspace",
+						});
+					}
+				}
+
+				if (input.env !== undefined) {
+					await checkPermission(ctx, { workspaceEnvVars: ["write"] });
+				}
+
+				const workspace = await updateWorkspaceById(input.workspaceId, {
+					...input,
+				});
+
+				if (workspace) {
+					await audit(ctx, {
+						action: "update",
+						resourceType: "workspace",
+						resourceId: input.workspaceId,
+						resourceName: workspace.name,
+					});
+				}
+				return workspace;
+			} catch (error) {
+				throw error;
+			}
+		}),
+	duplicate: protectedProcedure
+		.input(
+			z.object({
+				sourceEnvironmentId: z.string(),
+				name: z.string(),
+				description: z.string().optional(),
+				includeServices: z.boolean().default(true),
+				selectedServices: z
+					.array(
+						z.object({
+							id: z.string(),
+							type: z.enum([
+								"application",
+								"compose",
+								"libsql",
+								"mariadb",
+								"mongo",
+								"mysql",
+								"postgres",
+								"redis",
+							]),
+						}),
+					)
+					.optional(),
+				duplicateInSameProject: z.boolean().default(false),
+			}),
+		)
+		.mutation(async ({ ctx, input }) => {
+			try {
+				await checkWorkspaceAccess(ctx, "create");
+
+				const sourceEnvironment = input.duplicateInSameProject
+					? await findEnvironmentById(input.sourceEnvironmentId)
+					: null;
+
+				if (
+					input.duplicateInSameProject &&
+					sourceEnvironment?.workspace.organizationId !==
+						ctx.session.activeOrganizationId
+				) {
+					throw new TRPCError({
+						code: "UNAUTHORIZED",
+						message: "You are not authorized to access this workspace",
+					});
+				}
+
+				if (
+					input.duplicateInSameProject &&
+					sourceEnvironment &&
+					ctx.user.role !== "owner" &&
+					ctx.user.role !== "admin"
+				) {
+					const { accessedWorkspaces } = await findMemberByUserId(
+						ctx.user.id,
+						ctx.session.activeOrganizationId,
+					);
+					if (
+						!accessedWorkspaces.includes(
+							sourceEnvironment.workspace.workspaceId,
+						)
+					) {
+						throw new TRPCError({
+							code: "UNAUTHORIZED",
+							message: "You don't have access to this workspace",
+						});
+					}
+				}
+
+				const targetProject = input.duplicateInSameProject
+					? sourceEnvironment
+					: await createWorkspace(
+							{
+								name: input.name,
+								description: input.description,
+								env: sourceEnvironment?.workspace.env,
+							},
+							ctx.session.activeOrganizationId,
+						).then((value) => value.environment);
+
+				if (input.includeServices) {
+					const servicesToDuplicate = input.selectedServices || [];
+
+					const duplicateService = async (id: string, type: string) => {
+						switch (type) {
+							case "application": {
+								const {
+									applicationId,
+									domains,
+									security,
+									ports,
+									registry,
+									redirects,
+									previewDeployments,
+									mounts,
+									appName,
+									refreshToken,
+									...application
+								} = await findApplicationById(id);
+								const newAppName = appName.substring(
+									0,
+									appName.lastIndexOf("-"),
+								);
+
+								const newApplication = await createApplication({
+									...application,
+									appName: newAppName,
+									name: input.duplicateInSameProject
+										? `${application.name} (copy)`
+										: application.name,
+									environmentId: targetProject?.environmentId || "",
+								});
+
+								for (const domain of domains) {
+									const { domainId, ...rest } = domain;
+									await createDomain({
+										...rest,
+										applicationId: newApplication.applicationId,
+										domainType: "application",
+									});
+								}
+
+								for (const port of ports) {
+									const { portId, ...rest } = port;
+									await createPort({
+										...rest,
+										applicationId: newApplication.applicationId,
+									});
+								}
+
+								for (const mount of mounts) {
+									const { mountId, ...rest } = mount;
+									await createMount({
+										...rest,
+										serviceId: newApplication.applicationId,
+										serviceType: "application",
+									});
+								}
+
+								for (const redirect of redirects) {
+									const { redirectId, ...rest } = redirect;
+									await createRedirect({
+										...rest,
+										applicationId: newApplication.applicationId,
+									});
+								}
+
+								for (const secure of security) {
+									const { securityId, ...rest } = secure;
+									await createSecurity({
+										...rest,
+										applicationId: newApplication.applicationId,
+									});
+								}
+
+								for (const previewDeployment of previewDeployments) {
+									const { previewDeploymentId, ...rest } = previewDeployment;
+									await createPreviewDeployment({
+										...rest,
+										applicationId: newApplication.applicationId,
+										domainId: undefined,
+									});
+								}
+
+								break;
+							}
+							case "compose": {
+								const {
+									composeId,
+									mounts,
+									domains,
+									appName,
+									refreshToken,
+									...compose
+								} = await findComposeById(id);
+
+								const newAppName = appName.substring(
+									0,
+									appName.lastIndexOf("-"),
+								);
+
+								const newCompose = await createCompose({
+									...compose,
+									appName: newAppName,
+									name: input.duplicateInSameProject
+										? `${compose.name} (copy)`
+										: compose.name,
+									environmentId: targetProject?.environmentId || "",
+								});
+
+								for (const mount of mounts) {
+									const { mountId, ...rest } = mount;
+									await createMount({
+										...rest,
+										serviceId: newCompose.composeId,
+										serviceType: "compose",
+									});
+								}
+
+								for (const domain of domains) {
+									const { domainId, ...rest } = domain;
+									await createDomain({
+										...rest,
+										composeId: newCompose.composeId,
+										domainType: "compose",
+									});
+								}
+
+								break;
+							}
+							case "libsql": {
+								const { libsqlId, mounts, appName, ...libsql } =
+									await findLibsqlById(id);
+
+								const newAppName = appName.substring(
+									0,
+									appName.lastIndexOf("-"),
+								);
+
+								const newLibsql = await createLibsql({
+									...libsql,
+									appName: newAppName,
+									name: input.duplicateInSameProject
+										? `${libsql.name} (copy)`
+										: libsql.name,
+									environmentId: targetProject?.environmentId || "",
+								});
+
+								for (const mount of mounts) {
+									const { mountId, ...rest } = mount;
+									await createMount({
+										...rest,
+										serviceId: newLibsql.libsqlId,
+										serviceType: "libsql",
+									});
+								}
+
+								break;
+							}
+							case "mariadb": {
+								const { mariadbId, mounts, backups, appName, ...mariadb } =
+									await findMariadbById(id);
+
+								const newAppName = appName.substring(
+									0,
+									appName.lastIndexOf("-"),
+								);
+
+								const newMariadb = await createMariadb({
+									...mariadb,
+									appName: newAppName,
+									name: input.duplicateInSameProject
+										? `${mariadb.name} (copy)`
+										: mariadb.name,
+									environmentId: targetProject?.environmentId || "",
+								});
+
+								for (const mount of mounts) {
+									const { mountId, ...rest } = mount;
+									await createMount({
+										...rest,
+										serviceId: newMariadb.mariadbId,
+										serviceType: "mariadb",
+									});
+								}
+
+								for (const backup of backups) {
+									const { backupId, appName: _appName, ...rest } = backup;
+									await createBackup({
+										...rest,
+										mariadbId: newMariadb.mariadbId,
+									});
+								}
+								break;
+							}
+							case "mongo": {
+								const { mongoId, mounts, backups, appName, ...mongo } =
+									await findMongoById(id);
+
+								const newAppName = appName.substring(
+									0,
+									appName.lastIndexOf("-"),
+								);
+
+								const newMongo = await createMongo({
+									...mongo,
+									appName: newAppName,
+									name: input.duplicateInSameProject
+										? `${mongo.name} (copy)`
+										: mongo.name,
+									environmentId: targetProject?.environmentId || "",
+								});
+
+								for (const mount of mounts) {
+									const { mountId, ...rest } = mount;
+									await createMount({
+										...rest,
+										serviceId: newMongo.mongoId,
+										serviceType: "mongo",
+									});
+								}
+
+								for (const backup of backups) {
+									const { backupId, appName: _appName, ...rest } = backup;
+									await createBackup({
+										...rest,
+										mongoId: newMongo.mongoId,
+									});
+								}
+								break;
+							}
+							case "mysql": {
+								const { mysqlId, mounts, backups, appName, ...mysql } =
+									await findMySqlById(id);
+
+								const newAppName = appName.substring(
+									0,
+									appName.lastIndexOf("-"),
+								);
+
+								const newMysql = await createMysql({
+									...mysql,
+									appName: newAppName,
+									name: input.duplicateInSameProject
+										? `${mysql.name} (copy)`
+										: mysql.name,
+									environmentId: targetProject?.environmentId || "",
+								});
+
+								for (const mount of mounts) {
+									const { mountId, ...rest } = mount;
+									await createMount({
+										...rest,
+										serviceId: newMysql.mysqlId,
+										serviceType: "mysql",
+									});
+								}
+
+								for (const backup of backups) {
+									const { backupId, appName: _appName, ...rest } = backup;
+									await createBackup({
+										...rest,
+										mysqlId: newMysql.mysqlId,
+									});
+								}
+								break;
+							}
+							case "postgres": {
+								const { postgresId, mounts, backups, appName, ...postgres } =
+									await findPostgresById(id);
+
+								const newAppName = appName.substring(
+									0,
+									appName.lastIndexOf("-"),
+								);
+
+								const newPostgres = await createPostgres({
+									...postgres,
+									appName: newAppName,
+									name: input.duplicateInSameProject
+										? `${postgres.name} (copy)`
+										: postgres.name,
+									environmentId: targetProject?.environmentId || "",
+								});
+
+								for (const mount of mounts) {
+									const { mountId, ...rest } = mount;
+									await createMount({
+										...rest,
+										serviceId: newPostgres.postgresId,
+										serviceType: "postgres",
+									});
+								}
+
+								for (const backup of backups) {
+									const { backupId, ...rest } = backup;
+									await createBackup({
+										...rest,
+										postgresId: newPostgres.postgresId,
+									});
+								}
+								break;
+							}
+							case "redis": {
+								const { redisId, mounts, appName, ...redis } =
+									await findRedisById(id);
+
+								const newAppName = appName.substring(
+									0,
+									appName.lastIndexOf("-"),
+								);
+
+								const newRedis = await createRedis({
+									...redis,
+									appName: newAppName,
+									name: input.duplicateInSameProject
+										? `${redis.name} (copy)`
+										: redis.name,
+									environmentId: targetProject?.environmentId || "",
+								});
+
+								for (const mount of mounts) {
+									const { mountId, ...rest } = mount;
+									await createMount({
+										...rest,
+										serviceId: newRedis.redisId,
+										serviceType: "redis",
+									});
+								}
+
+								break;
+							}
+						}
+					};
+
+					for (const service of servicesToDuplicate) {
+						await duplicateService(service.id, service.type);
+					}
+				}
+
+				if (!input.duplicateInSameProject) {
+					await addNewWorkspace(ctx, targetProject?.workspaceId || "");
+				}
+
+				await audit(ctx, {
+					action: "create",
+					resourceType: "workspace",
+					resourceId: targetProject?.workspaceId || "",
+					resourceName: input.name,
+					metadata: { duplicatedFrom: input.sourceEnvironmentId },
+				});
+				return targetProject;
+			} catch (error) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `Error duplicating the workspace: ${error instanceof Error ? error.message : error}`,
+					cause: error,
+				});
+			}
 		}),
 });
+
+function buildServiceFilter(
+	fieldName: AnyPgColumn,
+	accessedServices: string[],
+) {
+	return accessedServices.length === 0
+		? sql`false`
+		: sql`${fieldName} IN (${sql.join(
+				accessedServices.map((serviceId) => sql`${serviceId}`),
+				sql`, `,
+			)})`;
+}

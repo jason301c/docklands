@@ -6,7 +6,7 @@ import { z } from "zod";
 import { backups } from "./backups";
 import { environments } from "./environment";
 import { mounts } from "./mount";
-import { server } from "./server";
+import { runtimeWorkers } from "./runtime-worker";
 import {
 	applicationStatus,
 	type EndpointSpecSwarm,
@@ -82,9 +82,12 @@ export const postgres = pgTable("postgres", {
 	environmentId: text("environmentId")
 		.notNull()
 		.references(() => environments.environmentId, { onDelete: "cascade" }),
-	serverId: text("serverId").references(() => server.serverId, {
-		onDelete: "cascade",
-	}),
+	runtimeWorkerId: text("runtimeWorkerId").references(
+		() => runtimeWorkers.runtimeWorkerId,
+		{
+			onDelete: "cascade",
+		},
+	),
 });
 
 export const postgresRelations = relations(postgres, ({ one, many }) => ({
@@ -94,9 +97,9 @@ export const postgresRelations = relations(postgres, ({ one, many }) => ({
 	}),
 	backups: many(backups),
 	mounts: many(mounts),
-	server: one(server, {
-		fields: [postgres.serverId],
-		references: [server.serverId],
+	runtimeWorker: one(runtimeWorkers, {
+		fields: [postgres.runtimeWorkerId],
+		references: [runtimeWorkers.runtimeWorkerId],
 	}),
 }));
 
@@ -127,7 +130,7 @@ const createSchema = createInsertSchema(postgres, {
 	externalPort: z.number().nullish(),
 	createdAt: z.string(),
 	description: z.string().nullish(),
-	serverId: z.string().nullish(),
+	runtimeWorkerId: z.string().nullish(),
 	healthCheckSwarm: HealthCheckSwarmSchema.nullable(),
 	restartPolicySwarm: RestartPolicySwarmSchema.nullable(),
 	placementSwarm: PlacementSwarmSchema.nullable(),
@@ -150,7 +153,7 @@ export const apiCreatePostgres = createSchema.pick({
 	dockerImage: true,
 	environmentId: true,
 	description: true,
-	serverId: true,
+	runtimeWorkerId: true,
 });
 
 export const apiFindOnePostgres = z.object({
@@ -197,7 +200,7 @@ export const apiUpdatePostgres = createSchema
 		postgresId: z.string().min(1),
 		dockerImage: z.string().optional(),
 	})
-	.omit({ serverId: true });
+	.omit({ runtimeWorkerId: true });
 
 export const apiRebuildPostgres = createSchema
 	.pick({

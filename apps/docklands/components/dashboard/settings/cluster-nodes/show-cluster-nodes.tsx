@@ -18,12 +18,12 @@ import { AddClusterNode } from "./add-cluster-node";
 import { ShowClusterNodeData } from "./show-cluster-node-data";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const ShowClusterNodes = ({ serverId }: Props) => {
+export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 	const { data, isPending, refetch } = api.cluster.getNodes.useQuery({
-		serverId,
+		runtimeWorkerId,
 	});
 	const { data: registry } = api.registry.all.useQuery();
 
@@ -43,7 +43,7 @@ export const ShowClusterNodes = ({ serverId }: Props) => {
 					</div>
 					{haveAtLeastOneRegistry && (
 						<div className="flex flex-row gap-2">
-							<AddClusterNode serverId={serverId} />
+							<AddClusterNode runtimeWorkerId={runtimeWorkerId} />
 						</div>
 					)}
 				</div>
@@ -131,7 +131,7 @@ export const ShowClusterNodes = ({ serverId }: Props) => {
 																	onClick={async () => {
 																		await deleteNode({
 																			nodeId: node.ID,
-																			serverId,
+																			runtimeWorkerId,
 																		})
 																			.then(() => {
 																				refetch();

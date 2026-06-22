@@ -22,13 +22,13 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   plausible_events_db:
-    image: clickhouse/clickhouse-server:23.3.7.5-alpine
+    image: clickhouse/clickhouse-runtimeWorker:23.3.7.5-alpine
     restart: always
     volumes:
       - event-data:/var/lib/clickhouse
-      - event-logs:/var/log/clickhouse-server
-      - ./clickhouse/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro
-      - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
+      - event-logs:/var/log/clickhouse-runtimeWorker
+      - ./clickhouse/clickhouse-config.xml:/etc/clickhouse-runtimeWorker/config.d/logging.xml:ro
+      - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-runtimeWorker/users.d/logging.xml:ro
     ulimits:
       nofile:
         soft: 262144
@@ -85,13 +85,13 @@ services:
       - POSTGRES_PASSWORD=postgres
 
   plausible_events_db:
-    image: clickhouse/clickhouse-server:23.3.7.5-alpine
+    image: clickhouse/clickhouse-runtimeWorker:23.3.7.5-alpine
     restart: always
     volumes:
       - event-data-testhash:/var/lib/clickhouse
-      - event-logs-testhash:/var/log/clickhouse-server
-      - ./clickhouse/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro
-      - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
+      - event-logs-testhash:/var/log/clickhouse-runtimeWorker
+      - ./clickhouse/clickhouse-config.xml:/etc/clickhouse-runtimeWorker/config.d/logging.xml:ro
+      - ./clickhouse/clickhouse-user-config.xml:/etc/clickhouse-runtimeWorker/users.d/logging.xml:ro
     ulimits:
       nofile:
         soft: 262144

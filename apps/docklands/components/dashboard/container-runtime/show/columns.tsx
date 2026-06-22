@@ -120,37 +120,37 @@ export const columns: ColumnDef<Container>[] = [
 						<DropdownMenu.Label>Actions</DropdownMenu.Label>
 						<ShowDockerModalLogs
 							containerId={container.containerId}
-							serverId={container.serverId}
+							runtimeWorkerId={container.runtimeWorkerId}
 						>
 							View Logs
 						</ShowDockerModalLogs>
 						<ShowContainerConfig
 							containerId={container.containerId}
-							serverId={container.serverId || ""}
+							runtimeWorkerId={container.runtimeWorkerId || ""}
 						/>
 						<ShowContainerMounts
 							containerId={container.containerId}
-							serverId={container.serverId || ""}
+							runtimeWorkerId={container.runtimeWorkerId || ""}
 						/>
 						<ShowContainerNetworks
 							containerId={container.containerId}
-							serverId={container.serverId || ""}
+							runtimeWorkerId={container.runtimeWorkerId || ""}
 						/>
 						<DockerTerminalModal
 							containerId={container.containerId}
-							serverId={container.serverId || ""}
+							runtimeWorkerId={container.runtimeWorkerId || ""}
 						>
 							Terminal
 						</DockerTerminalModal>
 						<UploadFileModal
 							containerId={container.containerId}
-							serverId={container.serverId || undefined}
+							runtimeWorkerId={container.runtimeWorkerId || undefined}
 						>
 							Upload File
 						</UploadFileModal>
 						<RemoveContainerDialog
 							containerId={container.containerId}
-							serverId={container.serverId ?? undefined}
+							runtimeWorkerId={container.runtimeWorkerId ?? undefined}
 						/>
 					</DropdownMenu.Content>
 				</DropdownMenu>

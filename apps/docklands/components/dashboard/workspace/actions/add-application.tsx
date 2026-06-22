@@ -36,7 +36,7 @@ const AddTemplateSchema = z.object({
 			message: APP_NAME_MESSAGE,
 		}),
 	description: z.string().optional(),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
 type AddTemplate = z.infer<typeof AddTemplateSchema>;
@@ -88,7 +88,8 @@ export const AddApplication = ({
 			name: data.name,
 			appName: data.appName,
 			description: data.description,
-			serverId: data.serverId === "docklands" ? undefined : data.serverId,
+			runtimeWorkerId:
+				data.runtimeWorkerId === "docklands" ? undefined : data.runtimeWorkerId,
 			environmentId,
 		})
 			.then(async () => {
@@ -156,7 +157,7 @@ export const AddApplication = ({
 						{shouldShowServerDropdown && (
 							<PlacementFormField
 								control={form.control}
-								name="serverId"
+								name="runtimeWorkerId"
 								ariaLabel="Service placement"
 								workers={servers}
 								showAutomaticPlacement={showLocalOption}

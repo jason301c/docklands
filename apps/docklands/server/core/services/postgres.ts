@@ -12,7 +12,7 @@ import { generatePassword } from "@/server/core/templates";
 import { buildPostgres } from "@/server/core/utils/databases/postgres";
 import { pullImage } from "@/server/core/utils/docker/utils";
 import { execAsyncRemote } from "@/server/core/utils/process/execAsync";
-import { validUniqueServerAppName } from "./project";
+import { validUniqueServerAppName } from "./workspace";
 
 export function getMountPath(dockerImage: string): string {
 	const versionMatch = dockerImage.match(/postgres:(\d+)/);
@@ -69,11 +69,11 @@ export const findPostgresById = async (postgresId: string) => {
 		with: {
 			environment: {
 				with: {
-					project: true,
+					workspace: true,
 				},
 			},
 			mounts: true,
-			server: true,
+			runtimeWorker: true,
 			backups: {
 				with: {
 					destination: {
@@ -152,9 +152,9 @@ export const deployPostgres = async (
 
 		onData?.("Starting postgres deployment...");
 
-		if (postgres.serverId) {
+		if (postgres.runtimeWorkerId) {
 			await execAsyncRemote(
-				postgres.serverId,
+				postgres.runtimeWorkerId,
 				`docker pull ${postgres.dockerImage}`,
 				onData,
 			);

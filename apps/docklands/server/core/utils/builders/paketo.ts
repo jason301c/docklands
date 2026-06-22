@@ -8,7 +8,7 @@ export const getPaketoCommand = (application: ApplicationNested) => {
 	const buildAppDirectory = getBuildAppDirectory(application);
 	const envVariables = prepareEnvironmentVariablesForShell(
 		env,
-		application.environment.project.env,
+		application.environment.workspace.env,
 		application.environment.env,
 	);
 

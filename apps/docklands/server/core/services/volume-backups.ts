@@ -16,7 +16,7 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},
@@ -25,7 +25,7 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},
@@ -34,7 +34,7 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},
@@ -43,7 +43,7 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},
@@ -52,7 +52,7 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},
@@ -61,7 +61,7 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},
@@ -70,7 +70,7 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},
@@ -79,7 +79,7 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 				with: {
 					environment: {
 						with: {
-							project: true,
+							workspace: true,
 						},
 					},
 				},

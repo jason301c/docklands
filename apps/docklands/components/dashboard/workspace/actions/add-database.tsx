@@ -37,7 +37,7 @@ type DbType = z.infer<typeof mySchema>["type"];
 
 const dockerImageDefaultPlaceholder: Record<DbType, string> = {
 	mongo: "mongo:8",
-	libsql: "ghcr.io/tursodatabase/libsql-server:v0.24.32",
+	libsql: "ghcr.io/tursodatabase/libsql-runtimeWorker:v0.24.32",
 	mariadb: "mariadb:11",
 	mysql: "mysql:8",
 	postgres: "postgres:18",
@@ -73,7 +73,7 @@ const baseDatabaseSchema = z.object({
 		}),
 	dockerImage: z.string(),
 	description: z.string().nullable(),
-	serverId: z.string().nullable(),
+	runtimeWorkerId: z.string().nullable(),
 });
 
 const mySchema = z
@@ -83,7 +83,7 @@ const mySchema = z
 				type: z.literal("libsql"),
 				dockerImage: z
 					.string()
-					.default("ghcr.io/tursodatabase/libsql-server:v0.24.32"),
+					.default("ghcr.io/tursodatabase/libsql-runtimeWorker:v0.24.32"),
 				databaseUser: z.string().default("libsql"),
 				sqldNode: z.enum(["primary", "replica"]).default("primary"),
 				sqldPrimaryUrl: z.string().optional(),
@@ -240,7 +240,7 @@ export const AddDatabase = ({
 			description: "",
 			databaseName: "",
 			databaseUser: "",
-			serverId: null,
+			runtimeWorkerId: null,
 		},
 		resolver: zodResolver(mySchema),
 	});
@@ -268,7 +268,7 @@ export const AddDatabase = ({
 			appName: `${slug}-`,
 			databasePassword: "",
 			description: "",
-			serverId: null,
+			runtimeWorkerId: null,
 		};
 
 		switch (databaseType) {
@@ -334,7 +334,8 @@ export const AddDatabase = ({
 			name: data.name,
 			appName: data.appName,
 			dockerImage: defaultDockerImage,
-			serverId: data.serverId === "docklands" ? undefined : data.serverId,
+			runtimeWorkerId:
+				data.runtimeWorkerId === "docklands" ? undefined : data.runtimeWorkerId,
 			environmentId,
 			description: data.description,
 		};
@@ -348,7 +349,8 @@ export const AddDatabase = ({
 				databasePassword: data.databasePassword,
 				databaseUser:
 					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				serverId: data.serverId === "docklands" ? null : data.serverId,
+				runtimeWorkerId:
+					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
 			});
 		} else if (data.type === "mariadb") {
 			promise = mariadbMutation.mutateAsync({
@@ -358,7 +360,8 @@ export const AddDatabase = ({
 				databaseName: data.databaseName || "mariadb",
 				databaseUser:
 					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				serverId: data.serverId === "docklands" ? null : data.serverId,
+				runtimeWorkerId:
+					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
 			});
 		} else if (data.type === "mongo") {
 			promise = mongoMutation.mutateAsync({
@@ -366,7 +369,8 @@ export const AddDatabase = ({
 				databasePassword: data.databasePassword,
 				databaseUser:
 					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				serverId: data.serverId === "docklands" ? null : data.serverId,
+				runtimeWorkerId:
+					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
 				replicaSets: data.replicaSets,
 			});
 		} else if (data.type === "mysql") {
@@ -376,7 +380,8 @@ export const AddDatabase = ({
 				databaseName: data.databaseName || "mysql",
 				databaseUser:
 					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				serverId: data.serverId === "docklands" ? null : data.serverId,
+				runtimeWorkerId:
+					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
 				databaseRootPassword: data.databaseRootPassword || "",
 			});
 		} else if (data.type === "postgres") {
@@ -386,13 +391,15 @@ export const AddDatabase = ({
 				databaseName: data.databaseName || "postgres",
 				databaseUser:
 					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				serverId: data.serverId === "docklands" ? null : data.serverId,
+				runtimeWorkerId:
+					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
 			});
 		} else if (data.type === "redis") {
 			promise = redisMutation.mutateAsync({
 				...commonParams,
 				databasePassword: data.databasePassword,
-				serverId: data.serverId === "docklands" ? null : data.serverId,
+				runtimeWorkerId:
+					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
 			});
 		}
 
@@ -515,7 +522,7 @@ export const AddDatabase = ({
 								{shouldShowServerDropdown && (
 									<PlacementFormField
 										control={form.control}
-										name="serverId"
+										name="runtimeWorkerId"
 										ariaLabel="Database placement"
 										workers={servers}
 										showAutomaticPlacement={showLocalOption}

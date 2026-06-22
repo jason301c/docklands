@@ -45,10 +45,10 @@ export const ComposeActions = ({ composeId }: Props) => {
 								.then(() => {
 									toast.success("Compose build queued");
 									refetch();
-									if (data?.environment.projectId && data.environmentId) {
+									if (data?.environment.workspaceId && data.environmentId) {
 										router.push(
 											workspaceServicePath({
-												workspaceId: data.environment.projectId,
+												workspaceId: data.environment.workspaceId,
 												environmentId: data.environmentId,
 												serviceType: "compose",
 												serviceId: composeId,
@@ -211,7 +211,7 @@ export const ComposeActions = ({ composeId }: Props) => {
 			</TooltipProvider>
 			<ServiceTerminalModal
 				appName={data?.appName || ""}
-				serverId={data?.serverId || ""}
+				runtimeWorkerId={data?.runtimeWorkerId || ""}
 				appType={data?.composeType || "docker-compose"}
 			>
 				<Button

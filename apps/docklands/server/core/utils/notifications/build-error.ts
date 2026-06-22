@@ -123,7 +123,7 @@ export const sendBuildErrorNotifications = async ({
 					color: 0xed4245,
 					fields: [
 						{
-							name: decorate("`🛠️`", "Project"),
+							name: decorate("`🛠️`", "Workspace"),
 							value: projectName,
 							inline: true,
 						},
@@ -224,7 +224,7 @@ export const sendBuildErrorNotifications = async ({
 							pretext: ":warning: *Build Failed*",
 							fields: [
 								{
-									title: "Project",
+									title: "Workspace",
 									value: projectName,
 									short: true,
 								},
@@ -420,7 +420,7 @@ ${errorMessage}
 				await sendTeamsNotification(teams, {
 					title: "⚠️ Build Failed",
 					facts: [
-						{ name: "Project", value: projectName },
+						{ name: "Workspace", value: projectName },
 						{ name: "Application", value: applicationName },
 						{ name: "Type", value: applicationType },
 						{ name: "Date", value: format(date, "PP pp") },

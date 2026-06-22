@@ -29,10 +29,10 @@ type UpdateIngressFileConfig = z.infer<typeof UpdateIngressFileConfigSchema>;
 
 interface Props {
 	path: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const ShowIngressFile = ({ path, serverId }: Props) => {
+export const ShowIngressFile = ({ path, runtimeWorkerId }: Props) => {
 	const {
 		data,
 		refetch,
@@ -40,7 +40,7 @@ export const ShowIngressFile = ({ path, serverId }: Props) => {
 	} = api.settings.readTraefikFile.useQuery(
 		{
 			path,
-			serverId,
+			runtimeWorkerId,
 		},
 		{
 			enabled: !!path,
@@ -81,7 +81,7 @@ export const ShowIngressFile = ({ path, serverId }: Props) => {
 		await mutateAsync({
 			traefikConfig: data.traefikConfig,
 			path,
-			serverId,
+			runtimeWorkerId,
 		})
 			.then(async () => {
 				toast.success("Ingress config updated");

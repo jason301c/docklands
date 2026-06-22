@@ -26,7 +26,7 @@ import {
 } from "@/server/core/services/domain";
 import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 import { findPreviewDeploymentById } from "@/server/core/services/preview-deployment";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { manageDomain, removeDomain } from "@/server/core/utils/traefik/domain";
 
@@ -80,20 +80,24 @@ export const domainRouter = createTRPCRouter({
 			return await findDomainsByComposeId(input.composeId);
 		}),
 	generateDomain: withPermission("domain", "create")
-		.input(z.object({ appName: z.string(), serverId: z.string().optional() }))
+		.input(
+			z.object({ appName: z.string(), runtimeWorkerId: z.string().optional() }),
+		)
 		.mutation(async ({ input, ctx }) => {
 			return generateTraefikMeDomain(
 				input.appName,
 				ctx.user.ownerId,
-				input.serverId,
+				input.runtimeWorkerId,
 			);
 		}),
 	canGenerateTraefikMeDomains: withPermission("domain", "read")
-		.input(z.object({ serverId: z.string() }))
+		.input(z.object({ runtimeWorkerId: z.string() }))
 		.query(async ({ input }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				return server.ipAddress;
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				return runtimeWorker.ipAddress;
 			}
 			const settings = await getWebServerSettings();
 			return settings?.serverIp || "";

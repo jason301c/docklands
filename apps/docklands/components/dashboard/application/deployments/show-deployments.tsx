@@ -33,12 +33,12 @@ interface Props {
 		| "application"
 		| "compose"
 		| "schedule"
-		| "server"
+		| "runtimeWorker"
 		| "backup"
 		| "previewDeployment"
 		| "volumeBackup";
 	refreshToken?: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
 export const formatDuration = (seconds: number) => {
@@ -52,7 +52,7 @@ export const ShowDeployments = ({
 	id,
 	type,
 	refreshToken,
-	serverId,
+	runtimeWorkerId,
 }: Props) => {
 	const [activeLog, setActiveLog] = useState<
 		RouterOutputs["deployment"]["all"][number] | null
@@ -466,7 +466,7 @@ export const ShowDeployments = ({
 					</div>
 				)}
 				<ShowDeployment
-					serverId={activeLog?.buildServerId || serverId}
+					runtimeWorkerId={activeLog?.buildRuntimeWorkerId || runtimeWorkerId}
 					open={Boolean(activeLog && activeLog.logPath !== null)}
 					onClose={() => setActiveLog(null)}
 					logPath={activeLog?.logPath || ""}

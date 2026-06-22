@@ -71,7 +71,7 @@ interface CloneBitbucketRepository {
 	bitbucketBranch: string | null;
 	bitbucketId: string | null;
 	enableSubmodules: boolean;
-	serverId: string | null;
+	runtimeWorkerId: string | null;
 	type?: "application" | "compose";
 	outputPathOverride?: string;
 }
@@ -88,10 +88,10 @@ export const cloneBitbucketRepository = async ({
 		bitbucketBranch,
 		bitbucketId,
 		enableSubmodules,
-		serverId,
+		runtimeWorkerId,
 		outputPathOverride,
 	} = entity;
-	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!serverId);
+	const { COMPOSE_PATH, APPLICATIONS_PATH } = paths(!!runtimeWorkerId);
 
 	if (!bitbucketId) {
 		command += `echo "Error: ❌ Bitbucket Provider not found"; exit 1;`;

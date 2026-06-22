@@ -43,23 +43,23 @@ export const getLocalServerIp = async () => {
 		const ip = stdout.trim();
 		return (
 			ip ||
-			"We were unable to obtain the local server IP, please use your private IP address"
+			"We were unable to obtain the local runtimeWorker IP, please use your private IP address"
 		);
 	} catch (error) {
-		console.error("Error obtaining local server IP", error);
-		return "We were unable to obtain the local server IP, please use your private IP address";
+		console.error("Error obtaining local runtimeWorker IP", error);
+		return "We were unable to obtain the local runtimeWorker IP, please use your private IP address";
 	}
 };
 
 export const readValidDirectory = (
 	directory: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
 	if (!/^[\w/. :[\]-]{1,500}$/.test(directory)) {
 		return false;
 	}
 
-	const { BASE_PATH } = paths(!!serverId);
+	const { BASE_PATH } = paths(!!runtimeWorkerId);
 
 	const resolvedBase = path.resolve(BASE_PATH);
 	const resolvedDir = path.resolve(directory);

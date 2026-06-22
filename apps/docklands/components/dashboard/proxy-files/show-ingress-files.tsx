@@ -13,9 +13,9 @@ import { Tree } from "@/components/shared/file-tree";
 import { ShowIngressFile } from "./show-ingress-file";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
-export const ShowIngressFiles = ({ serverId }: Props) => {
+export const ShowIngressFiles = ({ runtimeWorkerId }: Props) => {
 	const [file, setFile] = React.useState<null | string>(null);
 
 	const {
@@ -25,7 +25,7 @@ export const ShowIngressFiles = ({ serverId }: Props) => {
 		isError,
 	} = api.settings.readDirectories.useQuery(
 		{
-			serverId,
+			runtimeWorkerId,
 		},
 		{
 			retry: 2,
@@ -91,7 +91,10 @@ export const ShowIngressFiles = ({ serverId }: Props) => {
 								/>
 								<div className="w-full">
 									{file ? (
-										<ShowIngressFile path={file} serverId={serverId} />
+										<ShowIngressFile
+											path={file}
+											runtimeWorkerId={runtimeWorkerId}
+										/>
 									) : (
 										<div className="h-full min-h-[300px] w-full flex-col gap-4 flex items-center justify-center border border-dashed rounded-lg">
 											<div className="flex items-center justify-center size-14 rounded-full bg-muted">

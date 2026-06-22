@@ -23,12 +23,12 @@ export type Container = NonNullable<
 >[0];
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const ShowContainers = ({ serverId }: Props) => {
+export const ShowContainers = ({ runtimeWorkerId }: Props) => {
 	const { data, isPending } = api.docker.getContainers.useQuery({
-		serverId,
+		runtimeWorkerId,
 	});
 
 	const [sorting, setSorting] = React.useState<SortingState>([]);

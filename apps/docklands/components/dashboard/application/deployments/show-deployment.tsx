@@ -12,14 +12,14 @@ interface Props {
 	logPath: string | null;
 	open: boolean;
 	onClose: () => void;
-	serverId?: string;
+	runtimeWorkerId?: string;
 	errorMessage?: string;
 }
 export const ShowDeployment = ({
 	logPath,
 	open,
 	onClose,
-	serverId,
+	runtimeWorkerId,
 	errorMessage,
 }: Props) => {
 	const [data, setData] = useState("");
@@ -50,7 +50,7 @@ export const ShowDeployment = ({
 		setData("");
 		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
 
-		const wsUrl = `${protocol}//${window.location.host}/listen-deployment?logPath=${logPath}${serverId ? `&runtimeWorkerId=${serverId}` : ""}`;
+		const wsUrl = `${protocol}//${window.location.host}/listen-deployment?logPath=${logPath}${runtimeWorkerId ? `&runtimeWorkerId=${runtimeWorkerId}` : ""}`;
 		const ws = new WebSocket(wsUrl);
 		wsRef.current = ws; // Store WebSocket instance in ref
 
@@ -72,12 +72,12 @@ export const ShowDeployment = ({
 				wsRef.current = null;
 			}
 		};
-	}, [logPath, open, serverId]);
+	}, [logPath, open, runtimeWorkerId]);
 
 	useEffect(() => {
 		const logs = parseLogs(data);
 		let filteredLogsResult = logs;
-		if (serverId) {
+		if (runtimeWorkerId) {
 			let hideSubsequentLogs = false;
 			filteredLogsResult = logs.filter((log) => {
 				if (
@@ -160,7 +160,7 @@ export const ShowDeployment = ({
 							)}
 						</Button>
 
-						{serverId && (
+						{runtimeWorkerId && (
 							<div className="flex items-center space-x-2">
 								<Checkbox
 									checked={showExtraLogs}

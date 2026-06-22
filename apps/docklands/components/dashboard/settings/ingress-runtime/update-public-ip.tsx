@@ -27,7 +27,7 @@ type Schema = z.infer<typeof schema>;
 
 interface Props {
 	children?: React.ReactNode;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
 export const UpdatePublicIp = ({ children }: Props) => {

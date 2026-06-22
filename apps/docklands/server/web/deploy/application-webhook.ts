@@ -15,7 +15,7 @@ import {
 } from "@/server/web/request";
 
 /**
- * Log a webhook handler error server-side without leaking its shape to the HTTP
+ * Log a webhook handler error runtimeWorker-side without leaking its shape to the HTTP
  * response. Drizzle errors carry the raw SQL query, column list and parameters,
  * so we never forward the error object to the client.
  */
@@ -50,7 +50,7 @@ export async function handleApplicationDeployWebhook(
 			with: {
 				environment: {
 					with: {
-						project: true,
+						workspace: true,
 					},
 				},
 				bitbucket: true,
@@ -248,11 +248,11 @@ export async function handleApplicationDeployWebhook(
 				...(deploymentHash && { descriptionLog: `Hash: ${deploymentHash}` }),
 				type: "deploy",
 				applicationType: "application",
-				server: !!application.serverId,
+				runtimeWorker: !!application.runtimeWorkerId,
 			};
 
-			if (IS_CLOUD && application.serverId) {
-				jobData.serverId = application.serverId;
+			if (IS_CLOUD && application.runtimeWorkerId) {
+				jobData.runtimeWorkerId = application.runtimeWorkerId;
 				deploy(jobData).catch((error) => {
 					console.error("Background deployment failed:", error);
 				});

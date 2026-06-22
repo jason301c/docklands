@@ -52,15 +52,15 @@ export const createTraefikConfig = (appName: string) => {
 
 export const removeTraefikConfig = async (
 	appName: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
 	try {
-		const { DYNAMIC_TRAEFIK_PATH } = paths(!!serverId);
+		const { DYNAMIC_TRAEFIK_PATH } = paths(!!runtimeWorkerId);
 		const configPath = path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`);
 		const command = `rm -f ${configPath}`;
 
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -71,12 +71,12 @@ export const removeTraefikConfig = async (
 
 export const removeTraefikConfigRemote = async (
 	appName: string,
-	serverId: string,
+	runtimeWorkerId: string,
 ) => {
 	try {
 		const { DYNAMIC_TRAEFIK_PATH } = paths(true);
 		const configPath = path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`);
-		await execAsyncRemote(serverId, `rm -f ${configPath}`);
+		await execAsyncRemote(runtimeWorkerId, `rm -f ${configPath}`);
 	} catch (error) {
 		console.error(
 			`Error removing remote traefik config for ${appName}:`,
@@ -99,14 +99,17 @@ export const loadOrCreateConfig = (appName: string): FileConfig => {
 };
 
 export const loadOrCreateConfigRemote = async (
-	serverId: string,
+	runtimeWorkerId: string,
 	appName: string,
 ) => {
 	const { DYNAMIC_TRAEFIK_PATH } = paths(true);
 	const fileConfig: FileConfig = { http: { routers: {}, services: {} } };
 	const configPath = path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`);
 	try {
-		const { stdout } = await execAsyncRemote(serverId, `cat ${configPath}`);
+		const { stdout } = await execAsyncRemote(
+			runtimeWorkerId,
+			`cat ${configPath}`,
+		);
 
 		if (!stdout) return fileConfig;
 
@@ -129,11 +132,17 @@ export const readConfig = (appName: string) => {
 	return null;
 };
 
-export const readRemoteConfig = async (serverId: string, appName: string) => {
+export const readRemoteConfig = async (
+	runtimeWorkerId: string,
+	appName: string,
+) => {
 	const { DYNAMIC_TRAEFIK_PATH } = paths(true);
 	const configPath = path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`);
 	try {
-		const { stdout } = await execAsyncRemote(serverId, `cat ${configPath}`);
+		const { stdout } = await execAsyncRemote(
+			runtimeWorkerId,
+			`cat ${configPath}`,
+		);
 		if (!stdout) return null;
 		return stdout;
 	} catch {
@@ -185,11 +194,17 @@ export const readMonitoringConfig = async (readAll = false) => {
 	return null;
 };
 
-export const readConfigInPath = async (pathFile: string, serverId?: string) => {
+export const readConfigInPath = async (
+	pathFile: string,
+	runtimeWorkerId?: string,
+) => {
 	const configPath = path.join(pathFile);
 
-	if (serverId) {
-		const { stdout } = await execAsyncRemote(serverId, `cat ${configPath}`);
+	if (runtimeWorkerId) {
+		const { stdout } = await execAsyncRemote(
+			runtimeWorkerId,
+			`cat ${configPath}`,
+		);
 		if (!stdout) return null;
 		return stdout;
 	}
@@ -211,7 +226,7 @@ export const writeConfig = (appName: string, traefikConfig: string) => {
 };
 
 export const writeConfigRemote = async (
-	serverId: string,
+	runtimeWorkerId: string,
 	appName: string,
 	traefikConfig: string,
 ) => {
@@ -220,7 +235,7 @@ export const writeConfigRemote = async (
 		const configPath = path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`);
 		const encoded = encodeBase64(traefikConfig);
 		await execAsyncRemote(
-			serverId,
+			runtimeWorkerId,
 			`echo "${encoded}" | base64 -d > "${configPath}"`,
 		);
 	} catch (e) {
@@ -231,14 +246,14 @@ export const writeConfigRemote = async (
 export const writeTraefikConfigInPath = async (
 	pathFile: string,
 	traefikConfig: string,
-	serverId?: string,
+	runtimeWorkerId?: string,
 ) => {
 	try {
 		const configPath = path.join(pathFile);
-		if (serverId) {
+		if (runtimeWorkerId) {
 			const encoded = encodeBase64(traefikConfig);
 			await execAsyncRemote(
-				serverId,
+				runtimeWorkerId,
 				`echo "${encoded}" | base64 -d > "${configPath}"`,
 			);
 		} else {
@@ -266,13 +281,13 @@ export const writeTraefikConfig = (
 export const writeTraefikConfigRemote = async (
 	traefikConfig: FileConfig,
 	appName: string,
-	serverId: string,
+	runtimeWorkerId: string,
 ) => {
 	try {
 		const { DYNAMIC_TRAEFIK_PATH } = paths(true);
 		const configPath = path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`);
 		const yamlStr = stringify(traefikConfig);
-		await execAsyncRemote(serverId, `echo '${yamlStr}' > ${configPath}`);
+		await execAsyncRemote(runtimeWorkerId, `echo '${yamlStr}' > ${configPath}`);
 	} catch (e) {
 		console.error("Error saving the YAML config file:", e);
 	}

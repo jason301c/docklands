@@ -16,13 +16,13 @@ export const DockerLogsId = dynamic(
 interface Props {
 	containerId: string;
 	children?: React.ReactNode;
-	serverId?: string | null;
+	runtimeWorkerId?: string | null;
 }
 
 export const ShowDockerModalLogs = ({
 	containerId,
 	children,
-	serverId,
+	runtimeWorkerId,
 }: Props) => {
 	return (
 		<Dialog.Root>
@@ -46,7 +46,7 @@ export const ShowDockerModalLogs = ({
 				<div className="flex flex-col gap-4 pt-2.5">
 					<DockerLogsId
 						containerId={containerId || ""}
-						serverId={serverId}
+						runtimeWorkerId={runtimeWorkerId}
 						runType="native"
 					/>
 				</div>

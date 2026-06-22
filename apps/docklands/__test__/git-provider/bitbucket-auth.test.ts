@@ -45,9 +45,7 @@ describe("Bitbucket authentication", () => {
 
 	it("removes the old Bitbucket App Password column from active schemas", () => {
 		const schema = sourceFile("server/core/db/schema/bitbucket.ts");
-		const migration = sourceFile(
-			"drizzle/0002_remove_legacy_project_env_and_bitbucket_password.sql",
-		);
+		const baseline = sourceFile("drizzle/0000_docklands_baseline.sql");
 
 		expect(schema).not.toContain("appPassword");
 		expect(schema).toContain("export const apiCreateBitbucket = createSchema");
@@ -55,8 +53,6 @@ describe("Bitbucket authentication", () => {
 			"export const apiBitbucketTestConnection = createSchema",
 		);
 		expect(schema).toContain("export const apiUpdateBitbucket = createSchema");
-		expect(migration).toContain(
-			'ALTER TABLE "bitbucket" DROP COLUMN "appPassword";',
-		);
+		expect(baseline).not.toContain('"appPassword"');
 	});
 });

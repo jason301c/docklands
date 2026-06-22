@@ -9,12 +9,12 @@ import { mariadb } from "./mariadb";
 import { mongo } from "./mongo";
 import { mysql } from "./mysql";
 import { postgres } from "./postgres";
-import { projects } from "./project";
 import { redis } from "./redis";
+import { workspaces } from "./workspace";
 import {
 	workspaceServiceConnections,
 	workspaceServiceLayouts,
-} from "./workspace";
+} from "./workspace-graph";
 
 export const environments = pgTable("environment", {
 	environmentId: text("environmentId")
@@ -27,18 +27,18 @@ export const environments = pgTable("environment", {
 		.notNull()
 		.$defaultFn(() => new Date().toISOString()),
 	env: text("env").notNull().default(""),
-	projectId: text("projectId")
+	workspaceId: text("workspaceId")
 		.notNull()
-		.references(() => projects.projectId, { onDelete: "cascade" }),
+		.references(() => workspaces.workspaceId, { onDelete: "cascade" }),
 	isDefault: boolean("isDefault").notNull().default(false),
 });
 
 export const environmentRelations = relations(
 	environments,
 	({ one, many }) => ({
-		project: one(projects, {
-			fields: [environments.projectId],
-			references: [projects.projectId],
+		workspace: one(workspaces, {
+			fields: [environments.workspaceId],
+			references: [workspaces.workspaceId],
 		}),
 		applications: many(applications),
 		compose: many(compose),
@@ -56,7 +56,7 @@ export const environmentRelations = relations(
 export const apiCreateEnvironment = z.object({
 	name: z.string().min(1),
 	description: z.string().optional(),
-	projectId: z.string().min(1),
+	workspaceId: z.string().min(1),
 });
 
 export const apiFindOneEnvironment = z.object({
@@ -71,7 +71,7 @@ export const apiUpdateEnvironment = z.object({
 	environmentId: z.string().min(1),
 	name: z.string().min(1).optional(),
 	description: z.string().optional(),
-	projectId: z.string().optional(),
+	workspaceId: z.string().optional(),
 	env: z.string().optional(),
 });
 

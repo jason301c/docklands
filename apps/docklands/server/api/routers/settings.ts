@@ -14,21 +14,21 @@ import {
 	apiModifyTraefikConfig,
 	apiReadStatsLogs,
 	apiReadTraefikConfig,
+	apiRuntimeWorkerSchema,
 	apiSaveSSHKey,
-	apiServerSchema,
 	apiTraefikConfig,
 	apiUpdateDockerCleanup,
 	apiUpdateWebServerBuildsConcurrency,
-	projects,
-	server,
+	runtimeWorkers,
+	workspaces,
 } from "@/server/core/db/schema";
 import { generateOpenApiDocument } from "@/server/core/openapi/generator/index.mjs";
 import { removeJob, schedule } from "@/server/core/runtime/backup";
 import { checkPermission } from "@/server/core/services/permission";
 import {
-	findServerById,
-	updateServerById,
-} from "@/server/core/services/server";
+	findRuntimeWorkerById,
+	updateRuntimeWorkerById,
+} from "@/server/core/services/runtime-worker";
 import {
 	checkPortInUse,
 	DEFAULT_UPDATE_DATA,
@@ -166,14 +166,15 @@ export const settingsRouter = createTRPCRouter({
 		return result;
 	}),
 	reloadTraefik: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.mutation(async ({ input, ctx }) => {
 			// Run in background so the request returns immediately; avoids proxy timeouts.
-			void reloadDockerResource("docklands-traefik", input?.serverId).catch(
-				(err) => {
-					console.error("reloadTraefik background:", err);
-				},
-			);
+			void reloadDockerResource(
+				"docklands-traefik",
+				input?.runtimeWorkerId,
+			).catch((err) => {
+				console.error("reloadTraefik background:", err);
+			});
 			await audit(ctx, {
 				action: "reload",
 				resourceType: "settings",
@@ -184,17 +185,17 @@ export const settingsRouter = createTRPCRouter({
 	toggleDashboard: adminProcedure
 		.input(apiEnableDashboard)
 		.mutation(async ({ input, ctx }) => {
-			const ports = await readPorts("docklands-traefik", input.serverId);
+			const ports = await readPorts("docklands-traefik", input.runtimeWorkerId);
 			const env = await readEnvironmentVariables(
 				"docklands-traefik",
-				input.serverId,
+				input.runtimeWorkerId,
 			);
 			const preparedEnv = prepareEnvironmentVariables(env);
 			let newPorts = ports;
 			// If receive true, add 8080 to ports
 			if (input.enableDashboard) {
 				// Check if port 8080 is already in use before enabling dashboard
-				const portCheck = await checkPortInUse(8080, input.serverId);
+				const portCheck = await checkPortInUse(8080, input.runtimeWorkerId);
 				if (portCheck.isInUse) {
 					const conflictInfo = portCheck.conflictingContainer
 						? ` by ${portCheck.conflictingContainer}`
@@ -218,7 +219,7 @@ export const settingsRouter = createTRPCRouter({
 			void writeTraefikSetup({
 				env: preparedEnv,
 				additionalPorts: newPorts,
-				serverId: input.serverId,
+				runtimeWorkerId: input.runtimeWorkerId,
 			}).catch((err) => {
 				console.error("toggleDashboard background writeTraefikSetup:", err);
 			});
@@ -230,9 +231,9 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 	cleanUnusedImages: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.mutation(async ({ input, ctx }) => {
-			await cleanupImages(input?.serverId);
+			await cleanupImages(input?.runtimeWorkerId);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "settings",
@@ -241,9 +242,9 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 	cleanUnusedVolumes: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.mutation(async ({ input, ctx }) => {
-			await cleanupVolumes(input?.serverId);
+			await cleanupVolumes(input?.runtimeWorkerId);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "settings",
@@ -252,9 +253,9 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 	cleanStoppedContainers: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.mutation(async ({ input, ctx }) => {
-			await cleanupContainers(input?.serverId);
+			await cleanupContainers(input?.runtimeWorkerId);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "settings",
@@ -263,9 +264,9 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 	cleanDockerBuilder: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.mutation(async ({ input, ctx }) => {
-			await cleanupBuilders(input?.serverId);
+			await cleanupBuilders(input?.runtimeWorkerId);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "settings",
@@ -273,10 +274,10 @@ export const settingsRouter = createTRPCRouter({
 			});
 		}),
 	cleanDockerPrune: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.mutation(async ({ input, ctx }) => {
-			await cleanupSystem(input?.serverId);
-			await cleanupBuilders(input?.serverId);
+			await cleanupSystem(input?.runtimeWorkerId);
+			await cleanupBuilders(input?.runtimeWorkerId);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "settings",
@@ -285,10 +286,10 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 	cleanAll: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.mutation(async ({ input, ctx }) => {
 			// Execute cleanup in background and return immediately to avoid gateway timeouts
-			const result = await cleanupAllBackground(input?.serverId);
+			const result = await cleanupAllBackground(input?.runtimeWorkerId);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "settings",
@@ -359,7 +360,7 @@ export const settingsRouter = createTRPCRouter({
 			await audit(ctx, {
 				action: "update",
 				resourceType: "settings",
-				resourceName: "assign-domain-server",
+				resourceName: "assign-domain-runtimeWorker",
 			});
 			return settings;
 		}),
@@ -380,23 +381,29 @@ export const settingsRouter = createTRPCRouter({
 	updateDockerCleanup: adminProcedure
 		.input(apiUpdateDockerCleanup)
 		.mutation(async ({ input, ctx }) => {
-			if (input.serverId) {
-				await updateServerById(input.serverId, {
+			if (input.runtimeWorkerId) {
+				await updateRuntimeWorkerById(input.runtimeWorkerId, {
 					enableDockerCleanup: input.enableDockerCleanup,
 				});
 
-				const server = await findServerById(input.serverId);
+				const runtimeWorkers = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
 
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					runtimeWorkers.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this runtime worker",
 					});
 				}
 
-				if (server.enableDockerCleanup) {
-					const server = await findServerById(input.serverId);
-					if (server.serverStatus === "inactive") {
+				if (runtimeWorkers.enableDockerCleanup) {
+					const runtimeWorkers = await findRuntimeWorkerById(
+						input.runtimeWorkerId,
+					);
+					if (runtimeWorkers.runtimeWorkerStatus === "inactive") {
 						throw new TRPCError({
 							code: "NOT_FOUND",
 							message: "Runtime worker is inactive",
@@ -405,29 +412,35 @@ export const settingsRouter = createTRPCRouter({
 					if (IS_CLOUD) {
 						await schedule({
 							cronSchedule: CLEANUP_CRON_JOB,
-							serverId: input.serverId,
-							type: "server",
+							runtimeWorkerId: input.runtimeWorkerId,
+							type: "runtimeWorker",
 						});
 					} else {
-						scheduleJob(server.serverId, CLEANUP_CRON_JOB, async () => {
-							console.log(
-								`Container Runtime Cleanup ${new Date().toLocaleString()}] Running...`,
-							);
+						scheduleJob(
+							runtimeWorkers.runtimeWorkerId,
+							CLEANUP_CRON_JOB,
+							async () => {
+								console.log(
+									`Container Runtime Cleanup ${new Date().toLocaleString()}] Running...`,
+								);
 
-							await cleanupAll(server.serverId);
+								await cleanupAll(runtimeWorkers.runtimeWorkerId);
 
-							await sendDockerCleanupNotifications(server.organizationId);
-						});
+								await sendDockerCleanupNotifications(
+									runtimeWorkers.organizationId,
+								);
+							},
+						);
 					}
 				} else {
 					if (IS_CLOUD) {
 						await removeJob({
 							cronSchedule: CLEANUP_CRON_JOB,
-							serverId: input.serverId,
-							type: "server",
+							runtimeWorkerId: input.runtimeWorkerId,
+							type: "runtimeWorker",
 						});
 					} else {
-						const currentJob = scheduledJobs[server.serverId];
+						const currentJob = scheduledJobs[runtimeWorkers.runtimeWorkerId];
 						currentJob?.cancel();
 					}
 				}
@@ -617,12 +630,15 @@ export const settingsRouter = createTRPCRouter({
 		return getDocklandsImageTag();
 	}),
 	readDirectories: protectedProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.query(async ({ ctx, input }) => {
 			try {
 				await checkPermission(ctx, { traefikFiles: ["read"] });
-				const { MAIN_TRAEFIK_PATH } = paths(!!input?.serverId);
-				const result = await readDirectory(MAIN_TRAEFIK_PATH, input?.serverId);
+				const { MAIN_TRAEFIK_PATH } = paths(!!input?.runtimeWorkerId);
+				const result = await readDirectory(
+					MAIN_TRAEFIK_PATH,
+					input?.runtimeWorkerId,
+				);
 				return result || [];
 			} catch (error) {
 				throw error;
@@ -636,7 +652,7 @@ export const settingsRouter = createTRPCRouter({
 			await writeTraefikConfigInPath(
 				input.path,
 				input.traefikConfig,
-				input?.serverId,
+				input?.runtimeWorkerId,
 			);
 			await audit(ctx, {
 				action: "update",
@@ -651,15 +667,19 @@ export const settingsRouter = createTRPCRouter({
 		.query(async ({ input, ctx }) => {
 			await checkPermission(ctx, { traefikFiles: ["read"] });
 
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
+			if (input.runtimeWorkerId) {
+				const runtimeWorkers = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
 
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+				if (
+					runtimeWorkers.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
 
-			return readConfigInPath(input.path, input.serverId);
+			return readConfigInPath(input.path, input.runtimeWorkerId);
 		}),
 	getIp: protectedProcedure.query(async () => {
 		if (IS_CLOUD) {
@@ -684,7 +704,7 @@ export const settingsRouter = createTRPCRouter({
 			await audit(ctx, {
 				action: "update",
 				resourceType: "settings",
-				resourceName: "server-ip",
+				resourceName: "runtimeWorker-ip",
 			});
 			return settings;
 		}),
@@ -715,7 +735,7 @@ export const settingsRouter = createTRPCRouter({
 					"security",
 					"redirects",
 					"port",
-					"project",
+					"workspace",
 					"application",
 					"mysql",
 					"postgres",
@@ -731,7 +751,7 @@ export const settingsRouter = createTRPCRouter({
 					"gitea",
 					"tag",
 					"patch",
-					"server",
+					"runtimeWorker",
 					"volumeBackups",
 					"environment",
 					"organization",
@@ -768,26 +788,31 @@ export const settingsRouter = createTRPCRouter({
 		},
 	),
 	readTraefikEnv: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.query(async ({ input }) => {
 			const envVars = await readEnvironmentVariables(
 				"docklands-traefik",
-				input?.serverId,
+				input?.runtimeWorkerId,
 			);
 			return envVars;
 		}),
 
 	writeTraefikEnv: adminProcedure
-		.input(z.object({ env: z.string(), serverId: z.string().optional() }))
+		.input(
+			z.object({ env: z.string(), runtimeWorkerId: z.string().optional() }),
+		)
 		.mutation(async ({ input, ctx }) => {
 			const envs = prepareEnvironmentVariables(input.env);
-			const ports = await readPorts("docklands-traefik", input?.serverId);
+			const ports = await readPorts(
+				"docklands-traefik",
+				input?.runtimeWorkerId,
+			);
 
 			// Run in background so the request returns immediately; client polls /api/health.
 			void writeTraefikSetup({
 				env: envs,
 				additionalPorts: ports,
-				serverId: input.serverId,
+				runtimeWorkerId: input.runtimeWorkerId,
 			}).catch((err) => {
 				console.error("writeTraefikEnv background writeTraefikSetup:", err);
 			});
@@ -799,9 +824,12 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 	haveTraefikDashboardPortEnabled: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.query(async ({ input }) => {
-			const ports = await readPorts("docklands-traefik", input?.serverId);
+			const ports = await readPorts(
+				"docklands-traefik",
+				input?.runtimeWorkerId,
+			);
 			return ports.some((port) => port.targetPort === 8080);
 		}),
 
@@ -927,12 +955,15 @@ export const settingsRouter = createTRPCRouter({
 		return IS_CLOUD;
 	}),
 	isUserSubscribed: protectedProcedure.query(async ({ ctx }) => {
-		const haveServers = await db.query.server.findMany({
-			where: eq(server.organizationId, ctx.session?.activeOrganizationId || ""),
-		});
-		const haveProjects = await db.query.projects.findMany({
+		const haveServers = await db.query.runtimeWorkers.findMany({
 			where: eq(
-				projects.organizationId,
+				runtimeWorkers.organizationId,
+				ctx.session?.activeOrganizationId || "",
+			),
+		});
+		const haveProjects = await db.query.workspaces.findMany({
+			where: eq(
+				workspaces.organizationId,
 				ctx.session?.activeOrganizationId || "",
 			),
 		});
@@ -967,16 +998,16 @@ export const settingsRouter = createTRPCRouter({
 	setupGPU: adminProcedure
 		.input(
 			z.object({
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD && !input.serverId) {
-				throw new Error("Select a server to enable the GPU Setup");
+			if (IS_CLOUD && !input.runtimeWorkerId) {
+				throw new Error("Select a runtime worker to enable the GPU Setup");
 			}
 
 			try {
-				await setupGPUSupport(input.serverId);
+				await setupGPUSupport(input.runtimeWorkerId);
 				await audit(ctx, {
 					action: "update",
 					resourceType: "settings",
@@ -991,11 +1022,11 @@ export const settingsRouter = createTRPCRouter({
 	checkGPUStatus: adminProcedure
 		.input(
 			z.object({
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input }) => {
-			if (IS_CLOUD && !input.serverId) {
+			if (IS_CLOUD && !input.runtimeWorkerId) {
 				return {
 					driverInstalled: false,
 					driverVersion: undefined,
@@ -1012,7 +1043,7 @@ export const settingsRouter = createTRPCRouter({
 			}
 
 			try {
-				return await checkGPUStatus(input.serverId || "");
+				return await checkGPUStatus(input.runtimeWorkerId || "");
 			} catch (error) {
 				const message =
 					error instanceof Error ? error.message : "Failed to check GPU status";
@@ -1025,7 +1056,7 @@ export const settingsRouter = createTRPCRouter({
 	updateTraefikPorts: adminProcedure
 		.input(
 			z.object({
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 				additionalPorts: z.array(
 					z.object({
 						targetPort: z.number(),
@@ -1037,21 +1068,21 @@ export const settingsRouter = createTRPCRouter({
 		)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				if (IS_CLOUD && !input.serverId) {
+				if (IS_CLOUD && !input.runtimeWorkerId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
-						message: "Please set a serverId to update Traefik ports",
+						message: "Please set a runtimeWorkerId to update Traefik ports",
 					});
 				}
 				const env = await readEnvironmentVariables(
 					"docklands-traefik",
-					input?.serverId,
+					input?.runtimeWorkerId,
 				);
 
 				for (const port of input.additionalPorts) {
 					const portCheck = await checkPortInUse(
 						port.publishedPort,
-						input.serverId,
+						input.runtimeWorkerId,
 					);
 					if (portCheck.isInUse) {
 						throw new TRPCError({
@@ -1066,7 +1097,7 @@ export const settingsRouter = createTRPCRouter({
 				void writeTraefikSetup({
 					env: preparedEnv,
 					additionalPorts: input.additionalPorts,
-					serverId: input.serverId,
+					runtimeWorkerId: input.runtimeWorkerId,
 				}).catch((err) => {
 					console.error(
 						"updateTraefikPorts background writeTraefikSetup:",
@@ -1091,9 +1122,12 @@ export const settingsRouter = createTRPCRouter({
 			}
 		}),
 	getTraefikPorts: adminProcedure
-		.input(apiServerSchema)
+		.input(apiRuntimeWorkerSchema)
 		.query(async ({ input }) => {
-			const ports = await readPorts("docklands-traefik", input?.serverId);
+			const ports = await readPorts(
+				"docklands-traefik",
+				input?.runtimeWorkerId,
+			);
 			return ports;
 		}),
 	updateLogCleanup: protectedProcedure

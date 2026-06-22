@@ -67,10 +67,10 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 										.then(() => {
 											toast.success("Application build queued");
 											refetch();
-											if (data?.environment.projectId && data.environmentId) {
+											if (data?.environment.workspaceId && data.environmentId) {
 												router.push(
 													workspaceServicePath({
-														workspaceId: data.environment.projectId,
+														workspaceId: data.environment.workspaceId,
 														environmentId: data.environmentId,
 														serviceType: "application",
 														serviceId: applicationId,
@@ -278,7 +278,7 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 					</TooltipProvider>
 					<ServiceTerminalModal
 						appName={data?.appName || ""}
-						serverId={data?.serverId || ""}
+						runtimeWorkerId={data?.runtimeWorkerId || ""}
 					>
 						<Button
 							variant="outline"

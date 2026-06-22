@@ -6,8 +6,8 @@ import { z } from "zod";
 import type { Application } from "@/server/core/services/application";
 import type { Mount } from "@/server/core/services/mount";
 import type { Port } from "@/server/core/services/port";
-import type { Project } from "@/server/core/services/project";
 import type { Registry } from "@/server/core/services/registry";
+import type { Workspace } from "@/server/core/services/workspace";
 import { deployments } from "./deployment";
 
 export const rollbacks = pgTable("rollback", {
@@ -28,7 +28,7 @@ export const rollbacks = pgTable("rollback", {
 	fullContext: jsonb("fullContext").$type<
 		Application & {
 			environment: {
-				project: Project;
+				workspace: Workspace;
 			};
 			mounts: Mount[];
 			ports: Port[];

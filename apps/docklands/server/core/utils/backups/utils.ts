@@ -28,26 +28,26 @@ export const scheduleBackup = (backup: BackupSchedule) => {
 		if (backup.backupType === "database") {
 			if (databaseType === "postgres" && postgres) {
 				await runPostgresBackup(postgres, backup);
-				await keepLatestNBackups(backup, postgres.serverId);
+				await keepLatestNBackups(backup, postgres.runtimeWorkerId);
 			} else if (databaseType === "mysql" && mysql) {
 				await runMySqlBackup(mysql, backup);
-				await keepLatestNBackups(backup, mysql.serverId);
+				await keepLatestNBackups(backup, mysql.runtimeWorkerId);
 			} else if (databaseType === "mongo" && mongo) {
 				await runMongoBackup(mongo, backup);
-				await keepLatestNBackups(backup, mongo.serverId);
+				await keepLatestNBackups(backup, mongo.runtimeWorkerId);
 			} else if (databaseType === "mariadb" && mariadb) {
 				await runMariadbBackup(mariadb, backup);
-				await keepLatestNBackups(backup, mariadb.serverId);
+				await keepLatestNBackups(backup, mariadb.runtimeWorkerId);
 			} else if (databaseType === "libsql" && libsql) {
 				await runLibsqlBackup(libsql, backup);
-				await keepLatestNBackups(backup, libsql.serverId);
+				await keepLatestNBackups(backup, libsql.runtimeWorkerId);
 			} else if (databaseType === "web-server") {
 				await runWebServerBackup(backup);
 				await keepLatestNBackups(backup);
 			}
 		} else if (backup.backupType === "compose" && compose) {
 			await runComposeBackup(compose, backup);
-			await keepLatestNBackups(backup, compose.serverId);
+			await keepLatestNBackups(backup, compose.runtimeWorkerId);
 		}
 	});
 };
@@ -136,7 +136,7 @@ export const getComposeContainerCommand = (
 	if (composeType === "stack") {
 		return `docker ps -q --filter "status=running" --filter "label=com.docker.stack.namespace=${appName}" --filter "label=com.docker.swarm.service.name=${appName}_${serviceName}" | head -n 1`;
 	}
-	return `docker ps -q --filter "status=running" --filter "label=com.docker.compose.project=${appName}" --filter "label=com.docker.compose.service=${serviceName}" | head -n 1`;
+	return `docker ps -q --filter "status=running" --filter "label=com.docker.compose.workspace=${appName}" --filter "label=com.docker.compose.service=${serviceName}" | head -n 1`;
 };
 
 const getContainerSearchCommand = (backup: BackupSchedule) => {

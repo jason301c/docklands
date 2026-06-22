@@ -7,35 +7,37 @@ import {
 	getNodeInfo,
 	getSwarmNodes,
 } from "@/server/core/services/docker";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { createTRPCRouter, withPermission } from "../trpc";
 import { containerIdRegex } from "./docker";
 
 export const swarmRouter = createTRPCRouter({
-	getNodes: withPermission("server", "read")
+	getNodes: withPermission("runtimeWorker", "read")
 		.input(
 			z.object({
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input }) => {
-			return await getSwarmNodes(input.serverId);
+			return await getSwarmNodes(input.runtimeWorkerId);
 		}),
-	getNodeInfo: withPermission("server", "read")
-		.input(z.object({ nodeId: z.string(), serverId: z.string().optional() }))
+	getNodeInfo: withPermission("runtimeWorker", "read")
+		.input(
+			z.object({ nodeId: z.string(), runtimeWorkerId: z.string().optional() }),
+		)
 		.query(async ({ input }) => {
-			return await getNodeInfo(input.nodeId, input.serverId);
+			return await getNodeInfo(input.nodeId, input.runtimeWorkerId);
 		}),
-	getNodeApps: withPermission("server", "read")
+	getNodeApps: withPermission("runtimeWorker", "read")
 		.input(
 			z.object({
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input }) => {
-			return getNodeApplications(input.serverId);
+			return getNodeApplications(input.runtimeWorkerId);
 		}),
-	getAppInfos: withPermission("server", "read")
+	getAppInfos: withPermission("runtimeWorker", "read")
 		.meta({
 			openapi: {
 				path: "/drop-deployment",
@@ -51,25 +53,29 @@ export const swarmRouter = createTRPCRouter({
 					.min(1)
 					.regex(containerIdRegex, "Invalid app name.")
 					.array(),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input }) => {
-			return await getApplicationInfo(input.appName, input.serverId);
+			return await getApplicationInfo(input.appName, input.runtimeWorkerId);
 		}),
-	getContainerStats: withPermission("server", "read")
+	getContainerStats: withPermission("runtimeWorker", "read")
 		.input(
 			z.object({
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session?.activeOrganizationId) {
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					runtimeWorker.organizationId !== ctx.session?.activeOrganizationId
+				) {
 					throw new TRPCError({ code: "UNAUTHORIZED" });
 				}
 			}
-			return await getAllContainerStats(input.serverId);
+			return await getAllContainerStats(input.runtimeWorkerId);
 		}),
 });

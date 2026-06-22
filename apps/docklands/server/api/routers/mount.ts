@@ -38,35 +38,35 @@ async function getServiceOrganizationId(
 	switch (serviceType) {
 		case "application": {
 			const app = await findApplicationById(serviceId);
-			return app?.environment?.project?.organizationId ?? null;
+			return app?.environment?.workspace?.organizationId ?? null;
 		}
 		case "postgres": {
 			const postgres = await findPostgresById(serviceId);
-			return postgres?.environment?.project?.organizationId ?? null;
+			return postgres?.environment?.workspace?.organizationId ?? null;
 		}
 		case "mariadb": {
 			const mariadb = await findMariadbById(serviceId);
-			return mariadb?.environment?.project?.organizationId ?? null;
+			return mariadb?.environment?.workspace?.organizationId ?? null;
 		}
 		case "mongo": {
 			const mongo = await findMongoById(serviceId);
-			return mongo?.environment?.project?.organizationId ?? null;
+			return mongo?.environment?.workspace?.organizationId ?? null;
 		}
 		case "mysql": {
 			const mysql = await findMySqlById(serviceId);
-			return mysql?.environment?.project?.organizationId ?? null;
+			return mysql?.environment?.workspace?.organizationId ?? null;
 		}
 		case "redis": {
 			const redis = await findRedisById(serviceId);
-			return redis?.environment?.project?.organizationId ?? null;
+			return redis?.environment?.workspace?.organizationId ?? null;
 		}
 		case "compose": {
 			const compose = await findComposeById(serviceId);
-			return compose?.environment?.project?.organizationId ?? null;
+			return compose?.environment?.workspace?.organizationId ?? null;
 		}
 		case "libsql": {
 			const libsql = await findLibsqlById(serviceId);
-			return libsql?.environment?.project?.organizationId ?? null;
+			return libsql?.environment?.workspace?.organizationId ?? null;
 		}
 		default:
 			return null;
@@ -168,7 +168,10 @@ export const mountRouter = createTRPCRouter({
 				volume: ["read"],
 			});
 			const app = await findApplicationById(input.applicationId);
-			const container = await getServiceContainer(app.appName, app.serverId);
+			const container = await getServiceContainer(
+				app.appName,
+				app.runtimeWorkerId,
+			);
 			const mounts = container?.Mounts.filter(
 				(mount) => mount.Type === "volume" && mount.Source !== "",
 			);

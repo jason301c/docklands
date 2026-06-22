@@ -8,7 +8,7 @@ export const initSchedules = async () => {
 		const schedulesResult = await db.query.schedules.findMany({
 			where: eq(schedules.enabled, true),
 			with: {
-				server: true,
+				runtimeWorker: true,
 				application: true,
 				compose: true,
 				organization: true,

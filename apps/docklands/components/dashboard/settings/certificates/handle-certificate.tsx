@@ -29,7 +29,7 @@ const handleCertificateSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	certificateData: z.string().min(1, "Certificate data is required"),
 	privateKey: z.string().min(1, "Private key is required"),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
 type HandleCertificateForm = z.infer<typeof handleCertificateSchema>;
@@ -96,7 +96,10 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 				})
 			: createMutation.mutateAsync({
 					...basePayload,
-					serverId: data.serverId === "docklands" ? undefined : data.serverId,
+					runtimeWorkerId:
+						data.runtimeWorkerId === "docklands"
+							? undefined
+							: data.runtimeWorkerId,
 					organizationId: "",
 				});
 
@@ -212,7 +215,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 						{shouldShowServerDropdown && (
 							<FormField
 								control={form.control}
-								name="serverId"
+								name="runtimeWorkerId"
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
@@ -240,15 +243,15 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 															</span>
 														</Select.Option>
 													)}
-													{servers?.map((server) => (
+													{servers?.map((runtimeWorker) => (
 														<Select.Option
-															key={server.serverId}
-															value={server.serverId}
+															key={runtimeWorker.runtimeWorkerId}
+															value={runtimeWorker.runtimeWorkerId}
 														>
 															<span className="flex items-center gap-2 justify-between w-full">
-																<span>{server.name}</span>
+																<span>{runtimeWorker.name}</span>
 																<span className="text-muted-foreground text-xs self-center">
-																	{server.ipAddress}
+																	{runtimeWorker.ipAddress}
 																</span>
 															</span>
 														</Select.Option>

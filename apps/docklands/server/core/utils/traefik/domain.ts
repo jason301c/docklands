@@ -16,8 +16,8 @@ export const manageDomain = async (app: ApplicationNested, domain: Domain) => {
 	const { appName } = app;
 	let config: FileConfig;
 
-	if (app.serverId) {
-		config = await loadOrCreateConfigRemote(app.serverId, appName);
+	if (app.runtimeWorkerId) {
+		config = await loadOrCreateConfigRemote(app.runtimeWorkerId, appName);
 	} else {
 		config = loadOrCreateConfig(appName);
 	}
@@ -49,8 +49,8 @@ export const manageDomain = async (app: ApplicationNested, domain: Domain) => {
 
 	await createPathMiddlewares(app, domain);
 
-	if (app.serverId) {
-		await writeTraefikConfigRemote(config, appName, app.serverId);
+	if (app.runtimeWorkerId) {
+		await writeTraefikConfigRemote(config, appName, app.runtimeWorkerId);
 	} else {
 		writeTraefikConfig(config, appName);
 	}
@@ -60,11 +60,11 @@ export const removeDomain = async (
 	application: ApplicationNested,
 	uniqueKey: number,
 ) => {
-	const { appName, serverId } = application;
+	const { appName, runtimeWorkerId } = application;
 	let config: FileConfig;
 
-	if (serverId) {
-		config = await loadOrCreateConfigRemote(serverId, appName);
+	if (runtimeWorkerId) {
+		config = await loadOrCreateConfigRemote(runtimeWorkerId, appName);
 	} else {
 		config = loadOrCreateConfig(appName);
 	}
@@ -90,14 +90,14 @@ export const removeDomain = async (
 		config?.http?.routers &&
 		Object.keys(config?.http?.routers).length === 0
 	) {
-		if (serverId) {
-			await removeTraefikConfigRemote(appName, serverId);
+		if (runtimeWorkerId) {
+			await removeTraefikConfigRemote(appName, runtimeWorkerId);
 		} else {
 			await removeTraefikConfig(appName);
 		}
 	} else {
-		if (serverId) {
-			await writeTraefikConfigRemote(config, appName, serverId);
+		if (runtimeWorkerId) {
+			await writeTraefikConfigRemote(config, appName, runtimeWorkerId);
 		} else {
 			writeTraefikConfig(config, appName);
 		}

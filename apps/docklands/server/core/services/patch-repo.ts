@@ -23,14 +23,15 @@ export const ensurePatchRepo = async ({
 	type,
 	id,
 }: PatchRepoConfig): Promise<string> => {
-	let serverId: string | null = null;
+	let runtimeWorkerId: string | null = null;
 
 	if (type === "application") {
 		const application = await findApplicationById(id);
-		serverId = application.buildServerId || application.serverId;
+		runtimeWorkerId =
+			application.buildRuntimeWorkerId || application.runtimeWorkerId;
 	} else {
 		const compose = await findComposeById(id);
-		serverId = compose.serverId;
+		runtimeWorkerId = compose.runtimeWorkerId;
 	}
 
 	const application =
@@ -38,13 +39,13 @@ export const ensurePatchRepo = async ({
 			? await findApplicationById(id)
 			: await findComposeById(id);
 
-	const { PATCH_REPOS_PATH } = paths(!!serverId);
+	const { PATCH_REPOS_PATH } = paths(!!runtimeWorkerId);
 	const repoPath = join(PATCH_REPOS_PATH, type, application.appName);
 
 	const applicationEntity = {
 		...application,
 		type,
-		serverId: serverId,
+		runtimeWorkerId: runtimeWorkerId,
 		outputPathOverride: repoPath,
 	};
 
@@ -61,8 +62,8 @@ export const ensurePatchRepo = async ({
 		command += await cloneGitRepository(applicationEntity);
 	}
 
-	if (serverId) {
-		await execAsyncRemote(serverId, command);
+	if (runtimeWorkerId) {
+		await execAsyncRemote(runtimeWorkerId, command);
 	} else {
 		await execAsync(command);
 	}
@@ -82,15 +83,15 @@ interface DirectoryEntry {
  */
 export const readPatchRepoDirectory = async (
 	repoPath: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ): Promise<DirectoryEntry[]> => {
 	// Use git ls-tree to get tracked files only
 	const command = `cd "${repoPath}" && git ls-tree -r --name-only HEAD`;
 
 	let stdout: string;
 	try {
-		if (serverId) {
-			const result = await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			const result = await execAsyncRemote(runtimeWorkerId, command);
 			stdout = result.stdout;
 		} else {
 			const result = await execAsync(command);
@@ -149,16 +150,17 @@ export const readPatchRepoFile = async (
 	type: "application" | "compose",
 	filePath: string,
 ) => {
-	let serverId: string | null = null;
+	let runtimeWorkerId: string | null = null;
 
 	if (type === "application") {
 		const application = await findApplicationById(id);
-		serverId = application.buildServerId || application.serverId;
+		runtimeWorkerId =
+			application.buildRuntimeWorkerId || application.runtimeWorkerId;
 	} else {
 		const compose = await findComposeById(id);
-		serverId = compose.serverId;
+		runtimeWorkerId = compose.runtimeWorkerId;
 	}
-	const { PATCH_REPOS_PATH } = paths(!!serverId);
+	const { PATCH_REPOS_PATH } = paths(!!runtimeWorkerId);
 
 	const application =
 		type === "application"
@@ -170,8 +172,8 @@ export const readPatchRepoFile = async (
 
 	const command = `cat "${fullPath}"`;
 
-	if (serverId) {
-		const result = await execAsyncRemote(serverId, command);
+	if (runtimeWorkerId) {
+		const result = await execAsyncRemote(runtimeWorkerId, command);
 		return result.stdout;
 	}
 
@@ -183,14 +185,14 @@ export const readPatchRepoFile = async (
  * Clean all patch repos
  */
 export const cleanPatchRepos = async (
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ): Promise<void> => {
-	const { PATCH_REPOS_PATH } = paths(!!serverId);
+	const { PATCH_REPOS_PATH } = paths(!!runtimeWorkerId);
 
 	const command = `rm -rf "${PATCH_REPOS_PATH}"/* 2>/dev/null || true`;
 
-	if (serverId) {
-		await execAsyncRemote(serverId, command);
+	if (runtimeWorkerId) {
+		await execAsyncRemote(runtimeWorkerId, command);
 	} else {
 		await execAsync(command);
 	}

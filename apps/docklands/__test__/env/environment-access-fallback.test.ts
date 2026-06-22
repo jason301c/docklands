@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-// Type definitions matching the project structure
+// Type definitions matching the workspace structure
 type Environment = {
 	environmentId: string;
 	name: string;
 	isDefault: boolean;
 };
 
-type Project = {
-	projectId: string;
+type Workspace = {
+	workspaceId: string;
 	name: string;
 	environments: Environment[];
 };
@@ -18,16 +18,20 @@ type Project = {
  * This matches the logic used in search-command.tsx and show.tsx
  */
 function selectAccessibleEnvironment(
-	project: Project | null | undefined,
+	workspace: Workspace | null | undefined,
 ): Environment | null {
-	if (!project || !project.environments || project.environments.length === 0) {
+	if (
+		!workspace ||
+		!workspace.environments ||
+		workspace.environments.length === 0
+	) {
 		return null;
 	}
 
 	// Find default environment from accessible environments, or fall back to first accessible environment
 	const defaultEnvironment =
-		project.environments.find((environment) => environment.isDefault) ||
-		project.environments[0];
+		workspace.environments.find((environment) => environment.isDefault) ||
+		workspace.environments[0];
 
 	return defaultEnvironment || null;
 }
@@ -35,9 +39,9 @@ function selectAccessibleEnvironment(
 describe("Environment Access Fallback", () => {
 	describe("selectAccessibleEnvironment", () => {
 		it("should return default environment when user has access to it", () => {
-			const project: Project = {
-				projectId: "proj-1",
-				name: "Test Project",
+			const workspace: Workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: [
 					{
 						environmentId: "env-prod",
@@ -52,7 +56,7 @@ describe("Environment Access Fallback", () => {
 				],
 			};
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).not.toBeNull();
 			expect(result?.environmentId).toBe("env-prod");
@@ -61,9 +65,9 @@ describe("Environment Access Fallback", () => {
 
 		it("should return first accessible environment when user doesn't have access to default", () => {
 			// Simulating filtered environments (user only has access to development)
-			const project: Project = {
-				projectId: "proj-1",
-				name: "Test Project",
+			const workspace: Workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: [
 					// Note: production is not in the list because user doesn't have access
 					{
@@ -79,7 +83,7 @@ describe("Environment Access Fallback", () => {
 				],
 			};
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).not.toBeNull();
 			expect(result?.environmentId).toBe("env-dev");
@@ -87,9 +91,9 @@ describe("Environment Access Fallback", () => {
 		});
 
 		it("should return first environment when no default is marked but environments exist", () => {
-			const project: Project = {
-				projectId: "proj-1",
-				name: "Test Project",
+			const workspace: Workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: [
 					{
 						environmentId: "env-dev",
@@ -104,40 +108,40 @@ describe("Environment Access Fallback", () => {
 				],
 			};
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).not.toBeNull();
 			expect(result?.environmentId).toBe("env-dev");
 		});
 
-		it("should return null when project has no accessible environments", () => {
-			const project: Project = {
-				projectId: "proj-1",
-				name: "Test Project",
+		it("should return null when workspace has no accessible environments", () => {
+			const workspace: Workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: [],
 			};
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).toBeNull();
 		});
 
-		it("should return null when project is null", () => {
+		it("should return null when workspace is null", () => {
 			const result = selectAccessibleEnvironment(null);
 
 			expect(result).toBeNull();
 		});
 
-		it("should return null when project is undefined", () => {
+		it("should return null when workspace is undefined", () => {
 			const result = selectAccessibleEnvironment(undefined);
 
 			expect(result).toBeNull();
 		});
 
-		it("should handle project with single accessible environment", () => {
-			const project: Project = {
-				projectId: "proj-1",
-				name: "Test Project",
+		it("should handle workspace with single accessible environment", () => {
+			const workspace: Workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: [
 					{
 						environmentId: "env-dev",
@@ -147,16 +151,16 @@ describe("Environment Access Fallback", () => {
 				],
 			};
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).not.toBeNull();
 			expect(result?.environmentId).toBe("env-dev");
 		});
 
 		it("should prioritize default environment even when it's not first in the array", () => {
-			const project: Project = {
-				projectId: "proj-1",
-				name: "Test Project",
+			const workspace: Workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: [
 					{
 						environmentId: "env-dev",
@@ -176,7 +180,7 @@ describe("Environment Access Fallback", () => {
 				],
 			};
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).not.toBeNull();
 			expect(result?.environmentId).toBe("env-prod");
@@ -185,9 +189,9 @@ describe("Environment Access Fallback", () => {
 
 		it("should handle multiple default environments by returning the first one found", () => {
 			// Edge case: multiple environments marked as default (shouldn't happen, but test it)
-			const project: Project = {
-				projectId: "proj-1",
-				name: "Test Project",
+			const workspace: Workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: [
 					{
 						environmentId: "env-prod-1",
@@ -202,7 +206,7 @@ describe("Environment Access Fallback", () => {
 				],
 			};
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).not.toBeNull();
 			expect(result?.isDefault).toBe(true);
@@ -211,9 +215,9 @@ describe("Environment Access Fallback", () => {
 		});
 
 		it("should work correctly when user has access to multiple environments including default", () => {
-			const project: Project = {
-				projectId: "proj-1",
-				name: "Test Project",
+			const workspace: Workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: [
 					{
 						environmentId: "env-prod",
@@ -233,7 +237,7 @@ describe("Environment Access Fallback", () => {
 				],
 			};
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).not.toBeNull();
 			expect(result?.environmentId).toBe("env-prod");
@@ -244,9 +248,9 @@ describe("Environment Access Fallback", () => {
 			// This simulates the exact bug we're fixing:
 			// User has access to development but not production (default)
 			// The filtered environments array only contains development
-			const project: Project = {
-				projectId: "proj-1",
-				name: "My Project",
+			const workspace: Workspace = {
+				workspaceId: "proj-1",
+				name: "My Workspace",
 				environments: [
 					// Only development is accessible (production was filtered out)
 					{
@@ -257,7 +261,7 @@ describe("Environment Access Fallback", () => {
 				],
 			};
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).not.toBeNull();
 			expect(result?.environmentId).toBe("env-dev-123");
@@ -267,26 +271,26 @@ describe("Environment Access Fallback", () => {
 	});
 
 	describe("Environment selection edge cases", () => {
-		it("should handle project with environments property as undefined", () => {
-			const project = {
-				projectId: "proj-1",
-				name: "Test Project",
+		it("should handle workspace with environments property as undefined", () => {
+			const workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: undefined,
-			} as unknown as Project;
+			} as unknown as Workspace;
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).toBeNull();
 		});
 
-		it("should handle project with null environments array", () => {
-			const project = {
-				projectId: "proj-1",
-				name: "Test Project",
+		it("should handle workspace with null environments array", () => {
+			const workspace = {
+				workspaceId: "proj-1",
+				name: "Test Workspace",
 				environments: null,
-			} as unknown as Project;
+			} as unknown as Workspace;
 
-			const result = selectAccessibleEnvironment(project);
+			const result = selectAccessibleEnvironment(workspace);
 
 			expect(result).toBeNull();
 		});

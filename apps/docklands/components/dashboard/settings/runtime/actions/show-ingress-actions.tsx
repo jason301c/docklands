@@ -10,9 +10,9 @@ import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
-export const ShowIngressActions = ({ serverId }: Props) => {
+export const ShowIngressActions = ({ runtimeWorkerId }: Props) => {
 	const { mutateAsync: reloadTraefik, isPending: reloadTraefikIsLoading } =
 		api.settings.reloadTraefik.useMutation();
 
@@ -21,7 +21,7 @@ export const ShowIngressActions = ({ serverId }: Props) => {
 
 	const { data: haveTraefikDashboardPortEnabled, refetch: refetchDashboard } =
 		api.settings.haveTraefikDashboardPortEnabled.useQuery({
-			serverId,
+			runtimeWorkerId,
 		});
 
 	const {
@@ -76,7 +76,7 @@ export const ShowIngressActions = ({ serverId }: Props) => {
 						onClick={async () => {
 							try {
 								await executeReloadWithHealthCheck(() =>
-									reloadTraefik({ serverId }),
+									reloadTraefik({ runtimeWorkerId }),
 								);
 							} catch (error) {
 								const errorMessage =
@@ -92,7 +92,7 @@ export const ShowIngressActions = ({ serverId }: Props) => {
 					</DropdownMenu.Item>
 					<ServiceLogsModal
 						appName="docklands-traefik"
-						serverId={serverId}
+						runtimeWorkerId={runtimeWorkerId}
 						type="standalone"
 					>
 						<DropdownMenu.Item
@@ -102,7 +102,7 @@ export const ShowIngressActions = ({ serverId }: Props) => {
 							View Logs
 						</DropdownMenu.Item>
 					</ServiceLogsModal>
-					<EditIngressEnv serverId={serverId}>
+					<EditIngressEnv runtimeWorkerId={runtimeWorkerId}>
 						<DropdownMenu.Item
 							onSelect={(e) => e.preventDefault()}
 							className="cursor-pointer"
@@ -136,7 +136,7 @@ export const ShowIngressActions = ({ serverId }: Props) => {
 								await executeWithHealthCheck(() =>
 									toggleDashboard({
 										enableDashboard: !haveTraefikDashboardPortEnabled,
-										serverId: serverId,
+										runtimeWorkerId: runtimeWorkerId,
 									}),
 								);
 							} catch (error) {
@@ -159,7 +159,7 @@ export const ShowIngressActions = ({ serverId }: Props) => {
 							</span>
 						</DropdownMenu.Item>
 					</DialogAction>
-					<ManageIngressPorts serverId={serverId}>
+					<ManageIngressPorts runtimeWorkerId={runtimeWorkerId}>
 						<DropdownMenu.Item
 							onSelect={(e) => e.preventDefault()}
 							className="cursor-pointer"

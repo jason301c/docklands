@@ -13,7 +13,7 @@ import {
 import { removeJob, schedule, updateJob } from "@/server/core/runtime/backup";
 import { findDestinationById } from "@/server/core/services/destination";
 import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	createVolumeBackup,
 	findVolumeBackupById,
@@ -266,7 +266,7 @@ export const volumeBackupsRouter = createTRPCRouter({
 				volumeName: z.string().min(1),
 				id: z.string().min(1),
 				serviceType: z.enum(["application", "compose"]),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.subscription(async ({ input, ctx }) => {
@@ -277,8 +277,8 @@ export const volumeBackupsRouter = createTRPCRouter({
 					message: "You don't have access to this destination.",
 				});
 			}
-			if (input.serverId) {
-				const targetServer = await findServerById(input.serverId);
+			if (input.runtimeWorkerId) {
+				const targetServer = await findRuntimeWorkerById(input.runtimeWorkerId);
 				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
@@ -301,7 +301,7 @@ export const volumeBackupsRouter = createTRPCRouter({
 							input.destinationId,
 							input.volumeName,
 							input.backupFileName,
-							input.serverId || "",
+							input.runtimeWorkerId || "",
 							input.serviceType,
 						);
 
@@ -310,13 +310,19 @@ export const volumeBackupsRouter = createTRPCRouter({
 						emit.next(""); // Empty line
 
 						// Execute the restore command with real-time output
-						if (input.serverId) {
-							emit.next(`🌐 Executing on remote server: ${input.serverId}`);
-							await execAsyncRemote(input.serverId, restoreCommand, (data) => {
-								emit.next(data);
-							});
+						if (input.runtimeWorkerId) {
+							emit.next(
+								`🌐 Executing on remote runtimeWorker: ${input.runtimeWorkerId}`,
+							);
+							await execAsyncRemote(
+								input.runtimeWorkerId,
+								restoreCommand,
+								(data) => {
+									emit.next(data);
+								},
+							);
 						} else {
-							emit.next("🖥️ Executing on local server");
+							emit.next("🖥️ Executing on local runtimeWorker");
 							await execAsyncStream(restoreCommand, (data) => {
 								emit.next(data);
 							});

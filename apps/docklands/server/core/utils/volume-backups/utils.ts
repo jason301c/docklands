@@ -15,7 +15,7 @@ import { getS3Credentials, normalizeS3Path } from "../backups/utils";
 import { sendVolumeBackupNotifications } from "../notifications/volume-backup";
 import { backupVolume, getVolumeServiceAppName } from "./backup";
 
-// Helper functions to extract project info from volume backup
+// Helper functions to extract workspace info from volume backup
 const getProjectName = (
 	volumeBackup: Awaited<ReturnType<typeof findVolumeBackupById>>,
 ): string => {
@@ -31,12 +31,12 @@ const getProjectName = (
 	];
 
 	for (const service of services) {
-		if (service?.environment?.project?.name) {
-			return service.environment.project.name;
+		if (service?.environment?.workspace?.name) {
+			return service.environment.workspace.name;
 		}
 	}
 
-	return "Unknown Project";
+	return "Unknown Workspace";
 };
 
 const getOrganizationId = (
@@ -54,8 +54,8 @@ const getOrganizationId = (
 	];
 
 	for (const service of services) {
-		if (service?.environment?.project?.organizationId) {
-			return service.environment.project.organizationId;
+		if (service?.environment?.workspace?.organizationId) {
+			return service.environment.workspace.organizationId;
 		}
 	}
 
@@ -76,7 +76,7 @@ export const removeVolumeBackupJob = async (volumeBackupId: string) => {
 
 const cleanupOldVolumeBackups = async (
 	volumeBackup: Awaited<ReturnType<typeof findVolumeBackupById>>,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
 	const { keepLatestCount, prefix, volumeName } = volumeBackup;
 	const destination = await findDestinationById(volumeBackup.destinationId);
@@ -92,8 +92,8 @@ const cleanupOldVolumeBackups = async (
 		const deleteCommand = `rclone delete ${rcloneFlags.join(" ")} ${backupFilesPath}{}`;
 		const fullCommand = `${listCommand} | ${sortAndPick} ${deleteCommand}`;
 
-		if (serverId) {
-			await execAsyncRemote(serverId, fullCommand);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, fullCommand);
 		} else {
 			await execAsync(fullCommand);
 		}
@@ -104,8 +104,9 @@ const cleanupOldVolumeBackups = async (
 
 export const runVolumeBackup = async (volumeBackupId: string) => {
 	const volumeBackup = await findVolumeBackupById(volumeBackupId);
-	const serverId =
-		volumeBackup.application?.serverId || volumeBackup.compose?.serverId;
+	const runtimeWorkerId =
+		volumeBackup.application?.runtimeWorkerId ||
+		volumeBackup.compose?.runtimeWorkerId;
 	const deployment = await createDeploymentVolumeBackup({
 		volumeBackupId: volumeBackup.volumeBackupId,
 		title: "Volume Backup",
@@ -117,14 +118,14 @@ export const runVolumeBackup = async (volumeBackupId: string) => {
 		const command = await backupVolume(volumeBackup);
 
 		const commandWithLog = `(${command}) >> ${deployment.logPath} 2>&1`;
-		if (serverId) {
-			await execAsyncRemote(serverId, commandWithLog);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, commandWithLog);
 		} else {
 			await execAsync(commandWithLog);
 		}
 
 		if (volumeBackup.keepLatestCount && volumeBackup.keepLatestCount > 0) {
-			await cleanupOldVolumeBackups(volumeBackup, serverId);
+			await cleanupOldVolumeBackups(volumeBackup, runtimeWorkerId);
 		}
 
 		await updateDeploymentStatus(deployment.deploymentId, "done");
@@ -151,15 +152,15 @@ export const runVolumeBackup = async (volumeBackupId: string) => {
 			);
 		}
 	} catch (error) {
-		const { VOLUME_BACKUPS_PATH } = paths(!!serverId);
+		const { VOLUME_BACKUPS_PATH } = paths(!!runtimeWorkerId);
 		const volumeBackupPath = path.join(
 			VOLUME_BACKUPS_PATH,
 			volumeBackup.appName,
 		);
 		// delete all the .tar files
 		const command = `rm -rf ${volumeBackupPath}/*.tar`;
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}

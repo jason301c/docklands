@@ -15,11 +15,11 @@ export const recreateDirectory = async (pathFolder: string): Promise<void> => {
 
 export const recreateDirectoryRemote = async (
 	pathFolder: string,
-	serverId: string | null,
+	runtimeWorkerId: string | null,
 ): Promise<void> => {
 	try {
 		await execAsyncRemote(
-			serverId,
+			runtimeWorkerId,
 			`rm -rf ${pathFolder}; mkdir -p ${pathFolder}`,
 		);
 	} catch (error) {
@@ -46,14 +46,14 @@ export const removeFileOrDirectory = async (path: string) => {
 
 export const removeDirectoryCode = async (
 	appName: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
-	const { APPLICATIONS_PATH } = paths(!!serverId);
+	const { APPLICATIONS_PATH } = paths(!!runtimeWorkerId);
 	const directoryPath = path.join(APPLICATIONS_PATH, appName);
 	const command = `rm -rf ${directoryPath}`;
 	try {
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -65,14 +65,14 @@ export const removeDirectoryCode = async (
 
 export const removeComposeDirectory = async (
 	appName: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
-	const { COMPOSE_PATH } = paths(!!serverId);
+	const { COMPOSE_PATH } = paths(!!runtimeWorkerId);
 	const directoryPath = path.join(COMPOSE_PATH, appName);
 	const command = `rm -rf ${directoryPath}`;
 	try {
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -84,14 +84,14 @@ export const removeComposeDirectory = async (
 
 export const removeMonitoringDirectory = async (
 	appName: string,
-	serverId?: string | null,
+	runtimeWorkerId?: string | null,
 ) => {
-	const { MONITORING_PATH } = paths(!!serverId);
+	const { MONITORING_PATH } = paths(!!runtimeWorkerId);
 	const directoryPath = path.join(MONITORING_PATH, appName);
 	const command = `rm -rf ${directoryPath}`;
 	try {
-		if (serverId) {
-			await execAsyncRemote(serverId, command);
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await execAsync(command);
 		}
@@ -102,8 +102,9 @@ export const removeMonitoringDirectory = async (
 };
 
 export const getBuildAppDirectory = (application: Application) => {
-	const serverId = application.buildServerId || application.serverId;
-	const { APPLICATIONS_PATH } = paths(!!serverId);
+	const runtimeWorkerId =
+		application.buildRuntimeWorkerId || application.runtimeWorkerId;
+	const { APPLICATIONS_PATH } = paths(!!runtimeWorkerId);
 	const { appName, buildType, sourceType, customGitBuildPath, dockerfile } =
 		application;
 	let buildPath = "";
@@ -135,7 +136,7 @@ export const getBuildAppDirectory = (application: Application) => {
 };
 
 export const getDockerContextPath = (application: Application) => {
-	const { APPLICATIONS_PATH } = paths(!!application.serverId);
+	const { APPLICATIONS_PATH } = paths(!!application.runtimeWorkerId);
 	const { appName, dockerContextPath } = application;
 
 	if (!dockerContextPath) {

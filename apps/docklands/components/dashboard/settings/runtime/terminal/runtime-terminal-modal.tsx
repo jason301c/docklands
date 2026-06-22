@@ -19,24 +19,24 @@ const getTerminalKey = () => {
 
 interface Props {
 	children?: React.ReactNode;
-	serverId: string;
+	runtimeWorkerId: string;
 	asButton?: boolean;
 }
 
 export const RuntimeTerminalModal = ({
 	children,
-	serverId,
+	runtimeWorkerId,
 	asButton = false,
 }: Props) => {
 	const [terminalKey, setTerminalKey] = useState<string>(getTerminalKey());
 	const [isOpen, setIsOpen] = useState(false);
-	const isLocalRuntime = serverId === "local";
+	const isLocalRuntime = runtimeWorkerId === "local";
 
 	const { data } = api.runtimeWorker.one.useQuery(
 		{
-			serverId,
+			runtimeWorkerId,
 		},
-		{ enabled: !!serverId && !isLocalRuntime },
+		{ enabled: !!runtimeWorkerId && !isLocalRuntime },
 	);
 
 	const handleLocalRuntimeConfigSave = () => {
@@ -61,7 +61,9 @@ export const RuntimeTerminalModal = ({
 			)}
 			<Dialog className="sm:max-w-7xl">
 				<div className="flex flex-col gap-1">
-					<Dialog.Title>Terminal ({data?.name ?? serverId})</Dialog.Title>
+					<Dialog.Title>
+						Terminal ({data?.name ?? runtimeWorkerId})
+					</Dialog.Title>
 					<Dialog.Description>
 						Open an SSH session to this runtime worker.
 					</Dialog.Description>
@@ -75,7 +77,7 @@ export const RuntimeTerminalModal = ({
 					<RuntimeTerminal
 						id="terminal"
 						key={terminalKey}
-						serverId={serverId}
+						runtimeWorkerId={runtimeWorkerId}
 					/>
 				</div>
 			</Dialog>

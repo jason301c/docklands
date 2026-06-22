@@ -5,7 +5,7 @@ import { Client, type SFTPWrapper } from "ssh2";
 import { paths } from "@/server/core/constants/paths";
 import { readValidDirectory } from "@/server/core/runtime/host";
 import type { Application } from "@/server/core/services/application";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	recreateDirectory,
 	recreateDirectoryRemote,
@@ -17,9 +17,10 @@ export const unzipDrop = async (zipFile: File, application: Application) => {
 
 	try {
 		const { appName } = application;
-		// Use buildServerId if set, otherwise fall back to serverId
-		// This ensures the code is extracted to the server where the build will run
-		const targetServerId = application.buildServerId || application.serverId;
+		// Use buildRuntimeWorkerId if set, otherwise fall back to runtimeWorkerId
+		// This ensures the code is extracted to the runtimeWorker where the build will run
+		const targetServerId =
+			application.buildRuntimeWorkerId || application.runtimeWorkerId;
 		const { APPLICATIONS_PATH } = paths(!!targetServerId);
 		const outputPath = join(APPLICATIONS_PATH, appName, "code");
 		if (targetServerId) {
@@ -66,7 +67,7 @@ export const unzipDrop = async (zipFile: File, application: Application) => {
 			if (!filePath) continue;
 
 			const fullPath = path.join(outputPath, filePath).replace(/\\/g, "/");
-			if (!readValidDirectory(fullPath, application.serverId)) {
+			if (!readValidDirectory(fullPath, application.runtimeWorkerId)) {
 				throw new Error(
 					`Path traversal detected: resolved path escapes output directory: ${filePath}`,
 				);
@@ -107,9 +108,12 @@ export const unzipDrop = async (zipFile: File, application: Application) => {
 	}
 };
 
-const getSFTPConnection = async (serverId: string): Promise<SFTPWrapper> => {
-	const server = await findServerById(serverId);
-	if (!server.sshKeyId) throw new Error("No SSH key available for this server");
+const getSFTPConnection = async (
+	runtimeWorkerId: string,
+): Promise<SFTPWrapper> => {
+	const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
+	if (!runtimeWorker.sshKeyId)
+		throw new Error("No SSH key available for this runtimeWorker");
 
 	return new Promise((resolve, reject) => {
 		const conn = new Client();
@@ -121,10 +125,10 @@ const getSFTPConnection = async (serverId: string): Promise<SFTPWrapper> => {
 				});
 			})
 			.connect({
-				host: server.ipAddress,
-				port: server.port,
-				username: server.username,
-				privateKey: server.sshKey?.privateKey,
+				host: runtimeWorker.ipAddress,
+				port: runtimeWorker.port,
+				username: runtimeWorker.username,
+				privateKey: runtimeWorker.sshKey?.privateKey,
 			});
 	});
 };

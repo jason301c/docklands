@@ -11,11 +11,11 @@ import { audit } from "@/server/api/utils/audit";
 import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
-	apiCreateServer,
-	apiFindOneServer,
-	apiRemoveServer,
-	apiUpdateServer,
-	apiUpdateServerBuildsConcurrency,
+	apiCreateRuntimeWorker,
+	apiFindOneRuntimeWorker,
+	apiRemoveRuntimeWorker,
+	apiUpdateRuntimeWorker,
+	apiUpdateRuntimeWorkerBuildsConcurrency,
 	applications,
 	compose,
 	mariadb,
@@ -24,45 +24,48 @@ import {
 	organization,
 	postgres,
 	redis,
-	server,
+	runtimeWorkers,
 } from "@/server/core/db/schema";
 import { applyDockerCleanupSchedule } from "@/server/core/runtime/docker-cleanup";
 import { getPublicIpWithFallback } from "@/server/core/runtime/host";
-import { removeDeploymentsByServerId } from "@/server/core/services/deployment";
+import { removeDeploymentsByRuntimeWorkerId } from "@/server/core/services/deployment";
 import {
-	createServer,
-	deleteServer,
-	findServerById,
-	getAccessibleServerIds,
+	createRuntimeWorker,
+	deleteRuntimeWorker,
+	findRuntimeWorkerById,
+	getAccessibleRuntimeWorkerIds,
 	haveActiveServices,
-	updateServerById,
-} from "@/server/core/services/server";
-import { serverAudit } from "@/server/core/setup/server-audit";
-import { defaultCommand, serverSetup } from "@/server/core/setup/server-setup";
-import { serverValidate } from "@/server/core/setup/server-validate";
+	updateRuntimeWorkerById,
+} from "@/server/core/services/runtime-worker";
+import { runtimeWorkerAudit } from "@/server/core/setup/runtime-worker-audit";
+import {
+	defaultCommand,
+	runtimeWorkerSetup,
+} from "@/server/core/setup/runtime-worker-setup";
+import { runtimeWorkerValidate } from "@/server/core/setup/runtime-worker-validate";
 import { assertBuildsConcurrencyAllowed } from "@/server/queues/concurrency";
 
-export const serverRouter = createTRPCRouter({
-	create: withPermission("server", "create")
-		.input(apiCreateServer)
+export const runtimeWorkerRouter = createTRPCRouter({
+	create: withPermission("runtimeWorker", "create")
+		.input(apiCreateRuntimeWorker)
 		.mutation(async ({ ctx, input }) => {
 			try {
-				const project = await createServer(
+				const runtimeWorker = await createRuntimeWorker(
 					input,
 					ctx.session.activeOrganizationId,
 				);
 				await applyDockerCleanupSchedule(
-					project.serverId,
+					runtimeWorker.runtimeWorkerId,
 					ctx.session.activeOrganizationId,
 					input.enableDockerCleanup,
 				);
 				await audit(ctx, {
 					action: "create",
-					resourceType: "server",
-					resourceId: project.serverId,
-					resourceName: project.name,
+					resourceType: "runtimeWorker",
+					resourceId: runtimeWorker.runtimeWorkerId,
+					resourceName: runtimeWorker.name,
 				});
-				return project;
+				return runtimeWorker;
 			} catch (error) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
@@ -72,67 +75,93 @@ export const serverRouter = createTRPCRouter({
 			}
 		}),
 
-	one: withPermission("server", "read")
-		.input(apiFindOneServer)
+	one: withPermission("runtimeWorker", "read")
+		.input(apiFindOneRuntimeWorker)
 		.query(async ({ input, ctx }) => {
-			const server = await findServerById(input.serverId);
-			if (server.organizationId !== ctx.session.activeOrganizationId) {
+			const runtimeWorker = await findRuntimeWorkerById(input.runtimeWorkerId);
+			if (runtimeWorker.organizationId !== ctx.session.activeOrganizationId) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
 					message: "You are not authorized to access this runtime worker",
 				});
 			}
 
-			const accessibleIds = await getAccessibleServerIds(ctx.session);
-			if (!accessibleIds.has(input.serverId)) {
+			const accessibleIds = await getAccessibleRuntimeWorkerIds(ctx.session);
+			if (!accessibleIds.has(input.runtimeWorkerId)) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
 					message: "You are not authorized to access this runtime worker",
 				});
 			}
 
-			return server;
+			return runtimeWorker;
 		}),
-	getDefaultCommand: withPermission("server", "read")
-		.input(apiFindOneServer)
+	getDefaultCommand: withPermission("runtimeWorker", "read")
+		.input(apiFindOneRuntimeWorker)
 		.query(async ({ input }) => {
-			const server = await findServerById(input.serverId);
-			const isBuildServer = server.serverType === "build";
+			const runtimeWorker = await findRuntimeWorkerById(input.runtimeWorkerId);
+			const isBuildServer = runtimeWorker.runtimeWorkerType === "build";
 			return defaultCommand(isBuildServer);
 		}),
-	all: withPermission("server", "read").query(async ({ ctx }) => {
-		const accessibleIds = await getAccessibleServerIds(ctx.session);
+	all: withPermission("runtimeWorker", "read").query(async ({ ctx }) => {
+		const accessibleIds = await getAccessibleRuntimeWorkerIds(ctx.session);
 
 		const result = await db
 			.select({
-				...getTableColumns(server),
+				...getTableColumns(runtimeWorkers),
 				totalSum: sql<number>`cast(count(${applications.applicationId}) + count(${compose.composeId}) + count(${redis.redisId}) + count(${mariadb.mariadbId}) + count(${mongo.mongoId}) + count(${mysql.mysqlId}) + count(${postgres.postgresId}) as integer)`,
 			})
-			.from(server)
-			.leftJoin(applications, eq(applications.serverId, server.serverId))
-			.leftJoin(compose, eq(compose.serverId, server.serverId))
-			.leftJoin(redis, eq(redis.serverId, server.serverId))
-			.leftJoin(mariadb, eq(mariadb.serverId, server.serverId))
-			.leftJoin(mongo, eq(mongo.serverId, server.serverId))
-			.leftJoin(mysql, eq(mysql.serverId, server.serverId))
-			.leftJoin(postgres, eq(postgres.serverId, server.serverId))
-			.where(eq(server.organizationId, ctx.session.activeOrganizationId))
-			.orderBy(desc(server.createdAt))
-			.groupBy(server.serverId);
+			.from(runtimeWorkers)
+			.leftJoin(
+				applications,
+				eq(applications.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
+			)
+			.leftJoin(
+				compose,
+				eq(compose.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
+			)
+			.leftJoin(
+				redis,
+				eq(redis.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
+			)
+			.leftJoin(
+				mariadb,
+				eq(mariadb.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
+			)
+			.leftJoin(
+				mongo,
+				eq(mongo.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
+			)
+			.leftJoin(
+				mysql,
+				eq(mysql.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
+			)
+			.leftJoin(
+				postgres,
+				eq(postgres.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
+			)
+			.where(
+				eq(runtimeWorkers.organizationId, ctx.session.activeOrganizationId),
+			)
+			.orderBy(desc(runtimeWorkers.createdAt))
+			.groupBy(runtimeWorkers.runtimeWorkerId);
 
-		return result.filter((s) => accessibleIds.has(s.serverId));
+		return result.filter((s) => accessibleIds.has(s.runtimeWorkerId));
 	}),
 	allForPermissions: withPermission("member", "update").query(
 		async ({ ctx }) => {
-			return await db.query.server.findMany({
+			return await db.query.runtimeWorkers.findMany({
 				columns: {
-					serverId: true,
+					runtimeWorkerId: true,
 					name: true,
 					ipAddress: true,
-					serverType: true,
+					runtimeWorkerType: true,
 				},
-				orderBy: desc(server.createdAt),
-				where: eq(server.organizationId, ctx.session.activeOrganizationId),
+				orderBy: desc(runtimeWorkers.createdAt),
+				where: eq(
+					runtimeWorkers.organizationId,
+					ctx.session.activeOrganizationId,
+				),
 			});
 		},
 	),
@@ -140,78 +169,88 @@ export const serverRouter = createTRPCRouter({
 		const organizations = await db.query.organization.findMany({
 			where: eq(organization.ownerId, ctx.user.id),
 			with: {
-				servers: true,
+				runtimeWorkers: true,
 			},
 		});
 
-		const servers = organizations.flatMap((org) => org.servers);
+		const workers = organizations.flatMap((org) => org.runtimeWorkers);
 
-		return servers.length ?? 0;
+		return workers.length ?? 0;
 	}),
-	withSSHKey: withPermission("server", "read").query(async ({ ctx }) => {
-		const accessibleIds = await getAccessibleServerIds(ctx.session);
+	withSSHKey: withPermission("runtimeWorker", "read").query(async ({ ctx }) => {
+		const accessibleIds = await getAccessibleRuntimeWorkerIds(ctx.session);
 
-		const result = await db.query.server.findMany({
-			orderBy: desc(server.createdAt),
+		const result = await db.query.runtimeWorkers.findMany({
+			orderBy: desc(runtimeWorkers.createdAt),
 			where: IS_CLOUD
 				? and(
-						isNotNull(server.sshKeyId),
-						eq(server.organizationId, ctx.session.activeOrganizationId),
-						eq(server.serverStatus, "active"),
-						eq(server.serverType, "deploy"),
+						isNotNull(runtimeWorkers.sshKeyId),
+						eq(runtimeWorkers.organizationId, ctx.session.activeOrganizationId),
+						eq(runtimeWorkers.runtimeWorkerStatus, "active"),
+						eq(runtimeWorkers.runtimeWorkerType, "deploy"),
 					)
 				: and(
-						isNotNull(server.sshKeyId),
-						eq(server.organizationId, ctx.session.activeOrganizationId),
-						eq(server.serverType, "deploy"),
+						isNotNull(runtimeWorkers.sshKeyId),
+						eq(runtimeWorkers.organizationId, ctx.session.activeOrganizationId),
+						eq(runtimeWorkers.runtimeWorkerType, "deploy"),
 					),
 		});
-		return result.filter((s) => accessibleIds.has(s.serverId));
+		return result.filter((s) => accessibleIds.has(s.runtimeWorkerId));
 	}),
-	buildServers: withPermission("server", "read").query(async ({ ctx }) => {
-		const accessibleIds = await getAccessibleServerIds(ctx.session);
+	buildWorkers: withPermission("runtimeWorker", "read").query(
+		async ({ ctx }) => {
+			const accessibleIds = await getAccessibleRuntimeWorkerIds(ctx.session);
 
-		const result = await db.query.server.findMany({
-			orderBy: desc(server.createdAt),
-			where: IS_CLOUD
-				? and(
-						isNotNull(server.sshKeyId),
-						eq(server.organizationId, ctx.session.activeOrganizationId),
-						eq(server.serverStatus, "active"),
-						eq(server.serverType, "build"),
-					)
-				: and(
-						isNotNull(server.sshKeyId),
-						eq(server.organizationId, ctx.session.activeOrganizationId),
-						eq(server.serverType, "build"),
-					),
-		});
-		return result.filter((s) => accessibleIds.has(s.serverId));
-	}),
-	setup: withPermission("server", "create")
-		.input(apiFindOneServer)
+			const result = await db.query.runtimeWorkers.findMany({
+				orderBy: desc(runtimeWorkers.createdAt),
+				where: IS_CLOUD
+					? and(
+							isNotNull(runtimeWorkers.sshKeyId),
+							eq(
+								runtimeWorkers.organizationId,
+								ctx.session.activeOrganizationId,
+							),
+							eq(runtimeWorkers.runtimeWorkerStatus, "active"),
+							eq(runtimeWorkers.runtimeWorkerType, "build"),
+						)
+					: and(
+							isNotNull(runtimeWorkers.sshKeyId),
+							eq(
+								runtimeWorkers.organizationId,
+								ctx.session.activeOrganizationId,
+							),
+							eq(runtimeWorkers.runtimeWorkerType, "build"),
+						),
+			});
+			return result.filter((s) => accessibleIds.has(s.runtimeWorkerId));
+		},
+	),
+	setup: withPermission("runtimeWorker", "create")
+		.input(apiFindOneRuntimeWorker)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session.activeOrganizationId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (runtimeWorker.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to set up this runtime worker",
 					});
 				}
-				const currentServer = await serverSetup(input.serverId);
+				const setupResult = await runtimeWorkerSetup(input.runtimeWorkerId);
 				await audit(ctx, {
 					action: "update",
-					resourceType: "server",
-					resourceId: input.serverId,
-					resourceName: server.name,
+					resourceType: "runtimeWorker",
+					resourceId: input.runtimeWorkerId,
+					resourceName: runtimeWorker.name,
 				});
-				return currentServer;
+				return setupResult;
 			} catch (error) {
 				throw error;
 			}
 		}),
-	setupWithLogs: withPermission("server", "create")
+	setupWithLogs: withPermission("runtimeWorker", "create")
 		.meta({
 			openapi: {
 				path: "/deploy/server-with-logs",
@@ -220,18 +259,20 @@ export const serverRouter = createTRPCRouter({
 				enabled: false,
 			},
 		})
-		.input(apiFindOneServer)
+		.input(apiFindOneRuntimeWorker)
 		.subscription(async ({ input, ctx }) => {
 			try {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session.activeOrganizationId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (runtimeWorker.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to set up this runtime worker",
 					});
 				}
 				return observable<string>((emit) => {
-					serverSetup(input.serverId, (log) => {
+					runtimeWorkerSetup(input.runtimeWorkerId, (log) => {
 						emit.next(log);
 					});
 				});
@@ -239,18 +280,20 @@ export const serverRouter = createTRPCRouter({
 				throw error;
 			}
 		}),
-	validate: withPermission("server", "read")
-		.input(apiFindOneServer)
+	validate: withPermission("runtimeWorker", "read")
+		.input(apiFindOneRuntimeWorker)
 		.query(async ({ input, ctx }) => {
 			try {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session.activeOrganizationId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (runtimeWorker.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to validate this runtime worker",
 					});
 				}
-				const response = await serverValidate(input.serverId);
+				const response = await runtimeWorkerValidate(input.runtimeWorkerId);
 				return response as unknown as {
 					docker: {
 						enabled: boolean;
@@ -287,18 +330,20 @@ export const serverRouter = createTRPCRouter({
 			}
 		}),
 
-	security: withPermission("server", "read")
-		.input(apiFindOneServer)
+	security: withPermission("runtimeWorker", "read")
+		.input(apiFindOneRuntimeWorker)
 		.query(async ({ input, ctx }) => {
 			try {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session.activeOrganizationId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (runtimeWorker.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to validate this runtime worker",
 					});
 				}
-				const response = await serverAudit(input.serverId);
+				const response = await runtimeWorkerAudit(input.runtimeWorkerId);
 				return response as unknown as {
 					ufw: {
 						installed: boolean;
@@ -337,78 +382,91 @@ export const serverRouter = createTRPCRouter({
 				});
 			}
 		}),
-	remove: withPermission("server", "delete")
-		.input(apiRemoveServer)
+	remove: withPermission("runtimeWorker", "delete")
+		.input(apiRemoveRuntimeWorker)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				const activeServers = await haveActiveServices(input.serverId);
+				const hasActiveServices = await haveActiveServices(
+					input.runtimeWorkerId,
+				);
 
-				if (activeServers) {
+				if (hasActiveServices) {
 					throw new TRPCError({
 						code: "BAD_REQUEST",
 						message:
 							"Runtime worker has active services, please delete them first",
 					});
 				}
-				const currentServer = await findServerById(input.serverId);
+				const currentRuntimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
 				await audit(ctx, {
 					action: "delete",
-					resourceType: "server",
-					resourceId: currentServer.serverId,
-					resourceName: currentServer.name,
+					resourceType: "runtimeWorker",
+					resourceId: currentRuntimeWorker.runtimeWorkerId,
+					resourceName: currentRuntimeWorker.name,
 				});
-				await removeDeploymentsByServerId(currentServer);
-				await deleteServer(input.serverId);
+				await removeDeploymentsByRuntimeWorkerId(currentRuntimeWorker);
+				await deleteRuntimeWorker(input.runtimeWorkerId);
 
-				return currentServer;
+				return currentRuntimeWorker;
 			} catch (error) {
 				throw error;
 			}
 		}),
-	update: withPermission("server", "create")
-		.input(apiUpdateServer)
+	update: withPermission("runtimeWorker", "create")
+		.input(apiUpdateRuntimeWorker)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				const server = await findServerById(input.serverId);
-				if (server.organizationId !== ctx.session.activeOrganizationId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (runtimeWorker.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to update this runtime worker",
 					});
 				}
 
-				if (server.serverStatus === "inactive") {
+				if (runtimeWorker.runtimeWorkerStatus === "inactive") {
 					throw new TRPCError({
 						code: "NOT_FOUND",
 						message: "Runtime worker is inactive",
 					});
 				}
-				const currentServer = await updateServerById(input.serverId, {
-					...input,
-				});
+				const updatedRuntimeWorker = await updateRuntimeWorkerById(
+					input.runtimeWorkerId,
+					{
+						...input,
+					},
+				);
 
 				await applyDockerCleanupSchedule(
-					input.serverId,
+					input.runtimeWorkerId,
 					ctx.session.activeOrganizationId,
 					input.enableDockerCleanup,
 				);
 
 				await audit(ctx, {
 					action: "update",
-					resourceType: "server",
-					resourceId: input.serverId,
-					resourceName: server.name,
+					resourceType: "runtimeWorker",
+					resourceId: input.runtimeWorkerId,
+					resourceName: runtimeWorker.name,
 				});
-				return currentServer;
+				return updatedRuntimeWorker;
 			} catch (error) {
 				throw error;
 			}
 		}),
-	updateBuildsConcurrency: withPermission("server", "create")
-		.input(apiUpdateServerBuildsConcurrency)
+	updateBuildsConcurrency: withPermission("runtimeWorker", "create")
+		.input(apiUpdateRuntimeWorkerBuildsConcurrency)
 		.mutation(async ({ input, ctx }) => {
-			const currentServer = await findServerById(input.serverId);
-			if (currentServer.organizationId !== ctx.session.activeOrganizationId) {
+			const currentRuntimeWorker = await findRuntimeWorkerById(
+				input.runtimeWorkerId,
+			);
+			if (
+				currentRuntimeWorker.organizationId !== ctx.session.activeOrganizationId
+			) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
 					message: "You are not authorized to update this runtime worker",
@@ -418,7 +476,7 @@ export const serverRouter = createTRPCRouter({
 				input.buildsConcurrency,
 				ctx.session.activeOrganizationId,
 			);
-			return await updateServerById(input.serverId, {
+			return await updateRuntimeWorkerById(input.runtimeWorkerId, {
 				buildsConcurrency: input.buildsConcurrency,
 			});
 		}),

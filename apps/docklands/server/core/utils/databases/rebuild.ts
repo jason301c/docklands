@@ -35,14 +35,14 @@ export const rebuildDatabase = async (
 		throw new Error("Database not found");
 	}
 
-	await removeService(database.appName, database.serverId);
+	await removeService(database.appName, database.runtimeWorkerId);
 	await new Promise((resolve) => setTimeout(resolve, 6000));
 
 	for (const mount of database.mounts) {
 		if (mount.type === "volume") {
 			const command = `docker volume rm ${mount?.volumeName} --force`;
-			if (database.serverId) {
-				await execAsyncRemote(database.serverId, command);
+			if (database.runtimeWorkerId) {
+				await execAsyncRemote(database.runtimeWorkerId, command);
 			} else {
 				await execAsync(command);
 			}

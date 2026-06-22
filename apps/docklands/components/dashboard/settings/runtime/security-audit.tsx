@@ -7,16 +7,16 @@ import { AlertBlock } from "@/components/shared/alert-block";
 import { StatusRow } from "./gpu-support";
 
 interface Props {
-	serverId: string;
+	runtimeWorkerId: string;
 }
 
-export const SecurityAudit = ({ serverId }: Props) => {
+export const SecurityAudit = ({ runtimeWorkerId }: Props) => {
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const { data, refetch, error, isPending, isError } =
 		api.runtimeWorker.security.useQuery(
-			{ serverId },
+			{ runtimeWorkerId },
 			{
-				enabled: !!serverId,
+				enabled: !!runtimeWorkerId,
 			},
 		);
 

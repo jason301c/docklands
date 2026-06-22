@@ -19,7 +19,7 @@ import {
 	apiUpdateCompose,
 	compose as composeTable,
 	environments,
-	projects,
+	workspaces,
 } from "@/server/core/db/schema";
 import { cancelDeployment, deploy } from "@/server/core/runtime/deploy";
 import {
@@ -52,12 +52,12 @@ import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
-import { findProjectById } from "@/server/core/services/project";
 import {
-	findServerById,
-	getAccessibleServerIds,
-} from "@/server/core/services/server";
+	findRuntimeWorkerById,
+	getAccessibleRuntimeWorkerIds,
+} from "@/server/core/services/runtime-worker";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
+import { findWorkspaceById } from "@/server/core/services/workspace";
 import { generatePassword } from "@/server/core/templates";
 import {
 	type CompleteTemplate,
@@ -94,30 +94,32 @@ export const composeRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			try {
 				const environment = await findEnvironmentById(input.environmentId);
-				const project = await findProjectById(environment.projectId);
+				const workspace = await findWorkspaceById(environment.workspaceId);
 
-				await checkServiceAccess(ctx, project.projectId, "create");
+				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
 				if (
 					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.serverId
+					!input.runtimeWorkerId
 				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You need to select a runtime worker to create a compose",
 					});
 				}
-				if (project.organizationId !== ctx.session.activeOrganizationId) {
+				if (workspace.organizationId !== ctx.session.activeOrganizationId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this workspace",
 					});
 				}
 
-				if (input.serverId) {
-					const accessibleIds = await getAccessibleServerIds(ctx.session);
-					if (!accessibleIds.has(input.serverId)) {
+				if (input.runtimeWorkerId) {
+					const accessibleIds = await getAccessibleRuntimeWorkerIds(
+						ctx.session,
+					);
+					if (!accessibleIds.has(input.runtimeWorkerId)) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
 							message: "You are not authorized to access this runtime worker",
@@ -150,7 +152,7 @@ export const composeRouter = createTRPCRouter({
 
 			const compose = await findComposeById(input.composeId);
 			if (
-				compose.environment.project.organizationId !==
+				compose.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -244,7 +246,7 @@ export const composeRouter = createTRPCRouter({
 			const composeResult = await findComposeById(input.composeId);
 
 			if (
-				composeResult.environment.project.organizationId !==
+				composeResult.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -298,7 +300,7 @@ export const composeRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const compose = await findComposeById(input.composeId);
-			await clearOldDeployments(compose.appName, compose.serverId);
+			await clearOldDeployments(compose.appName, compose.runtimeWorkerId);
 			await audit(ctx, {
 				action: "update",
 				resourceType: "compose",
@@ -314,7 +316,7 @@ export const composeRouter = createTRPCRouter({
 				deployment: ["cancel"],
 			});
 			const compose = await findComposeById(input.composeId);
-			await killDockerBuild("compose", compose.serverId);
+			await killDockerBuild("compose", compose.runtimeWorkerId);
 		}),
 
 	loadServices: protectedProcedure
@@ -353,8 +355,8 @@ export const composeRouter = createTRPCRouter({
 				const compose = await findComposeById(input.composeId);
 
 				const command = await cloneCompose(compose);
-				if (compose.serverId) {
-					await execAsyncRemote(compose.serverId, command);
+				if (compose.runtimeWorkerId) {
+					await execAsyncRemote(compose.runtimeWorkerId, command);
 				} else {
 					await execAsync(command);
 				}
@@ -431,11 +433,11 @@ export const composeRouter = createTRPCRouter({
 				type: "deploy",
 				applicationType: "compose",
 				descriptionLog: input.description || "",
-				server: !!compose.serverId,
-				serverId: compose.serverId ?? undefined,
+				runtimeWorker: !!compose.runtimeWorkerId,
+				runtimeWorkerId: compose.runtimeWorkerId ?? undefined,
 			};
 
-			if (IS_CLOUD && compose.serverId) {
+			if (IS_CLOUD && compose.runtimeWorkerId) {
 				deploy(jobData).catch((error) => {
 					console.error("Background deployment failed:", error);
 				});
@@ -480,10 +482,10 @@ export const composeRouter = createTRPCRouter({
 				type: "redeploy",
 				applicationType: "compose",
 				descriptionLog: input.description || "",
-				server: !!compose.serverId,
-				serverId: compose.serverId ?? undefined,
+				runtimeWorker: !!compose.runtimeWorkerId,
+				runtimeWorkerId: compose.runtimeWorkerId ?? undefined,
 			};
-			if (IS_CLOUD && compose.serverId) {
+			if (IS_CLOUD && compose.runtimeWorkerId) {
 				deploy(jobData).catch((error) => {
 					console.error("Background deployment failed:", error);
 				});
@@ -579,7 +581,7 @@ export const composeRouter = createTRPCRouter({
 		.input(
 			z.object({
 				environmentId: z.string(),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 				id: z.string(),
 				baseUrl: z.string().optional(),
 			}),
@@ -587,12 +589,12 @@ export const composeRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const environment = await findEnvironmentById(input.environmentId);
 
-			await checkServiceAccess(ctx, environment.projectId, "create");
+			await checkServiceAccess(ctx, environment.workspaceId, "create");
 
 			const webServerSettings = await getWebServerSettings();
 			if (
 				(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-				!input.serverId
+				!input.runtimeWorkerId
 			) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
@@ -600,9 +602,9 @@ export const composeRouter = createTRPCRouter({
 				});
 			}
 
-			if (input.serverId) {
-				const accessibleIds = await getAccessibleServerIds(ctx.session);
-				if (!accessibleIds.has(input.serverId)) {
+			if (input.runtimeWorkerId) {
+				const accessibleIds = await getAccessibleRuntimeWorkerIds(ctx.session);
+				if (!accessibleIds.has(input.runtimeWorkerId)) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You are not authorized to access this runtime worker",
@@ -614,11 +616,13 @@ export const composeRouter = createTRPCRouter({
 
 			let serverIp = "127.0.0.1";
 
-			const project = await findProjectById(environment.projectId);
+			const workspace = await findWorkspaceById(environment.workspaceId);
 
-			if (input.serverId) {
-				const server = await findServerById(input.serverId);
-				serverIp = server.ipAddress;
+			if (input.runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				serverIp = runtimeWorker.ipAddress;
 			} else if (process.env.NODE_ENV === "development") {
 				serverIp = "127.0.0.1";
 			} else {
@@ -626,7 +630,7 @@ export const composeRouter = createTRPCRouter({
 				serverIp = settings?.serverIp || "127.0.0.1";
 			}
 
-			const projectName = slugify(`${project.name} ${input.id}`);
+			const projectName = slugify(`${workspace.name} ${input.id}`);
 			const appName = `${projectName}-${generatePassword(6)}`;
 			const config = {
 				...template.config,
@@ -644,7 +648,7 @@ export const composeRouter = createTRPCRouter({
 				...input,
 				composeFile: template.dockerCompose,
 				env: generate.envs?.join("\n"),
-				serverId: input.serverId,
+				runtimeWorkerId: input.runtimeWorkerId,
 				name: input.id,
 				sourceType: "raw",
 				appName: appName,
@@ -825,9 +829,11 @@ export const composeRouter = createTRPCRouter({
 				);
 				let serverIp = "127.0.0.1";
 
-				if (compose.serverId) {
-					const server = await findServerById(compose.serverId);
-					serverIp = server.ipAddress;
+				if (compose.runtimeWorkerId) {
+					const runtimeWorker = await findRuntimeWorkerById(
+						compose.runtimeWorkerId,
+					);
+					serverIp = runtimeWorker.ipAddress;
 				} else if (process.env.NODE_ENV === "development") {
 					serverIp = "127.0.0.1";
 				} else {
@@ -875,14 +881,16 @@ export const composeRouter = createTRPCRouter({
 			z.object({
 				base64: z.string(),
 				appName: z.string(),
-				serverId: z.string().optional(),
+				runtimeWorkerId: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				if (input.serverId) {
-					const accessibleIds = await getAccessibleServerIds(ctx.session);
-					if (!accessibleIds.has(input.serverId)) {
+				if (input.runtimeWorkerId) {
+					const accessibleIds = await getAccessibleRuntimeWorkerIds(
+						ctx.session,
+					);
+					if (!accessibleIds.has(input.runtimeWorkerId)) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
 							message: "You are not authorized to access this runtime worker",
@@ -896,9 +904,11 @@ export const composeRouter = createTRPCRouter({
 
 				let serverIp = "127.0.0.1";
 
-				if (input.serverId) {
-					const server = await findServerById(input.serverId);
-					serverIp = server.ipAddress;
+				if (input.runtimeWorkerId) {
+					const runtimeWorker = await findRuntimeWorkerById(
+						input.runtimeWorkerId,
+					);
+					serverIp = runtimeWorker.ipAddress;
 				} else if (process.env.NODE_ENV !== "development") {
 					const settings = await getWebServerSettings();
 					serverIp = settings?.serverIp || "127.0.0.1";
@@ -967,9 +977,11 @@ export const composeRouter = createTRPCRouter({
 
 				let serverIp = "127.0.0.1";
 
-				if (compose.serverId) {
-					const server = await findServerById(compose.serverId);
-					serverIp = server.ipAddress;
+				if (compose.runtimeWorkerId) {
+					const runtimeWorker = await findRuntimeWorkerById(
+						compose.runtimeWorkerId,
+					);
+					serverIp = runtimeWorker.ipAddress;
 				} else if (process.env.NODE_ENV === "development") {
 					serverIp = "127.0.0.1";
 				} else {
@@ -1105,7 +1117,7 @@ export const composeRouter = createTRPCRouter({
 				name: z.string().optional(),
 				appName: z.string().optional(),
 				description: z.string().optional(),
-				projectId: z.string().optional(),
+				workspaceId: z.string().optional(),
 				environmentId: z.string().optional(),
 				limit: z.number().min(1).max(100).default(20),
 				offset: z.number().min(0).default(0),
@@ -1113,11 +1125,11 @@ export const composeRouter = createTRPCRouter({
 		)
 		.query(async ({ ctx, input }) => {
 			const baseConditions = [
-				eq(projects.organizationId, ctx.session.activeOrganizationId),
+				eq(workspaces.organizationId, ctx.session.activeOrganizationId),
 			];
 
-			if (input.projectId) {
-				baseConditions.push(eq(environments.projectId, input.projectId));
+			if (input.workspaceId) {
+				baseConditions.push(eq(environments.workspaceId, input.workspaceId));
 			}
 			if (input.environmentId) {
 				baseConditions.push(
@@ -1184,7 +1196,10 @@ export const composeRouter = createTRPCRouter({
 						environments,
 						eq(composeTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where)
 					.orderBy(desc(composeTable.createdAt))
 					.limit(input.limit)
@@ -1196,7 +1211,10 @@ export const composeRouter = createTRPCRouter({
 						environments,
 						eq(composeTable.environmentId, environments.environmentId),
 					)
-					.innerJoin(projects, eq(environments.projectId, projects.projectId))
+					.innerJoin(
+						workspaces,
+						eq(environments.workspaceId, workspaces.workspaceId),
+					)
 					.where(where),
 			]);
 
@@ -1228,7 +1246,7 @@ export const composeRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, input.composeId, "read");
 			const compose = await findComposeById(input.composeId);
 			if (
-				compose.environment.project.organizationId !==
+				compose.environment.workspace.organizationId !==
 				ctx.session.activeOrganizationId
 			) {
 				throw new TRPCError({
@@ -1241,7 +1259,7 @@ export const composeRouter = createTRPCRouter({
 				input.tail,
 				input.since,
 				input.search,
-				compose.serverId,
+				compose.runtimeWorkerId,
 				true,
 			);
 		}),

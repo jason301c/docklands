@@ -201,7 +201,7 @@ export const HandleVolumeBackups = ({
 				composeId: id || "",
 			}),
 			...(volumeBackupType === "postgres" && {
-				serverId: id || "",
+				runtimeWorkerId: id || "",
 			}),
 			...(volumeBackupType === "postgres" && {
 				postgresId: id || "",

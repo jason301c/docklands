@@ -6,9 +6,9 @@ import { RuntimeWorkerFilter } from "@/components/shared/runtime-worker-filter";
 const Page = () => {
 	return (
 		<RuntimeWorkerFilter>
-			{(serverId) => (
+			{(runtimeWorkerId) => (
 				<div className="flex flex-col gap-4 w-full">
-					<ShowClusterNodes serverId={serverId} />
+					<ShowClusterNodes runtimeWorkerId={runtimeWorkerId} />
 				</div>
 			)}
 		</RuntimeWorkerFilter>

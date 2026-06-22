@@ -12,7 +12,7 @@ import { getRemoteDocker } from "../servers/remote-docker";
 
 export type RedisNested = InferResultType<
 	"redis",
-	{ mounts: true; environment: { with: { project: true } } }
+	{ mounts: true; environment: { with: { workspace: true } } }
 >;
 export const buildRedis = async (redis: RedisNested) => {
 	const {
@@ -55,14 +55,14 @@ export const buildRedis = async (redis: RedisNested) => {
 	});
 	const envVariables = prepareEnvironmentVariables(
 		defaultRedisEnv,
-		redis.environment.project.env,
+		redis.environment.workspace.env,
 		redis.environment.env,
 	);
 	const volumesMount = generateVolumeMounts(mounts);
 	const bindsMount = generateBindMounts(mounts);
 	const filesMount = generateFileMounts(appName, redis);
 
-	const docker = await getRemoteDocker(redis.serverId);
+	const docker = await getRemoteDocker(redis.runtimeWorkerId);
 
 	const settings: CreateServiceOptions = {
 		Name: appName,
@@ -86,7 +86,10 @@ export const buildRedis = async (redis: RedisNested) => {
 						}
 					: {
 							Command: ["/bin/sh"],
-							Args: ["-c", `redis-server --requirepass ${databasePassword}`],
+							Args: [
+								"-c",
+								`redis-runtimeWorker --requirepass ${databasePassword}`,
+							],
 						}),
 				...(Ulimits && { Ulimits }),
 				Labels,

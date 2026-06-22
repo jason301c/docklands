@@ -35,32 +35,35 @@ const Schema = z.object({
 	sshKeyId: z.string().min(1, {
 		message: "SSH Key is required",
 	}),
-	serverType: z.enum(["deploy", "build"]).default("deploy"),
+	runtimeWorkerType: z.enum(["deploy", "build"]).default("deploy"),
 	enableDockerCleanup: z.boolean().default(true),
 });
 
 type Schema = z.infer<typeof Schema>;
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 	asButton?: boolean;
 }
 
-export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
+export const HandleRuntimeWorker = ({
+	runtimeWorkerId,
+	asButton = false,
+}: Props) => {
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
 
 	const { data, refetch: refetchServer } = api.runtimeWorker.one.useQuery(
 		{
-			serverId: serverId || "",
+			runtimeWorkerId: runtimeWorkerId || "",
 		},
 		{
-			enabled: !!serverId,
+			enabled: !!runtimeWorkerId,
 		},
 	);
 
 	const { data: sshKeys } = api.sshKey.all.useQuery();
-	const { mutateAsync, error, isPending, isError } = serverId
+	const { mutateAsync, error, isPending, isError } = runtimeWorkerId
 		? api.runtimeWorker.update.useMutation()
 		: api.runtimeWorker.create.useMutation();
 	const form = useForm({
@@ -71,7 +74,7 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 			port: 22,
 			username: "root",
 			sshKeyId: "",
-			serverType: "deploy",
+			runtimeWorkerType: "deploy",
 			enableDockerCleanup: true,
 		},
 		resolver: zodResolver(Schema),
@@ -85,7 +88,7 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 			port: data?.port || 22,
 			username: data?.username || "root",
 			sshKeyId: data?.sshKeyId || "",
-			serverType: data?.serverType || "deploy",
+			runtimeWorkerType: data?.runtimeWorkerType || "deploy",
 			enableDockerCleanup: data?.enableDockerCleanup ?? true,
 		});
 	}, [form, form.reset, form.formState.isSubmitSuccessful, data]);
@@ -98,26 +101,28 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 			port: data.port || 22,
 			username: data.username || "root",
 			sshKeyId: data.sshKeyId || "",
-			serverType: data.serverType || "deploy",
+			runtimeWorkerType: data.runtimeWorkerType || "deploy",
 			enableDockerCleanup: data.enableDockerCleanup,
-			serverId: serverId || "",
+			runtimeWorkerId: runtimeWorkerId || "",
 		})
 			.then(async (_data) => {
-				await utils.server.all.invalidate();
+				await utils.runtimeWorker.all.invalidate();
 				refetchServer();
-				toast.success(serverId ? "Worker updated" : "Worker created");
+				toast.success(runtimeWorkerId ? "Worker updated" : "Worker created");
 				setIsOpen(false);
 			})
 			.catch(() => {
 				toast.error(
-					serverId ? "Error updating a worker" : "Error creating a worker",
+					runtimeWorkerId
+						? "Error updating a worker"
+						: "Error creating a worker",
 				);
 			});
 	};
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
-			{serverId ? (
+			{runtimeWorkerId ? (
 				asButton ? (
 					<Dialog.Trigger
 						render={
@@ -155,11 +160,11 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 			<Dialog className="sm:max-w-3xl ">
 				<div>
 					<Dialog.Title>
-						{serverId ? "Edit" : "Create"} Runtime Worker
+						{runtimeWorkerId ? "Edit" : "Create"} Runtime Worker
 					</Dialog.Title>
 					<Dialog.Description>
-						{serverId ? "Edit" : "Create"} a worker to run services on a remote
-						machine.
+						{runtimeWorkerId ? "Edit" : "Create"} a worker to run services on a
+						remote machine.
 					</Dialog.Description>
 				</div>
 				<div>
@@ -175,7 +180,7 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
 					<form
-						id="hook-form-add-server"
+						id="hook-form-add-runtimeWorker"
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="grid w-full gap-4"
 					>
@@ -215,9 +220,9 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 						/>
 						<FormField
 							control={form.control}
-							name="serverType"
+							name="runtimeWorkerType"
 							render={({ field }) => {
-								const serverTypeValue = form.watch("serverType");
+								const serverTypeValue = form.watch("runtimeWorkerType");
 								return (
 									<FormItem>
 										<FormLabel>Worker Role</FormLabel>
@@ -376,10 +381,10 @@ export const HandleRuntimeWorker = ({ serverId, asButton = false }: Props) => {
 					<div>
 						<Button
 							loading={isPending}
-							form="hook-form-add-server"
+							form="hook-form-add-runtimeWorker"
 							type="submit"
 						>
-							{serverId ? "Update" : "Create"}
+							{runtimeWorkerId ? "Update" : "Create"}
 						</Button>
 					</div>
 				</Form>

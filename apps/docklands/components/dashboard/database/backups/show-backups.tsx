@@ -116,7 +116,11 @@ export const ShowBackups = ({
 							id={id}
 							databaseType={databaseType}
 							backupType={backupType}
-							serverId={"serverId" in postgres ? postgres.serverId : undefined}
+							runtimeWorkerId={
+								"runtimeWorkerId" in postgres
+									? postgres.runtimeWorkerId
+									: undefined
+							}
 						/>
 					</div>
 				)}
@@ -156,8 +160,10 @@ export const ShowBackups = ({
 										id={id}
 										databaseType={databaseType}
 										backupType={backupType}
-										serverId={
-											"serverId" in postgres ? postgres.serverId : undefined
+										runtimeWorkerId={
+											"runtimeWorkerId" in postgres
+												? postgres.runtimeWorkerId
+												: undefined
 										}
 									/>
 								</div>
@@ -171,8 +177,10 @@ export const ShowBackups = ({
 								)}
 								<div className="flex flex-col gap-6">
 									{postgres?.backups.map((backup) => {
-										const serverId =
-											"serverId" in postgres ? postgres.serverId : undefined;
+										const runtimeWorkerId =
+											"runtimeWorkerId" in postgres
+												? postgres.runtimeWorkerId
+												: undefined;
 
 										return (
 											<div key={backup.backupId}>
@@ -274,7 +282,7 @@ export const ShowBackups = ({
 														<ShowDeploymentsModal
 															id={backup.backupId}
 															type="backup"
-															serverId={serverId || undefined}
+															runtimeWorkerId={runtimeWorkerId || undefined}
 														>
 															<Button
 																aria-label="View backup build history"

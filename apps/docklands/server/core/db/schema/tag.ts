@@ -4,7 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { organization } from "./account";
-import { projects } from "./project";
+import { workspaces } from "./workspace";
 
 export const tags = pgTable(
 	"tag",
@@ -32,23 +32,23 @@ export const tags = pgTable(
 	}),
 );
 
-export const projectTags = pgTable(
-	"project_tag",
+export const workspaceTags = pgTable(
+	"workspace_tag",
 	{
 		id: text("id")
 			.primaryKey()
 			.$defaultFn(() => nanoid()),
-		projectId: text("projectId")
+		workspaceId: text("workspaceId")
 			.notNull()
-			.references(() => projects.projectId, { onDelete: "cascade" }),
+			.references(() => workspaces.workspaceId, { onDelete: "cascade" }),
 		tagId: text("tagId")
 			.notNull()
 			.references(() => tags.tagId, { onDelete: "cascade" }),
 	},
 	(table) => ({
-		// Unique constraint to prevent duplicate project-tag associations
-		uniqueProjectTag: unique("unique_project_tag").on(
-			table.projectId,
+		// Unique constraint to prevent duplicate workspace-tag associations.
+		uniqueWorkspaceTag: unique("unique_workspace_tag").on(
+			table.workspaceId,
 			table.tagId,
 		),
 	}),
@@ -59,16 +59,16 @@ export const tagRelations = relations(tags, ({ one, many }) => ({
 		fields: [tags.organizationId],
 		references: [organization.id],
 	}),
-	projectTags: many(projectTags),
+	workspaceTags: many(workspaceTags),
 }));
 
-export const projectTagRelations = relations(projectTags, ({ one }) => ({
-	project: one(projects, {
-		fields: [projectTags.projectId],
-		references: [projects.projectId],
+export const workspaceTagRelations = relations(workspaceTags, ({ one }) => ({
+	workspace: one(workspaces, {
+		fields: [workspaceTags.workspaceId],
+		references: [workspaces.workspaceId],
 	}),
 	tag: one(tags, {
-		fields: [projectTags.tagId],
+		fields: [workspaceTags.tagId],
 		references: [tags.tagId],
 	}),
 }));

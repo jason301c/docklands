@@ -195,7 +195,7 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 																placeholder={
 																	index === 0
 																		? "-c"
-																		: "redis-server --port 6379"
+																		: "redis-runtimeWorker --port 6379"
 																}
 																{...field}
 															/>

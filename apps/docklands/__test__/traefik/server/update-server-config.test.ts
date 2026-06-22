@@ -33,7 +33,7 @@ const baseSettings: WebServerSettings = {
 				exclude: [],
 			},
 		},
-		server: {
+		runtimeWorker: {
 			type: "Docklands",
 			cronJob: "",
 			port: 4500,

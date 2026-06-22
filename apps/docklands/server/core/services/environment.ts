@@ -40,7 +40,7 @@ export const findEnvironmentById = async (environmentId: string) => {
 			description: true,
 			environmentId: true,
 			isDefault: true,
-			projectId: true,
+			workspaceId: true,
 			env: true,
 		},
 		with: {
@@ -62,7 +62,7 @@ export const findEnvironmentById = async (environmentId: string) => {
 					createdAt: true,
 					applicationStatus: true,
 					description: true,
-					serverId: true,
+					runtimeWorkerId: true,
 					icon: true,
 				},
 			},
@@ -73,7 +73,7 @@ export const findEnvironmentById = async (environmentId: string) => {
 					createdAt: true,
 					applicationStatus: true,
 					description: true,
-					serverId: true,
+					runtimeWorkerId: true,
 				},
 			},
 			mongo: {
@@ -83,7 +83,7 @@ export const findEnvironmentById = async (environmentId: string) => {
 					createdAt: true,
 					applicationStatus: true,
 					description: true,
-					serverId: true,
+					runtimeWorkerId: true,
 				},
 			},
 			mysql: {
@@ -93,7 +93,7 @@ export const findEnvironmentById = async (environmentId: string) => {
 					createdAt: true,
 					applicationStatus: true,
 					description: true,
-					serverId: true,
+					runtimeWorkerId: true,
 				},
 			},
 			postgres: {
@@ -103,7 +103,7 @@ export const findEnvironmentById = async (environmentId: string) => {
 					description: true,
 					createdAt: true,
 					applicationStatus: true,
-					serverId: true,
+					runtimeWorkerId: true,
 				},
 			},
 			redis: {
@@ -113,7 +113,7 @@ export const findEnvironmentById = async (environmentId: string) => {
 					createdAt: true,
 					applicationStatus: true,
 					description: true,
-					serverId: true,
+					runtimeWorkerId: true,
 				},
 			},
 			compose: {
@@ -134,7 +134,7 @@ export const findEnvironmentById = async (environmentId: string) => {
 					createdAt: true,
 					composeStatus: true,
 					description: true,
-					serverId: true,
+					runtimeWorkerId: true,
 				},
 			},
 			libsql: {
@@ -144,10 +144,10 @@ export const findEnvironmentById = async (environmentId: string) => {
 					createdAt: true,
 					applicationStatus: true,
 					description: true,
-					serverId: true,
+					runtimeWorkerId: true,
 				},
 			},
-			project: true,
+			workspace: true,
 		},
 	});
 	if (!environment) {
@@ -159,9 +159,9 @@ export const findEnvironmentById = async (environmentId: string) => {
 	return environment;
 };
 
-export const findEnvironmentsByProjectId = async (projectId: string) => {
-	const projectEnvironments = await db.query.environments.findMany({
-		where: eq(environments.projectId, projectId),
+export const findEnvironmentsByWorkspaceId = async (workspaceId: string) => {
+	const workspaceEnvironments = await db.query.environments.findMany({
+		where: eq(environments.workspaceId, workspaceId),
 		orderBy: asc(environments.createdAt),
 		with: {
 			applications: true,
@@ -172,7 +172,7 @@ export const findEnvironmentsByProjectId = async (projectId: string) => {
 			redis: true,
 			compose: true,
 			libsql: true,
-			project: true,
+			workspace: true,
 		},
 		columns: {
 			name: true,
@@ -181,7 +181,7 @@ export const findEnvironmentsByProjectId = async (projectId: string) => {
 			isDefault: true,
 		},
 	});
-	return projectEnvironments;
+	return workspaceEnvironments;
 };
 
 const environmentHasServices = (
@@ -251,7 +251,7 @@ export const duplicateEnvironment = async (
 		.values({
 			name: input.name,
 			description: input.description || originalEnvironment.description,
-			projectId: originalEnvironment.projectId,
+			workspaceId: originalEnvironment.workspaceId,
 			env: originalEnvironment.env,
 		})
 		.returning()
@@ -267,13 +267,13 @@ export const duplicateEnvironment = async (
 	return newEnvironment;
 };
 
-export const createProductionEnvironment = async (projectId: string) => {
+export const createProductionEnvironment = async (workspaceId: string) => {
 	const newEnvironment = await db
 		.insert(environments)
 		.values({
 			name: "production",
 			description: "Production environment",
-			projectId,
+			workspaceId,
 			isDefault: true,
 		})
 		.returning()

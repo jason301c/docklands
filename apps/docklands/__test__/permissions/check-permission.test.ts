@@ -8,11 +8,11 @@ const mockMemberData = (
 	role,
 	userId: "user-1",
 	organizationId: "org-1",
-	accessedProjects: [] as string[],
+	accessedWorkspaces: [] as string[],
 	accessedServices: [] as string[],
 	accessedEnvironments: [] as string[],
-	canCreateProjects: overrides.canCreateProjects ?? false,
-	canDeleteProjects: overrides.canDeleteProjects ?? false,
+	canCreateWorkspaces: overrides.canCreateWorkspaces ?? false,
+	canDeleteWorkspaces: overrides.canDeleteWorkspaces ?? false,
 	canCreateServices: overrides.canCreateServices ?? false,
 	canDeleteServices: overrides.canDeleteServices ?? false,
 	canCreateEnvironments: overrides.canCreateEnvironments ?? false,
@@ -117,9 +117,11 @@ describe("member is denied org-level advanced resources", () => {
 		).rejects.toThrow();
 	});
 
-	it("member is denied server.read", async () => {
+	it("member is denied runtimeWorker.read", async () => {
 		memberToReturn = mockMemberData("member");
-		await expect(checkPermission(ctx, { server: ["read"] })).rejects.toThrow();
+		await expect(
+			checkPermission(ctx, { runtimeWorker: ["read"] }),
+		).rejects.toThrow();
 	});
 
 	it("member is denied registry.create", async () => {
@@ -131,17 +133,17 @@ describe("member is denied org-level advanced resources", () => {
 });
 
 describe("static roles validate free-tier resources", () => {
-	it("owner passes project.create", async () => {
+	it("owner passes workspace.create", async () => {
 		memberToReturn = mockMemberData("owner");
 		await expect(
-			checkPermission(ctx, { project: ["create"] }),
+			checkPermission(ctx, { workspace: ["create"] }),
 		).resolves.toBeUndefined();
 	});
 
-	it("member fails project.create without the member permission flag", async () => {
+	it("member fails workspace.create without the member permission flag", async () => {
 		memberToReturn = mockMemberData("member");
 		await expect(
-			checkPermission(ctx, { project: ["create"] }),
+			checkPermission(ctx, { workspace: ["create"] }),
 		).rejects.toThrow();
 	});
 
@@ -161,10 +163,10 @@ describe("static roles validate free-tier resources", () => {
 });
 
 describe("member permission flags", () => {
-	it("member passes project.create with canCreateProjects=true", async () => {
-		memberToReturn = mockMemberData("member", { canCreateProjects: true });
+	it("member passes workspace.create with canCreateWorkspaces=true", async () => {
+		memberToReturn = mockMemberData("member", { canCreateWorkspaces: true });
 		await expect(
-			checkPermission(ctx, { project: ["create"] }),
+			checkPermission(ctx, { workspace: ["create"] }),
 		).resolves.toBeUndefined();
 	});
 

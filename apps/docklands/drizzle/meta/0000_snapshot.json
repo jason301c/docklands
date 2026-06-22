@@ -1,5 +1,5 @@
 {
-  "id": "b1e57843-7984-4ce5-a9c2-da79313fed79",
+  "id": "7ed232c6-60b4-4365-b7b4-679c130dcc22",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -442,8 +442,8 @@
           "notNull": true,
           "default": false
         },
-        "canCreateProjects": {
-          "name": "canCreateProjects",
+        "canCreateWorkspaces": {
+          "name": "canCreateWorkspaces",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -463,8 +463,8 @@
           "notNull": true,
           "default": false
         },
-        "canDeleteProjects": {
-          "name": "canDeleteProjects",
+        "canDeleteWorkspaces": {
+          "name": "canDeleteWorkspaces",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -519,8 +519,8 @@
           "notNull": true,
           "default": false
         },
-        "accesedProjects": {
-          "name": "accesedProjects",
+        "accessedWorkspaces": {
+          "name": "accessedWorkspaces",
           "type": "text[]",
           "primaryKey": false,
           "notNull": true,
@@ -547,8 +547,8 @@
           "notNull": true,
           "default": "ARRAY[]::text[]"
         },
-        "accessedServers": {
-          "name": "accessedServers",
+        "accessedRuntimeWorkers": {
+          "name": "accessedRuntimeWorkers",
           "type": "text[]",
           "primaryKey": false,
           "notNull": true,
@@ -1470,14 +1470,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "buildServerId": {
-          "name": "buildServerId",
+        "buildRuntimeWorkerId": {
+          "name": "buildRuntimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1595,28 +1595,28 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "application_serverId_server_serverId_fk": {
-          "name": "application_serverId_server_serverId_fk",
+        "application_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "application_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "application",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "application_buildServerId_server_serverId_fk": {
-          "name": "application_buildServerId_server_serverId_fk",
+        "application_buildRuntimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "application_buildRuntimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "application",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "buildServerId"
+            "buildRuntimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
@@ -2067,12 +2067,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "appPassword": {
-          "name": "appPassword",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "apiToken": {
           "name": "apiToken",
           "type": "text",
@@ -2160,8 +2154,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -2182,15 +2176,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "certificate_serverId_server_serverId_fk": {
-          "name": "certificate_serverId_server_serverId_fk",
+        "certificate_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "certificate_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "certificate",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2494,8 +2488,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -2581,15 +2575,15 @@
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "compose_serverId_server_serverId_fk": {
-          "name": "compose_serverId_server_serverId_fk",
+        "compose_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "compose_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "compose",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2655,8 +2649,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -2722,8 +2716,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "buildServerId": {
-          "name": "buildServerId",
+        "buildRuntimeWorkerId": {
+          "name": "buildRuntimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -2757,15 +2751,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "deployment_serverId_server_serverId_fk": {
-          "name": "deployment_serverId_server_serverId_fk",
+        "deployment_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "deployment_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "deployment",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2835,15 +2829,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "deployment_buildServerId_server_serverId_fk": {
-          "name": "deployment_buildServerId_server_serverId_fk",
+        "deployment_buildRuntimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "deployment_buildRuntimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "deployment",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "buildServerId"
+            "buildRuntimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -3155,8 +3149,8 @@
           "notNull": true,
           "default": "''"
         },
-        "projectId": {
-          "name": "projectId",
+        "workspaceId": {
+          "name": "workspaceId",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -3171,15 +3165,15 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "environment_projectId_project_projectId_fk": {
-          "name": "environment_projectId_project_projectId_fk",
+        "environment_workspaceId_workspace_workspaceId_fk": {
+          "name": "environment_workspaceId_workspace_workspaceId_fk",
           "tableFrom": "environment",
-          "tableTo": "project",
+          "tableTo": "workspace",
           "columnsFrom": [
-            "projectId"
+            "workspaceId"
           ],
           "columnsTo": [
-            "projectId"
+            "workspaceId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -3760,8 +3754,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -3782,15 +3776,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "libsql_serverId_server_serverId_fk": {
-          "name": "libsql_serverId_server_serverId_fk",
+        "libsql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "libsql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "libsql",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -4009,8 +4003,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -4031,15 +4025,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "mariadb_serverId_server_serverId_fk": {
-          "name": "mariadb_serverId_server_serverId_fk",
+        "mariadb_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "mariadb_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "mariadb",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -4247,8 +4241,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -4276,15 +4270,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "mongo_serverId_server_serverId_fk": {
-          "name": "mongo_serverId_server_serverId_fk",
+        "mongo_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "mongo_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "mongo",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -4720,8 +4714,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -4742,15 +4736,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "mysql_serverId_server_serverId_fk": {
-          "name": "mysql_serverId_server_serverId_fk",
+        "mysql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "mysql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "mysql",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -5932,8 +5926,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -5954,15 +5948,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "postgres_serverId_server_serverId_fk": {
-          "name": "postgres_serverId_server_serverId_fk",
+        "postgres_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "postgres_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "postgres",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -6110,12 +6104,12 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.project": {
-      "name": "project",
+    "public.runtimeWorker": {
+      "name": "runtimeWorker",
       "schema": "",
       "columns": {
-        "projectId": {
-          "name": "projectId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": true,
           "notNull": true
@@ -6132,6 +6126,45 @@
           "primaryKey": false,
           "notNull": false
         },
+        "ipAddress": {
+          "name": "ipAddress",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "port": {
+          "name": "port",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'root'"
+        },
+        "appName": {
+          "name": "appName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enableDockerCleanup": {
+          "name": "enableDockerCleanup",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "buildsConcurrency": {
+          "name": "buildsConcurrency",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "text",
@@ -6144,19 +6177,48 @@
           "primaryKey": false,
           "notNull": true
         },
-        "env": {
-          "name": "env",
+        "runtimeWorkerStatus": {
+          "name": "runtimeWorkerStatus",
+          "type": "runtimeWorkerStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "runtimeWorkerType": {
+          "name": "runtimeWorkerType",
+          "type": "runtimeWorkerType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'deploy'"
+        },
+        "command": {
+          "name": "command",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "default": "''"
+        },
+        "sshKeyId": {
+          "name": "sshKeyId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metricsConfig": {
+          "name": "metricsConfig",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"runtimeWorker\":{\"type\":\"Remote\",\"refreshRate\":60,\"port\":4500,\"token\":\"\",\"urlCallback\":\"\",\"cronJob\":\"\",\"retentionDays\":2,\"thresholds\":{\"cpu\":0,\"memory\":0}},\"containers\":{\"refreshRate\":60,\"services\":{\"include\":[],\"exclude\":[]}}}'::jsonb"
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "project_organizationId_organization_id_fk": {
-          "name": "project_organizationId_organization_id_fk",
-          "tableFrom": "project",
+        "runtimeWorker_organizationId_organization_id_fk": {
+          "name": "runtimeWorker_organizationId_organization_id_fk",
+          "tableFrom": "runtimeWorker",
           "tableTo": "organization",
           "columnsFrom": [
             "organizationId"
@@ -6165,6 +6227,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "runtimeWorker_sshKeyId_ssh-key_sshKeyId_fk": {
+          "name": "runtimeWorker_sshKeyId_ssh-key_sshKeyId_fk",
+          "tableFrom": "runtimeWorker",
+          "tableTo": "ssh-key",
+          "columnsFrom": [
+            "sshKeyId"
+          ],
+          "columnsTo": [
+            "sshKeyId"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -6425,8 +6500,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -6447,15 +6522,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "redis_serverId_server_serverId_fk": {
-          "name": "redis_serverId_server_serverId_fk",
+        "redis_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "redis_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "redis",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -6702,8 +6777,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "serverId": {
-          "name": "serverId",
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -6762,15 +6837,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "schedule_serverId_server_serverId_fk": {
-          "name": "schedule_serverId_server_serverId_fk",
+        "schedule_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "schedule_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
           "tableFrom": "schedule",
-          "tableTo": "server",
+          "tableTo": "runtimeWorker",
           "columnsFrom": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "columnsTo": [
-            "serverId"
+            "runtimeWorkerId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -6857,151 +6932,6 @@
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.server": {
-      "name": "server",
-      "schema": "",
-      "columns": {
-        "serverId": {
-          "name": "serverId",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ipAddress": {
-          "name": "ipAddress",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "port": {
-          "name": "port",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "username": {
-          "name": "username",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'root'"
-        },
-        "appName": {
-          "name": "appName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "enableDockerCleanup": {
-          "name": "enableDockerCleanup",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "buildsConcurrency": {
-          "name": "buildsConcurrency",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "organizationId": {
-          "name": "organizationId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "serverStatus": {
-          "name": "serverStatus",
-          "type": "serverStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'active'"
-        },
-        "serverType": {
-          "name": "serverType",
-          "type": "serverType",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'deploy'"
-        },
-        "command": {
-          "name": "command",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "sshKeyId": {
-          "name": "sshKeyId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "metricsConfig": {
-          "name": "metricsConfig",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{\"server\":{\"type\":\"Remote\",\"refreshRate\":60,\"port\":4500,\"token\":\"\",\"urlCallback\":\"\",\"cronJob\":\"\",\"retentionDays\":2,\"thresholds\":{\"cpu\":0,\"memory\":0}},\"containers\":{\"refreshRate\":60,\"services\":{\"include\":[],\"exclude\":[]}}}'::jsonb"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "server_organizationId_organization_id_fk": {
-          "name": "server_organizationId_organization_id_fk",
-          "tableFrom": "server",
-          "tableTo": "organization",
-          "columnsFrom": [
-            "organizationId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "server_sshKeyId_ssh-key_sshKeyId_fk": {
-          "name": "server_sshKeyId_ssh-key_sshKeyId_fk",
-          "tableFrom": "server",
-          "tableTo": "ssh-key",
-          "columnsFrom": [
-            "sshKeyId"
-          ],
-          "columnsTo": [
-            "sshKeyId"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -7177,73 +7107,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.project_tag": {
-      "name": "project_tag",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "projectId": {
-          "name": "projectId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "tagId": {
-          "name": "tagId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "project_tag_projectId_project_projectId_fk": {
-          "name": "project_tag_projectId_project_projectId_fk",
-          "tableFrom": "project_tag",
-          "tableTo": "project",
-          "columnsFrom": [
-            "projectId"
-          ],
-          "columnsTo": [
-            "projectId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "project_tag_tagId_tag_tagId_fk": {
-          "name": "project_tag_tagId_tag_tagId_fk",
-          "tableFrom": "project_tag",
-          "tableTo": "tag",
-          "columnsFrom": [
-            "tagId"
-          ],
-          "columnsTo": [
-            "tagId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "unique_project_tag": {
-          "name": "unique_project_tag",
-          "nullsNotDistinct": false,
-          "columns": [
-            "projectId",
-            "tagId"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.tag": {
       "name": "tag",
       "schema": "",
@@ -7303,6 +7166,73 @@
           "columns": [
             "organizationId",
             "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workspace_tag": {
+      "name": "workspace_tag",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "workspaceId": {
+          "name": "workspaceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tagId": {
+          "name": "tagId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workspace_tag_workspaceId_workspace_workspaceId_fk": {
+          "name": "workspace_tag_workspaceId_workspace_workspaceId_fk",
+          "tableFrom": "workspace_tag",
+          "tableTo": "workspace",
+          "columnsFrom": [
+            "workspaceId"
+          ],
+          "columnsTo": [
+            "workspaceId"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "workspace_tag_tagId_tag_tagId_fk": {
+          "name": "workspace_tag_tagId_tag_tagId_fk",
+          "tableFrom": "workspace_tag",
+          "tableTo": "tag",
+          "columnsFrom": [
+            "tagId"
+          ],
+          "columnsTo": [
+            "tagId"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_workspace_tag": {
+          "name": "unique_workspace_tag",
+          "nullsNotDistinct": false,
+          "columns": [
+            "workspaceId",
+            "tagId"
           ]
         }
       },
@@ -7794,7 +7724,7 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": true,
-          "default": "'{\"server\":{\"type\":\"Docklands\",\"refreshRate\":60,\"port\":4500,\"token\":\"\",\"retentionDays\":2,\"cronJob\":\"\",\"urlCallback\":\"\",\"thresholds\":{\"cpu\":0,\"memory\":0}},\"containers\":{\"refreshRate\":60,\"services\":{\"include\":[],\"exclude\":[]}}}'::jsonb"
+          "default": "'{\"runtimeWorker\":{\"type\":\"Docklands\",\"refreshRate\":60,\"port\":4500,\"token\":\"\",\"retentionDays\":2,\"cronJob\":\"\",\"urlCallback\":\"\",\"thresholds\":{\"cpu\":0,\"memory\":0}},\"containers\":{\"refreshRate\":60,\"services\":{\"include\":[],\"exclude\":[]}}}'::jsonb"
         },
         "remoteServersOnly": {
           "name": "remoteServersOnly",
@@ -7850,6 +7780,265 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workspace": {
+      "name": "workspace",
+      "schema": "",
+      "columns": {
+        "workspaceId": {
+          "name": "workspaceId",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "organizationId": {
+          "name": "organizationId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "env": {
+          "name": "env",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workspace_organizationId_organization_id_fk": {
+          "name": "workspace_organizationId_organization_id_fk",
+          "tableFrom": "workspace",
+          "tableTo": "organization",
+          "columnsFrom": [
+            "organizationId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workspace_service_connection": {
+      "name": "workspace_service_connection",
+      "schema": "",
+      "columns": {
+        "connectionId": {
+          "name": "connectionId",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "environmentId": {
+          "name": "environmentId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sourceServiceType": {
+          "name": "sourceServiceType",
+          "type": "workspaceServiceType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sourceServiceId": {
+          "name": "sourceServiceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "targetServiceType": {
+          "name": "targetServiceType",
+          "type": "workspaceServiceType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "targetServiceId": {
+          "name": "targetServiceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workspace_service_connection_environmentId_environment_environmentId_fk": {
+          "name": "workspace_service_connection_environmentId_environment_environmentId_fk",
+          "tableFrom": "workspace_service_connection",
+          "tableTo": "environment",
+          "columnsFrom": [
+            "environmentId"
+          ],
+          "columnsTo": [
+            "environmentId"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_workspace_service_connection": {
+          "name": "unique_workspace_service_connection",
+          "nullsNotDistinct": false,
+          "columns": [
+            "environmentId",
+            "sourceServiceType",
+            "sourceServiceId",
+            "targetServiceType",
+            "targetServiceId"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workspace_service_layout": {
+      "name": "workspace_service_layout",
+      "schema": "",
+      "columns": {
+        "layoutId": {
+          "name": "layoutId",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "environmentId": {
+          "name": "environmentId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "serviceType": {
+          "name": "serviceType",
+          "type": "workspaceServiceType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "serviceId": {
+          "name": "serviceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "x": {
+          "name": "x",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "y": {
+          "name": "y",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 280
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 164
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workspace_service_layout_environmentId_environment_environmentId_fk": {
+          "name": "workspace_service_layout_environmentId_environment_environmentId_fk",
+          "tableFrom": "workspace_service_layout",
+          "tableTo": "environment",
+          "columnsFrom": [
+            "environmentId"
+          ],
+          "columnsTo": [
+            "environmentId"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "unique_workspace_service_layout": {
+          "name": "unique_workspace_service_layout",
+          "nullsNotDistinct": false,
+          "columns": [
+            "environmentId",
+            "serviceType",
+            "serviceId"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -8016,6 +8205,22 @@
         "host"
       ]
     },
+    "public.runtimeWorkerStatus": {
+      "name": "runtimeWorkerStatus",
+      "schema": "public",
+      "values": [
+        "active",
+        "inactive"
+      ]
+    },
+    "public.runtimeWorkerType": {
+      "name": "runtimeWorkerType",
+      "schema": "public",
+      "values": [
+        "deploy",
+        "build"
+      ]
+    },
     "public.RegistryType": {
       "name": "RegistryType",
       "schema": "public",
@@ -8030,7 +8235,7 @@
       "values": [
         "application",
         "compose",
-        "server",
+        "runtimeWorker",
         "docklands-server"
       ]
     },
@@ -8040,22 +8245,6 @@
       "values": [
         "bash",
         "sh"
-      ]
-    },
-    "public.serverStatus": {
-      "name": "serverStatus",
-      "schema": "public",
-      "values": [
-        "active",
-        "inactive"
-      ]
-    },
-    "public.serverType": {
-      "name": "serverType",
-      "schema": "public",
-      "values": [
-        "deploy",
-        "build"
       ]
     },
     "public.applicationStatus": {
@@ -8091,6 +8280,20 @@
       "values": [
         "push",
         "tag"
+      ]
+    },
+    "public.workspaceServiceType": {
+      "name": "workspaceServiceType",
+      "schema": "public",
+      "values": [
+        "application",
+        "compose",
+        "libsql",
+        "mariadb",
+        "mongo",
+        "mysql",
+        "postgres",
+        "redis"
       ]
     }
   },

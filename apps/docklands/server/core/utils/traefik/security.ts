@@ -24,11 +24,11 @@ export const createSecurityMiddleware = async (
 	application: ApplicationNested,
 	data: Security,
 ) => {
-	const { appName, serverId } = application;
+	const { appName, runtimeWorkerId } = application;
 	let config: FileConfig;
 
-	if (serverId) {
-		config = await loadRemoteMiddlewares(serverId);
+	if (runtimeWorkerId) {
+		config = await loadRemoteMiddlewares(runtimeWorkerId);
 	} else {
 		config = loadMiddlewares<FileConfig>();
 	}
@@ -54,15 +54,15 @@ export const createSecurityMiddleware = async (
 	}
 	let appConfig: FileConfig;
 
-	if (serverId) {
-		appConfig = await loadOrCreateConfigRemote(serverId, appName);
+	if (runtimeWorkerId) {
+		appConfig = await loadOrCreateConfigRemote(runtimeWorkerId, appName);
 	} else {
 		appConfig = loadOrCreateConfig(appName);
 	}
 	addMiddleware(appConfig, middlewareName);
-	if (serverId) {
-		await writeTraefikConfigRemote(config, "middlewares", serverId);
-		await writeTraefikConfigRemote(appConfig, appName, serverId);
+	if (runtimeWorkerId) {
+		await writeTraefikConfigRemote(config, "middlewares", runtimeWorkerId);
+		await writeTraefikConfigRemote(appConfig, appName, runtimeWorkerId);
 	} else {
 		writeTraefikConfig(appConfig, appName);
 		writeMiddleware(config);
@@ -73,18 +73,18 @@ export const removeSecurityMiddleware = async (
 	application: ApplicationNested,
 	data: Security,
 ) => {
-	const { appName, serverId } = application;
+	const { appName, runtimeWorkerId } = application;
 	let config: FileConfig;
 
-	if (serverId) {
-		config = await loadRemoteMiddlewares(serverId);
+	if (runtimeWorkerId) {
+		config = await loadRemoteMiddlewares(runtimeWorkerId);
 	} else {
 		config = loadMiddlewares<FileConfig>();
 	}
 	let appConfig: FileConfig;
 
-	if (serverId) {
-		appConfig = await loadOrCreateConfigRemote(serverId, appName);
+	if (runtimeWorkerId) {
+		appConfig = await loadOrCreateConfigRemote(runtimeWorkerId, appName);
 	} else {
 		appConfig = loadOrCreateConfig(appName);
 	}
@@ -106,8 +106,8 @@ export const removeSecurityMiddleware = async (
 					delete config.http.middlewares[middlewareName];
 				}
 				deleteMiddleware(appConfig, middlewareName);
-				if (serverId) {
-					await writeTraefikConfigRemote(appConfig, appName, serverId);
+				if (runtimeWorkerId) {
+					await writeTraefikConfigRemote(appConfig, appName, runtimeWorkerId);
 				} else {
 					writeTraefikConfig(appConfig, appName);
 				}
@@ -115,8 +115,8 @@ export const removeSecurityMiddleware = async (
 		}
 	}
 
-	if (serverId) {
-		await writeTraefikConfigRemote(config, "middlewares", serverId);
+	if (runtimeWorkerId) {
+		await writeTraefikConfigRemote(config, "middlewares", runtimeWorkerId);
 	} else {
 		writeMiddleware(config);
 	}

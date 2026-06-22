@@ -26,14 +26,14 @@ type Schema = z.infer<typeof schema>;
 
 interface Props {
 	children?: React.ReactNode;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const EditIngressEnv = ({ children, serverId }: Props) => {
+export const EditIngressEnv = ({ children, runtimeWorkerId }: Props) => {
 	const [canEdit, setCanEdit] = useState(true);
 
 	const { data } = api.settings.readTraefikEnv.useQuery({
-		serverId,
+		runtimeWorkerId,
 	});
 
 	const { mutateAsync, isPending, error, isError } =
@@ -68,7 +68,7 @@ export const EditIngressEnv = ({ children, serverId }: Props) => {
 			await executeWithHealthCheck(() =>
 				mutateAsync({
 					env: data.env,
-					serverId,
+					runtimeWorkerId,
 				}),
 			);
 		} catch {

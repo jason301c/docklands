@@ -22,20 +22,20 @@ export const DockerLogsId = dynamic(
 interface Props {
 	appName: string;
 	children?: React.ReactNode;
-	serverId?: string;
+	runtimeWorkerId?: string;
 	type?: "standalone" | "swarm";
 }
 
 export const ServiceLogsModal = ({
 	appName,
 	children,
-	serverId,
+	runtimeWorkerId,
 	type = "swarm",
 }: Props) => {
 	const { data, isPending } = api.docker.getContainersByAppLabel.useQuery(
 		{
 			appName,
-			serverId,
+			runtimeWorkerId,
 			type,
 		},
 		{
@@ -95,7 +95,7 @@ export const ServiceLogsModal = ({
 					</Select>
 					<DockerLogsId
 						containerId={containerId || ""}
-						serverId={serverId}
+						runtimeWorkerId={runtimeWorkerId}
 						runType="native"
 					/>
 				</div>

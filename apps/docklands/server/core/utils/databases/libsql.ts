@@ -14,7 +14,7 @@ export type LibsqlNested = InferResultType<
 	"libsql",
 	{
 		mounts: true;
-		environment: { with: { project: true } };
+		environment: { with: { workspace: true } };
 	}
 >;
 export const buildLibsql = async (libsql: LibsqlNested) => {
@@ -64,14 +64,14 @@ export const buildLibsql = async (libsql: LibsqlNested) => {
 	});
 	const envVariables = prepareEnvironmentVariables(
 		defaultLibsqlEnv,
-		libsql.environment.project.env,
+		libsql.environment.workspace.env,
 		libsql.environment.env,
 	);
 	const volumesMount = generateVolumeMounts(mounts);
 	const bindsMount = generateBindMounts(mounts);
 	const filesMount = generateFileMounts(appName, libsql);
 
-	const docker = await getRemoteDocker(libsql.serverId);
+	const docker = await getRemoteDocker(libsql.runtimeWorkerId);
 
 	let finalCommand =
 		command ??
@@ -85,7 +85,7 @@ export const buildLibsql = async (libsql: LibsqlNested) => {
 		TaskTemplate: {
 			ContainerSpec: {
 				HealthCheck,
-				Image: "ghcr.io/tursodatabase/libsql-server:v0.24.32",
+				Image: "ghcr.io/tursodatabase/libsql-runtimeWorker:v0.24.32",
 				Env: envVariables,
 				Mounts: [...volumesMount, ...bindsMount, ...filesMount],
 				...(finalCommand

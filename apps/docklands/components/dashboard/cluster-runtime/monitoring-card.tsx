@@ -14,12 +14,12 @@ import { api } from "@/client/api/trpc";
 import { NodeCard } from "./details/details-card";
 
 interface Props {
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export default function ClusterMonitorCard({ serverId }: Props) {
+export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 	const { data: nodes, isPending } = api.swarm.getNodes.useQuery({
-		serverId,
+		runtimeWorkerId,
 	});
 
 	if (isPending) {
@@ -76,7 +76,7 @@ export default function ClusterMonitorCard({ serverId }: Props) {
 						Monitor runtime workers and node health across the cluster.
 					</p>
 				</div>
-				{!serverId && (
+				{!runtimeWorkerId && (
 					<Button
 						onClick={() =>
 							window.location.replace("/dashboard/settings/cluster-nodes")
@@ -170,7 +170,11 @@ export default function ClusterMonitorCard({ serverId }: Props) {
 
 			<div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
 				{nodes.map((node) => (
-					<NodeCard key={node.ID} node={node} serverId={serverId} />
+					<NodeCard
+						key={node.ID}
+						node={node}
+						runtimeWorkerId={runtimeWorkerId}
+					/>
 				))}
 			</div>
 		</div>

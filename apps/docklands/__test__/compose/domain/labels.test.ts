@@ -30,7 +30,7 @@ describe("createDomainLabels", () => {
 		expect(labels).toEqual([
 			"traefik.http.routers.test-app-1-web.rule=Host(`example.com`)",
 			"traefik.http.routers.test-app-1-web.entrypoints=web",
-			"traefik.http.services.test-app-1-web.loadbalancer.server.port=8080",
+			"traefik.http.services.test-app-1-web.loadbalancer.runtimeWorker.port=8080",
 			"traefik.http.routers.test-app-1-web.service=test-app-1-web",
 		]);
 	});
@@ -40,7 +40,7 @@ describe("createDomainLabels", () => {
 		expect(labels).toEqual([
 			"traefik.http.routers.test-app-1-websecure.rule=Host(`example.com`)",
 			"traefik.http.routers.test-app-1-websecure.entrypoints=websecure",
-			"traefik.http.services.test-app-1-websecure.loadbalancer.server.port=8080",
+			"traefik.http.services.test-app-1-websecure.loadbalancer.runtimeWorker.port=8080",
 			"traefik.http.routers.test-app-1-websecure.service=test-app-1-websecure",
 		]);
 	});
@@ -58,7 +58,7 @@ describe("createDomainLabels", () => {
 		expect(labels).toEqual([
 			"traefik.http.routers.test-app-1-websecure.rule=Host(`example.com`) && PathPrefix(`/hello`)",
 			"traefik.http.routers.test-app-1-websecure.entrypoints=websecure",
-			"traefik.http.services.test-app-1-websecure.loadbalancer.server.port=8080",
+			"traefik.http.services.test-app-1-websecure.loadbalancer.runtimeWorker.port=8080",
 			"traefik.http.routers.test-app-1-websecure.service=test-app-1-websecure",
 		]);
 	});
@@ -152,7 +152,7 @@ describe("createDomainLabels", () => {
 		const customPortDomain = { ...baseDomain, port: 3000 };
 		const labels = await createDomainLabels(appName, customPortDomain, "web");
 		expect(labels).toContain(
-			"traefik.http.services.test-app-1-web.loadbalancer.server.port=3000",
+			"traefik.http.services.test-app-1-web.loadbalancer.runtimeWorker.port=3000",
 		);
 	});
 
@@ -422,7 +422,7 @@ describe("createDomainLabels", () => {
 		expect(labels).toEqual([
 			"traefik.http.routers.test-app-1-custom.rule=Host(`example.com`)",
 			"traefik.http.routers.test-app-1-custom.entrypoints=custom",
-			"traefik.http.services.test-app-1-custom.loadbalancer.server.port=8080",
+			"traefik.http.services.test-app-1-custom.loadbalancer.runtimeWorker.port=8080",
 			"traefik.http.routers.test-app-1-custom.service=test-app-1-custom",
 		]);
 	});
@@ -441,7 +441,7 @@ describe("createDomainLabels", () => {
 		expect(labels).toEqual([
 			"traefik.http.routers.test-app-1-custom.rule=Host(`example.com`)",
 			"traefik.http.routers.test-app-1-custom.entrypoints=custom",
-			"traefik.http.services.test-app-1-custom.loadbalancer.server.port=8080",
+			"traefik.http.services.test-app-1-custom.loadbalancer.runtimeWorker.port=8080",
 			"traefik.http.routers.test-app-1-custom.service=test-app-1-custom",
 			"traefik.http.routers.test-app-1-custom.tls.certresolver=letsencrypt",
 		]);

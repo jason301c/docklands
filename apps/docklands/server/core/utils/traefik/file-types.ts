@@ -98,7 +98,7 @@ export interface FileConfig {
 				 */
 				sniStrict?: boolean;
 				/**
-				 * This option allows the server to choose its most preferred cipher suite instead of the client's. Please note that this is enabled automatically when minVersion or maxVersion are set.
+				 * This option allows the runtimeWorker to choose its most preferred cipher suite instead of the client's. Please note that this is enabled automatically when minVersion or maxVersion are set.
 				 */
 				preferServerCipherSuites?: boolean;
 				/**
@@ -313,7 +313,7 @@ export interface HttpRouter {
 /**
  * The load balancers are able to load balance the requests between multiple instances of your programs.
  *
- * Each service has a load-balancer, even if there is only one server to forward traffic to.
+ * Each service has a load-balancer, even if there is only one runtimeWorker to forward traffic to.
  */
 export interface HttpLoadBalancerService {
 	/**
@@ -338,7 +338,7 @@ export interface HttpLoadBalancerService {
 		}[],
 	];
 	/**
-	 * When sticky sessions are enabled, a cookie is set on the initial request and response to let the client know which server handles the first response. On subsequent requests, to keep the session alive with the same server, the client should resend the same cookie.
+	 * When sticky sessions are enabled, a cookie is set on the initial request and response to let the client know which runtimeWorker handles the first response. On subsequent requests, to keep the session alive with the same runtimeWorker, the client should resend the same cookie.
 	 */
 	sticky?: {
 		cookie?: {
@@ -357,7 +357,7 @@ export interface HttpLoadBalancerService {
 		[k: string]: unknown;
 	};
 	/**
-	 * Configure health check to remove unhealthy servers from the load balancing rotation. Traefik will consider your servers healthy as long as they return status codes between 2XX and 3XX to the health check requests (carried out every interval). Traefik keeps monitoring the health of unhealthy servers. If a server has recovered (returning 2xx -> 3xx responses again), it will be added back to the load balancer rotation pool.
+	 * Configure health check to remove unhealthy servers from the load balancing rotation. Traefik will consider your servers healthy as long as they return status codes between 2XX and 3XX to the health check requests (carried out every interval). Traefik keeps monitoring the health of unhealthy servers. If a runtimeWorker has recovered (returning 2xx -> 3xx responses again), it will be added back to the load balancer rotation pool.
 	 */
 	healthCheck?: {
 		/**
@@ -365,11 +365,11 @@ export interface HttpLoadBalancerService {
 		 */
 		method?: string;
 		/**
-		 * path is appended to the server URL to set the health check endpoint.
+		 * path is appended to the runtimeWorker URL to set the health check endpoint.
 		 */
 		path?: string;
 		/**
-		 * If defined, will replace the server URL scheme for the health check endpoint
+		 * If defined, will replace the runtimeWorker URL scheme for the health check endpoint
 		 */
 		scheme?: string;
 		/**
@@ -377,7 +377,7 @@ export interface HttpLoadBalancerService {
 		 */
 		hostname?: string;
 		/**
-		 * If defined, will replace the server URL port for the health check endpoint.
+		 * If defined, will replace the runtimeWorker URL port for the health check endpoint.
 		 */
 		port?: number;
 		/**
@@ -385,7 +385,7 @@ export interface HttpLoadBalancerService {
 		 */
 		interval?: string;
 		/**
-		 * Defines the maximum duration Traefik will wait for a health check request before considering the server failed (unhealthy). Timeout is to be given in a format understood by `time.ParseDuration`.
+		 * Defines the maximum duration Traefik will wait for a health check request before considering the runtimeWorker failed (unhealthy). Timeout is to be given in a format understood by `time.ParseDuration`.
 		 */
 		timeout?: string;
 		/**
@@ -401,11 +401,11 @@ export interface HttpLoadBalancerService {
 		[k: string]: unknown;
 	};
 	/**
-	 * The passHostHeader allows to forward client Host header to server. By default, passHostHeader is true.
+	 * The passHostHeader allows to forward client Host header to runtimeWorker. By default, passHostHeader is true.
 	 */
 	passHostHeader?: boolean;
 	/**
-	 * Defines how Traefik forwards the response from the backend server to the client.
+	 * Defines how Traefik forwards the response from the backend runtimeWorker to the client.
 	 */
 	responseForwarding?: {
 		/**
@@ -428,7 +428,7 @@ export interface HttpWeightedService {
 		[k: string]: unknown;
 	}[];
 	/**
-	 * When sticky sessions are enabled, a cookie is set on the initial request and response to let the client know which server handles the first response. On subsequent requests, to keep the session alive with the same server, the client should resend the same cookie.
+	 * When sticky sessions are enabled, a cookie is set on the initial request and response to let the client know which runtimeWorker handles the first response. On subsequent requests, to keep the session alive with the same runtimeWorker, the client should resend the same cookie.
 	 */
 	sticky?: {
 		cookie?: {
@@ -661,35 +661,35 @@ export interface ErrorsMiddleware {
 	};
 }
 /**
- * The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed. Otherwise, the response from the authentication server is returned.
+ * The ForwardAuth middleware delegate the authentication to an external service. If the service response code is 2XX, access is granted and the original request is performed. Otherwise, the response from the authentication runtimeWorker is returned.
  */
 export interface ForwardAuthMiddleware {
 	/**
-	 * The address option defines the authentication server address.
+	 * The address option defines the authentication runtimeWorker address.
 	 */
 	address?: string;
 	/**
-	 * The tls option is the TLS configuration from Traefik to the authentication server.
+	 * The tls option is the TLS configuration from Traefik to the authentication runtimeWorker.
 	 */
 	tls?: {
 		/**
-		 * Certificate Authority used for the secured connection to the authentication server.
+		 * Certificate Authority used for the secured connection to the authentication runtimeWorker.
 		 */
 		ca?: string;
 		/**
-		 * Policy used for the secured connection with TLS Client Authentication to the authentication server. Requires tls.ca to be defined.
+		 * Policy used for the secured connection with TLS Client Authentication to the authentication runtimeWorker. Requires tls.ca to be defined.
 		 */
 		caOptional?: boolean;
 		/**
-		 * Public certificate used for the secured connection to the authentication server.
+		 * Public certificate used for the secured connection to the authentication runtimeWorker.
 		 */
 		cert?: string;
 		/**
-		 * Private certificate used for the secure connection to the authentication server.
+		 * Private certificate used for the secure connection to the authentication runtimeWorker.
 		 */
 		key?: string;
 		/**
-		 * If insecureSkipVerify is true, TLS for the connection to authentication server accepts any certificate presented by the server and any host name in that certificate.
+		 * If insecureSkipVerify is true, TLS for the connection to authentication runtimeWorker accepts any certificate presented by the runtimeWorker and any host name in that certificate.
 		 */
 		insecureSkipVerify?: boolean;
 		[k: string]: unknown;
@@ -699,15 +699,15 @@ export interface ForwardAuthMiddleware {
 	 */
 	trustForwardHeader?: boolean;
 	/**
-	 * The authResponseHeaders option is the list of the headers to copy from the authentication server to the request.
+	 * The authResponseHeaders option is the list of the headers to copy from the authentication runtimeWorker to the request.
 	 */
 	authResponseHeaders?: string[];
 	/**
-	 * The authResponseHeadersRegex option is the regex to match headers to copy from the authentication server response and set on forwarded request, after stripping all headers that match the regex.
+	 * The authResponseHeadersRegex option is the regex to match headers to copy from the authentication runtimeWorker response and set on forwarded request, after stripping all headers that match the regex.
 	 */
 	authResponseHeadersRegex?: string;
 	/**
-	 * The authRequestHeaders option is the list of the headers to copy from the request to the authentication server.
+	 * The authRequestHeaders option is the list of the headers to copy from the request to the authentication runtimeWorker.
 	 */
 	authRequestHeaders?: string[];
 }
@@ -742,7 +742,7 @@ export interface HeadersMiddleware {
 	/**
 	 * The accessControlAllowOriginList indicates whether a resource can be shared by returning different values.
 	 *
-	 * A wildcard origin * can also be configured, and will match all requests. If this value is set by a backend server, it will be overwritten by Traefik
+	 * A wildcard origin * can also be configured, and will match all requests. If this value is set by a backend runtimeWorker, it will be overwritten by Traefik
 	 *
 	 * This value can contain a list of allowed origins.
 	 */
@@ -760,7 +760,7 @@ export interface HeadersMiddleware {
 	 */
 	accessControlMaxAge?: number;
 	/**
-	 * The addVaryHeader is used in conjunction with accessControlAllowOriginList to determine whether the vary header should be added or modified to demonstrate that server responses can differ based on the value of the origin header.
+	 * The addVaryHeader is used in conjunction with accessControlAllowOriginList to determine whether the vary header should be added or modified to demonstrate that runtimeWorker responses can differ based on the value of the origin header.
 	 */
 	addVaryHeader?: boolean;
 	/**
@@ -1088,7 +1088,7 @@ export interface ReplacePathRegexMiddleware {
 	replacement?: string;
 }
 /**
- * The Retry middleware is in charge of reissuing a request a given number of times to a backend server if that server does not reply. To be clear, as soon as the server answers, the middleware stops retrying, regardless of the response status.
+ * The Retry middleware is in charge of reissuing a request a given number of times to a backend runtimeWorker if that runtimeWorker does not reply. To be clear, as soon as the runtimeWorker answers, the middleware stops retrying, regardless of the response status.
  */
 export interface RetryMiddleware {
 	/**
@@ -1205,7 +1205,7 @@ export interface TcpLoadBalancerService {
 		}[],
 	];
 	/**
-	 * As a proxy between a client and a server, it can happen that either side (e.g. client side) decides to terminate its writing capability on the connection (i.e. issuance of a FIN packet). The proxy needs to propagate that intent to the other side, and so when that happens, it also does the same on its connection with the other side (e.g. backend side).
+	 * As a proxy between a client and a runtimeWorker, it can happen that either side (e.g. client side) decides to terminate its writing capability on the connection (i.e. issuance of a FIN packet). The proxy needs to propagate that intent to the other side, and so when that happens, it also does the same on its connection with the other side (e.g. backend side).
 	 *
 	 * However, if for some reason (bad implementation, or malicious intent) the other side does not eventually do the same as well, the connection would stay half-open, which would lock resources for however long.
 	 *

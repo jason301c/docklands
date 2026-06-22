@@ -21,10 +21,10 @@ export const DockerLogs = dynamic(
 
 interface Props {
 	appName: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
+export const ShowDockerLogsStack = ({ appName, runtimeWorkerId }: Props) => {
 	const [option, setOption] = useState<"swarm" | "native">("native");
 	const [containerId, setContainerId] = useState<string | undefined>();
 
@@ -32,7 +32,7 @@ export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
 		api.docker.getStackContainersByAppName.useQuery(
 			{
 				appName,
-				serverId,
+				runtimeWorkerId,
 			},
 			{
 				enabled: !!appName && option === "swarm",
@@ -44,7 +44,7 @@ export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
 			{
 				appName,
 				appType: "stack",
-				serverId,
+				runtimeWorkerId,
 			},
 			{
 				enabled: !!appName && option === "native",
@@ -155,7 +155,7 @@ export const ShowDockerLogsStack = ({ appName, serverId }: Props) => {
 						</div>
 					)}
 				<DockerLogs
-					serverId={serverId || ""}
+					runtimeWorkerId={runtimeWorkerId || ""}
 					containerId={containerId || "select-a-container"}
 					runType={option}
 				/>

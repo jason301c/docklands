@@ -16,13 +16,13 @@ import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
 } from "@/server/core/services/permission";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	createSchedule,
 	deleteSchedule,
 	findScheduleById,
 	updateSchedule,
 } from "@/server/core/services/schedule";
-import { findServerById } from "@/server/core/services/server";
 import {
 	removeScheduleJob,
 	runCommand,
@@ -51,7 +51,7 @@ export const scheduleRouter = createTRPCRouter({
 				await checkPermission(ctx, { schedule: ["create"] });
 
 				if (
-					input.scheduleType === "server" ||
+					input.scheduleType === "runtimeWorker" ||
 					input.scheduleType === "docklands-server"
 				) {
 					const member = await findMemberByUserId(
@@ -62,13 +62,15 @@ export const scheduleRouter = createTRPCRouter({
 						throw new TRPCError({
 							code: "FORBIDDEN",
 							message:
-								"Only owners and admins can manage server-level schedules.",
+								"Only owners and admins can manage runtimeWorker-level schedules.",
 						});
 					}
 				}
 
-				if (input.scheduleType === "server" && input.serverId) {
-					const targetServer = await findServerById(input.serverId);
+				if (input.scheduleType === "runtimeWorker" && input.runtimeWorkerId) {
+					const targetServer = await findRuntimeWorkerById(
+						input.runtimeWorkerId,
+					);
 					if (
 						targetServer.organizationId !== ctx.session.activeOrganizationId
 					) {
@@ -141,7 +143,7 @@ export const scheduleRouter = createTRPCRouter({
 				await checkPermission(ctx, { schedule: ["update"] });
 
 				if (
-					existingSchedule.scheduleType === "server" ||
+					existingSchedule.scheduleType === "runtimeWorker" ||
 					existingSchedule.scheduleType === "docklands-server"
 				) {
 					const member = await findMemberByUserId(
@@ -152,16 +154,18 @@ export const scheduleRouter = createTRPCRouter({
 						throw new TRPCError({
 							code: "FORBIDDEN",
 							message:
-								"Only owners and admins can manage server-level schedules.",
+								"Only owners and admins can manage runtimeWorker-level schedules.",
 						});
 					}
 				}
 
 				if (
-					existingSchedule.scheduleType === "server" &&
-					existingSchedule.serverId
+					existingSchedule.scheduleType === "runtimeWorker" &&
+					existingSchedule.runtimeWorkerId
 				) {
-					const targetServer = await findServerById(existingSchedule.serverId);
+					const targetServer = await findRuntimeWorkerById(
+						existingSchedule.runtimeWorkerId,
+					);
 					if (
 						targetServer.organizationId !== ctx.session.activeOrganizationId
 					) {
@@ -227,7 +231,7 @@ export const scheduleRouter = createTRPCRouter({
 				await checkPermission(ctx, { schedule: ["delete"] });
 
 				if (
-					scheduleItem.scheduleType === "server" ||
+					scheduleItem.scheduleType === "runtimeWorker" ||
 					scheduleItem.scheduleType === "docklands-server"
 				) {
 					const member = await findMemberByUserId(
@@ -238,13 +242,18 @@ export const scheduleRouter = createTRPCRouter({
 						throw new TRPCError({
 							code: "FORBIDDEN",
 							message:
-								"Only owners and admins can manage server-level schedules.",
+								"Only owners and admins can manage runtimeWorker-level schedules.",
 						});
 					}
 				}
 
-				if (scheduleItem.scheduleType === "server" && scheduleItem.serverId) {
-					const targetServer = await findServerById(scheduleItem.serverId);
+				if (
+					scheduleItem.scheduleType === "runtimeWorker" &&
+					scheduleItem.runtimeWorkerId
+				) {
+					const targetServer = await findRuntimeWorkerById(
+						scheduleItem.runtimeWorkerId,
+					);
 					if (
 						targetServer.organizationId !== ctx.session.activeOrganizationId
 					) {
@@ -282,7 +291,7 @@ export const scheduleRouter = createTRPCRouter({
 				scheduleType: z.enum([
 					"application",
 					"compose",
-					"server",
+					"runtimeWorker",
 					"docklands-server",
 				]),
 			}),
@@ -298,8 +307,8 @@ export const scheduleRouter = createTRPCRouter({
 			} else {
 				await checkPermission(ctx, { schedule: ["read"] });
 
-				if (input.scheduleType === "server") {
-					const targetServer = await findServerById(input.id);
+				if (input.scheduleType === "runtimeWorker") {
+					const targetServer = await findRuntimeWorkerById(input.id);
 					if (
 						targetServer.organizationId !== ctx.session.activeOrganizationId
 					) {
@@ -326,7 +335,7 @@ export const scheduleRouter = createTRPCRouter({
 			const where = {
 				application: eq(schedules.applicationId, input.id),
 				compose: eq(schedules.composeId, input.id),
-				server: eq(schedules.serverId, input.id),
+				runtimeWorker: eq(schedules.runtimeWorkerId, input.id),
 				"docklands-server": eq(
 					schedules.organizationId,
 					ctx.session.activeOrganizationId,
@@ -337,7 +346,7 @@ export const scheduleRouter = createTRPCRouter({
 				orderBy: [asc(schedules.createdAt)],
 				with: {
 					application: true,
-					server: true,
+					runtimeWorker: true,
 					compose: true,
 					deployments: {
 						orderBy: [desc(deployments.createdAt)],
@@ -358,8 +367,13 @@ export const scheduleRouter = createTRPCRouter({
 			} else {
 				await checkPermission(ctx, { schedule: ["read"] });
 
-				if (schedule.scheduleType === "server" && schedule.serverId) {
-					const targetServer = await findServerById(schedule.serverId);
+				if (
+					schedule.scheduleType === "runtimeWorker" &&
+					schedule.runtimeWorkerId
+				) {
+					const targetServer = await findRuntimeWorkerById(
+						schedule.runtimeWorkerId,
+					);
 					if (
 						targetServer.organizationId !== ctx.session.activeOrganizationId
 					) {
@@ -394,7 +408,7 @@ export const scheduleRouter = createTRPCRouter({
 				await checkPermission(ctx, { schedule: ["create"] });
 
 				if (
-					scheduleItem.scheduleType === "server" ||
+					scheduleItem.scheduleType === "runtimeWorker" ||
 					scheduleItem.scheduleType === "docklands-server"
 				) {
 					const member = await findMemberByUserId(
@@ -405,13 +419,18 @@ export const scheduleRouter = createTRPCRouter({
 						throw new TRPCError({
 							code: "FORBIDDEN",
 							message:
-								"Only owners and admins can manage server-level schedules.",
+								"Only owners and admins can manage runtimeWorker-level schedules.",
 						});
 					}
 				}
 
-				if (scheduleItem.scheduleType === "server" && scheduleItem.serverId) {
-					const targetServer = await findServerById(scheduleItem.serverId);
+				if (
+					scheduleItem.scheduleType === "runtimeWorker" &&
+					scheduleItem.runtimeWorkerId
+				) {
+					const targetServer = await findRuntimeWorkerById(
+						scheduleItem.runtimeWorkerId,
+					);
 					if (
 						targetServer.organizationId !== ctx.session.activeOrganizationId
 					) {

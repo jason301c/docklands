@@ -29,7 +29,7 @@ export const webServerSettings = pgTable("webServerSettings", {
 	// Metrics Configuration
 	metricsConfig: jsonb("metricsConfig")
 		.$type<{
-			server: {
+			runtimeWorker: {
 				type: "Docklands" | "Remote";
 				refreshRate: number;
 				port: number;
@@ -52,7 +52,7 @@ export const webServerSettings = pgTable("webServerSettings", {
 		}>()
 		.notNull()
 		.default({
-			server: {
+			runtimeWorker: {
 				type: "Docklands",
 				refreshRate: 60,
 				port: 4500,
@@ -111,7 +111,7 @@ export const apiUpdateWebServerSettings = createSchema.partial().extend({
 	logCleanupCron: z.string().optional().nullable(),
 	metricsConfig: z
 		.object({
-			server: z.object({
+			runtimeWorker: z.object({
 				type: z.enum(["Docklands", "Remote"]),
 				refreshRate: z.number(),
 				port: z.number(),
@@ -168,13 +168,13 @@ export const apiSaveSSHKey = z
 
 export const apiUpdateDockerCleanup = z.object({
 	enableDockerCleanup: z.boolean(),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 });
 
 export const apiUpdateWebServerMonitoring = z.object({
 	metricsConfig: z
 		.object({
-			server: z.object({
+			runtimeWorker: z.object({
 				refreshRate: z.number().min(2),
 				port: z.number().min(1),
 				token: z.string(),

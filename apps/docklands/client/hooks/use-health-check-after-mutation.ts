@@ -24,7 +24,7 @@ export interface UseHealthCheckAfterMutationOptions {
 	 */
 	onSuccess?: () => void | Promise<void>;
 	/**
-	 * If true, reloads the page when health check passes (e.g. for server update).
+	 * If true, reloads the page when health check passes (e.g. for runtimeWorker update).
 	 * @default false
 	 */
 	reloadOnSuccess?: boolean;

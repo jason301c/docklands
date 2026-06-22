@@ -65,34 +65,34 @@ const statusDotClass: Record<string, string> = {
 function getServiceInfo(d: DeploymentRow) {
 	const app = d.application;
 	const comp = d.compose;
-	if (app?.environment?.project && app.environment) {
+	if (app?.environment?.workspace && app.environment) {
 		return {
 			type: "Application" as const,
 			name: app.name,
-			workspaceId: app.environment.project.projectId,
+			workspaceId: app.environment.workspace.workspaceId,
 			environmentId: app.environment.environmentId,
-			workspaceName: app.environment.project.name,
+			workspaceName: app.environment.workspace.name,
 			environmentName: app.environment.name,
 			serviceId: app.applicationId,
 			href: workspaceServicePath({
-				workspaceId: app.environment.project.projectId,
+				workspaceId: app.environment.workspace.workspaceId,
 				environmentId: app.environment.environmentId,
 				serviceType: "application",
 				serviceId: app.applicationId,
 			}),
 		};
 	}
-	if (comp?.environment?.project && comp.environment) {
+	if (comp?.environment?.workspace && comp.environment) {
 		return {
 			type: "Compose" as const,
 			name: comp.name,
-			workspaceId: comp.environment.project.projectId,
+			workspaceId: comp.environment.workspace.workspaceId,
 			environmentId: comp.environment.environmentId,
-			workspaceName: comp.environment.project.name,
+			workspaceName: comp.environment.workspace.name,
 			environmentName: comp.environment.name,
 			serviceId: comp.composeId,
 			href: workspaceServicePath({
-				workspaceId: comp.environment.project.projectId,
+				workspaceId: comp.environment.workspace.workspaceId,
 				environmentId: comp.environment.environmentId,
 				serviceType: "compose",
 				serviceId: comp.composeId,

@@ -46,7 +46,7 @@ export const runCommand = async (scheduleId: string) => {
 		compose,
 		serviceName,
 		appName,
-		serverId,
+		runtimeWorkerId,
 	} = await findScheduleById(scheduleId);
 
 	const deployment = await createDeploymentSchedule({
@@ -57,25 +57,25 @@ export const runCommand = async (scheduleId: string) => {
 
 	if (scheduleType === "application" || scheduleType === "compose") {
 		let containerId = "";
-		let serverId = "";
+		let runtimeWorkerId = "";
 		if (scheduleType === "application" && application) {
 			const container = await getServiceContainer(
 				application.appName,
-				application.serverId,
+				application.runtimeWorkerId,
 			);
 			containerId = container?.Id || "";
-			serverId = application.serverId || "";
+			runtimeWorkerId = application.runtimeWorkerId || "";
 		}
 		if (scheduleType === "compose" && compose) {
 			const container = await getComposeContainer(compose, serviceName || "");
 			containerId = container?.Id || "";
-			serverId = compose.serverId || "";
+			runtimeWorkerId = compose.runtimeWorkerId || "";
 		}
 
-		if (serverId) {
+		if (runtimeWorkerId) {
 			try {
 				await execAsyncRemote(
-					serverId,
+					runtimeWorkerId,
 					`
 					set -e
 					echo "Running command: docker exec ${containerId} ${shellType} -c '${command}'" >> ${deployment.logPath};
@@ -155,7 +155,7 @@ export const runCommand = async (scheduleId: string) => {
 			await updateDeploymentStatus(deployment.deploymentId, "error");
 			throw error;
 		}
-	} else if (scheduleType === "server") {
+	} else if (scheduleType === "runtimeWorker") {
 		try {
 			const { SCHEDULES_PATH } = paths(true);
 			const fullPath = path.join(SCHEDULES_PATH, appName || "");
@@ -168,7 +168,7 @@ export const runCommand = async (scheduleId: string) => {
 				  }
 				echo "✅ Command executed successfully" >> ${deployment.logPath};
 			`;
-			await execAsyncRemote(serverId, command, async (data) => {
+			await execAsyncRemote(runtimeWorkerId, command, async (data) => {
 				// we need to extract the PID and Schedule ID from the data
 				const pid = data?.match(/PID: (\d+)/)?.[1];
 				if (pid) {

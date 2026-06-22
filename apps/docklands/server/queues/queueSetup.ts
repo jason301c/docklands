@@ -12,7 +12,7 @@ import type { DeploymentJob } from "./queue-types";
  * Deployment queue.
  *
  * Self-hosted uses an in-memory, per-group FIFO queue with configurable
- * concurrency per server. Cloud does not use the queue at
+ * concurrency per runtimeWorker. Cloud does not use the queue at
  * all — deployments run directly in the background — so we expose a no-op.
  */
 
@@ -59,7 +59,7 @@ const createInMemoryQueue = (): DeploymentQueue => {
 
 // Use a global singleton so the deployment queue is shared across every module
 // instance. In dev (tsx/Next) the same file can be evaluated more than once
-// (relative import in server.ts vs `@/` alias in the routers); without this the
+// (relative import in runtimeWorker.ts vs `@/` alias in the routers); without this the
 // worker and the `add()` calls would land on different queue instances.
 const globalForQueue = globalThis as unknown as {
 	__docklandsDeploymentQueue?: DeploymentQueue;
@@ -73,7 +73,7 @@ if (!globalForQueue.__docklandsDeploymentQueue) {
 
 const myQueue: DeploymentQueue = globalForQueue.__docklandsDeploymentQueue;
 
-/** Start processing jobs. Called once on server startup (self-hosted). */
+/** Start processing jobs. Called once on runtimeWorker startup (self-hosted). */
 export const startDeploymentWorker = () => myQueue.run();
 
 export const getJobsByApplicationId = async (applicationId: string) => {
@@ -122,22 +122,22 @@ export const cleanAllDeploymentQueue = async () => {
 
 export const killDockerBuild = async (
 	type: "application" | "compose",
-	serverId: string | null,
+	runtimeWorkerId: string | null,
 ) => {
 	try {
 		if (type === "application") {
 			const command = `pkill -2 -f "docker build"`;
 
-			if (serverId) {
-				await execAsyncRemote(serverId, command);
+			if (runtimeWorkerId) {
+				await execAsyncRemote(runtimeWorkerId, command);
 			} else {
 				await execAsync(command);
 			}
 		} else if (type === "compose") {
 			const command = `pkill -2 -f "docker compose"`;
 
-			if (serverId) {
-				await execAsyncRemote(serverId, command);
+			if (runtimeWorkerId) {
+				await execAsyncRemote(runtimeWorkerId, command);
 			} else {
 				await execAsync(command);
 			}

@@ -44,7 +44,7 @@ export const ShowDocklandsActions = () => {
 					>
 						<span>Reload</span>
 					</DropdownMenu.Item>
-					<RuntimeTerminalModal serverId="local">
+					<RuntimeTerminalModal runtimeWorkerId="local">
 						<span>Terminal</span>
 					</RuntimeTerminalModal>
 					<ServiceLogsModal appName="docklands">

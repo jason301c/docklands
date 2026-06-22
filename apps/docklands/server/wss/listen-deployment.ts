@@ -5,19 +5,22 @@ import { WebSocketServer } from "ws";
 import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { readValidDirectory } from "@/server/core/runtime/host";
-import { findServerById } from "@/server/core/services/server";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { encodeBase64 } from "@/server/core/utils/docker/utils";
 import { getRuntimeWorkerIdParam } from "./utils";
 
 export const setupDeploymentLogsWebSocketServer = (
-	server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse>,
+	runtimeWorker: http.Server<
+		typeof http.IncomingMessage,
+		typeof http.ServerResponse
+	>,
 ) => {
 	const wssTerm = new WebSocketServer({
 		noServer: true,
 		path: "/listen-deployment",
 	});
 
-	server.on("upgrade", (req, socket, head) => {
+	runtimeWorker.on("upgrade", (req, socket, head) => {
 		const { pathname } = new URL(req.url || "", `http://${req.headers.host}`);
 
 		if (pathname === "/listen-deployment") {
@@ -30,7 +33,7 @@ export const setupDeploymentLogsWebSocketServer = (
 	wssTerm.on("connection", async (ws, req) => {
 		const url = new URL(req.url || "", `http://${req.headers.host}`);
 		const logPath = url.searchParams.get("logPath");
-		const serverId = getRuntimeWorkerIdParam(url);
+		const runtimeWorkerId = getRuntimeWorkerIdParam(url);
 		const { user, session } = await validateRequest(req);
 
 		// Generate unique connection ID for tracking
@@ -41,7 +44,7 @@ export const setupDeploymentLogsWebSocketServer = (
 			return;
 		}
 
-		if (!readValidDirectory(logPath, serverId)) {
+		if (!readValidDirectory(logPath, runtimeWorkerId)) {
 			ws.close(4000, "Invalid log path");
 			return;
 		}
@@ -55,15 +58,15 @@ export const setupDeploymentLogsWebSocketServer = (
 		let sshClient: Client | null = null;
 
 		try {
-			if (serverId) {
-				const server = await findServerById(serverId);
+			if (runtimeWorkerId) {
+				const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 
-				if (server.organizationId !== session.activeOrganizationId) {
+				if (runtimeWorker.organizationId !== session.activeOrganizationId) {
 					ws.close();
 					return;
 				}
 
-				if (!server.sshKeyId) {
+				if (!runtimeWorker.sshKeyId) {
 					ws.close();
 					return;
 				}
@@ -107,10 +110,10 @@ export const setupDeploymentLogsWebSocketServer = (
 						}
 					})
 					.connect({
-						host: server.ipAddress,
-						port: server.port,
-						username: server.username,
-						privateKey: server.sshKey?.privateKey,
+						host: runtimeWorker.ipAddress,
+						port: runtimeWorker.port,
+						username: runtimeWorker.username,
+						privateKey: runtimeWorker.sshKey?.privateKey,
 					});
 
 				ws.on("close", () => {

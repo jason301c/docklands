@@ -33,9 +33,12 @@ export const backupVolume = async (
 ) => {
 	const { serviceType, volumeName, turnOff, prefix } = volumeBackup;
 	const destination = await findDestinationById(volumeBackup.destinationId);
-	const serverId =
-		volumeBackup.application?.serverId || volumeBackup.compose?.serverId;
-	const { VOLUME_BACKUPS_PATH, VOLUME_BACKUP_LOCK_PATH } = paths(!!serverId);
+	const runtimeWorkerId =
+		volumeBackup.application?.runtimeWorkerId ||
+		volumeBackup.compose?.runtimeWorkerId;
+	const { VOLUME_BACKUPS_PATH, VOLUME_BACKUP_LOCK_PATH } = paths(
+		!!runtimeWorkerId,
+	);
 	const s3AppName = getVolumeServiceAppName(volumeBackup);
 	const backupFileName = `${volumeName}-${getBackupTimestamp()}.tar`;
 	const bucketDestination = `${s3AppName}/${normalizeS3Path(prefix || "")}${backupFileName}`;
@@ -149,7 +152,7 @@ export const backupVolume = async (
 		} else {
 			stopCommand = `
 			echo "Stopping compose container"
-            ID=$(docker ps -q --filter "label=com.docker.compose.project=${compose.appName}" --filter "label=com.docker.compose.service=${volumeBackup.serviceName}")
+            ID=$(docker ps -q --filter "label=com.docker.compose.workspace=${compose.appName}" --filter "label=com.docker.compose.service=${volumeBackup.serviceName}")
             docker stop $ID`;
 
 			startCommand = `

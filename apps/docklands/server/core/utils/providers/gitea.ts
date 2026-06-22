@@ -118,7 +118,7 @@ export type ApplicationWithGitea = InferResultType<
 export type ComposeWithGitea = InferResultType<"compose", { gitea: true }>;
 
 type GiteaClone = (ApplicationWithGitea | ComposeWithGitea) & {
-	serverId: string | null;
+	runtimeWorkerId: string | null;
 	type?: "application" | "compose";
 };
 
@@ -129,7 +129,7 @@ interface CloneGiteaRepository {
 	giteaOwner: string | null;
 	giteaRepository: string | null;
 	enableSubmodules: boolean;
-	serverId: string | null;
+	runtimeWorkerId: string | null;
 	type?: "application" | "compose";
 	outputPathOverride?: string;
 }
@@ -146,10 +146,10 @@ export const cloneGiteaRepository = async ({
 		giteaOwner,
 		giteaRepository,
 		enableSubmodules,
-		serverId,
+		runtimeWorkerId,
 		outputPathOverride,
 	} = entity;
-	const { APPLICATIONS_PATH, COMPOSE_PATH } = paths(!!serverId);
+	const { APPLICATIONS_PATH, COMPOSE_PATH } = paths(!!runtimeWorkerId);
 
 	if (!giteaId) {
 		command += `echo "Error: ❌ Gitea Provider not found"; exit 1;`;

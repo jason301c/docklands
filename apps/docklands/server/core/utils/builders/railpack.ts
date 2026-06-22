@@ -22,7 +22,7 @@ export const getRailpackCommand = (application: ApplicationNested) => {
 	const buildAppDirectory = getBuildAppDirectory(application);
 	const envVariables = prepareEnvironmentVariablesForShell(
 		env,
-		application.environment.project.env,
+		application.environment.workspace.env,
 		application.environment.env,
 	);
 
@@ -73,7 +73,7 @@ export const getRailpackCommand = (application: ApplicationNested) => {
 	// Use prepareEnvironmentVariables (without ForShell) to get raw values for parsing
 	const rawEnvVariables = prepareEnvironmentVariables(
 		env,
-		application.environment.project.env,
+		application.environment.workspace.env,
 		application.environment.env,
 	);
 	const exportEnvs = [];

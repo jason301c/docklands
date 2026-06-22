@@ -33,7 +33,7 @@ const storageProviderSchema = z.object({
 	bucket: z.string().min(1, "Bucket is required"),
 	region: z.string(),
 	endpoint: z.string().min(1, "Endpoint is required"),
-	serverId: z.string().optional(),
+	runtimeWorkerId: z.string().optional(),
 	additionalFlags: z
 		.array(
 			z.object({
@@ -147,7 +147,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 			});
 	};
 
-	const handleTestConnection = async (serverId?: string) => {
+	const handleTestConnection = async (runtimeWorkerId?: string) => {
 		const result = await form.trigger([
 			"provider",
 			"accessKeyId",
@@ -170,7 +170,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 			return;
 		}
 
-		if (isCloud && !serverId) {
+		if (isCloud && !runtimeWorkerId) {
 			toast.error("Please select a runtime worker");
 			return;
 		}
@@ -192,7 +192,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 			name: "Test",
 			region,
 			secretAccessKey: secretKey,
-			serverId,
+			runtimeWorkerId,
 			additionalFlags:
 				form.getValues("additionalFlags")?.map((f) => f.value) ?? [],
 		})
@@ -436,7 +436,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 								</span>
 								<FormField
 									control={form.control}
-									name="serverId"
+									name="runtimeWorkerId"
 									render={({ field }) => (
 										<FormItem>
 											<FormLabel>Runtime Worker (Optional)</FormLabel>
@@ -452,12 +452,12 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 															<Select.GroupLabel>
 																Runtime Workers
 															</Select.GroupLabel>
-															{servers?.map((server) => (
+															{servers?.map((runtimeWorker) => (
 																<Select.Option
-																	key={server.serverId}
-																	value={server.serverId}
+																	key={runtimeWorker.runtimeWorkerId}
+																	value={runtimeWorker.runtimeWorkerId}
 																>
-																	{server.name}
+																	{runtimeWorker.name}
 																</Select.Option>
 															))}
 															<Select.Option value={"none"}>None</Select.Option>
@@ -475,7 +475,9 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 									variant={"secondary"}
 									loading={isPendingConnection}
 									onClick={async () => {
-										await handleTestConnection(form.getValues("serverId"));
+										await handleTestConnection(
+											form.getValues("runtimeWorkerId"),
+										);
 									}}
 								>
 									Test Connection

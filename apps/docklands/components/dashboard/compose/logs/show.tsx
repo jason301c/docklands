@@ -20,20 +20,20 @@ export const DockerLogs = dynamic(
 
 interface Props {
 	appName: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 	appType: "stack" | "docker-compose";
 }
 
 export const ShowDockerLogsCompose = ({
 	appName,
 	appType,
-	serverId,
+	runtimeWorkerId,
 }: Props) => {
 	const { data, isPending } = api.docker.getContainersByAppNameMatch.useQuery(
 		{
 			appName,
 			appType,
-			serverId,
+			runtimeWorkerId,
 		},
 		{
 			enabled: !!appName,
@@ -90,7 +90,7 @@ export const ShowDockerLogsCompose = ({
 					</>
 				</Select>
 				<DockerLogs
-					serverId={serverId || ""}
+					runtimeWorkerId={runtimeWorkerId || ""}
 					containerId={containerId || "select-a-container"}
 					runType="native"
 				/>

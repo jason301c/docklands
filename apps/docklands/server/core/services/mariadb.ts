@@ -12,7 +12,7 @@ import { generatePassword } from "@/server/core/templates";
 import { buildMariadb } from "@/server/core/utils/databases/mariadb";
 import { pullImage } from "@/server/core/utils/docker/utils";
 import { execAsyncRemote } from "@/server/core/utils/process/execAsync";
-import { validUniqueServerAppName } from "./project";
+import { validUniqueServerAppName } from "./workspace";
 
 export type Mariadb = typeof mariadb.$inferSelect;
 
@@ -61,11 +61,11 @@ export const findMariadbById = async (mariadbId: string) => {
 		with: {
 			environment: {
 				with: {
-					project: true,
+					workspace: true,
 				},
 			},
 			mounts: true,
-			server: true,
+			runtimeWorker: true,
 			backups: {
 				with: {
 					destination: {
@@ -142,9 +142,9 @@ export const deployMariadb = async (
 			applicationStatus: "running",
 		});
 		onData?.("Starting mariadb deployment...");
-		if (mariadb.serverId) {
+		if (mariadb.runtimeWorkerId) {
 			await execAsyncRemote(
-				mariadb.serverId,
+				mariadb.runtimeWorkerId,
 				`docker pull ${mariadb.dockerImage}`,
 				onData,
 			);

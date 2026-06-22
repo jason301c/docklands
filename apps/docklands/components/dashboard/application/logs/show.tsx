@@ -36,10 +36,10 @@ export const badgeStateColor = (state: string) => {
 
 interface Props {
 	appName: string;
-	serverId?: string;
+	runtimeWorkerId?: string;
 }
 
-export const ShowDockerLogs = ({ appName, serverId }: Props) => {
+export const ShowDockerLogs = ({ appName, runtimeWorkerId }: Props) => {
 	const [containerId, setContainerId] = useState<string | undefined>();
 	const [option, setOption] = useState<"swarm" | "native">("native");
 
@@ -47,7 +47,7 @@ export const ShowDockerLogs = ({ appName, serverId }: Props) => {
 		api.docker.getServiceContainersByAppName.useQuery(
 			{
 				appName,
-				serverId,
+				runtimeWorkerId,
 			},
 			{
 				enabled: !!appName && option === "swarm",
@@ -58,7 +58,7 @@ export const ShowDockerLogs = ({ appName, serverId }: Props) => {
 		api.docker.getContainersByAppNameMatch.useQuery(
 			{
 				appName,
-				serverId,
+				runtimeWorkerId,
 			},
 			{
 				enabled: !!appName && option === "native",
@@ -170,7 +170,7 @@ export const ShowDockerLogs = ({ appName, serverId }: Props) => {
 						</div>
 					)}
 				<DockerLogs
-					serverId={serverId || ""}
+					runtimeWorkerId={runtimeWorkerId || ""}
 					containerId={containerId || "select-a-container"}
 					runType={option}
 				/>
