@@ -1,12 +1,14 @@
 # AGENTS.md
 
 @README.md
+@TRACKING.md
 
 This is Docklands: a fork focused on self-hosted deployment management. Treat the repository as a pnpm workspace with separate deployable surfaces. Today only `apps/docklands` exists; later `apps/site` and `apps/docs` can be added as independent Astro deployables.
 
 ## AGENTS.md Scope
 
 - This root file owns repo-wide architecture, workspace commands, development modes, dependency notes, and branding.
+- `TRACKING.md` owns the current transformation backlog and recent verified checkpoints. Update it when a slice materially changes the product direction, architecture, or verification state.
 - Nested `AGENTS.md` files are intentionally disjoint. They should add only subtree-specific boundaries and should not copy root-level rules.
 - If guidance applies everywhere, keep it here. If guidance applies only to one subtree, keep it in the nearest nested `AGENTS.md`.
 

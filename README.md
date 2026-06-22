@@ -14,6 +14,7 @@ Docklands is early and should be treated as a fork-in-progress.
 - Remaining upstream PRs are intentionally not mass-merged. Most need dedicated security or product review.
 - The primary project environment view is now a workspace canvas with persisted service layout, service connections, generated connection variables, service variables, deployments, domains, previews, topology grouping, and command-bar navigation.
 - The inherited list view remains available as a fallback while remaining bulk operations are migrated into the workspace surface.
+- Ongoing transformation work is tracked in [TRACKING.md](TRACKING.md).
 
 ## What It Does
 
