@@ -12,12 +12,12 @@ import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { ShowClusterSettings } from "@/components/dashboard/application/advanced/cluster/show-cluster-settings";
 import { AddCommand } from "@/components/dashboard/application/advanced/general/add-command";
+import { ShowIngressConfig } from "@/components/dashboard/application/advanced/ingress/show-ingress-config";
 import { ShowPorts } from "@/components/dashboard/application/advanced/ports/show-port";
 import { ShowRedirects } from "@/components/dashboard/application/advanced/redirects/show-redirects";
 import { ShowSecurity } from "@/components/dashboard/application/advanced/security/show-security";
 import { ShowBuildServer } from "@/components/dashboard/application/advanced/show-build-server";
 import { ShowResources } from "@/components/dashboard/application/advanced/show-resources";
-import { ShowTraefikConfig } from "@/components/dashboard/application/advanced/traefik/show-traefik-config";
 import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
@@ -388,7 +388,7 @@ const Service = (props: {
 											<ShowRedirects applicationId={applicationId} />
 											<ShowSecurity applicationId={applicationId} />
 											<ShowPorts applicationId={applicationId} />
-											<ShowTraefikConfig applicationId={applicationId} />
+											<ShowIngressConfig applicationId={applicationId} />
 										</div>
 									</div>
 								)}

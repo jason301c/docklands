@@ -2,13 +2,13 @@ import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { File, Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
-import { UpdateTraefikConfig } from "./update-traefik-config";
+import { UpdateIngressConfig } from "./update-ingress-config";
 
 interface Props {
 	applicationId: string;
 }
 
-export const ShowTraefikConfig = ({ applicationId }: Props) => {
+export const ShowIngressConfig = ({ applicationId }: Props) => {
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const canRead = permissions?.traefikFiles.read ?? false;
 	const { data, isPending } = api.application.readTraefikConfig.useQuery(
@@ -55,7 +55,7 @@ export const ShowTraefikConfig = ({ applicationId }: Props) => {
 								className="font-mono"
 							/>
 							<div className="flex justify-end absolute z-50 right-6 top-6">
-								<UpdateTraefikConfig applicationId={applicationId} />
+								<UpdateIngressConfig applicationId={applicationId} />
 							</div>
 						</div>
 					</div>

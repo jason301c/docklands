@@ -13,7 +13,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
-import { validateAndFormatYAML } from "../../application/advanced/traefik/update-traefik-config";
+import { validateAndFormatYAML } from "../../application/advanced/ingress/update-ingress-config";
 
 interface Props {
 	composeId: string;

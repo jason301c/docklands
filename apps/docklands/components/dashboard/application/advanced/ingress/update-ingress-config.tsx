@@ -20,11 +20,11 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 
-const UpdateTraefikConfigSchema = z.object({
+const UpdateIngressConfigSchema = z.object({
 	traefikConfig: z.string(),
 });
 
-type UpdateTraefikConfig = z.infer<typeof UpdateTraefikConfigSchema>;
+type UpdateIngressConfig = z.infer<typeof UpdateIngressConfigSchema>;
 
 interface Props {
 	applicationId: string;
@@ -51,7 +51,7 @@ export const validateAndFormatYAML = (yamlText: string) => {
 	}
 };
 
-export const UpdateTraefikConfig = ({ applicationId }: Props) => {
+export const UpdateIngressConfig = ({ applicationId }: Props) => {
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const canWrite = permissions?.traefikFiles.write ?? false;
 	const [open, setOpen] = useState(false);
@@ -66,11 +66,11 @@ export const UpdateTraefikConfig = ({ applicationId }: Props) => {
 	const { mutateAsync, isPending, error, isError } =
 		api.application.updateTraefikConfig.useMutation();
 
-	const form = useForm<UpdateTraefikConfig>({
+	const form = useForm<UpdateIngressConfig>({
 		defaultValues: {
 			traefikConfig: "",
 		},
-		resolver: zodResolver(UpdateTraefikConfigSchema),
+		resolver: zodResolver(UpdateIngressConfigSchema),
 	});
 
 	useEffect(() => {
@@ -81,7 +81,7 @@ export const UpdateTraefikConfig = ({ applicationId }: Props) => {
 		}
 	}, [data]);
 
-	const onSubmit = async (data: UpdateTraefikConfig) => {
+	const onSubmit = async (data: UpdateIngressConfig) => {
 		if (!skipYamlValidation) {
 			const { valid, error } = validateAndFormatYAML(data.traefikConfig);
 			if (!valid) {
@@ -133,7 +133,7 @@ export const UpdateTraefikConfig = ({ applicationId }: Props) => {
 
 				<Form {...form}>
 					<form
-						id="hook-form-update-traefik-config"
+						id="hook-form-update-ingress-config"
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="w-full space-y-4 overflow-auto"
 					>
@@ -194,7 +194,7 @@ routers:
 						</div>
 						<Button
 							loading={isPending}
-							form="hook-form-update-traefik-config"
+							form="hook-form-update-ingress-config"
 							type="submit"
 						>
 							Update
