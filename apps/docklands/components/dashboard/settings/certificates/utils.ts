@@ -255,7 +255,7 @@ export const getExpirationStatus = (certData: string) => {
 	if (!expirationDate)
 		return {
 			status: "unknown" as const,
-			className: "text-muted-foreground",
+			className: "text-kumo-subtle",
 			message: "Could not determine expiration",
 		};
 
@@ -267,7 +267,7 @@ export const getExpirationStatus = (certData: string) => {
 	if (daysUntilExpiration < 0) {
 		return {
 			status: "expired" as const,
-			className: "text-red-500",
+			className: "text-kumo-danger",
 			message: `Expired on ${expirationDate.toLocaleDateString([], {
 				year: "numeric",
 				month: "long",
@@ -279,14 +279,14 @@ export const getExpirationStatus = (certData: string) => {
 	if (daysUntilExpiration <= 30) {
 		return {
 			status: "warning" as const,
-			className: "text-yellow-500",
+			className: "text-kumo-warning",
 			message: `Expires in ${daysUntilExpiration} days`,
 		};
 	}
 
 	return {
 		status: "valid" as const,
-		className: "text-muted-foreground",
+		className: "text-kumo-subtle",
 		message: `Expires ${expirationDate.toLocaleDateString([], {
 			year: "numeric",
 			month: "long",
@@ -321,7 +321,7 @@ export const getCertificateChainExpirationDetails = (certData: string) => {
 				label: `Certificate ${index + 1}`,
 				commonName,
 				status: "unknown" as const,
-				className: "text-muted-foreground",
+				className: "text-kumo-subtle",
 				message: "Could not determine expiration",
 				expirationDate: null,
 			};
@@ -337,7 +337,7 @@ export const getCertificateChainExpirationDetails = (certData: string) => {
 
 		if (daysUntilExpiration < 0) {
 			status = "expired";
-			className = "text-red-500";
+			className = "text-kumo-danger";
 			message = `Expired on ${expirationDate.toLocaleDateString([], {
 				year: "numeric",
 				month: "long",
@@ -345,11 +345,11 @@ export const getCertificateChainExpirationDetails = (certData: string) => {
 			})}`;
 		} else if (daysUntilExpiration <= 30) {
 			status = "warning";
-			className = "text-yellow-500";
+			className = "text-kumo-warning";
 			message = `Expires in ${daysUntilExpiration} days`;
 		} else {
 			status = "valid";
-			className = "text-muted-foreground";
+			className = "text-kumo-subtle";
 			message = `Expires ${expirationDate.toLocaleDateString([], {
 				year: "numeric",
 				month: "long",

@@ -105,8 +105,8 @@ export const RuntimeUpdateDialog = ({
 										)}
 										{updateData && (
 											<span className="absolute right-2 flex h-2 w-2 group-data-[collapsible=icon]:hidden">
-												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-												<span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-kumo-success opacity-75" />
+												<span className="relative inline-flex rounded-full h-2 w-2 bg-kumo-success" />
 											</span>
 										)}
 									</Button>
@@ -122,9 +122,9 @@ export const RuntimeUpdateDialog = ({
 						Runtime Update
 					</Dialog.Title>
 					{docklandsVersion && (
-						<div className="flex items-center gap-1.5 rounded-full px-3 py-1 mr-2 bg-muted">
-							<Server className="h-4 w-4 text-muted-foreground" />
-							<span className="text-sm text-muted-foreground">
+						<div className="flex items-center gap-1.5 rounded-full px-3 py-1 mr-2 bg-kumo-fill">
+							<Server className="h-4 w-4 text-kumo-subtle" />
+							<span className="text-sm text-kumo-subtle">
 								{docklandsVersion}{" "}
 								{(releaseTag === "canary" || releaseTag === "feature") &&
 									`(${releaseTag})`}
@@ -136,7 +136,7 @@ export const RuntimeUpdateDialog = ({
 				{/* Initial state */}
 				{!hasCheckedUpdate && (
 					<div className="mb-8">
-						<p className="text text-muted-foreground">
+						<p className="text text-kumo-subtle">
 							Check for new releases and update Docklands.
 							<br />
 							<br />
@@ -149,32 +149,32 @@ export const RuntimeUpdateDialog = ({
 				{/* Update available state */}
 				{isUpdateAvailable && latestVersion && (
 					<div className="mb-8">
-						<div className="inline-flex items-center gap-2 rounded-lg px-3 py-2 border border-emerald-900 bg-emerald-900 dark:bg-emerald-900/40 mb-4 w-full">
+						<div className="inline-flex items-center gap-2 rounded-lg px-3 py-2 border border-kumo-success bg-kumo-success-tint mb-4 w-full">
 							<div className="flex items-center gap-1.5">
-								<Download className="h-4 w-4 text-emerald-400" />
-								<span className="text font-medium text-emerald-400 ">
+								<Download className="h-4 w-4 text-kumo-success" />
+								<span className="text font-medium text-kumo-success ">
 									New version available:
 								</span>
 							</div>
-							<span className="text font-semibold text-emerald-300">
+							<span className="text font-semibold text-kumo-success">
 								{latestVersion}
 							</span>
 						</div>
 
-						<div className="space-y-4 text-muted-foreground">
+						<div className="space-y-4 text-kumo-subtle">
 							<p className="text">
 								A new version of the Docklands runtime is available. Consider
 								updating if you:
 							</p>
 							<ul className="space-y-3">
 								<li className="flex items-start gap-2">
-									<Stars className="h-5 w-5 mt-0.5 text-[#5B9DFF]" />
+									<Stars className="h-5 w-5 mt-0.5 text-kumo-info" />
 									<span className="text">
 										Want to access the latest features and improvements
 									</span>
 								</li>
 								<li className="flex items-start gap-2">
-									<Bug className="h-5 w-5 mt-0.5 text-[#5B9DFF]" />
+									<Bug className="h-5 w-5 mt-0.5 text-kumo-info" />
 									<span className="text">
 										Are experiencing issues that may be resolved in the new
 										version
@@ -189,14 +189,14 @@ export const RuntimeUpdateDialog = ({
 				{hasCheckedUpdate && !isUpdateAvailable && !isPending && (
 					<div className="mb-8">
 						<div className="flex flex-col items-center gap-6 mb-6">
-							<div className="rounded-full p-4 bg-emerald-400/40">
-								<Sparkles className="h-8 w-8 text-emerald-400" />
+							<div className="rounded-full p-4 bg-kumo-success-tint">
+								<Sparkles className="h-8 w-8 text-kumo-success" />
 							</div>
 							<div className="text-center space-y-2">
 								<h3 className="text-lg font-medium">
 									You are using the latest version
 								</h3>
-								<p className="text text-muted-foreground">
+								<p className="text text-kumo-subtle">
 									Your runtime is up to date with all the latest features and
 									security improvements.
 								</p>
@@ -208,12 +208,12 @@ export const RuntimeUpdateDialog = ({
 				{hasCheckedUpdate && isPending && (
 					<div className="mb-8">
 						<div className="flex flex-col items-center gap-6 mb-6">
-							<div className="rounded-full p-4 bg-[#5B9DFF]/40 text-foreground">
+							<div className="rounded-full p-4 bg-kumo-info-tint text-kumo-default">
 								<RefreshCcw className="h-8 w-8 animate-spin" />
 							</div>
 							<div className="text-center space-y-2">
 								<h3 className="text-lg font-medium">Checking for updates...</h3>
-								<p className="text text-muted-foreground">
+								<p className="text text-kumo-subtle">
 									Please wait while we pull the latest version information from
 									Docker Hub.
 								</p>
@@ -223,15 +223,15 @@ export const RuntimeUpdateDialog = ({
 				)}
 
 				{isUpdateAvailable && (
-					<div className="rounded-lg bg-[#16254D] p-4 mb-8">
+					<div className="rounded-lg bg-kumo-elevated p-4 mb-8">
 						<div className="flex gap-2">
-							<Info className="h-5 w-5 flex-shrink-0 text-[#5B9DFF]" />
-							<div className="text-[#5B9DFF]">
+							<Info className="h-5 w-5 flex-shrink-0 text-kumo-info" />
+							<div className="text-kumo-info">
 								We recommend reviewing the{" "}
 								<Link
 									href="https://github.com/jason301c/docklands/releases"
 									target="_blank"
-									className="text-white underline hover:text-zinc-200"
+									className="text-kumo-default underline hover:text-kumo-subtle"
 								>
 									release notes
 								</Link>{" "}

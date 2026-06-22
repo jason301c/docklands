@@ -105,9 +105,9 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 						aria-label="Edit Bitbucket provider"
 						variant="ghost"
 						shape="square"
-						className="group hover:bg-blue-500/10 "
+						className="group hover:bg-kumo-brand/10 "
 					>
-						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+						<PenBoxIcon className="size-3.5  text-kumo-brand group-hover:text-kumo-brand" />
 					</Button>
 				}
 			/>
@@ -127,7 +127,7 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 					>
 						<div className="p-0">
 							<div className="flex flex-col gap-4">
-								<p className="text-muted-foreground text-sm">
+								<p className="text-kumo-subtle text-sm">
 									Update your Bitbucket authentication with an API token.
 								</p>
 

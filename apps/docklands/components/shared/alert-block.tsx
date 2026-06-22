@@ -8,21 +8,19 @@ interface Props extends React.ComponentPropsWithoutRef<"div"> {
 
 const iconMap = {
 	info: {
-		className: "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400",
+		className: "bg-kumo-info-tint text-kumo-info",
 		icon: Info,
 	},
 	success: {
-		className:
-			"bg-green-50 dark:bg-green-950 text-green-600 dark:text-green-400",
+		className: "bg-kumo-success-tint text-kumo-success",
 		icon: CheckCircle2,
 	},
 	warning: {
-		className:
-			"bg-orange-50 dark:bg-orange-950 text-orange-600 dark:text-orange-400",
+		className: "bg-kumo-warning-tint text-kumo-warning",
 		icon: AlertCircle,
 	},
 	error: {
-		className: "bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400",
+		className: "bg-kumo-danger-tint text-kumo-danger",
 		icon: AlertTriangle,
 	},
 };

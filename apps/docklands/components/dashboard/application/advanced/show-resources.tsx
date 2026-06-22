@@ -174,9 +174,9 @@ export const ShowResources = ({ id, type }: Props) => {
 	};
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div>
-				<h3 className="text-xl">Resources</h3>
+				<h3 className="text-xl font-semibold">Resources</h3>
 				<p>
 					If you want to decrease or increase the resources to a specific.
 					application or database
@@ -215,7 +215,7 @@ export const ShowResources = ({ id, type }: Props) => {
 															</p>
 														}
 														render={
-															<InfoIcon className="h-4 w-4 text-muted-foreground" />
+															<InfoIcon className="h-4 w-4 text-kumo-subtle" />
 														}
 													/>
 												</TooltipProvider>
@@ -255,7 +255,7 @@ export const ShowResources = ({ id, type }: Props) => {
 														</p>
 													}
 													render={
-														<InfoIcon className="h-4 w-4 text-muted-foreground" />
+														<InfoIcon className="h-4 w-4 text-kumo-subtle" />
 													}
 												/>
 											</TooltipProvider>
@@ -296,7 +296,7 @@ export const ShowResources = ({ id, type }: Props) => {
 															</p>
 														}
 														render={
-															<InfoIcon className="h-4 w-4 text-muted-foreground" />
+															<InfoIcon className="h-4 w-4 text-kumo-subtle" />
 														}
 													/>
 												</TooltipProvider>
@@ -337,7 +337,7 @@ export const ShowResources = ({ id, type }: Props) => {
 															</p>
 														}
 														render={
-															<InfoIcon className="h-4 w-4 text-muted-foreground" />
+															<InfoIcon className="h-4 w-4 text-kumo-subtle" />
 														}
 													/>
 												</TooltipProvider>
@@ -374,9 +374,7 @@ export const ShowResources = ({ id, type }: Props) => {
 													(maximum allowed). Use -1 for unlimited.
 												</p>
 											}
-											render={
-												<InfoIcon className="h-4 w-4 text-muted-foreground" />
-											}
+											render={<InfoIcon className="h-4 w-4 text-kumo-subtle" />}
 										/>
 									</TooltipProvider>
 								</div>
@@ -398,7 +396,7 @@ export const ShowResources = ({ id, type }: Props) => {
 									{fields.map((field, index) => (
 										<div
 											key={field.id}
-											className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30"
+											className="flex items-start gap-3 p-3 border rounded-lg bg-kumo-fill/30"
 										>
 											<FormField
 												control={form.control}
@@ -490,7 +488,7 @@ export const ShowResources = ({ id, type }: Props) => {
 												type="button"
 												variant="ghost"
 												shape="square"
-												className="mt-6 text-destructive hover:text-destructive"
+												className="mt-6 text-kumo-danger hover:text-kumo-danger"
 												onClick={() => remove(index)}
 											>
 												<Trash2 className="h-4 w-4" />
@@ -501,7 +499,7 @@ export const ShowResources = ({ id, type }: Props) => {
 							)}
 
 							{fields.length === 0 && (
-								<p className="text-sm text-muted-foreground">
+								<p className="text-sm text-kumo-subtle">
 									No ulimits configured. Click &quot;Add Ulimit&quot; to set
 									resource limits.
 								</p>

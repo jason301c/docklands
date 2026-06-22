@@ -320,7 +320,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 						className="grid  grid-cols-1 md:grid-cols-2  w-full gap-4"
 					>
 						{isCustomRole && (
-							<div className="md:col-span-2 rounded-lg border p-3 bg-muted/50 text-sm text-muted-foreground">
+							<div className="md:col-span-2 rounded-lg border p-3 bg-kumo-fill/50 text-sm text-kumo-subtle">
 								This user has a custom role assigned. Capabilities are defined
 								by the role. You can still manage which workspaces,
 								environments, and services they can access below.
@@ -562,7 +562,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 										</FormDescription>
 									</div>
 									{workspaces?.length === 0 && (
-										<p className="text-sm text-muted-foreground">
+										<p className="text-sm text-kumo-subtle">
 											No workspaces found
 										</p>
 									)}
@@ -648,7 +648,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																			}}
 																		/>
 																	</FormControl>
-																	<FormLabel className="text-base font-semibold text-primary">
+																	<FormLabel className="text-base font-semibold text-kumo-brand">
 																		{workspace.name}
 																	</FormLabel>
 																</div>
@@ -656,7 +656,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																{/* Environments */}
 																<div className="ml-6 w-full space-y-3">
 																	{workspace.environments.length === 0 && (
-																		<p className="text-sm text-muted-foreground">
+																		<p className="text-sm text-kumo-subtle">
 																			No environments found
 																		</p>
 																	)}
@@ -667,7 +667,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																			return (
 																				<div
 																					key={`env-${envIndex}`}
-																					className="border-l-2 border-muted pl-4"
+																					className="border-l-2 border-kumo-hairline pl-4"
 																				>
 																					{/* Environment Header with Checkbox */}
 																					<FormField
@@ -745,11 +745,11 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																									/>
 																								</FormControl>
 																								<div className="flex items-center gap-2">
-																									<div className="w-2 h-2 bg-blue-500 rounded-full" />
-																									<FormLabel className="text-sm font-medium text-foreground cursor-pointer">
+																									<div className="w-2 h-2 bg-kumo-info rounded-full" />
+																									<FormLabel className="text-sm font-medium text-kumo-default cursor-pointer">
 																										{environment.name}
 																									</FormLabel>
-																									<span className="text-xs text-muted-foreground">
+																									<span className="text-xs text-kumo-subtle">
 																										({services.length} services)
 																									</span>
 																								</div>
@@ -760,7 +760,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																					{/* Services */}
 																					<div className="ml-4 space-y-2">
 																						{services.length === 0 && (
-																							<p className="text-xs text-muted-foreground">
+																							<p className="text-xs text-kumo-subtle">
 																								No services found
 																							</p>
 																						)}
@@ -858,10 +858,10 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 																																	: "bg-orange-500"
 																														}`}
 																													/>
-																													<FormLabel className="text-sm text-muted-foreground cursor-pointer">
+																													<FormLabel className="text-sm text-kumo-subtle cursor-pointer">
 																														{service.name}
 																													</FormLabel>
-																													<span className="text-xs text-muted-foreground/70 capitalize">
+																													<span className="text-xs text-kumo-subtle/70 capitalize">
 																														({service.type})
 																													</span>
 																												</div>
@@ -901,7 +901,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 										</FormDescription>
 									</div>
 									{gitProviders?.length === 0 && (
-										<p className="text-sm text-muted-foreground">
+										<p className="text-sm text-kumo-subtle">
 											No git providers found
 										</p>
 									)}
@@ -938,7 +938,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 															<FormLabel className="text-sm cursor-pointer">
 																{provider.name}
 															</FormLabel>
-															<span className="text-xs text-muted-foreground capitalize">
+															<span className="text-xs text-kumo-subtle capitalize">
 																({provider.providerType})
 															</span>
 														</div>
@@ -963,7 +963,7 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 										</FormDescription>
 									</div>
 									{runtimeWorkers?.length === 0 && (
-										<p className="text-sm text-muted-foreground">
+										<p className="text-sm text-kumo-subtle">
 											No runtime workers found
 										</p>
 									)}
@@ -1001,10 +1001,10 @@ export const AddUserPermissions = ({ userId, role }: Props) => {
 															<FormLabel className="text-sm cursor-pointer">
 																{runtimeWorker.name}
 															</FormLabel>
-															<span className="text-xs text-muted-foreground">
+															<span className="text-xs text-kumo-subtle">
 																({runtimeWorker.ipAddress})
 															</span>
-															<span className="text-xs text-muted-foreground capitalize">
+															<span className="text-xs text-kumo-subtle capitalize">
 																{runtimeWorker.runtimeWorkerType}
 															</span>
 														</div>

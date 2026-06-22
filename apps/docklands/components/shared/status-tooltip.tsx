@@ -33,32 +33,29 @@ export const StatusTooltip = ({ status, className }: Props) => {
 				{status === "idle" && (
 					<div
 						className={cn(
-							"size-3.5 rounded-full bg-muted-foreground dark:bg-card",
+							"size-3.5 rounded-full bg-kumo-subtle dark:bg-kumo-base",
 							className,
 						)}
 					/>
 				)}
 				{status === "error" && (
 					<div
-						className={cn("size-3.5 rounded-full bg-destructive", className)}
+						className={cn("size-3.5 rounded-full bg-kumo-danger", className)}
 					/>
 				)}
 				{status === "done" && (
 					<div
-						className={cn("size-3.5 rounded-full bg-green-500", className)}
+						className={cn("size-3.5 rounded-full bg-kumo-success", className)}
 					/>
 				)}
 				{status === "cancelled" && (
 					<div
-						className={cn(
-							"size-3.5 rounded-full bg-muted-foreground",
-							className,
-						)}
+						className={cn("size-3.5 rounded-full bg-kumo-subtle", className)}
 					/>
 				)}
 				{status === "running" && (
 					<div
-						className={cn("size-3.5 rounded-full bg-yellow-500", className)}
+						className={cn("size-3.5 rounded-full bg-kumo-warning", className)}
 					/>
 				)}
 			</Tooltip>

@@ -56,10 +56,10 @@ const statusVariants: Record<
 };
 
 const statusDotClass: Record<string, string> = {
-	running: "bg-amber-500",
-	done: "bg-emerald-500",
-	error: "bg-red-500",
-	cancelled: "bg-muted-foreground/50",
+	running: "bg-kumo-warning",
+	done: "bg-kumo-success",
+	error: "bg-kumo-danger",
+	cancelled: "bg-kumo-fill",
 };
 
 function getServiceInfo(d: DeploymentRow) {
@@ -114,17 +114,17 @@ function DeploymentMetricCard({
 	icon: ReactNode;
 }) {
 	return (
-		<div className="rounded-md border bg-background p-4">
+		<div className="rounded-md border bg-kumo-canvas p-4">
 			<div className="flex items-start justify-between gap-3">
 				<div className="space-y-1">
-					<p className="text-xs uppercase text-muted-foreground">{label}</p>
+					<p className="text-xs uppercase text-kumo-subtle">{label}</p>
 					<p className="text-2xl font-semibold tabular-nums">{value}</p>
 				</div>
-				<div className="flex size-9 items-center justify-center rounded-md border bg-muted/30 text-muted-foreground">
+				<div className="flex size-9 items-center justify-center rounded-md border bg-kumo-fill/30 text-kumo-subtle">
 					{icon}
 				</div>
 			</div>
-			<p className="mt-3 text-xs text-muted-foreground">{detail}</p>
+			<p className="mt-3 text-xs text-kumo-subtle">{detail}</p>
 		</div>
 	);
 }
@@ -230,13 +230,13 @@ export function ShowDeploymentsTable() {
 				),
 				cell: ({ row }: { row: { original: DeploymentRow } }) => {
 					const info = getServiceInfo(row.original);
-					if (!info) return <span className="text-muted-foreground">—</span>;
+					if (!info) return <span className="text-kumo-subtle">—</span>;
 					return (
 						<div className="flex items-center gap-2">
 							{info.type === "Application" ? (
-								<Rocket className="size-4 text-muted-foreground shrink-0" />
+								<Rocket className="size-4 text-kumo-subtle shrink-0" />
 							) : (
-								<Boxes className="size-4 text-muted-foreground shrink-0" />
+								<Boxes className="size-4 text-kumo-subtle shrink-0" />
 							)}
 							<div className="flex flex-col min-w-0">
 								<span className="font-medium truncate">{info.name}</span>
@@ -272,7 +272,7 @@ export function ShowDeploymentsTable() {
 				cell: ({ row }: { row: { original: DeploymentRow } }) => {
 					const info = getServiceInfo(row.original);
 					return (
-						<span className="text-muted-foreground">
+						<span className="text-kumo-subtle">
 							{info?.workspaceName ?? "—"}
 						</span>
 					);
@@ -302,7 +302,7 @@ export function ShowDeploymentsTable() {
 				cell: ({ row }: { row: { original: DeploymentRow } }) => {
 					const info = getServiceInfo(row.original);
 					return (
-						<span className="text-muted-foreground">
+						<span className="text-kumo-subtle">
 							{info?.environmentName ?? "—"}
 						</span>
 					);
@@ -381,7 +381,7 @@ export function ShowDeploymentsTable() {
 					</Button>
 				),
 				cell: ({ row }: { row: { original: DeploymentRow } }) => (
-					<span className="text-muted-foreground text-sm whitespace-nowrap">
+					<span className="text-kumo-subtle text-sm whitespace-nowrap">
 						{row.original.createdAt
 							? new Date(row.original.createdAt).toLocaleString()
 							: "—"}
@@ -471,18 +471,18 @@ export function ShowDeploymentsTable() {
 						/>
 					</div>
 
-					<div className="rounded-md border bg-background">
+					<div className="rounded-md border bg-kumo-canvas">
 						<div className="flex items-center justify-between gap-3 border-b px-4 py-3">
 							<div>
 								<p className="text-sm font-medium">Deployment stream</p>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-xs text-kumo-subtle">
 									Latest runtime changes across every workspace and environment.
 								</p>
 							</div>
 							<Badge variant="outline">{filteredData.length} visible</Badge>
 						</div>
 						{recentDeploymentStream.length === 0 ? (
-							<div className="flex min-h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
+							<div className="flex min-h-32 flex-col items-center justify-center gap-2 text-kumo-subtle">
 								<Rocket className="size-6" />
 								<p className="text-sm">
 									No deployment activity matches this view.
@@ -517,7 +517,7 @@ export function ShowDeploymentsTable() {
 															<Badge variant="outline">{info.type}</Badge>
 														)}
 													</div>
-													<p className="mt-1 truncate text-xs text-muted-foreground">
+													<p className="mt-1 truncate text-xs text-kumo-subtle">
 														{info
 															? `${info.workspaceName} / ${info.environmentName}`
 															: "Service metadata unavailable"}
@@ -526,7 +526,7 @@ export function ShowDeploymentsTable() {
 												</div>
 											</div>
 											<div className="flex items-center gap-3 md:justify-end">
-												<span className="text-xs text-muted-foreground">
+												<span className="text-xs text-kumo-subtle">
 													{deployment.createdAt
 														? formatDistanceToNow(
 																new Date(deployment.createdAt),
@@ -597,7 +597,7 @@ export function ShowDeploymentsTable() {
 			</div>
 			<div className="px-0">
 				{isLoading ? (
-					<div className="flex gap-4 w-full items-center justify-center min-h-[45vh] text-muted-foreground">
+					<div className="flex gap-4 w-full items-center justify-center min-h-[45vh] text-kumo-subtle">
 						<Loader2 className="size-4 animate-spin" />
 						<span>Loading deployments...</span>
 					</div>
@@ -641,7 +641,7 @@ export function ShowDeploymentsTable() {
 												colSpan={columns.length}
 												className=" text-center"
 											>
-												<div className="flex flex-col min-h-[45vh] items-center justify-center gap-2 text-muted-foreground">
+												<div className="flex flex-col min-h-[45vh] items-center justify-center gap-2 text-kumo-subtle">
 													<Rocket className="size-8" />
 													<p className="font-medium">No deployments found</p>
 													<p className="text-sm">
@@ -657,7 +657,7 @@ export function ShowDeploymentsTable() {
 						</div>
 						<div className="flex flex-col gap-4 px-4 py-4 border-t sm:flex-row sm:items-center sm:justify-between">
 							<div className="flex items-center gap-2 flex-wrap">
-								<span className="text-sm text-muted-foreground whitespace-nowrap">
+								<span className="text-sm text-kumo-subtle whitespace-nowrap">
 									Rows per page
 								</span>
 								<Select
@@ -681,7 +681,7 @@ export function ShowDeploymentsTable() {
 										))}
 									</>
 								</Select>
-								<span className="text-sm text-muted-foreground whitespace-nowrap">
+								<span className="text-sm text-kumo-subtle whitespace-nowrap">
 									Showing{" "}
 									{filteredData.length === 0
 										? 0

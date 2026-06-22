@@ -70,7 +70,7 @@ export const ShowPatches = ({ id, type }: Props) => {
 	};
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row items-center justify-between">
 				<div>
 					<h3>Patches</h3>
@@ -94,12 +94,12 @@ export const ShowPatches = ({ id, type }: Props) => {
 					</div>
 				) : patches?.length === 0 ? (
 					<div className="flex min-h-[40vh] w-full flex-col items-center justify-center gap-4 rounded-lg border border-dashed p-8">
-						<div className="rounded-full bg-muted p-4">
-							<FilePlus2 className="h-10 w-10 text-muted-foreground" />
+						<div className="rounded-full bg-kumo-fill p-4">
+							<FilePlus2 className="h-10 w-10 text-kumo-subtle" />
 						</div>
 						<div className="space-y-1 text-center">
 							<p className="text-sm font-medium">No patches yet</p>
-							<p className="max-w-sm text-sm text-muted-foreground">
+							<p className="max-w-sm text-sm text-kumo-subtle">
 								Add file patches to modify your repo before each build—configs,
 								env, or code. Create your first patch to get started.
 							</p>
@@ -127,7 +127,7 @@ export const ShowPatches = ({ id, type }: Props) => {
 								<Table.Row key={patch.patchId}>
 									<Table.Cell className="font-mono text-sm">
 										<div className="flex items-center gap-2">
-											<File className="h-4 w-4 text-muted-foreground shrink-0" />
+											<File className="h-4 w-4 text-kumo-subtle shrink-0" />
 											{patch.filePath}
 										</div>
 									</Table.Cell>
@@ -198,7 +198,7 @@ export const ShowPatches = ({ id, type }: Props) => {
 												}}
 												title="Delete patch"
 											>
-												<Trash2 className="h-4 w-4 text-destructive" />
+												<Trash2 className="h-4 w-4 text-kumo-danger" />
 											</Button>
 										</div>
 									</Table.Cell>

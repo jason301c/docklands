@@ -113,10 +113,10 @@ export const ComposeFileEditor = ({ composeId }: Props) => {
 				<div className="flex items-center justify-between">
 					<div>
 						<h3 className="text-lg font-medium">Compose File</h3>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-sm text-kumo-subtle">
 							Configure your Docker Compose file for this service.
 							{hasUnsavedChanges && (
-								<span className="text-yellow-500 ml-2">
+								<span className="text-kumo-warning ml-2">
 									(You have unsaved changes)
 								</span>
 							)}

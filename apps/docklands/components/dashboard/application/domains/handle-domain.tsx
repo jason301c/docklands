@@ -405,7 +405,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																					}
 																				}}
 																			>
-																				<RefreshCw className="size-4 text-muted-foreground" />
+																				<RefreshCw className="size-4 text-kumo-subtle" />
 																			</Button>
 																		</Tooltip>
 																	</TooltipProvider>
@@ -437,7 +437,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																					}
 																				}}
 																			>
-																				<DatabaseZap className="size-4 text-muted-foreground" />
+																				<DatabaseZap className="size-4 text-kumo-subtle" />
 																			</Button>
 																		</Tooltip>
 																	</TooltipProvider>
@@ -469,9 +469,9 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																		}}
 																	>
 																		{isManualInput ? (
-																			<RefreshCw className="size-4 text-muted-foreground" />
+																			<RefreshCw className="size-4 text-kumo-subtle" />
 																		) : (
-																			<span className="text-xs text-muted-foreground">
+																			<span className="text-xs text-kumo-subtle">
 																				Manual
 																			</span>
 																		)}
@@ -498,7 +498,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 														You need to set an IP address in your{" "}
 														<Link
 															href="/dashboard/settings/ingress"
-															className="text-primary"
+															className="text-kumo-brand"
 														>
 															Runtime network settings
 														</Link>{" "}
@@ -549,7 +549,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																	});
 															}}
 														>
-															<Dices className="size-4 text-muted-foreground" />
+															<Dices className="size-4 text-kumo-subtle" />
 														</Button>
 													</Tooltip>
 												</TooltipProvider>
@@ -806,7 +806,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 														}
 														className="max-w-[300px]"
 													>
-														<div className="size-4 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+														<div className="size-4 rounded-full bg-kumo-fill flex items-center justify-center text-[10px] font-bold">
 															?
 														</div>
 													</Tooltip>

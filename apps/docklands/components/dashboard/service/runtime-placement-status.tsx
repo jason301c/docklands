@@ -69,7 +69,7 @@ export const RuntimePlacementStatus = ({
 						asChild
 					>
 						<Label className="break-all w-fit flex flex-row gap-1 items-center">
-							<HelpCircle className="size-4 text-muted-foreground" />
+							<HelpCircle className="size-4 text-kumo-subtle" />
 						</Label>
 					</Tooltip>
 				</TooltipProvider>
@@ -81,8 +81,8 @@ export const RuntimePlacementStatus = ({
 export const RuntimeWorkerInactiveState = () => (
 	<div className="flex h-[55vh] border-2 rounded-xl border-dashed p-4">
 		<div className="max-w-3xl mx-auto flex flex-col items-center justify-center self-center gap-3">
-			<ServerOff className="size-10 text-muted-foreground self-center" />
-			<span className="text-center text-base text-muted-foreground">
+			<ServerOff className="size-10 text-kumo-subtle self-center" />
+			<span className="text-center text-base text-kumo-subtle">
 				This service's runtime worker is currently marked inactive. Re-enable
 				runtime workers from Settings to regain access to this service.
 			</span>

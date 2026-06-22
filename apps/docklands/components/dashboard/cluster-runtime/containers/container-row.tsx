@@ -29,7 +29,7 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 			<Table.Cell>
 				<div className="flex flex-col gap-1">
 					<span className="font-medium text-sm">{container.Name}</span>
-					<span className="text-xs text-muted-foreground truncate max-w-[230px]">
+					<span className="text-xs text-kumo-subtle truncate max-w-[230px]">
 						{container.Image}
 					</span>
 				</div>
@@ -50,7 +50,7 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 						>
 							<span className="inline-flex items-center gap-1.5 cursor-help">
 								{stateBadge}
-								<AlertCircle className="h-3.5 w-3.5 text-destructive" />
+								<AlertCircle className="h-3.5 w-3.5 text-kumo-danger" />
 							</span>
 						</Tooltip>
 					</TooltipProvider>
@@ -62,7 +62,7 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 				{stat ? (
 					<span className="text-sm font-medium">{formatCpu(stat.CPUPerc)}</span>
 				) : (
-					<span className="text-xs text-muted-foreground">--</span>
+					<span className="text-xs text-kumo-subtle">--</span>
 				)}
 			</Table.Cell>
 			<Table.Cell className="text-right">
@@ -71,27 +71,27 @@ export const ContainerRow = ({ container, stat }: ContainerRowProps) => {
 						{formatMemUsage(stat.MemUsage)}
 					</span>
 				) : (
-					<span className="text-xs text-muted-foreground">--</span>
+					<span className="text-xs text-kumo-subtle">--</span>
 				)}
 			</Table.Cell>
 			<Table.Cell className="text-right">
 				{stat ? (
 					<div className="flex items-center justify-end gap-1.5">
-						<HardDrive className="h-3 w-3 text-muted-foreground" />
+						<HardDrive className="h-3 w-3 text-kumo-subtle" />
 						<span className="text-sm">{formatIOValue(stat.BlockIO)}</span>
 					</div>
 				) : (
-					<span className="text-xs text-muted-foreground">--</span>
+					<span className="text-xs text-kumo-subtle">--</span>
 				)}
 			</Table.Cell>
 			<Table.Cell className="text-right">
 				{stat ? (
 					<div className="flex items-center justify-end gap-1.5">
-						<Network className="h-3 w-3 text-muted-foreground" />
+						<Network className="h-3 w-3 text-kumo-subtle" />
 						<span className="text-sm">{formatIOValue(stat.NetIO)}</span>
 					</div>
 				) : (
-					<span className="text-xs text-muted-foreground">--</span>
+					<span className="text-xs text-kumo-subtle">--</span>
 				)}
 			</Table.Cell>
 		</Table.Row>

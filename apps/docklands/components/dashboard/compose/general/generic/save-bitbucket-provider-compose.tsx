@@ -224,7 +224,7 @@ export const SaveBitbucketProviderCompose = ({ composeId }: Props) => {
 												href={`https://bitbucket.org/${field.value.owner}/${field.value.slug || field.value.repo}`}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+												className="flex items-center gap-1 text-sm text-kumo-subtle hover:text-kumo-brand"
 											>
 												<BitbucketIcon className="h-4 w-4" />
 												<span>View Repository</span>
@@ -237,8 +237,8 @@ export const SaveBitbucketProviderCompose = ({ composeId }: Props) => {
 												<Button
 													variant="outline"
 													className={cn(
-														"w-full justify-between !bg-input",
-														!field.value && "text-muted-foreground",
+														"w-full justify-between !bg-kumo-fill",
+														!field.value && "text-kumo-subtle",
 													)}
 												>
 													{!field.value.owner
@@ -260,7 +260,7 @@ export const SaveBitbucketProviderCompose = ({ composeId }: Props) => {
 													className="h-9"
 												/>
 												{!bitbucketId ? (
-													<span className="py-6 text-center text-sm text-muted-foreground">
+													<span className="py-6 text-center text-sm text-kumo-subtle">
 														Select a Bitbucket account first
 													</span>
 												) : isLoadingRepositories ? (
@@ -286,7 +286,7 @@ export const SaveBitbucketProviderCompose = ({ composeId }: Props) => {
 															>
 																<span className="flex items-center gap-2">
 																	<span>{repo.name}</span>
-																	<span className="text-muted-foreground text-xs">
+																	<span className="text-kumo-subtle text-xs">
 																		{repo.owner.username}
 																	</span>
 																</span>
@@ -306,7 +306,7 @@ export const SaveBitbucketProviderCompose = ({ composeId }: Props) => {
 										</PopoverContent>
 									</Popover>
 									{form.formState.errors.repository && (
-										<p className={cn("text-sm font-medium text-destructive")}>
+										<p className={cn("text-sm font-medium text-kumo-danger")}>
 											Repository is required
 										</p>
 									)}
@@ -325,8 +325,8 @@ export const SaveBitbucketProviderCompose = ({ composeId }: Props) => {
 												<Button
 													variant="outline"
 													className={cn(
-														" w-full justify-between !bg-input",
-														!field.value && "text-muted-foreground",
+														" w-full justify-between !bg-kumo-fill",
+														!field.value && "text-kumo-subtle",
 													)}
 												>
 													{status === "pending" && fetchStatus === "fetching"
@@ -347,12 +347,12 @@ export const SaveBitbucketProviderCompose = ({ composeId }: Props) => {
 													className="h-9"
 												/>
 												{status === "pending" && fetchStatus === "fetching" && (
-													<span className="py-6 text-center text-sm text-muted-foreground">
+													<span className="py-6 text-center text-sm text-kumo-subtle">
 														Loading Branches....
 													</span>
 												)}
 												{!repository?.owner && (
-													<span className="py-6 text-center text-sm text-muted-foreground">
+													<span className="py-6 text-center text-sm text-kumo-subtle">
 														Select a repository
 													</span>
 												)}
@@ -421,7 +421,7 @@ export const SaveBitbucketProviderCompose = ({ composeId }: Props) => {
 													</>
 												}
 											>
-												<div className="size-4 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+												<div className="size-4 rounded-full bg-kumo-fill flex items-center justify-center text-[10px] font-bold">
 													?
 												</div>
 											</Tooltip>

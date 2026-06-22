@@ -28,13 +28,13 @@ export const ToggleVisibilityInput = ({ ...props }: InputProps) => {
 					toast.success("Value is copied to clipboard");
 				}}
 			>
-				<Clipboard className="size-4 text-muted-foreground" />
+				<Clipboard className="size-4 text-kumo-subtle" />
 			</Button>
 			{/* <Button onClick={togglePasswordVisibility} variant={"secondary"}>
 				{isPasswordVisible ? (
-					<EyeOffIcon className="size-4 text-muted-foreground" />
+					<EyeOffIcon className="size-4 text-kumo-subtle" />
 				) : (
-					<EyeIcon className="size-4 text-muted-foreground" />
+					<EyeIcon className="size-4 text-kumo-subtle" />
 				)}
 			</Button> */}
 		</div>

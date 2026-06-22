@@ -176,8 +176,8 @@ export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 												<Button
 													variant="outline"
 													className={cn(
-														"w-full justify-between !bg-input",
-														!field.value && "text-muted-foreground",
+														"w-full justify-between !bg-kumo-fill",
+														!field.value && "text-kumo-subtle",
 													)}
 												>
 													{field.value
@@ -258,8 +258,8 @@ export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 												<Button
 													variant="outline"
 													className={cn(
-														"w-full justify-between !bg-input",
-														!field.value && "text-muted-foreground",
+														"w-full justify-between !bg-kumo-fill",
+														!field.value && "text-kumo-subtle",
 													)}
 												>
 													<span className="truncate text-left flex-1 w-52">
@@ -284,11 +284,11 @@ export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 														Loading backup files...
 													</div>
 												) : files.length === 0 && search ? (
-													<div className="py-6 text-center text-sm text-muted-foreground">
+													<div className="py-6 text-center text-sm text-kumo-subtle">
 														No backup files found for "{search}"
 													</div>
 												) : files.length === 0 ? (
-													<div className="py-6 text-center text-sm text-muted-foreground">
+													<div className="py-6 text-center text-sm text-kumo-subtle">
 														No backup files available
 													</div>
 												) : (
@@ -324,12 +324,12 @@ export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 																				)}
 																			/>
 																		</div>
-																		<div className="flex items-center gap-4 text-xs text-muted-foreground">
+																		<div className="flex items-center gap-4 text-xs text-kumo-subtle">
 																			<span>
 																				Size: {formatBytes(file.Size)}
 																			</span>
 																			{file.IsDir && (
-																				<span className="text-blue-500">
+																				<span className="text-kumo-info">
 																					Directory
 																				</span>
 																			)}

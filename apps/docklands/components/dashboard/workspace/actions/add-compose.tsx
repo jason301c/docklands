@@ -121,7 +121,7 @@ export const AddCompose = ({
 						className="w-full cursor-pointer space-x-3"
 						onSelect={(e) => e.preventDefault()}
 					>
-						<CircuitBoard className="size-4 text-muted-foreground" />
+						<CircuitBoard className="size-4 text-kumo-subtle" />
 						<span>Compose</span>
 					</DropdownMenu.Item>
 				</Dialog.Trigger>

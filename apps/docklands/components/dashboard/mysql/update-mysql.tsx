@@ -87,9 +87,9 @@ export const UpdateMysql = ({ mysqlId }: Props) => {
 						aria-label="Edit MySQL"
 						variant="ghost"
 						shape="square"
-						className="group hover:bg-blue-500/10 "
+						className="group hover:bg-kumo-brand/10 "
 					>
-						<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+						<PenBoxIcon className="size-3.5  text-kumo-brand group-hover:text-kumo-brand" />
 					</Button>
 				}
 			/>

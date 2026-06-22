@@ -187,7 +187,7 @@ routers:
 									Skip YAML validation (for Go templating)
 								</Label>
 							</div>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-sm text-kumo-subtle">
 								Check to save configs with Go templating (e.g.{" "}
 								<code className="text-xs">{"{{range}}"}</code>).
 							</p>

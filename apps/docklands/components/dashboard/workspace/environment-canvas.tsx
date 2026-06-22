@@ -265,7 +265,7 @@ const serviceTypeDescriptions: Record<WorkspaceServiceType, string> = {
 	redis: "Cache",
 };
 
-const serviceIconClassName = "size-6 text-muted-foreground";
+const serviceIconClassName = "size-6 text-kumo-subtle";
 
 const WorkspaceServiceIcon = ({ service }: { service: WorkspaceService }) => {
 	if (service.type === "application") {
@@ -301,10 +301,10 @@ const WorkspaceServiceIcon = ({ service }: { service: WorkspaceService }) => {
 };
 
 const pulseToneClass: Record<WorkspaceServiceStatus, string> = {
-	done: "bg-sky-500",
-	error: "bg-red-500",
-	idle: "bg-muted-foreground/40",
-	running: "bg-emerald-500",
+	done: "bg-kumo-info",
+	error: "bg-kumo-danger",
+	idle: "bg-kumo-subtle/40",
+	running: "bg-kumo-success",
 };
 
 const getServicePulseBars = (service: WorkspaceService, linkCount: number) => {
@@ -340,10 +340,10 @@ const ServiceRuntimePulse = ({
 
 	return (
 		<div
-			className="pointer-events-none absolute inset-x-3 bottom-3 rounded-md border bg-background/95 px-2 py-1.5 opacity-0 shadow-sm transition group-hover:opacity-100"
+			className="pointer-events-none absolute inset-x-3 bottom-3 rounded-md border bg-kumo-canvas/95 px-2 py-1.5 opacity-0 shadow-sm transition group-hover:opacity-100"
 			aria-hidden="true"
 		>
-			<div className="mb-1 flex items-center justify-between gap-2 text-[10px] uppercase text-muted-foreground">
+			<div className="mb-1 flex items-center justify-between gap-2 text-[10px] uppercase text-kumo-subtle">
 				<span>Runtime pulse</span>
 				<span>{linkCount} links</span>
 			</div>
@@ -375,14 +375,12 @@ const ConnectionVariablePreview = ({
 	if (!enabled) return null;
 
 	if (variablesQuery.isPending) {
-		return (
-			<p className="text-xs text-muted-foreground">Loading variable keys...</p>
-		);
+		return <p className="text-xs text-kumo-subtle">Loading variable keys...</p>;
 	}
 
 	if (!variablesQuery.data?.length) {
 		return (
-			<p className="text-xs text-muted-foreground">
+			<p className="text-xs text-kumo-subtle">
 				No generated variables for this source.
 			</p>
 		);
@@ -406,20 +404,20 @@ const WorkspaceServiceFlowNode = ({
 	serviceType: WorkspaceServiceType;
 	fallbackLabel: string;
 }) => (
-	<div className="min-w-0 rounded-md border bg-background px-3 py-2">
+	<div className="min-w-0 rounded-md border bg-kumo-canvas px-3 py-2">
 		<div className="flex min-w-0 items-center gap-2">
-			<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/30">
+			<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
 				{service ? (
 					<WorkspaceServiceIcon service={service} />
 				) : (
-					<Network className="size-4 text-muted-foreground" />
+					<Network className="size-4 text-kumo-subtle" />
 				)}
 			</div>
 			<div className="min-w-0">
 				<p className="truncate text-sm font-medium">
 					{service?.name ?? fallbackLabel}
 				</p>
-				<p className="truncate text-xs text-muted-foreground">
+				<p className="truncate text-xs text-kumo-subtle">
 					{serviceTypeLabels[service?.type ?? serviceType] ?? serviceType}
 				</p>
 			</div>
@@ -440,15 +438,15 @@ const ConnectionVariableFlowCard = ({
 	variablePreviewEnabled: boolean;
 	actions?: ReactNode;
 }) => (
-	<div className="space-y-3 rounded-md border bg-background/80 p-3">
+	<div className="space-y-3 rounded-md border bg-kumo-canvas/80 p-3">
 		<div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
 			<WorkspaceServiceFlowNode
 				service={source}
 				serviceType={connection.sourceServiceType}
 				fallbackLabel="Unknown source"
 			/>
-			<div className="flex size-8 items-center justify-center rounded-full border bg-muted/30">
-				<ArrowRight className="size-4 text-muted-foreground" />
+			<div className="flex size-8 items-center justify-center rounded-full border bg-kumo-fill/30">
+				<ArrowRight className="size-4 text-kumo-subtle" />
 			</div>
 			<WorkspaceServiceFlowNode
 				service={target}
@@ -2086,7 +2084,7 @@ export const EnvironmentCanvas = ({
 						detail: "Create an app service from source or image",
 						search:
 							"new create application app service build git docker image builder",
-						icon: <Folder className="size-5 text-muted-foreground" />,
+						icon: <Folder className="size-5 text-kumo-subtle" />,
 						run: () => openCreateDialog("application"),
 					},
 					{
@@ -2096,7 +2094,7 @@ export const EnvironmentCanvas = ({
 						detail: "Provision Postgres, Redis, MySQL, and more",
 						search:
 							"new create database postgres redis mysql mariadb mongo libsql",
-						icon: <Database className="size-5 text-muted-foreground" />,
+						icon: <Database className="size-5 text-kumo-subtle" />,
 						run: () => openDatabaseDialog(),
 					},
 					...[
@@ -2157,7 +2155,7 @@ export const EnvironmentCanvas = ({
 						label: "New compose stack",
 						detail: "Create a compose service group",
 						search: "new create compose stack docker compose",
-						icon: <CircuitBoard className="size-5 text-muted-foreground" />,
+						icon: <CircuitBoard className="size-5 text-kumo-subtle" />,
 						run: () => openCreateDialog("compose"),
 					},
 					{
@@ -2166,7 +2164,7 @@ export const EnvironmentCanvas = ({
 						label: "Create from template",
 						detail: "Browse templates and create a service",
 						search: "new create build template catalog starter marketplace",
-						icon: <PuzzleIcon className="size-5 text-muted-foreground" />,
+						icon: <PuzzleIcon className="size-5 text-kumo-subtle" />,
 						run: () => openCreateDialog("template"),
 					},
 					{
@@ -2175,7 +2173,7 @@ export const EnvironmentCanvas = ({
 						label: "Import compose",
 						detail: "Import a base64 compose export",
 						search: "new create import compose export base64 template",
-						icon: <FileInput className="size-5 text-muted-foreground" />,
+						icon: <FileInput className="size-5 text-kumo-subtle" />,
 						run: () => openCreateDialog("import"),
 					},
 				]
@@ -2187,7 +2185,7 @@ export const EnvironmentCanvas = ({
 			detail: `Duplicate ${currentEnvironmentName} into a staging canvas`,
 			search:
 				"preview duplicate branch environment staging pull request pr temporary canvas",
-			icon: <GitPullRequest className="size-5 text-muted-foreground" />,
+			icon: <GitPullRequest className="size-5 text-kumo-subtle" />,
 			run: () => {
 				setCommandOpen(false);
 				void duplicateCurrentEnvironment();
@@ -2213,7 +2211,7 @@ export const EnvironmentCanvas = ({
 						? "Current environment"
 						: `${serviceCount} ${serviceCount === 1 ? "service" : "services"}`,
 				search: `${environment.name} environment switch open ${environment.description ?? ""}`,
-				icon: <GlobeIcon className="size-5 text-muted-foreground" />,
+				icon: <GlobeIcon className="size-5 text-kumo-subtle" />,
 				run: () => {
 					setCommandOpen(false);
 					setCommandQuery("");
@@ -2260,7 +2258,7 @@ export const EnvironmentCanvas = ({
 					label: `Deploy ${service.name}`,
 					detail: `${serviceTypeLabels[service.type]} · queue deployment`,
 					search: `${baseSearch} deploy redeploy build release`,
-					icon: <RefreshCw className="size-5 text-muted-foreground" />,
+					icon: <RefreshCw className="size-5 text-kumo-subtle" />,
 					run: () => {
 						setCommandOpen(false);
 						void runServiceAction(service, "deploy");
@@ -2272,7 +2270,7 @@ export const EnvironmentCanvas = ({
 					label: `Start ${service.name}`,
 					detail: `${serviceTypeLabels[service.type]} · start runtime`,
 					search: `${baseSearch} start run up`,
-					icon: <Play className="size-5 text-muted-foreground" />,
+					icon: <Play className="size-5 text-kumo-subtle" />,
 					run: () => {
 						setCommandOpen(false);
 						void runServiceAction(service, "start");
@@ -2284,7 +2282,7 @@ export const EnvironmentCanvas = ({
 					label: `Stop ${service.name}`,
 					detail: `${serviceTypeLabels[service.type]} · stop runtime`,
 					search: `${baseSearch} stop down pause`,
-					icon: <X className="size-5 text-muted-foreground" />,
+					icon: <X className="size-5 text-kumo-subtle" />,
 					run: () => {
 						setCommandOpen(false);
 						void runServiceAction(service, "stop");
@@ -2296,7 +2294,7 @@ export const EnvironmentCanvas = ({
 					label: `Variables for ${service.name}`,
 					detail: `${serviceTypeLabels[service.type]} · edit env`,
 					search: `${baseSearch} variables env secrets config`,
-					icon: <SquareTerminal className="size-5 text-muted-foreground" />,
+					icon: <SquareTerminal className="size-5 text-kumo-subtle" />,
 					run: () => {
 						setSelectedService({
 							serviceId: service.id,
@@ -2315,7 +2313,7 @@ export const EnvironmentCanvas = ({
 								label: `Deployment history for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · releases and worker output`,
 								search: `${baseSearch} deployments releases history builds`,
-								icon: <Rocket className="size-5 text-muted-foreground" />,
+								icon: <Rocket className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2335,7 +2333,7 @@ export const EnvironmentCanvas = ({
 								label: `Domains for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · public ingress`,
 								search: `${baseSearch} domains ingress urls routes tls ssl`,
-								icon: <GlobeIcon className="size-5 text-muted-foreground" />,
+								icon: <GlobeIcon className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2355,9 +2353,7 @@ export const EnvironmentCanvas = ({
 								label: `Previews for ${service.name}`,
 								detail: "Application · pull request environments",
 								search: `${baseSearch} previews preview environments pull requests pr github`,
-								icon: (
-									<GitPullRequest className="size-5 text-muted-foreground" />
-								),
+								icon: <GitPullRequest className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2375,7 +2371,7 @@ export const EnvironmentCanvas = ({
 					label: `Connections for ${service.name}`,
 					detail: `${serviceTypeLabels[service.type]} · service graph`,
 					search: `${baseSearch} connections links graph network variables`,
-					icon: <Cable className="size-5 text-muted-foreground" />,
+					icon: <Cable className="size-5 text-kumo-subtle" />,
 					run: () => {
 						setSelectedService({
 							serviceId: service.id,
@@ -2391,7 +2387,7 @@ export const EnvironmentCanvas = ({
 					label: `Connect from ${service.name}`,
 					detail: `${serviceTypeLabels[service.type]} · start drawing a private link`,
 					search: `${baseSearch} connect link wire private network variables database`,
-					icon: <Cable className="size-5 text-muted-foreground" />,
+					icon: <Cable className="size-5 text-kumo-subtle" />,
 					run: () => {
 						setCommandOpen(false);
 						startConnectionFromService(service);
@@ -2405,9 +2401,7 @@ export const EnvironmentCanvas = ({
 								label: `Logs for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · live runtime logs`,
 								search: `${baseSearch} logs console runtime stdout stderr`,
-								icon: (
-									<SquareTerminal className="size-5 text-muted-foreground" />
-								),
+								icon: <SquareTerminal className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2427,9 +2421,7 @@ export const EnvironmentCanvas = ({
 								label: `Terminal for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · container shell`,
 								search: `${baseSearch} terminal shell exec bash sh container console`,
-								icon: (
-									<SquareTerminal className="size-5 text-muted-foreground" />
-								),
+								icon: <SquareTerminal className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2450,7 +2442,7 @@ export const EnvironmentCanvas = ({
 								label: `Automations for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · cron jobs and tasks`,
 								search: `${baseSearch} schedules cron jobs tasks automation`,
-								icon: <Clock className="size-5 text-muted-foreground" />,
+								icon: <Clock className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2470,7 +2462,7 @@ export const EnvironmentCanvas = ({
 								label: `Backups for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · backup policies`,
 								search: `${baseSearch} backups restore database snapshot s3`,
-								icon: <Database className="size-5 text-muted-foreground" />,
+								icon: <Database className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2490,9 +2482,7 @@ export const EnvironmentCanvas = ({
 								label: `Credentials for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · connection strings`,
 								search: `${baseSearch} credentials connection string password port external internal`,
-								icon: (
-									<SquareTerminal className="size-5 text-muted-foreground" />
-								),
+								icon: <SquareTerminal className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2512,7 +2502,7 @@ export const EnvironmentCanvas = ({
 								label: `Resources for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · limits, ports, and storage`,
 								search: `${baseSearch} resources storage volumes mounts ports cpu memory limits`,
-								icon: <Box className="size-5 text-muted-foreground" />,
+								icon: <Box className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2533,7 +2523,7 @@ export const EnvironmentCanvas = ({
 								label: `Volume backups for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · persistent volume backups`,
 								search: `${baseSearch} volume backups restore persistent storage`,
-								icon: <Database className="size-5 text-muted-foreground" />,
+								icon: <Database className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2553,7 +2543,7 @@ export const EnvironmentCanvas = ({
 								label: `Containers for ${service.name}`,
 								detail: "Compose · inspect containers",
 								search: `${baseSearch} containers docker tasks inspect terminal`,
-								icon: <Box className="size-5 text-muted-foreground" />,
+								icon: <Box className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2573,7 +2563,7 @@ export const EnvironmentCanvas = ({
 								label: `Metrics for ${service.name}`,
 								detail: `${serviceTypeLabels[service.type]} · live resource usage`,
 								search: `${baseSearch} metrics monitoring cpu memory network disk`,
-								icon: <RefreshCw className="size-5 text-muted-foreground" />,
+								icon: <RefreshCw className="size-5 text-kumo-subtle" />,
 								run: () => {
 									setSelectedService({
 										serviceId: service.id,
@@ -2591,7 +2581,7 @@ export const EnvironmentCanvas = ({
 					label: `Settings for ${service.name}`,
 					detail: `${serviceTypeLabels[service.type]} · advanced settings`,
 					search: `${baseSearch} settings full advanced configure`,
-					icon: <Settings2 className="size-5 text-muted-foreground" />,
+					icon: <Settings2 className="size-5 text-kumo-subtle" />,
 					run: () => {
 						setCommandOpen(false);
 						router.push(
@@ -2609,7 +2599,7 @@ export const EnvironmentCanvas = ({
 						label: "Arrange workspace",
 						detail: "Reset service card layout",
 						search: "arrange layout organize canvas workspace reset",
-						icon: <Grip className="size-5 text-muted-foreground" />,
+						icon: <Grip className="size-5 text-kumo-subtle" />,
 						run: () => {
 							setCommandOpen(false);
 							void arrangeWorkspace();
@@ -2621,7 +2611,7 @@ export const EnvironmentCanvas = ({
 						label: isTopologyOpen ? "Hide topology" : "Show topology",
 						detail: "Toggle connected stack and unlinked service panel",
 						search: "topology graph groups sidebar panel connections links",
-						icon: <Network className="size-5 text-muted-foreground" />,
+						icon: <Network className="size-5 text-kumo-subtle" />,
 						run: () => {
 							setCommandOpen(false);
 							setIsTopologyOpen((current) => !current);
@@ -2635,7 +2625,7 @@ export const EnvironmentCanvas = ({
 			label: `Select ${group.title}`,
 			detail: `${group.serviceCount} services · ${group.connectionCount} links`,
 			search: `${group.title} ${group.searchText} service group stack connected graph select bulk`,
-			icon: <CircuitBoard className="size-5 text-muted-foreground" />,
+			icon: <CircuitBoard className="size-5 text-kumo-subtle" />,
 			run: () => {
 				setCommandOpen(false);
 				selectServiceGroup(group.nodeKeys);
@@ -2648,7 +2638,7 @@ export const EnvironmentCanvas = ({
 				detail: "Domains, TLS, cleanup, and proxy",
 				path: "/dashboard/settings/ingress",
 				search: "ingress runtime domain tls ssl proxy cleanup",
-				icon: <ServerIcon className="size-5 text-muted-foreground" />,
+				icon: <ServerIcon className="size-5 text-kumo-subtle" />,
 			},
 			{
 				id: "system:remote-servers",
@@ -2656,7 +2646,7 @@ export const EnvironmentCanvas = ({
 				detail: "Worker machines and placement",
 				path: "/dashboard/settings/runtime",
 				search: "remote servers runtime workers nodes machines",
-				icon: <Network className="size-5 text-muted-foreground" />,
+				icon: <Network className="size-5 text-kumo-subtle" />,
 			},
 			{
 				id: "system:git-providers",
@@ -2664,7 +2654,7 @@ export const EnvironmentCanvas = ({
 				detail: "GitHub, GitLab, and Gitea",
 				path: "/dashboard/settings/git-providers",
 				search: "git providers github gitlab gitea oauth",
-				icon: <FolderInput className="size-5 text-muted-foreground" />,
+				icon: <FolderInput className="size-5 text-kumo-subtle" />,
 			},
 			{
 				id: "system:registry",
@@ -2672,7 +2662,7 @@ export const EnvironmentCanvas = ({
 				detail: "Container image registries",
 				path: "/dashboard/settings/image-registry",
 				search: "registry docker image container credentials",
-				icon: <Box className="size-5 text-muted-foreground" />,
+				icon: <Box className="size-5 text-kumo-subtle" />,
 			},
 			{
 				id: "system:ssh-keys",
@@ -2680,7 +2670,7 @@ export const EnvironmentCanvas = ({
 				detail: "Deploy keys and private keys",
 				path: "/dashboard/settings/ssh-keys",
 				search: "ssh keys private deploy git",
-				icon: <SquareTerminal className="size-5 text-muted-foreground" />,
+				icon: <SquareTerminal className="size-5 text-kumo-subtle" />,
 			},
 			{
 				id: "system:notifications",
@@ -2688,7 +2678,7 @@ export const EnvironmentCanvas = ({
 				detail: "Alerts and integrations",
 				path: "/dashboard/settings/notifications",
 				search: "notifications alerts discord slack webhook",
-				icon: <Command className="size-5 text-muted-foreground" />,
+				icon: <Command className="size-5 text-kumo-subtle" />,
 			},
 		].map((item) => ({
 			...item,
@@ -2721,7 +2711,7 @@ export const EnvironmentCanvas = ({
 
 	if (workspaceQuery.isPending) {
 		return (
-			<div className="flex min-h-[70vh] items-center justify-center gap-2 text-sm text-muted-foreground">
+			<div className="flex min-h-[70vh] items-center justify-center gap-2 text-sm text-kumo-subtle">
 				<Loader2 className="size-4 animate-spin" />
 				<span>Loading workspace...</span>
 			</div>
@@ -2730,7 +2720,7 @@ export const EnvironmentCanvas = ({
 
 	if (!workspace) {
 		return (
-			<div className="flex min-h-[70vh] items-center justify-center text-muted-foreground">
+			<div className="flex min-h-[70vh] items-center justify-center text-kumo-subtle">
 				Workspace not found
 			</div>
 		);
@@ -2740,11 +2730,11 @@ export const EnvironmentCanvas = ({
 		<div className="h-[calc(100vh-5.5rem)] min-h-[720px] overflow-hidden">
 			<AdvanceBreadcrumb />
 
-			<div className="grid h-[calc(100%-2.25rem)] grid-rows-[auto_1fr] overflow-hidden rounded-lg border bg-background">
+			<div className="grid h-[calc(100%-2.25rem)] grid-rows-[auto_1fr] overflow-hidden rounded-lg border bg-kumo-canvas">
 				<div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3">
 					<div className="flex min-w-0 items-center gap-3">
-						<div className="flex size-9 items-center justify-center rounded-md border bg-muted/40">
-							<Network className="size-5 text-muted-foreground" />
+						<div className="flex size-9 items-center justify-center rounded-md border bg-kumo-fill/40">
+							<Network className="size-5 text-kumo-subtle" />
 						</div>
 						<div className="min-w-0">
 							<div className="flex flex-wrap items-center gap-2">
@@ -2756,7 +2746,7 @@ export const EnvironmentCanvas = ({
 									currentEnvironmentId={environmentId}
 								/>
 							</div>
-							<p className="truncate text-sm text-muted-foreground">
+							<p className="truncate text-sm text-kumo-subtle">
 								{workspace.environment.description ||
 									`${workspace.environment.name} environment`}
 							</p>
@@ -2780,7 +2770,7 @@ export const EnvironmentCanvas = ({
 								onChange={(event) => setSearchQuery(event.target.value)}
 								className="h-9 w-[220px] pr-9"
 							/>
-							<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+							<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-kumo-subtle" />
 						</div>
 						<div className="w-[150px]">
 							<Select
@@ -2815,7 +2805,7 @@ export const EnvironmentCanvas = ({
 							</Select>
 						</div>
 						<div className="flex w-[170px] items-center gap-2">
-							<ArrowUpDown className="size-4 shrink-0 text-muted-foreground" />
+							<ArrowUpDown className="size-4 shrink-0 text-kumo-subtle" />
 							<Select
 								aria-label="Service sort"
 								value={serviceSort}
@@ -2989,14 +2979,14 @@ export const EnvironmentCanvas = ({
 						)}
 					</div>
 					{isSelectionMode && (
-						<div className="flex basis-full flex-wrap items-center justify-between gap-3 rounded-md border bg-muted/20 px-3 py-2 text-sm">
+						<div className="flex basis-full flex-wrap items-center justify-between gap-3 rounded-md border bg-kumo-fill/20 px-3 py-2 text-sm">
 							<div className="flex min-w-0 flex-wrap items-center gap-2">
 								<Badge>{selectedBulkServices.length} selected</Badge>
-								<span className="text-muted-foreground">
+								<span className="text-kumo-subtle">
 									Select services on the canvas, then run a bulk action.
 								</span>
 								{selectedBulkRunningServices.length > 0 && (
-									<span className="text-destructive">
+									<span className="text-kumo-danger">
 										Stop running services before deleting.
 									</span>
 								)}
@@ -3078,16 +3068,16 @@ export const EnvironmentCanvas = ({
 
 				<div
 					className={cn(
-						"grid min-h-0 grid-cols-1 bg-muted/20",
+						"grid min-h-0 grid-cols-1 bg-kumo-fill/20",
 						isTopologyOpen && "lg:grid-cols-[280px_minmax(0,1fr)]",
 					)}
 				>
 					{isTopologyOpen && (
-						<aside className="max-h-64 overflow-auto border-b bg-background/80 p-3 lg:max-h-none lg:border-b-0 lg:border-r">
+						<aside className="max-h-64 overflow-auto border-b bg-kumo-canvas/80 p-3 lg:max-h-none lg:border-b-0 lg:border-r">
 							<div className="mb-3 flex items-start justify-between gap-3">
 								<div className="min-w-0">
 									<p className="text-sm font-medium">Topology</p>
-									<p className="text-xs text-muted-foreground">
+									<p className="text-xs text-kumo-subtle">
 										{connectionGroupSummaries.length > 0
 											? `${connectionGroupSummaries.length} connected stack${connectionGroupSummaries.length === 1 ? "" : "s"}`
 											: "No linked services yet"}
@@ -3099,9 +3089,7 @@ export const EnvironmentCanvas = ({
 							<div className="space-y-4">
 								{connectionGroupSummaries.length > 0 && (
 									<div className="space-y-2">
-										<p className="text-xs uppercase text-muted-foreground">
-											Stacks
-										</p>
+										<p className="text-xs uppercase text-kumo-subtle">Stacks</p>
 										<div className="space-y-1.5">
 											{connectionGroupSummaries.map((group) => {
 												const groupSelected = group.nodeKeys.every((nodeKey) =>
@@ -3117,8 +3105,9 @@ export const EnvironmentCanvas = ({
 														type="button"
 														aria-label={`Select ${group.title} topology group`}
 														className={cn(
-															"w-full rounded-md border bg-background p-2 text-left transition hover:bg-muted/40",
-															groupSelected && "border-primary bg-primary/5",
+															"w-full rounded-md border bg-kumo-canvas p-2 text-left transition hover:bg-kumo-fill/40",
+															groupSelected &&
+																"border-kumo-brand bg-kumo-brand/5",
 															!groupVisible && "opacity-50",
 														)}
 														onClick={() => selectServiceGroup(group.nodeKeys)}
@@ -3130,7 +3119,7 @@ export const EnvironmentCanvas = ({
 															</span>
 															<Badge>{group.connectionCount} links</Badge>
 														</div>
-														<div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+														<div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-kumo-subtle">
 															<span>{group.serviceCount} services</span>
 															{group.runtimeCount > 0 && (
 																<span>{group.runtimeCount} runtimes</span>
@@ -3147,11 +3136,9 @@ export const EnvironmentCanvas = ({
 								)}
 
 								<div className="space-y-2">
-									<p className="text-xs uppercase text-muted-foreground">
-										Unlinked
-									</p>
+									<p className="text-xs uppercase text-kumo-subtle">Unlinked</p>
 									{unlinkedServices.length === 0 ? (
-										<p className="rounded-md border border-dashed bg-background/70 p-3 text-xs text-muted-foreground">
+										<p className="rounded-md border border-dashed bg-kumo-canvas/70 p-3 text-xs text-kumo-subtle">
 											All visible services have at least one private link.
 										</p>
 									) : (
@@ -3160,24 +3147,24 @@ export const EnvironmentCanvas = ({
 												<button
 													key={getWorkspaceServiceKey(service.type, service.id)}
 													type="button"
-													className="flex w-full items-center gap-2 rounded-md border bg-background p-2 text-left transition hover:bg-muted/40"
+													className="flex w-full items-center gap-2 rounded-md border bg-kumo-canvas p-2 text-left transition hover:bg-kumo-fill/40"
 													onClick={() => openServiceFromTopology(service)}
 												>
-													<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/30">
+													<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
 														<WorkspaceServiceIcon service={service} />
 													</div>
 													<div className="min-w-0">
 														<p className="truncate text-sm font-medium">
 															{service.name}
 														</p>
-														<p className="truncate text-xs text-muted-foreground">
+														<p className="truncate text-xs text-kumo-subtle">
 															{serviceTypeLabels[service.type]}
 														</p>
 													</div>
 												</button>
 											))}
 											{unlinkedServices.length > 8 && (
-												<p className="px-1 text-xs text-muted-foreground">
+												<p className="px-1 text-xs text-kumo-subtle">
 													+{unlinkedServices.length - 8} more hidden by this
 													panel
 												</p>
@@ -3210,9 +3197,9 @@ export const EnvironmentCanvas = ({
 									<div
 										key={group.id}
 										className={cn(
-											"pointer-events-none absolute rounded-xl border border-dashed bg-background/35",
+											"pointer-events-none absolute rounded-xl border border-dashed bg-kumo-canvas/35",
 											groupSelected
-												? "border-primary/80 bg-primary/5"
+												? "border-kumo-brand/80 bg-kumo-brand/5"
 												: "border-kumo-line",
 										)}
 										style={{
@@ -3222,9 +3209,9 @@ export const EnvironmentCanvas = ({
 											height: group.height,
 										}}
 									>
-										<div className="pointer-events-auto absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-md border bg-background/90 px-2 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
+										<div className="pointer-events-auto absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-md border bg-kumo-canvas/90 px-2 py-1 text-xs text-kumo-subtle shadow-sm backdrop-blur">
 											<div className="min-w-0">
-												<p className="truncate font-medium text-foreground">
+												<p className="truncate font-medium text-kumo-default">
 													{group.title || `Service group ${group.index + 1}`}
 												</p>
 												<div className="flex flex-wrap gap-x-2 gap-y-0.5">
@@ -3240,7 +3227,7 @@ export const EnvironmentCanvas = ({
 											</div>
 											<button
 												type="button"
-												className="shrink-0 rounded border px-2 py-1 font-medium text-foreground transition hover:bg-muted"
+												className="shrink-0 rounded border px-2 py-1 font-medium text-kumo-default transition hover:bg-kumo-fill"
 												onClick={() => selectServiceGroup(group.nodeKeys)}
 											>
 												{groupSelected ? "Selected" : "Select group"}
@@ -3268,7 +3255,7 @@ export const EnvironmentCanvas = ({
 									>
 										<path
 											d="M 0 0 L 10 5 L 0 10 z"
-											className="fill-muted-foreground"
+											className="fill-kumo-subtle"
 										/>
 									</marker>
 									<marker
@@ -3279,7 +3266,7 @@ export const EnvironmentCanvas = ({
 										markerWidth="5"
 										markerHeight="5"
 									>
-										<circle cx="5" cy="5" r="4" className="fill-primary" />
+										<circle cx="5" cy="5" r="4" className="fill-kumo-brand" />
 									</marker>
 								</defs>
 								{connections.map((connection) => {
@@ -3315,7 +3302,7 @@ export const EnvironmentCanvas = ({
 											key={connection.connectionId}
 											d={connectionPath(source, target)}
 											className={cn(
-												"fill-none stroke-muted-foreground/60 stroke-2",
+												"fill-none stroke-kumo-subtle/60 stroke-2",
 												(!sourceVisible || !targetVisible) && "opacity-20",
 											)}
 											markerEnd="url(#workspace-arrow)"
@@ -3325,7 +3312,7 @@ export const EnvironmentCanvas = ({
 								{connectionPreview && (
 									<path
 										d={connectionPreview}
-										className="fill-none stroke-primary stroke-2 opacity-80"
+										className="fill-none stroke-kumo-brand stroke-2 opacity-80"
 										strokeDasharray="8 8"
 										markerEnd="url(#workspace-preview-dot)"
 									/>
@@ -3333,28 +3320,28 @@ export const EnvironmentCanvas = ({
 							</svg>
 
 							{connectSourceService && (
-								<div className="pointer-events-none absolute left-1/2 top-6 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-background/95 px-3 py-2 text-xs shadow-sm backdrop-blur">
-									<Cable className="size-4 text-primary" />
+								<div className="pointer-events-none absolute left-1/2 top-6 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-kumo-canvas/95 px-3 py-2 text-xs shadow-sm backdrop-blur">
+									<Cable className="size-4 text-kumo-brand" />
 									<span>
 										Connecting from{" "}
 										<strong className="font-medium">
 											{connectSourceService.name}
 										</strong>
 									</span>
-									<span className="text-muted-foreground">
+									<span className="text-kumo-subtle">
 										Select a target service
 									</span>
 								</div>
 							)}
 
 							{services.length === 0 ? (
-								<div className="absolute left-1/2 top-1/2 flex w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 rounded-lg border bg-background/95 p-5 text-center shadow-sm backdrop-blur">
-									<div className="flex size-12 items-center justify-center rounded-md border bg-muted/30">
-										<FolderInput className="size-6 text-muted-foreground" />
+								<div className="absolute left-1/2 top-1/2 flex w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 rounded-lg border bg-kumo-canvas/95 p-5 text-center shadow-sm backdrop-blur">
+									<div className="flex size-12 items-center justify-center rounded-md border bg-kumo-fill/30">
+										<FolderInput className="size-6 text-kumo-subtle" />
 									</div>
 									<div className="space-y-1">
 										<p className="font-medium">Empty canvas</p>
-										<p className="text-sm text-muted-foreground">
+										<p className="text-sm text-kumo-subtle">
 											Start with a runtime, database, compose stack, or
 											template.
 										</p>
@@ -3431,23 +3418,23 @@ export const EnvironmentCanvas = ({
 												isSelectionMode
 													? "cursor-pointer"
 													: "cursor-grab active:cursor-grabbing",
-												"focus-visible:ring-2 focus-visible:ring-ring",
+												"focus-visible:ring-2 focus-visible:ring-kumo-focus",
 											)}
 										>
 											<LayerCard
 												className={cn(
-													"relative h-full bg-background/95 shadow-sm transition hover:bg-background",
-													isConnectSource && "ring-2 ring-primary",
+													"relative h-full bg-kumo-canvas/95 shadow-sm transition hover:bg-kumo-canvas",
+													isConnectSource && "ring-2 ring-kumo-brand",
 													connectSource &&
 														!isConnectSource &&
-														"ring-1 ring-primary/30",
-													isBulkSelected && "ring-2 ring-primary",
+														"ring-1 ring-kumo-brand/30",
+													isBulkSelected && "ring-2 ring-kumo-brand",
 												)}
 											>
 												<div className="flex h-full flex-col gap-4">
 													<div className="flex items-start justify-between gap-4">
 														<div className="flex min-w-0 items-start gap-3">
-															<div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-muted/40">
+															<div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/40">
 																<WorkspaceServiceIcon service={service} />
 															</div>
 															<div className="min-w-0">
@@ -3455,9 +3442,9 @@ export const EnvironmentCanvas = ({
 																	<span className="truncate font-medium">
 																		{service.name}
 																	</span>
-																	<Grip className="size-3 shrink-0 text-muted-foreground" />
+																	<Grip className="size-3 shrink-0 text-kumo-subtle" />
 																</div>
-																<p className="truncate text-xs text-muted-foreground">
+																<p className="truncate text-xs text-kumo-subtle">
 																	{serviceTypeLabels[service.type]}
 																</p>
 															</div>
@@ -3474,12 +3461,12 @@ export const EnvironmentCanvas = ({
 														</div>
 													</div>
 
-													<p className="line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
+													<p className="line-clamp-2 min-h-[2.5rem] text-sm text-kumo-subtle">
 														{service.description ||
 															serviceTypeDescriptions[service.type]}
 													</p>
 
-													<div className="mt-auto space-y-1 text-xs text-muted-foreground">
+													<div className="mt-auto space-y-1 text-xs text-kumo-subtle">
 														<div className="flex items-center justify-between gap-3">
 															<span className="flex min-w-0 items-center gap-1.5">
 																<Network className="size-3 shrink-0" />
@@ -3516,9 +3503,10 @@ export const EnvironmentCanvas = ({
 															: `Start connection from ${service.name}`
 												}
 												className={cn(
-													"absolute -right-4 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-background text-muted-foreground opacity-0 shadow-sm transition hover:text-foreground group-hover:opacity-100",
+													"absolute -right-4 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-kumo-canvas text-kumo-subtle opacity-0 shadow-sm transition hover:text-kumo-default group-hover:opacity-100",
 													connectSource && "opacity-100",
-													isConnectSource && "border-primary text-primary",
+													isConnectSource &&
+														"border-kumo-brand text-kumo-brand",
 												)}
 												onClick={(event) => {
 													event.stopPropagation();
@@ -3541,10 +3529,10 @@ export const EnvironmentCanvas = ({
 			</div>
 
 			{selectedServiceModel && (
-				<aside className="fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-xl flex-col border-l bg-background shadow-xl">
+				<aside className="fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-xl flex-col border-l bg-kumo-canvas shadow-xl">
 					<div className="flex items-start justify-between gap-4 border-b p-5">
 						<div className="flex min-w-0 gap-3">
-							<div className="flex size-11 shrink-0 items-center justify-center rounded-md border bg-muted/40">
+							<div className="flex size-11 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/40">
 								<WorkspaceServiceIcon service={selectedServiceModel} />
 							</div>
 							<div className="min-w-0">
@@ -3556,7 +3544,7 @@ export const EnvironmentCanvas = ({
 										status={selectedServiceModel.status ?? undefined}
 									/>
 								</div>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-sm text-kumo-subtle">
 									{serviceTypeLabels[selectedServiceModel.type]}
 								</p>
 							</div>
@@ -3614,13 +3602,13 @@ export const EnvironmentCanvas = ({
 									</Button>
 								</div>
 
-								<LayerCard className="bg-muted/20">
+								<LayerCard className="bg-kumo-fill/20">
 									<div className="space-y-3">
 										<div className="flex items-center justify-between">
 											<span className="text-sm font-medium">Runtime</span>
 											<Badge>{selectedServiceModel.status || "idle"}</Badge>
 										</div>
-										<div className="grid gap-2 text-sm text-muted-foreground">
+										<div className="grid gap-2 text-sm text-kumo-subtle">
 											<div className="flex items-center justify-between gap-4">
 												<span>Network</span>
 												<span className="truncate">Private runtime</span>
@@ -3679,11 +3667,11 @@ export const EnvironmentCanvas = ({
 
 						{drawerTab === "variables" && (
 							<div className="space-y-3">
-								<LayerCard className="bg-muted/20">
+								<LayerCard className="bg-kumo-fill/20">
 									<div className="space-y-4">
 										<div>
 											<p className="text-sm font-medium">Variable graph</p>
-											<p className="text-xs text-muted-foreground">
+											<p className="text-xs text-kumo-subtle">
 												Workspace variables are inherited with{" "}
 												<code>{"{{workspace.KEY}}"}</code>. Incoming service
 												links can sync generated connection variables into this
@@ -3692,7 +3680,7 @@ export const EnvironmentCanvas = ({
 										</div>
 
 										<div className="grid gap-3">
-											<div className="rounded-md border bg-background/60 p-3">
+											<div className="rounded-md border bg-kumo-canvas/60 p-3">
 												<div className="flex items-center justify-between gap-3">
 													<span className="text-sm font-medium">
 														Workspace scope
@@ -3711,18 +3699,18 @@ export const EnvironmentCanvas = ({
 															))}
 														</div>
 													) : (
-														<p className="mt-3 text-xs text-muted-foreground">
+														<p className="mt-3 text-xs text-kumo-subtle">
 															No workspace variables defined.
 														</p>
 													))}
 												{!permissions?.envVars.read && (
-													<p className="mt-3 text-xs text-muted-foreground">
+													<p className="mt-3 text-xs text-kumo-subtle">
 														You need variable read access to see inherited keys.
 													</p>
 												)}
 											</div>
 
-											<div className="rounded-md border bg-background/60 p-3">
+											<div className="rounded-md border bg-kumo-canvas/60 p-3">
 												<div className="flex items-center justify-between gap-3">
 													<span className="text-sm font-medium">
 														Incoming links
@@ -3735,7 +3723,7 @@ export const EnvironmentCanvas = ({
 													</Badge>
 												</div>
 												{selectedIncomingConnections.length === 0 ? (
-													<p className="mt-3 text-xs text-muted-foreground">
+													<p className="mt-3 text-xs text-kumo-subtle">
 														No linked services are generating variables for this
 														service.
 													</p>
@@ -3901,11 +3889,11 @@ export const EnvironmentCanvas = ({
 						)}
 
 						{drawerTab === "terminal" && selectedServiceModel.appName && (
-							<LayerCard className="bg-muted/20">
+							<LayerCard className="bg-kumo-fill/20">
 								<div className="flex items-center justify-between gap-4">
 									<div className="min-w-0">
 										<h3 className="font-medium">Container Terminal</h3>
-										<p className="truncate text-sm text-muted-foreground">
+										<p className="truncate text-sm text-kumo-subtle">
 											{selectedServiceModel.appName}
 										</p>
 									</div>
@@ -3947,7 +3935,7 @@ export const EnvironmentCanvas = ({
 								<div className="flex items-start justify-between gap-3">
 									<div className="min-w-0">
 										<p className="text-sm font-medium">Service graph</p>
-										<p className="text-xs text-muted-foreground">
+										<p className="text-xs text-kumo-subtle">
 											Incoming database links can sync generated variables into
 											this service.
 										</p>
@@ -3966,7 +3954,7 @@ export const EnvironmentCanvas = ({
 									</Button>
 								</div>
 								{selectedConnections.length === 0 ? (
-									<div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+									<div className="rounded-lg border border-dashed p-6 text-center text-sm text-kumo-subtle">
 										No connections yet. Use Connect, then select another service
 										on the canvas.
 									</div>
@@ -4090,7 +4078,7 @@ export const EnvironmentCanvas = ({
 								))}
 							</Select>
 							{selectedTargetProject && targetEnvironments.length === 0 && (
-								<p className="text-xs text-muted-foreground">
+								<p className="text-xs text-kumo-subtle">
 									This workspace has no other environments.
 								</p>
 							)}
@@ -4138,13 +4126,13 @@ export const EnvironmentCanvas = ({
 
 					<div className="space-y-4 text-sm">
 						{selectedBulkRunningServices.length > 0 ? (
-							<div className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-destructive">
+							<div className="rounded-md border border-kumo-danger/30 bg-kumo-danger/10 p-3 text-kumo-danger">
 								Stop {selectedBulkRunningServices.length} running service
 								{selectedBulkRunningServices.length === 1 ? "" : "s"} before
 								deleting.
 							</div>
 						) : (
-							<div className="rounded-md border bg-muted/30 p-3">
+							<div className="rounded-md border bg-kumo-fill/30 p-3">
 								{selectedBulkServices.map((service) => (
 									<div
 										key={getWorkspaceServiceKey(service.type, service.id)}
@@ -4319,7 +4307,7 @@ export const EnvironmentCanvas = ({
 							</div>
 						)}
 
-						<div className="rounded-md border bg-muted/30 p-3 text-sm">
+						<div className="rounded-md border bg-kumo-fill/30 p-3 text-sm">
 							{selectedBulkServices.map((service) => (
 								<div
 									key={getWorkspaceServiceKey(service.type, service.id)}
@@ -4371,11 +4359,11 @@ export const EnvironmentCanvas = ({
 							onChange={(event) => setCommandQuery(event.target.value)}
 							className="pr-9"
 						/>
-						<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+						<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-kumo-subtle" />
 					</div>
 					<div className="max-h-[22rem] space-y-2 overflow-auto">
 						{filteredCommandItems.length === 0 ? (
-							<div className="rounded-lg border border-dashed p-5 text-center text-sm text-muted-foreground">
+							<div className="rounded-lg border border-dashed p-5 text-center text-sm text-kumo-subtle">
 								No commands found.
 							</div>
 						) : (
@@ -4387,30 +4375,30 @@ export const EnvironmentCanvas = ({
 
 								return (
 									<div key={group} className="space-y-1">
-										<div className="px-1 text-xs font-medium uppercase text-muted-foreground">
+										<div className="px-1 text-xs font-medium uppercase text-kumo-subtle">
 											{group}
 										</div>
 										{items.map((item) => (
 											<button
 												key={item.id}
 												type="button"
-												className="flex w-full items-center justify-between gap-3 rounded-md border bg-background px-3 py-2 text-left hover:bg-muted/40"
+												className="flex w-full items-center justify-between gap-3 rounded-md border bg-kumo-canvas px-3 py-2 text-left hover:bg-kumo-fill/40"
 												onClick={item.run}
 											>
 												<span className="flex min-w-0 items-center gap-3">
-													<span className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/30">
+													<span className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
 														{item.icon}
 													</span>
 													<span className="min-w-0">
 														<span className="block truncate text-sm font-medium">
 															{item.label}
 														</span>
-														<span className="block truncate text-xs text-muted-foreground">
+														<span className="block truncate text-xs text-kumo-subtle">
 															{item.detail}
 														</span>
 													</span>
 												</span>
-												<ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+												<ArrowRight className="size-4 shrink-0 text-kumo-subtle" />
 											</button>
 										))}
 									</div>

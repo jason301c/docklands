@@ -17,45 +17,45 @@ export const SummaryCards = ({
 	runningContainerCount,
 }: SummaryCardsProps) => (
 	<div className="grid gap-4 md:grid-cols-3">
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 				<h3 className="text-sm font-medium">Workers</h3>
-				<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
-					<Server className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
+				<div className="p-2 bg-kumo-success-tint text-kumo-success rounded-md">
+					<Server className="h-4 w-4 text-kumo-success" />
 				</div>
 			</div>
 			<div>
 				<div className="text-2xl font-bold">{nodeCount}</div>
 				{downNodeCount > 0 && (
-					<p className="text-xs text-destructive mt-1">
+					<p className="text-xs text-kumo-danger mt-1">
 						{downNodeCount} worker(s) down or drained
 					</p>
 				)}
 			</div>
 		</LayerCard>
 
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 				<h3 className="text-sm font-medium">Services</h3>
-				<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
-					<Cpu className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
+				<div className="p-2 bg-kumo-success-tint text-kumo-success rounded-md">
+					<Cpu className="h-4 w-4 text-kumo-success" />
 				</div>
 			</div>
 			<div>
 				<div className="text-2xl font-bold">{serviceCount}</div>
 				{unscheduledCount > 0 && (
-					<p className="text-xs text-muted-foreground mt-1">
+					<p className="text-xs text-kumo-subtle mt-1">
 						{unscheduledCount} with no running tasks
 					</p>
 				)}
 			</div>
 		</LayerCard>
 
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 				<h3 className="text-sm font-medium">Running Containers</h3>
-				<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
-					<Container className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
+				<div className="p-2 bg-kumo-success-tint text-kumo-success rounded-md">
+					<Container className="h-4 w-4 text-kumo-success" />
 				</div>
 			</div>
 			<div>

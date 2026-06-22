@@ -245,9 +245,9 @@ export const HandleVolumeBackups = ({
 							aria-label="Edit volume backup"
 							variant="ghost"
 							shape="square"
-							className="group hover:bg-blue-500/10"
+							className="group hover:bg-kumo-brand/10"
 						>
-							<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
+							<PenBoxIcon className="size-3.5 text-kumo-brand group-hover:text-kumo-brand" />
 						</Button>
 					) : (
 						((
@@ -398,7 +398,7 @@ export const HandleVolumeBackups = ({
 																	}
 																}}
 															>
-																<RefreshCw className="size-4 text-muted-foreground" />
+																<RefreshCw className="size-4 text-kumo-subtle" />
 															</Button>
 														</Tooltip>
 													</TooltipProvider>
@@ -429,7 +429,7 @@ export const HandleVolumeBackups = ({
 																	}
 																}}
 															>
-																<DatabaseZap className="size-4 text-muted-foreground" />
+																<DatabaseZap className="size-4 text-kumo-subtle" />
 															</Button>
 														</Tooltip>
 													</TooltipProvider>
@@ -592,7 +592,7 @@ export const HandleVolumeBackups = ({
 										/>
 										Turn Off Container During Backup
 									</FormLabel>
-									<FormDescription className="text-amber-600 dark:text-amber-400">
+									<FormDescription className="text-kumo-warning">
 										⚠️ The container will be temporarily stopped during backup to
 										prevent file corruption. This ensures data integrity but may
 										cause temporary service interruption.

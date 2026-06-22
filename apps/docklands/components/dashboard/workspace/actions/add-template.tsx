@@ -163,13 +163,13 @@ export const AddTemplate = ({
 						className="w-full cursor-pointer space-x-3"
 						onSelect={(e) => e.preventDefault()}
 					>
-						<PuzzleIcon className="size-4 text-muted-foreground" />
+						<PuzzleIcon className="size-4 text-kumo-subtle" />
 						<span>Template</span>
 					</DropdownMenu.Item>
 				</Dialog.Trigger>
 			)}
 			<Dialog className="sm:max-w-[90vw] p-0">
-				<div className="sticky top-0 z-10 bg-background p-6 border-b">
+				<div className="sticky top-0 z-10 bg-kumo-canvas p-6 border-b">
 					<div className="flex flex-col space-y-6">
 						<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
 							<div>
@@ -191,7 +191,7 @@ export const AddTemplate = ({
 										<Button
 											variant="outline"
 											className={cn(
-												"w-full sm:w-[200px] justify-between !bg-input",
+												"w-full sm:w-[200px] justify-between !border-kumo-line",
 											)}
 										>
 											{isLoadingTags
@@ -315,21 +315,21 @@ export const AddTemplate = ({
 
 						{isLoadingTemplates ? (
 							<div className="flex justify-center items-center w-full h-full flex-row gap-4">
-								<Loader2 className="size-8 text-muted-foreground animate-spin min-h-[60vh]" />
-								<div className="text-lg font-medium text-muted-foreground">
+								<Loader2 className="size-8 text-kumo-subtle animate-spin min-h-[60vh]" />
+								<div className="text-lg font-medium text-kumo-subtle">
 									Loading templates...
 								</div>
 							</div>
 						) : templates.length === 0 ? (
 							<div className="flex flex-col justify-center items-center w-full gap-2 min-h-[50vh]">
-								<SearchIcon className="text-muted-foreground size-6" />
-								<div className="text-xl font-medium text-muted-foreground">
+								<SearchIcon className="text-kumo-subtle size-6" />
+								<div className="text-xl font-medium text-kumo-subtle">
 									{showBookmarksOnly
 										? "No bookmarked templates found"
 										: "No templates found"}
 								</div>
 								{showBookmarksOnly && (
-									<p className="text-sm text-muted-foreground">
+									<p className="text-sm text-kumo-subtle">
 										Click the bookmark icon on templates to add them to
 										bookmarks
 									</p>
@@ -358,14 +358,14 @@ export const AddTemplate = ({
 												aria-label="Toggle template bookmark"
 												variant="ghost"
 												shape="square"
-												className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"
+												className="h-8 w-8 bg-kumo-canvas/80 backdrop-blur-sm hover:bg-kumo-canvas"
 												onClick={(e) => handleToggleBookmark(e, template.id)}
 											>
 												<Bookmark
 													className={cn(
 														"size-4",
 														bookmarkIds.includes(template.id) &&
-															"fill-yellow-400 text-yellow-400",
+															"fill-kumo-warning text-kumo-warning",
 													)}
 												/>
 											</Button>
@@ -375,7 +375,7 @@ export const AddTemplate = ({
 										</div>
 										<div
 											className={cn(
-												"flex-none p-6 pb-3 flex flex-col items-center gap-4 bg-muted/30",
+												"flex-none p-6 pb-3 flex flex-col items-center gap-4 bg-kumo-fill/30",
 												viewMode === "detailed" && "border-b",
 											)}
 										>
@@ -411,7 +411,7 @@ export const AddTemplate = ({
 										{/* Template Content */}
 										{viewMode === "detailed" && (
 											<ScrollArea className="flex-1 p-6">
-												<div className="text-sm text-muted-foreground">
+												<div className="text-sm text-kumo-subtle">
 													{template?.description}
 												</div>
 											</ScrollArea>
@@ -422,7 +422,7 @@ export const AddTemplate = ({
 											className={cn(
 												"flex-none px-6 py-3 mt-auto",
 												viewMode === "detailed"
-													? "flex items-center justify-between bg-muted/30 border-t"
+													? "flex items-center justify-between bg-kumo-fill/30 border-t"
 													: "flex justify-center",
 											)}
 										>
@@ -432,7 +432,7 @@ export const AddTemplate = ({
 														<Link
 															href={template?.links?.github}
 															target="_blank"
-															className="text-muted-foreground hover:text-foreground transition-colors"
+															className="text-kumo-subtle hover:text-kumo-default transition-colors"
 														>
 															<GithubIcon className="size-5" />
 														</Link>
@@ -441,7 +441,7 @@ export const AddTemplate = ({
 														<Link
 															href={template?.links?.website}
 															target="_blank"
-															className="text-muted-foreground hover:text-foreground transition-colors"
+															className="text-kumo-subtle hover:text-kumo-default transition-colors"
 														>
 															<Globe className="size-5" />
 														</Link>
@@ -450,7 +450,7 @@ export const AddTemplate = ({
 														<Link
 															href={template?.links?.docs}
 															target="_blank"
-															className="text-muted-foreground hover:text-foreground transition-colors"
+															className="text-kumo-subtle hover:text-kumo-default transition-colors"
 														>
 															<BookText className="size-5" />
 														</Link>

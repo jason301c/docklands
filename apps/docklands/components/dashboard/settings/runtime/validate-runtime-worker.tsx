@@ -30,13 +30,13 @@ export const ValidateRuntimeWorker = ({ runtimeWorkerId }: Props) => {
 	return (
 		<div className="p-0">
 			<div className="flex flex-col gap-4">
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 						<div className="flex flex-row gap-2 justify-between w-full  max-sm:flex-col">
 							<div className="flex flex-col gap-1">
 								<div className="flex items-center gap-2">
 									<PcCase className="size-5" />
-									<h3 className="text-xl">Setup Validation</h3>
+									<h3 className="text-xl font-semibold">Setup Validation</h3>
 								</div>
 								<p>Check if your worker is ready for builds and runtime</p>
 							</div>
@@ -63,7 +63,7 @@ export const ValidateRuntimeWorker = ({ runtimeWorkerId }: Props) => {
 
 					<div className="flex flex-col gap-4">
 						{isPending ? (
-							<div className="flex items-center justify-center text-muted-foreground py-4">
+							<div className="flex items-center justify-center text-kumo-subtle py-4">
 								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
 								<span>Checking worker configuration</span>
 							</div>
@@ -71,7 +71,7 @@ export const ValidateRuntimeWorker = ({ runtimeWorkerId }: Props) => {
 							<div className="grid w-full gap-4">
 								<div className="border rounded-lg p-4">
 									<h3 className="text-lg font-semibold mb-1">Status</h3>
-									<p className="text-sm text-muted-foreground mb-4">
+									<p className="text-sm text-kumo-subtle mb-4">
 										{isBuildServer
 											? "Shows the build worker configuration status"
 											: "Shows the runtime worker configuration status"}

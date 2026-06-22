@@ -70,7 +70,7 @@ export const ShowVolumeBackups = ({
 			<div className="px-0">
 				<div className="flex justify-between items-center flex-wrap gap-2">
 					<div className="flex flex-col gap-2">
-						<h3 className="text-xl font-bold flex items-center gap-2">
+						<h3 className="text-xl font-semibold flex items-center gap-2">
 							Volume Backups
 						</h3>
 						<p>
@@ -97,8 +97,8 @@ export const ShowVolumeBackups = ({
 			<div className="px-0">
 				{isLoadingVolumeBackups ? (
 					<div className="flex gap-4 w-full items-center justify-center text-center mx-auto min-h-[45vh]">
-						<Loader2 className="size-4 text-muted-foreground/70 transition-colors animate-spin self-center" />
-						<span className="text-sm text-muted-foreground/70">
+						<Loader2 className="size-4 text-kumo-subtle/70 transition-colors animate-spin self-center" />
+						<span className="text-sm text-kumo-subtle/70">
 							Loading volume backups...
 						</span>
 					</div>
@@ -116,11 +116,11 @@ export const ShowVolumeBackups = ({
 							return (
 								<div
 									key={volumeBackup.volumeBackupId}
-									className="flex flex-col sm:flex-row sm:items-center flex-wrap sm:flex-nowrap gap-y-2 justify-between rounded-lg border p-3 transition-colors bg-muted/50 w-full"
+									className="flex flex-col sm:flex-row sm:items-center flex-wrap sm:flex-nowrap gap-y-2 justify-between rounded-lg border p-3 transition-colors bg-kumo-fill/50 w-full"
 								>
 									<div className="flex items-start gap-3 w-full sm:w-auto">
-										<div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/5">
-											<DatabaseBackup className="size-4 text-primary/70" />
+										<div className="flex h-9 w-9 items-center justify-center rounded-full bg-kumo-brand/5">
+											<DatabaseBackup className="size-4 text-kumo-brand/70" />
 										</div>
 										<div className="space-y-1.5 w-full sm:w-auto">
 											<div className="flex items-center gap-2">
@@ -136,7 +136,7 @@ export const ShowVolumeBackups = ({
 													{volumeBackup.enabled ? "Enabled" : "Disabled"}
 												</Badge>
 											</div>
-											<div className="flex items-center gap-2 text-sm text-muted-foreground">
+											<div className="flex items-center gap-2 text-sm text-kumo-subtle">
 												<Badge
 													variant="outline"
 													className="font-mono text-[10px] bg-transparent"
@@ -211,10 +211,10 @@ export const ShowVolumeBackups = ({
 												aria-label="Delete volume backup"
 												variant="ghost"
 												shape="square"
-												className="group hover:bg-red-500/10"
+												className="group hover:bg-kumo-danger/10"
 												loading={isDeleting}
 											>
-												<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+												<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 											</Button>
 										</DialogAction>
 									</div>
@@ -224,11 +224,11 @@ export const ShowVolumeBackups = ({
 					</div>
 				) : (
 					<div className="flex flex-col gap-2 items-center justify-center py-12 rounded-lg">
-						<DatabaseBackup className="size-8 mb-4 text-muted-foreground" />
-						<p className="text-lg font-medium text-muted-foreground">
+						<DatabaseBackup className="size-8 mb-4 text-kumo-subtle" />
+						<p className="text-lg font-medium text-kumo-subtle">
 							No volume backups
 						</p>
-						<p className="text-sm text-muted-foreground mt-1">
+						<p className="text-sm text-kumo-subtle mt-1">
 							Create your first volume backup to automate your workflows
 						</p>
 						<div className="flex items-center gap-2">

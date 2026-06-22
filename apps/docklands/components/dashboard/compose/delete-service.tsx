@@ -138,10 +138,10 @@ export const DeleteService = ({ id, type }: Props) => {
 						aria-label="Delete service"
 						variant="ghost"
 						shape="square"
-						className="group hover:bg-red-500/10 "
+						className="group hover:bg-kumo-danger/10 "
 						loading={isPending}
 					>
-						<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+						<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 					</Button>
 				}
 			/>
@@ -171,7 +171,7 @@ export const DeleteService = ({ id, type }: Props) => {
 												To confirm, type{" "}
 												<Button
 													type="button"
-													className="p-2 rounded-md ml-1 mr-1 hover:border-primary hover:text-primary-foreground hover:bg-primary hover:cursor-pointer"
+													className="p-2 rounded-md ml-1 mr-1 hover:border-kumo-brand hover:text-kumo-inverse hover:bg-kumo-brand hover:cursor-pointer"
 													variant="outline"
 													size="xs"
 													onClick={() => {
@@ -182,7 +182,7 @@ export const DeleteService = ({ id, type }: Props) => {
 													}}
 												>
 													{data?.name}/{data?.appName}&nbsp;
-													<Copy className="h-4 w-4 ml-1 text-muted-foreground" />
+													<Copy className="h-4 w-4 ml-1 text-kumo-subtle" />
 												</Button>{" "}
 												in the box below:
 											</span>

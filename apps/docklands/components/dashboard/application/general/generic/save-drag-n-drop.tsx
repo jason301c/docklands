@@ -104,7 +104,7 @@ export const SaveDragNDrop = ({ applicationId }: Props) => {
 									<FormMessage />
 									{zip instanceof File && (
 										<div className="flex flex-row gap-4 items-center">
-											<span className="text-sm text-muted-foreground">
+											<span className="text-sm text-kumo-subtle">
 												{zip.name} ({zip.size} bytes)
 											</span>
 											<Button
@@ -115,7 +115,7 @@ export const SaveDragNDrop = ({ applicationId }: Props) => {
 													field.onChange(null);
 												}}
 											>
-												<TrashIcon className="w-4 h-4 text-muted-foreground" />
+												<TrashIcon className="w-4 h-4 text-kumo-subtle" />
 											</Button>
 										</div>
 									)}

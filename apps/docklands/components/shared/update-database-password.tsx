@@ -88,7 +88,7 @@ export const UpdateDatabasePassword = ({
 			<Dialog.Trigger
 				render={
 					<Button aria-label={`Update ${label}`} variant="ghost" shape="square">
-						<PenBox className="size-3.5 text-muted-foreground" />
+						<PenBox className="size-3.5 text-kumo-subtle" />
 					</Button>
 				}
 			/>

@@ -86,10 +86,10 @@ export const AddCommand = ({ applicationId }: Props) => {
 	};
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row justify-between">
 				<div>
-					<h3 className="text-xl">Run Command</h3>
+					<h3 className="text-xl font-semibold">Run Command</h3>
 					<p>
 						Run a custom command in the container after the application
 						initialized
@@ -133,7 +133,7 @@ export const AddCommand = ({ applicationId }: Props) => {
 								</div>
 
 								{fields.length === 0 && (
-									<p className="text-sm text-muted-foreground">
+									<p className="text-sm text-kumo-subtle">
 										No arguments added yet. Click "Add Argument" to add one.
 									</p>
 								)}

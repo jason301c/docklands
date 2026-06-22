@@ -113,7 +113,7 @@ export const AddApplication = ({
 						className="w-full cursor-pointer space-x-3"
 						onSelect={(e) => e.preventDefault()}
 					>
-						<Folder className="size-4 text-muted-foreground" />
+						<Folder className="size-4 text-kumo-subtle" />
 						<span>Application</span>
 					</DropdownMenu.Item>
 				</Dialog.Trigger>
@@ -182,7 +182,7 @@ export const AddApplication = ({
 												side="right"
 												asChild
 											>
-												<HelpCircle className="size-4 text-muted-foreground" />
+												<HelpCircle className="size-4 text-kumo-subtle" />
 											</Tooltip>
 										</TooltipProvider>
 									</FormLabel>

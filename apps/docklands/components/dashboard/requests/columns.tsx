@@ -71,7 +71,7 @@ export const columns: ColumnDef<LogEntry>[] = [
 				<div className="flex flex-col gap-2">
 					<div className="flex items-center flex-row flex-wrap gap-3 ">
 						{log.RequestMethod}{" "}
-						<div className="inline-flex items-center gap-2 bg-muted px-1.5 py-1 rounded-lg">
+						<div className="inline-flex items-center gap-2 bg-kumo-fill px-1.5 py-1 rounded-lg">
 							<span>{log.RequestAddr}</span>
 						</div>
 						<span className="break-all">{log.RequestPath}</span>

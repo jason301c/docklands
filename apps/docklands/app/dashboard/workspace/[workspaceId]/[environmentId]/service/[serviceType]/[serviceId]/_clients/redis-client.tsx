@@ -64,24 +64,22 @@ const Redis = (props: {
 			<UseKeyboardNav forPage="redis" />
 			<AdvanceBreadcrumb />
 			<div className="w-full">
-				<div className="rounded-lg border bg-background p-6">
+				<div className="rounded-lg border bg-kumo-canvas p-6">
 					<div className="flex flex-row justify-between items-center">
 						<div className="flex flex-col">
-							<h3 className="text-xl flex flex-row gap-2">
+							<h3 className="text-xl font-semibold flex items-center gap-2">
 								<div className="relative flex flex-row gap-4">
 									<div className="absolute -right-1  -top-2">
 										<StatusTooltip status={data?.applicationStatus} />
 									</div>
 
-									<RedisIcon className="h-6 w-6 text-muted-foreground" />
+									<RedisIcon className="h-6 w-6 text-kumo-subtle" />
 								</div>
 								{data?.name}
 							</h3>
 							{data?.description && <p>{data?.description}</p>}
 
-							<span className="text-sm text-muted-foreground">
-								{data?.appName}
-							</span>
+							<span className="text-sm text-kumo-subtle">{data?.appName}</span>
 						</div>
 						<div className="flex flex-col h-fit w-fit gap-2">
 							<RuntimePlacementStatus
@@ -174,7 +172,7 @@ const Redis = (props: {
 													<>
 														{/* {monitoring?.enabledFeatures && (
 															<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2">
-																<Label className="text-muted-foreground">
+																<Label className="text-kumo-subtle">
 																	Metrics source
 																</Label>
 																<Switch

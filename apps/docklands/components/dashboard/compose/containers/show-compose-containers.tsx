@@ -48,10 +48,10 @@ export const ShowComposeContainers = ({
 		);
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row items-center justify-between">
 				<div>
-					<h3 className="text-xl">Containers</h3>
+					<h3 className="text-xl font-semibold">Containers</h3>
 					<p>
 						Inspect each container in this compose and run basic lifecycle
 						actions.
@@ -70,11 +70,11 @@ export const ShowComposeContainers = ({
 			<div>
 				{isPending ? (
 					<div className="flex items-center justify-center h-[20vh]">
-						<Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />
+						<Loader2 className="animate-spin h-6 w-6 text-kumo-subtle" />
 					</div>
 				) : !data || data.length === 0 ? (
 					<div className="flex items-center justify-center h-[20vh]">
-						<span className="text-muted-foreground">
+						<span className="text-kumo-subtle">
 							No containers found. Run a build to see containers here.
 						</span>
 					</div>
@@ -170,7 +170,7 @@ const ContainerRow = ({
 				</Badge>
 			</Table.Cell>
 			<Table.Cell>{container.status}</Table.Cell>
-			<Table.Cell className="font-mono text-sm text-muted-foreground">
+			<Table.Cell className="font-mono text-sm text-kumo-subtle">
 				{container.containerId}
 			</Table.Cell>
 			<Table.Cell className="text-right">
@@ -244,7 +244,7 @@ const ContainerRow = ({
 								Stop
 							</DropdownMenu.Item>
 							<DropdownMenu.Item
-								className="cursor-pointer text-red-500 focus:text-red-600"
+								className="cursor-pointer text-kumo-danger focus:text-kumo-danger"
 								disabled={actionLoading !== null}
 								onClick={() => handleAction("kill", killMutation)}
 							>

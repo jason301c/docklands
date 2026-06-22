@@ -117,7 +117,7 @@ export const UpdatePublicIp = ({ children }: Props) => {
 													type="button"
 													onClick={setCurrentIp}
 												>
-													<RefreshCw className="size-4 text-muted-foreground" />
+													<RefreshCw className="size-4 text-kumo-subtle" />
 												</Button>
 											</Tooltip>
 										</TooltipProvider>

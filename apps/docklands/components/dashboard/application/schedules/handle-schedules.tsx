@@ -153,7 +153,7 @@ export const ScheduleFormField = <TFieldValues extends FieldValues>({
 								}
 								asChild
 							>
-								<Info className="w-4 h-4 text-muted-foreground cursor-help" />
+								<Info className="w-4 h-4 text-kumo-subtle cursor-help" />
 							</Tooltip>
 						</TooltipProvider>
 					</FormLabel>
@@ -320,9 +320,9 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 							aria-label="Edit automation"
 							variant="ghost"
 							shape="square"
-							className="group hover:bg-blue-500/10"
+							className="group hover:bg-kumo-brand/10"
 						>
-							<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
+							<PenBoxIcon className="size-3.5 text-kumo-brand group-hover:text-kumo-brand" />
 						</Button>
 					) : (
 						((
@@ -420,7 +420,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 																}
 															}}
 														>
-															<RefreshCw className="size-4 text-muted-foreground" />
+															<RefreshCw className="size-4 text-kumo-subtle" />
 														</Button>
 													</Tooltip>
 												</TooltipProvider>
@@ -452,7 +452,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 																}
 															}}
 														>
-															<DatabaseZap className="size-4 text-muted-foreground" />
+															<DatabaseZap className="size-4 text-kumo-subtle" />
 														</Button>
 													</Tooltip>
 												</TooltipProvider>
@@ -528,7 +528,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 												}
 												asChild
 											>
-												<Info className="w-4 h-4 text-muted-foreground cursor-help" />
+												<Info className="w-4 h-4 text-kumo-subtle cursor-help" />
 											</Tooltip>
 										</TooltipProvider>
 									</FormLabel>
@@ -538,8 +538,8 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 												<Button
 													variant="outline"
 													className={cn(
-														"w-full justify-between !bg-input",
-														!field.value && "text-muted-foreground",
+														"w-full justify-between !bg-kumo-fill",
+														!field.value && "text-kumo-subtle",
 													)}
 												>
 													{getTimezoneLabel(field.value)}

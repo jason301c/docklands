@@ -25,12 +25,12 @@ export const AddClusterManager = ({ runtimeWorkerId }: Props) => {
 				</div>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				{isPending ? (
-					<Loader2 className="w-full animate-spin text-muted-foreground" />
+					<Loader2 className="w-full animate-spin text-kumo-subtle" />
 				) : (
 					<>
 						<div className="flex flex-col gap-2.5 text-sm">
 							<span>1. Go to the new machine and run this command</span>
-							<span className="bg-muted rounded-lg p-2 flex justify-between">
+							<span className="bg-kumo-fill rounded-lg p-2 flex justify-between">
 								curl https://get.docker.com | sh -s -- --version {data?.version}
 								<button
 									type="button"
@@ -53,7 +53,7 @@ export const AddClusterManager = ({ runtimeWorkerId }: Props) => {
 								2. Run this command to join the machine as a cluster manager
 							</span>
 
-							<span className="bg-muted rounded-lg p-2  flex">
+							<span className="bg-kumo-fill rounded-lg p-2  flex">
 								{data?.command}
 								<button
 									type="button"

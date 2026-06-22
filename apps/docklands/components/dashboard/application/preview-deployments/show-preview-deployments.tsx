@@ -63,10 +63,10 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 	};
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 				<div className="flex flex-col gap-2">
-					<h3 className="text-xl">Preview Environments</h3>
+					<h3 className="text-xl font-semibold">Preview Environments</h3>
 					<p>Review pull request runtimes for this service.</p>
 				</div>
 				{data?.isPreviewDeploymentsActive && (
@@ -84,15 +84,15 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 						</div>
 						{isLoadingPreviewDeployments ? (
 							<div className="flex w-full flex-row items-center justify-center gap-3 min-h-[35vh]">
-								<Loader2 className="size-5 text-muted-foreground animate-spin" />
-								<span className="text-base text-muted-foreground">
+								<Loader2 className="size-5 text-kumo-subtle animate-spin" />
+								<span className="text-base text-kumo-subtle">
 									Loading preview environments...
 								</span>
 							</div>
 						) : !previewDeployments?.length ? (
 							<div className="flex w-full flex-col items-center justify-center gap-3 min-h-[35vh]">
-								<RocketIcon className="size-8 text-muted-foreground" />
-								<span className="text-base text-muted-foreground">
+								<RocketIcon className="size-8 text-kumo-subtle" />
+								<span className="text-base text-kumo-subtle">
 									No preview environments found
 								</span>
 							</div>
@@ -109,22 +109,22 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 											<div
 												className={`absolute left-0 top-0 w-1 h-full ${
 													status === "done"
-														? "bg-green-500"
+														? "bg-kumo-success"
 														: status === "running"
-															? "bg-yellow-500"
-															: "bg-red-500"
+															? "bg-kumo-warning"
+															: "bg-kumo-danger"
 												}`}
 											/>
 
 											<div className="p-4">
 												<div className="flex items-start justify-between mb-3">
 													<div className="flex items-start gap-3">
-														<GitPullRequest className="size-5 text-muted-foreground mt-1 flex-shrink-0" />
+														<GitPullRequest className="size-5 text-kumo-subtle mt-1 flex-shrink-0" />
 														<div>
 															<div className="font-medium text-sm">
 																{deployment.pullRequestTitle}
 															</div>
-															<div className="text-sm text-muted-foreground mt-1">
+															<div className="text-sm text-kumo-subtle mt-1">
 																{deployment.branch}
 															</div>
 														</div>
@@ -144,12 +144,12 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 															aria-label="Preview deployment URL"
 															value={deploymentUrl}
 															readOnly
-															className="pr-8 text-sm text-blue-500 hover:text-blue-600 cursor-pointer"
+															className="pr-8 text-sm text-kumo-info hover:text-kumo-info cursor-pointer"
 															onClick={() =>
 																window.open(deploymentUrl, "_blank")
 															}
 														/>
-														<ExternalLink className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
+														<ExternalLink className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-kumo-subtle" />
 													</div>
 
 													<div className="flex gap-2 opacity-80 group-hover:opacity-100 transition-opacity">
@@ -269,7 +269,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 																variant="ghost"
 																size="sm"
 																loading={isPending}
-																className="text-red-600 hover:text-red-700 hover:bg-red-50"
+																className="text-kumo-danger hover:text-kumo-danger hover:bg-kumo-danger-tint"
 															>
 																<Trash2 className="size-4" />
 															</Button>
@@ -285,8 +285,8 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 					</>
 				) : (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
-						<RocketIcon className="size-8 text-muted-foreground" />
-						<span className="text-base text-muted-foreground">
+						<RocketIcon className="size-8 text-kumo-subtle" />
+						<span className="text-base text-kumo-subtle">
 							Preview environments are disabled for this application. Enable
 							them to create pull request runtimes.
 						</span>

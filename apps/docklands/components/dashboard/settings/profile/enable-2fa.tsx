@@ -243,7 +243,7 @@ export const Enable2FA = () => {
 			<Dialog.Trigger
 				render={
 					<Button variant="ghost">
-						<Fingerprint className="size-4 text-muted-foreground" />
+						<Fingerprint className="size-4 text-kumo-subtle" />
 						Enable 2FA
 					</Button>
 				}
@@ -322,7 +322,7 @@ export const Enable2FA = () => {
 								{data?.qrCodeUrl ? (
 									<>
 										<div className="flex flex-col items-center gap-4 p-6 border rounded-lg">
-											<QrCode className="size-5 text-muted-foreground" />
+											<QrCode className="size-5 text-kumo-subtle" />
 											<span className="text-sm font-medium">
 												Scan this QR code with your authenticator app
 											</span>
@@ -332,10 +332,10 @@ export const Enable2FA = () => {
 												className="rounded-lg w-48 h-48"
 											/>
 											<div className="flex flex-col gap-2 text-center">
-												<span className="text-sm text-muted-foreground">
+												<span className="text-sm text-kumo-subtle">
 													Can't scan the QR code?
 												</span>
-												<span className="text-xs font-mono bg-muted p-2 rounded">
+												<span className="text-xs font-mono bg-kumo-fill p-2 rounded">
 													{data.secret}
 												</span>
 											</div>
@@ -387,13 +387,13 @@ export const Enable2FA = () => {
 													{backupCodes.map((code, index) => (
 														<code
 															key={`${code}-${index}`}
-															className="bg-muted p-2 rounded text-sm font-mono"
+															className="bg-kumo-fill p-2 rounded text-sm font-mono"
 														>
 															{code}
 														</code>
 													))}
 												</div>
-												<p className="text-sm text-muted-foreground">
+												<p className="text-sm text-kumo-subtle">
 													Save these backup codes in a secure place. You can use
 													them to access your account if you lose access to your
 													authenticator device.
@@ -402,8 +402,8 @@ export const Enable2FA = () => {
 										)}
 									</>
 								) : (
-									<div className="flex items-center justify-center w-full h-48 bg-muted rounded-lg">
-										<QrCode className="size-8 text-muted-foreground animate-pulse" />
+									<div className="flex items-center justify-center w-full h-48 bg-kumo-fill rounded-lg">
+										<QrCode className="size-8 text-kumo-subtle animate-pulse" />
 									</div>
 								)}
 							</div>

@@ -20,7 +20,7 @@ const Dashboard = () => {
 	return (
 		<div className="space-y-4 pb-10">
 			{isPending ? (
-				<div className="flex min-h-[50vh] items-center justify-center rounded-lg border bg-background px-4 text-muted-foreground">
+				<div className="flex min-h-[50vh] items-center justify-center rounded-lg border bg-kumo-canvas px-4 text-kumo-subtle">
 					Loading...
 					<Loader2 className="h-4 w-4 animate-spin" />
 				</div>
@@ -28,7 +28,7 @@ const Dashboard = () => {
 				<>
 					{/* {monitoring?.enabledFeatures && (
 						<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2">
-							<Label className="text-muted-foreground">Metrics source</Label>
+							<Label className="text-kumo-subtle">Metrics source</Label>
 							<Switch
 								checked={toggleMonitoring}
 								onCheckedChange={setToggleMonitoring}
@@ -36,7 +36,7 @@ const Dashboard = () => {
 						</div>
 					)} */}
 					{toggleMonitoring ? (
-						<div className="rounded-lg border bg-background">
+						<div className="rounded-lg border bg-kumo-canvas">
 							<ShowPaidMonitoring
 								BASE_URL={
 									process.env.NODE_ENV === "production"
@@ -51,7 +51,7 @@ const Dashboard = () => {
 							/>
 						</div>
 					) : (
-						<div className="rounded-lg border bg-background p-6">
+						<div className="rounded-lg border bg-kumo-canvas p-6">
 							<ContainerFreeMonitoring appName="docklands" />
 						</div>
 					)}

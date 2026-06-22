@@ -171,7 +171,7 @@ export const ShowIconSettings = ({
 								className="h-8 w-8 object-contain"
 							/>
 						) : (
-							<GlobeIcon className="h-6 w-6 text-muted-foreground" />
+							<GlobeIcon className="h-6 w-6 text-kumo-subtle" />
 						)}
 						<div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded opacity-0 group-hover:opacity-100 transition-opacity">
 							<Pencil className="h-3 w-3 text-white" />
@@ -188,7 +188,7 @@ export const ShowIconSettings = ({
 								variant="ghost"
 								size="sm"
 								onClick={handleRemoveIcon}
-								className="text-muted-foreground"
+								className="text-kumo-subtle"
 							>
 								<X className="size-4 mr-1" />
 								Remove icon
@@ -199,7 +199,7 @@ export const ShowIconSettings = ({
 
 				<div className="space-y-4">
 					<div className="relative">
-						<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-kumo-subtle" />
 						<Input
 							aria-label="Search icons"
 							placeholder="Search icons (e.g. react, vue, docker)..."
@@ -211,7 +211,7 @@ export const ShowIconSettings = ({
 
 					<div className="max-h-[300px] overflow-y-auto border rounded-lg p-4">
 						{displayedIcons.length === 0 ? (
-							<div className="text-center py-8 text-sm text-muted-foreground">
+							<div className="text-center py-8 text-sm text-kumo-subtle">
 								No icons found
 							</div>
 						) : (
@@ -222,7 +222,7 @@ export const ShowIconSettings = ({
 											type="button"
 											key={i.slug}
 											onClick={() => handleIconSelect(i)}
-											className="flex flex-col items-center gap-1.5 p-2 rounded-lg border hover:border-primary hover:bg-muted transition-colors group"
+											className="flex flex-col items-center gap-1.5 p-2 rounded-lg border hover:border-kumo-brand hover:bg-kumo-fill transition-colors group"
 										>
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
@@ -232,7 +232,7 @@ export const ShowIconSettings = ({
 											>
 												<path d={i.path} />
 											</svg>
-											<span className="text-[10px] text-muted-foreground capitalize truncate w-full text-center">
+											<span className="text-[10px] text-kumo-subtle capitalize truncate w-full text-center">
 												{i.title}
 											</span>
 										</button>
@@ -254,16 +254,16 @@ export const ShowIconSettings = ({
 					</div>
 
 					<div className="relative pt-3 border-t">
-						<p className="text-sm text-muted-foreground text-center mb-3">
+						<p className="text-sm text-kumo-subtle text-center mb-3">
 							or upload a custom icon
 						</p>
 						<Dropzone
 							dropMessage="Drag & drop an icon or click to upload"
 							accept=".jpg,.jpeg,.png,.svg,image/jpeg,image/png,image/svg+xml"
 							onChange={handleFileUpload}
-							classNameWrapper="border-2 border-dashed border-border hover:border-primary bg-muted/30 hover:bg-muted/50 transition-all rounded-lg"
+							classNameWrapper="border-2 border-dashed border-kumo-hairline hover:border-kumo-brand bg-kumo-fill/30 hover:bg-kumo-fill/50 transition-all rounded-lg"
 						/>
-						<div className="mt-2 text-center text-xs text-muted-foreground">
+						<div className="mt-2 text-center text-xs text-kumo-subtle">
 							Supported formats: JPG, JPEG, PNG, SVG (max 2MB)
 						</div>
 					</div>

@@ -120,7 +120,7 @@ export const ShowPaidMonitoring = ({
 	if (isLoading) {
 		return (
 			<div className="flex h-[400px] w-full items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+				<Loader2 className="h-8 w-8 animate-spin text-kumo-subtle" />
 			</div>
 		);
 	}
@@ -129,15 +129,15 @@ export const ShowPaidMonitoring = ({
 		return (
 			<div className="flex min-h-[55vh] w-full items-center justify-center p-4">
 				<div className="max-w-xl text-center">
-					<p className="mb-2 text-base font-medium leading-none text-muted-foreground">
+					<p className="mb-2 text-base font-medium leading-none text-kumo-subtle">
 						Error fetching metrics{" "}
 					</p>
-					<p className="whitespace-pre-line text-sm text-destructive">
+					<p className="whitespace-pre-line text-sm text-kumo-danger">
 						{queryError instanceof Error
 							? queryError.message
 							: "Failed to fetch metrics. Please check that your metrics collector is configured correctly."}
 					</p>
-					<p className="text-sm text-muted-foreground">URL: {BASE_URL}</p>
+					<p className="text-sm text-kumo-subtle">URL: {BASE_URL}</p>
 				</div>
 			</div>
 		);
@@ -149,7 +149,7 @@ export const ShowPaidMonitoring = ({
 				<h2 className="text-2xl font-bold tracking-tight">Host Metrics</h2>
 				<div className="flex items-center gap-4 flex-wrap">
 					<div>
-						<span className="text-sm text-muted-foreground">Data points:</span>
+						<span className="text-sm text-kumo-subtle">Data points:</span>
 						<Select
 							aria-label="Metric data point range"
 							value={dataPoints}
@@ -170,9 +170,7 @@ export const ShowPaidMonitoring = ({
 					</div>
 
 					<div>
-						<span className="text-sm text-muted-foreground">
-							Refresh interval:
-						</span>
+						<span className="text-sm text-kumo-subtle">Refresh interval:</span>
 						<Select
 							aria-label="Metric refresh interval"
 							value={refreshInterval}
@@ -196,9 +194,9 @@ export const ShowPaidMonitoring = ({
 
 			{/* Stats Cards */}
 			<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
-				<div className="rounded-lg border text-card-foreground shadow-sm p-6">
+				<div className="rounded-lg border text-kumo-default shadow-sm p-6">
 					<div className="flex items-center gap-2">
-						<Clock className="h-4 w-4 text-muted-foreground" />
+						<Clock className="h-4 w-4 text-kumo-subtle" />
 						<h3 className="text-sm font-medium">Uptime</h3>
 					</div>
 					<p className="mt-2 text-2xl font-bold">
@@ -206,17 +204,17 @@ export const ShowPaidMonitoring = ({
 					</p>
 				</div>
 
-				<div className="rounded-lg border text-card-foreground shadow-sm p-6">
+				<div className="rounded-lg border text-kumo-default shadow-sm p-6">
 					<div className="flex items-center gap-2">
-						<Cpu className="h-4 w-4 text-muted-foreground" />
+						<Cpu className="h-4 w-4 text-kumo-subtle" />
 						<h3 className="text-sm font-medium">CPU Usage</h3>
 					</div>
 					<p className="mt-2 text-2xl font-bold">{metrics.cpu}%</p>
 				</div>
 
-				<div className="rounded-lg border text-card-foreground bg-transparent shadow-sm p-6">
+				<div className="rounded-lg border text-kumo-default bg-transparent shadow-sm p-6">
 					<div className="flex items-center gap-2">
-						<MemoryStick className="h-4 w-4 text-muted-foreground" />
+						<MemoryStick className="h-4 w-4 text-kumo-subtle" />
 						<h3 className="text-sm font-medium">Memory Usage</h3>
 					</div>
 					<p className="mt-2 text-2xl font-bold">
@@ -224,9 +222,9 @@ export const ShowPaidMonitoring = ({
 					</p>
 				</div>
 
-				<div className="rounded-lg border text-card-foreground shadow-sm p-6">
+				<div className="rounded-lg border text-kumo-default shadow-sm p-6">
 					<div className="flex items-center gap-2">
-						<HardDrive className="h-4 w-4 text-muted-foreground" />
+						<HardDrive className="h-4 w-4 text-kumo-subtle" />
 						<h3 className="text-sm font-medium">Disk Usage</h3>
 					</div>
 					<p className="mt-2 text-2xl font-bold">{metrics.diskUsed}%</p>
@@ -234,23 +232,23 @@ export const ShowPaidMonitoring = ({
 			</div>
 
 			{/* System Information */}
-			<div className="rounded-lg border text-card-foreground shadow-sm p-6">
+			<div className="rounded-lg border text-kumo-default shadow-sm p-6">
 				<h3 className="text-lg font-medium mb-4">System Information</h3>
 				<div className="grid gap-4 md:grid-cols-2">
 					<div>
-						<h4 className="text-sm font-medium text-muted-foreground">CPU</h4>
+						<h4 className="text-sm font-medium text-kumo-subtle">CPU</h4>
 						<p className="mt-1">{metrics.cpuModel}</p>
-						<p className="text-sm text-muted-foreground mt-1">
+						<p className="text-sm text-kumo-subtle mt-1">
 							{metrics.cpuPhysicalCores} Physical Cores ({metrics.cpuCores}{" "}
 							Threads) @ {metrics.cpuSpeed}GHz
 						</p>
 					</div>
 					<div>
-						<h4 className="text-sm font-medium text-muted-foreground">
+						<h4 className="text-sm font-medium text-kumo-subtle">
 							Operating System
 						</h4>
 						<p className="mt-1">{metrics.distro}</p>
-						<p className="text-sm text-muted-foreground mt-1">
+						<p className="text-sm text-kumo-subtle mt-1">
 							Kernel: {metrics.kernel} ({metrics.arch})
 						</p>
 					</div>

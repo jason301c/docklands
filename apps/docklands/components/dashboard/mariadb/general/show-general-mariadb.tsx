@@ -63,9 +63,9 @@ export const ShowGeneralMariadb = ({ mariadbId }: Props) => {
 	return (
 		<>
 			<div className="flex w-full flex-col gap-5 ">
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div>
-						<h3 className="text-xl">Runtime Setup</h3>
+						<h3 className="text-xl font-semibold">Runtime Setup</h3>
 					</div>
 					<div className="flex flex-row gap-4 flex-wrap">
 						{canDeploy && (

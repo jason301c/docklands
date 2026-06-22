@@ -230,14 +230,14 @@ export const WorkspaceList = () => {
 				]}
 			/>
 			<div className="w-full">
-				<div className="rounded-lg border bg-background">
+				<div className="rounded-lg border bg-kumo-canvas">
 					<div className="flex w-full flex-wrap items-center justify-between gap-4 p-6">
 						<div className="p-0">
-							<h3 className="text-xl flex flex-row gap-2">
-								<FolderInput className="size-6 text-muted-foreground self-center" />
+							<h3 className="text-xl font-semibold flex items-center gap-2">
+								<FolderInput className="size-6 text-kumo-subtle self-center" />
 								Workspaces
 							</h3>
-							<p className="text-sm text-muted-foreground">
+							<p className="text-sm text-kumo-subtle">
 								{filteredWorkspaces.length} visible · {visibleServicesCount}{" "}
 								services
 							</p>
@@ -251,54 +251,54 @@ export const WorkspaceList = () => {
 
 					<div className="flex min-h-[60vh] flex-col gap-4 border-t p-6">
 						{isPending ? (
-							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[60vh]">
+							<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[60vh]">
 								<span>Loading...</span>
 								<Loader2 className="animate-spin size-4" />
 							</div>
 						) : (
 							<>
 								<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-									<div className="rounded-md border bg-background p-4">
-										<p className="text-xs uppercase text-muted-foreground">
+									<div className="rounded-md border bg-kumo-canvas p-4">
+										<p className="text-xs uppercase text-kumo-subtle">
 											Visible workspaces
 										</p>
 										<p className="mt-2 text-2xl font-semibold tabular-nums">
 											{filteredWorkspaces.length}
 										</p>
-										<p className="mt-2 text-xs text-muted-foreground">
+										<p className="mt-2 text-xs text-kumo-subtle">
 											{visibleEnvironmentCount} environments
 										</p>
 									</div>
-									<div className="rounded-md border bg-background p-4">
-										<p className="text-xs uppercase text-muted-foreground">
+									<div className="rounded-md border bg-kumo-canvas p-4">
+										<p className="text-xs uppercase text-kumo-subtle">
 											Applications
 										</p>
 										<p className="mt-2 text-2xl font-semibold tabular-nums">
 											{visibleServiceCounts.applications}
 										</p>
-										<p className="mt-2 text-xs text-muted-foreground">
+										<p className="mt-2 text-xs text-kumo-subtle">
 											Runtime services across visible workspaces
 										</p>
 									</div>
-									<div className="rounded-md border bg-background p-4">
-										<p className="text-xs uppercase text-muted-foreground">
+									<div className="rounded-md border bg-kumo-canvas p-4">
+										<p className="text-xs uppercase text-kumo-subtle">
 											Compose stacks
 										</p>
 										<p className="mt-2 text-2xl font-semibold tabular-nums">
 											{visibleServiceCounts.compose}
 										</p>
-										<p className="mt-2 text-xs text-muted-foreground">
+										<p className="mt-2 text-xs text-kumo-subtle">
 											Stack services ready for the canvas
 										</p>
 									</div>
-									<div className="rounded-md border bg-background p-4">
-										<p className="text-xs uppercase text-muted-foreground">
+									<div className="rounded-md border bg-kumo-canvas p-4">
+										<p className="text-xs uppercase text-kumo-subtle">
 											Data services
 										</p>
 										<p className="mt-2 text-2xl font-semibold tabular-nums">
 											{visibleServiceCounts.databases}
 										</p>
-										<p className="mt-2 text-xs text-muted-foreground">
+										<p className="mt-2 text-xs text-kumo-subtle">
 											Databases and caches available to link
 										</p>
 									</div>
@@ -313,7 +313,7 @@ export const WorkspaceList = () => {
 											className="pr-10"
 										/>
 
-										<Search className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+										<Search className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-kumo-subtle" />
 									</div>
 									<div className="flex items-center gap-2">
 										<TagFilter
@@ -328,7 +328,7 @@ export const WorkspaceList = () => {
 											onTagsChange={setSelectedTagIds}
 										/>
 										<div className="flex items-center gap-2 min-w-48 max-sm:w-full">
-											<ArrowUpDown className="size-4 text-muted-foreground" />
+											<ArrowUpDown className="size-4 text-kumo-subtle" />
 											<Select
 												aria-label="Workspace sort order"
 												value={sortBy}
@@ -360,8 +360,8 @@ export const WorkspaceList = () => {
 								</div>
 								{filteredWorkspaces?.length === 0 && (
 									<div className="mt-6 flex h-[50vh] w-full flex-col items-center justify-center space-y-4">
-										<FolderInput className="size-8 self-center text-muted-foreground" />
-										<span className="text-center font-medium text-muted-foreground">
+										<FolderInput className="size-8 self-center text-kumo-subtle" />
+										<span className="text-center font-medium text-kumo-subtle">
 											No workspaces found
 										</span>
 									</div>
@@ -394,12 +394,12 @@ export const WorkspaceList = () => {
 										return (
 											<LayerCard
 												key={workspace.workspaceId}
-												className="group flex h-full min-h-[230px] flex-col bg-background transition-colors hover:bg-muted/30"
+												className="group flex h-full min-h-[230px] flex-col bg-kumo-canvas transition-colors hover:bg-kumo-fill/30"
 											>
 												<div className="flex items-start justify-between gap-3">
 													<div className="min-w-0 space-y-1.5">
 														<div className="flex min-w-0 items-center gap-2">
-															<BookIcon className="size-4 shrink-0 text-muted-foreground" />
+															<BookIcon className="size-4 shrink-0 text-kumo-subtle" />
 															{workspaceHref ? (
 																<Link
 																	href={workspaceHref}
@@ -414,7 +414,7 @@ export const WorkspaceList = () => {
 															)}
 														</div>
 														{workspace.description && (
-															<p className="line-clamp-2 text-sm text-muted-foreground">
+															<p className="line-clamp-2 text-sm text-kumo-subtle">
 																{workspace.description}
 															</p>
 														)}
@@ -470,9 +470,9 @@ export const WorkspaceList = () => {
 																					Delete workspace?
 																				</Dialog.Title>
 																				{!emptyServices ? (
-																					<div className="flex flex-row gap-4 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
-																						<AlertTriangle className="text-yellow-600 dark:text-yellow-400" />
-																						<span className="text-sm text-yellow-600 dark:text-yellow-400">
+																					<div className="flex flex-row gap-4 rounded-lg bg-kumo-warning-tint p-2">
+																						<AlertTriangle className="text-kumo-warning" />
+																						<span className="text-sm text-kumo-warning">
 																							Delete services first.
 																						</span>
 																					</div>
@@ -533,13 +533,13 @@ export const WorkspaceList = () => {
 														{visibleEnvironments.map((environment) => (
 															<span
 																key={environment.environmentId}
-																className="rounded-md border bg-muted/20 px-2 py-1 text-xs text-muted-foreground"
+																className="rounded-md border bg-kumo-fill/20 px-2 py-1 text-xs text-kumo-subtle"
 															>
 																{environment.name}
 															</span>
 														))}
 														{hiddenEnvironmentCount > 0 && (
-															<span className="rounded-md border bg-muted/20 px-2 py-1 text-xs text-muted-foreground">
+															<span className="rounded-md border bg-kumo-fill/20 px-2 py-1 text-xs text-kumo-subtle">
 																+{hiddenEnvironmentCount} more
 															</span>
 														)}
@@ -547,42 +547,40 @@ export const WorkspaceList = () => {
 												)}
 
 												{hasNoEnvironments && (
-													<div className="mt-4 flex flex-row gap-2 rounded-lg bg-yellow-50 p-2 dark:bg-yellow-950">
-														<AlertTriangle className="size-4 shrink-0 text-yellow-600 dark:text-yellow-400" />
-														<span className="text-xs text-yellow-600 dark:text-yellow-400">
+													<div className="mt-4 flex flex-row gap-2 rounded-lg bg-kumo-warning-tint p-2">
+														<AlertTriangle className="size-4 shrink-0 text-kumo-warning" />
+														<span className="text-xs text-kumo-warning">
 															No environments are available.
 														</span>
 													</div>
 												)}
 
 												<div className="mt-auto pt-5">
-													<div className="grid grid-cols-4 gap-2 rounded-md border bg-muted/20 p-3 text-xs">
+													<div className="grid grid-cols-4 gap-2 rounded-md border bg-kumo-fill/20 p-3 text-xs">
 														<div className="space-y-1">
-															<Rocket className="size-4 text-muted-foreground" />
-															<div className="text-muted-foreground">Apps</div>
+															<Rocket className="size-4 text-kumo-subtle" />
+															<div className="text-kumo-subtle">Apps</div>
 															<div className="text-lg font-semibold tabular-nums">
 																{serviceCounts.applications}
 															</div>
 														</div>
 														<div className="space-y-1">
-															<Boxes className="size-4 text-muted-foreground" />
-															<div className="text-muted-foreground">
-																Stacks
-															</div>
+															<Boxes className="size-4 text-kumo-subtle" />
+															<div className="text-kumo-subtle">Stacks</div>
 															<div className="text-lg font-semibold tabular-nums">
 																{serviceCounts.compose}
 															</div>
 														</div>
 														<div className="space-y-1">
-															<Database className="size-4 text-muted-foreground" />
-															<div className="text-muted-foreground">Data</div>
+															<Database className="size-4 text-kumo-subtle" />
+															<div className="text-kumo-subtle">Data</div>
 															<div className="text-lg font-semibold tabular-nums">
 																{serviceCounts.databases}
 															</div>
 														</div>
 														<div className="space-y-1">
-															<FolderInput className="size-4 text-muted-foreground" />
-															<div className="text-muted-foreground">Envs</div>
+															<FolderInput className="size-4 text-kumo-subtle" />
+															<div className="text-kumo-subtle">Envs</div>
 															<div className="text-lg font-semibold tabular-nums">
 																{workspace.environments.length}
 															</div>

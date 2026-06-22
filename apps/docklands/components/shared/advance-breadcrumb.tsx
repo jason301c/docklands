@@ -342,7 +342,7 @@ export const AdvanceBreadcrumb = () => {
 					<SidebarTrigger className="-ml-1" />
 					<Separator orientation="vertical" className="mr-2 h-4" />
 					<div className="flex items-center gap-2">
-						<FolderInput className="size-4 text-muted-foreground" />
+						<FolderInput className="size-4 text-kumo-subtle" />
 						<span className="font-medium">Workspaces</span>
 					</div>
 				</div>
@@ -363,13 +363,13 @@ export const AdvanceBreadcrumb = () => {
 							<Button
 								variant="ghost"
 								aria-expanded={workspaceOpen}
-								className="h-auto px-2 py-1.5 hover:bg-accent gap-2"
+								className="h-auto px-2 py-1.5 hover:bg-kumo-fill-hover gap-2"
 							>
-								<FolderInput className="size-4 text-muted-foreground" />
+								<FolderInput className="size-4 text-kumo-subtle" />
 								<span className="font-medium max-w-[50px] md:max-w-[150px] truncate">
 									{currentWorkspace?.name || "Select workspace"}
 								</span>
-								<ChevronDown className="size-4 text-muted-foreground" />
+								<ChevronDown className="size-4 text-kumo-subtle" />
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent
@@ -385,7 +385,7 @@ export const AdvanceBreadcrumb = () => {
 										onChange={(event) => setWorkspaceSearch(event.target.value)}
 										className="w-full focus-visible:ring-0"
 									/>
-									<kbd className="pointer-events-none h-5 absolute right-2 top-1/2 -translate-y-1/2 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
+									<kbd className="pointer-events-none h-5 absolute right-2 top-1/2 -translate-y-1/2 select-none items-center gap-1 rounded border bg-kumo-fill px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
 										Esc
 									</kbd>
 								</div>
@@ -419,14 +419,14 @@ export const AdvanceBreadcrumb = () => {
 															className="flex items-center justify-between py-3 px-2 cursor-pointer"
 														>
 															<div className="flex items-center gap-3">
-																<div className="flex items-center justify-center size-8 rounded-md bg-muted text-xs font-semibold uppercase">
+																<div className="flex items-center justify-center size-8 rounded-md bg-kumo-fill text-xs font-semibold uppercase">
 																	{workspace.name.slice(0, 2)}
 																</div>
 																<div className="flex flex-col">
 																	<span className="font-medium">
 																		{workspace.name}
 																	</span>
-																	<span className="text-muted-foreground">
+																	<span className="text-kumo-subtle">
 																		{workspace.environments.length} env
 																		{workspace.environments.length !== 1
 																			? "s"
@@ -438,11 +438,11 @@ export const AdvanceBreadcrumb = () => {
 															</div>
 															<div className="flex items-center gap-2">
 																{isSelected && (
-																	<Check className="size-4 text-primary" />
+																	<Check className="size-4 text-kumo-brand" />
 																)}
 																{workspace.environments.length > 1 && (
 																	<ChevronRight
-																		className={`size-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`}
+																		className={`size-4 text-kumo-subtle transition-transform ${isExpanded ? "rotate-90" : ""}`}
 																	/>
 																)}
 															</div>
@@ -471,13 +471,13 @@ export const AdvanceBreadcrumb = () => {
 																		>
 																			<div className="flex items-center gap-2">
 																				<p className="text-xs">{env.name}</p>
-																				<span className="text-xs text-muted-foreground">
+																				<span className="text-xs text-kumo-subtle">
 																					{envServices} service
 																					{envServices !== 1 ? "s" : ""}
 																				</span>
 																			</div>
 																			{isEnvSelected && (
-																				<Check className="size-3 text-primary" />
+																				<Check className="size-3 text-kumo-brand" />
 																			)}
 																		</CommandItem>
 																	);
@@ -501,12 +501,12 @@ export const AdvanceBreadcrumb = () => {
 								<Button
 									variant="ghost"
 									aria-expanded={environmentOpen}
-									className="h-auto px-2 py-1.5 hover:bg-accent gap-2"
+									className="h-auto px-2 py-1.5 hover:bg-kumo-fill-hover gap-2"
 								>
 									<span className="font-medium max-w-[50px] md:max-w-[150px] truncate">
 										{currentEnvironment?.name || "production"}
 									</span>
-									<ChevronDown className="size-4 text-muted-foreground" />
+									<ChevronDown className="size-4 text-kumo-subtle" />
 								</Button>
 							</PopoverTrigger>
 							<PopoverContent
@@ -524,7 +524,7 @@ export const AdvanceBreadcrumb = () => {
 											}
 											className="w-full focus-visible:ring-0"
 										/>
-										<kbd className="pointer-events-none h-5 absolute right-2 top-1/2 -translate-y-1/2 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
+										<kbd className="pointer-events-none h-5 absolute right-2 top-1/2 -translate-y-1/2 select-none items-center gap-1 rounded border bg-kumo-fill px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
 											Esc
 										</kbd>
 									</div>
@@ -546,7 +546,7 @@ export const AdvanceBreadcrumb = () => {
 														>
 															<span className="font-medium">{env.name}</span>
 															{isSelected && (
-																<Check className="size-4 text-primary" />
+																<Check className="size-4 text-kumo-brand" />
 															)}
 														</CommandItem>
 													);
@@ -575,13 +575,13 @@ export const AdvanceBreadcrumb = () => {
 									<Button
 										variant="ghost"
 										aria-expanded={serviceOpen}
-										className="h-auto px-2 py-1.5 hover:bg-accent gap-2"
+										className="h-auto px-2 py-1.5 hover:bg-kumo-fill-hover gap-2"
 									>
 										{getServiceIcon(currentService.type)}
 										<span className="font-medium max-w-[50px] md:max-w-[150px] truncate">
 											{currentService.name}
 										</span>
-										<ChevronDown className="size-4 text-muted-foreground" />
+										<ChevronDown className="size-4 text-kumo-subtle" />
 									</Button>
 								</PopoverTrigger>
 								<PopoverContent
@@ -599,7 +599,7 @@ export const AdvanceBreadcrumb = () => {
 												}
 												className="w-full focus-visible:ring-0"
 											/>
-											<kbd className="pointer-events-none h-5 select-none absolute right-2 top-1/2 -translate-y-1/2 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
+											<kbd className="pointer-events-none h-5 select-none absolute right-2 top-1/2 -translate-y-1/2 items-center gap-1 rounded border bg-kumo-fill px-1.5 font-mono text-[10px] font-medium opacity-100 flex">
 												Esc
 											</kbd>
 										</div>
@@ -617,20 +617,20 @@ export const AdvanceBreadcrumb = () => {
 																className="flex items-center justify-between py-2 cursor-pointer"
 															>
 																<div className="flex items-center gap-3">
-																	<div className="flex items-center justify-center size-8 rounded-md bg-muted">
+																	<div className="flex items-center justify-center size-8 rounded-md bg-kumo-fill">
 																		{getServiceIcon(service.type)}
 																	</div>
 																	<div className="flex flex-col">
 																		<span className="font-medium">
 																			{service.name}
 																		</span>
-																		<span className="text-xs text-muted-foreground capitalize">
+																		<span className="text-xs text-kumo-subtle capitalize">
 																			{service.type}
 																		</span>
 																	</div>
 																</div>
 																{isSelected && (
-																	<Check className="size-4 text-primary" />
+																	<Check className="size-4 text-kumo-brand" />
 																)}
 															</CommandItem>
 														);
@@ -659,7 +659,7 @@ export const AdvanceBreadcrumb = () => {
 									);
 								}}
 							>
-								<X className="size-4 text-muted-foreground" />
+								<X className="size-4 text-kumo-subtle" />
 							</Button>
 						</>
 					)}

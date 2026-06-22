@@ -26,10 +26,10 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 
 	const utils = api.useUtils();
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row justify-between flex-wrap gap-4">
 				<div>
-					<h3 className="text-xl">Security</h3>
+					<h3 className="text-xl font-semibold">Security</h3>
 					<p>Add basic auth to your application</p>
 				</div>
 
@@ -42,8 +42,8 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 			<div className="flex flex-col gap-4">
 				{data?.security.length === 0 ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
-						<LockKeyhole className="size-8 text-muted-foreground" />
-						<span className="text-base text-muted-foreground">
+						<LockKeyhole className="size-8 text-kumo-subtle" />
+						<span className="text-base text-kumo-subtle">
 							No security configured
 						</span>
 						<HandleSecurity applicationId={applicationId}>
@@ -102,10 +102,10 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 													aria-label="Delete security rule"
 													variant="ghost"
 													shape="square"
-													className="group hover:bg-red-500/10"
+													className="group hover:bg-kumo-danger/10"
 													loading={isRemoving}
 												>
-													<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+													<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 												</Button>
 											</DialogAction>
 										</div>

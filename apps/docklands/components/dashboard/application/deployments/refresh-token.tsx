@@ -16,7 +16,7 @@ export const RefreshToken = ({ id, type }: Props) => {
 	return (
 		<Dialog.Root role="alertdialog">
 			<Dialog.Trigger>
-				<RefreshCcw className="h-4 w-4 cursor-pointer text-muted-foreground" />
+				<RefreshCcw className="h-4 w-4 cursor-pointer text-kumo-subtle" />
 			</Dialog.Trigger>
 			<Dialog>
 				<div>

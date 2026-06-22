@@ -57,7 +57,7 @@ export function TagSelector({
 				<Combobox.Content align="start">
 					{tags.length === 0 && (
 						<div className="flex flex-col items-center gap-2 py-4">
-							<span className="text-sm text-muted-foreground">
+							<span className="text-sm text-kumo-subtle">
 								No tags created yet.
 							</span>
 							<HandleTag />
@@ -86,9 +86,7 @@ export function TagSelector({
 					</Combobox.List>
 					<Combobox.Empty>
 						<div className="flex flex-col items-center gap-2 py-1">
-							<span className="text-sm text-muted-foreground">
-								No tags found.
-							</span>
+							<span className="text-sm text-kumo-subtle">No tags found.</span>
 							<HandleTag />
 						</div>
 					</Combobox.Empty>

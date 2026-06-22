@@ -129,9 +129,9 @@ export const ShowImport = ({ composeId }: Props) => {
 
 	return (
 		<>
-			<LayerCard className="bg-background">
+			<LayerCard className="bg-kumo-canvas">
 				<div>
-					<h3 className="text-xl">Import Compose</h3>
+					<h3 className="text-xl font-semibold">Import Compose</h3>
 					<p>Import a base64-encoded Docker Compose file</p>
 				</div>
 				<div className="flex flex-col gap-4">
@@ -190,7 +190,7 @@ export const ShowImport = ({ composeId }: Props) => {
 									<div className="flex flex-col gap-6">
 										<div className="space-y-4">
 											<div className="flex items-center gap-2">
-												<Code2 className="h-5 w-5 text-primary" />
+												<Code2 className="h-5 w-5 text-kumo-brand" />
 												<h3 className="text-lg font-semibold">
 													Docker Compose
 												</h3>
@@ -209,7 +209,7 @@ export const ShowImport = ({ composeId }: Props) => {
 											templateInfo.template.domains.length > 0 && (
 												<div className="space-y-4">
 													<div className="flex items-center gap-2">
-														<Globe2 className="h-5 w-5 text-primary" />
+														<Globe2 className="h-5 w-5 text-kumo-brand" />
 														<h3 className="text-lg font-semibold">Domains</h3>
 													</div>
 													<div className="grid grid-cols-1 gap-3">
@@ -217,12 +217,12 @@ export const ShowImport = ({ composeId }: Props) => {
 															(domain, index) => (
 																<div
 																	key={index}
-																	className="rounded-lg border bg-card p-3 text-card-foreground shadow-sm"
+																	className="rounded-lg border bg-kumo-base p-3 text-kumo-default shadow-sm"
 																>
 																	<div className="font-medium">
 																		{domain.serviceName}
 																	</div>
-																	<div className="text-sm text-muted-foreground space-y-1">
+																	<div className="text-sm text-kumo-subtle space-y-1">
 																		<div>Port: {domain.port}</div>
 																		{domain.host && (
 																			<div>Host: {domain.host}</div>
@@ -242,7 +242,7 @@ export const ShowImport = ({ composeId }: Props) => {
 											templateInfo.template.envs.length > 0 && (
 												<div className="space-y-4">
 													<div className="flex items-center gap-2">
-														<Code2 className="h-5 w-5 text-primary" />
+														<Code2 className="h-5 w-5 text-kumo-brand" />
 														<h3 className="text-lg font-semibold">
 															Environment Variables
 														</h3>
@@ -251,7 +251,7 @@ export const ShowImport = ({ composeId }: Props) => {
 														{templateInfo.template.envs.map((env, index) => (
 															<div
 																key={index}
-																className="rounded-lg truncate border bg-card p-2 font-mono text-sm"
+																className="rounded-lg truncate border bg-kumo-base p-2 font-mono text-sm"
 															>
 																{env}
 															</div>
@@ -264,7 +264,7 @@ export const ShowImport = ({ composeId }: Props) => {
 											templateInfo.template.mounts.length > 0 && (
 												<div className="space-y-4">
 													<div className="flex items-center gap-2">
-														<HardDrive className="h-5 w-5 text-primary" />
+														<HardDrive className="h-5 w-5 text-kumo-brand" />
 														<h3 className="text-lg font-semibold">Mounts</h3>
 													</div>
 													<div className="grid grid-cols-1 gap-2">
@@ -272,7 +272,7 @@ export const ShowImport = ({ composeId }: Props) => {
 															(mount, index) => (
 																<div
 																	key={index}
-																	className="rounded-lg border bg-card p-2 font-mono text-sm hover:bg-accent cursor-pointer transition-colors"
+																	className="rounded-lg border bg-kumo-base p-2 font-mono text-sm hover:bg-kumo-fill-hover cursor-pointer transition-colors"
 																	onClick={() => handleShowMountContent(mount)}
 																>
 																	{mount.filePath}

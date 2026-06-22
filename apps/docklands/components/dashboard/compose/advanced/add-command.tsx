@@ -81,10 +81,10 @@ export const AddCommandCompose = ({ composeId }: Props) => {
 	};
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row justify-between">
 				<div>
-					<h3 className="text-xl">Run Command</h3>
+					<h3 className="text-xl font-semibold">Run Command</h3>
 					<p>Override a custom command to the compose file</p>
 				</div>
 			</div>

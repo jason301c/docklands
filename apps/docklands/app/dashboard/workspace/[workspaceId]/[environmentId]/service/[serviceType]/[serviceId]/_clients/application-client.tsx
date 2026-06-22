@@ -132,10 +132,10 @@ const Service = (props: {
 			<UseKeyboardNav forPage="application" />
 			<AdvanceBreadcrumb />
 			<div className="w-full">
-				<div className="rounded-lg border bg-background p-6">
+				<div className="rounded-lg border bg-kumo-canvas p-6">
 					<div className="flex flex-row justify-between items-center">
 						<div className="flex flex-col">
-							<h3 className="text-xl flex flex-row gap-2 items-center">
+							<h3 className="text-xl font-semibold flex items-center gap-2">
 								<div className="relative flex flex-row gap-4 items-center">
 									<ShowIconSettings
 										applicationId={applicationId}
@@ -149,9 +149,7 @@ const Service = (props: {
 							</h3>
 							{data?.description && <p>{data?.description}</p>}
 
-							<span className="text-sm text-muted-foreground">
-								{data?.appName}
-							</span>
+							<span className="text-sm text-kumo-subtle">{data?.appName}</span>
 						</div>
 						<div className="flex flex-col h-fit w-fit gap-2">
 							<RuntimePlacementStatus
@@ -227,7 +225,7 @@ const Service = (props: {
 															isCloud &&
 															data?.runtimeWorkerId && (
 																<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2">
-																	<Label className="text-muted-foreground">
+																	<Label className="text-kumo-subtle">
 																		Metrics source
 																	</Label>
 																	<Switch

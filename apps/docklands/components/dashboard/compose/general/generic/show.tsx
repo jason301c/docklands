@@ -66,18 +66,18 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 					<h3 className="flex items-start justify-between">
 						<div className="flex flex-col gap-2">
 							<span className="flex flex-col space-y-0.5">Provider</span>
-							<p className="flex items-center text-sm font-normal text-muted-foreground">
+							<p className="flex items-center text-sm font-normal text-kumo-subtle">
 								Select the source of your code
 							</p>
 						</div>
 						<div className="hidden space-y-1 text-sm font-normal md:block">
-							<GitBranch className="size-6 text-muted-foreground" />
+							<GitBranch className="size-6 text-kumo-subtle" />
 						</div>
 					</h3>
 				</div>
 				<div>
 					<div className="flex min-h-[25vh] items-center justify-center">
-						<div className="flex items-center gap-2 text-muted-foreground">
+						<div className="flex items-center gap-2 text-kumo-subtle">
 							<Loader2 className="size-4 animate-spin" />
 							<span>Loading providers...</span>
 						</div>
@@ -99,12 +99,12 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 					<h3 className="flex items-start justify-between">
 						<div className="flex flex-col gap-2">
 							<span className="flex flex-col space-y-0.5">Provider</span>
-							<p className="flex items-center text-sm font-normal text-muted-foreground">
+							<p className="flex items-center text-sm font-normal text-kumo-subtle">
 								Repository connection through unauthorized provider
 							</p>
 						</div>
 						<div className="hidden space-y-1 text-sm font-normal md:block">
-							<GitBranch className="size-6 text-muted-foreground" />
+							<GitBranch className="size-6 text-kumo-subtle" />
 						</div>
 					</h3>
 				</div>
@@ -124,13 +124,13 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 				<h3 className="flex items-start justify-between">
 					<div className="flex flex-col gap-2">
 						<span className="flex flex-col space-y-0.5">Provider</span>
-						<p className="flex items-center text-sm font-normal text-muted-foreground">
+						<p className="flex items-center text-sm font-normal text-kumo-subtle">
 							Select the source of your code
 						</p>
 					</div>
 					<div className="hidden space-y-1 text-sm font-normal md:flex flex-row items-center gap-2">
 						<ShowConvertedCompose composeId={composeId} />
-						<GitBranch className="size-6 text-muted-foreground" />
+						<GitBranch className="size-6 text-kumo-subtle" />
 					</div>
 				</h3>
 			</div>
@@ -207,13 +207,13 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 								<SaveGithubProviderCompose composeId={composeId} />
 							) : (
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-									<GithubIcon className="size-8 text-muted-foreground" />
-									<span className="text-base text-muted-foreground">
+									<GithubIcon className="size-8 text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle">
 										To build from GitHub, you need to configure your account
 										first. Please, go to{" "}
 										<Link
 											href="/dashboard/settings/git-providers"
-											className="text-foreground"
+											className="text-kumo-default"
 										>
 											Settings
 										</Link>{" "}
@@ -229,13 +229,13 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 								<SaveGitlabProviderCompose composeId={composeId} />
 							) : (
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-									<GitlabIcon className="size-8 text-muted-foreground" />
-									<span className="text-base text-muted-foreground">
+									<GitlabIcon className="size-8 text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle">
 										To build from GitLab, you need to configure your account
 										first. Please, go to{" "}
 										<Link
 											href="/dashboard/settings/git-providers"
-											className="text-foreground"
+											className="text-kumo-default"
 										>
 											Settings
 										</Link>{" "}
@@ -251,13 +251,13 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 								<SaveBitbucketProviderCompose composeId={composeId} />
 							) : (
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-									<BitbucketIcon className="size-8 text-muted-foreground" />
-									<span className="text-base text-muted-foreground">
+									<BitbucketIcon className="size-8 text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle">
 										To build from Bitbucket, you need to configure your account
 										first. Please, go to{" "}
 										<Link
 											href="/dashboard/settings/git-providers"
-											className="text-foreground"
+											className="text-kumo-default"
 										>
 											Settings
 										</Link>{" "}
@@ -273,13 +273,13 @@ export const ShowProviderFormCompose = ({ composeId }: Props) => {
 								<SaveGiteaProviderCompose composeId={composeId} />
 							) : (
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-									<GiteaIcon className="size-8 text-muted-foreground" />
-									<span className="text-base text-muted-foreground">
+									<GiteaIcon className="size-8 text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle">
 										To build from Gitea, you need to configure your account
 										first. Please, go to{" "}
 										<Link
 											href="/dashboard/settings/git-providers"
-											className="text-foreground"
+											className="text-kumo-default"
 										>
 											Settings
 										</Link>{" "}

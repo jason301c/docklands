@@ -260,7 +260,7 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 											>
 												{statsLogs?.data.length === 0 && (
 													<div className="w-full flex-col gap-2 flex items-center justify-center h-[55vh]">
-														<span className="text-muted-foreground text-lg font-medium">
+														<span className="text-kumo-subtle text-lg font-medium">
 															No results.
 														</span>
 													</div>
@@ -273,7 +273,7 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 						</div>
 						<div className="flex items-center justify-end space-x-2 py-4">
 							{statsLogs?.totalCount && (
-								<span className="text-muted-foreground text-sm">
+								<span className="text-kumo-subtle text-sm">
 									Showing{" "}
 									{Math.min(
 										pagination.pageIndex * pagination.pageSize + 1,
@@ -329,14 +329,14 @@ export const RequestsTable = ({ dateRange }: RequestsTableProps) => {
 											<Table.Cell className="font-medium">{key}</Table.Cell>
 											<Table.Cell className="truncate break-words break-before-all whitespace-pre-wrap">
 												{key === "RequestAddr" ? (
-													<div className="flex items-center gap-2 bg-muted p-1 rounded">
+													<div className="flex items-center gap-2 bg-kumo-fill p-1 rounded">
 														<span>{value}</span>
 														<Copy
 															onClick={() => {
 																copy(value);
 																toast.success("Copied to clipboard");
 															}}
-															className="h-4 w-4 text-muted-foreground cursor-pointer"
+															className="h-4 w-4 text-kumo-subtle cursor-pointer"
 														/>
 													</div>
 												) : (

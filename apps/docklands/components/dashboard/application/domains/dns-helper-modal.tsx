@@ -53,12 +53,12 @@ export const DnsHelperModal = ({ domain, ingressAddress }: Props) => {
 						<div className="rounded-lg border p-4">
 							<h3 className="font-medium mb-2">1. Add A Record</h3>
 							<div className="flex flex-col gap-3">
-								<p className="text-sm text-muted-foreground">
+								<p className="text-sm text-kumo-subtle">
 									Create an A record that points your domain to the Docklands
 									ingress address:
 								</p>
 								<div className="flex flex-col gap-2">
-									<div className="flex items-center justify-between gap-2 bg-muted p-3 rounded-md">
+									<div className="flex items-center justify-between gap-2 bg-kumo-fill p-3 rounded-md">
 										<div>
 											<p className="text-sm font-medium">Type: A</p>
 											<p className="text-sm">
@@ -85,7 +85,7 @@ export const DnsHelperModal = ({ domain, ingressAddress }: Props) => {
 						<div className="rounded-lg border p-4">
 							<h3 className="font-medium mb-2">2. Verify Configuration</h3>
 							<div className="flex flex-col gap-3">
-								<p className="text-sm text-muted-foreground">
+								<p className="text-sm text-kumo-subtle">
 									After configuring your DNS records:
 								</p>
 								<ul className="list-disc list-inside space-y-1 text-sm">

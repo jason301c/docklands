@@ -125,7 +125,7 @@ export const AddSwarmSettings = ({ id, type }: Props) => {
 			<Dialog.Trigger
 				render={
 					<Button variant="secondary" className="cursor-pointer w-fit">
-						<Settings className="size-4 text-muted-foreground" />
+						<Settings className="size-4 text-kumo-subtle" />
 						Advanced Orchestration
 					</Button>
 				}
@@ -162,8 +162,8 @@ export const AddSwarmSettings = ({ id, type }: Props) => {
 												className={cn(
 													"w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
 													activeMenu === item.id
-														? "bg-primary text-primary-foreground"
-														: "hover:bg-muted",
+														? "bg-kumo-brand text-kumo-inverse"
+														: "hover:bg-kumo-fill",
 												)}
 											>
 												<div className="font-medium">{item.label}</div>

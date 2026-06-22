@@ -5,6 +5,8 @@ import { Rocket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShowDeploymentsTable } from "@/components/dashboard/deployments/show-deployments-table";
 import { ShowDeploymentQueueTable } from "@/components/dashboard/deployments/show-queue-table";
+import { PageHeader } from "@/components/shared/page-header";
+import { PageSection } from "@/components/shared/page-section";
 
 const TAB_VALUES = ["history", "queue"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
@@ -31,38 +33,32 @@ function DeploymentsPage() {
 
 	return (
 		<div className="w-full">
-			<div className="min-h-[45vh] rounded-lg border bg-background p-6">
-				<div>
-					<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-						<div>
-							<h3 className="flex items-center gap-2 text-xl font-bold">
-								<Rocket className="size-5" />
-								Deployments
-							</h3>
-							<p>Deployment history and worker queue across every service.</p>
-						</div>
+			<PageSection className="min-h-[45vh] gap-0">
+				<PageHeader
+					icon={Rocket}
+					title="Deployments"
+					description="Deployment history and worker queue across every service."
+				/>
+				<Tabs
+					value={tab}
+					onValueChange={(value) => value !== null && setTab(value as never)}
+					className="mt-2 w-full"
+					tabs={[
+						{ value: "history", label: "History" },
+						{ value: "queue", label: "Worker queue" },
+					]}
+				/>
+				{tab === "history" && (
+					<div className="mt-0 pt-4">
+						<ShowDeploymentsTable />
 					</div>
-					<Tabs
-						value={tab}
-						onValueChange={(value) => value !== null && setTab(value as never)}
-						className="mt-2 w-full"
-						tabs={[
-							{ value: "history", label: "History" },
-							{ value: "queue", label: "Worker queue" },
-						]}
-					/>
-					{tab === "history" && (
-						<div className="mt-0 pt-4">
-							<ShowDeploymentsTable />
-						</div>
-					)}
-					{tab === "queue" && (
-						<div className="mt-0 pt-4">
-							<ShowDeploymentQueueTable />
-						</div>
-					)}
-				</div>
-			</div>
+				)}
+				{tab === "queue" && (
+					<div className="mt-0 pt-4">
+						<ShowDeploymentQueueTable />
+					</div>
+				)}
+			</PageSection>
 		</div>
 	);
 }

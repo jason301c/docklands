@@ -202,24 +202,24 @@ export const ContainerFreeMonitoring = ({
 	}, [appName]);
 
 	return (
-		<div className="rounded-xl bg-background flex flex-col gap-4">
+		<div className="rounded-xl bg-kumo-canvas flex flex-col gap-4">
 			<header className="flex items-center justify-between">
 				<div className="space-y-1">
 					<h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-sm text-kumo-subtle">
 						Watch runtime usage for this service
 					</p>
 				</div>
 			</header>
 
 			<div className="grid gap-6 lg:grid-cols-2">
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<h3 className="text-sm font-medium">CPU Usage</h3>
 					</div>
 					<div>
 						<div className="flex flex-col gap-2 w-full">
-							<span className="text-sm text-muted-foreground">
+							<span className="text-sm text-kumo-subtle">
 								Used: {String(currentData.cpu.value ?? "0%")}
 							</span>
 							<Meter
@@ -235,13 +235,13 @@ export const ContainerFreeMonitoring = ({
 						</div>
 					</div>
 				</LayerCard>
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<h3 className="text-sm font-medium">Memory Usage</h3>
 					</div>
 					<div>
 						<div className="flex flex-col gap-2 w-full">
-							<span className="text-sm text-muted-foreground">
+							<span className="text-sm text-kumo-subtle">
 								{`Used:  ${currentData.memory.value.used} / Limit: ${currentData.memory.value.total} `}
 							</span>
 							<Meter
@@ -268,13 +268,13 @@ export const ContainerFreeMonitoring = ({
 					</div>
 				</LayerCard>
 				{appName === "docklands" && (
-					<LayerCard className="bg-background">
+					<LayerCard className="bg-kumo-canvas">
 						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 							<h3 className="text-sm font-medium">Disk Space</h3>
 						</div>
 						<div>
 							<div className="flex flex-col gap-2 w-full">
-								<span className="text-sm text-muted-foreground">
+								<span className="text-sm text-kumo-subtle">
 									{`Used:  ${currentData.disk.value.diskUsage} GB / Limit: ${currentData.disk.value.diskTotal} GB`}
 								</span>
 								<Meter
@@ -292,7 +292,7 @@ export const ContainerFreeMonitoring = ({
 					</LayerCard>
 				)}
 				{appName === "docklands" && (
-					<LayerCard className="bg-background">
+					<LayerCard className="bg-kumo-canvas">
 						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 							<h3 className="text-sm font-medium">Container Disk Usage</h3>
 						</div>
@@ -302,26 +302,26 @@ export const ContainerFreeMonitoring = ({
 					</LayerCard>
 				)}
 
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<h3 className="text-sm font-medium">Block I/O</h3>
 					</div>
 					<div>
 						<div className="flex flex-col gap-2 w-full">
-							<span className="text-sm text-muted-foreground">
+							<span className="text-sm text-kumo-subtle">
 								{`Read:  ${currentData.block.value.readMb}  / Write: ${currentData.block.value.writeMb} `}
 							</span>
 							<DockerBlockChart accumulativeData={accumulativeData.block} />
 						</div>
 					</div>
 				</LayerCard>
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<h3 className="text-sm font-medium">Network I/O</h3>
 					</div>
 					<div>
 						<div className="flex flex-col gap-2 w-full">
-							<span className="text-sm text-muted-foreground">
+							<span className="text-sm text-kumo-subtle">
 								{`In MB: ${currentData.network.value.inputMb}  / Out MB: ${currentData.network.value.outputMb} `}
 							</span>
 							<DockerNetworkChart accumulativeData={accumulativeData.network} />

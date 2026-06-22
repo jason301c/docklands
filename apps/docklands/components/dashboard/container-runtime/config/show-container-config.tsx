@@ -40,7 +40,7 @@ export const ShowContainerConfig = ({
 						See in detail the config of this container
 					</Dialog.Description>
 				</div>
-				<div className="text-wrap rounded-lg border p-4 overflow-y-auto text-sm bg-card max-h-[80vh]">
+				<div className="text-wrap rounded-lg border p-4 overflow-y-auto text-sm bg-kumo-base max-h-[80vh]">
 					<code>
 						<pre className="whitespace-pre-wrap break-words">
 							<CodeEditor

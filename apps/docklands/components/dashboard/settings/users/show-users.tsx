@@ -22,17 +22,17 @@ export const ShowUsers = () => {
 
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="">
-					<h3 className="text-xl flex flex-row gap-2">
-						<Users className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<Users className="size-6 text-kumo-subtle self-center" />
 						Users
 					</h3>
 					<p>Add your users to your Docklands account.</p>
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 							<span>Loading...</span>
 							<Loader2 className="animate-spin size-4" />
 						</div>
@@ -40,8 +40,8 @@ export const ShowUsers = () => {
 						<>
 							{data?.length === 0 ? (
 								<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
-									<Users className="size-8 self-center text-muted-foreground" />
-									<span className="text-base text-muted-foreground">
+									<Users className="size-8 self-center text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle">
 										Invite users to your Docklands account
 									</span>
 								</div>
@@ -112,7 +112,7 @@ export const ShowUsers = () => {
 														<Table.Cell className="w-[100px]">
 															{member.user.email}
 															{member.user.id === session?.user?.id && (
-																<span className="text-muted-foreground ml-1">
+																<span className="text-kumo-subtle ml-1">
 																	(You)
 																</span>
 															)}
@@ -134,7 +134,7 @@ export const ShowUsers = () => {
 																: "Disabled"}
 														</Table.Cell>
 														<Table.Cell className="text-center">
-															<span className="text-sm text-muted-foreground">
+															<span className="text-sm text-kumo-subtle">
 																{format(new Date(member.createdAt), "PPpp")}
 															</span>
 														</Table.Cell>
@@ -199,7 +199,7 @@ export const ShowUsers = () => {
 																				}}
 																			>
 																				<DropdownMenu.Item
-																					className="w-full cursor-pointer text-red-500 hover:!text-red-600"
+																					className="w-full cursor-pointer text-kumo-danger hover:!text-kumo-danger"
 																					onSelect={(e) => e.preventDefault()}
 																				>
 																					Delete User
@@ -258,7 +258,7 @@ export const ShowUsers = () => {
 																				}}
 																			>
 																				<DropdownMenu.Item
-																					className="w-full cursor-pointer text-red-500 hover:!text-red-600"
+																					className="w-full cursor-pointer text-kumo-danger hover:!text-kumo-danger"
 																					onSelect={(e) => e.preventDefault()}
 																				>
 																					Unlink User
@@ -276,7 +276,7 @@ export const ShowUsers = () => {
 																	<span className="sr-only">
 																		No actions available
 																	</span>
-																	<MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+																	<MoreHorizontal className="h-4 w-4 text-kumo-subtle" />
 																</Button>
 															)}
 														</Table.Cell>

@@ -29,7 +29,7 @@ const Dashboard = () => {
 						</div>
 					)}
 					{activeTab === "containers" && (
-						<div className="rounded-lg border bg-background p-6">
+						<div className="rounded-lg border bg-kumo-canvas p-6">
 							<ShowClusterContainers runtimeWorkerId={runtimeWorkerId} />
 						</div>
 					)}

@@ -124,14 +124,14 @@ export const ShowEnvironment = ({ id, type }: Props) => {
 
 	return (
 		<div className="flex w-full flex-col gap-5 ">
-			<LayerCard className="bg-background">
+			<LayerCard className="bg-kumo-canvas">
 				<div className="flex flex-row w-full items-center justify-between">
 					<div>
-						<h3 className="text-xl">Environment Settings</h3>
+						<h3 className="text-xl font-semibold">Environment Settings</h3>
 						<p>
 							You can add environment variables to your resource.
 							{hasChanges && (
-								<span className="text-yellow-500 ml-2">
+								<span className="text-kumo-warning ml-2">
 									(You have unsaved changes)
 								</span>
 							)}
@@ -144,9 +144,9 @@ export const ShowEnvironment = ({ id, type }: Props) => {
 						onPressedChange={setIsEnvVisible}
 					>
 						{isEnvVisible ? (
-							<EyeOffIcon className="h-4 w-4 text-muted-foreground" />
+							<EyeOffIcon className="h-4 w-4 text-kumo-subtle" />
 						) : (
-							<EyeIcon className="h-4 w-4 text-muted-foreground" />
+							<EyeIcon className="h-4 w-4 text-kumo-subtle" />
 						)}
 					</Toggle>
 				</div>

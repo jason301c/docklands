@@ -24,10 +24,10 @@ export const ShowRedirects = ({ applicationId }: Props) => {
 	const utils = api.useUtils();
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row justify-between flex-wrap gap-4">
 				<div>
-					<h3 className="text-xl">Redirects</h3>
+					<h3 className="text-xl font-semibold">Redirects</h3>
 					<p>
 						If you want to redirect requests to this application use the
 						following config to setup the redirects
@@ -43,8 +43,8 @@ export const ShowRedirects = ({ applicationId }: Props) => {
 			<div className="flex flex-col gap-4">
 				{data?.redirects.length === 0 ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
-						<Split className="size-8 text-muted-foreground" />
-						<span className="text-base text-muted-foreground">
+						<Split className="size-8 text-kumo-subtle" />
+						<span className="text-base text-kumo-subtle">
 							No redirects configured
 						</span>
 						<HandleRedirect applicationId={applicationId}>
@@ -60,19 +60,19 @@ export const ShowRedirects = ({ applicationId }: Props) => {
 										<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 flex-col gap-4 sm:gap-8">
 											<div className="flex flex-col gap-1">
 												<span className="font-medium">Regex</span>
-												<span className="text-sm text-muted-foreground">
+												<span className="text-sm text-kumo-subtle">
 													{redirect.regex}
 												</span>
 											</div>
 											<div className="flex flex-col gap-1">
 												<span className="font-medium">Replacement</span>
-												<span className="text-sm text-muted-foreground">
+												<span className="text-sm text-kumo-subtle">
 													{redirect.replacement}
 												</span>
 											</div>
 											<div className="flex flex-col gap-1">
 												<span className="font-medium">Permanent</span>
-												<span className="text-sm text-muted-foreground">
+												<span className="text-sm text-kumo-subtle">
 													{redirect.permanent ? "Yes" : "No"}
 												</span>
 											</div>
@@ -107,10 +107,10 @@ export const ShowRedirects = ({ applicationId }: Props) => {
 													aria-label="Delete redirect"
 													variant="ghost"
 													shape="square"
-													className="group hover:bg-red-500/10"
+													className="group hover:bg-kumo-danger/10"
 													loading={isRemoving}
 												>
-													<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+													<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 												</Button>
 											</DialogAction>
 										</div>

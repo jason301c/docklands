@@ -101,7 +101,7 @@ export const RandomizeCompose = ({ composeId }: Props) => {
 					conflicts with some property like volumes, networks, etc.
 				</Dialog.Description>
 			</div>
-			<div className="text-sm text-muted-foreground flex flex-col gap-2">
+			<div className="text-sm text-kumo-subtle flex flex-col gap-2">
 				<span>
 					This will randomize the compose file and will add a suffix to the
 					property to avoid conflicts
@@ -126,11 +126,9 @@ export const RandomizeCompose = ({ composeId }: Props) => {
 					className="grid w-full gap-4"
 				>
 					{isError && (
-						<div className="flex flex-row gap-4 rounded-lg items-center bg-red-50 p-2 dark:bg-red-950">
-							<AlertTriangle className="text-red-600 dark:text-red-400" />
-							<span className="text-sm text-red-600 dark:text-red-400">
-								{error?.message}
-							</span>
+						<div className="flex flex-row gap-4 rounded-lg items-center bg-kumo-danger-tint p-2">
+							<AlertTriangle className="text-kumo-danger" />
+							<span className="text-sm text-kumo-danger">{error?.message}</span>
 						</div>
 					)}
 

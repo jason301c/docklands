@@ -188,19 +188,19 @@ export const notificationsMap = {
 		label: "Discord",
 	},
 	lark: {
-		icon: <LarkIcon className="text-muted-foreground" />,
+		icon: <LarkIcon className="text-kumo-subtle" />,
 		label: "Lark",
 	},
 	teams: {
-		icon: <TeamsIcon className="text-muted-foreground" />,
+		icon: <TeamsIcon className="text-kumo-subtle" />,
 		label: "Microsoft Teams",
 	},
 	email: {
-		icon: <Mail size={29} className="text-muted-foreground" />,
+		icon: <Mail size={29} className="text-kumo-subtle" />,
 		label: "Email",
 	},
 	resend: {
-		icon: <ResendIcon className="text-muted-foreground" />,
+		icon: <ResendIcon className="text-kumo-subtle" />,
 		label: "Resend",
 	},
 	gotify: {
@@ -220,7 +220,7 @@ export const notificationsMap = {
 		label: "Pushover",
 	},
 	custom: {
-		icon: <PenBoxIcon size={29} className="text-muted-foreground" />,
+		icon: <PenBoxIcon size={29} className="text-kumo-subtle" />,
 		label: "Custom",
 	},
 };
@@ -827,9 +827,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 							aria-label="Edit notification"
 							variant="ghost"
 							shape="square"
-							className="group hover:bg-blue-500/10 "
+							className="group hover:bg-kumo-brand/10 "
 						>
-							<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+							<PenBoxIcon className="size-3.5  text-kumo-brand group-hover:text-kumo-brand" />
 						</Button>
 					) : (
 						((
@@ -864,7 +864,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 							name="type"
 							render={({ field }) => (
 								<FormItem className="space-y-3">
-									<FormLabel className="text-muted-foreground">
+									<FormLabel className="text-kumo-subtle">
 										Select a provider
 									</FormLabel>
 									<FormControl>
@@ -895,9 +895,9 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 									</FormControl>
 									<FormMessage />
 									{activeMutation[field.value].isError && (
-										<div className="flex flex-row gap-4 rounded-lg bg-red-50 p-2 dark:bg-red-950">
-											<AlertTriangle className="text-red-600 dark:text-red-400" />
-											<span className="text-sm text-red-600 dark:text-red-400">
+										<div className="flex flex-row gap-4 rounded-lg bg-kumo-danger-tint p-2">
+											<AlertTriangle className="text-kumo-danger" />
+											<span className="text-sm text-kumo-danger">
 												{activeMutation[field.value].error?.message}
 											</span>
 										</div>
@@ -1198,7 +1198,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 											))}
 											{type === "email" &&
 												"toAddresses" in form.formState.errors && (
-													<div className="text-sm font-medium text-destructive">
+													<div className="text-sm font-medium text-kumo-danger">
 														{form.formState?.errors?.toAddresses?.root?.message}
 													</div>
 												)}
@@ -1288,7 +1288,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 											))}
 											{type === "resend" &&
 												"toAddresses" in form.formState.errors && (
-													<div className="text-sm font-medium text-destructive">
+													<div className="text-sm font-medium text-kumo-danger">
 														{form.formState?.errors?.toAddresses?.root?.message}
 													</div>
 												)}
@@ -1566,7 +1566,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 												{headerFields.map((field, index) => (
 													<div
 														key={field.id}
-														className="flex items-center gap-2 p-2 border rounded-md bg-muted/50"
+														className="flex items-center gap-2 p-2 border rounded-md bg-kumo-fill/50"
 													>
 														<FormField
 															control={form.control}
@@ -1595,7 +1595,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 															variant="ghost"
 															size="sm"
 															onClick={() => removeHeader(index)}
-															className="text-red-500 hover:text-red-700 hover:bg-red-50"
+															className="text-kumo-danger hover:text-kumo-danger hover:bg-kumo-danger-tint"
 														>
 															<Trash2 className="h-4 w-4" />
 														</Button>

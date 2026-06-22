@@ -89,7 +89,7 @@ export const EditScript = ({ runtimeWorkerId }: Props) => {
 				render={
 					<Button variant="outline">
 						Modify Script
-						<FileTerminal className="size-4 text-muted-foreground" />
+						<FileTerminal className="size-4 text-kumo-subtle" />
 					</Button>
 				}
 			/>

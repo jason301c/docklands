@@ -48,7 +48,7 @@ export function TagFilter({
 							<TagBadge name={tag.name} color={tag.color} />
 						</Combobox.Chip>
 					)}
-					className={cn(selectedTags.length > 0 && "border-primary")}
+					className={cn(selectedTags.length > 0 && "border-kumo-brand")}
 				/>
 				<Combobox.Content align="start" className="w-64">
 					{selectedTags.length > 0 && (
@@ -62,7 +62,7 @@ export function TagFilter({
 							<button
 								type="button"
 								onClick={() => onTagsChange([])}
-								className="text-xs text-muted-foreground hover:text-foreground"
+								className="text-xs text-kumo-subtle hover:text-kumo-default"
 							>
 								Clear
 							</button>
@@ -87,9 +87,7 @@ export function TagFilter({
 					</Combobox.List>
 					<Combobox.Empty>
 						<div className="flex flex-col items-center gap-2 py-1">
-							<span className="text-sm text-muted-foreground">
-								No tags found.
-							</span>
+							<span className="text-sm text-kumo-subtle">No tags found.</span>
 							<HandleTag />
 						</div>
 					</Combobox.Empty>

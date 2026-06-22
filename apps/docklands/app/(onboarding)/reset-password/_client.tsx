@@ -91,7 +91,7 @@ export default function Home({ tokenResetPassword }: Props) {
 		setIsLoading(false);
 	};
 	return (
-		<section className="w-full rounded-lg border bg-background p-8 shadow-sm">
+		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
 			<div className="mb-8 flex flex-col items-center gap-4 text-center">
 				<Link href="/" aria-label="Docklands home">
 					<Logo className="size-12" />
@@ -144,7 +144,7 @@ export default function Home({ tokenResetPassword }: Props) {
 					</Button>
 
 					<div className="text-center text-sm">
-						<Link className="hover:underline text-muted-foreground" href="/">
+						<Link className="hover:underline text-kumo-subtle" href="/">
 							Sign in
 						</Link>
 					</div>

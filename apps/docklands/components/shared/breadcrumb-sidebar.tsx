@@ -34,7 +34,7 @@ export const BreadcrumbSidebar = ({ list }: Props) => {
 							<Fragment key={`${item.name}-${index}`}>
 								{item.dropdownItems && item.dropdownItems.length > 0 ? (
 									<DropdownMenu>
-										<DropdownMenu.Trigger className="flex items-center gap-1 hover:text-foreground transition-colors outline-none">
+										<DropdownMenu.Trigger className="flex items-center gap-1 hover:text-kumo-default transition-colors outline-none">
 											{item.name}
 											<ChevronDown className="h-4 w-4 opacity-50" />
 										</DropdownMenu.Trigger>

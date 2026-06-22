@@ -334,7 +334,7 @@ export const DockerLogsId: React.FC<Props> = ({
 								placeholder="Search logs..."
 								value={search}
 								onChange={handleSearch}
-								className="inline-flex h-9 text-sm placeholder-gray-400 w-full sm:w-auto"
+								className="inline-flex h-9 text-sm placeholder:text-kumo-placeholder w-full sm:w-auto"
 							/>
 						</div>
 
@@ -403,7 +403,7 @@ export const DockerLogsId: React.FC<Props> = ({
 					<div
 						ref={scrollRef}
 						onScroll={handleScroll}
-						className="h-[720px] overflow-y-auto space-y-0 border p-4 bg-[#fafafa] dark:bg-[#050506] rounded custom-logs-scrollbar"
+						className="h-[720px] overflow-y-auto space-y-0 border p-4 bg-kumo-base rounded custom-logs-scrollbar"
 					>
 						{filteredLogs.length > 0 ? (
 							filteredLogs.map((filteredLog: LogLine, index: number) => (
@@ -415,11 +415,11 @@ export const DockerLogsId: React.FC<Props> = ({
 								/>
 							))
 						) : isLoading ? (
-							<div className="flex justify-center items-center h-full text-muted-foreground">
+							<div className="flex justify-center items-center h-full text-kumo-subtle">
 								<Loader2 className="h-6 w-6 animate-spin" />
 							</div>
 						) : (
-							<div className="flex justify-center items-center h-full text-muted-foreground">
+							<div className="flex justify-center items-center h-full text-kumo-subtle">
 								No logs found
 							</div>
 						)}

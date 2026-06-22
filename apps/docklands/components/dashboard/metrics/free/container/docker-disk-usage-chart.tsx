@@ -79,14 +79,14 @@ export const DockerDiskUsageChart = () => {
 	if (isLoading) {
 		return (
 			<div className="flex items-center justify-center h-[16rem]">
-				<Loader2 className="size-5 animate-spin text-muted-foreground" />
+				<Loader2 className="size-5 animate-spin text-kumo-subtle" />
 			</div>
 		);
 	}
 
 	if (chartData.length === 0) {
 		return (
-			<p className="text-xs text-muted-foreground mt-4">
+			<p className="text-xs text-kumo-subtle mt-4">
 				No container disk usage data available.
 			</p>
 		);
@@ -95,7 +95,7 @@ export const DockerDiskUsageChart = () => {
 	return (
 		<div className="flex flex-col gap-2 w-full">
 			<div className="flex items-center justify-between">
-				<span className="text-sm text-muted-foreground">
+				<span className="text-sm text-kumo-subtle">
 					Total: {formatSize(totalBytes)}
 				</span>
 				<Button
@@ -113,7 +113,7 @@ export const DockerDiskUsageChart = () => {
 			</div>
 			<ChartContainer
 				config={chartConfig}
-				className="mx-auto w-full max-h-[250px] [&_.recharts-pie-label-text]:fill-foreground"
+				className="mx-auto w-full max-h-[250px] [&_.recharts-pie-label-text]:fill-kumo-default"
 			>
 				<PieChart>
 					<ChartTooltip
@@ -158,14 +158,14 @@ export const DockerDiskUsageChart = () => {
 											<tspan
 												x={viewBox.cx}
 												y={(viewBox.cy || 0) - 8}
-												className="fill-foreground text-2xl font-bold"
+												className="fill-kumo-default text-2xl font-bold"
 											>
 												{formatSize(totalBytes)}
 											</tspan>
 											<tspan
 												x={viewBox.cx}
 												y={(viewBox.cy || 0) + 14}
-												className="fill-muted-foreground text-xs"
+												className="fill-kumo-subtle text-xs"
 											>
 												Container Usage
 											</tspan>

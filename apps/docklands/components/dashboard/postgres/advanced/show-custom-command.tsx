@@ -114,9 +114,9 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 	return (
 		<>
 			<div className="flex w-full flex-col gap-5 ">
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div>
-						<h3 className="text-xl">Advanced Settings</h3>
+						<h3 className="text-xl font-semibold">Advanced Settings</h3>
 					</div>
 					<div className="flex flex-col gap-4">
 						<Form {...form}>
@@ -177,7 +177,7 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 									</div>
 
 									{fields.length === 0 && (
-										<p className="text-sm text-muted-foreground">
+										<p className="text-sm text-kumo-subtle">
 											No arguments added yet. Click "Add Argument" to add one.
 										</p>
 									)}

@@ -199,7 +199,7 @@ export const ShowClusterContainers = ({ runtimeWorkerId }: Props) => {
 
 	if (isLoading) {
 		return (
-			<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[40vh]">
+			<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[40vh]">
 				<span>Loading containers...</span>
 				<Loader2 className="animate-spin size-4" />
 			</div>
@@ -258,11 +258,11 @@ export const ShowClusterContainers = ({ runtimeWorkerId }: Props) => {
 		<div className="flex flex-col gap-4">
 			<header className="flex items-center flex-wrap gap-4 justify-between">
 				<div className="space-y-1">
-					<h3 className="text-xl flex flex-row gap-2">
-						<Container className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<Container className="size-6 text-kumo-subtle self-center" />
 						Container Breakdown by Worker
 					</h3>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-sm text-kumo-subtle">
 						Showing containers across {nodes?.length ?? 0} worker(s)
 						{statsLoading ? "" : " (metrics refresh every 5s)"}
 					</p>
@@ -318,7 +318,7 @@ export const ShowClusterContainers = ({ runtimeWorkerId }: Props) => {
 					<AlertTitle>Multi-Worker Metrics Note</AlertTitle>
 					<AlertDescription>
 						CPU, memory, and I/O metrics are collected from the manager via{" "}
-						<code className="bg-muted px-1 py-0.5 rounded text-xs">
+						<code className="bg-kumo-fill px-1 py-0.5 rounded text-xs">
 							docker stats
 						</code>
 						. Containers running on remote workers will show &ldquo;--&rdquo;
@@ -355,7 +355,7 @@ export const ShowClusterContainers = ({ runtimeWorkerId }: Props) => {
 								<li key={svc.ID}>
 									<strong>{svc.Name}</strong>
 									{svc.Error && svc.Error.trim() !== "" && (
-										<span className="text-destructive ml-1">
+										<span className="text-kumo-danger ml-1">
 											&mdash; {svc.Error}
 										</span>
 									)}

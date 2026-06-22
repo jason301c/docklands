@@ -119,7 +119,7 @@ export const ShowEnvironment = ({ applicationId }: Props) => {
 	}, [form, onSubmit, isPending]);
 
 	return (
-		<LayerCard className="bg-background px-6 pb-6">
+		<LayerCard className="bg-kumo-canvas px-6 pb-6">
 			<Form {...form}>
 				<form
 					onSubmit={form.handleSubmit(onSubmit)}
@@ -132,7 +132,7 @@ export const ShowEnvironment = ({ applicationId }: Props) => {
 							<span>
 								You can add environment variables to your resource.
 								{hasChanges && (
-									<span className="text-yellow-500 ml-2">
+									<span className="text-kumo-warning ml-2">
 										(You have unsaved changes)
 									</span>
 								)}
@@ -149,7 +149,7 @@ export const ShowEnvironment = ({ applicationId }: Props) => {
 									Arguments are available only at build-time. See
 									documentation&nbsp;
 									<a
-										className="text-primary"
+										className="text-kumo-brand"
 										href="https://docs.docker.com/build/building/variables/"
 										target="_blank"
 										rel="noopener noreferrer"
@@ -171,7 +171,7 @@ export const ShowEnvironment = ({ applicationId }: Props) => {
 									Secrets are specially designed for sensitive information and
 									are only available at build-time. See documentation&nbsp;
 									<a
-										className="text-primary"
+										className="text-kumo-brand"
 										href="https://docs.docker.com/build/building/secrets/"
 										target="_blank"
 										rel="noopener noreferrer"

@@ -188,7 +188,7 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 										type="button"
 										onClick={() => toggleFolder(entry.path)}
 										className={
-											"flex-1 flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-muted/50 rounded-md transition-colors text-left min-w-0"
+											"flex-1 flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-kumo-fill/50 rounded-md transition-colors text-left min-w-0"
 										}
 										style={{ paddingLeft: `${depth * 12 + 8}px` }}
 									>
@@ -197,7 +197,7 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 												isExpanded ? "rotate-90" : ""
 											}`}
 										/>
-										<Folder className="h-4 w-4 shrink-0 text-blue-500" />
+										<Folder className="h-4 w-4 shrink-0 text-kumo-info" />
 										<span className="truncate">{entry.name}</span>
 									</button>
 									<CreateFileDialog
@@ -226,15 +226,15 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 							type="button"
 							key={entry.path}
 							onClick={() => handleFileSelect(entry.path)}
-							className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-muted/50 rounded-md transition-colors ${
-								isSelected ? "bg-muted" : ""
-							} ${isMarkedForDeletion ? "text-destructive" : ""}`}
+							className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-kumo-fill/50 rounded-md transition-colors ${
+								isSelected ? "bg-kumo-fill" : ""
+							} ${isMarkedForDeletion ? "text-kumo-danger" : ""}`}
 							style={{ paddingLeft: `${depth * 12 + 28}px` }}
 						>
-							<File className="h-4 w-4 shrink-0 text-muted-foreground" />
+							<File className="h-4 w-4 shrink-0 text-kumo-subtle" />
 							<span className="truncate">{entry.name}</span>
 							{isMarkedForDeletion && (
-								<Trash2 className="h-3 w-3 shrink-0 text-destructive ml-auto" />
+								<Trash2 className="h-3 w-3 shrink-0 text-kumo-danger ml-auto" />
 							)}
 						</button>
 					);
@@ -244,7 +244,7 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 	);
 
 	return (
-		<LayerCard className="bg-background overflow-hidden">
+		<LayerCard className="bg-kumo-canvas overflow-hidden">
 			<div className="flex flex-row items-center justify-between pb-4">
 				<div className="flex items-center gap-4">
 					<Button
@@ -323,7 +323,7 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 											setCreateFolderPath(open ? "" : null)
 										}
 									/>
-									<span className="text-xs text-muted-foreground">
+									<span className="text-xs text-kumo-subtle">
 										New file in root
 									</span>
 								</div>
@@ -334,7 +334,7 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 								) : directories ? (
 									renderTree(directories)
 								) : (
-									<div className="text-sm text-muted-foreground p-4">
+									<div className="text-sm text-kumo-subtle p-4">
 										No files found
 									</div>
 								)}
@@ -355,7 +355,7 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 								lineWrapping
 							/>
 						) : (
-							<div className="flex items-center justify-center h-full text-muted-foreground">
+							<div className="flex items-center justify-center h-full text-kumo-subtle">
 								Select a file to edit
 							</div>
 						)}

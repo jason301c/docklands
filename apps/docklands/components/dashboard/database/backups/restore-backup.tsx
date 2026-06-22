@@ -329,8 +329,8 @@ export const RestoreBackup = ({
 												<Button
 													variant="outline"
 													className={cn(
-														"w-full justify-between !bg-input",
-														!field.value && "text-muted-foreground",
+														"w-full justify-between !bg-kumo-line",
+														!field.value && "text-kumo-subtle",
 													)}
 												>
 													{field.value
@@ -411,8 +411,8 @@ export const RestoreBackup = ({
 												<Button
 													variant="outline"
 													className={cn(
-														"w-full justify-between !bg-input",
-														!field.value && "text-muted-foreground",
+														"w-full justify-between !bg-kumo-line",
+														!field.value && "text-kumo-subtle",
 													)}
 												>
 													<span className="truncate text-left flex-1 w-52">
@@ -437,11 +437,11 @@ export const RestoreBackup = ({
 														Loading backup files...
 													</div>
 												) : files.length === 0 && search ? (
-													<div className="py-6 text-center text-sm text-muted-foreground">
+													<div className="py-6 text-center text-sm text-kumo-subtle">
 														No backup files found for "{search}"
 													</div>
 												) : files.length === 0 ? (
-													<div className="py-6 text-center text-sm text-muted-foreground">
+													<div className="py-6 text-center text-sm text-kumo-subtle">
 														No backup files available
 													</div>
 												) : (
@@ -477,12 +477,12 @@ export const RestoreBackup = ({
 																				)}
 																			/>
 																		</div>
-																		<div className="flex items-center gap-4 text-xs text-muted-foreground">
+																		<div className="flex items-center gap-4 text-xs text-kumo-subtle">
 																			<span>
 																				Size: {formatBytes(file.Size)}
 																			</span>
 																			{file.IsDir && (
-																				<span className="text-blue-500">
+																				<span className="text-kumo-info">
 																					Directory
 																				</span>
 																			)}
@@ -614,7 +614,7 @@ export const RestoreBackup = ({
 																}
 															}}
 														>
-															<RefreshCw className="size-4 text-muted-foreground" />
+															<RefreshCw className="size-4 text-kumo-subtle" />
 														</Button>
 													</Tooltip>
 												</TooltipProvider>
@@ -645,7 +645,7 @@ export const RestoreBackup = ({
 																}
 															}}
 														>
-															<DatabaseZap className="size-4 text-muted-foreground" />
+															<DatabaseZap className="size-4 text-kumo-subtle" />
 														</Button>
 													</Tooltip>
 												</TooltipProvider>

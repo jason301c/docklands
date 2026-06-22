@@ -135,7 +135,7 @@ export const SearchCommand = () => {
 						id: `workspace-${workspace.workspaceId}`,
 						title,
 						searchText: title.toLowerCase(),
-						icon: <BookIcon className="size-4 text-muted-foreground mr-2" />,
+						icon: <BookIcon className="size-4 text-kumo-subtle mr-2" />,
 						onSelect: () =>
 							navigate(
 								workspaceEnvironmentPath({

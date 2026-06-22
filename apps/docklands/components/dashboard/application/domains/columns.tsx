@@ -133,7 +133,7 @@ export const createColumns = ({
 		header: "Entrypoint",
 		cell: ({ row }) => {
 			const entrypoint = row.getValue("customEntrypoint") as string | null;
-			if (!entrypoint) return <span className="text-muted-foreground">-</span>;
+			if (!entrypoint) return <span className="text-kumo-subtle">-</span>;
 			return <div className="font-mono text-sm">{entrypoint}</div>;
 		},
 	},
@@ -170,7 +170,7 @@ export const createColumns = ({
 									<>
 										{validationState?.error ? (
 											<div className="flex flex-col gap-1">
-												<p className="font-medium text-red-500">Error:</p>
+												<p className="font-medium text-kumo-danger">Error:</p>
 												<p>{validationState.error}</p>
 											</div>
 										) : (
@@ -187,10 +187,10 @@ export const createColumns = ({
 									size="xs"
 									className={
 										validationState?.isValid
-											? "bg-green-500/10 text-green-500 cursor-pointer"
+											? "bg-kumo-success/10 text-kumo-success cursor-pointer"
 											: validationState?.error
-												? "bg-red-500/10 text-red-500 cursor-pointer"
-												: "bg-yellow-500/10 text-yellow-500 cursor-pointer"
+												? "bg-kumo-danger/10 text-kumo-danger cursor-pointer"
+												: "bg-kumo-warning/10 text-kumo-warning cursor-pointer"
 									}
 									onClick={() => handleValidateDomain(domain.host)}
 								>
@@ -241,7 +241,7 @@ export const createColumns = ({
 		cell: ({ row }) => {
 			const createdAt = row.getValue("createdAt") as string;
 			return (
-				<div className="text-sm text-muted-foreground">
+				<div className="text-sm text-kumo-subtle">
 					{new Date(createdAt).toLocaleDateString()}
 				</div>
 			);
@@ -272,9 +272,9 @@ export const createColumns = ({
 								aria-label="Edit domain"
 								variant="ghost"
 								shape="square"
-								className="group hover:bg-blue-500/10 h-8 w-8"
+								className="group hover:bg-kumo-brand/10 h-8 w-8"
 							>
-								<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
+								<PenBoxIcon className="size-3.5 text-kumo-brand group-hover:text-kumo-brand" />
 							</Button>
 						</AddDomain>
 					)}
@@ -291,10 +291,10 @@ export const createColumns = ({
 								aria-label="Delete domain"
 								variant="ghost"
 								shape="square"
-								className="group hover:bg-red-500/10 h-8 w-8"
+								className="group hover:bg-kumo-danger/10 h-8 w-8"
 								loading={isDeleting}
 							>
-								<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+								<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 							</Button>
 						</DialogAction>
 					)}

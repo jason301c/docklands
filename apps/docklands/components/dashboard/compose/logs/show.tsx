@@ -48,9 +48,9 @@ export const ShowDockerLogsCompose = ({
 	}, [data]);
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div>
-				<h3 className="text-xl">Logs</h3>
+				<h3 className="text-xl font-semibold">Logs</h3>
 				<p>Watch the logs of the application in real time</p>
 			</div>
 
@@ -65,7 +65,7 @@ export const ShowDockerLogsCompose = ({
 				>
 					<>
 						{isPending ? (
-							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
+							<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle">
 								<span>Loading...</span>
 								<Loader2 className="animate-spin size-4" />
 							</div>

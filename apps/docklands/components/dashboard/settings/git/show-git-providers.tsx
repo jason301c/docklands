@@ -56,17 +56,17 @@ export const ShowGitProviders = () => {
 
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="">
-					<h3 className="text-xl flex flex-row gap-2">
-						<GitBranch className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<GitBranch className="size-6 text-kumo-subtle self-center" />
 						Git Providers
 					</h3>
 					<p>Connect your Git provider for authentication.</p>
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 							<span>Loading...</span>
 							<Loader2 className="animate-spin size-4" />
 						</div>
@@ -74,14 +74,14 @@ export const ShowGitProviders = () => {
 						<>
 							{data?.length === 0 ? (
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-									<GitBranch className="size-8 self-center text-muted-foreground" />
-									<span className="text-base text-muted-foreground text-center">
+									<GitBranch className="size-8 self-center text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle text-center">
 										No Git Providers configured
 									</span>
 									{permissions?.gitProviders.create && (
 										<div>
-											<div className="flex items-center bg-sidebar p-1 w-full rounded-lg">
-												<div className="flex flex-wrap items-center gap-4 p-3.5 rounded-lg bg-background border w-full [&>button]:grow">
+											<div className="flex items-center bg-kumo-elevated p-1 w-full rounded-lg">
+												<div className="flex flex-wrap items-center gap-4 p-3.5 rounded-lg bg-kumo-canvas border w-full [&>button]:grow">
 													<AddGithubProvider />
 													<AddGitlabProvider />
 													<AddBitbucketProvider />
@@ -98,8 +98,8 @@ export const ShowGitProviders = () => {
 											Available Providers
 										</span>
 										{permissions?.gitProviders.create && (
-											<div className="flex items-center bg-sidebar p-1 w-full rounded-lg">
-												<div className="flex flex-wrap items-center gap-4 p-3.5 rounded-lg bg-background border w-full [&>button]:grow">
+											<div className="flex items-center bg-kumo-elevated p-1 w-full rounded-lg">
+												<div className="flex flex-wrap items-center gap-4 p-3.5 rounded-lg bg-kumo-canvas border w-full [&>button]:grow">
 													<AddGithubProvider />
 													<AddGitlabProvider />
 													<AddBitbucketProvider />
@@ -127,9 +127,9 @@ export const ShowGitProviders = () => {
 											return (
 												<div
 													key={gitProvider.gitProviderId}
-													className="flex items-center justify-between bg-sidebar p-1 w-full rounded-lg"
+													className="flex items-center justify-between bg-kumo-elevated p-1 w-full rounded-lg"
 												>
-													<div className="flex items-center justify-between p-3.5 rounded-lg bg-background border w-full">
+													<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border w-full">
 														<div className="flex flex-col items-center justify-between">
 															<div className="flex gap-2 flex-row items-center">
 																{isGithub && <GithubIcon className="size-5" />}
@@ -142,7 +142,7 @@ export const ShowGitProviders = () => {
 																	<span className="text-sm font-medium">
 																		{gitProvider.name}
 																	</span>
-																	<span className="text-xs text-muted-foreground">
+																	<span className="text-xs text-kumo-subtle">
 																		{formatDate(
 																			gitProvider.createdAt,
 																			"yyyy-MM-dd hh:mm:ss a",
@@ -171,7 +171,7 @@ export const ShowGitProviders = () => {
 																		asChild
 																	>
 																		<div className="flex items-center gap-1.5 mr-2">
-																			<Users className="size-4 text-muted-foreground" />
+																			<Users className="size-4 text-kumo-subtle" />
 																			<Switch
 																				disabled={isToggling}
 																				checked={
@@ -215,7 +215,7 @@ export const ShowGitProviders = () => {
 																			variant: "ghost",
 																		})}
 																	>
-																		<ImportIcon className="size-4 text-primary" />
+																		<ImportIcon className="size-4 text-kumo-brand" />
 																	</Link>
 																</div>
 															)}
@@ -229,7 +229,7 @@ export const ShowGitProviders = () => {
 																			variant: "ghost",
 																		})}
 																	>
-																		<ExternalLinkIcon className="size-4 text-primary" />
+																		<ExternalLinkIcon className="size-4 text-kumo-brand" />
 																	</Link>
 																</div>
 															)}
@@ -250,7 +250,7 @@ export const ShowGitProviders = () => {
 																			variant: "ghost",
 																		})}
 																	>
-																		<ImportIcon className="size-4 text-primary" />
+																		<ImportIcon className="size-4 text-kumo-brand" />
 																	</Link>
 																</div>
 															)}
@@ -316,10 +316,10 @@ export const ShowGitProviders = () => {
 																			aria-label="Delete Git provider"
 																			variant="ghost"
 																			shape="square"
-																			className="group hover:bg-red-500/10"
+																			className="group hover:bg-kumo-danger/10"
 																			loading={isRemoving}
 																		>
-																			<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+																			<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 																		</Button>
 																	</DialogAction>
 																</>

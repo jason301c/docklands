@@ -71,7 +71,7 @@ export const ToggleDockerCleanup = ({ runtimeWorkerId }: Props) => {
 									href="https://github.com/jason301c/docklands"
 									target="_blank"
 									rel="noopener noreferrer"
-									className="underline text-primary"
+									className="underline text-kumo-brand"
 								>
 									Automations
 								</a>{" "}
@@ -83,9 +83,9 @@ export const ToggleDockerCleanup = ({ runtimeWorkerId }: Props) => {
 					className="max-w-sm"
 					asChild
 				>
-					<Label className="text-primary flex items-center gap-1.5 cursor-pointer">
+					<Label className="text-kumo-brand flex items-center gap-1.5 cursor-pointer">
 						Daily Runtime Cleanup
-						<HelpCircle className="size-4 text-muted-foreground" />
+						<HelpCircle className="size-4 text-kumo-subtle" />
 					</Label>
 				</Tooltip>
 			</TooltipProvider>

@@ -49,9 +49,9 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 
 	return (
 		<>
-			<LayerCard className="bg-background">
+			<LayerCard className="bg-kumo-canvas">
 				<div>
-					<h3 className="text-xl">Build Settings</h3>
+					<h3 className="text-xl font-semibold">Build Settings</h3>
 				</div>
 				<div className="grid grid-cols-2 lg:flex lg:flex-row lg:flex-wrap gap-4">
 					<TooltipProvider delay={0}>
@@ -307,7 +307,7 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 											toast.error("Error updating Auto Build");
 										});
 								}}
-								className="flex flex-row gap-2 items-center data-[state=checked]:bg-primary"
+								className="flex flex-row gap-2 items-center data-[state=checked]:bg-kumo-brand"
 							/>
 						</div>
 					)}
@@ -331,7 +331,7 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 											toast.error("Error updating Clean Cache");
 										});
 								}}
-								className="flex flex-row gap-2 items-center data-[state=checked]:bg-primary"
+								className="flex flex-row gap-2 items-center data-[state=checked]:bg-kumo-brand"
 							/>
 						</div>
 					)}

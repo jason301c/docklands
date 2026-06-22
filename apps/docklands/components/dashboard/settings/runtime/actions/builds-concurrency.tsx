@@ -90,7 +90,7 @@ export const BuildsConcurrency = ({ runtimeWorkerId, label }: Props) => {
 						<p className="text-sm font-medium">
 							{label ?? serverQuery.data?.name ?? "Local runtime worker"}
 						</p>
-						<span className="text-xs text-muted-foreground rounded border px-1.5 py-0.5">
+						<span className="text-xs text-kumo-subtle rounded border px-1.5 py-0.5">
 							{runtimeWorkerId
 								? (serverQuery.data?.ipAddress ?? "remote worker")
 								: "local worker"}

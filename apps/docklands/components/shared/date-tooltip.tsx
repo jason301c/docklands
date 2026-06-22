@@ -14,7 +14,7 @@ export const DateTooltip = ({ date, children, className }: Props) => {
 			<Tooltip content={<>{format(new Date(date), "PPpp")}</>}>
 				<span
 					className={cn(
-						"flex items-center text-muted-foreground text-left",
+						"flex items-center text-kumo-subtle text-left",
 						className,
 					)}
 				>

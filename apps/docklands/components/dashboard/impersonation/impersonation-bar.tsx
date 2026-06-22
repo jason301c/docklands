@@ -166,14 +166,14 @@ export const ImpersonationBar = () => {
 							"fixed bottom-4 right-4 z-50 rounded-full shadow-lg",
 							isImpersonating &&
 								!showBar &&
-								"bg-red-100 hover:bg-red-200 border-red-200",
+								"bg-kumo-danger-tint hover:bg-kumo-danger-tint border-kumo-danger",
 						)}
 						onClick={() => setShowBar(!showBar)}
 					>
 						<Settings2
 							className={cn(
 								"h-4 w-4",
-								isImpersonating && !showBar && "text-red-500",
+								isImpersonating && !showBar && "text-kumo-danger",
 							)}
 						/>
 					</Button>
@@ -181,7 +181,7 @@ export const ImpersonationBar = () => {
 
 				<div
 					className={cn(
-						"fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4 flex items-center justify-center gap-4 z-40 transition-all duration-200 ease-in-out",
+						"fixed bottom-0 left-0 right-0 bg-kumo-canvas border-t border-kumo-hairline p-4 flex items-center justify-center gap-4 z-40 transition-all duration-200 ease-in-out",
 						showBar ? "translate-y-0" : "translate-y-full",
 					)}
 				>
@@ -204,7 +204,7 @@ export const ImpersonationBar = () => {
 															{`${selectedUser.name} ${selectedUser.lastName}`.trim() ||
 																""}
 														</span>
-														<span className="text-xs text-muted-foreground">
+														<span className="text-xs text-kumo-subtle">
 															{selectedUser.email}
 														</span>
 													</span>
@@ -253,7 +253,7 @@ export const ImpersonationBar = () => {
 																				{`${user.name} ${user.lastName}`.trim() ||
 																					""}
 																			</span>
-																			<span className="text-xs text-muted-foreground">
+																			<span className="text-xs text-kumo-subtle">
 																				{user.email} • {user.role}
 																			</span>
 																		</span>
@@ -304,7 +304,7 @@ export const ImpersonationBar = () => {
 										<div className="flex items-center gap-2">
 											<Badge
 												variant="outline"
-												className="gap-1 py-1 text-yellow-500 bg-yellow-50/20"
+												className="gap-1 py-1 text-kumo-warning bg-kumo-warning-tint/20"
 											>
 												<Shield className="h-3 w-3" />
 												Impersonating
@@ -314,7 +314,7 @@ export const ImpersonationBar = () => {
 													""}
 											</span>
 										</div>
-										<div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
+										<div className="flex items-center gap-3 text-sm text-kumo-subtle flex-wrap">
 											<span className="flex items-center gap-1">
 												<UserIcon className="h-3 w-3" />
 												{data?.user?.email} • {data?.role}
@@ -327,7 +327,7 @@ export const ImpersonationBar = () => {
 														aria-label="Copy impersonated member ID"
 														variant="ghost"
 														shape="square"
-														className="h-4 w-4 hover:bg-muted/50"
+														className="h-4 w-4 hover:bg-kumo-fill/50"
 														onClick={() => {
 															if (data?.id) {
 																copy(data.id);
@@ -347,7 +347,7 @@ export const ImpersonationBar = () => {
 														aria-label="Copy impersonated organization ID"
 														variant="ghost"
 														shape="square"
-														className="h-4 w-4 hover:bg-muted/50"
+														className="h-4 w-4 hover:bg-kumo-fill/50"
 														onClick={() => {
 															if (data?.organizationId) {
 																copy(data.organizationId);
@@ -385,8 +385,8 @@ export const ImpersonationBar = () => {
 														className={cn(
 															"h-3 w-3",
 															data?.user?.twoFactorEnabled
-																? "text-green-500"
-																: "text-muted-foreground",
+																? "text-kumo-success"
+																: "text-kumo-subtle",
 														)}
 													/>
 													<Badge

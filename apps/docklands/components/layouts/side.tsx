@@ -94,7 +94,7 @@ function SidebarLogo() {
 	return (
 		<>
 			{isLoading ? (
-				<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[5vh] pt-4">
+				<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[5vh] pt-4">
 					<Loader2 className="animate-spin size-4" />
 				</div>
 			) : (
@@ -112,7 +112,7 @@ function SidebarLogo() {
 									<SidebarMenuButton
 										size={isCollapsed ? "sm" : "base"}
 										className={cn(
-											"data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground",
+											"data-[state=open]:bg-kumo-fill-hover data-[state=open]:text-kumo-default",
 											isCollapsed &&
 												"flex justify-center items-center p-2 h-10 w-10 mx-auto",
 										)}
@@ -160,7 +160,7 @@ function SidebarLogo() {
 								side={isMobile ? "bottom" : "right"}
 								sideOffset={4}
 							>
-								<DropdownMenu.Label className="text-xs text-muted-foreground shrink-0">
+								<DropdownMenu.Label className="text-xs text-kumo-subtle shrink-0">
 									Organizations
 								</DropdownMenu.Label>
 								<div className="overflow-y-auto overflow-x-hidden min-h-0 -mx-1 px-1">
@@ -208,8 +208,8 @@ function SidebarLogo() {
 														className={cn(
 															"group",
 															isDefault
-																? "hover:bg-yellow-500/10"
-																: "hover:bg-blue-500/10",
+																? "hover:bg-kumo-warning/10"
+																: "hover:bg-kumo-brand/10",
 														)}
 														loading={isSettingDefault && !isDefault}
 														disabled={isDefault}
@@ -240,13 +240,13 @@ function SidebarLogo() {
 															<Star
 																fill="#eab308"
 																stroke="#eab308"
-																className="size-4 text-yellow-500"
+																className="size-4 text-kumo-warning"
 															/>
 														) : (
 															<Star
 																fill="none"
 																stroke="currentColor"
-																className="size-4 text-gray-400 group-hover:text-blue-500 transition-colors"
+																className="size-4 text-kumo-subtle group-hover:text-kumo-brand transition-colors"
 															/>
 														)}
 													</Button>
@@ -279,10 +279,10 @@ function SidebarLogo() {
 																	variant="ghost"
 																	shape="square"
 																	aria-label="Delete organization"
-																	className="group hover:bg-red-500/10"
+																	className="group hover:bg-kumo-danger/10"
 																	loading={isRemoving}
 																>
-																	<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+																	<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 																</Button>
 															</DialogAction>
 														</>
@@ -320,7 +320,7 @@ function SidebarLogo() {
 									>
 										<Bell className="size-4" />
 										{invitations && invitations.length > 0 && (
-											<span className="absolute -top-0 -right-0 flex size-4 items-center justify-center rounded-full bg-blue-500 text-xs text-white">
+											<span className="absolute -top-0 -right-0 flex size-4 items-center justify-center rounded-full bg-kumo-info text-xs text-white">
 												{invitations.length}
 											</span>
 										)}
@@ -344,11 +344,11 @@ function SidebarLogo() {
 													<div className="font-medium">
 														{invitation?.organization?.name}
 													</div>
-													<div className="text-xs text-muted-foreground">
+													<div className="text-xs text-kumo-subtle">
 														Expires:{" "}
 														{new Date(invitation.expiresAt).toLocaleString()}
 													</div>
-													<div className="text-xs text-muted-foreground">
+													<div className="text-xs text-kumo-subtle">
 														Role: {invitation.role}
 													</div>
 												</DropdownMenu.Item>
@@ -449,7 +449,7 @@ export default function Page({ children }: Props) {
 	const isSettingsPath = pathname.startsWith("/dashboard/settings");
 
 	if (!isLoaded) {
-		return <div className="w-full h-screen bg-background" />; // Placeholder mientras se carga
+		return <div className="w-full h-screen bg-kumo-canvas" />; // Placeholder mientras se carga
 	}
 
 	return (
@@ -502,7 +502,7 @@ export default function Page({ children }: Props) {
 												tooltip={item.title}
 												active={isActive}
 												icon={item.icon}
-												className={cn(isActive && "bg-border")}
+												className={cn(isActive && "bg-kumo-fill")}
 											>
 												<span>{item.title}</span>
 											</SidebarMenuButton>
@@ -538,14 +538,14 @@ export default function Page({ children }: Props) {
 																	<SidebarMenuSubButton
 																		href={subItem.url}
 																		active={subActive}
-																		className={cn(subActive && "bg-border")}
+																		className={cn(subActive && "bg-kumo-fill")}
 																	>
 																		{subItem.icon && (
 																			<span className="mr-2">
 																				<subItem.icon
 																					className={cn(
-																						"h-4 w-4 text-muted-foreground",
-																						subActive && "text-primary",
+																						"h-4 w-4 text-kumo-subtle",
+																						subActive && "text-kumo-brand",
 																					)}
 																				/>
 																			</span>
@@ -583,7 +583,7 @@ export default function Page({ children }: Props) {
 												tooltip={item.title}
 												active={isActive}
 												icon={item.icon}
-												className={cn(isActive && "bg-border")}
+												className={cn(isActive && "bg-kumo-fill")}
 											>
 												<span>{item.title}</span>
 											</SidebarMenuButton>
@@ -619,14 +619,14 @@ export default function Page({ children }: Props) {
 																	<SidebarMenuSubButton
 																		href={subItem.url}
 																		active={subActive}
-																		className={cn(subActive && "bg-border")}
+																		className={cn(subActive && "bg-kumo-fill")}
 																	>
 																		{subItem.icon && (
 																			<span className="mr-2">
 																				<subItem.icon
 																					className={cn(
-																						"h-4 w-4 text-muted-foreground",
-																						subActive && "text-primary",
+																						"h-4 w-4 text-kumo-subtle",
+																						subActive && "text-kumo-brand",
 																					)}
 																				/>
 																			</span>
@@ -662,7 +662,7 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 				</SidebarContent>
-				<SidebarFooter className="border-t bg-background p-2 pb-3">
+				<SidebarFooter className="border-t bg-kumo-canvas p-2 pb-3">
 					<SidebarMenu className="flex flex-col gap-2">
 						{!isCloud && permissions?.organization.update && (
 							<SidebarMenuItem>
@@ -673,7 +673,7 @@ export default function Page({ children }: Props) {
 							<UserNav />
 						</SidebarMenuItem>
 						{docklandsVersion && (
-							<div className="px-3 text-xs text-muted-foreground text-center group-data-[collapsible=icon]:hidden">
+							<div className="px-3 text-xs text-kumo-subtle text-center group-data-[collapsible=icon]:hidden">
 								Version {docklandsVersion}
 							</div>
 						)}
@@ -681,7 +681,7 @@ export default function Page({ children }: Props) {
 				</SidebarFooter>
 				<SidebarRail />
 			</Sidebar>
-			<main className="flex min-h-svh min-w-0 flex-1 flex-col bg-background">
+			<main className="flex min-h-svh min-w-0 flex-1 flex-col bg-kumo-canvas">
 				{!includesProjects && (
 					<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
 						<div className="flex items-center justify-between w-full px-4">

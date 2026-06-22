@@ -217,7 +217,7 @@ export const HandleTag = ({ tagId }: HandleTagProps) => {
 
 						{colorValue && (
 							<div className="flex items-center gap-2">
-								<span className="text-sm text-muted-foreground">Preview:</span>
+								<span className="text-sm text-kumo-subtle">Preview:</span>
 								<TagBadge
 									name={form.watch("name") || "Tag Name"}
 									color={colorValue}

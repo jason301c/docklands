@@ -92,7 +92,7 @@ export const ServiceTerminalModal = ({
 				>
 					<>
 						{isPending ? (
-							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
+							<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle">
 								<span>Loading...</span>
 								<Loader2 className="animate-spin size-4" />
 							</div>

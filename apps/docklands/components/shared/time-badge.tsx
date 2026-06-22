@@ -57,7 +57,7 @@ export function TimeBadge() {
 				<span className="hidden sm:inline">Runtime Time:</span>
 				<span className="font-medium tabular-nums">{formattedTime}</span>
 			</div>
-			<span className="hidden sm:inline text-primary/70 border rounded-full bg-foreground/5 px-1.5 py-0.5">
+			<span className="hidden sm:inline text-kumo-brand/70 border rounded-full bg-kumo-default/5 px-1.5 py-0.5">
 				{serverTime.timezone} | {getUtcOffset(serverTime.timezone)}
 			</span>
 		</div>

@@ -43,7 +43,7 @@ export function SinceLogsFilter({
 					<Button
 						variant="outline"
 						size="sm"
-						className="h-9 bg-input text-sm placeholder-gray-400 w-full sm:w-auto"
+						className="h-9 bg-kumo-fill text-sm placeholder:text-kumo-placeholder w-full sm:w-auto"
 					>
 						{title}
 						<Separator orientation="vertical" className="mx-2 h-4" />
@@ -68,9 +68,9 @@ export function SinceLogsFilter({
 							>
 								<div
 									className={cn(
-										"mr-2 flex h-4 w-4 items-center rounded-sm border border-primary",
+										"mr-2 flex h-4 w-4 items-center rounded-sm border border-kumo-brand",
 										isSelected
-											? "bg-primary text-primary-foreground"
+											? "bg-kumo-brand text-kumo-inverse"
 											: "opacity-50 [&_svg]:invisible",
 									)}
 								>

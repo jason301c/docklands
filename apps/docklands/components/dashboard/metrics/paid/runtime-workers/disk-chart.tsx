@@ -56,7 +56,7 @@ export function DiskChart({ data }: RadialChartProps) {
 							gridType="circle"
 							radialLines={false}
 							stroke="none"
-							className="first:fill-muted last:fill-background"
+							className="first:fill-kumo-fill last:fill-kumo-canvas"
 							polarRadius={[86, 74]}
 						/>
 						<RadialBar
@@ -79,14 +79,14 @@ export function DiskChart({ data }: RadialChartProps) {
 												<tspan
 													x={viewBox.cx}
 													y={viewBox.cy}
-													className="fill-foreground text-4xl font-bold"
+													className="fill-kumo-default text-4xl font-bold"
 												>
 													{diskUsed.toFixed(1)}%
 												</tspan>
 												<tspan
 													x={viewBox.cx}
 													y={(viewBox.cy || 0) + 24}
-													className="fill-muted-foreground text-sm"
+													className="fill-kumo-subtle text-sm"
 												>
 													Used
 												</tspan>
@@ -103,7 +103,7 @@ export function DiskChart({ data }: RadialChartProps) {
 				<div className="flex items-center gap-2 font-medium leading-none">
 					<HardDrive className="h-4 w-4" /> {usedDiskGB.toFixed(1)} GB used
 				</div>
-				<div className="leading-none text-muted-foreground">
+				<div className="leading-none text-kumo-subtle">
 					Of {totalDiskGB.toFixed(1)} GB total
 				</div>
 			</div>

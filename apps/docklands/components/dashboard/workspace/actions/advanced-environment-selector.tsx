@@ -194,9 +194,9 @@ export const AdvancedEnvironmentSelector = ({
 					render={
 						<Button variant="ghost" className="h-auto p-2 font-normal">
 							<div className="flex items-center gap-1">
-								<span className="text-muted-foreground">/</span>
+								<span className="text-kumo-subtle">/</span>
 								<span>{currentEnv?.name || "Select Environment"}</span>
-								<ChevronDownIcon className="h-4 w-4 text-muted-foreground" />
+								<ChevronDownIcon className="h-4 w-4 text-kumo-subtle" />
 							</div>
 						</Button>
 					}
@@ -235,7 +235,7 @@ export const AdvancedEnvironmentSelector = ({
 											{environment.name} ({servicesCount})
 										</span>
 										{environment.environmentId === currentEnvironmentId && (
-											<div className="w-2 h-2 bg-blue-500 rounded-full" />
+											<div className="w-2 h-2 bg-kumo-info rounded-full" />
 										)}
 									</div>
 								</DropdownMenu.Item>
@@ -257,7 +257,7 @@ export const AdvancedEnvironmentSelector = ({
 										<Button
 											variant="ghost"
 											size="sm"
-											className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+											className="h-6 w-6 p-0 text-kumo-danger hover:text-kumo-danger"
 											onClick={(e) => {
 												e.stopPropagation();
 												openDeleteDialog(environment);

@@ -133,18 +133,18 @@ export const AddGitlabProvider = () => {
 					>
 						<div className="p-0">
 							<div className="flex flex-col gap-4">
-								<p className="text-muted-foreground text-sm">
+								<p className="text-kumo-subtle text-sm">
 									To integrate your GitLab account, you need to create a new
 									application in your GitLab settings. Follow these steps:
 								</p>
-								<ol className="list-decimal list-inside text-sm text-muted-foreground">
+								<ol className="list-decimal list-inside text-sm text-kumo-subtle">
 									<li className="flex flex-row gap-2 items-center">
 										Go to your GitLab profile settings{" "}
 										<Link
 											href={`${gitlabUrl}/-/profile/applications`}
 											target="_blank"
 										>
-											<ExternalLink className="w-fit text-primary size-4" />
+											<ExternalLink className="w-fit text-kumo-brand size-4" />
 										</Link>
 									</li>
 									<li>Navigate to Applications</li>
@@ -154,7 +154,9 @@ export const AddGitlabProvider = () => {
 											<li>Name: Docklands</li>
 											<li>
 												Redirect URI:{" "}
-												<span className="text-primary">{webhookUrl}</span>{" "}
+												<span className="text-kumo-brand">
+													{webhookUrl}
+												</span>{" "}
 											</li>
 											<li>Scopes: api, read_user, read_repository</li>
 										</ul>

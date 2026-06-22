@@ -67,7 +67,7 @@ export const AddGithubProvider = () => {
 				<div id="hook-form-add-workspace" className="grid w-full gap-1">
 					<div className="p-0">
 						<div className="flex flex-col ">
-							<p className="text-muted-foreground text-sm">
+							<p className="text-kumo-subtle text-sm">
 								To integrate your GitHub account with our services, you'll need
 								to create and install a GitHub app. This process is
 								straightforward and only takes a few minutes. Click the button
@@ -115,7 +115,7 @@ export const AddGithubProvider = () => {
 												? `https://github.com/organizations/${organizationName}/settings/installations`
 												: "https://github.com/settings/installations"
 										}
-										className={`text-muted-foreground text-sm hover:underline duration-300
+										className={`text-kumo-subtle text-sm hover:underline duration-300
 											 ${
 													isOrganization && !organizationName
 														? "pointer-events-none opacity-50"

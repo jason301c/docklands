@@ -7,7 +7,6 @@
 	:root {
 		--font-inter: Inter, ui-sans-serif, system-ui, sans-serif;
 		--terminal-paste: rgba(0, 0, 0, 0.2);
-		--radius: 0.5rem;
 		--overlay: rgba(0, 0, 0, 0.2);
 
 		--chart-1: var(--color-kumo-brand);
@@ -25,12 +24,14 @@
 }
 
 @layer base {
-	* {
-		@apply border-border;
+	*,
+	::before,
+	::after {
+		border-color: var(--color-kumo-hairline);
 	}
 
 	body {
-		@apply bg-background text-foreground;
+		@apply bg-kumo-canvas text-kumo-default;
 	}
 
 	/* Custom scrollbar styling */
@@ -79,7 +80,7 @@
 
 /* Codemirror */
 .cm-editor {
-	@apply w-full h-full rounded-md overflow-hidden border border-solid border-border outline-none;
+	@apply w-full h-full rounded-md overflow-hidden border border-solid border-kumo-hairline outline-none;
 }
 
 .cm-editor .cm-scroller {

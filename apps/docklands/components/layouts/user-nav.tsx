@@ -32,7 +32,7 @@ export const UserNav = () => {
 				render={
 					<SidebarMenuButton
 						size="base"
-						className="h-auto min-h-14 w-full gap-3 px-2 py-2 data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:min-h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-1"
+						className="h-auto min-h-14 w-full gap-3 px-2 py-2 data-[state=open]:bg-kumo-fill-hover data-[state=open]:text-kumo-default group-data-[collapsible=icon]:min-h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-1"
 					>
 						<Avatar className="h-8 w-8 shrink-0 rounded-lg">
 							<AvatarImage
@@ -46,7 +46,7 @@ export const UserNav = () => {
 						</Avatar>
 						<div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
 							<span className="truncate font-semibold">Account</span>
-							<span className="truncate text-xs text-muted-foreground">
+							<span className="truncate text-xs text-kumo-subtle">
 								{data?.user?.email}
 							</span>
 						</div>
@@ -63,7 +63,7 @@ export const UserNav = () => {
 				<div className="flex items-center justify-between px-2 py-1.5">
 					<div className="min-w-0">
 						<DropdownMenu.Label>My Account</DropdownMenu.Label>
-						<span className="text-xs font-normal text-muted-foreground">
+						<span className="text-xs font-normal text-kumo-subtle">
 							{data?.user?.email}
 						</span>
 					</div>

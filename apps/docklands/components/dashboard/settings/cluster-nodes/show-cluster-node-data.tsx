@@ -26,7 +26,7 @@ export const ShowClusterNodeData = ({ data }: Props) => {
 						See in detail the metadata of this node
 					</Dialog.Description>
 				</div>
-				<div className="text-wrap rounded-lg border p-4 text-sm sm:max-w-[59rem] bg-card">
+				<div className="text-wrap rounded-lg border p-4 text-sm sm:max-w-[59rem] bg-kumo-base">
 					<code>
 						<pre className="whitespace-pre-wrap break-words">
 							<CodeEditor

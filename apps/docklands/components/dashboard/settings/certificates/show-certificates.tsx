@@ -31,10 +31,10 @@ export const ShowCertificates = () => {
 
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="">
-					<h3 className="text-xl flex flex-row gap-2">
-						<ShieldCheck className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<ShieldCheck className="size-6 text-kumo-subtle self-center" />
 						Certificates
 					</h3>
 					<p>Create certificates in the ingress runtime directory</p>
@@ -48,7 +48,7 @@ export const ShowCertificates = () => {
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 							<span>Loading...</span>
 							<Loader2 className="animate-spin size-4" />
 						</div>
@@ -56,8 +56,8 @@ export const ShowCertificates = () => {
 						<>
 							{data?.length === 0 ? (
 								<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
-									<ShieldCheck className="size-8 self-center text-muted-foreground" />
-									<span className="text-base text-muted-foreground text-center">
+									<ShieldCheck className="size-8 self-center text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle text-center">
 										You don't have any certificates created
 									</span>
 									{permissions?.certificate.create && <HandleCertificate />}
@@ -99,20 +99,20 @@ export const ShowCertificates = () => {
 											return (
 												<div
 													key={certificate.certificateId}
-													className="flex items-center justify-between bg-sidebar p-1 w-full rounded-lg"
+													className="flex items-center justify-between bg-kumo-elevated p-1 w-full rounded-lg"
 												>
-													<div className="flex items-center justify-between p-3.5 rounded-lg bg-background border  w-full">
+													<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border  w-full">
 														<div className="flex items-center justify-between">
 															<div className="flex gap-2 flex-col">
 																<span className="text-sm font-medium">
 																	{index + 1}. {certificate.name}
 																</span>
 																{commonName && (
-																	<span className="text-xs text-muted-foreground">
+																	<span className="text-xs text-kumo-subtle">
 																		CN: {commonName}
 																	</span>
 																)}
-																<span className="text-xs text-muted-foreground flex items-center gap-1">
+																<span className="text-xs text-kumo-subtle flex items-center gap-1">
 																	<Server className="size-3" />
 																	{certificate.runtimeWorker
 																		? `${certificate.runtimeWorker.name} (${certificate.runtimeWorker.ipAddress})`
@@ -123,30 +123,30 @@ export const ShowCertificates = () => {
 																		<button
 																			type="button"
 																			onClick={toggleChain}
-																			className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted/50 w-fit hover:bg-muted transition-colors"
+																			className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-kumo-fill/50 w-fit hover:bg-kumo-fill transition-colors"
 																		>
 																			{isExpanded ? (
-																				<ChevronDown className="size-3 text-muted-foreground" />
+																				<ChevronDown className="size-3 text-kumo-subtle" />
 																			) : (
-																				<ChevronRight className="size-3 text-muted-foreground" />
+																				<ChevronRight className="size-3 text-kumo-subtle" />
 																			)}
-																			<Link className="size-3 text-muted-foreground" />
-																			<span className="text-xs text-muted-foreground">
+																			<Link className="size-3 text-kumo-subtle" />
+																			<span className="text-xs text-kumo-subtle">
 																				Chain ({chainInfo.count} certificates)
 																			</span>
 																		</button>
 																		{isExpanded && (
-																			<div className="flex flex-col gap-3 pl-2 border-l-2 border-muted">
+																			<div className="flex flex-col gap-3 pl-2 border-l-2 border-kumo-hairline">
 																				{chainDetails?.map((cert) => (
 																					<div
 																						key={cert.index}
-																						className="flex flex-col gap-1 p-2 rounded-md bg-muted/30"
+																						className="flex flex-col gap-1 p-2 rounded-md bg-kumo-fill/30"
 																					>
-																						<span className="text-xs font-medium text-muted-foreground">
+																						<span className="text-xs font-medium text-kumo-subtle">
 																							{cert.label}
 																						</span>
 																						{cert.commonName && (
-																							<span className="text-xs text-muted-foreground/80">
+																							<span className="text-xs text-kumo-subtle/80">
 																								CN: {cert.commonName}
 																							</span>
 																						)}
@@ -170,7 +170,7 @@ export const ShowCertificates = () => {
 																	{expiration.message}
 																	{certificate.autoRenew &&
 																		expiration.status !== "valid" && (
-																			<span className="text-xs text-emerald-500 ml-1">
+																			<span className="text-xs text-kumo-success ml-1">
 																				(Auto-renewal enabled)
 																			</span>
 																		)}
@@ -211,10 +211,10 @@ export const ShowCertificates = () => {
 																		aria-label="Delete certificate"
 																		variant="ghost"
 																		shape="square"
-																		className="group hover:bg-red-500/10"
+																		className="group hover:bg-kumo-danger/10"
 																		loading={isRemoving}
 																	>
-																		<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+																		<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 																	</Button>
 																</DialogAction>
 															)}

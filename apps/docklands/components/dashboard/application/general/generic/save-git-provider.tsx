@@ -112,7 +112,7 @@ export const SaveGitProvider = ({ applicationId }: Props) => {
 											href={field.value}
 											target="_blank"
 											rel="noopener noreferrer"
-											className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+											className="flex items-center gap-1 text-sm text-kumo-subtle hover:text-kumo-brand"
 										>
 											<GitIcon className="h-4 w-4" />
 											<span>View Repository</span>
@@ -134,7 +134,7 @@ export const SaveGitProvider = ({ applicationId }: Props) => {
 								<FormItem className="col-span-2 lg:col-span-1">
 									<FormLabel className="w-full inline-flex justify-between">
 										SSH Key
-										<LockIcon className="size-4 text-muted-foreground" />
+										<LockIcon className="size-4 text-kumo-subtle" />
 									</FormLabel>
 									<FormControl>
 										<Select
@@ -225,7 +225,7 @@ export const SaveGitProvider = ({ applicationId }: Props) => {
 											className="max-w-[300px]"
 											asChild
 										>
-											<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+											<HelpCircle className="size-4 text-kumo-subtle hover:text-kumo-default transition-colors cursor-pointer" />
 										</Tooltip>
 									</TooltipProvider>
 								</div>

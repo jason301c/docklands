@@ -44,16 +44,17 @@ const InputOTP = React.forwardRef<
 				key={i}
 				onClick={() => handleBoxClick(i)}
 				className={cn(
-					"relative flex h-11 w-11 items-center justify-center rounded-lg border-2 border-input bg-background text-base font-semibold transition-all cursor-text hover:border-ring/50",
-					isActive && "border-ring ring-2 ring-ring/20 ring-offset-1",
-					isFilled && "border-primary/50 bg-primary/5",
+					"relative flex h-11 w-11 items-center justify-center rounded-lg border-2 border-kumo-line bg-kumo-canvas text-base font-semibold transition-all cursor-text hover:border-kumo-focus/50",
+					isActive &&
+						"border-kumo-focus ring-2 ring-kumo-focus/20 ring-offset-1",
+					isFilled && "border-kumo-brand/50 bg-kumo-brand/5",
 					className,
 				)}
 			>
-				<span className="text-foreground">{char}</span>
+				<span className="text-kumo-default">{char}</span>
 				{isActive && !char && (
 					<div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-						<div className="h-5 w-0.5 animate-caret-blink bg-primary duration-1000" />
+						<div className="h-5 w-0.5 animate-caret-blink bg-kumo-brand duration-1000" />
 					</div>
 				)}
 			</div>

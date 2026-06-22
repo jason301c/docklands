@@ -87,9 +87,9 @@ export const UpdatePostgres = ({ postgresId }: Props) => {
 						aria-label="Edit PostgreSQL"
 						variant="ghost"
 						shape="square"
-						className="group hover:bg-blue-500/10 focus-visible:ring-2 focus-visible:ring-offset-2"
+						className="group hover:bg-kumo-brand/10 focus-visible:ring-2 focus-visible:ring-offset-2"
 					>
-						<PenBox className="size-3.5 text-primary group-hover:text-blue-500" />
+						<PenBox className="size-3.5 text-kumo-brand group-hover:text-kumo-brand" />
 					</Button>
 				}
 			/>

@@ -239,12 +239,12 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 				<h3 className="flex items-start justify-between">
 					<div className="flex flex-col gap-2">
 						<span className="flex flex-col space-y-0.5">Build Type</span>
-						<p className="flex items-center text-sm font-normal text-muted-foreground">
+						<p className="flex items-center text-sm font-normal text-kumo-subtle">
 							Select the way of building your code
 						</p>
 					</div>
 					<div className="hidden space-y-1 text-sm font-normal md:block">
-						<Cog className="size-6 text-muted-foreground" />
+						<Cog className="size-6 text-kumo-subtle" />
 					</div>
 				</h3>
 			</div>
@@ -509,7 +509,7 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 													href="https://github.com/railwayapp/railpack/releases"
 													target="_blank"
 													rel="noreferrer"
-													className="text-primary underline underline-offset-4"
+													className="text-kumo-brand underline underline-offset-4"
 												>
 													View releases
 												</a>

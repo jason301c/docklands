@@ -174,7 +174,7 @@ export const AddVolumes = ({
 										Make sure the host path is a valid path and exists in the
 										host machine.
 									</p>
-									<p className="text-sm text-muted-foreground">
+									<p className="text-sm text-kumo-subtle">
 										<strong>Cluster Warning:</strong> If you're using cluster
 										features, bind mounts may cause build failures since the
 										path must exist on all worker/manager nodes. Consider using
@@ -190,7 +190,7 @@ export const AddVolumes = ({
 							name="type"
 							render={({ field }) => (
 								<FormItem className="space-y-3">
-									<FormLabel className="text-muted-foreground">
+									<FormLabel className="text-kumo-subtle">
 										Select the Mount Type
 									</FormLabel>
 									<FormControl>

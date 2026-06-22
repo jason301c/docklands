@@ -32,11 +32,11 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 	const haveAtLeastOneRegistry = !!(registry && registry?.length > 0);
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="flex flex-row gap-2 justify-between w-full items-center flex-wrap">
 					<div className="flex flex-col gap-2">
-						<h3 className="text-xl flex flex-row gap-2">
-							<Boxes className="size-6 text-muted-foreground self-center" />
+						<h3 className="text-xl font-semibold flex items-center gap-2">
+							<Boxes className="size-6 text-kumo-subtle self-center" />
 							Cluster
 						</h3>
 						<p>Add nodes to your cluster runtime.</p>
@@ -50,7 +50,7 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 				<div className="space-y-2 py-8 border-t min-h-[35vh]">
 					{isPending ? (
 						<div className="flex items-center justify-center w-full h-[40vh]">
-							<Loader2 className="size-8 animate-spin text-muted-foreground" />
+							<Loader2 className="size-8 animate-spin text-kumo-subtle" />
 						</div>
 					) : haveAtLeastOneRegistry ? (
 						<div className="grid md:grid-cols-1 gap-4">
@@ -162,9 +162,9 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 						</div>
 					) : (
 						<div className="flex flex-col items-center gap-3">
-							<LockIcon className="size-8 text-muted-foreground" />
+							<LockIcon className="size-8 text-kumo-subtle" />
 							<div className="flex flex-row gap-2">
-								<span className="text-base text-muted-foreground ">
+								<span className="text-base text-kumo-subtle ">
 									To add nodes to your cluster, you need to configure at least
 									one registry.
 								</span>
@@ -172,12 +172,12 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 									<Tooltip
 										content={<>Nodes need a registry to pull images from.</>}
 									>
-										<HelpCircle className="size-5 text-muted-foreground " />
+										<HelpCircle className="size-5 text-kumo-subtle " />
 									</Tooltip>
 								</TooltipProvider>
 							</div>
 
-							<ul className="list-disc list-inside text-sm text-muted-foreground border p-4 rounded-lg flex flex-col gap-1.5 mt-2.5">
+							<ul className="list-disc list-inside text-sm text-kumo-subtle border p-4 rounded-lg flex flex-col gap-1.5 mt-2.5">
 								<li>
 									<strong>Image Registry:</strong> Use custom registries like
 									Docker Hub, DigitalOcean Registry, etc.

@@ -12,15 +12,13 @@ import type { ContainerInfo } from "./types";
 
 export const DocLinks = () => (
 	<div className="flex flex-col gap-1 pt-2 border-t mt-2">
-		<p className="text-xs font-medium text-muted-foreground">
-			Helpful resources:
-		</p>
+		<p className="text-xs font-medium text-kumo-subtle">Helpful resources:</p>
 		<div className="flex flex-wrap gap-x-4 gap-y-1">
 			<a
 				href="https://github.com/jason301c/docklands"
 				target="_blank"
 				rel="noopener noreferrer"
-				className="text-xs text-primary underline underline-offset-4 inline-flex items-center gap-1"
+				className="text-xs text-kumo-brand underline underline-offset-4 inline-flex items-center gap-1"
 			>
 				Docklands Documentation
 				<ExternalLink className="h-3 w-3" />
@@ -29,14 +27,14 @@ export const DocLinks = () => (
 				href="https://docs.docker.com/engine/swarm/"
 				target="_blank"
 				rel="noopener noreferrer"
-				className="text-xs text-primary underline underline-offset-4 inline-flex items-center gap-1"
+				className="text-xs text-kumo-brand underline underline-offset-4 inline-flex items-center gap-1"
 			>
 				Docker Swarm engine guide
 				<ExternalLink className="h-3 w-3" />
 			</a>
 			<Link
 				href="/dashboard/settings/cluster-nodes"
-				className="text-xs text-primary underline underline-offset-4 inline-flex items-center gap-1"
+				className="text-xs text-kumo-brand underline underline-offset-4 inline-flex items-center gap-1"
 			>
 				Cluster Nodes
 			</Link>
@@ -64,7 +62,7 @@ export const ClusterRuntimeUnavailable = ({
 				)}
 			</AlertDescription>
 		</Alert>
-		<div className="space-y-3 text-sm text-muted-foreground">
+		<div className="space-y-3 text-sm text-kumo-subtle">
 			<p>
 				This view uses Docker Swarm under the hood, so the runtime worker needs
 				cluster mode initialized before Docklands can list scheduled services.
@@ -72,13 +70,13 @@ export const ClusterRuntimeUnavailable = ({
 			<ol className="list-decimal list-inside space-y-2 ml-1">
 				<li>
 					Initialize cluster mode on your runtime worker:{" "}
-					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">
+					<code className="bg-kumo-fill px-1.5 py-0.5 rounded text-xs">
 						docker swarm init
 					</code>
 				</li>
 				<li>
 					Verify it&apos;s active:{" "}
-					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">
+					<code className="bg-kumo-fill px-1.5 py-0.5 rounded text-xs">
 						docker info | grep Swarm
 					</code>
 				</li>
@@ -86,7 +84,7 @@ export const ClusterRuntimeUnavailable = ({
 					Check the{" "}
 					<Link
 						href="/dashboard/settings/cluster-nodes"
-						className="text-primary underline underline-offset-4"
+						className="text-kumo-brand underline underline-offset-4"
 					>
 						Cluster Nodes
 					</Link>{" "}
@@ -122,7 +120,7 @@ export const ServicesError = ({
 				)}
 			</AlertDescription>
 		</Alert>
-		<div className="space-y-3 text-sm text-muted-foreground">
+		<div className="space-y-3 text-sm text-kumo-subtle">
 			<p>This could be caused by:</p>
 			<ul className="list-disc list-inside space-y-1 ml-1">
 				<li>Permission issues running Docker commands on the runtime worker</li>
@@ -131,7 +129,7 @@ export const ServicesError = ({
 					Network connectivity issues to a remote worker &mdash; check{" "}
 					<Link
 						href="/dashboard/settings/cluster-nodes"
-						className="text-primary underline underline-offset-4"
+						className="text-kumo-brand underline underline-offset-4"
 					>
 						Cluster Nodes
 					</Link>
@@ -161,7 +159,7 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 				services running yet.
 			</AlertDescription>
 		</Alert>
-		<div className="space-y-3 text-sm text-muted-foreground">
+		<div className="space-y-3 text-sm text-kumo-subtle">
 			<p>
 				This view shows containers running through the{" "}
 				<strong>cluster runtime</strong>. Standalone containers and Compose
@@ -173,9 +171,11 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 					<strong>Deployed as cluster services</strong> &mdash; Docklands
 					deploys applications this way by default. Compose workloads need to
 					use{" "}
-					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">Stack</code>{" "}
+					<code className="bg-kumo-fill px-1.5 py-0.5 rounded text-xs">
+						Stack
+					</code>{" "}
 					type (not{" "}
-					<code className="bg-muted px-1.5 py-0.5 rounded text-xs">
+					<code className="bg-kumo-fill px-1.5 py-0.5 rounded text-xs">
 						Docker Compose
 					</code>
 					) to run across workers.
@@ -186,7 +186,7 @@ export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 					in{" "}
 					<Link
 						href="/dashboard/settings/image-registry"
-						className="text-primary underline underline-offset-4"
+						className="text-kumo-brand underline underline-offset-4"
 					>
 						Image Registry
 					</Link>
@@ -246,7 +246,7 @@ export const NoRunningContainers = ({
 					</AlertDescription>
 				</Alert>
 			)}
-			<div className="space-y-3 text-sm text-muted-foreground">
+			<div className="space-y-3 text-sm text-kumo-subtle">
 				<p>This can happen when:</p>
 				<ul className="list-disc list-inside space-y-2 ml-1">
 					<li>Services are scaled to 0 replicas</li>
@@ -257,7 +257,7 @@ export const NoRunningContainers = ({
 						Images can&apos;t be pulled on workers &mdash; verify your{" "}
 						<Link
 							href="/dashboard/settings/image-registry"
-							className="text-primary underline underline-offset-4"
+							className="text-kumo-brand underline underline-offset-4"
 						>
 							registry configuration
 						</Link>

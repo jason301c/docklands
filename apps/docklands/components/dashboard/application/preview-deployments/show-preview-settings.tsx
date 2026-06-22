@@ -226,7 +226,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 															}
 															asChild
 														>
-															<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+															<HelpCircle className="size-4 text-kumo-subtle hover:text-kumo-default transition-colors cursor-pointer" />
 														</Tooltip>
 													</TooltipProvider>
 												</div>
@@ -239,7 +239,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 														>
 															{label}
 															<X
-																className="size-3 cursor-pointer hover:text-destructive"
+																className="size-3 cursor-pointer hover:text-kumo-danger"
 																onClick={() => {
 																	const newLabels = [...(field.value || [])];
 																	newLabels.splice(index, 1);
@@ -471,7 +471,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 												Arguments are available only at build-time. See
 												documentation&nbsp;
 												<a
-													className="text-primary"
+													className="text-kumo-brand"
 													href="https://docs.docker.com/build/building/variables/"
 													target="_blank"
 													rel="noopener noreferrer"
@@ -494,7 +494,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 												and are only available at build-time. See
 												documentation&nbsp;
 												<a
-													className="text-primary"
+													className="text-kumo-brand"
 													href="https://docs.docker.com/build/building/secrets/"
 													target="_blank"
 													rel="noopener noreferrer"

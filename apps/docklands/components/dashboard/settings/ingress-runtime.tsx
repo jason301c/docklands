@@ -20,8 +20,8 @@ export const IngressRuntime = () => {
 		<div className="w-full">
 			<LayerCard className="h-full w-full">
 				<div>
-					<h3 className="text-xl flex flex-row gap-2">
-						<ServerIcon className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<ServerIcon className="size-6 text-kumo-subtle self-center" />
 						Ingress Runtime
 					</h3>
 					<p>
@@ -38,11 +38,11 @@ export const IngressRuntime = () => {
 					</div>
 
 					<div className="flex items-center flex-wrap justify-between gap-4">
-						<span className="text-sm text-muted-foreground flex items-center gap-1.5">
+						<span className="text-sm text-kumo-subtle flex items-center gap-1.5">
 							Public IP: {ingressSettings?.serverIp}
 							{ingressSettings?.serverIp && (
 								<CopyIcon
-									className="size-3.5 cursor-pointer hover:text-foreground transition-colors"
+									className="size-3.5 cursor-pointer hover:text-kumo-default transition-colors"
 									onClick={() => {
 										copy(ingressSettings.serverIp ?? "");
 										toast.success("Copied to clipboard");
@@ -50,7 +50,7 @@ export const IngressRuntime = () => {
 								/>
 							)}
 						</span>
-						<span className="text-sm text-muted-foreground">
+						<span className="text-sm text-kumo-subtle">
 							Version: {docklandsVersion}
 						</span>
 

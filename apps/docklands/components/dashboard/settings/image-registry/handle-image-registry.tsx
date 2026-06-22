@@ -200,9 +200,9 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 							aria-label="Edit image registry"
 							variant="ghost"
 							shape="square"
-							className="group hover:bg-blue-500/10 "
+							className="group hover:bg-kumo-brand/10 "
 						>
-							<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+							<PenBoxIcon className="size-3.5  text-kumo-brand group-hover:text-kumo-brand" />
 						</Button>
 					) : (
 						((
@@ -224,9 +224,9 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 					</Dialog.Description>
 				</div>
 				{(isError || testRegistryIsError || testRegistryByIdIsError) && (
-					<div className="flex flex-row gap-4 rounded-lg bg-red-50 p-2 dark:bg-red-950">
-						<AlertTriangle className="text-red-600 dark:text-red-400" />
-						<span className="text-sm text-red-600 dark:text-red-400">
+					<div className="flex flex-row gap-4 rounded-lg bg-kumo-danger-tint p-2">
+						<AlertTriangle className="text-kumo-danger" />
+						<span className="text-sm text-kumo-danger">
 							{testRegistryError?.message ||
 								testRegistryByIdError?.message ||
 								error?.message ||

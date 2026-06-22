@@ -92,9 +92,9 @@ export const ShowExternalMysqlCredentials = ({ mysqlId }: Props) => {
 	return (
 		<>
 			<div className="flex w-full flex-col gap-5 ">
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div>
-						<h3 className="text-xl">External Credentials</h3>
+						<h3 className="text-xl font-semibold">External Credentials</h3>
 						<p>
 							In order to make the database reachable through the internet, you
 							must set a port and ensure that the port is not being used by
@@ -107,7 +107,7 @@ export const ShowExternalMysqlCredentials = ({ mysqlId }: Props) => {
 								You need to set an IP address in your{" "}
 								<Link
 									href="/dashboard/settings/ingress"
-									className="text-primary"
+									className="text-kumo-brand"
 								>
 									Runtime network settings
 								</Link>{" "}

@@ -96,12 +96,12 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 	};
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div>
-				<h3 className="text-xl">Enable Isolated Runtime</h3>
+				<h3 className="text-xl font-semibold">Enable Isolated Runtime</h3>
 				<p>
 					Configure isolated runtime resources for the compose file.
-					<div className="text-sm text-muted-foreground flex flex-col gap-2">
+					<div className="text-sm text-kumo-subtle flex flex-col gap-2">
 						<span>
 							This feature creates an isolated environment for your compose
 							runtime by adding unique prefixes to all resources. It establishes
@@ -133,9 +133,9 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 							className="grid w-full gap-4"
 						>
 							{isError && (
-								<div className="flex flex-row gap-4 rounded-lg items-center bg-red-50 p-2 dark:bg-red-950">
-									<AlertTriangle className="text-red-600 dark:text-red-400" />
-									<span className="text-sm text-red-600 dark:text-red-400">
+								<div className="flex flex-row gap-4 rounded-lg items-center bg-kumo-danger-tint p-2">
+									<AlertTriangle className="text-kumo-danger" />
+									<span className="text-sm text-kumo-danger">
 										{error?.message}
 									</span>
 								</div>
@@ -204,8 +204,8 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 										<div className="flex flex-col gap-4 overflow-auto">
 											{isPreviewLoading ? (
 												<div className="flex flex-col items-center justify-center py-12 gap-4">
-													<Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-													<p className="text-muted-foreground">
+													<Loader2 className="w-8 h-8 animate-spin text-kumo-subtle" />
+													<p className="text-kumo-subtle">
 														Generating compose preview...
 													</p>
 												</div>

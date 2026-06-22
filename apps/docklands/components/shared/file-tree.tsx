@@ -143,21 +143,21 @@ const TreeItem = React.forwardRef<HTMLDivElement, TreeItemProps>(
 									>
 										<TreeItemTrigger
 											className={cn(
-												"px-2 hover:before:opacity-100  before:absolute before:left-0 before:w-full before:opacity-0 before:bg-muted/80 before:h-[1.75rem] before:-z-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+												"px-2 hover:before:opacity-100  before:absolute before:left-0 before:w-full before:opacity-0 before:bg-kumo-fill/80 before:h-[1.75rem] before:-z-10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-kumo-focus",
 												selectedItemId === item.id &&
-													"before:opacity-100 before:bg-accent text-accent-foreground before:border-l-2 before:border-l-accent-foreground/50 dark:before:border-0",
+													"before:opacity-100 before:bg-kumo-fill-hover text-kumo-default before:border-l-2 before:border-l-kumo-default/50 dark:before:border-0",
 											)}
 											onClick={() => handleSelectChange(item)}
 										>
 											{item.icon && (
 												<item.icon
-													className="h-4 w-4 shrink-0 mr-2 text-accent-foreground/50"
+													className="h-4 w-4 shrink-0 mr-2 text-kumo-default/50"
 													aria-hidden="true"
 												/>
 											)}
 											{!item.icon && FolderIcon && (
 												<FolderIcon
-													className="h-4 w-4 shrink-0 mr-2 text-accent-foreground/50"
+													className="h-4 w-4 shrink-0 mr-2 text-kumo-default/50"
 													aria-hidden="true"
 												/>
 											)}
@@ -167,7 +167,7 @@ const TreeItem = React.forwardRef<HTMLDivElement, TreeItemProps>(
 										</TreeItemTrigger>
 										<Collapsible.Panel className="pl-6">
 											{item.children.length === 0 && (
-												<div className="text-sm text-muted-foreground pl-6">
+												<div className="text-sm text-kumo-subtle pl-6">
 													No items
 												</div>
 											)}
@@ -223,22 +223,22 @@ const Leaf = React.forwardRef<
 			type="button"
 			className={cn(
 				"flex items-center py-2 px-2 cursor-pointer \
-			hover:before:opacity-100 before:absolute before:left-0 before:right-1 before:w-full transition-colors before:opacity-0 before:bg-muted/80 before:h-[1.75rem] before:-z-10 rounded-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 relative focus-visible:z-10 w-full",
+			hover:before:opacity-100 before:absolute before:left-0 before:right-1 before:w-full transition-colors before:opacity-0 before:bg-kumo-fill/80 before:h-[1.75rem] before:-z-10 rounded-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-kumo-focus focus-visible:ring-offset-1 relative focus-visible:z-10 w-full",
 				className,
 				isSelected &&
-					"before:opacity-100 before:bg-accent bg-border rounded-lg   text-accent-foreground before:border-l-2 before:border-l-accent-foreground/50 dark:before:border-0",
+					"before:opacity-100 before:bg-kumo-fill-hover bg-kumo-hairline rounded-lg   text-kumo-default before:border-l-2 before:border-l-kumo-default/50 dark:before:border-0",
 			)}
 			{...props}
 		>
 			{item.icon && (
 				<item.icon
-					className="h-4 w-4 shrink-0 mr-2 text-accent-foreground/50"
+					className="h-4 w-4 shrink-0 mr-2 text-kumo-default/50"
 					aria-hidden="true"
 				/>
 			)}
 			{!item.icon && Icon && (
 				<Icon
-					className="h-4 w-4 shrink-0 mr-2 text-accent-foreground/50"
+					className="h-4 w-4 shrink-0 mr-2 text-kumo-default/50"
 					aria-hidden="true"
 				/>
 			)}
@@ -269,7 +269,7 @@ const TreeItemTrigger = React.forwardRef<
 		{...props}
 	>
 		{children}
-		<ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 text-accent-foreground/50 ml-auto" />
+		<ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 text-kumo-default/50 ml-auto" />
 	</Collapsible.Trigger>
 ));
 TreeItemTrigger.displayName = "TreeItemTrigger";

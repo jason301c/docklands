@@ -48,7 +48,7 @@ export const PlacementSelect = ({
 				>
 					<Label className="break-all w-fit flex flex-row gap-1 items-center">
 						{label} {optional ? "(Optional)" : ""}
-						<HelpCircle className="size-4 text-muted-foreground" />
+						<HelpCircle className="size-4 text-kumo-subtle" />
 					</Label>
 				</Tooltip>
 			</TooltipProvider>
@@ -69,7 +69,7 @@ export const PlacementSelect = ({
 							<Select.Option value="docklands">
 								<span className="flex items-center gap-2 justify-between w-full">
 									<span>Automatic placement</span>
-									<span className="text-muted-foreground text-xs self-center">
+									<span className="text-kumo-subtle text-xs self-center">
 										Default
 									</span>
 								</span>
@@ -83,7 +83,7 @@ export const PlacementSelect = ({
 								<span className="flex items-center gap-2 justify-between w-full">
 									<span>{worker.name}</span>
 									{worker.ipAddress && (
-										<span className="text-muted-foreground text-xs self-center">
+										<span className="text-kumo-subtle text-xs self-center">
 											{worker.ipAddress}
 										</span>
 									)}

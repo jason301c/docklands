@@ -33,17 +33,17 @@ export const ShowRuntimeWorkers = () => {
 
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="">
-					<h3 className="text-xl flex flex-row gap-2">
-						<ServerIcon className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<ServerIcon className="size-6 text-kumo-subtle self-center" />
 						Runtime Workers
 					</h3>
 					<p>Add workers to run services on remote machines.</p>
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 							<span>Loading...</span>
 							<Loader2 className="animate-spin size-4" />
 						</div>
@@ -52,11 +52,11 @@ export const ShowRuntimeWorkers = () => {
 							{sshKeys?.length === 0 && data?.length === 0 ? (
 								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
 									<KeyIcon className="size-8" />
-									<span className="text-base text-muted-foreground">
+									<span className="text-base text-kumo-subtle">
 										No SSH keys found. Add an SSH key to start adding workers.{" "}
 										<Link
 											href="/dashboard/settings/ssh-keys"
-											className="text-primary"
+											className="text-kumo-brand"
 										>
 											Add SSH Key
 										</Link>
@@ -66,8 +66,8 @@ export const ShowRuntimeWorkers = () => {
 								<>
 									{data?.length === 0 ? (
 										<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
-											<ServerIcon className="size-8 self-center text-muted-foreground" />
-											<span className="text-base text-muted-foreground">
+											<ServerIcon className="size-8 self-center text-kumo-subtle" />
+											<span className="text-base text-kumo-subtle">
 												Start adding workers to run your applications across
 												remote machines.
 											</span>
@@ -92,7 +92,7 @@ export const ShowRuntimeWorkers = () => {
 															<div className="pb-3">
 																<div className="flex items-start justify-between gap-2">
 																	<div className="flex min-w-0 items-center gap-2">
-																		<ServerIcon className="size-5 shrink-0 text-muted-foreground" />
+																		<ServerIcon className="size-5 shrink-0 text-kumo-subtle" />
 																		<h3 className="text-lg break-words min-w-0">
 																			{runtimeWorker.name}
 																		</h3>
@@ -150,14 +150,12 @@ export const ShowRuntimeWorkers = () => {
 															</div>
 															<div className="space-y-3 flex-1 flex flex-col">
 																<div className="flex items-center gap-2 text-sm">
-																	<Network className="size-4 text-muted-foreground" />
-																	<span className="text-muted-foreground">
-																		IP:
-																	</span>
+																	<Network className="size-4 text-kumo-subtle" />
+																	<span className="text-kumo-subtle">IP:</span>
 																	<Badge variant="outline">
 																		{runtimeWorker.ipAddress}
 																	</Badge>
-																	<span className="text-muted-foreground">
+																	<span className="text-kumo-subtle">
 																		Port:
 																	</span>
 																	<span className="font-medium">
@@ -165,8 +163,8 @@ export const ShowRuntimeWorkers = () => {
 																	</span>
 																</div>
 																<div className="flex items-center gap-2 text-sm">
-																	<User className="size-4 text-muted-foreground" />
-																	<span className="text-muted-foreground">
+																	<User className="size-4 text-kumo-subtle" />
+																	<span className="text-kumo-subtle">
 																		User:
 																	</span>
 																	<span className="font-medium">
@@ -174,8 +172,8 @@ export const ShowRuntimeWorkers = () => {
 																	</span>
 																</div>
 																<div className="flex items-center gap-2 text-sm">
-																	<Key className="size-4 text-muted-foreground" />
-																	<span className="text-muted-foreground">
+																	<Key className="size-4 text-kumo-subtle" />
+																	<span className="text-kumo-subtle">
 																		SSH Key:
 																	</span>
 																	<span className="font-medium">
@@ -183,8 +181,8 @@ export const ShowRuntimeWorkers = () => {
 																	</span>
 																</div>
 																<div className="flex items-center gap-2 text-sm pt-2 border-t">
-																	<Clock className="size-4 text-muted-foreground" />
-																	<span className="text-xs text-muted-foreground">
+																	<Clock className="size-4 text-kumo-subtle" />
+																	<span className="text-xs text-kumo-subtle">
 																		Created{" "}
 																		{format(
 																			new Date(runtimeWorker.createdAt),
@@ -204,7 +202,7 @@ export const ShowRuntimeWorkers = () => {
 																							<p className="font-semibold">
 																								Set Up Worker
 																							</p>
-																							<p className="text-xs text-muted-foreground">
+																							<p className="text-xs text-kumo-subtle">
 																								Configure and initialize your
 																								runtime worker with a container
 																								engine, ingress, and the
@@ -354,7 +352,7 @@ export const ShowRuntimeWorkers = () => {
 																								aria-label={`Delete worker ${runtimeWorker.name}`}
 																								variant="ghost"
 																								shape="square"
-																								className={`h-9 w-9 ${canDelete ? "text-destructive hover:text-destructive hover:bg-destructive/10" : "text-muted-foreground hover:bg-muted"}`}
+																								className={`h-9 w-9 ${canDelete ? "text-kumo-danger hover:text-kumo-danger hover:bg-kumo-danger/10" : "text-kumo-subtle hover:bg-kumo-fill"}`}
 																							>
 																								<Trash2 className="h-4 w-4" />
 																							</Button>

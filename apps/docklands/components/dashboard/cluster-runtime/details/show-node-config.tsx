@@ -31,7 +31,7 @@ export const ShowNodeConfig = ({ nodeId, runtimeWorkerId }: Props) => {
 						See in detail the metadata of this node
 					</Dialog.Description>
 				</div>
-				<div className="text-wrap rounded-lg border p-4 text-sm sm:max-w-[59rem] bg-card max-h-[70vh] overflow-auto ">
+				<div className="text-wrap rounded-lg border p-4 text-sm sm:max-w-[59rem] bg-kumo-base max-h-[70vh] overflow-auto ">
 					<code>
 						<pre className="whitespace-pre-wrap break-words items-center justify-center">
 							{/* {JSON.stringify(data, null, 2)} */}

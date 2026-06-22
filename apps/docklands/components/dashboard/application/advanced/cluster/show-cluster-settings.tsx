@@ -117,10 +117,10 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 	};
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row justify-between">
 				<div>
-					<h3 className="text-xl">Orchestration Settings</h3>
+					<h3 className="text-xl font-semibold">Orchestration Settings</h3>
 					<p>Control how this service is scheduled across runtime workers.</p>
 				</div>
 				<AddSwarmSettings id={id} type={type} />
@@ -166,13 +166,13 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 								{registries && registries?.length === 0 ? (
 									<div className="pt-10">
 										<div className="flex flex-col items-center gap-3">
-											<Server className="size-8 text-muted-foreground" />
-											<span className="text-base text-muted-foreground">
+											<Server className="size-8 text-kumo-subtle" />
+											<span className="text-base text-kumo-subtle">
 												To use multi-worker orchestration, configure at least
 												one registry first. Go to{" "}
 												<Link
 													href="/dashboard/settings/image-registry"
-													className="text-foreground"
+													className="text-kumo-default"
 												>
 													Image Registry
 												</Link>{" "}

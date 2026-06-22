@@ -101,7 +101,7 @@ export function LineCountFilter({
 					<Button
 						variant="outline"
 						size="sm"
-						className="h-9 bg-input text-sm placeholder-gray-400 w-full sm:w-auto"
+						className="h-9 bg-kumo-fill text-sm placeholder:text-kumo-placeholder w-full sm:w-auto"
 					>
 						{title}
 						<Separator orientation="vertical" className="mx-2 h-4" />
@@ -114,7 +114,7 @@ export function LineCountFilter({
 				}
 			/>
 			<PopoverContent className="w-[200px] p-2" align="start">
-				<div className="overflow-hidden rounded-md text-popover-foreground">
+				<div className="overflow-hidden rounded-md text-kumo-default">
 					<div className="flex items-center border-b pb-2">
 						<Hash className="mr-2 h-4 w-4 shrink-0 opacity-50" />
 						<Input
@@ -150,13 +150,13 @@ export function LineCountFilter({
 									key={option.value}
 									type="button"
 									onClick={() => handleSelect(option.label)}
-									className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground"
+									className="relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-kumo-fill-hover hover:text-kumo-default"
 								>
 									<div
 										className={cn(
-											"flex h-4 w-4 items-center justify-center rounded-sm border border-primary mr-2",
+											"flex h-4 w-4 items-center justify-center rounded-sm border border-kumo-brand mr-2",
 											isSelected
-												? "bg-primary text-primary-foreground"
+												? "bg-kumo-brand text-kumo-inverse"
 												: "opacity-50 [&_svg]:invisible",
 										)}
 									>

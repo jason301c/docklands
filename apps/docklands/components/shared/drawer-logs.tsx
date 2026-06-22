@@ -49,7 +49,7 @@ export const DrawerLogs = ({ isOpen, onClose, filteredLogs }: Props) => {
 				<div
 					ref={scrollRef}
 					onScroll={handleScroll}
-					className="h-[720px] overflow-y-auto space-y-0 border p-4 bg-[#fafafa] dark:bg-[#050506] rounded custom-logs-scrollbar"
+					className="h-[720px] overflow-y-auto space-y-0 border p-4 bg-kumo-base dark:bg-kumo-elevated rounded custom-logs-scrollbar"
 				>
 					{" "}
 					{filteredLogs.length > 0 ? (
@@ -61,7 +61,7 @@ export const DrawerLogs = ({ isOpen, onClose, filteredLogs }: Props) => {
 							/>
 						))
 					) : (
-						<div className="flex justify-center items-center h-full text-muted-foreground">
+						<div className="flex justify-center items-center h-full text-kumo-subtle">
 							<Loader2 className="h-6 w-6 animate-spin" />
 						</div>
 					)}

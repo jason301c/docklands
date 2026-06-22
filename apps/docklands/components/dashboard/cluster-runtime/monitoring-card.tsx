@@ -24,8 +24,8 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 
 	if (isPending) {
 		return (
-			<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-background p-6">
-				<div className="flex min-h-[55vh] items-center justify-center text-muted-foreground">
+			<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-kumo-canvas p-6">
+				<div className="flex min-h-[55vh] items-center justify-center text-kumo-subtle">
 					<span className="flex flex-row items-center justify-center gap-2 text-sm">
 						Loading...
 						<Loader2 className="size-4 animate-spin" />
@@ -37,8 +37,8 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 
 	if (!nodes) {
 		return (
-			<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-background p-6">
-				<div className="flex min-h-[55vh] items-center justify-center text-destructive">
+			<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-kumo-canvas p-6">
+				<div className="flex min-h-[55vh] items-center justify-center text-kumo-danger">
 					<span>Failed to load data</span>
 				</div>
 			</div>
@@ -60,14 +60,14 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 	);
 
 	return (
-		<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-background p-6">
+		<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-kumo-canvas p-6">
 			<header className="flex items-center flex-wrap gap-4 justify-between">
 				<div className="space-y-1">
-					<h3 className="text-xl flex flex-row gap-2">
-						<WorkflowIcon className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<WorkflowIcon className="size-6 text-kumo-subtle self-center" />
 						Cluster Runtime Overview
 					</h3>
-					<p className="text-sm text-muted-foreground">
+					<p className="text-sm text-kumo-subtle">
 						Monitor runtime workers and node health across the cluster.
 					</p>
 				</div>
@@ -84,11 +84,11 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 			</header>
 
 			<div className="grid gap-6 lg:grid-cols-3">
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<h3 className="text-sm font-medium">Total Workers</h3>
-						<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
-							<Server className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
+						<div className="p-2 bg-kumo-success-tint text-kumo-success rounded-md">
+							<Server className="h-4 w-4 text-kumo-success" />
 						</div>
 					</div>
 					<div>
@@ -96,14 +96,14 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 					</div>
 				</LayerCard>
 
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<div className="flex items-center gap-2">
 							<h3 className="text-sm font-medium">Active Workers</h3>
 							<Badge variant="green">Online</Badge>
 						</div>
-						<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
-							<Activity className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
+						<div className="p-2 bg-kumo-success-tint text-kumo-success rounded-md">
+							<Activity className="h-4 w-4 text-kumo-success" />
 						</div>
 					</div>
 					<div>
@@ -129,14 +129,14 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 					</div>
 				</LayerCard>
 
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<div className="flex items-center gap-2">
 							<h3 className="text-sm font-medium">Managers</h3>
 							<Badge variant="green">Online</Badge>
 						</div>
-						<div className="p-2 bg-emerald-600/20 text-emerald-600 rounded-md">
-							<Monitor className="h-4 w-4 text-muted-foreground dark:text-emerald-600" />
+						<div className="p-2 bg-kumo-success-tint text-kumo-success rounded-md">
+							<Monitor className="h-4 w-4 text-kumo-success" />
 						</div>
 					</div>
 					<div>

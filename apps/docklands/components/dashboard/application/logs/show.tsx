@@ -82,9 +82,9 @@ export const ShowDockerLogs = ({ appName, runtimeWorkerId }: Props) => {
 		option === "native" ? containers?.length : services?.length;
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div>
-				<h3 className="text-xl">Logs</h3>
+				<h3 className="text-xl font-semibold">Logs</h3>
 				<p>Watch the logs of the application in real time</p>
 			</div>
 
@@ -92,7 +92,7 @@ export const ShowDockerLogs = ({ appName, runtimeWorkerId }: Props) => {
 				<div className="flex flex-row justify-between items-center gap-2">
 					<Label>Select a container to view logs</Label>
 					<div className="flex flex-row gap-2 items-center">
-						<span className="text-sm text-muted-foreground">
+						<span className="text-sm text-kumo-subtle">
 							{option === "native" ? "Local" : "Orchestrated"}
 						</span>
 						<Switch
@@ -113,7 +113,7 @@ export const ShowDockerLogs = ({ appName, runtimeWorkerId }: Props) => {
 				>
 					<>
 						{isLoading ? (
-							<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
+							<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle">
 								<span>Loading...</span>
 								<Loader2 className="animate-spin size-4" />
 							</div>
@@ -164,7 +164,7 @@ export const ShowDockerLogs = ({ appName, runtimeWorkerId }: Props) => {
 				</Select>
 				{option === "swarm" &&
 					services?.find((c) => c.containerId === containerId)?.error && (
-						<div className="rounded-md bg-destructive/10 border border-destructive/20 px-3 py-2 text-sm text-destructive">
+						<div className="rounded-md bg-kumo-danger/10 border border-destructive/20 px-3 py-2 text-sm text-kumo-danger">
 							<span className="font-medium">Error: </span>
 							{services?.find((c) => c.containerId === containerId)?.error}
 						</div>

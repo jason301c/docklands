@@ -24,10 +24,10 @@ export const ShowNotifications = () => {
 
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="">
-					<h3 className="text-xl flex flex-row gap-2">
-						<Bell className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<Bell className="size-6 text-kumo-subtle self-center" />
 						Notifications
 					</h3>
 					<p>
@@ -37,7 +37,7 @@ export const ShowNotifications = () => {
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 							<span>Loading...</span>
 							<Loader2 className="animate-spin size-4" />
 						</div>
@@ -46,7 +46,7 @@ export const ShowNotifications = () => {
 							{data?.length === 0 ? (
 								<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
 									<Bell />
-									<span className="text-base text-muted-foreground text-center">
+									<span className="text-base text-kumo-subtle text-center">
 										To send notifications it is required to set at least 1
 										provider.
 									</span>
@@ -58,9 +58,9 @@ export const ShowNotifications = () => {
 										{data?.map((notification, _index) => (
 											<div
 												key={notification.notificationId}
-												className="flex items-center justify-between bg-sidebar p-1 w-full rounded-lg"
+												className="flex items-center justify-between bg-kumo-elevated p-1 w-full rounded-lg"
 											>
-												<div className="flex items-center justify-between p-3.5 rounded-lg bg-background border  w-full">
+												<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border  w-full">
 													<span className="text-sm flex flex-row items-center gap-4">
 														{notification.notificationType === "slack" && (
 															<div className="flex  items-center justify-center rounded-lg">
@@ -79,12 +79,12 @@ export const ShowNotifications = () => {
 														)}
 														{notification.notificationType === "email" && (
 															<div className="flex  items-center justify-center rounded-lg ">
-																<Mail className="size-6 text-muted-foreground" />
+																<Mail className="size-6 text-kumo-subtle" />
 															</div>
 														)}
 														{notification.notificationType === "resend" && (
 															<div className="flex  items-center justify-center rounded-lg ">
-																<ResendIcon className="size-6 text-muted-foreground" />
+																<ResendIcon className="size-6 text-kumo-subtle" />
 															</div>
 														)}
 														{notification.notificationType === "gotify" && (
@@ -99,17 +99,17 @@ export const ShowNotifications = () => {
 														)}
 														{notification.notificationType === "custom" && (
 															<div className="flex  items-center justify-center rounded-lg ">
-																<PenBoxIcon className="size-6 text-muted-foreground" />
+																<PenBoxIcon className="size-6 text-kumo-subtle" />
 															</div>
 														)}
 														{notification.notificationType === "lark" && (
 															<div className="flex  items-center justify-center rounded-lg">
-																<LarkIcon className="size-7 text-muted-foreground" />
+																<LarkIcon className="size-7 text-kumo-subtle" />
 															</div>
 														)}
 														{notification.notificationType === "teams" && (
 															<div className="flex  items-center justify-center rounded-lg">
-																<TeamsIcon className="size-7 text-muted-foreground" />
+																<TeamsIcon className="size-7 text-kumo-subtle" />
 															</div>
 														)}
 														{notification.notificationType === "mattermost" && (
@@ -151,10 +151,10 @@ export const ShowNotifications = () => {
 																	aria-label="Delete notification"
 																	variant="ghost"
 																	shape="square"
-																	className="group hover:bg-red-500/10 "
+																	className="group hover:bg-kumo-danger/10 "
 																	loading={isRemoving}
 																>
-																	<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+																	<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 																</Button>
 															</DialogAction>
 														)}

@@ -111,7 +111,6 @@
 		"ssh2": "~1.17.0",
 		"superjson": "^2.2.6",
 		"tailwind-merge": "^3.6.0",
-		"tailwindcss-animate": "^1.0.7",
 		"tsx": "^4.22.4",
 		"undici": "^8.5.0",
 		"use-resize-observer": "9.1.0",

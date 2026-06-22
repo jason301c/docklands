@@ -209,7 +209,7 @@ export const Configure2FA = () => {
 				<Dialog.Trigger
 					render={
 						<Button variant="secondary">
-							<KeyRound className="size-4 text-muted-foreground" />
+							<KeyRound className="size-4 text-kumo-subtle" />
 							Manage 2FA
 						</Button>
 					}
@@ -276,14 +276,14 @@ export const Configure2FA = () => {
 					{step === "actions" && (
 						<div className="space-y-4">
 							<div className="grid gap-3">
-								<div className="flex flex-col gap-2 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+								<div className="flex flex-col gap-2 p-4 border rounded-lg hover:bg-kumo-fill/50 transition-colors">
 									<div className="flex items-start justify-between">
 										<div className="flex-1">
 											<h4 className="font-medium flex items-center gap-2">
 												<RefreshCw className="size-4" />
 												Regenerate Backup Codes
 											</h4>
-											<p className="text-sm text-muted-foreground mt-1">
+											<p className="text-sm text-kumo-subtle mt-1">
 												Generate new backup codes to replace your existing ones.
 												This will invalidate all previous backup codes.
 											</p>
@@ -300,14 +300,14 @@ export const Configure2FA = () => {
 									</Button>
 								</div>
 
-								<div className="flex flex-col gap-2 p-4 border border-destructive/50 rounded-lg hover:bg-destructive/5 transition-colors">
+								<div className="flex flex-col gap-2 p-4 border border-kumo-danger/50 rounded-lg hover:bg-kumo-danger/5 transition-colors">
 									<div className="flex items-start justify-between">
 										<div className="flex-1">
-											<h4 className="font-medium flex items-center gap-2 text-destructive">
+											<h4 className="font-medium flex items-center gap-2 text-kumo-danger">
 												<ShieldOff className="size-4" />
 												Disable 2FA
 											</h4>
-											<p className="text-sm text-muted-foreground mt-1">
+											<p className="text-sm text-kumo-subtle mt-1">
 												Completely disable two-factor authentication for your
 												account. This will make your account less secure.
 											</p>
@@ -337,18 +337,18 @@ export const Configure2FA = () => {
 
 					{step === "backup-codes" && (
 						<div className="space-y-4">
-							<div className="w-full space-y-3 border rounded-lg p-4 bg-muted/50">
+							<div className="w-full space-y-3 border rounded-lg p-4 bg-kumo-fill/50">
 								<div className="grid grid-cols-2 gap-2">
 									{backupCodes.map((code, index) => (
 										<code
 											key={`${code}-${index}`}
-											className="bg-background p-2 rounded text-sm font-mono text-center"
+											className="bg-kumo-canvas p-2 rounded text-sm font-mono text-center"
 										>
 											{code}
 										</code>
 									))}
 								</div>
-								<p className="text-sm text-muted-foreground">
+								<p className="text-sm text-kumo-subtle">
 									Save these backup codes in a secure place. You can use them to
 									access your account if you lose access to your authenticator
 									device. Each code can only be used once.
@@ -402,7 +402,7 @@ export const Configure2FA = () => {
 						<Dialog.Close>Cancel</Dialog.Close>
 						<Dialog.Close
 							onClick={handleDisable2FA}
-							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+							className="bg-kumo-danger text-kumo-inverse hover:bg-kumo-danger/90"
 							disabled={isDisabling}
 						>
 							{isDisabling ? "Disabling..." : "Disable 2FA"}

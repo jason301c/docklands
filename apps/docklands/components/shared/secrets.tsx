@@ -35,9 +35,9 @@ export const Secrets = (props: Props) => {
 					onPressedChange={setIsVisible}
 				>
 					{isVisible ? (
-						<EyeOffIcon className="h-4 w-4 text-muted-foreground" />
+						<EyeOffIcon className="h-4 w-4 text-kumo-subtle" />
 					) : (
-						<EyeIcon className="h-4 w-4 text-muted-foreground" />
+						<EyeIcon className="h-4 w-4 text-kumo-subtle" />
 					)}
 				</Toggle>
 			</div>

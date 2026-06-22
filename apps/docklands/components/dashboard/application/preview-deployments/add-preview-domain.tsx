@@ -186,7 +186,7 @@ export const AddPreviewDomain = ({
 																	});
 															}}
 														>
-															<Dices className="size-4 text-muted-foreground" />
+															<Dices className="size-4 text-kumo-subtle" />
 														</Button>
 													</Tooltip>
 												</TooltipProvider>

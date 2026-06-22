@@ -319,9 +319,9 @@ export const HandleBackup = ({
 							aria-label="Edit database backup"
 							variant="ghost"
 							shape="square"
-							className="group hover:bg-blue-500/10 size-8"
+							className="group hover:bg-kumo-brand/10 size-8"
 						>
-							<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
+							<PenBoxIcon className="size-3.5 text-kumo-brand group-hover:text-kumo-brand" />
 						</Button>
 					) : (
 						((
@@ -398,8 +398,8 @@ export const HandleBackup = ({
 													<Button
 														variant="outline"
 														className={cn(
-															"w-full justify-between !bg-input",
-															!field.value && "text-muted-foreground",
+															"w-full justify-between !bg-kumo-line",
+															!field.value && "text-kumo-subtle",
 														)}
 													>
 														{isPending
@@ -521,7 +521,7 @@ export const HandleBackup = ({
 																	}
 																}}
 															>
-																<RefreshCw className="size-4 text-muted-foreground" />
+																<RefreshCw className="size-4 text-kumo-subtle" />
 															</Button>
 														</Tooltip>
 													</TooltipProvider>
@@ -552,7 +552,7 @@ export const HandleBackup = ({
 																	}
 																}}
 															>
-																<DatabaseZap className="size-4 text-muted-foreground" />
+																<DatabaseZap className="size-4 text-kumo-subtle" />
 															</Button>
 														</Tooltip>
 													</TooltipProvider>

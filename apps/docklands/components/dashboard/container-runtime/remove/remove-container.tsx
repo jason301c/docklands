@@ -20,7 +20,7 @@ export const RemoveContainerDialog = ({
 			<Dialog.Trigger
 				render={
 					<DropdownMenu.Item
-						className="w-full cursor-pointer text-red-500 hover:!text-red-600"
+						className="w-full cursor-pointer text-kumo-danger hover:!text-kumo-danger"
 						onSelect={(e) => e.preventDefault()}
 					>
 						Remove Container

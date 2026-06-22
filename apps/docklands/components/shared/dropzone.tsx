@@ -45,7 +45,7 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
 			<LayerCard
 				ref={ref}
 				className={cn(
-					"border-2 border-dashed bg-muted/20 hover:cursor-pointer hover:border-muted-foreground/50 ",
+					"border-2 border-dashed bg-kumo-fill/20 hover:cursor-pointer hover:border-kumo-hairline/50 ",
 					classNameWrapper,
 				)}
 			>
@@ -55,8 +55,8 @@ export const Dropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
 					onDrop={handleDrop}
 					onClick={handleButtonClick}
 				>
-					<div className="flex flex-col items-center justify-center text-muted-foreground">
-						<FolderIcon className="size-6 text-muted-foreground" />
+					<div className="flex flex-col items-center justify-center text-kumo-subtle">
+						<FolderIcon className="size-6 text-kumo-subtle" />
 						<span className="font-medium text-xl text-center">
 							{dropMessage}
 						</span>

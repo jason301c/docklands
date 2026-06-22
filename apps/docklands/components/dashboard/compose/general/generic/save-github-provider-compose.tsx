@@ -211,7 +211,7 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 												href={`https://github.com/${field.value.owner}/${field.value.repo}`}
 												target="_blank"
 												rel="noopener noreferrer"
-												className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+												className="flex items-center gap-1 text-sm text-kumo-subtle hover:text-kumo-brand"
 											>
 												<GithubIcon className="h-4 w-4" />
 												<span>View Repository</span>
@@ -224,8 +224,8 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 												<Button
 													variant="outline"
 													className={cn(
-														"w-full justify-between !bg-input",
-														!field.value && "text-muted-foreground",
+														"w-full justify-between !bg-kumo-fill",
+														!field.value && "text-kumo-subtle",
 													)}
 												>
 													{!field.value.owner
@@ -247,7 +247,7 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 													className="h-9"
 												/>
 												{!githubId ? (
-													<span className="py-6 text-center text-sm text-muted-foreground">
+													<span className="py-6 text-center text-sm text-kumo-subtle">
 														Select a GitHub account first
 													</span>
 												) : isLoadingRepositories ? (
@@ -272,7 +272,7 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 															>
 																<span className="flex items-center gap-2">
 																	<span>{repo.name}</span>
-																	<span className="text-muted-foreground text-xs">
+																	<span className="text-kumo-subtle text-xs">
 																		{repo.owner.login}
 																	</span>
 																</span>
@@ -292,7 +292,7 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 										</PopoverContent>
 									</Popover>
 									{form.formState.errors.repository && (
-										<p className={cn("text-sm font-medium text-destructive")}>
+										<p className={cn("text-sm font-medium text-kumo-danger")}>
 											Repository is required
 										</p>
 									)}
@@ -311,8 +311,8 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 												<Button
 													variant="outline"
 													className={cn(
-														" w-full justify-between !bg-input",
-														!field.value && "text-muted-foreground",
+														" w-full justify-between !bg-kumo-fill",
+														!field.value && "text-kumo-subtle",
 													)}
 												>
 													{status === "pending" && fetchStatus === "fetching"
@@ -333,12 +333,12 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 													className="h-9"
 												/>
 												{status === "pending" && fetchStatus === "fetching" && (
-													<span className="py-6 text-center text-sm text-muted-foreground">
+													<span className="py-6 text-center text-sm text-kumo-subtle">
 														Loading Branches....
 													</span>
 												)}
 												{!repository?.owner && (
-													<span className="py-6 text-center text-sm text-muted-foreground">
+													<span className="py-6 text-center text-sm text-kumo-subtle">
 														Select a repository
 													</span>
 												)}
@@ -408,7 +408,7 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 												}
 												asChild
 											>
-												<HelpCircle className="size-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" />
+												<HelpCircle className="size-4 text-kumo-subtle hover:text-kumo-default transition-colors cursor-pointer" />
 											</Tooltip>
 										</TooltipProvider>
 									</div>
@@ -450,7 +450,7 @@ export const SaveGithubProviderCompose = ({ composeId }: Props) => {
 														</>
 													}
 												>
-													<div className="size-4 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold">
+													<div className="size-4 rounded-full bg-kumo-fill flex items-center justify-center text-[10px] font-bold">
 														?
 													</div>
 												</Tooltip>

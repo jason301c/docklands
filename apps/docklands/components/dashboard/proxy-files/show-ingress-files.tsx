@@ -33,10 +33,10 @@ export const ShowIngressFiles = ({ runtimeWorkerId }: Props) => {
 	);
 
 	return (
-		<div className="w-full rounded-lg border bg-background p-6">
+		<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 			<div>
-				<h3 className="flex flex-row gap-2 text-xl">
-					<FileIcon className="size-6 self-center text-muted-foreground" />
+				<h3 className="text-xl font-semibold flex items-center gap-2">
+					<FileIcon className="size-6 self-center text-kumo-subtle" />
 					Ingress Files
 				</h3>
 				<p>Manage generated and custom ingress files.</p>
@@ -55,24 +55,24 @@ export const ShowIngressFiles = ({ runtimeWorkerId }: Props) => {
 						)}
 						{isLoading && (
 							<div className="w-full flex-col gap-2 flex items-center justify-center h-[55vh]">
-								<span className="text-muted-foreground text-lg font-medium">
+								<span className="text-kumo-subtle text-lg font-medium">
 									Loading...
 								</span>
-								<Loader2 className="animate-spin size-8 text-muted-foreground" />
+								<Loader2 className="animate-spin size-8 text-kumo-subtle" />
 							</div>
 						)}
 						{directories?.length === 0 && (
 							<div className="w-full flex-col gap-4 flex items-center justify-center h-[55vh] border border-dashed rounded-lg">
-								<div className="flex items-center justify-center size-14 rounded-full bg-muted">
-									<FolderOpen className="size-7 text-muted-foreground" />
+								<div className="flex items-center justify-center size-14 rounded-full bg-kumo-fill">
+									<FolderOpen className="size-7 text-kumo-subtle" />
 								</div>
 								<div className="flex flex-col items-center gap-1 text-center px-4">
 									<span className="text-base font-medium">
 										No ingress files found
 									</span>
-									<span className="text-sm text-muted-foreground">
+									<span className="text-sm text-kumo-subtle">
 										There are no ingress files in{" "}
-										<code className="bg-muted px-1.5 py-0.5 rounded text-xs">
+										<code className="bg-kumo-fill px-1.5 py-0.5 rounded text-xs">
 											/etc/docklands/traefik
 										</code>{" "}
 										on this runtime yet.
@@ -97,14 +97,14 @@ export const ShowIngressFiles = ({ runtimeWorkerId }: Props) => {
 										/>
 									) : (
 										<div className="h-full min-h-[300px] w-full flex-col gap-4 flex items-center justify-center border border-dashed rounded-lg">
-											<div className="flex items-center justify-center size-14 rounded-full bg-muted">
-												<MousePointerClick className="size-7 text-muted-foreground" />
+											<div className="flex items-center justify-center size-14 rounded-full bg-kumo-fill">
+												<MousePointerClick className="size-7 text-kumo-subtle" />
 											</div>
 											<div className="flex flex-col items-center gap-1 text-center px-4">
 												<span className="text-base font-medium">
 													Select a file to edit
 												</span>
-												<span className="text-sm text-muted-foreground">
+												<span className="text-sm text-kumo-subtle">
 													Choose a file from the tree on the left to view and
 													edit its contents.
 												</span>

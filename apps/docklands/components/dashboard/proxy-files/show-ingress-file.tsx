@@ -103,10 +103,10 @@ export const ShowIngressFile = ({ path, runtimeWorkerId }: Props) => {
 					<div className="flex flex-col overflow-auto">
 						{isLoadingFile ? (
 							<div className="w-full flex-col gap-2 flex items-center justify-center h-[55vh]">
-								<span className="text-muted-foreground text-lg font-medium">
+								<span className="text-kumo-subtle text-lg font-medium">
 									Loading...
 								</span>
-								<Loader2 className="animate-spin size-8 text-muted-foreground" />
+								<Loader2 className="animate-spin size-8 text-kumo-subtle" />
 							</div>
 						) : (
 							<FormField
@@ -171,7 +171,7 @@ routers:
 								Skip YAML validation (for Go templating)
 							</Label>
 						</div>
-						<p className="text-sm text-muted-foreground -mt-2">
+						<p className="text-sm text-kumo-subtle -mt-2">
 							Traefik supports Go templating in dynamic configs (e.g.{" "}
 							<code className="text-xs">{"{{range}}"}</code>). Configs using
 							templates will fail standard YAML validation. Check this to save

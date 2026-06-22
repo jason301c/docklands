@@ -33,7 +33,7 @@ export const NodeSection = ({
 			open={isExpanded}
 			onOpenChange={() => onToggleNode(group.nodeName)}
 		>
-			<LayerCard className="bg-background">
+			<LayerCard className="bg-kumo-canvas">
 				<Collapsible.Trigger
 					render={
 						<button
@@ -42,18 +42,18 @@ export const NodeSection = ({
 						/>
 					}
 				>
-					<div className="cursor-pointer hover:bg-muted/50 transition-colors">
+					<div className="cursor-pointer hover:bg-kumo-fill/50 transition-colors">
 						<div className="flex items-center justify-between">
 							<div className="flex items-center gap-3">
 								{isExpanded ? (
-									<ChevronDown className="h-4 w-4 text-muted-foreground" />
+									<ChevronDown className="h-4 w-4 text-kumo-subtle" />
 								) : (
-									<ChevronRight className="h-4 w-4 text-muted-foreground" />
+									<ChevronRight className="h-4 w-4 text-kumo-subtle" />
 								)}
 								<div className="relative">
-									<Server className="h-5 w-5 text-muted-foreground" />
+									<Server className="h-5 w-5 text-kumo-subtle" />
 									{nodeDown && (
-										<span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-destructive" />
+										<span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-kumo-danger" />
 									)}
 								</div>
 								<h3 className="text-base">{group.nodeName}</h3>

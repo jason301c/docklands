@@ -23,17 +23,17 @@ export const UnauthorizedGitProvider = ({ service, onDisconnect }: Props) => {
 	const getProviderIcon = (sourceType: string) => {
 		switch (sourceType) {
 			case "github":
-				return <GithubIcon className="size-5 text-muted-foreground" />;
+				return <GithubIcon className="size-5 text-kumo-subtle" />;
 			case "gitlab":
-				return <GitlabIcon className="size-5 text-muted-foreground" />;
+				return <GitlabIcon className="size-5 text-kumo-subtle" />;
 			case "bitbucket":
-				return <BitbucketIcon className="size-5 text-muted-foreground" />;
+				return <BitbucketIcon className="size-5 text-kumo-subtle" />;
 			case "gitea":
-				return <GiteaIcon className="size-5 text-muted-foreground" />;
+				return <GiteaIcon className="size-5 text-kumo-subtle" />;
 			case "git":
-				return <GitIcon className="size-5 text-muted-foreground" />;
+				return <GitIcon className="size-5 text-kumo-subtle" />;
 			default:
-				return <GitBranch className="size-5 text-muted-foreground" />;
+				return <GitBranch className="size-5 text-kumo-subtle" />;
 		}
 	};
 
@@ -100,7 +100,7 @@ export const UnauthorizedGitProvider = ({ service, onDisconnect }: Props) => {
 				<div className="space-y-3">
 					{owner && (
 						<div>
-							<span className="text-sm font-medium text-muted-foreground">
+							<span className="text-sm font-medium text-kumo-subtle">
 								Owner:
 							</span>
 							<p className="text-sm">{owner}</p>
@@ -108,7 +108,7 @@ export const UnauthorizedGitProvider = ({ service, onDisconnect }: Props) => {
 					)}
 					{repo && (
 						<div>
-							<span className="text-sm font-medium text-muted-foreground">
+							<span className="text-sm font-medium text-kumo-subtle">
 								Repository:
 							</span>
 							<p className="text-sm">{repo}</p>
@@ -116,7 +116,7 @@ export const UnauthorizedGitProvider = ({ service, onDisconnect }: Props) => {
 					)}
 					{branch && (
 						<div>
-							<span className="text-sm font-medium text-muted-foreground">
+							<span className="text-sm font-medium text-kumo-subtle">
 								Branch:
 							</span>
 							<p className="text-sm">{branch}</p>
@@ -137,7 +137,7 @@ export const UnauthorizedGitProvider = ({ service, onDisconnect }: Props) => {
 								Disconnect Repository
 							</Button>
 						</DialogAction>
-						<p className="text-xs text-muted-foreground mt-2">
+						<p className="text-xs text-kumo-subtle mt-2">
 							Disconnecting will allow you to configure a new repository with
 							your own git providers.
 						</p>

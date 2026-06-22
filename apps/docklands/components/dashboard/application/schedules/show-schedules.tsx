@@ -70,7 +70,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 			<div className="px-0">
 				<div className="flex justify-between items-center gap-y-2 flex-wrap">
 					<div className="flex flex-col gap-2">
-						<h3 className="text-xl font-bold flex items-center gap-2">
+						<h3 className="text-xl font-semibold flex items-center gap-2">
 							Automations
 						</h3>
 						<p>Run commands automatically at specified intervals.</p>
@@ -83,8 +83,8 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 			<div className="px-0">
 				{isLoadingSchedules ? (
 					<div className="flex gap-4 w-full items-center justify-center text-center mx-auto min-h-[45vh]">
-						<Loader2 className="size-4 text-muted-foreground/70 transition-colors animate-spin self-center" />
-						<span className="text-sm text-muted-foreground/70">
+						<Loader2 className="size-4 text-kumo-subtle/70 transition-colors animate-spin self-center" />
+						<span className="text-sm text-kumo-subtle/70">
 							Loading automations...
 						</span>
 					</div>
@@ -98,11 +98,11 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 							return (
 								<div
 									key={schedule.scheduleId}
-									className="flex flex-col sm:flex-row sm:items-center flex-wrap sm:flex-nowrap gap-y-2 justify-between rounded-lg border p-3 transition-colors bg-muted/50 w-full"
+									className="flex flex-col sm:flex-row sm:items-center flex-wrap sm:flex-nowrap gap-y-2 justify-between rounded-lg border p-3 transition-colors bg-kumo-fill/50 w-full"
 								>
 									<div className="flex items-start gap-3 w-full sm:w-auto">
-										<div className="flex flex-shrink-0 h-9 w-9 items-center justify-center rounded-full bg-primary/5">
-											<Clock className="size-4 text-primary/70" />
+										<div className="flex flex-shrink-0 h-9 w-9 items-center justify-center rounded-full bg-kumo-brand/5">
+											<Clock className="size-4 text-kumo-brand/70" />
 										</div>
 										<div className="space-y-1.5 w-full sm:w-auto">
 											<div className="flex items-center gap-2 flex-wrap">
@@ -117,11 +117,11 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 												</Badge>
 											</div>
 											{schedule.description && (
-												<p className="text-xs text-muted-foreground/70 [overflow-wrap:anywhere] line-clamp-2">
+												<p className="text-xs text-kumo-subtle/70 [overflow-wrap:anywhere] line-clamp-2">
 													{schedule.description}
 												</p>
 											)}
-											<div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+											<div className="flex items-center gap-2 text-sm text-kumo-subtle flex-wrap">
 												<Badge
 													variant="outline"
 													className="font-mono text-[10px] bg-transparent"
@@ -131,7 +131,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 												{schedule.scheduleType !== "runtimeWorker" &&
 													schedule.scheduleType !== "docklands-server" && (
 														<>
-															<span className="text-xs text-muted-foreground/50">
+															<span className="text-xs text-kumo-subtle/50">
 																•
 															</span>
 															<Badge
@@ -145,8 +145,8 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 											</div>
 											{schedule.command && (
 												<div className="flex items-start gap-2 max-w-full">
-													<Terminal className="size-3.5 text-muted-foreground/70 flex-shrink-0 mt-0.5" />
-													<code className="font-mono text-[10px] text-muted-foreground/70 break-all max-w-[calc(100%-20px)]">
+													<Terminal className="size-3.5 text-kumo-subtle/70 flex-shrink-0 mt-0.5" />
+													<code className="font-mono text-[10px] text-kumo-subtle/70 break-all max-w-[calc(100%-20px)]">
 														{schedule.command}
 													</code>
 												</div>
@@ -214,10 +214,10 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 												aria-label="Delete automation"
 												variant="ghost"
 												shape="square"
-												className="group hover:bg-red-500/10"
+												className="group hover:bg-kumo-danger/10"
 												disabled={isDeleting}
 											>
-												<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+												<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 											</Button>
 										</DialogAction>
 									</div>
@@ -227,11 +227,11 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 					</div>
 				) : (
 					<div className="flex flex-col gap-2 items-center justify-center py-12 rounded-lg">
-						<Clock className="size-8 mb-4 text-muted-foreground" />
-						<p className="text-lg font-medium text-muted-foreground">
+						<Clock className="size-8 mb-4 text-kumo-subtle" />
+						<p className="text-lg font-medium text-kumo-subtle">
 							No automations
 						</p>
-						<p className="text-sm text-muted-foreground mt-1">
+						<p className="text-sm text-kumo-subtle mt-1">
 							Create your first automation to run recurring workflows
 						</p>
 						<HandleSchedules id={id} scheduleType={scheduleType} />

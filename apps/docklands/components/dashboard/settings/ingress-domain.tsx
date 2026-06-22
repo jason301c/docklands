@@ -102,8 +102,8 @@ export const IngressDomain = () => {
 			<LayerCard className="h-full w-full">
 				<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
 					<div className="flex flex-col gap-1">
-						<h3 className="text-xl flex flex-row gap-2">
-							<GlobeIcon className="size-6 text-muted-foreground self-center" />
+						<h3 className="text-xl font-semibold flex items-center gap-2">
+							<GlobeIcon className="size-6 text-kumo-subtle self-center" />
 							Ingress Domain
 						</h3>
 						<p>Add a domain to the Docklands ingress.</p>

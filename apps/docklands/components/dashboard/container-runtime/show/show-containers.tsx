@@ -60,10 +60,10 @@ export const ShowContainers = ({ runtimeWorkerId }: Props) => {
 
 	return (
 		<div className="w-full">
-			<div className="rounded-lg border bg-background p-6">
+			<div className="rounded-lg border bg-kumo-canvas p-6">
 				<div className="">
-					<h3 className="text-xl flex flex-row gap-2">
-						<Container className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<Container className="size-6 text-kumo-subtle self-center" />
 						Runtime Containers
 					</h3>
 					<p>Inspect the containers running on this Docklands runtime.</p>
@@ -118,13 +118,13 @@ export const ShowContainers = ({ runtimeWorkerId }: Props) => {
 							<div className="rounded-md border">
 								{isPending ? (
 									<div className="w-full flex-col gap-2 flex items-center justify-center h-[55vh]">
-										<span className="text-muted-foreground text-lg font-medium">
+										<span className="text-kumo-subtle text-lg font-medium">
 											Loading...
 										</span>
 									</div>
 								) : data?.length === 0 ? (
 									<div className="flex-col gap-2 flex items-center justify-center h-[55vh]">
-										<span className="text-muted-foreground text-lg font-medium">
+										<span className="text-kumo-subtle text-lg font-medium">
 											No results.
 										</span>
 									</div>
@@ -173,7 +173,7 @@ export const ShowContainers = ({ runtimeWorkerId }: Props) => {
 													>
 														{isPending ? (
 															<div className="w-full flex-col gap-2 flex items-center justify-center h-[55vh]">
-																<span className="text-muted-foreground text-lg font-medium">
+																<span className="text-kumo-subtle text-lg font-medium">
 																	Loading...
 																</span>
 															</div>

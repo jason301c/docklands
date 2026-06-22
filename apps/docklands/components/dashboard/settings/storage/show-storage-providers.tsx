@@ -12,10 +12,10 @@ export const ShowStorageProviders = () => {
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="">
-					<h3 className="text-xl flex flex-row gap-2">
-						<Database className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<Database className="size-6 text-kumo-subtle self-center" />
 						Storage providers
 					</h3>
 					<p>
@@ -25,7 +25,7 @@ export const ShowStorageProviders = () => {
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 							<span>Loading...</span>
 							<Loader2 className="animate-spin size-4" />
 						</div>
@@ -33,8 +33,8 @@ export const ShowStorageProviders = () => {
 						<>
 							{data?.length === 0 ? (
 								<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
-									<FolderUp className="size-8 self-center text-muted-foreground" />
-									<span className="text-base text-muted-foreground">
+									<FolderUp className="size-8 self-center text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle">
 										To create a backup it is required to set at least 1
 										provider.
 									</span>
@@ -46,14 +46,14 @@ export const ShowStorageProviders = () => {
 										{data?.map((destination, index) => (
 											<div
 												key={destination.destinationId}
-												className="flex items-center justify-between bg-sidebar p-1 w-full rounded-lg"
+												className="flex items-center justify-between bg-kumo-elevated p-1 w-full rounded-lg"
 											>
-												<div className="flex items-center justify-between p-3.5 rounded-lg bg-background border  w-full">
+												<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border  w-full">
 													<div className="flex flex-col gap-1">
 														<span className="text-sm">
 															{index + 1}. {destination.name}
 														</span>
-														<span className="text-xs text-muted-foreground">
+														<span className="text-xs text-kumo-subtle">
 															Created at:{" "}
 															{new Date(
 																destination.createdAt,
@@ -90,10 +90,10 @@ export const ShowStorageProviders = () => {
 																	aria-label="Delete storage provider"
 																	variant="ghost"
 																	shape="square"
-																	className="group hover:bg-red-500/10 "
+																	className="group hover:bg-kumo-danger/10 "
 																	loading={isRemoving}
 																>
-																	<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+																	<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 																</Button>
 															</DialogAction>
 														)}

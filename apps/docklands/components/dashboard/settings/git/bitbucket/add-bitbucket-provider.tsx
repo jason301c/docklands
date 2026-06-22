@@ -78,7 +78,7 @@ export const AddBitbucketProvider = () => {
 				render={
 					<Button
 						variant="secondary"
-						className="flex items-center space-x-1 bg-blue-700 text-white hover:bg-blue-600"
+						className="flex items-center space-x-1 bg-kumo-info text-kumo-inverse hover:bg-kumo-info"
 					>
 						<BitbucketIcon />
 						<span>Bitbucket</span>
@@ -114,25 +114,25 @@ export const AddBitbucketProvider = () => {
 										className="inline-flex items-center gap-1 ml-1"
 									>
 										<span>Bitbucket settings</span>
-										<ExternalLink className="w-fit text-primary size-4" />
+										<ExternalLink className="w-fit text-kumo-brand size-4" />
 									</Link>
 								</div>
-								<ul className="list-disc list-inside ml-4 text-sm text-muted-foreground">
-									<li className="text-muted-foreground text-sm">
+								<ul className="list-disc list-inside ml-4 text-sm text-kumo-subtle">
+									<li className="text-kumo-subtle text-sm">
 										Click on Create API token with scopes
 									</li>
-									<li className="text-muted-foreground text-sm">
+									<li className="text-kumo-subtle text-sm">
 										Select the expiration date (Max 1 year)
 									</li>
-									<li className="text-muted-foreground text-sm">
+									<li className="text-kumo-subtle text-sm">
 										Select Bitbucket product.
 									</li>
 								</ul>
-								<p className="text-muted-foreground text-sm">
+								<p className="text-kumo-subtle text-sm">
 									Select the following scopes:
 								</p>
 
-								<ul className="list-disc list-inside ml-4 text-sm text-muted-foreground">
+								<ul className="list-disc list-inside ml-4 text-sm text-kumo-subtle">
 									<li>read:repository:bitbucket</li>
 									<li>read:pullrequest:bitbucket</li>
 									<li>read:webhook:bitbucket</li>

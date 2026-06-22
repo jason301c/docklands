@@ -142,7 +142,7 @@ const Invitation = ({
 	};
 
 	return (
-		<section className="w-full rounded-lg border bg-background p-8 shadow-sm">
+		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
 			<div className="mb-8 flex flex-col items-center gap-4 text-center">
 				<Link href="/" aria-label="Docklands home">
 					<Logo className="size-12" />
@@ -154,7 +154,7 @@ const Invitation = ({
 					<AlertBlock type="success">
 						<div className="flex flex-col gap-2">
 							<span className="font-medium">Valid Invitation</span>
-							<span className="text-sm text-green-600 dark:text-green-400">
+							<span className="text-sm text-kumo-success">
 								We detected that you already have an account with this email.
 								Please sign in to accept the invitation.
 							</span>
@@ -258,14 +258,11 @@ const Invitation = ({
 
 							{isCloud && (
 								<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
-									<Link
-										className="hover:underline text-muted-foreground"
-										href="/"
-									>
+									<Link className="hover:underline text-kumo-subtle" href="/">
 										Login
 									</Link>
 									<Link
-										className="hover:underline text-muted-foreground"
+										className="hover:underline text-kumo-subtle"
 										href="/send-reset-password"
 									>
 										Lost your password?

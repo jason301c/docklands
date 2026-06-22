@@ -87,16 +87,16 @@ export function DataTableFacetedFilter({
 							>
 								<div
 									className={cn(
-										"mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+										"mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-kumo-brand",
 										isSelected
-											? "bg-primary text-primary-foreground"
+											? "bg-kumo-brand text-kumo-inverse"
 											: "opacity-50 [&_svg]:invisible",
 									)}
 								>
 									<CheckIcon className="h-4 w-4" />
 								</div>
 								{option.icon && (
-									<option.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+									<option.icon className="mr-2 h-4 w-4 text-kumo-subtle" />
 								)}
 								<span>{option.label}</span>
 							</DropdownMenu.CheckboxItem>

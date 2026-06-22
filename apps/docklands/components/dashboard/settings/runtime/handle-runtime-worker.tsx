@@ -168,7 +168,7 @@ export const HandleRuntimeWorker = ({
 					</Dialog.Description>
 				</div>
 				<div>
-					<p className="text-primary text-sm font-medium">
+					<p className="text-kumo-brand text-sm font-medium">
 						Use any VPS or machine that supports SSH and a Docker-compatible
 						Linux environment.
 					</p>

@@ -115,7 +115,7 @@ const Register = ({ isCloud }: Props) => {
 		}
 	};
 	return (
-		<section className="w-full rounded-lg border bg-background p-8 shadow-sm">
+		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
 			<div className="mb-8 flex flex-col items-center gap-4 text-center">
 				<Link href="/" aria-label="Docklands home">
 					<Logo className="size-12" />
@@ -125,11 +125,9 @@ const Register = ({ isCloud }: Props) => {
 				</h1>
 			</div>
 			{isError && (
-				<div className="my-2 flex flex-row items-center gap-2 rounded-lg bg-red-50 p-2 dark:bg-red-950">
-					<AlertTriangle className="text-red-600 dark:text-red-400" />
-					<span className="text-sm text-red-600 dark:text-red-400">
-						{error}
-					</span>
+				<div className="my-2 flex flex-row items-center gap-2 rounded-lg bg-kumo-danger-tint p-2">
+					<AlertTriangle className="text-kumo-danger" />
+					<span className="text-sm text-kumo-danger">{error}</span>
 				</div>
 			)}
 			{isCloud && data && (
@@ -220,13 +218,13 @@ const Register = ({ isCloud }: Props) => {
 			</Form>
 			<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
 				{isCloud && (
-					<Link className="hover:underline text-muted-foreground" href="/">
+					<Link className="hover:underline text-kumo-subtle" href="/">
 						Sign in
 					</Link>
 				)}
 
 				<Link
-					className="hover:underline text-muted-foreground"
+					className="hover:underline text-kumo-subtle"
 					href="https://github.com/jason301c/docklands"
 					target="_blank"
 				>

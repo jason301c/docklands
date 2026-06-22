@@ -79,7 +79,7 @@ export default function Home() {
 		setIsLoading(false);
 	};
 	return (
-		<section className="w-full rounded-lg border bg-background p-8 shadow-sm">
+		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
 			<div className="mb-8 flex flex-col items-center gap-4 text-center">
 				<Link href="/" aria-label="Docklands home">
 					<Logo />
@@ -123,7 +123,7 @@ export default function Home() {
 			) : null}
 
 			<div className="mt-5 flex justify-center text-center text-sm">
-				<Link className="hover:underline text-muted-foreground" href="/">
+				<Link className="hover:underline text-kumo-subtle" href="/">
 					Login
 				</Link>
 			</div>

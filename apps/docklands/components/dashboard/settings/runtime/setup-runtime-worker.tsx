@@ -101,13 +101,13 @@ export const SetupRuntimeWorker = ({
 						<Dialog.Title className="flex items-center gap-2">
 							<ServerIcon className="size-5" /> Set Up Worker
 						</Dialog.Title>
-						<p className="text-muted-foreground text-sm">
+						<p className="text-kumo-subtle text-sm">
 							To set up this worker, click the button below.
 						</p>
 					</div>
 				</div>
 				{!runtimeWorker?.sshKeyId ? (
-					<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
+					<div className="flex flex-col gap-2 text-sm text-kumo-subtle pt-3">
 						<AlertBlock type="warning">
 							Please add an SSH key to this worker before setup. You can assign
 							an SSH key to this worker from Edit Worker.
@@ -141,8 +141,8 @@ export const SetupRuntimeWorker = ({
 						/>
 						{setupTab === "ssh-keys" && (
 							<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
-								<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
-									<p className="text-primary text-base font-semibold">
+								<div className="flex flex-col gap-2 text-sm text-kumo-subtle pt-3">
+									<p className="text-kumo-brand text-base font-semibold">
 										You have two options to add SSH keys to your worker:
 									</p>
 
@@ -156,7 +156,7 @@ export const SetupRuntimeWorker = ({
 									</ul>
 									<div className="flex flex-col gap-4 w-full overflow-auto">
 										<div className="flex relative flex-col gap-2 overflow-y-auto">
-											<div className="text-sm text-primary flex flex-row gap-2 items-center">
+											<div className="text-sm text-kumo-brand flex flex-row gap-2 items-center">
 												Copy Public Key ({runtimeWorker?.sshKey?.name})
 												<button
 													type="button"
@@ -170,32 +170,32 @@ export const SetupRuntimeWorker = ({
 														toast.success("SSH Copied to clipboard");
 													}}
 												>
-													<CopyIcon className="size-4 text-muted-foreground" />
+													<CopyIcon className="size-4 text-kumo-subtle" />
 												</button>
 											</div>
 										</div>
 									</div>
 
 									<div className="flex flex-col gap-2 w-full mt-2 border rounded-lg p-4">
-										<span className="text-base font-semibold text-primary">
+										<span className="text-base font-semibold text-kumo-brand">
 											Automatic process
 										</span>
 										<Link
 											href="https://github.com/jason301c/docklands"
 											target="_blank"
-											className="text-primary flex flex-row gap-2"
+											className="text-kumo-brand flex flex-row gap-2"
 										>
 											View Tutorial <ExternalLinkIcon className="size-4" />
 										</Link>
 									</div>
 									<div className="flex flex-col gap-2 w-full border rounded-lg p-4">
-										<span className="text-base font-semibold text-primary">
+										<span className="text-base font-semibold text-kumo-brand">
 											Manual process
 										</span>
 										<ul>
 											<li className="items-center flex gap-1">
 												1. Log in to your worker{" "}
-												<span className="text-primary bg-secondary p-1 rounded-lg">
+												<span className="text-kumo-brand bg-kumo-fill p-1 rounded-lg">
 													ssh {runtimeWorker?.username}@
 													{runtimeWorker?.ipAddress}
 												</span>
@@ -244,7 +244,7 @@ export const SetupRuntimeWorker = ({
 										</ul>
 									</div>
 									<div className="flex flex-col gap-2 w-full border rounded-lg p-4">
-										<span className="text-base font-semibold text-primary">
+										<span className="text-base font-semibold text-kumo-brand">
 											Supported Distros:
 										</span>
 										<p>
@@ -272,11 +272,13 @@ export const SetupRuntimeWorker = ({
 							<div>
 								<div className="p-0">
 									<div className="flex flex-col gap-4">
-										<LayerCard className="bg-background">
+										<LayerCard className="bg-kumo-canvas">
 											<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 												<div className="flex flex-row gap-2 justify-between w-full max-sm:flex-col">
 													<div className="flex flex-col gap-1">
-														<h3 className="text-xl">Set Up Worker</h3>
+														<h3 className="text-xl font-semibold">
+															Set Up Worker
+														</h3>
 														<p>
 															Initialize this worker with the runtime services
 															Docklands needs.
@@ -286,7 +288,7 @@ export const SetupRuntimeWorker = ({
 											</div>
 											<div className="flex flex-col gap-4 min-h-[25vh] items-center">
 												<div className="flex flex-col gap-4 items-center h-full max-w-xl mx-auto min-h-[25vh] justify-center">
-													<span className="text-sm text-muted-foreground text-center">
+													<span className="text-sm text-kumo-subtle text-center">
 														When your worker is ready, run the setup script or
 														adjust it before execution.
 													</span>
@@ -322,7 +324,7 @@ export const SetupRuntimeWorker = ({
 						)}
 						{setupTab === "validate" && (
 							<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
-								<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
+								<div className="flex flex-col gap-2 text-sm text-kumo-subtle pt-3">
 									<ValidateRuntimeWorker runtimeWorkerId={runtimeWorkerId} />
 								</div>
 							</div>
@@ -331,14 +333,14 @@ export const SetupRuntimeWorker = ({
 							<>
 								{setupTab === "audit" && (
 									<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
-										<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
+										<div className="flex flex-col gap-2 text-sm text-kumo-subtle pt-3">
 											<SecurityAudit runtimeWorkerId={runtimeWorkerId} />
 										</div>
 									</div>
 								)}
 								{setupTab === "gpu-setup" && (
 									<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">
-										<div className="flex flex-col gap-2 text-sm text-muted-foreground pt-3">
+										<div className="flex flex-col gap-2 text-sm text-kumo-subtle pt-3">
 											<GPUSupport runtimeWorkerId={runtimeWorkerId} />
 										</div>
 									</div>

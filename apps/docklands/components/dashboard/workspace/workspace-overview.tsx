@@ -44,10 +44,10 @@ const countProjectServices = (workspace: {
 	);
 
 const statusDotClass: Record<string, string> = {
-	done: "bg-emerald-500",
-	running: "bg-amber-500",
-	error: "bg-red-500",
-	idle: "bg-muted-foreground/40",
+	done: "bg-kumo-success",
+	running: "bg-kumo-warning",
+	error: "bg-kumo-danger",
+	idle: "bg-kumo-subtle/40",
 };
 
 function getServiceInfo(d: any) {
@@ -92,15 +92,13 @@ function StatCard({
 	delta?: string;
 }) {
 	return (
-		<div className="flex min-h-[140px] flex-col justify-between rounded-lg border bg-background p-5">
-			<span className="text-xs uppercase tracking-wider text-muted-foreground">
+		<div className="flex min-h-[140px] flex-col justify-between rounded-lg border bg-kumo-canvas p-5">
+			<span className="text-xs uppercase tracking-wider text-kumo-subtle">
 				{label}
 			</span>
 			<div className="flex flex-col gap-1">
 				<span className="text-3xl font-semibold tracking-tight">{value}</span>
-				{delta && (
-					<span className="text-xs text-muted-foreground">{delta}</span>
-				)}
+				{delta && <span className="text-xs text-kumo-subtle">{delta}</span>}
 			</div>
 		</div>
 	);
@@ -114,8 +112,8 @@ function StatusListCard({
 	items: { dotClass: string; label: string; count: number }[];
 }) {
 	return (
-		<div className="flex min-h-[140px] flex-col gap-3 rounded-lg border bg-background p-5">
-			<span className="text-xs uppercase tracking-wider text-muted-foreground">
+		<div className="flex min-h-[140px] flex-col gap-3 rounded-lg border bg-kumo-canvas p-5">
+			<span className="text-xs uppercase tracking-wider text-kumo-subtle">
 				{label}
 			</span>
 			<ul className="flex flex-col gap-1.5">
@@ -126,7 +124,7 @@ function StatusListCard({
 							aria-hidden
 						/>
 						<span className="font-semibold tabular-nums w-8">{item.count}</span>
-						<span className="text-muted-foreground">{item.label}</span>
+						<span className="text-kumo-subtle">{item.label}</span>
 					</li>
 				))}
 			</ul>
@@ -140,15 +138,15 @@ function FirstRunWorkspacePanel({
 	canCreateWorkspaces: boolean;
 }) {
 	return (
-		<div className="flex min-h-[560px] items-center justify-center rounded-lg border bg-background px-6 py-12">
+		<div className="flex min-h-[560px] items-center justify-center rounded-lg border bg-kumo-canvas px-6 py-12">
 			<div className="flex w-full max-w-3xl flex-col items-center text-center">
-				<span className="flex size-12 items-center justify-center rounded-lg border bg-muted/30">
-					<FolderInput className="size-5 text-muted-foreground" />
+				<span className="flex size-12 items-center justify-center rounded-lg border bg-kumo-fill/30">
+					<FolderInput className="size-5 text-kumo-subtle" />
 				</span>
 				<h2 className="mt-5 text-2xl font-semibold tracking-tight">
 					Start from a workspace canvas
 				</h2>
-				<p className="mt-2 max-w-xl text-sm text-muted-foreground">
+				<p className="mt-2 max-w-xl text-sm text-kumo-subtle">
 					Create the first workspace, then drop services onto one environment
 					canvas.
 				</p>
@@ -168,29 +166,29 @@ function FirstRunWorkspacePanel({
 				</div>
 
 				<div className="mt-10 grid w-full gap-3 sm:grid-cols-3">
-					<div className="flex min-h-[112px] flex-col gap-3 rounded-lg border bg-muted/20 p-4 text-left">
-						<FolderInput className="size-4 text-muted-foreground" />
+					<div className="flex min-h-[112px] flex-col gap-3 rounded-lg border bg-kumo-fill/20 p-4 text-left">
+						<FolderInput className="size-4 text-kumo-subtle" />
 						<div className="flex flex-col gap-1">
 							<span className="text-sm font-medium">Workspace</span>
-							<span className="text-xs text-muted-foreground">
+							<span className="text-xs text-kumo-subtle">
 								Name the system boundary.
 							</span>
 						</div>
 					</div>
-					<div className="flex min-h-[112px] flex-col gap-3 rounded-lg border bg-muted/20 p-4 text-left">
-						<BookIcon className="size-4 text-muted-foreground" />
+					<div className="flex min-h-[112px] flex-col gap-3 rounded-lg border bg-kumo-fill/20 p-4 text-left">
+						<BookIcon className="size-4 text-kumo-subtle" />
 						<div className="flex flex-col gap-1">
 							<span className="text-sm font-medium">Service</span>
-							<span className="text-xs text-muted-foreground">
+							<span className="text-xs text-kumo-subtle">
 								Add Git, image, compose, or data.
 							</span>
 						</div>
 					</div>
-					<div className="flex min-h-[112px] flex-col gap-3 rounded-lg border bg-muted/20 p-4 text-left">
-						<Rocket className="size-4 text-muted-foreground" />
+					<div className="flex min-h-[112px] flex-col gap-3 rounded-lg border bg-kumo-fill/20 p-4 text-left">
+						<Rocket className="size-4 text-kumo-subtle" />
 						<div className="flex flex-col gap-1">
 							<span className="text-sm font-medium">Runtime</span>
-							<span className="text-xs text-muted-foreground">
+							<span className="text-xs text-kumo-subtle">
 								Deploy on this VM.
 							</span>
 						</div>
@@ -301,7 +299,7 @@ export const WorkspaceOverview = () => {
 
 	return (
 		<div className="w-full">
-			<div className="flex min-h-[85vh] flex-col gap-6 rounded-lg border bg-background p-6">
+			<div className="flex min-h-[85vh] flex-col gap-6 rounded-lg border bg-kumo-canvas p-6">
 				<div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
 					<h1 className="text-3xl font-semibold tracking-tight">
 						{firstName ? `Welcome back, ${firstName}` : "Welcome back"}
@@ -343,17 +341,17 @@ export const WorkspaceOverview = () => {
 								label="Status"
 								items={[
 									{
-										dotClass: "bg-emerald-500",
+										dotClass: "bg-kumo-success",
 										label: "running",
 										count: statusBreakdown.running,
 									},
 									{
-										dotClass: "bg-red-500",
+										dotClass: "bg-kumo-danger",
 										label: "errored",
 										count: statusBreakdown.error,
 									},
 									{
-										dotClass: "bg-muted-foreground/40",
+										dotClass: "bg-kumo-subtle/40",
 										label: "idle",
 										count: statusBreakdown.idle,
 									},
@@ -362,10 +360,10 @@ export const WorkspaceOverview = () => {
 						</div>
 
 						<div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
-							<div className="rounded-lg border bg-background">
+							<div className="rounded-lg border bg-kumo-canvas">
 								<div className="flex items-center justify-between px-5 py-4 border-b">
 									<div className="flex items-center gap-2">
-										<Rocket className="size-4 text-muted-foreground" />
+										<Rocket className="size-4 text-kumo-subtle" />
 										<h2 className="text-sm font-semibold">
 											Recent deployments
 										</h2>
@@ -373,24 +371,24 @@ export const WorkspaceOverview = () => {
 									{canReadDeployments && (
 										<Link
 											href="/dashboard/deployments"
-											className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+											className="text-xs text-kumo-subtle hover:text-kumo-default transition-colors"
 										>
 											view all →
 										</Link>
 									)}
 								</div>
 								{!canReadDeployments ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
 										<Rocket className="size-8 opacity-40" />
 										<span>You do not have permission to view deployments.</span>
 									</div>
 								) : isDeploymentsLoading ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
 										<Rocket className="size-8 opacity-40" />
 										<span>Loading deployments...</span>
 									</div>
 								) : recentDeployments.length === 0 ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
 										<Rocket className="size-8 opacity-40" />
 										<span>No recent deployments.</span>
 									</div>
@@ -404,7 +402,7 @@ export const WorkspaceOverview = () => {
 												<li key={d.deploymentId}>
 													<Link
 														href={info.href}
-														className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
+														className="flex items-center gap-4 px-5 py-4 hover:bg-kumo-fill/40 transition-colors"
 													>
 														<span
 															className={`size-2 rounded-full shrink-0 ${statusDotClass[status] ?? statusDotClass.idle}`}
@@ -414,23 +412,23 @@ export const WorkspaceOverview = () => {
 															<span className="text-sm truncate">
 																{info.name}
 															</span>
-															<span className="text-xs text-muted-foreground truncate">
+															<span className="text-xs text-kumo-subtle truncate">
 																{info.projectName} · {info.environment}
 															</span>
 														</div>
-														<span className="text-xs text-muted-foreground w-36 hidden lg:flex items-center justify-end gap-1.5 truncate">
+														<span className="text-xs text-kumo-subtle w-36 hidden lg:flex items-center justify-end gap-1.5 truncate">
 															<Rocket className="size-3 shrink-0" />
 															<span className="truncate">Runtime</span>
 														</span>
-														<span className="text-xs text-muted-foreground w-20 text-right hidden sm:inline">
+														<span className="text-xs text-kumo-subtle w-20 text-right hidden sm:inline">
 															{status}
 														</span>
-														<span className="text-xs text-muted-foreground w-24 text-right hidden md:inline">
+														<span className="text-xs text-kumo-subtle w-24 text-right hidden md:inline">
 															{formatDistanceToNow(new Date(d.createdAt), {
 																addSuffix: true,
 															})}
 														</span>
-														<span className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+														<span className="text-xs text-kumo-subtle hover:text-kumo-default transition-colors">
 															logs →
 														</span>
 													</Link>
@@ -441,27 +439,27 @@ export const WorkspaceOverview = () => {
 								)}
 							</div>
 
-							<div className="rounded-lg border bg-background">
+							<div className="rounded-lg border bg-kumo-canvas">
 								<div className="flex items-center justify-between px-5 py-4 border-b">
 									<div className="flex items-center gap-2">
-										<FolderInput className="size-4 text-muted-foreground" />
+										<FolderInput className="size-4 text-kumo-subtle" />
 										<h2 className="text-sm font-semibold">Workspaces</h2>
 									</div>
 									<Link
 										href={workspaceListPath}
-										className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+										className="text-xs text-kumo-subtle hover:text-kumo-default transition-colors"
 									>
 										view all →
 									</Link>
 								</div>
 
 								{isWorkspacesLoading ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
 										<FolderInput className="size-8 opacity-40" />
 										<span>Loading workspaces...</span>
 									</div>
 								) : recentProjects.length === 0 ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground p-10">
+									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
 										<FolderInput className="size-8 opacity-40" />
 										<span>No recent workspaces.</span>
 									</div>
@@ -479,22 +477,22 @@ export const WorkspaceOverview = () => {
 																	})
 																: workspaceListPath
 														}
-														className="flex items-center gap-4 px-5 py-4 hover:bg-muted/40 transition-colors"
+														className="flex items-center gap-4 px-5 py-4 hover:bg-kumo-fill/40 transition-colors"
 													>
-														<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-muted/30">
-															<BookIcon className="size-4 text-muted-foreground" />
+														<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
+															<BookIcon className="size-4 text-kumo-subtle" />
 														</span>
 														<div className="flex flex-col min-w-0 flex-1">
 															<span className="text-sm truncate">
 																{workspace.name}
 															</span>
-															<span className="text-xs text-muted-foreground truncate">
+															<span className="text-xs text-kumo-subtle truncate">
 																{environment?.name ?? "No environment"} ·{" "}
 																{services}{" "}
 																{services === 1 ? "service" : "services"}
 															</span>
 														</div>
-														<ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+														<ArrowRight className="size-4 shrink-0 text-kumo-subtle" />
 													</Link>
 												</li>
 											),

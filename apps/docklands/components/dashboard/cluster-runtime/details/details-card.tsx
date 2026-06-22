@@ -29,7 +29,7 @@ export function NodeCard({ node, runtimeWorkerId }: Props) {
 
 	if (isPending) {
 		return (
-			<LayerCard className="w-full bg-background">
+			<LayerCard className="w-full bg-kumo-canvas">
 				<div>
 					<h3 className="flex items-center justify-between text-lg">
 						<span className="flex items-center gap-2">{node.Hostname}</span>
@@ -38,7 +38,7 @@ export function NodeCard({ node, runtimeWorkerId }: Props) {
 				</div>
 				<div>
 					<div className="flex items-center justify-center">
-						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+						<Loader2 className="h-6 w-6 animate-spin text-kumo-subtle" />
 					</div>
 				</div>
 			</LayerCard>
@@ -46,7 +46,7 @@ export function NodeCard({ node, runtimeWorkerId }: Props) {
 	}
 
 	return (
-		<LayerCard className="w-full bg-background">
+		<LayerCard className="w-full bg-kumo-canvas">
 			<div>
 				<h3 className="text-lg">Node Status</h3>
 			</div>
@@ -55,7 +55,7 @@ export function NodeCard({ node, runtimeWorkerId }: Props) {
 					<div className="flex flex-wrap gap-y-2 items-center justify-between">
 						<div className="flex items-center space-x-4 p-2 rounded-xl border">
 							<div
-								className={`h-2.5 w-2.5 rounded-full ${node.Status === "Ready" ? "bg-green-500" : "bg-red-500"}`}
+								className={`h-2.5 w-2.5 rounded-full ${node.Status === "Ready" ? "bg-kumo-success" : "bg-kumo-danger"}`}
 							/>
 							<div className="font-medium">{node.Hostname}</div>
 							<Badge variant="green">{node.ManagerStatus || "Worker"}</Badge>
@@ -70,14 +70,14 @@ export function NodeCard({ node, runtimeWorkerId }: Props) {
 
 					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 						<div className="space-y-2 flex flex-col items-center text-center">
-							<div className="flex items-center text-sm text-muted-foreground">
+							<div className="flex items-center text-sm text-kumo-subtle">
 								<HardDrive className="mr-2 h-4 w-4" />
 								Engine Version
 							</div>
 							<div>{node.EngineVersion}</div>
 						</div>
 						<div className="space-y-2 flex flex-col items-center text-center">
-							<div className="flex items-center text-sm text-muted-foreground">
+							<div className="flex items-center text-sm text-kumo-subtle">
 								<Cpu className="mr-2 h-4 w-4" />
 								CPU
 							</div>
@@ -88,7 +88,7 @@ export function NodeCard({ node, runtimeWorkerId }: Props) {
 							</div>
 						</div>
 						<div className="space-y-2 flex flex-col items-center text-center">
-							<div className="flex items-center text-sm text-muted-foreground">
+							<div className="flex items-center text-sm text-kumo-subtle">
 								<Database className="mr-2 h-4 w-4" />
 								Memory
 							</div>
@@ -102,7 +102,7 @@ export function NodeCard({ node, runtimeWorkerId }: Props) {
 							</div>
 						</div>
 						<div className="space-y-2 flex flex-col items-center text-center">
-							<div className="flex items-center text-sm text-muted-foreground">
+							<div className="flex items-center text-sm text-kumo-subtle">
 								<Box className="mr-2 h-4 w-4" />
 								IP Address
 							</div>

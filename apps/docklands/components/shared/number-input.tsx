@@ -87,7 +87,7 @@ export const NumberInputWithSteps = ({
 				</Button>
 			</div>
 			{displayValue && (
-				<span className="text-xs text-muted-foreground text-center">
+				<span className="text-xs text-kumo-subtle text-center">
 					{displayValue}
 				</span>
 			)}

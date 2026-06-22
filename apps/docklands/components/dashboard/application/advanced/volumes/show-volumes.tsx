@@ -43,10 +43,10 @@ export const ShowVolumes = ({ id, type }: Props) => {
 		api.mounts.remove.useMutation();
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row justify-between flex-wrap gap-4">
 				<div>
-					<h3 className="text-xl">Volumes</h3>
+					<h3 className="text-xl font-semibold">Volumes</h3>
 					<p>
 						If you want to persist data in this service use the following config
 						to setup the volumes
@@ -62,8 +62,8 @@ export const ShowVolumes = ({ id, type }: Props) => {
 			<div className="flex flex-col gap-4">
 				{data?.mounts.length === 0 ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
-						<Package className="size-8 text-muted-foreground" />
-						<span className="text-base text-muted-foreground">
+						<Package className="size-8 text-kumo-subtle" />
+						<span className="text-base text-kumo-subtle">
 							No volumes/mounts configured
 						</span>
 						{canCreate && (
@@ -89,14 +89,14 @@ export const ShowVolumes = ({ id, type }: Props) => {
 										<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 flex-col gap-4 sm:gap-8">
 											<div className="flex flex-col gap-1">
 												<span className="font-medium">Mount Type</span>
-												<span className="text-sm text-muted-foreground">
+												<span className="text-sm text-kumo-subtle">
 													{mount.type.toUpperCase()}
 												</span>
 											</div>
 											{mount.type === "volume" && (
 												<div className="flex flex-col gap-1">
 													<span className="font-medium">Volume Name</span>
-													<span className="text-sm text-muted-foreground">
+													<span className="text-sm text-kumo-subtle">
 														{mount.volumeName}
 													</span>
 												</div>
@@ -105,7 +105,7 @@ export const ShowVolumes = ({ id, type }: Props) => {
 											{mount.type === "file" && (
 												<div className="flex flex-col gap-1">
 													<span className="font-medium">Content</span>
-													<span className="text-sm text-muted-foreground line-clamp-[10] whitespace-break-spaces">
+													<span className="text-sm text-kumo-subtle line-clamp-[10] whitespace-break-spaces">
 														{mount.content}
 													</span>
 												</div>
@@ -113,7 +113,7 @@ export const ShowVolumes = ({ id, type }: Props) => {
 											{mount.type === "bind" && (
 												<div className="flex flex-col gap-1">
 													<span className="font-medium">Host Path</span>
-													<span className="text-sm text-muted-foreground">
+													<span className="text-sm text-kumo-subtle">
 														{mount.hostPath}
 													</span>
 												</div>
@@ -121,7 +121,7 @@ export const ShowVolumes = ({ id, type }: Props) => {
 											{mount.type === "file" && (
 												<div className="flex flex-col gap-1">
 													<span className="font-medium">File Path</span>
-													<span className="text-sm text-muted-foreground">
+													<span className="text-sm text-kumo-subtle">
 														{mount.filePath}
 													</span>
 												</div>
@@ -129,7 +129,7 @@ export const ShowVolumes = ({ id, type }: Props) => {
 
 											<div className="flex flex-col gap-1">
 												<span className="font-medium">Mount Path</span>
-												<span className="text-sm text-muted-foreground">
+												<span className="text-sm text-kumo-subtle">
 													{mount.mountPath}
 												</span>
 											</div>
@@ -165,10 +165,10 @@ export const ShowVolumes = ({ id, type }: Props) => {
 														aria-label="Delete volume"
 														variant="ghost"
 														shape="square"
-														className="group hover:bg-red-500/10"
+														className="group hover:bg-kumo-danger/10"
 														loading={isRemoving}
 													>
-														<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+														<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 													</Button>
 												</DialogAction>
 											)}

@@ -54,9 +54,9 @@ export const ComposePaidMonitoring = ({
 
 	return (
 		<div>
-			<LayerCard className="bg-background border-0">
+			<LayerCard className="bg-kumo-canvas border-0">
 				<div>
-					<h3 className="text-xl">Metrics</h3>
+					<h3 className="text-xl font-semibold">Metrics</h3>
 					<p>Watch the usage of your compose</p>
 				</div>
 				<div className="flex flex-col gap-4">
@@ -76,7 +76,7 @@ export const ComposePaidMonitoring = ({
 						>
 							<>
 								{isPending ? (
-									<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground">
+									<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle">
 										<span>Loading...</span>
 										<Loader2 className="animate-spin size-4" />
 									</div>

@@ -8,7 +8,7 @@ function SchedulesPage() {
 		<RuntimeWorkerFilter>
 			{(runtimeWorkerId) => (
 				<div className="w-full">
-					<div className="min-h-[45vh] rounded-lg border bg-background">
+					<div className="min-h-[45vh] rounded-lg border bg-kumo-canvas">
 						<ShowSchedules
 							scheduleType={
 								runtimeWorkerId ? "runtimeWorker" : "docklands-server"

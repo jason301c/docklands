@@ -35,7 +35,7 @@ export const AddClusterNode = ({ runtimeWorkerId }: Props) => {
 						<Link
 							href="https://docs.docker.com/engine/swarm/"
 							target="_blank"
-							className="text-primary flex flex-row gap-2 items-center"
+							className="text-kumo-brand flex flex-row gap-2 items-center"
 						>
 							Docker Swarm engine guide
 							<ExternalLink className="h-4 w-4" />
@@ -43,7 +43,7 @@ export const AddClusterNode = ({ runtimeWorkerId }: Props) => {
 						<Link
 							href="https://docs.docker.com/engine/swarm/how-swarm-mode-works/nodes/"
 							target="_blank"
-							className="text-primary flex flex-row gap-2 items-center"
+							className="text-kumo-brand flex flex-row gap-2 items-center"
 						>
 							Architecture
 							<ExternalLink className="h-4 w-4" />

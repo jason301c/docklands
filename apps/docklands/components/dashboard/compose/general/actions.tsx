@@ -241,7 +241,7 @@ export const ComposeActions = ({ composeId }: Props) => {
 									toast.error("Error updating Auto Build");
 								});
 						}}
-						className="flex flex-row gap-2 items-center data-[state=checked]:bg-primary"
+						className="flex flex-row gap-2 items-center data-[state=checked]:bg-kumo-brand"
 					/>
 				</div>
 			)}

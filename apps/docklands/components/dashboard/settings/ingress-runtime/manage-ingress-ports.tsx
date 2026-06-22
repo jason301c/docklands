@@ -119,7 +119,7 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 							<div className="flex items-center justify-between">
 								<div className="flex flex-col gap-1">
 									Add or remove additional ports for the ingress runtime
-									<span className="text-sm text-muted-foreground">
+									<span className="text-sm text-kumo-subtle">
 										{fields.length} port mapping{fields.length !== 1 ? "s" : ""}{" "}
 										configured
 									</span>
@@ -141,11 +141,11 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 							<div className="grid gap-6 py-4">
 								{fields.length === 0 ? (
 									<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
-										<ArrowRightLeft className="size-8 text-muted-foreground" />
-										<span className="text-base text-muted-foreground text-center">
+										<ArrowRightLeft className="size-8 text-kumo-subtle" />
+										<span className="text-base text-kumo-subtle text-center">
 											No port mappings configured
 										</span>
-										<p className="text-sm text-muted-foreground text-center">
+										<p className="text-sm text-kumo-subtle text-center">
 											Add one to get started
 										</p>
 									</div>
@@ -160,7 +160,7 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 															name={`ports.${index}.targetPort`}
 															render={({ field }) => (
 																<FormItem>
-																	<FormLabel className="text-sm font-medium text-muted-foreground">
+																	<FormLabel className="text-sm font-medium text-kumo-subtle">
 																		Target Port
 																	</FormLabel>
 																	<FormControl>
@@ -189,7 +189,7 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 															name={`ports.${index}.publishedPort`}
 															render={({ field }) => (
 																<FormItem>
-																	<FormLabel className="text-sm font-medium text-muted-foreground">
+																	<FormLabel className="text-sm font-medium text-kumo-subtle">
 																		Published Port
 																	</FormLabel>
 																	<FormControl>
@@ -217,7 +217,7 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 															name={`ports.${index}.protocol`}
 															render={({ field }) => (
 																<FormItem>
-																	<FormLabel className="text-sm font-medium text-muted-foreground">
+																	<FormLabel className="text-sm font-medium text-kumo-subtle">
 																		Protocol
 																	</FormLabel>
 																	<FormControl>
@@ -254,7 +254,7 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 																onClick={() => remove(index)}
 																variant="ghost"
 																shape="square"
-																className="text-muted-foreground hover:text-destructive"
+																className="text-kumo-subtle hover:text-kumo-danger"
 															>
 																<Trash2 className="h-4 w-4" />
 															</Button>

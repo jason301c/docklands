@@ -81,10 +81,10 @@ export const ShowRequests = () => {
 	return (
 		<>
 			<div className="w-full">
-				<div className="mx-auto w-full max-w-8xl rounded-lg border bg-background p-6">
+				<div className="mx-auto w-full max-w-8xl rounded-lg border bg-kumo-canvas p-6">
 					<div className="">
-						<h3 className="text-xl flex flex-row gap-2">
-							<ArrowDownUp className="size-6 text-muted-foreground self-center" />
+						<h3 className="text-xl font-semibold flex items-center gap-2">
+							<ArrowDownUp className="size-6 text-kumo-subtle self-center" />
 							Requests
 						</h3>
 						<p>See incoming requests handled by the ingress runtime.</p>
@@ -95,7 +95,7 @@ export const ShowRequests = () => {
 								apply the changes. You can reload it in{" "}
 								<Link
 									href="/dashboard/settings/ingress"
-									className="text-primary"
+									className="text-kumo-brand"
 								>
 									Settings
 								</Link>
@@ -122,7 +122,7 @@ export const ShowRequests = () => {
 												</>
 											}
 										>
-											<InfoIcon className="size-4 text-muted-foreground" />
+											<InfoIcon className="size-4 text-kumo-subtle" />
 										</Tooltip>
 									</TooltipProvider>
 								</div>
@@ -234,8 +234,8 @@ export const ShowRequests = () => {
 								<RequestsTable dateRange={dateRange} />
 							</>
 						) : (
-							<div className="flex flex-col items-center justify-center py-12 gap-4 text-muted-foreground">
-								<AlertCircle className="size-12 text-muted-foreground/50" />
+							<div className="flex flex-col items-center justify-center py-12 gap-4 text-kumo-subtle">
+								<AlertCircle className="size-12 text-kumo-subtle/50" />
 								<div className="text-center space-y-2">
 									<h3 className="text-lg font-medium">
 										Requests are not activated

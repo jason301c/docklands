@@ -132,9 +132,9 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 							aria-label="Edit certificate"
 							variant="ghost"
 							shape="square"
-							className="group hover:bg-blue-500/10"
+							className="group hover:bg-kumo-brand/10"
 						>
-							<SquarePen className="size-3.5 text-primary group-hover:text-blue-500" />
+							<SquarePen className="size-3.5 text-kumo-brand group-hover:text-kumo-brand" />
 						</Button>
 					) : (
 						((
@@ -220,7 +220,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 									<FormItem>
 										<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
 											Placement {!isCloud && "(Optional)"}
-											<HelpCircle className="size-4 text-muted-foreground" />
+											<HelpCircle className="size-4 text-kumo-subtle" />
 										</FormLabel>
 
 										<Select
@@ -237,7 +237,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 														<Select.Option value="docklands">
 															<span className="flex items-center gap-2 justify-between w-full">
 																<span>Automatic placement</span>
-																<span className="text-muted-foreground text-xs self-center">
+																<span className="text-kumo-subtle text-xs self-center">
 																	Default
 																</span>
 															</span>
@@ -250,7 +250,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 														>
 															<span className="flex items-center gap-2 justify-between w-full">
 																<span>{runtimeWorker.name}</span>
-																<span className="text-muted-foreground text-xs self-center">
+																<span className="text-kumo-subtle text-xs self-center">
 																	{runtimeWorker.ipAddress}
 																</span>
 															</span>

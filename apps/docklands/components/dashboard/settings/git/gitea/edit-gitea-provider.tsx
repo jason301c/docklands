@@ -162,7 +162,7 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 				shape="square"
 				disabled
 			>
-				<PenBoxIcon className="h-4 w-4 text-muted-foreground" />
+				<PenBoxIcon className="h-4 w-4 text-kumo-subtle" />
 			</Button>
 		);
 	}
@@ -180,9 +180,9 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 						aria-label="Edit Gitea provider"
 						variant="ghost"
 						shape="square"
-						className="group hover:bg-blue-500/10"
+						className="group hover:bg-kumo-brand/10"
 					>
-						<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
+						<PenBoxIcon className="size-3.5 text-kumo-brand group-hover:text-kumo-brand" />
 					</Button>
 				}
 			/>

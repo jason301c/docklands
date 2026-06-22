@@ -18,10 +18,10 @@ export const ShowGeneralCompose = ({ composeId }: Props) => {
 
 	return (
 		<>
-			<LayerCard className="bg-background">
+			<LayerCard className="bg-kumo-canvas">
 				<div>
 					<div className="flex flex-row gap-2 justify-between flex-wrap">
-						<h3 className="text-xl">Build Settings</h3>
+						<h3 className="text-xl font-semibold">Build Settings</h3>
 						<Badge>
 							{data?.composeType === "docker-compose" ? "Compose" : "Stack"}
 						</Badge>

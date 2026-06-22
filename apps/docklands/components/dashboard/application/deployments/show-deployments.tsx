@@ -140,10 +140,10 @@ export const ShowDeployments = ({
 	}, []);
 
 	return (
-		<LayerCard className="bg-background border-none">
+		<LayerCard className="bg-kumo-canvas border-none">
 			<div className="flex flex-row items-center justify-between flex-wrap gap-2">
 				<div className="flex flex-col gap-2">
-					<h3 className="text-xl">Deployments</h3>
+					<h3 className="text-xl font-semibold">Deployments</h3>
 					<p>See the last 10 deployments for this {type}</p>
 				</div>
 				<div className="flex flex-row items-center flex-wrap gap-2">
@@ -226,7 +226,7 @@ export const ShowDeployments = ({
 								<button
 									type="button"
 									aria-label="Copy webhook URL to clipboard"
-									className="p-2 rounded-md ml-1 mr-1 border hover:border-primary hover:text-primary-foreground hover:bg-primary hover:cursor-pointer whitespace-normal break-all inline-flex items-center"
+									className="p-2 rounded-md ml-1 mr-1 border hover:border-kumo-brand hover:text-kumo-inverse hover:bg-kumo-brand hover:cursor-pointer whitespace-normal break-all inline-flex items-center"
 									onClick={() => {
 										copy(webhookUrl);
 										toast.success("Copied to clipboard.");
@@ -245,15 +245,15 @@ export const ShowDeployments = ({
 
 				{isLoadingDeployments ? (
 					<div className="flex w-full flex-row items-center justify-center gap-3 pt-10 min-h-[25vh]">
-						<Loader2 className="size-6 text-muted-foreground animate-spin" />
-						<span className="text-base text-muted-foreground">
+						<Loader2 className="size-6 text-kumo-subtle animate-spin" />
+						<span className="text-base text-kumo-subtle">
 							Loading deployments...
 						</span>
 					</div>
 				) : deployments?.length === 0 ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10 min-h-[25vh]">
-						<RocketIcon className="size-8 text-muted-foreground" />
-						<span className="text-base text-muted-foreground">
+						<RocketIcon className="size-8 text-kumo-subtle" />
+						<span className="text-base text-kumo-subtle">
 							No deployments found
 						</span>
 					</div>
@@ -274,7 +274,7 @@ export const ShowDeployments = ({
 									className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
 								>
 									<div className="flex flex-1 flex-col min-w-0">
-										<span className="flex items-center gap-4 font-medium capitalize text-foreground">
+										<span className="flex items-center gap-4 font-medium capitalize text-kumo-default">
 											{index + 1}. {deployment.status}
 											<StatusTooltip
 												status={deployment?.status}
@@ -283,7 +283,7 @@ export const ShowDeployments = ({
 										</span>
 
 										<div className="flex flex-col gap-1">
-											<span className="break-words text-sm text-muted-foreground whitespace-pre-wrap">
+											<span className="break-words text-sm text-kumo-subtle whitespace-pre-wrap">
 												{isExpanded || !needsTruncation
 													? titleText
 													: truncateDescription(titleText)}
@@ -300,7 +300,7 @@ export const ShowDeployments = ({
 														}
 														setExpandedDescriptions(next);
 													}}
-													className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors w-fit mt-1 cursor-pointer"
+													className="flex items-center gap-1 text-xs text-kumo-subtle hover:text-kumo-default transition-colors w-fit mt-1 cursor-pointer"
 													aria-label={
 														isExpanded
 															? "Collapse commit message"
@@ -322,14 +322,14 @@ export const ShowDeployments = ({
 											)}
 											{/* Hash (from description) - shown in compact form */}
 											{deployment.description?.trim() && (
-												<span className="text-xs text-muted-foreground font-mono">
+												<span className="text-xs text-kumo-subtle font-mono">
 													{deployment.description}
 												</span>
 											)}
 										</div>
 									</div>
 									<div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:max-w-[300px] sm:items-end sm:justify-start">
-										<div className="text-sm capitalize text-muted-foreground flex flex-wrap items-center gap-2">
+										<div className="text-sm capitalize text-kumo-subtle flex flex-wrap items-center gap-2">
 											<DateTooltip date={deployment.createdAt} />
 											{deployment.startedAt && deployment.finishedAt && (
 												<Badge
@@ -453,7 +453,7 @@ export const ShowDeployments = ({
 															loading={isRollingBack}
 															className="w-full sm:w-auto"
 														>
-															<RefreshCcw className="size-4 text-primary group-hover:text-red-500" />
+															<RefreshCcw className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 															Rollback
 														</Button>
 													</DialogAction>

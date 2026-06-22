@@ -64,7 +64,7 @@ export const ShowContainerNetworks = ({
 				</div>
 				<div className="overflow-auto max-h-[70vh]">
 					{entries.length === 0 ? (
-						<div className="text-center text-muted-foreground py-8">
+						<div className="text-center text-kumo-subtle py-8">
 							No networks found for this container.
 						</div>
 					) : (

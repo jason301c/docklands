@@ -13,17 +13,17 @@ export const ShowImageRegistry = () => {
 
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="">
-					<h3 className="text-xl flex flex-row gap-2">
-						<Package className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<Package className="size-6 text-kumo-subtle self-center" />
 						Image Registry
 					</h3>
 					<p>Manage credentials for container image registries.</p>
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 							<span>Loading...</span>
 							<Loader2 className="animate-spin size-4" />
 						</div>
@@ -31,8 +31,8 @@ export const ShowImageRegistry = () => {
 						<>
 							{data?.length === 0 ? (
 								<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
-									<Package className="size-8 self-center text-muted-foreground" />
-									<span className="text-base text-muted-foreground text-center">
+									<Package className="size-8 self-center text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle text-center">
 										You don't have any image registries
 									</span>
 									{permissions?.registry.create && <HandleImageRegistry />}
@@ -43,16 +43,16 @@ export const ShowImageRegistry = () => {
 										{data?.map((registry, index) => (
 											<div
 												key={registry.registryId}
-												className="flex items-center justify-between bg-sidebar p-1 w-full rounded-lg"
+												className="flex items-center justify-between bg-kumo-elevated p-1 w-full rounded-lg"
 											>
-												<div className="flex items-center justify-between p-3.5 rounded-lg bg-background border  w-full">
+												<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border  w-full">
 													<div className="flex items-center justify-between">
 														<div className="flex gap-2 flex-col">
 															<span className="text-sm font-medium">
 																{index + 1}. {registry.registryName}
 															</span>
 															{registry.registryUrl && (
-																<div className="text-xs text-muted-foreground">
+																<div className="text-xs text-kumo-subtle">
 																	{registry.registryUrl}
 																</div>
 															)}
@@ -90,10 +90,10 @@ export const ShowImageRegistry = () => {
 																	aria-label="Delete image registry"
 																	variant="ghost"
 																	shape="square"
-																	className="group hover:bg-red-500/10 "
+																	className="group hover:bg-kumo-danger/10 "
 																	loading={isRemoving}
 																>
-																	<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+																	<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 																</Button>
 															</DialogAction>
 														)}

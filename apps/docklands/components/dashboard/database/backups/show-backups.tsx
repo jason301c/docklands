@@ -89,11 +89,11 @@ export const ShowBackups = ({
 		api.backup.remove.useMutation();
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row justify-between gap-4  flex-wrap">
 				<div className="flex flex-col gap-0.5">
-					<h3 className="text-xl flex flex-row gap-2">
-						<Database className="size-6 text-muted-foreground" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<Database className="size-6 text-kumo-subtle" />
 						Backups
 					</h3>
 					<p>
@@ -128,13 +128,13 @@ export const ShowBackups = ({
 			<div className="flex flex-col gap-4">
 				{data?.length === 0 ? (
 					<div className="flex flex-col items-center gap-3 min-h-[35vh] justify-center">
-						<DatabaseBackup className="size-8 text-muted-foreground" />
-						<span className="text-base text-muted-foreground text-center">
+						<DatabaseBackup className="size-8 text-kumo-subtle" />
+						<span className="text-base text-kumo-subtle text-center">
 							To create a backup it is required to set at least 1 provider.
 							Please, go to{" "}
 							<Link
 								href="/dashboard/settings/storage"
-								className="text-foreground"
+								className="text-kumo-default"
 							>
 								Storage providers
 							</Link>{" "}
@@ -145,8 +145,8 @@ export const ShowBackups = ({
 					<div className="flex flex-col gap-4 w-full">
 						{postgres?.backups.length === 0 ? (
 							<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
-								<DatabaseBackup className="size-8 text-muted-foreground" />
-								<span className="text-base text-muted-foreground">
+								<DatabaseBackup className="size-8 text-kumo-subtle" />
+								<span className="text-base text-kumo-subtle">
 									No backups configured
 								</span>
 								<div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
@@ -184,7 +184,7 @@ export const ShowBackups = ({
 
 										return (
 											<div key={backup.backupId}>
-												<div className="flex w-full flex-col md:flex-row md:items-start justify-between gap-4 border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+												<div className="flex w-full flex-col md:flex-row md:items-start justify-between gap-4 border rounded-lg p-4 hover:bg-kumo-fill/50 transition-colors">
 													<div className="flex flex-col w-full gap-4">
 														<div className="flex items-center gap-3">
 															{backup.backupType === "compose" && (
@@ -209,7 +209,7 @@ export const ShowBackups = ({
 																		<h3 className="font-medium">
 																			{backup.serviceName}
 																		</h3>
-																		<span className="px-1.5 py-0.5 rounded-full bg-muted text-xs font-medium capitalize">
+																		<span className="px-1.5 py-0.5 rounded-full bg-kumo-fill text-xs font-medium capitalize">
 																			{backup.databaseType}
 																		</span>
 																	</div>
@@ -219,11 +219,11 @@ export const ShowBackups = ({
 																		className={cn(
 																			"size-1.5 rounded-full",
 																			backup.enabled
-																				? "bg-green-500"
-																				: "bg-red-500",
+																				? "bg-kumo-success"
+																				: "bg-kumo-danger",
 																		)}
 																	/>
-																	<span className="text-xs text-muted-foreground">
+																	<span className="text-xs text-kumo-subtle">
 																		{backup.enabled ? "Active" : "Inactive"}
 																	</span>
 																</div>
@@ -232,7 +232,7 @@ export const ShowBackups = ({
 
 														<div className="flex flex-wrap gap-x-8 gap-y-2">
 															<div className="min-w-[200px]">
-																<span className="text-sm font-medium text-muted-foreground">
+																<span className="text-sm font-medium text-kumo-subtle">
 																	Destination
 																</span>
 																<p className="font-medium text-sm mt-0.5">
@@ -241,7 +241,7 @@ export const ShowBackups = ({
 															</div>
 
 															<div className="min-w-[150px]">
-																<span className="text-sm font-medium text-muted-foreground">
+																<span className="text-sm font-medium text-kumo-subtle">
 																	Database
 																</span>
 																<p className="font-medium text-sm mt-0.5">
@@ -250,7 +250,7 @@ export const ShowBackups = ({
 															</div>
 
 															<div className="min-w-[120px]">
-																<span className="text-sm font-medium text-muted-foreground">
+																<span className="text-sm font-medium text-kumo-subtle">
 																	Schedule
 																</span>
 																<p className="font-medium text-sm mt-0.5">
@@ -259,7 +259,7 @@ export const ShowBackups = ({
 															</div>
 
 															<div className="min-w-[150px]">
-																<span className="text-sm font-medium text-muted-foreground">
+																<span className="text-sm font-medium text-kumo-subtle">
 																	Prefix Storage
 																</span>
 																<p className="font-medium text-sm mt-0.5">
@@ -268,7 +268,7 @@ export const ShowBackups = ({
 															</div>
 
 															<div className="min-w-[100px]">
-																<span className="text-sm font-medium text-muted-foreground">
+																<span className="text-sm font-medium text-kumo-subtle">
 																	Keep Latest
 																</span>
 																<p className="font-medium text-sm mt-0.5">
@@ -357,10 +357,10 @@ export const ShowBackups = ({
 																aria-label="Delete backup"
 																variant="ghost"
 																shape="square"
-																className="group hover:bg-red-500/10 size-8"
+																className="group hover:bg-kumo-danger/10 size-8"
 																loading={isRemoving}
 															>
-																<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+																<Trash2 className="size-4 text-kumo-default group-hover:text-kumo-danger" />
 															</Button>
 														</DialogAction>
 													</div>

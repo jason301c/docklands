@@ -19,17 +19,17 @@ export const ShowInvitations = () => {
 
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="">
-					<h3 className="text-xl flex flex-row gap-2">
-						<Mail className="size-6 text-muted-foreground self-center" />
+					<h3 className="text-xl font-semibold flex items-center gap-2">
+						<Mail className="size-6 text-kumo-subtle self-center" />
 						Invitations
 					</h3>
 					<p>Create invitations to your organization.</p>
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[25vh]">
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 							<span>Loading...</span>
 							<Loader2 className="animate-spin size-4" />
 						</div>
@@ -37,8 +37,8 @@ export const ShowInvitations = () => {
 						<>
 							{data?.length === 0 ? (
 								<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
-									<Users className="size-8 self-center text-muted-foreground" />
-									<span className="text-base text-muted-foreground">
+									<Users className="size-8 self-center text-kumo-subtle" />
+									<span className="text-base text-kumo-subtle">
 										Invite users to your organization
 									</span>
 									<AddInvitation />
@@ -95,7 +95,7 @@ export const ShowInvitations = () => {
 														<Table.Cell className="text-center">
 															{format(new Date(invitation.expiresAt), "PPpp")}{" "}
 															{isExpired ? (
-																<span className="text-muted-foreground">
+																<span className="text-kumo-subtle">
 																	(Expired)
 																</span>
 															) : null}

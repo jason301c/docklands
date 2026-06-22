@@ -34,13 +34,13 @@ const ServiceStatusItem = ({
 }) => (
 	<div className="flex items-center gap-2">
 		{service.status === "healthy" ? (
-			<CheckCircle2 className="h-4 w-4 text-green-500" />
+			<CheckCircle2 className="h-4 w-4 text-kumo-success" />
 		) : (
-			<XCircle className="h-4 w-4 text-red-500" />
+			<XCircle className="h-4 w-4 text-kumo-danger" />
 		)}
 		<span className="text-sm font-medium">{name}</span>
 		{service.status === "unhealthy" && service.message && (
-			<span className="text-xs text-muted-foreground">— {service.message}</span>
+			<span className="text-xs text-kumo-subtle">— {service.message}</span>
 		)}
 	</div>
 );
@@ -133,8 +133,8 @@ export const ApplyRuntimeUpdate = () => {
 					>
 						<HardDriveDownload className="h-4 w-4" />
 						<span className="absolute -right-1 -top-2 flex h-3 w-3">
-							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-							<span className="relative inline-flex rounded-full h-3 w-3 bg-green-500" />
+							<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-kumo-success opacity-75" />
+							<span className="relative inline-flex rounded-full h-3 w-3 bg-kumo-success" />
 						</span>
 						Update Runtime
 					</Button>
@@ -188,9 +188,9 @@ export const ApplyRuntimeUpdate = () => {
 									</div>
 
 									{!allHealthy && (
-										<div className="flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3">
-											<AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
-											<span className="text-sm text-yellow-600 dark:text-yellow-400">
+										<div className="flex items-start gap-2 rounded-md border border-kumo-warning/30 bg-kumo-warning-tint p-3">
+											<AlertTriangle className="h-4 w-4 text-kumo-warning mt-0.5 shrink-0" />
+											<span className="text-sm text-kumo-warning">
 												Some services are not healthy. You can still proceed
 												with the update.
 											</span>
@@ -198,7 +198,7 @@ export const ApplyRuntimeUpdate = () => {
 									)}
 
 									{allHealthy && (
-										<span className="text-sm text-muted-foreground">
+										<span className="text-sm text-kumo-subtle">
 											All services are running. You can proceed with the update.
 										</span>
 									)}
@@ -206,9 +206,9 @@ export const ApplyRuntimeUpdate = () => {
 							)}
 
 							{modalState === "results" && !healthResult && (
-								<div className="flex items-start gap-2 rounded-md border border-yellow-500/30 bg-yellow-500/10 p-3">
-									<AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 shrink-0" />
-									<span className="text-sm text-yellow-600 dark:text-yellow-400">
+								<div className="flex items-start gap-2 rounded-md border border-kumo-warning/30 bg-kumo-warning-tint p-3">
+									<AlertTriangle className="h-4 w-4 text-kumo-warning mt-0.5 shrink-0" />
+									<span className="text-sm text-kumo-warning">
 										Could not verify services. You can still proceed with the
 										update.
 									</span>

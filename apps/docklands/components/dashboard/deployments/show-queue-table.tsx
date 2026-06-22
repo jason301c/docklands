@@ -85,17 +85,17 @@ function QueueMetricCard({
 	icon: ReactNode;
 }) {
 	return (
-		<div className="rounded-md border bg-background p-4">
+		<div className="rounded-md border bg-kumo-canvas p-4">
 			<div className="flex items-start justify-between gap-3">
 				<div className="space-y-1">
-					<p className="text-xs uppercase text-muted-foreground">{label}</p>
+					<p className="text-xs uppercase text-kumo-subtle">{label}</p>
 					<p className="text-2xl font-semibold tabular-nums">{value}</p>
 				</div>
-				<div className="flex size-9 items-center justify-center rounded-md border bg-muted/30 text-muted-foreground">
+				<div className="flex size-9 items-center justify-center rounded-md border bg-kumo-fill/30 text-kumo-subtle">
 					{icon}
 				</div>
 			</div>
-			<p className="mt-3 text-xs text-muted-foreground">{detail}</p>
+			<p className="mt-3 text-xs text-kumo-subtle">{detail}</p>
 		</div>
 	);
 }
@@ -153,7 +153,7 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 	return (
 		<div className="space-y-2 px-0">
 			{isLoading ? (
-				<div className="flex gap-4 w-full items-center justify-center min-h-[30vh] text-muted-foreground">
+				<div className="flex gap-4 w-full items-center justify-center min-h-[30vh] text-kumo-subtle">
 					<Loader2 className="size-4 animate-spin" />
 					<span>Loading queue...</span>
 				</div>
@@ -186,18 +186,18 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 						/>
 					</div>
 
-					<div className="rounded-md border bg-background">
+					<div className="rounded-md border bg-kumo-canvas">
 						<div className="flex items-center justify-between gap-3 border-b px-4 py-3">
 							<div>
 								<p className="text-sm font-medium">Worker queue</p>
-								<p className="text-xs text-muted-foreground">
+								<p className="text-xs text-kumo-subtle">
 									Most recent deployment jobs observed by the worker.
 								</p>
 							</div>
 							<Badge variant="outline">{queueStats.total} jobs</Badge>
 						</div>
 						{queueStream.length === 0 ? (
-							<div className="flex min-h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
+							<div className="flex min-h-32 flex-col items-center justify-center gap-2 text-kumo-subtle">
 								<ListTodo className="size-6" />
 								<p className="text-sm">Queue is empty.</p>
 							</div>
@@ -226,7 +226,7 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 														{appType ?? row.name ?? "job"}
 													</Badge>
 												</div>
-												<p className="mt-1 truncate text-xs text-muted-foreground">
+												<p className="mt-1 truncate text-xs text-kumo-subtle">
 													Job {String(row.id)} · added{" "}
 													{formatRelativeTs(row.timestamp)}
 													{row.failedReason ? ` · ${row.failedReason}` : ""}
@@ -243,9 +243,7 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 														Service
 													</LinkButton>
 												) : (
-													<span className="text-xs text-muted-foreground">
-														—
-													</span>
+													<span className="text-xs text-kumo-subtle">—</span>
 												)}
 											</div>
 										</div>
@@ -293,16 +291,16 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 														{row.state}
 													</Badge>
 												</Table.Cell>
-												<Table.Cell className="text-muted-foreground text-xs">
+												<Table.Cell className="text-kumo-subtle text-xs">
 													{formatTs(row.timestamp)}
 												</Table.Cell>
-												<Table.Cell className="text-muted-foreground text-xs">
+												<Table.Cell className="text-kumo-subtle text-xs">
 													{formatTs(row.processedOn)}
 												</Table.Cell>
-												<Table.Cell className="text-muted-foreground text-xs">
+												<Table.Cell className="text-kumo-subtle text-xs">
 													{formatTs(row.finishedOn)}
 												</Table.Cell>
-												<Table.Cell className="max-w-[180px] truncate text-xs text-destructive">
+												<Table.Cell className="max-w-[180px] truncate text-xs text-kumo-danger">
 													{row.failedReason ?? "—"}
 												</Table.Cell>
 												<Table.Cell>
@@ -317,7 +315,7 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 																Service
 															</LinkButton>
 														) : (
-															<span className="text-muted-foreground text-xs">
+															<span className="text-kumo-subtle text-xs">
 																—
 															</span>
 														)}
@@ -328,7 +326,7 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 																<Button
 																	variant="ghost"
 																	size="sm"
-																	className="text-destructive hover:text-destructive"
+																	className="text-kumo-danger hover:text-kumo-danger"
 																	disabled={isCancelling}
 																	onClick={() => {
 																		const appId =
@@ -362,7 +360,7 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 								) : (
 									<Table.Row>
 										<Table.Cell colSpan={9} className="text-center py-12">
-											<div className="flex flex-col items-center justify-center gap-2 text-muted-foreground min-h-[30vh]">
+											<div className="flex flex-col items-center justify-center gap-2 text-kumo-subtle min-h-[30vh]">
 												<ListTodo className="size-8" />
 												<p className="font-medium">Queue is empty</p>
 												<p className="text-sm">

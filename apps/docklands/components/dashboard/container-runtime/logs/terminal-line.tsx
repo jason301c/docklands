@@ -45,8 +45,7 @@ export function TerminalLine({ log, noTimestamp, searchTerm }: LogLineProps) {
 
 		const modifiedContent = htmlContent.replace(
 			searchRegex,
-			(match) =>
-				`<span class="bg-orange-200/80 dark:bg-orange-900/80 font-bold">${match}</span>`,
+			(match) => `<span class="bg-kumo-warning-tint font-bold">${match}</span>`,
 		);
 
 		return (
@@ -66,12 +65,12 @@ export function TerminalLine({ log, noTimestamp, searchTerm }: LogLineProps) {
 				<Tooltip
 					content={
 						<>
-							<p className="text text-xs text-muted-foreground break-all max-w-md">
+							<p className="text text-xs text-kumo-subtle break-all max-w-md">
 								<pre>{timestamp}</pre>
 							</p>
 						</>
 					}
-					className="bg-popover border-border z-[99999]"
+					className="bg-kumo-elevated border-kumo-hairline z-[99999]"
 					asChild
 				>
 					{square}
@@ -87,12 +86,12 @@ export function TerminalLine({ log, noTimestamp, searchTerm }: LogLineProps) {
 			className={cn(
 				"font-mono text-xs flex flex-row gap-3 py-2 sm:py-0.5 group",
 				type === "error"
-					? "bg-red-500/10 hover:bg-red-500/15"
+					? "bg-kumo-danger/10 hover:bg-kumo-danger/15"
 					: type === "warning"
-						? "bg-yellow-500/10 hover:bg-yellow-500/15"
+						? "bg-kumo-warning/10 hover:bg-kumo-warning/15"
 						: type === "debug"
-							? "bg-orange-500/10 hover:bg-orange-500/15"
-							: "hover:bg-gray-200/50 dark:hover:bg-gray-800/50",
+							? "bg-kumo-warning/10 hover:bg-kumo-warning/15"
+							: "hover:bg-kumo-fill",
 			)}
 		>
 			{" "}
@@ -101,7 +100,7 @@ export function TerminalLine({ log, noTimestamp, searchTerm }: LogLineProps) {
 				{/* <Square className="size-4 text-muted-foreground opacity-0 group-hover/logitem:opacity-100 transition-opacity" /> */}
 				{tooltip(color, rawTimestamp)}
 				{!noTimestamp && (
-					<span className="select-none pl-2 text-muted-foreground w-full sm:w-40 flex-shrink-0">
+					<span className="select-none pl-2 text-kumo-subtle w-full sm:w-40 flex-shrink-0">
 						{formattedTime}
 					</span>
 				)}
@@ -113,7 +112,7 @@ export function TerminalLine({ log, noTimestamp, searchTerm }: LogLineProps) {
 					{type}
 				</Badge>
 			</div>
-			<span className="dark:text-gray-200 font-mono text-foreground whitespace-pre-wrap break-all">
+			<span className="font-mono text-kumo-default whitespace-pre-wrap break-all">
 				{highlightMessage(message, searchTerm || "")}
 			</span>
 		</div>

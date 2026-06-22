@@ -14,10 +14,10 @@ export const ShowApiKeys = () => {
 
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
 					<div>
-						<h3 className="text-xl flex items-center gap-2">
+						<h3 className="text-xl font-semibold flex items-center gap-2">
 							<KeyIcon className="size-5" />
 							API/CLI Keys
 						</h3>
@@ -35,7 +35,7 @@ export const ShowApiKeys = () => {
 									<div className="flex justify-between items-start">
 										<div className="flex flex-col gap-1">
 											<span className="font-medium">{apiKey.name}</span>
-											<div className="flex flex-wrap gap-2 items-center text-sm text-muted-foreground">
+											<div className="flex flex-wrap gap-2 items-center text-sm text-kumo-subtle">
 												<span className="flex items-center gap-1">
 													<Clock className="size-3.5" />
 													Created{" "}
@@ -98,8 +98,8 @@ export const ShowApiKeys = () => {
 							))
 						) : (
 							<div className="flex flex-col items-center gap-3 py-6">
-								<KeyIcon className="size-8 text-muted-foreground" />
-								<span className="text-base text-muted-foreground">
+								<KeyIcon className="size-8 text-kumo-subtle" />
+								<span className="text-base text-kumo-subtle">
 									No API keys found
 								</span>
 							</div>

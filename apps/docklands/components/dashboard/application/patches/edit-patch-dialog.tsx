@@ -70,7 +70,7 @@ export const EditPatchDialog = ({
 				</div>
 				{isPatchLoading ? (
 					<div className="flex flex-1 items-center justify-center px-6 py-12">
-						<Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+						<Loader2 className="h-6 w-6 animate-spin text-kumo-subtle" />
 					</div>
 				) : (
 					<div className="flex-1 min-h-0 px-6 overflow-hidden flex flex-col">

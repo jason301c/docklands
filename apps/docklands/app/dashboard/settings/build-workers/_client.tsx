@@ -3,20 +3,19 @@
 import { api } from "@/client/api/trpc";
 import { BuildsConcurrency } from "@/components/dashboard/settings/runtime/actions/builds-concurrency";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { PageHeader } from "@/components/shared/page-header";
+import { PageSection } from "@/components/shared/page-section";
 
 const Page = () => {
 	const { data: servers } = api.runtimeWorker.all.useQuery();
 
 	return (
 		<div className="w-full">
-			<div className="flex h-full w-full flex-col gap-4 rounded-lg border bg-background p-6">
-				<div>
-					<h3 className="text-xl">Concurrent Builds</h3>
-					<p>
-						Configure how many builds can run at the same time on each runtime
-						worker. Builds of the same service are always serialized.
-					</p>
-				</div>
+			<PageSection className="h-full gap-4">
+				<PageHeader
+					title="Concurrent Builds"
+					description="Configure how many builds can run at the same time on each runtime worker. Builds of the same service are always serialized."
+				/>
 				<div className="flex flex-col gap-6">
 					<AlertBlock type="warning">
 						Running multiple builds at once increases CPU, memory and disk usage
@@ -25,14 +24,14 @@ const Page = () => {
 						handle. Too high a value can exhaust memory and make builds fail.
 					</AlertBlock>
 					<div className="flex flex-col gap-2">
-						<p className="text-sm font-medium text-muted-foreground">
+						<p className="text-sm font-medium text-kumo-subtle">
 							Local runtime worker
 						</p>
 						<BuildsConcurrency />
 					</div>
 
 					<div className="flex flex-col gap-2">
-						<p className="text-sm font-medium text-muted-foreground">
+						<p className="text-sm font-medium text-kumo-subtle">
 							Remote workers
 						</p>
 						{servers && servers.length > 0 ? (
@@ -46,13 +45,13 @@ const Page = () => {
 								))}
 							</div>
 						) : (
-							<p className="text-sm text-muted-foreground rounded-lg border border-dashed p-4 text-center">
+							<p className="text-sm text-kumo-subtle rounded-lg border border-dashed p-4 text-center">
 								No remote workers added yet.
 							</p>
 						)}
 					</div>
 				</div>
-			</div>
+			</PageSection>
 		</div>
 	);
 };

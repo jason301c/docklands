@@ -17,9 +17,9 @@ export const ShowInternalPostgresCredentials = ({ postgresId }: Props) => {
 	return (
 		<>
 			<div className="flex w-full flex-col gap-5 ">
-				<LayerCard className="bg-background">
+				<LayerCard className="bg-kumo-canvas">
 					<div>
-						<h3 className="text-xl">Internal Credentials</h3>
+						<h3 className="text-xl font-semibold">Internal Credentials</h3>
 					</div>
 					<div className="flex w-full flex-row gap-4">
 						<div className="grid w-full md:grid-cols-2 gap-4 md:gap-8">

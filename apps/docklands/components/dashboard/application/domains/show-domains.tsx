@@ -206,10 +206,10 @@ export const ShowDomains = ({ id, type }: Props) => {
 
 	return (
 		<div className="flex w-full flex-col gap-5 ">
-			<LayerCard className="bg-background">
+			<LayerCard className="bg-kumo-canvas">
 				<div className="flex flex-row items-center flex-wrap gap-4 justify-between">
 					<div className="flex flex-col gap-1">
-						<h3 className="text-xl">Domains</h3>
+						<h3 className="text-xl font-semibold">Domains</h3>
 						<p>Domains are used to access to the application</p>
 					</div>
 
@@ -246,15 +246,15 @@ export const ShowDomains = ({ id, type }: Props) => {
 				<div className="flex w-full flex-row gap-4">
 					{isLoadingDomains ? (
 						<div className="flex w-full flex-row gap-4 min-h-[40vh] justify-center items-center">
-							<Loader2 className="size-5 animate-spin text-muted-foreground" />
-							<span className="text-base text-muted-foreground">
+							<Loader2 className="size-5 animate-spin text-kumo-subtle" />
+							<span className="text-base text-kumo-subtle">
 								Loading domains...
 							</span>
 						</div>
 					) : data?.length === 0 ? (
 						<div className="flex w-full flex-col items-center justify-center gap-3 min-h-[40vh]">
-							<GlobeIcon className="size-8 text-muted-foreground" />
-							<span className="text-base text-muted-foreground">
+							<GlobeIcon className="size-8 text-kumo-subtle" />
+							<span className="text-base text-kumo-subtle">
 								To access the application it is required to set at least 1
 								domain
 							</span>
@@ -430,9 +430,9 @@ export const ShowDomains = ({ id, type }: Props) => {
 																	aria-label="Edit domain"
 																	variant="ghost"
 																	shape="square"
-																	className="group hover:bg-blue-500/10"
+																	className="group hover:bg-kumo-brand/10"
 																>
-																	<PenBoxIcon className="size-3.5 text-primary group-hover:text-blue-500" />
+																	<PenBoxIcon className="size-3.5 text-kumo-brand group-hover:text-kumo-brand" />
 																</Button>
 															</AddDomain>
 														)}
@@ -460,10 +460,10 @@ export const ShowDomains = ({ id, type }: Props) => {
 																	aria-label="Delete domain"
 																	variant="ghost"
 																	shape="square"
-																	className="group hover:bg-red-500/10"
+																	className="group hover:bg-kumo-danger/10"
 																	loading={isRemoving}
 																>
-																	<Trash2 className="size-4 text-primary group-hover:text-red-500" />
+																	<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 																</Button>
 															</DialogAction>
 														)}
@@ -576,7 +576,7 @@ export const ShowDomains = ({ id, type }: Props) => {
 																<>
 																	{validationState?.error ? (
 																		<div className="flex flex-col gap-1">
-																			<p className="font-medium text-red-500">
+																			<p className="font-medium text-kumo-danger">
 																				Error:
 																			</p>
 																			<p>{validationState.error}</p>
@@ -595,10 +595,10 @@ export const ShowDomains = ({ id, type }: Props) => {
 																size="xs"
 																className={
 																	validationState?.isValid
-																		? "bg-green-500/10 text-green-500 cursor-pointer"
+																		? "bg-kumo-success/10 text-kumo-success cursor-pointer"
 																		: validationState?.error
-																			? "bg-red-500/10 text-red-500 cursor-pointer"
-																			: "bg-yellow-500/10 text-yellow-500 cursor-pointer"
+																			? "bg-kumo-danger/10 text-kumo-danger cursor-pointer"
+																			: "bg-kumo-warning/10 text-kumo-warning cursor-pointer"
 																}
 																onClick={() => handleValidateDomain(item.host)}
 															>

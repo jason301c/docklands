@@ -20,7 +20,7 @@ export const ToggleAutoCheckUpdates = ({ disabled }: { disabled: boolean }) => {
 				id="autoCheckUpdatesToggle"
 				disabled={disabled}
 			/>
-			<Label className="text-primary" htmlFor="autoCheckUpdatesToggle">
+			<Label className="text-kumo-brand" htmlFor="autoCheckUpdatesToggle">
 				Automatically check for new updates
 			</Label>
 		</div>

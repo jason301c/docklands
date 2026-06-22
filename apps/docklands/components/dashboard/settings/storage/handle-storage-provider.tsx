@@ -216,9 +216,9 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 							aria-label="Edit storage provider"
 							variant="ghost"
 							shape="square"
-							className="group hover:bg-blue-500/10 "
+							className="group hover:bg-kumo-brand/10 "
 						>
-							<PenBoxIcon className="size-3.5  text-primary group-hover:text-blue-500" />
+							<PenBoxIcon className="size-3.5  text-kumo-brand group-hover:text-kumo-brand" />
 						</Button>
 					) : (
 						((
@@ -411,7 +411,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 													shape="square"
 													onClick={() => remove(index)}
 												>
-													<Trash2 className="size-4 text-muted-foreground" />
+													<Trash2 className="size-4 text-kumo-subtle" />
 												</Button>
 											</div>
 											<FormMessage />
@@ -430,7 +430,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 					>
 						{isCloud ? (
 							<div className="flex flex-col gap-4 border p-2 rounded-lg">
-								<span className="text-sm text-muted-foreground">
+								<span className="text-sm text-kumo-subtle">
 									Select a runtime worker to test this storage provider. If you
 									do not have a worker, use automatic placement.
 								</span>

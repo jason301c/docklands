@@ -139,7 +139,7 @@ export const AddGiteaProvider = () => {
 				render={
 					<Button
 						variant="primary"
-						className="flex items-center space-x-1 bg-green-700 text-white hover:bg-green-500"
+						className="flex items-center space-x-1 bg-kumo-success text-kumo-inverse hover:bg-kumo-success"
 					>
 						<GiteaIcon />
 						<span>Gitea</span>
@@ -162,18 +162,18 @@ export const AddGiteaProvider = () => {
 					>
 						<div className="p-0">
 							<div className="flex flex-col gap-4">
-								<p className="text-muted-foreground text-sm">
+								<p className="text-kumo-subtle text-sm">
 									To integrate your Gitea account, you need to create a new
 									application in your Gitea settings. Follow these steps:
 								</p>
-								<ol className="list-decimal list-inside text-sm text-muted-foreground">
+								<ol className="list-decimal list-inside text-sm text-kumo-subtle">
 									<li className="flex flex-row gap-2 items-center">
 										Go to your Gitea settings{" "}
 										<Link
 											href={`${giteaUrl}/user/settings/applications`}
 											target="_blank"
 										>
-											<ExternalLink className="w-fit text-primary size-4" />
+											<ExternalLink className="w-fit text-kumo-brand size-4" />
 										</Link>
 									</li>
 									<li>
@@ -186,7 +186,9 @@ export const AddGiteaProvider = () => {
 											<li>Name: Docklands</li>
 											<li>
 												Redirect URI:{" "}
-												<span className="text-primary">{webhookUrl}</span>{" "}
+												<span className="text-kumo-brand">
+													{webhookUrl}
+												</span>{" "}
 											</li>
 										</ul>
 									</li>

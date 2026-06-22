@@ -142,11 +142,11 @@ export const ProfileForm = () => {
 
 	return (
 		<div className="w-full">
-			<div className="w-full rounded-lg border bg-background p-6">
+			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
 				<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
 					<div>
-						<h3 className="text-xl flex flex-row gap-2">
-							<User className="size-6 text-muted-foreground self-center" />
+						<h3 className="text-xl font-semibold flex items-center gap-2">
+							<User className="size-6 text-kumo-subtle self-center" />
 							Account
 						</h3>
 						<p>Change the details of your profile here.</p>
@@ -158,7 +158,7 @@ export const ProfileForm = () => {
 				<div className="space-y-2 py-8 border-t">
 					{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-muted-foreground min-h-[35vh]">
+						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[35vh]">
 							<span>Loading...</span>
 							<Loader2 className="animate-spin size-4" />
 						</div>
@@ -272,7 +272,7 @@ export const ProfileForm = () => {
 																value=""
 																className="p-2"
 																label={
-																	<Avatar className="default-avatar h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-transform">
+																	<Avatar className="default-avatar h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-transform">
 																		<AvatarFallback className="rounded-lg">
 																			{getFallbackAvatarInitials(
 																				`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
@@ -288,7 +288,7 @@ export const ProfileForm = () => {
 																label={
 																	<>
 																		<div
-																			className="upload-avatar h-12 w-12 rounded-full border border-dashed border-muted-foreground hover:border-primary transition-colors flex items-center justify-center bg-muted/50 hover:bg-muted overflow-hidden"
+																			className="upload-avatar h-12 w-12 rounded-full border border-dashed border-kumo-hairline hover:border-kumo-brand transition-colors flex items-center justify-center bg-kumo-fill/50 hover:bg-kumo-fill overflow-hidden"
 																			onClick={() =>
 																				document
 																					.getElementById("avatar-upload")
@@ -303,7 +303,7 @@ export const ProfileForm = () => {
 																				/>
 																			) : (
 																				<svg
-																					className="h-5 w-5 text-muted-foreground"
+																					className="h-5 w-5 text-kumo-subtle"
 																					fill="none"
 																					stroke="currentColor"
 																					viewBox="0 0 24 24"
@@ -352,7 +352,7 @@ export const ProfileForm = () => {
 																label={
 																	<>
 																		<div
-																			className="color-avatar h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-colors flex items-center justify-center overflow-hidden cursor-pointer"
+																			className="color-avatar h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-colors flex items-center justify-center overflow-hidden cursor-pointer"
 																			style={{
 																				backgroundColor: isSolidColorAvatar(
 																					field.value,
@@ -365,7 +365,7 @@ export const ProfileForm = () => {
 																			}
 																		>
 																			{!isSolidColorAvatar(field.value) && (
-																				<Palette className="h-5 w-5 text-muted-foreground" />
+																				<Palette className="h-5 w-5 text-kumo-subtle" />
 																			)}
 																		</div>
 																		<input
@@ -393,7 +393,7 @@ export const ProfileForm = () => {
 																				key={image}
 																				src={image}
 																				alt="avatar"
-																				className="h-12 w-12 rounded-full border hover:p-px hover:border-primary transition-transform"
+																				className="h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-transform"
 																			/>
 																		</>
 																	}

@@ -146,7 +146,7 @@ export function DataTable<TData, TValue>({
 									No results.
 									{/* {isPending ? (
                     <div className="w-full flex-col gap-2 flex items-center justify-center h-[55vh]">
-                      <span className="text-muted-foreground text-lg font-medium">
+                      <span className="text-kumo-subtle text-lg font-medium">
                         Loading...
                       </span>
                     </div>

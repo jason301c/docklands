@@ -205,7 +205,7 @@ export default function Home({ IS_CLOUD }: Props) {
 	);
 
 	return (
-		<section className="w-full rounded-lg border bg-background p-8 shadow-sm">
+		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
 			<div className="mb-8 flex flex-col items-center gap-4 text-center">
 				<Logo className="size-12" />
 				<h1 className="font-semibold text-2xl tracking-tight">Login</h1>
@@ -242,7 +242,7 @@ export default function Home({ IS_CLOUD }: Props) {
 								<button
 									type="button"
 									onClick={() => setIsBackupCodeModalOpen(true)}
-									className="text-sm text-muted-foreground hover:underline self-start mt-2"
+									className="text-sm text-kumo-subtle hover:underline self-start mt-2"
 								>
 									Lost access to your authenticator app?
 								</button>
@@ -328,7 +328,7 @@ export default function Home({ IS_CLOUD }: Props) {
 					<div>
 						{IS_CLOUD && (
 							<Link
-								className="hover:underline text-muted-foreground"
+								className="hover:underline text-kumo-subtle"
 								href="/register"
 							>
 								Create an account
@@ -339,14 +339,14 @@ export default function Home({ IS_CLOUD }: Props) {
 					<div>
 						{IS_CLOUD ? (
 							<Link
-								className="hover:underline text-muted-foreground"
+								className="hover:underline text-kumo-subtle"
 								href="/send-reset-password"
 							>
 								Lost your password?
 							</Link>
 						) : (
 							<Link
-								className="hover:underline text-muted-foreground"
+								className="hover:underline text-kumo-subtle"
 								href="https://github.com/jason301c/docklands"
 								target="_blank"
 							>

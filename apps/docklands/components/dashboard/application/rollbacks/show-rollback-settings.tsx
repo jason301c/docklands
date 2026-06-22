@@ -175,11 +175,11 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 											</>
 										</Select>
 										{!registries || registries.length === 0 ? (
-											<FormDescription className="text-amber-600 dark:text-amber-500">
+											<FormDescription className="text-kumo-warning">
 												No registries available. Please{" "}
 												<Link
 													href="/dashboard/settings/image-registry"
-													className="underline font-medium hover:text-amber-700 dark:hover:text-amber-400"
+													className="underline font-medium hover:text-kumo-warning"
 												>
 													configure a registry
 												</Link>{" "}

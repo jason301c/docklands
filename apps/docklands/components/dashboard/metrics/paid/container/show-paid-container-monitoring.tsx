@@ -99,7 +99,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 	if (isLoading) {
 		return (
 			<div className="flex h-[400px] w-full items-center justify-center">
-				<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+				<Loader2 className="h-8 w-8 animate-spin text-kumo-subtle" />
 			</div>
 		);
 	}
@@ -108,16 +108,16 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 		return (
 			<div className="mt-5 flex min-h-[55vh] w-full items-center justify-center p-4">
 				<div className="max-w-xl text-center">
-					<p className="mb-2 text-base font-medium leading-none text-muted-foreground">
+					<p className="mb-2 text-base font-medium leading-none text-kumo-subtle">
 						Error fetching metrics for{" "}
-						<strong className="text-primary">{appName}</strong>
+						<strong className="text-kumo-brand">{appName}</strong>
 					</p>
-					<p className="whitespace-pre-line text-sm text-destructive">
+					<p className="whitespace-pre-line text-sm text-kumo-danger">
 						{queryError instanceof Error
 							? queryError.message
 							: "Failed to fetch metrics. Please check that your metrics collector is configured correctly."}
 					</p>
-					<p className="text-sm text-muted-foreground">URL: {baseUrl}</p>
+					<p className="text-sm text-kumo-subtle">URL: {baseUrl}</p>
 				</div>
 			</div>
 		);
@@ -129,7 +129,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 				<h2 className="text-2xl font-bold tracking-tight">Container Metrics</h2>
 				<div className="flex items-center gap-4 flex-wrap">
 					<div>
-						<span className="text-sm text-muted-foreground">Data points:</span>
+						<span className="text-sm text-kumo-subtle">Data points:</span>
 						<Select
 							aria-label="Container metric data point range"
 							value={dataPoints}
@@ -150,9 +150,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 					</div>
 
 					<div>
-						<span className="text-sm text-muted-foreground">
-							Refresh interval:
-						</span>
+						<span className="text-sm text-kumo-subtle">Refresh interval:</span>
 						<Select
 							aria-label="Container metric refresh interval"
 							value={refreshInterval}
@@ -178,7 +176,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 			<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
 				<LayerCard className="p-6 bg-transparent">
 					<div className="flex items-center gap-2">
-						<Cpu className="h-4 w-4 text-muted-foreground" />
+						<Cpu className="h-4 w-4 text-kumo-subtle" />
 						<h3 className="text-sm font-medium">CPU Usage</h3>
 					</div>
 					<p className="mt-2 text-2xl font-bold">{metrics.CPU}%</p>
@@ -186,13 +184,13 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 
 				<LayerCard className="p-6 bg-transparent">
 					<div className="flex items-center gap-2">
-						<MemoryStick className="h-4 w-4 text-muted-foreground" />
+						<MemoryStick className="h-4 w-4 text-kumo-subtle" />
 						<h3 className="text-sm font-medium">Memory Usage</h3>
 					</div>
 					<p className="mt-2 text-2xl font-bold">
 						{metrics?.Memory?.percentage}%
 					</p>
-					<p className="mt-1 text-sm text-muted-foreground">
+					<p className="mt-1 text-sm text-kumo-subtle">
 						{metrics?.Memory?.used} {metrics?.Memory?.unit} /{" "}
 						{metrics?.Memory?.total} {metrics?.Memory?.unit}
 					</p>
@@ -200,7 +198,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 
 				<LayerCard className="p-6 bg-transparent">
 					<div className="flex items-center gap-2">
-						<Network className="h-4 w-4 text-muted-foreground" />
+						<Network className="h-4 w-4 text-kumo-subtle" />
 						<h3 className="text-sm font-medium">Network I/O</h3>
 					</div>
 					<p className="mt-2 text-2xl font-bold">
@@ -211,7 +209,7 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 
 				<LayerCard className="p-6 bg-transparent">
 					<div className="flex items-center gap-2">
-						<HardDrive className="h-4 w-4 text-muted-foreground" />
+						<HardDrive className="h-4 w-4 text-kumo-subtle" />
 						<h3 className="text-sm font-medium">Block I/O</h3>
 					</div>
 					<p className="mt-2 text-2xl font-bold">
@@ -226,13 +224,13 @@ export const ContainerPaidMonitoring = ({ appName, baseUrl, token }: Props) => {
 				<h3 className="text-lg font-medium mb-4">Container Information</h3>
 				<div className="grid gap-4 md:grid-cols-2">
 					<div>
-						<h4 className="text-sm font-medium text-muted-foreground">
+						<h4 className="text-sm font-medium text-kumo-subtle">
 							Container ID
 						</h4>
 						<p className="mt-1">{metrics.ID}</p>
 					</div>
 					<div>
-						<h4 className="text-sm font-medium text-muted-foreground">Name</h4>
+						<h4 className="text-sm font-medium text-kumo-subtle">Name</h4>
 						<p className="mt-1 truncate">{metrics.Name}</p>
 					</div>
 				</div>

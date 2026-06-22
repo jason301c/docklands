@@ -428,7 +428,7 @@ export const AddDatabase = ({
 						className="w-full cursor-pointer space-x-3"
 						onSelect={(e) => e.preventDefault()}
 					>
-						<Database className="size-4 text-muted-foreground" />
+						<Database className="size-4 text-kumo-subtle" />
 						<span>Database</span>
 					</DropdownMenu.Item>
 				</Dialog.Trigger>
@@ -450,7 +450,7 @@ export const AddDatabase = ({
 							name="type"
 							render={({ field }) => (
 								<FormItem className="space-y-3">
-									<FormLabel className="text-muted-foreground">
+									<FormLabel className="text-kumo-subtle">
 										Select a database
 									</FormLabel>
 									<FormControl>
@@ -481,9 +481,9 @@ export const AddDatabase = ({
 									</FormControl>
 									<FormMessage />
 									{activeMutation[field.value].isError && (
-										<div className="flex flex-row gap-4 rounded-lg bg-red-50 p-2 dark:bg-red-950">
-											<AlertTriangle className="text-red-600 dark:text-red-400" />
-											<span className="text-sm text-red-600 dark:text-red-400">
+										<div className="flex flex-row gap-4 rounded-lg bg-kumo-danger-tint p-2">
+											<AlertTriangle className="text-kumo-danger" />
+											<span className="text-sm text-kumo-danger">
 												{activeMutation[field.value].error?.message}
 											</span>
 										</div>
@@ -547,7 +547,7 @@ export const AddDatabase = ({
 														side="right"
 														asChild
 													>
-														<HelpCircle className="size-4 text-muted-foreground" />
+														<HelpCircle className="size-4 text-kumo-subtle" />
 													</Tooltip>
 												</TooltipProvider>
 											</FormLabel>

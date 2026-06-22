@@ -101,12 +101,12 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 	};
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div>
 				<div className="flex flex-row items-center gap-2">
-					<Hammer className="size-6 text-muted-foreground" />
+					<Hammer className="size-6 text-kumo-subtle" />
 					<div>
-						<h3 className="text-xl">Build Worker</h3>
+						<h3 className="text-xl font-semibold">Build Worker</h3>
 						<p>Configure a dedicated worker for building your application.</p>
 					</div>
 				</div>
@@ -136,7 +136,7 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 						go to{" "}
 						<Link
 							href="/dashboard/settings/image-registry"
-							className="text-primary underline"
+							className="text-kumo-brand underline"
 						>
 							Image Registry
 						</Link>{" "}
@@ -179,7 +179,7 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 												>
 													<span className="flex items-center gap-2 justify-between w-full">
 														<span>{runtimeWorker.name}</span>
-														<span className="text-muted-foreground text-xs">
+														<span className="text-kumo-subtle text-xs">
 															{runtimeWorker.ipAddress}
 														</span>
 													</span>

@@ -63,12 +63,12 @@ export const ShowConvertedCompose = ({ composeId }: Props) => {
 				</AlertBlock>
 				{isPending ? (
 					<div className="flex flex-row items-center justify-center min-h-[25rem] border p-4 rounded-md">
-						<Loader2 className="h-8 w-8 text-muted-foreground mb-2 animate-spin" />
+						<Loader2 className="h-8 w-8 text-kumo-subtle mb-2 animate-spin" />
 					</div>
 				) : compose?.length === 5 ? (
 					<div className="border p-4 rounded-md flex flex-col items-center justify-center min-h-[25rem]">
-						<Puzzle className="h-8 w-8 text-muted-foreground mb-2" />
-						<span className="text-muted-foreground">
+						<Puzzle className="h-8 w-8 text-kumo-subtle mb-2" />
+						<span className="text-kumo-subtle">
 							No converted compose data available.
 						</span>
 					</div>

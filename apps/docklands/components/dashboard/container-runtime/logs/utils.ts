@@ -17,27 +17,27 @@ const LOG_STYLES: Record<LogType, LogStyle> = {
 	error: {
 		type: "error",
 		variant: "red",
-		color: "bg-red-500/40",
+		color: "bg-kumo-danger/40",
 	},
 	warning: {
 		type: "warning",
 		variant: "orange",
-		color: "bg-orange-500/40",
+		color: "bg-kumo-warning/40",
 	},
 	debug: {
 		type: "debug",
 		variant: "orange",
-		color: "bg-yellow-500/40",
+		color: "bg-kumo-warning/40",
 	},
 	success: {
 		type: "success",
 		variant: "green",
-		color: "bg-green-500/40",
+		color: "bg-kumo-success/40",
 	},
 	info: {
 		type: "info",
 		variant: "blue",
-		color: "bg-blue-600/40",
+		color: "bg-kumo-info/40",
 	},
 } as const;
 

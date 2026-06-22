@@ -53,24 +53,22 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 
 	if (isLoadingRuntimeWorkers || isLoadingCloud) {
 		return (
-			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-2 rounded-lg border bg-background">
-				<span className="text-lg font-medium text-muted-foreground">
-					Loading...
-				</span>
-				<Loader2 className="size-8 animate-spin text-muted-foreground" />
+			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-2 rounded-lg border bg-kumo-canvas">
+				<span className="text-lg font-medium text-kumo-subtle">Loading...</span>
+				<Loader2 className="size-8 animate-spin text-kumo-subtle" />
 			</div>
 		);
 	}
 
 	if (isCloud && !runtimeWorkers?.length) {
 		return (
-			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-5 rounded-lg border border-dashed bg-background px-4">
-				<div className="flex size-16 items-center justify-center rounded-full bg-muted">
-					<ServerIcon className="size-8 text-muted-foreground" />
+			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-5 rounded-lg border border-dashed bg-kumo-canvas px-4">
+				<div className="flex size-16 items-center justify-center rounded-full bg-kumo-fill">
+					<ServerIcon className="size-8 text-kumo-subtle" />
 				</div>
 				<div className="flex max-w-md flex-col items-center gap-1.5 text-center">
 					<span className="text-lg font-medium">No runtime workers yet</span>
-					<span className="text-sm text-muted-foreground">
+					<span className="text-sm text-kumo-subtle">
 						{permissions?.runtimeWorker.create
 							? "This section works on remote runtime workers. Add your first worker to start managing it from here."
 							: "This section works on remote runtime workers. Ask an administrator to add a worker to your organization."}
@@ -92,7 +90,7 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 				<div className="flex w-full items-center justify-end gap-3">
 					<Label
 						htmlFor="runtime-worker-filter"
-						className="whitespace-nowrap text-sm text-muted-foreground"
+						className="whitespace-nowrap text-sm text-kumo-subtle"
 					>
 						Runtime worker
 					</Label>
@@ -105,7 +103,7 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 					>
 						<>
 							<div className="flex items-center gap-2">
-								<ServerIcon className="size-4 text-muted-foreground" />
+								<ServerIcon className="size-4 text-kumo-subtle" />
 							</div>
 						</>
 						<>
@@ -131,7 +129,7 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 									>
 										<div className="flex items-center gap-2">
 											<span>{runtimeWorker.name}</span>
-											<span className="text-xs text-muted-foreground">
+											<span className="text-xs text-kumo-subtle">
 												{runtimeWorker.ipAddress}
 											</span>
 										</div>

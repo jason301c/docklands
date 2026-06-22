@@ -44,10 +44,10 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 	};
 
 	return (
-		<LayerCard className="bg-background border-destructive/50">
+		<LayerCard className="bg-kumo-canvas border-kumo-danger/50">
 			<div>
-				<h3 className="text-xl flex items-center gap-2">
-					<AlertTriangle className="h-5 w-5 text-destructive" />
+				<h3 className="text-xl font-semibold flex items-center gap-2">
+					<AlertTriangle className="h-5 w-5 text-kumo-danger" />
 					Danger Zone
 				</h3>
 			</div>
@@ -55,7 +55,7 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 				<div className="flex flex-col gap-4">
 					<div className="flex flex-col gap-2">
 						<h3 className="text-base font-semibold">Rebuild Database</h3>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-sm text-kumo-subtle">
 							This action will completely reset your database to its initial
 							state. All data, tables, and configurations will be removed.
 						</p>
@@ -66,7 +66,7 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 								<Button
 									loading={isPending}
 									variant="outline"
-									className="w-full border-destructive/50 hover:bg-destructive/10 hover:text-destructive text-destructive"
+									className="w-full border-kumo-danger/50 hover:bg-kumo-danger/10 hover:text-kumo-danger text-kumo-danger"
 								>
 									<DatabaseIcon className="mr-2 h-4 w-4" />
 									Rebuild Database
@@ -76,7 +76,7 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 						<Dialog>
 							<div>
 								<Dialog.Title className="flex items-center gap-2">
-									<AlertTriangle className="h-5 w-5 text-destructive" />
+									<AlertTriangle className="h-5 w-5 text-kumo-danger" />
 									Are you absolutely sure?
 								</Dialog.Title>
 								<Dialog.Description className="space-y-2">
@@ -87,7 +87,7 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 										<li>Reset to the default configuration</li>
 										<li>Restart the service with a clean state</li>
 									</ul>
-									<p className="font-medium text-destructive mt-4">
+									<p className="font-medium text-kumo-danger mt-4">
 										This action cannot be undone.
 									</p>
 								</Dialog.Description>
@@ -96,7 +96,7 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 								<Dialog.Close>Cancel</Dialog.Close>
 								<Dialog.Close
 									onClick={handleRebuild}
-									className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+									className="bg-kumo-danger text-kumo-inverse hover:bg-kumo-danger/90"
 									render={
 										<Button loading={isPending} type="submit">
 											Yes, rebuild database

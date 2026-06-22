@@ -60,7 +60,6 @@ COPY --from=build /usr/src/app/apps/docklands/next.config.mjs ./apps/docklands/n
 COPY --from=build /usr/src/app/apps/docklands/public ./apps/docklands/public
 COPY --from=build /usr/src/app/apps/docklands/templates ./apps/docklands/templates
 COPY --from=build /usr/src/app/apps/docklands/drizzle ./apps/docklands/drizzle
-COPY --from=build /usr/src/app/apps/docklands/components.json ./apps/docklands/components.json
 
 
 # Install docker

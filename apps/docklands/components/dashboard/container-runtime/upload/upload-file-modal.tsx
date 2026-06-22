@@ -114,7 +114,7 @@ export const UploadFileModal = ({
 										/>
 									</FormControl>
 									<FormMessage />
-									<p className="text-xs text-muted-foreground">
+									<p className="text-xs text-kumo-subtle">
 										Enter the full path where the file should be uploaded in the
 										container (e.g., /app/config.json)
 									</p>
@@ -143,8 +143,8 @@ export const UploadFileModal = ({
 									</FormControl>
 									<FormMessage />
 									{file instanceof File && (
-										<div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-											<span className="text-sm text-muted-foreground flex-1">
+										<div className="flex items-center gap-2 p-2 bg-kumo-fill rounded-md">
+											<span className="text-sm text-kumo-subtle flex-1">
 												{file.name} ({(file.size / 1024).toFixed(2)} KB)
 											</span>
 											<Button

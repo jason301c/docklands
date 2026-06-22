@@ -21,10 +21,10 @@ export const ShowIngressConfig = ({ applicationId }: Props) => {
 	if (!canRead) return null;
 
 	return (
-		<LayerCard className="bg-background">
+		<LayerCard className="bg-kumo-canvas">
 			<div className="flex flex-row justify-between">
 				<div>
-					<h3 className="text-xl">Ingress Config</h3>
+					<h3 className="text-xl font-semibold">Ingress Config</h3>
 					<p>
 						Modify the service ingress config. Use this only when you need
 						specific routing behavior, because invalid config can break ingress
@@ -34,14 +34,14 @@ export const ShowIngressConfig = ({ applicationId }: Props) => {
 			</div>
 			<div className="flex flex-col gap-4">
 				{isPending ? (
-					<span className="text-base text-muted-foreground flex flex-row gap-3 items-center justify-center min-h-[10vh]">
+					<span className="text-base text-kumo-subtle flex flex-row gap-3 items-center justify-center min-h-[10vh]">
 						Loading...
 						<Loader2 className="animate-spin" />
 					</span>
 				) : !data ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
-						<File className="size-8 text-muted-foreground" />
-						<span className="text-base text-muted-foreground">
+						<File className="size-8 text-kumo-subtle" />
+						<span className="text-base text-kumo-subtle">
 							No ingress config detected
 						</span>
 					</div>
