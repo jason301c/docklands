@@ -1,4 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
+import { DatePicker } from "@cloudflare/kumo/components/date-picker";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
@@ -19,7 +20,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Calendar } from "@/components/shared/calendar";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { RequestDistributionChart } from "./request-distribution-chart";
@@ -212,15 +212,15 @@ export const ShowRequests = () => {
 													)}
 												</Button>
 											</PopoverTrigger>
-											<PopoverContent className="w-auto p-0" align="end">
-												<Calendar
+											<PopoverContent className="w-auto p-3" align="end">
+												<DatePicker
 													mode="range"
 													defaultMonth={dateRange.from}
 													selected={{
 														from: dateRange.from,
 														to: dateRange.to,
 													}}
-													onSelect={(range) => {
+													onChange={(range) => {
 														setDateRange({
 															from: range?.from,
 															to: range?.to,
