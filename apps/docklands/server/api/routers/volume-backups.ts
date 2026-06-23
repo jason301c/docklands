@@ -192,7 +192,14 @@ export const volumeBackupsRouter = createTRPCRouter({
 					{ err: error, volumeBackupId: input.volumeBackupId },
 					"runManually volume backup failed",
 				);
-				return false;
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message:
+						error instanceof Error
+							? error.message
+							: "Failed to run volume backup",
+					cause: error,
+				});
 			}
 		}),
 	restoreVolumeBackupWithLogs: withPermission("volumeBackup", "restore")
