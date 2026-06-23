@@ -87,3 +87,21 @@ export const findBackupsByDbId = async (databaseId: string) => {
 	});
 	return result || [];
 };
+
+export const findBackupsByServiceDatabaseId = async (
+	serviceDatabaseId: string,
+) => {
+	const result = await db.query.backups.findMany({
+		where: eq(backups.serviceDatabaseId, serviceDatabaseId),
+		with: {
+			serviceDatabase: true,
+			destination: {
+				columns: {
+					accessKey: false,
+					secretAccessKey: false,
+				},
+			},
+		},
+	});
+	return result || [];
+};

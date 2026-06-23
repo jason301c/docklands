@@ -148,7 +148,8 @@ const persistProcessedTemplateRecords = async (
 			serviceName: detected.serviceName,
 			engine: detected.engine,
 			image: detected.image,
-			config: detected.config as (typeof serviceDatabase.$inferInsert)["config"],
+			config:
+				detected.config as (typeof serviceDatabase.$inferInsert)["config"],
 		});
 	}
 };

@@ -21,6 +21,7 @@ import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowGeneralCompose } from "@/components/dashboard/compose/general/show";
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
+import { ShowServiceDatabases } from "@/components/dashboard/compose/service-databases/show-service-databases";
 import { UpdateCompose } from "@/components/dashboard/compose/update-compose";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
 import { ComposeFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-compose-monitoring";
@@ -40,6 +41,7 @@ type TabState =
 	| "environment"
 	| "advanced"
 	| "backups"
+	| "databases"
 	| "deployments"
 	| "domains"
 	| "containers"
@@ -71,6 +73,10 @@ const Service = (props: {
 
 	const { data } = api.compose.one.useQuery({ composeId });
 
+	const { data: serviceDatabases } = api.serviceDatabase.byCompose.useQuery({
+		composeId,
+	});
+
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const { data: serverIp } = api.settings.getIp.useQuery();
 	const { data: environments } = api.environment.byWorkspaceId.useQuery({
@@ -97,6 +103,9 @@ const Service = (props: {
 			? { value: "containers", label: "Containers" }
 			: null,
 		permissions?.service.create ? { value: "backups", label: "Backups" } : null,
+		permissions?.service.read && (serviceDatabases?.length ?? 0) > 0
+			? { value: "databases", label: "Databases" }
+			: null,
 		permissions?.schedule.read
 			? { value: "schedules", label: "Automations" }
 			: null,
@@ -198,6 +207,14 @@ const Service = (props: {
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
 											<ShowBackups id={composeId} backupType="compose" />
+										</div>
+									</div>
+								)}
+
+								{permissions?.service.read && tab === "databases" && (
+									<div>
+										<div className="flex flex-col gap-4 pt-2.5">
+											<ShowServiceDatabases composeId={composeId} />
 										</div>
 									</div>
 								)}
