@@ -40,7 +40,7 @@ import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
-import { formatBytes } from "../../database/backups/restore-backup";
+import { formatBytes } from "../../database-service/backups/restore-backup";
 
 interface Props {
 	id: string;

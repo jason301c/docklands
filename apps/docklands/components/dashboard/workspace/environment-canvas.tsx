@@ -70,7 +70,7 @@ import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
 import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
-import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
+import { ShowBackups } from "@/components/dashboard/database-service/backups/show-backups";
 import { ShowExternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-external-database-credentials";
 import { ShowInternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-internal-database-credentials";
 import { ComposeFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-compose-monitoring";
@@ -2141,12 +2141,7 @@ export const EnvironmentCanvas = ({
 			const serviceCount =
 				environment.applications.length +
 				environment.compose.length +
-				environment.libsql.length +
-				environment.mariadb.length +
-				environment.mongo.length +
-				environment.mysql.length +
-				environment.postgres.length +
-				environment.redis.length;
+				environment.database.length;
 
 			return {
 				id: `environment:${environment.environmentId}`,

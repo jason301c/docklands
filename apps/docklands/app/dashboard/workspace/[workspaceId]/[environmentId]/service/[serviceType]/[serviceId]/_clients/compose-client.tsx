@@ -23,7 +23,7 @@ import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show"
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
 import { ShowServiceDatabases } from "@/components/dashboard/compose/service-databases/show-service-databases";
 import { UpdateCompose } from "@/components/dashboard/compose/update-compose";
-import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
+import { ShowBackups } from "@/components/dashboard/database-service/backups/show-backups";
 import { ComposeFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-compose-monitoring";
 import {
 	RuntimePlacementStatus,

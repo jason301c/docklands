@@ -9,7 +9,7 @@ import {
 import React from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { Tree } from "@/components/shared/file-tree";
+import { Tree } from "./file-tree";
 import { ShowIngressFile } from "./show-ingress-file";
 
 interface Props {

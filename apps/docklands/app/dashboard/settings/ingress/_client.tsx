@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/client/api/trpc";
-import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
+import { ShowBackups } from "@/components/dashboard/database-service/backups/show-backups";
 import { IngressDomain } from "@/components/dashboard/settings/ingress-domain";
 import { IngressRuntime } from "@/components/dashboard/settings/ingress-runtime";
 

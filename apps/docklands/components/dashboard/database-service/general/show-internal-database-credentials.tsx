@@ -5,7 +5,6 @@ import { Select } from "@cloudflare/kumo/components/select";
 import { api } from "@/client/api/trpc";
 import { toast } from "@/components/shared/toast";
 import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
-import { UpdateDatabasePassword } from "@/components/shared/update-database-password";
 import {
 	asLibsql,
 	asMongo,
@@ -13,6 +12,7 @@ import {
 	asPostgres,
 	asRedis,
 } from "./engine-config";
+import { UpdateDatabasePassword } from "./update-database-password";
 
 interface Props {
 	databaseId: string;

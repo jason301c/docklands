@@ -41,7 +41,7 @@ import {
 } from "@/shared/database-engines";
 import { cn } from "@/shared/utils";
 import { ScheduleFormField } from "../../application/schedules/handle-schedules";
-import { ENGINE_LABELS } from "../../database-service/general/engine-labels";
+import { ENGINE_LABELS } from "../general/engine-labels";
 
 const logger = createClientLogger("database-backup");
 

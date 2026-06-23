@@ -22,18 +22,18 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { useDebounce } from "@/client/hooks/use-debounce";
 import { createClientLogger } from "@/client/lib/logger";
-import { BreadcrumbSidebar } from "@/components/shared/breadcrumb-sidebar";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { TagBadge } from "@/components/shared/tag-badge";
-import { TagFilter } from "@/components/shared/tag-filter";
 import { toast } from "@/components/shared/toast";
 import {
 	workspaceEnvironmentPath,
 	workspaceListPath,
 	workspaceOverviewPath,
 } from "@/shared/routes";
+import { BreadcrumbSidebar } from "./breadcrumb-sidebar";
 import { HandleWorkspace } from "./handle-workspace";
+import { TagFilter } from "./tag-filter";
 import { WorkspaceVariables } from "./workspace-variables";
 
 const logger = createClientLogger("workspace");

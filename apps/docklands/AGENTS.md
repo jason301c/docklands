@@ -135,8 +135,8 @@ like `@/server/...`, `@/components/...`, `@/shared/...`, `@/client/...`.
 The **workspace canvas** is the centerpiece: `components/dashboard/workspace/`
 (`environment-canvas.tsx`, `workspace-overview.tsx`, plus `actions/` and
 `manage/`). Per-service feature trees (`application/`, `compose/`, and the
-**single** `database-service/` tree that serves all six managed engines,
-`database/backups/`),
+**single** `database-service/` tree that serves all six managed engines — with
+`general/`, `advanced/`, and `backups/` subfolders),
 runtime surfaces (`container-runtime/`, `cluster-runtime/`, `proxy-files/`,
 `deployments/`, `metrics/`), and `settings/*` (including `settings/roles/` for
 the custom-role manager) all hang off `components/dashboard/`.

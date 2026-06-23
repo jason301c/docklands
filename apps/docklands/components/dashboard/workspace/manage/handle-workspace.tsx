@@ -19,9 +19,9 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { TagSelector } from "@/components/shared/tag-selector";
 import { toast } from "@/components/shared/toast";
 import { workspaceEnvironmentPath } from "@/shared/routes";
+import { TagSelector } from "./tag-selector";
 
 const logger = createClientLogger("workspace");
 

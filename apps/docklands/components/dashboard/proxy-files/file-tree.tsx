@@ -5,8 +5,8 @@ import { Collapsible } from "@cloudflare/kumo/components/collapsible";
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import React from "react";
 import useResizeObserver from "use-resize-observer";
+import { ScrollArea } from "@/components/shared/scroll-area";
 import { cn } from "@/shared/utils";
-import { ScrollArea } from "./scroll-area";
 
 interface TreeDataItem {
 	id: string;

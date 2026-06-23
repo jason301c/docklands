@@ -8,7 +8,8 @@ import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { ShowEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
-import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
+import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/database-service/advanced/show-database-advanced-settings";
+import { ShowBackups } from "@/components/dashboard/database-service/backups/show-backups";
 import { ShowExternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-external-database-credentials";
 import { ShowGeneralDatabase } from "@/components/dashboard/database-service/general/show-general-database";
 import { ShowInternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-internal-database-credentials";
@@ -18,7 +19,6 @@ import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,
 } from "@/components/dashboard/service/runtime-placement-status";
-import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/shared/show-database-advanced-settings";
 import {
 	LibsqlIcon,
 	MariadbIcon,
