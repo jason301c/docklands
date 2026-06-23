@@ -91,7 +91,7 @@ like `@/server/...`, `@/components/...`, `@/shared/...`, `@/client/...`.
 - Browser data access goes through `@/client/api/trpc`; never import server
   services into client components.
 - Route groups: `app/(onboarding)/` holds the public auth flows (register,
-  invitation/accept-invitation, reset-password); `app/dashboard/` is the
+  invitation, reset-password); `app/dashboard/` is the
   authenticated product, with `app/dashboard/layout.tsx` enforcing the user
   boundary and individual pages gating with permission helpers
   (e.g. `requirePermission(resource, action, fallback)`).

@@ -294,8 +294,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 				}
 				setIsOpen(false);
 			})
-			.catch((e) => {
-				console.log(e);
+			.catch(() => {
 				toast.error(dictionary.error);
 			});
 	};
