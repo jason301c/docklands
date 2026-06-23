@@ -28,6 +28,7 @@ import {
 	checkEnvironmentDeletionPermission,
 	checkPermission,
 	findMemberByUserId,
+	isOwnerOrAdmin,
 } from "@/server/core/services/permission";
 
 const filterEnvironmentServices = (
@@ -99,7 +100,7 @@ export const environmentRouter = createTRPCRouter({
 				});
 			}
 
-			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+			if (!isOwnerOrAdmin(ctx.user.role)) {
 				const { accessedEnvironments, accessedServices } =
 					await findMemberByUserId(
 						ctx.user.id,
@@ -145,7 +146,7 @@ export const environmentRouter = createTRPCRouter({
 					});
 				}
 
-				if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+				if (!isOwnerOrAdmin(ctx.user.role)) {
 					const { accessedEnvironments, accessedServices } =
 						await findMemberByUserId(
 							ctx.user.id,
@@ -248,7 +249,7 @@ export const environmentRouter = createTRPCRouter({
 					});
 				}
 
-				if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+				if (!isOwnerOrAdmin(ctx.user.role)) {
 					const { accessedEnvironments } = await findMemberByUserId(
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
@@ -301,7 +302,7 @@ export const environmentRouter = createTRPCRouter({
 					});
 				}
 
-				if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+				if (!isOwnerOrAdmin(ctx.user.role)) {
 					const { accessedEnvironments } = await findMemberByUserId(
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
@@ -374,7 +375,7 @@ export const environmentRouter = createTRPCRouter({
 				);
 			}
 
-			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+			if (!isOwnerOrAdmin(ctx.user.role)) {
 				const { accessedEnvironments } = await findMemberByUserId(
 					ctx.user.id,
 					ctx.session.activeOrganizationId,

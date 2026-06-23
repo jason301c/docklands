@@ -14,6 +14,7 @@ import {
 import {
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
+	isOwnerOrAdmin,
 } from "@/server/core/services/permission";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
@@ -27,10 +28,9 @@ export const deploymentRouter = createTRPCRouter({
 	allCentralized: withPermission("deployment", "read").query(
 		async ({ ctx }) => {
 			const orgId = ctx.session.activeOrganizationId;
-			const accessedServices =
-				ctx.user.role !== "owner" && ctx.user.role !== "admin"
-					? (await findMemberByUserId(ctx.user.id, orgId)).accessedServices
-					: null;
+			const accessedServices = !isOwnerOrAdmin(ctx.user.role)
+				? (await findMemberByUserId(ctx.user.id, orgId)).accessedServices
+				: null;
 			if (accessedServices !== null && accessedServices.length === 0) {
 				return [];
 			}

@@ -13,6 +13,7 @@ import {
 	checkEnvironmentAccess,
 	checkPermission,
 	findMemberByUserId,
+	isOwnerOrAdmin,
 } from "@/server/core/services/permission";
 import {
 	applyWorkspaceConnectionVariables,
@@ -59,7 +60,7 @@ const getAuthorizedEnvironment = async (
 		ctx.session.activeOrganizationId,
 	);
 
-	if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+	if (!isOwnerOrAdmin(ctx.user.role)) {
 		const { accessedServices } = await findMemberByUserId(
 			ctx.user.id,
 			ctx.session.activeOrganizationId,

@@ -26,6 +26,7 @@ import { findNotificationById } from "@/server/core/services/notification";
 import {
 	findMemberByUserId,
 	hasPermission,
+	isOwnerOrAdmin,
 	loadResourceAccess,
 	resolvePermissions,
 	syncMemberResourceAccess,
@@ -108,8 +109,7 @@ export const userRouter = createTRPCRouter({
 			// 3. User has member.update permission (custom roles managing permissions)
 			if (
 				memberResult.userId !== ctx.user.id &&
-				ctx.user.role !== "owner" &&
-				ctx.user.role !== "admin"
+				!isOwnerOrAdmin(ctx.user.role)
 			) {
 				const canUpdate = await hasPermission(ctx, { member: ["update"] });
 				if (!canUpdate) {
@@ -256,7 +256,7 @@ export const userRouter = createTRPCRouter({
 		)
 		.mutation(async ({ input, ctx }) => {
 			// Ensure the acting user has admin privileges in the active organization
-			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+			if (!isOwnerOrAdmin(ctx.user.role)) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
 					message: "Only owners or admins can delete users",

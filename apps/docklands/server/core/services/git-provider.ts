@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { gitProvider, member } from "@/server/core/db/schema";
-import { getMemberResourceAccessSet } from "./permission";
+import { getMemberResourceAccessSet, isOwnerOrAdmin } from "./permission";
 
 export type GitProvider = typeof gitProvider.$inferSelect;
 
@@ -96,7 +96,7 @@ export const getAccessibleGitProviderIds = async (session: {
 		"gitProvider",
 	);
 
-	if (role === "owner" || role === "admin") {
+	if (isOwnerOrAdmin(role)) {
 		return new Set(allOrgProviders.map((p) => p.gitProviderId));
 	}
 

@@ -40,6 +40,7 @@ import {
 	checkPermission,
 	checkWorkspaceAccess,
 	findMemberByUserId,
+	isOwnerOrAdmin,
 } from "@/server/core/services/permission";
 import { createPort } from "@/server/core/services/port";
 import { createPreviewDeployment } from "@/server/core/services/preview-deployment";
@@ -91,7 +92,7 @@ export const workspaceRouter = createTRPCRouter({
 	one: protectedProcedure
 		.input(apiFindOneWorkspace)
 		.query(async ({ input, ctx }) => {
-			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+			if (!isOwnerOrAdmin(ctx.user.role)) {
 				const { accessedServices, accessedWorkspaces } =
 					await findMemberByUserId(
 						ctx.user.id,
@@ -160,7 +161,7 @@ export const workspaceRouter = createTRPCRouter({
 			return workspace;
 		}),
 	all: protectedProcedure.query(async ({ ctx }) => {
-		if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+		if (!isOwnerOrAdmin(ctx.user.role)) {
 			const { accessedWorkspaces, accessedEnvironments, accessedServices } =
 				await findMemberByUserId(ctx.user.id, ctx.session.activeOrganizationId);
 
@@ -339,7 +340,7 @@ export const workspaceRouter = createTRPCRouter({
 	),
 
 	homeStats: protectedProcedure.query(async ({ ctx }) => {
-		const isPrivileged = ctx.user.role === "owner" || ctx.user.role === "admin";
+		const isPrivileged = isOwnerOrAdmin(ctx.user.role);
 
 		let accessedWorkspaces: string[] = [];
 		let accessedEnvironments: string[] = [];
@@ -483,7 +484,7 @@ export const workspaceRouter = createTRPCRouter({
 				);
 			}
 
-			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+			if (!isOwnerOrAdmin(ctx.user.role)) {
 				const { accessedWorkspaces } = await findMemberByUserId(
 					ctx.user.id,
 					ctx.session.activeOrganizationId,
@@ -567,7 +568,7 @@ export const workspaceRouter = createTRPCRouter({
 					});
 				}
 
-				if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
+				if (!isOwnerOrAdmin(ctx.user.role)) {
 					const { accessedWorkspaces } = await findMemberByUserId(
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
@@ -653,8 +654,7 @@ export const workspaceRouter = createTRPCRouter({
 				if (
 					input.duplicateInSameProject &&
 					sourceEnvironment &&
-					ctx.user.role !== "owner" &&
-					ctx.user.role !== "admin"
+					!isOwnerOrAdmin(ctx.user.role)
 				) {
 					const { accessedWorkspaces } = await findMemberByUserId(
 						ctx.user.id,

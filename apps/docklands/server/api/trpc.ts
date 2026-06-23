@@ -22,7 +22,10 @@ import {
 } from "@/server/core/lib/auth";
 import { createLogger } from "@/server/core/lib/logger";
 import type { OpenApiMeta } from "@/server/core/openapi/types";
-import { checkPermission } from "@/server/core/services/permission";
+import {
+	checkPermission,
+	isOwnerOrAdmin,
+} from "@/server/core/services/permission";
 
 type Resource = keyof typeof statements;
 type ActionOf<R extends Resource> = (typeof statements)[R][number];
@@ -267,11 +270,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
 });
 
 export const cliProcedure = t.procedure.use(({ ctx, next }) => {
-	if (
-		!ctx.session ||
-		!ctx.user ||
-		(ctx.user.role !== "owner" && ctx.user.role !== "admin")
-	) {
+	if (!ctx.session || !ctx.user || !isOwnerOrAdmin(ctx.user.role)) {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
 	}
 	return next({
@@ -285,11 +284,7 @@ export const cliProcedure = t.procedure.use(({ ctx, next }) => {
 });
 
 export const adminProcedure = t.procedure.use(({ ctx, next }) => {
-	if (
-		!ctx.session ||
-		!ctx.user ||
-		(ctx.user.role !== "owner" && ctx.user.role !== "admin")
-	) {
+	if (!ctx.session || !ctx.user || !isOwnerOrAdmin(ctx.user.role)) {
 		throw new TRPCError({ code: "UNAUTHORIZED" });
 	}
 	return next({

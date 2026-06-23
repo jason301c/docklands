@@ -9,7 +9,10 @@ import {
 	workspaces,
 	workspaceTags,
 } from "@/server/core/db/schema";
-import { findMemberByUserId } from "@/server/core/services/permission";
+import {
+	findMemberByUserId,
+	isOwnerOrAdmin,
+} from "@/server/core/services/permission";
 
 export type Tag = typeof tags.$inferSelect;
 
@@ -214,8 +217,7 @@ export const assertWorkspaceTagAccess = async ({
 
 	// Verify the member has access to the workspace
 	if (
-		memberRecord.role !== "owner" &&
-		memberRecord.role !== "admin" &&
+		!isOwnerOrAdmin(memberRecord.role) &&
 		!memberRecord.accessedWorkspaces.includes(workspaceId)
 	) {
 		throw new TRPCError({

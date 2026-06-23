@@ -13,6 +13,7 @@ import {
 	checkPermission,
 	checkServicePermissionAndAccess,
 	findMemberByUserId,
+	isOwnerOrAdmin,
 } from "@/server/core/services/permission";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
@@ -48,7 +49,7 @@ export const scheduleRouter = createTRPCRouter({
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
 					);
-					if (member.role !== "owner" && member.role !== "admin") {
+					if (!isOwnerOrAdmin(member.role)) {
 						throw new TRPCError({
 							code: "FORBIDDEN",
 							message:
@@ -113,7 +114,7 @@ export const scheduleRouter = createTRPCRouter({
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
 					);
-					if (member.role !== "owner" && member.role !== "admin") {
+					if (!isOwnerOrAdmin(member.role)) {
 						throw new TRPCError({
 							code: "FORBIDDEN",
 							message:
@@ -177,7 +178,7 @@ export const scheduleRouter = createTRPCRouter({
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
 					);
-					if (member.role !== "owner" && member.role !== "admin") {
+					if (!isOwnerOrAdmin(member.role)) {
 						throw new TRPCError({
 							code: "FORBIDDEN",
 							message:
@@ -257,7 +258,7 @@ export const scheduleRouter = createTRPCRouter({
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
 					);
-					if (member.role !== "owner" && member.role !== "admin") {
+					if (!isOwnerOrAdmin(member.role)) {
 						throw new TRPCError({
 							code: "FORBIDDEN",
 							message: "Only owners and admins can list host-level schedules.",
@@ -341,7 +342,7 @@ export const scheduleRouter = createTRPCRouter({
 						ctx.user.id,
 						ctx.session.activeOrganizationId,
 					);
-					if (member.role !== "owner" && member.role !== "admin") {
+					if (!isOwnerOrAdmin(member.role)) {
 						throw new TRPCError({
 							code: "FORBIDDEN",
 							message:

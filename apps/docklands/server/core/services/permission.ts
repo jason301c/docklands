@@ -15,6 +15,13 @@ import {
 	statements,
 } from "../lib/access-control";
 
+/**
+ * Owner and admin are the privileged roles that bypass per-resource access
+ * scoping. Use this instead of inlining the role comparison.
+ */
+export const isOwnerOrAdmin = (role: string | null | undefined): boolean =>
+	role === "owner" || role === "admin";
+
 type Statements = typeof statements;
 type Resource = keyof Statements;
 type Action<R extends Resource> = Statements[R][number];
@@ -148,8 +155,7 @@ export const checkWorkspaceAccess = async (
 	if (
 		action !== "create" &&
 		workspaceId &&
-		memberRecord.role !== "owner" &&
-		memberRecord.role !== "admin"
+		!isOwnerOrAdmin(memberRecord.role)
 	) {
 		if (!memberRecord.accessedWorkspaces.includes(workspaceId)) {
 			throw new TRPCError({
@@ -169,7 +175,7 @@ export const checkServicePermissionAndAccess = async (
 	const organizationId = ctx.session.activeOrganizationId;
 	const memberRecord = await findMemberByUserId(userId, organizationId);
 	await checkPermission(ctx, permissions);
-	if (memberRecord.role !== "owner" && memberRecord.role !== "admin") {
+	if (!isOwnerOrAdmin(memberRecord.role)) {
 		if (!memberRecord.accessedServices.includes(serviceId)) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",
@@ -190,7 +196,7 @@ export const checkServiceAccess = async (
 
 	await checkPermission(ctx, { service: [action] });
 
-	if (memberRecord.role !== "owner" && memberRecord.role !== "admin") {
+	if (!isOwnerOrAdmin(memberRecord.role)) {
 		if (action === "create") {
 			if (!memberRecord.accessedWorkspaces.includes(serviceId)) {
 				throw new TRPCError({
@@ -220,11 +226,7 @@ export const checkEnvironmentAccess = async (
 
 	await checkPermission(ctx, { environment: [action] });
 
-	if (
-		action !== "create" &&
-		memberRecord.role !== "owner" &&
-		memberRecord.role !== "admin"
-	) {
+	if (action !== "create" && !isOwnerOrAdmin(memberRecord.role)) {
 		if (!memberRecord.accessedEnvironments.includes(environmentId)) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",
@@ -244,7 +246,7 @@ export const checkEnvironmentCreationPermission = async (
 
 	await checkPermission(ctx, { environment: ["create"] });
 
-	if (memberRecord.role !== "owner" && memberRecord.role !== "admin") {
+	if (!isOwnerOrAdmin(memberRecord.role)) {
 		if (!memberRecord.accessedWorkspaces.includes(workspaceId)) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",
@@ -264,7 +266,7 @@ export const checkEnvironmentDeletionPermission = async (
 
 	await checkPermission(ctx, { environment: ["delete"] });
 
-	if (memberRecord.role !== "owner" && memberRecord.role !== "admin") {
+	if (!isOwnerOrAdmin(memberRecord.role)) {
 		if (!memberRecord.accessedWorkspaces.includes(workspaceId)) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",

@@ -7,7 +7,7 @@ import {
 	organization,
 	runtimeWorkers,
 } from "@/server/core/db/schema";
-import { getMemberResourceAccessSet } from "./permission";
+import { getMemberResourceAccessSet, isOwnerOrAdmin } from "./permission";
 
 export type RuntimeWorker = typeof runtimeWorkers.$inferSelect;
 
@@ -141,7 +141,7 @@ export const getAccessibleRuntimeWorkerIds = async (session: {
 		"runtimeWorker",
 	);
 
-	if (role === "owner" || role === "admin") {
+	if (isOwnerOrAdmin(role)) {
 		return new Set(
 			allOrgRuntimeWorkers.map((worker) => worker.runtimeWorkerId),
 		);

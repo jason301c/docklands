@@ -341,6 +341,21 @@ access helpers). tRPC procedures and WebSocket handlers must check permissions
 before side effects; routers should audit meaningful mutations to the
 `audit-log` table.
 
+There are three distinct authorization mechanisms; reach for the narrowest one
+that fits:
+
+- **Capability gate** — `withPermission(resource, action)` (the permission-checked
+  procedure factory) and `adminProcedure` (owner/admin) gate a whole tRPC
+  procedure on a role's capabilities. Use these at the procedure boundary.
+- **Instance access** — the `check*Access` / `checkServicePermissionAndAccess` /
+  `checkPermission` helpers in `permission.ts` enforce per-resource (instance-level)
+  scoping after the capability passes. Use these when an operation targets a
+  specific workspace/environment/service/etc.
+- **Privileged-role bypass** — `isOwnerOrAdmin(role)` is the single shared test for
+  the owner/admin roles that bypass per-resource scoping. Use it instead of
+  inlining `role === "owner" || role === "admin"`; it is the only sanctioned way
+  to special-case the privileged roles.
+
 ## Build, Server, And Runtime
 
 - **Turbopack everywhere.** `server/server.ts` passes `turbopack: true`,
