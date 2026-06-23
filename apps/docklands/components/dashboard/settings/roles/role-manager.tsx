@@ -1,5 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Loader2, ShieldCheck, Trash2 } from "lucide-react";
+import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Loader2, ShieldCheck, Trash2, Users } from "lucide-react";
+import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
@@ -14,6 +16,74 @@ const permissionCount = (permissions: Record<string, string[]>) =>
 		(total, actions) => total + actions.length,
 		0,
 	);
+
+const memberDisplayName = (firstName: string | null, lastName: string | null) =>
+	[firstName, lastName].filter(Boolean).join(" ").trim();
+
+const RoleMembersDialog = ({
+	roleName,
+	memberCount,
+}: {
+	roleName: string;
+	memberCount: number;
+}) => {
+	const [open, setOpen] = useState(false);
+	const { data: members, isPending } = api.customRole.membersByRole.useQuery(
+		{ roleName },
+		{ enabled: open },
+	);
+
+	return (
+		<Dialog.Root open={open} onOpenChange={setOpen}>
+			<Dialog.Trigger
+				render={
+					<Button variant="ghost" size="sm" className="gap-1.5">
+						<Users className="size-3.5 text-kumo-subtle" />
+						<span>
+							{memberCount} member{memberCount === 1 ? "" : "s"}
+						</span>
+					</Button>
+				}
+			/>
+			<Dialog className="sm:max-w-md">
+				<Dialog.Title>Members of "{roleName}"</Dialog.Title>
+				{isPending ? (
+					<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[8rem]">
+						<span>Loading...</span>
+						<Loader2 className="animate-spin size-4" />
+					</div>
+				) : !members || members.length === 0 ? (
+					<div className="flex flex-col items-center gap-2 min-h-[8rem] justify-center">
+						<Users className="size-5 text-kumo-subtle" />
+						<span className="text-sm text-kumo-subtle text-center">
+							No members have this role.
+						</span>
+					</div>
+				) : (
+					<div className="flex flex-col gap-2">
+						{members.map((member) => {
+							const fullName = memberDisplayName(
+								member.firstName,
+								member.lastName,
+							);
+							return (
+								<div
+									key={member.id}
+									className="flex flex-col gap-0.5 rounded-lg border bg-kumo-canvas p-3"
+								>
+									<span className="text-sm font-medium">{member.email}</span>
+									{fullName ? (
+										<span className="text-xs text-kumo-subtle">{fullName}</span>
+									) : null}
+								</div>
+							);
+						})}
+					</div>
+				)}
+			</Dialog>
+		</Dialog.Root>
+	);
+};
 
 export const RoleManager = () => {
 	const utils = api.useUtils();
@@ -61,13 +131,17 @@ export const RoleManager = () => {
 										<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border w-full">
 											<div className="flex flex-col gap-1">
 												<span className="text-sm font-medium">{role.role}</span>
-												<span className="text-xs text-kumo-subtle">
-													{permissionCount(role.permissions)} permission
-													{permissionCount(role.permissions) === 1 ? "" : "s"}
-													{" · "}
-													{role.memberCount} member
-													{role.memberCount === 1 ? "" : "s"}
-												</span>
+												<div className="flex items-center gap-1 text-xs text-kumo-subtle">
+													<span>
+														{permissionCount(role.permissions)} permission
+														{permissionCount(role.permissions) === 1 ? "" : "s"}
+													</span>
+													<span>·</span>
+													<RoleMembersDialog
+														roleName={role.role}
+														memberCount={role.memberCount}
+													/>
+												</div>
 											</div>
 											<div className="flex flex-row gap-1 items-center">
 												<HandleRole
