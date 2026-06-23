@@ -377,6 +377,57 @@ export const backupRouter = createTRPCRouter({
 			}
 		}),
 
+	// Non-streaming counterpart to restoreBackupWithLogs. The subscription above
+	// can't ride the REST/OpenAPI surface, so API/CLI operators could create,
+	// schedule, run, list and delete backups but never restore one. This awaits
+	// the restore to completion and returns the collected logs.
+	restoreBackup: protectedProcedure
+		.input(apiRestoreBackup)
+		.mutation(async ({ input, ctx }) => {
+			if (input.databaseId) {
+				await checkServicePermissionAndAccess(ctx, input.databaseId, {
+					backup: ["restore"],
+				});
+			}
+			const destination = await findDestinationById(input.destinationId);
+			const logs: string[] = [];
+			const onLog = (log: string) => {
+				logs.push(log);
+			};
+			try {
+				if (input.backupType === "database") {
+					if (input.databaseType === "web-server") {
+						await restoreWebServerBackup(destination, input.backupFile, onLog);
+					} else {
+						const database = await findDatabaseById(input.databaseId);
+						await restoreDatabaseBackup(database, destination, input, onLog);
+					}
+				} else if (input.backupType === "compose") {
+					// input.databaseId carries the compose id for compose restores
+					// (apiRestoreBackup reuses the single databaseId field).
+					const compose = await findComposeById(input.databaseId);
+					await restoreComposeBackup(compose, destination, input, onLog);
+				}
+			} catch (error) {
+				logger.error(
+					{ err: error, backupType: input.backupType },
+					"restore backup failed",
+				);
+				throw new TRPCError({
+					code: "INTERNAL_SERVER_ERROR",
+					message:
+						error instanceof Error ? error.message : "Failed to restore backup",
+					cause: error,
+				});
+			}
+			await audit(ctx, {
+				action: "restore",
+				resourceType: "backup",
+				resourceId: input.databaseId,
+			});
+			return { success: true, logs };
+		}),
+
 	restoreBackupWithLogs: protectedProcedure
 		.meta({
 			openapi: {
