@@ -20,6 +20,7 @@ import {
 	environments,
 	workspaces,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	createApplication,
 	findApplicationById,
@@ -50,6 +51,8 @@ import {
 	findWorkspaceById,
 	updateWorkspaceById,
 } from "@/server/core/services/workspace";
+
+const logger = createLogger("workspace-router");
 
 export const workspaceRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -626,6 +629,9 @@ export const workspaceRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			// Tracks a newly created target workspace so a mid-duplication failure
+			// can roll it back instead of leaving an orphaned, half-built project.
+			let createdWorkspaceId: string | undefined;
 			try {
 				await checkWorkspaceAccess(ctx, "create");
 
@@ -676,6 +682,10 @@ export const workspaceRouter = createTRPCRouter({
 							},
 							ctx.session.activeOrganizationId,
 						).then((value) => value.environment);
+
+				if (!input.duplicateInSameProject) {
+					createdWorkspaceId = targetProject?.workspaceId;
+				}
 
 				if (input.includeServices) {
 					const servicesToDuplicate = input.selectedServices || [];
@@ -882,6 +892,18 @@ export const workspaceRouter = createTRPCRouter({
 				});
 				return targetProject;
 			} catch (error) {
+				// Roll back the half-built workspace (cascade removes its children)
+				// so a failed duplication leaves no orphaned partial project.
+				if (createdWorkspaceId) {
+					try {
+						await deleteWorkspace(createdWorkspaceId);
+					} catch (cleanupError) {
+						logger.error(
+							{ err: cleanupError, workspaceId: createdWorkspaceId },
+							"failed to roll back duplicated workspace",
+						);
+					}
+				}
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: `Error duplicating the workspace: ${error instanceof Error ? error.message : error}`,
