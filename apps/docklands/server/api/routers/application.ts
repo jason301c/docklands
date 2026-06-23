@@ -276,7 +276,14 @@ export const applicationRouter = createTRPCRouter({
 			for (const operation of cleanupOperations) {
 				try {
 					await operation();
-				} catch (_) {}
+				} catch (error) {
+					// Best-effort cleanup: keep deleting the rest, but don't swallow
+					// silently — a failed step can leave orphaned Docker/Traefik state.
+					console.error(
+						`Failed to clean up application resource during delete for ${application.appName}:`,
+						error,
+					);
+				}
 			}
 
 			await audit(ctx, {

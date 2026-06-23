@@ -305,7 +305,14 @@ export const databaseRouter = createTRPCRouter({
 			for (const operation of cleanupOperations) {
 				try {
 					await operation();
-				} catch (_) {}
+				} catch (error) {
+					// Best-effort cleanup: keep going, but surface failures so an
+					// orphaned container/volume isn't left behind silently.
+					console.error(
+						`Failed to clean up database resource during delete for ${service.appName}:`,
+						error,
+					);
+				}
 			}
 			return service;
 		}),

@@ -136,9 +136,16 @@ export const keepLatestNBackups = async (
 		const backupFilesPath = `:s3:${destination.bucket}/${appName}/${normalizeS3Path(backup.prefix)}`;
 
 		// --include "*.bson.gz" or "*.sql.gz" or "*.zip" ensures nothing else other than the docklands backup files are touched by rclone
-		const rcloneList = `${s3Env} rclone lsf ${rcloneFlags.join(" ")} --include "*${backup.databaseType === "web-server" ? ".zip" : ".{sql.gz,bson.gz}"}" ${backupFilesPath}`;
-		// when we pipe the above command with this one, we only get the list of files we want to delete
-		const sortAndPickUnwantedBackups = `sort -r | tail -n +$((${backup.keepLatestCount}+1)) | xargs -I{}`;
+		// --format "tp" emits "<modtime>;<path>" so we can prune by real object
+		// modification time rather than by filename. Filenames happen to be
+		// ISO-timestamp-prefixed, but relying on that meant an out-of-band file
+		// (or any non-timestamp name) could skew which backups were kept.
+		const rcloneList = `${s3Env} rclone lsf ${rcloneFlags.join(" ")} --format "tp" --separator ";" --include "*${backup.databaseType === "web-server" ? ".zip" : ".{sql.gz,bson.gz}"}" ${backupFilesPath}`;
+		// Sort by the modtime column descending (the leading fixed-width ISO
+		// "YYYY-MM-DD HH:MM:SS" makes a plain `sort -r` order by real mtime), drop
+		// the newest keepLatestCount rows, then recover the path after the ";"
+		// separator so only the stale backups are passed to delete.
+		const sortAndPickUnwantedBackups = `sort -r | tail -n +$((${backup.keepLatestCount}+1)) | cut -d";" -f2- | xargs -I{}`;
 		// this command deletes the files
 		// to test the deletion before actually deleting we can add --dry-run before ${backupFilesPath}{}
 		const rcloneDelete = `${s3Env} rclone delete ${rcloneFlags.join(" ")} ${backupFilesPath}{}`;

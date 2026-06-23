@@ -325,16 +325,37 @@ export const composeRouter = createTRPCRouter({
 
 			await cleanQueuesByCompose(input.composeId);
 
-			const cleanupOperations = [
-				async () => await removeCompose(composeResult, input.deleteVolumes),
-				async () => await removeDeploymentsByComposeId(composeResult),
-				async () => await removeComposeDirectory(composeResult.appName),
+			const cleanupOperations: Array<{
+				label: string;
+				run: () => Promise<unknown>;
+			}> = [
+				{
+					label: "remove compose stack/containers/volumes",
+					run: () => removeCompose(composeResult, input.deleteVolumes),
+				},
+				{
+					label: "remove deployments",
+					run: () => removeDeploymentsByComposeId(composeResult),
+				},
+				{
+					label: "remove compose directory",
+					run: () => removeComposeDirectory(composeResult.appName),
+				},
 			];
 
+			// The DB row is already deleted, so deletion must still proceed even if
+			// a cleanup step fails. But a failure must not be swallowed silently:
+			// it can leave orphaned Docker resources (stack, containers, volumes) or
+			// on-disk directories that need manual cleanup.
 			for (const operation of cleanupOperations) {
 				try {
-					await operation();
-				} catch (_) {}
+					await operation.run();
+				} catch (error) {
+					console.error(
+						`Failed to clean up compose resource during delete (${operation.label}) for ${composeResult.appName}:`,
+						error,
+					);
+				}
 			}
 
 			await audit(ctx, {

@@ -82,8 +82,14 @@ const cleanupOldVolumeBackups = async (
 		const s3Env = getS3CredentialEnv(destination);
 		const s3AppName = getVolumeServiceAppName(volumeBackup);
 		const backupFilesPath = `:s3:${destination.bucket}/${s3AppName}/${normalizeS3Path(prefix || "")}`;
-		const listCommand = `${s3Env} rclone lsf ${rcloneFlags.join(" ")} --include "${volumeName}-*.tar" ${backupFilesPath}`;
-		const sortAndPick = `sort -r | tail -n +$((${keepLatestCount}+1)) | xargs -I{}`;
+		// --format "tp" emits "<modtime>;<path>" so retention prunes by real object
+		// modification time, not by filename. Filenames are ISO-timestamp-suffixed,
+		// but relying on that meant an out-of-band file could skew which backups
+		// were kept; --include still scopes the listing to this volume's .tar files.
+		const listCommand = `${s3Env} rclone lsf ${rcloneFlags.join(" ")} --format "tp" --separator ";" --include "${volumeName}-*.tar" ${backupFilesPath}`;
+		// Sort by the leading fixed-width ISO modtime column descending, drop the
+		// newest keepLatestCount rows, then recover the path after the ";" separator.
+		const sortAndPick = `sort -r | tail -n +$((${keepLatestCount}+1)) | cut -d";" -f2- | xargs -I{}`;
 		const deleteCommand = `${s3Env} rclone delete ${rcloneFlags.join(" ")} ${backupFilesPath}{}`;
 		const fullCommand = `${listCommand} | ${sortAndPick} ${deleteCommand}`;
 
