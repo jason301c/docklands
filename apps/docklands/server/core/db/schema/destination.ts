@@ -3,11 +3,11 @@ import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { encryptedText } from "../encrypted";
 import {
 	ADDITIONAL_FLAG_ERROR,
 	ADDITIONAL_FLAG_REGEX,
-} from "../validations/destination";
+} from "@/shared/validations/destination";
+import { encryptedText } from "../encrypted";
 import { organization } from "./account";
 import { backups } from "./backups";
 

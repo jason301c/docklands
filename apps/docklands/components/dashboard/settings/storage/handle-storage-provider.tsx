@@ -22,7 +22,7 @@ import { toast } from "@/components/shared/toast";
 import {
 	ADDITIONAL_FLAG_ERROR,
 	ADDITIONAL_FLAG_REGEX,
-} from "@/server/core/db/validations/destination";
+} from "@/shared/validations/destination";
 import { S3_PROVIDERS } from "./provider-options";
 
 const logger = createClientLogger("storage-provider");

@@ -22,7 +22,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
-import { domain } from "@/server/core/db/validations/domain";
+import { domain } from "@/shared/validations/domain";
 
 const logger = createClientLogger("preview");
 

@@ -29,7 +29,7 @@ import {
 } from "@/components/shared/form";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
-import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
+import { VALID_BRANCH_REGEX } from "@/shared/git-branch-validation";
 import { cn } from "@/shared/utils";
 
 const Command = Combobox;

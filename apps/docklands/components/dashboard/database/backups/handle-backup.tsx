@@ -39,7 +39,7 @@ import { toast } from "@/components/shared/toast";
 import {
 	DATABASE_ENGINE_KEYS,
 	databaseEngineSupportsBackup,
-} from "@/server/core/databases/registry";
+} from "@/shared/database-engines";
 import { cn } from "@/shared/utils";
 import { ScheduleFormField } from "../../application/schedules/handle-schedules";
 import { ENGINE_LABELS } from "../../database-service/general/engine-labels";

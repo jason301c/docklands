@@ -15,19 +15,19 @@
  */
 import { z } from "zod";
 import { createLogger } from "@/server/core/lib/logger";
+import {
+	DATABASE_ENGINE_KEYS,
+	type DatabaseEngineKey,
+	databaseEngineSupportsBackup,
+} from "@/shared/database-engines";
 
 const logger = createLogger("db");
 
-export const DATABASE_ENGINE_KEYS = [
-	"postgres",
-	"mysql",
-	"mariadb",
-	"mongo",
-	"redis",
-	"libsql",
-] as const;
-
-export type DatabaseEngineKey = (typeof DATABASE_ENGINE_KEYS)[number];
+export {
+	DATABASE_ENGINE_KEYS,
+	type DatabaseEngineKey,
+	databaseEngineSupportsBackup,
+};
 
 export interface EnvEntry {
 	key: string;
@@ -649,10 +649,6 @@ export const parseDatabaseConfig = <K extends DatabaseEngineKey>(
 	raw: unknown,
 ): DatabaseConfigByKey[K] =>
 	databaseEngines[key].configSchema.parse(raw) as DatabaseConfigByKey[K];
-
-/** Engines that support a logical (dump-based) backup. Redis/libSQL do not. */
-export const databaseEngineSupportsBackup = (key: DatabaseEngineKey): boolean =>
-	Boolean(databaseEngines[key].backup);
 
 // ---------------------------------------------------------------------------
 // Dispatch helpers — call engine behavior with a runtime key + parsed config.

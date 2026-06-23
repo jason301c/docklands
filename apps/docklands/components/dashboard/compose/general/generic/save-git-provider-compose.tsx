@@ -23,7 +23,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
-import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
+import { VALID_BRANCH_REGEX } from "@/shared/git-branch-validation";
 
 const logger = createClientLogger("compose");
 

@@ -7,6 +7,7 @@ import {
 	execAsync,
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
+import type { IUpdateData } from "@/shared/runtime-update-types";
 import { db } from "../db";
 import { compose } from "../db/schema";
 import {
@@ -16,11 +17,6 @@ import {
 } from "../setup/traefik-setup";
 
 const logger = createLogger("settings");
-
-export interface IUpdateData {
-	latestVersion: string | null;
-	updateAvailable: boolean;
-}
 
 const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || "jason301c/docklands";
 const DOCKLANDS_DOCKER_HUB_TAGS_URL =

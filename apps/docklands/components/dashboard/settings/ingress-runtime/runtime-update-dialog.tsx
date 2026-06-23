@@ -18,7 +18,7 @@ import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("runtime-update");
 
-import type { IUpdateData } from "@/server/core/services/settings";
+import type { IUpdateData } from "@/shared/runtime-update-types";
 import { ApplyRuntimeUpdate } from "./apply-runtime-update";
 import { ToggleAutoCheckUpdates } from "./toggle-auto-check-updates";
 

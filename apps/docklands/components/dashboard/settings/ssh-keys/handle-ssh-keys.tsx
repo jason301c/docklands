@@ -21,7 +21,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
-import { sshKeyCreate, type sshKeyType } from "@/server/core/db/validations";
+import { sshKeyCreate, type sshKeyType } from "@/shared/validations";
 
 type SSHKey = z.infer<typeof sshKeyCreate>;
 

@@ -8,7 +8,7 @@ import { createClientLogger } from "@/client/lib/logger";
 const logger = createClientLogger("runtime-update");
 
 import { RuntimeUpdateDialog } from "@/components/dashboard/settings/ingress-runtime/runtime-update-dialog";
-import type { IUpdateData } from "@/server/core/services/settings";
+import type { IUpdateData } from "@/shared/runtime-update-types";
 
 const AUTO_CHECK_UPDATES_INTERVAL_MINUTES = 7;
 
