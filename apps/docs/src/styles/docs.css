@@ -10,6 +10,9 @@
  * Only the *tokens* are imported here (theme-kumo.css), not Kumo's component
  * CSS or React runtime — a docs site needs the palette, not the widgets.
  *
+ * Fonts match the marketing site: Inter (body) + Fraunces (display headings),
+ * both self-hosted via @fontsource-variable/*.
+ *
  * Light/dark switching: Starlight toggles `data-theme` on <html>; Kumo tokens
  * key off `data-mode`. astro.config.mjs injects a small head script that mirrors
  * one onto the other, so the variables below resolve to the right shade in both
@@ -18,6 +21,7 @@
 
 @import "@cloudflare/kumo/styles/theme-kumo";
 @import "@fontsource-variable/inter";
+@import "@fontsource-variable/fraunces";
 
 /*
  * Map Starlight semantics -> Kumo tokens. Applied at `:root` (Starlight's dark
@@ -28,6 +32,8 @@
 :root,
 :root[data-theme="light"] {
 	--sl-font: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+	--docs-font-display: "Fraunces Variable", ui-serif, Georgia, Cambria,
+		"Times New Roman", serif;
 
 	/* Surfaces */
 	--sl-color-bg: var(--color-kumo-canvas);
@@ -58,4 +64,15 @@
 	--sl-color-gray-5: var(--color-kumo-hairline);
 	--sl-color-gray-6: var(--color-kumo-elevated);
 	--sl-color-gray-7: var(--color-kumo-recessed);
+}
+
+/*
+ * Fraunces (display) for headings + the brand title; Inter stays the body font.
+ * Mirrors the marketing site's Inter-body / Fraunces-display split.
+ */
+.site-title,
+.content-panel h1,
+.sl-markdown-content :is(h1, h2, h3, h4) {
+	font-family: var(--docs-font-display);
+	font-optical-sizing: auto;
 }

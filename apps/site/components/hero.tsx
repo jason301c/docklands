@@ -17,7 +17,7 @@ export function Hero() {
 					Self-hosted · open source · your VM
 				</span>
 
-				<h1 className="max-w-3xl text-balance font-semibold text-4xl text-kumo-strong leading-[1.1] tracking-tight sm:text-6xl">
+				<h1 className="max-w-3xl text-balance font-display font-semibold text-5xl text-kumo-strong leading-[1.05] tracking-tight sm:text-7xl">
 					Deploy anything on infrastructure{" "}
 					<span className="text-kumo-brand">you own</span>.
 				</h1>

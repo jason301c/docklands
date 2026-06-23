@@ -6,7 +6,7 @@ export function GetStarted() {
 	return (
 		<section id="get-started" className="scroll-mt-20 px-6 py-20">
 			<div className="mx-auto max-w-3xl rounded-3xl border border-kumo-hairline bg-kumo-fill p-8 text-center sm:p-12">
-				<h2 className="font-semibold text-3xl text-kumo-strong tracking-tight sm:text-4xl">
+				<h2 className="font-display font-semibold text-3xl text-kumo-strong tracking-tight sm:text-4xl">
 					Up and running in minutes
 				</h2>
 				<p className="mt-4 text-kumo-subtle leading-relaxed">

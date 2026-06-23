@@ -5,7 +5,7 @@
 
 @layer base {
 	:root {
-		--font-inter: Inter, ui-sans-serif, system-ui, sans-serif;
+		--font-inter: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 		--terminal-paste: rgba(0, 0, 0, 0.2);
 		--overlay: rgba(0, 0, 0, 0.2);
 

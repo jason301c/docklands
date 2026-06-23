@@ -60,7 +60,7 @@ export function FeatureGrid() {
 			className="mx-auto w-full max-w-7xl scroll-mt-20 px-6 py-20"
 		>
 			<div className="mx-auto max-w-2xl text-center">
-				<h2 className="font-semibold text-3xl text-kumo-strong tracking-tight sm:text-4xl">
+				<h2 className="font-display font-semibold text-3xl text-kumo-strong tracking-tight sm:text-4xl">
 					Everything to run your own platform
 				</h2>
 				<p className="mt-4 text-kumo-subtle leading-relaxed">
