@@ -35,8 +35,22 @@ import {
 } from "@/components/shared/form";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
+import {
+	DATABASE_ENGINE_KEYS,
+	databaseEngineSupportsBackup,
+} from "@/server/core/databases/registry";
 import { cn } from "@/shared/utils";
 import { ScheduleFormField } from "../../application/schedules/handle-schedules";
+import { ENGINE_LABELS } from "../../database-service/general/engine-labels";
+
+/**
+ * Engines that support a logical (dump-based) backup, derived from the engine
+ * registry so this list cannot drift from the backend. Resolves to
+ * postgres/mysql/mariadb/mongo (redis/libsql have no dump command).
+ */
+const BACKUP_DATABASE_ENGINES = DATABASE_ENGINE_KEYS.filter((key) =>
+	databaseEngineSupportsBackup(key),
+);
 
 const Command = Combobox;
 const CommandInput = Combobox.TriggerInput;
@@ -355,12 +369,11 @@ export const HandleBackup = ({
 											>
 												<></>
 												<>
-													<Select.Option value="postgres">
-														PostgreSQL
-													</Select.Option>
-													<Select.Option value="mariadb">MariaDB</Select.Option>
-													<Select.Option value="mysql">MySQL</Select.Option>
-													<Select.Option value="mongo">MongoDB</Select.Option>
+													{BACKUP_DATABASE_ENGINES.map((engine) => (
+														<Select.Option key={engine} value={engine}>
+															{ENGINE_LABELS[engine]}
+														</Select.Option>
+													))}
 												</>
 											</Select>
 											<FormMessage />

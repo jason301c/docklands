@@ -724,6 +724,15 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 												return (
 													<FormItem>
 														<FormLabel>Certificate Provider</FormLabel>
+														<FormDescription>
+															How the TLS certificate for this domain is
+															obtained. Pick <strong>None</strong> if you
+															uploaded your own certificate files — they are
+															served automatically by the file/SNI provider.
+															Pick <strong>Custom</strong> only when you have a
+															custom ACME resolver defined in your Traefik
+															static config.
+														</FormDescription>
 														<Select
 															aria-label="Certificate provider"
 															onValueChange={(value) => {
@@ -743,13 +752,13 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 															</FormControl>
 															<>
 																<Select.Option value={"none"}>
-																	None
+																	None (or your own uploaded certificate)
 																</Select.Option>
 																<Select.Option value={"letsencrypt"}>
 																	Let's Encrypt
 																</Select.Option>
 																<Select.Option value={"custom"}>
-																	Custom
+																	Custom ACME resolver
 																</Select.Option>
 															</>
 														</Select>
@@ -767,6 +776,11 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 													return (
 														<FormItem>
 															<FormLabel>Custom Certificate Resolver</FormLabel>
+															<FormDescription>
+																The name of an ACME certificate resolver defined
+																in your Traefik static configuration. The route
+																fails if no resolver with this name exists.
+															</FormDescription>
 															<FormControl>
 																<Input
 																	className="w-full"

@@ -644,6 +644,12 @@ export const EnvironmentCanvas = ({
 	} | null>(null);
 	const dragState = useRef<DragState | null>(null);
 	const suppressClick = useRef(false);
+	// Node keys whose local position is being (or was just) saved. While a key is
+	// here, the server-sync effect preserves the locally-moved position instead of
+	// clobbering it with a possibly-stale refetch — this prevents a card from
+	// snapping back when a concurrent drag's save lands between our drag and the
+	// refetch that reflects it.
+	const pendingNodeKeys = useRef<Set<string>>(new Set());
 	const { data: allWorkspaces } = api.workspaces.all.useQuery(undefined, {
 		enabled: isSelectionMode,
 	});
@@ -704,7 +710,34 @@ export const EnvironmentCanvas = ({
 			: serviceActions.database;
 
 	useEffect(() => {
-		if (workspace?.nodes) setNodes(workspace.nodes);
+		const serverNodes = workspace?.nodes;
+		if (!serverNodes) return;
+		// Fast path: nothing in flight, take the server snapshot as-is.
+		if (pendingNodeKeys.current.size === 0) {
+			setNodes(serverNodes);
+			return;
+		}
+		// Preserve the locally-moved position for any node whose save is pending or
+		// just settled; everything else updates from the server.
+		setNodes((current) => {
+			const localByKey = new Map(
+				current.map((node) => [
+					getWorkspaceServiceKey(node.serviceType, node.serviceId),
+					node,
+				]),
+			);
+			return serverNodes.map((serverNode) => {
+				const key = getWorkspaceServiceKey(
+					serverNode.serviceType,
+					serverNode.serviceId,
+				);
+				if (!pendingNodeKeys.current.has(key)) return serverNode;
+				const localNode = localByKey.get(key);
+				if (!localNode) return serverNode;
+				// Keep our position; accept any other server-side changes.
+				return { ...serverNode, x: localNode.x, y: localNode.y };
+			});
+		});
 	}, [workspace?.nodes]);
 
 	useEffect(() => {
@@ -1303,12 +1336,23 @@ export const EnvironmentCanvas = ({
 		);
 		if (!node) return;
 
+		// Guard this node from being clobbered by an in-flight refetch (e.g. a
+		// concurrent drag's save) until our own save has settled and been reflected.
+		pendingNodeKeys.current.add(drag.key);
 		try {
 			await persistNode(node);
 		} catch (error) {
 			toast.error(
 				`Could not save service position: ${error instanceof Error ? error.message : "Unknown error"}`,
 			);
+		} finally {
+			// Hold the guard briefly past the save so a refetch that started just
+			// before the mutation resolved cannot snap the node back, then release it
+			// so future server updates flow through normally.
+			const settledKey = drag.key;
+			setTimeout(() => {
+				pendingNodeKeys.current.delete(settledKey);
+			}, 750);
 		}
 	};
 

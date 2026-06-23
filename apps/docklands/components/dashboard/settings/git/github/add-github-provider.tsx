@@ -5,6 +5,7 @@ import { Switch } from "@cloudflare/kumo/components/switch";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { useUrl } from "@/client/hooks/use-url";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 
 export const AddGithubProvider = () => {
@@ -13,6 +14,9 @@ export const AddGithubProvider = () => {
 
 	const { data: session } = api.user.session.useQuery();
 	const { data } = api.user.get.useQuery();
+	// Prefer the configured app URL over the browsing origin so the manifest's
+	// callback/webhook URLs are reachable even when set up from localhost.
+	const url = useUrl();
 	const [manifest, setManifest] = useState("");
 	const [isOrganization, setIsOrganization] = useState(false);
 	const [organizationName, setOrganization] = useState("");
@@ -20,16 +24,16 @@ export const AddGithubProvider = () => {
 	const randomString = () => Math.random().toString(36).slice(2, 8);
 
 	useEffect(() => {
-		const url = document.location.origin;
+		if (!url) return;
 		const manifest = JSON.stringify(
 			{
-				redirect_url: `${origin}/api/providers/github/setup?organizationId=${activeOrganization?.id ?? ""}&userId=${session?.user?.id ?? ""}`,
+				redirect_url: `${url}/api/providers/github/setup?organizationId=${activeOrganization?.id ?? ""}&userId=${session?.user?.id ?? ""}`,
 				name: `Docklands-${format(new Date(), "yyyy-MM-dd")}-${randomString()}`,
-				url: origin,
+				url,
 				hook_attributes: {
 					url: `${url}/api/deploy/github`,
 				},
-				callback_urls: [`${origin}/api/providers/github/setup`],
+				callback_urls: [`${url}/api/providers/github/setup`],
 				public: false,
 				request_oauth_on_install: true,
 				default_permissions: {
@@ -45,7 +49,7 @@ export const AddGithubProvider = () => {
 		);
 
 		setManifest(manifest);
-	}, [activeOrganization?.id, session?.user?.id]);
+	}, [activeOrganization?.id, session?.user?.id, url]);
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>

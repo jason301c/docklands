@@ -829,7 +829,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | D2 | password change no propagation | **✅ P5** (re-resolve at deploy) |
 | D3 | external-port TOCTOU | **✅ P7** (clear best-effort error) |
 | D4 | changePassword shell interpolation | **✅ P2** (regex backtick gap fixed + boundary assert) |
-| D5 | backup UI hardcodes engines | **P7 (registry-drive)** |
+| D5 | backup UI hardcodes engines | **✅ P7** (driven off DATABASE_ENGINE_KEYS + supportsBackup) |
 | D6 | redis/libsql no logical backup | no action (by design) |
 | D7 | config jsonb validated at boundary | no action (positive) |
 | D8 | mysql/mariadb dumps as root | no action (note) |
@@ -842,7 +842,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | C7 | delete swallows cleanup errors | **✅ P7** (logged; app/compose/db parity) |
 | C8 | catalog header parsing fragile | **✅ P7** (robust header scan) |
 | C9 | libsql embedded detection weak | **✅ P7** (added SQLD_* env + healthcheck signals) |
-| N1 | "custom" cert provider ≠ upload | **P7 (UI clarity)** |
+| N1 | "custom" cert provider ≠ upload | **✅ P7** (clarified None=uploaded, Custom=ACME resolver) |
 | N2 | cert private keys plaintext | **✅ P1** |
 | N3 | remote traefik write interpolation | **✅ P2** (base64 `| base64 -d`) |
 | N4 | placeholder ACME email | **✅ P7** (block enabling LE until ingress email set) |
@@ -858,7 +858,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | G5 | SSH key echo interpolation + race | **✅ P2** (base64 + per-clone mktemp + cleanup) |
 | G6 | provider parity uneven | **✅ P7** (documented) |
 | G7 | bitbucket isConfigured false | **✅ P0** (derives from apiToken + email) |
-| G8 | provider URLs from window.origin | **P7 (use configured URL)** |
+| G8 | provider URLs from window.origin | **✅ P7** (prefer configured host via useUrl) |
 | AC1 | docker WS skip per-service access | **◑ deferred** — needs container→service resolution validated on live Docker (owners/admins unaffected) |
 | AC2 | API keys full identity | **◑ deferred** — schema+enforcement feature; prior RBAC audit flagged "moot under single-org" |
 | AC3 | "Delete User" global delete | **✅ P4** (dialog now warns it's a permanent full-account delete) |
@@ -902,7 +902,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | R6 | server→runtimeWorker rename | **P7 (finish rename)** |
 | R7 | build-workers route is concurrency | no action (documented) |
 | R8 | execAsyncRemote timeout + dead sleep | **✅ P0** (drop sleep; timeout 30s; rm dead var) |
-| W1 | canvas layout race | **P7 (debounce + guard)** |
+| W1 | canvas layout race | **✅ P7** (pending-node guard preserves in-flight drags) |
 | W2 | conn vars snapshot not binding | **✅ P5** (re-resolve at deploy + retract on disconnect) |
 | W3 | environment promotion absent | **◑ deferred** (real feature, design separately) |
 | W4 | orphaned layout rows | **✅ P7** (cleanup invoked on canvas load) |
