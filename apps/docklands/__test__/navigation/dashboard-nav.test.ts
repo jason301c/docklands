@@ -7,6 +7,7 @@ import {
 } from "@/shared/dashboard-nav";
 
 const fullPermissions = {
+	auditLog: { read: true },
 	certificate: { read: true },
 	deployment: { read: true },
 	destination: { read: true },
@@ -47,6 +48,7 @@ describe("dashboard nav", () => {
 				"Build Workers",
 				"Users",
 				"Roles",
+				"Audit Log",
 				"SSH Keys",
 				"Tags",
 				"Git Providers",
