@@ -34,6 +34,13 @@ files.
 **Use it when:** you want a zero-config build and your project follows common
 conventions.
 
+:::note[Builder versions: Railpack is pinned-and-configurable, Paketo is fixed]
+The Railpack builder runs a pinned default version that you can override per app
+from the **Railpack Version** field. The Paketo builder image is hard-pinned with
+no version field, so Paketo builds always use the bundled builder image — there
+is nothing to choose.
+:::
+
 ## Dockerfile
 
 The Dockerfile build runs `docker build` against a Dockerfile in your repo. It is

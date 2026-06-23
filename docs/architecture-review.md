@@ -805,7 +805,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | A4 | drop + buildType unvalidated | **P7 guard** |
 | A5 | audit resourceType inconsistent | **✅ P7** (canonical: application/compose/owning-type) |
 | A6 | rollbacks inert; image-less row leak | **✅ P7** (row always deleted) |
-| A7 | paketo/railpack version pinning | **P7 (railpack: configurable)** |
+| A7 | paketo/railpack version pinning | **✅ P7** (documented) |
 | A8 | disconnect resets to github | **✅ P0** (→ neutral `git`, app + compose) |
 | A9 | env reference resolution order | no action (documented) |
 | A10 | patch filePath shell interpolation | **✅ P2** (base64 + path-containment check) |
@@ -825,24 +825,24 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | C4 | backup user/password engine quirk | **P7 fix** |
 | C5 | detection runs twice | **P7 (single call site)** |
 | C6 | stack stop/start asymmetry | **P7 (add start path)** |
-| C7 | delete swallows cleanup errors | **P7 (surface errors)** |
+| C7 | delete swallows cleanup errors | **✅ P7** (logged; app/compose/db parity) |
 | C8 | catalog header parsing fragile | **P7 (robust parse)** |
 | C9 | libsql embedded detection weak | **P7 (note/strengthen)** |
 | N1 | "custom" cert provider ≠ upload | **P7 (UI clarity)** |
 | N2 | cert private keys plaintext | **✅ P1** |
 | N3 | remote traefik write interpolation | **✅ P2** (base64 `| base64 -d`) |
 | N4 | placeholder ACME email | **P7 guard (require email)** |
-| N5 | LE prod-only + rate-limit | **P7 (doc + dev resolver)** |
+| N5 | LE prod-only + rate-limit | **✅ P7** (documented) |
 | N6 | proxy-file editing can brick ingress | **P7 guard (validate)** |
 | N7 | port default contradiction | **✅ P0** (zod default → `host`, matches column + runtime) |
-| N8 | domain validation CDN gap | **P7 (doc)** |
-| N9 | redirects application-only | no action (note) |
+| N8 | domain validation CDN gap | **✅ P7** (documented) |
+| N9 | redirects application-only | **✅ P7** (documented) |
 | G1 | GitLab `/api/v4/workspaces` | **✅ P0** (→ `/api/v4/projects`) |
 | G2 | refresh-token webhook no signature | **◑ deferred** — provider-specific signing; webhook changes are breakage-sensitive |
 | G3 | SSH keys plaintext + wrong comment | **✅ P1** (+ comment fixed) |
 | G4 | all provider creds plaintext | **✅ P1** |
 | G5 | SSH key echo interpolation + race | **✅ P2** (base64 + per-clone mktemp + cleanup) |
-| G6 | provider parity uneven | **P7 (document)** |
+| G6 | provider parity uneven | **✅ P7** (documented) |
 | G7 | bitbucket isConfigured false | **✅ P0** (derives from apiToken + email) |
 | G8 | provider URLs from window.origin | **P7 (use configured URL)** |
 | AC1 | docker WS skip per-service access | **◑ deferred** — needs container→service resolution validated on live Docker (owners/admins unaffected) |
@@ -857,7 +857,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | O1 | audit log no-op | **✅ P6** (createAuditLog/getAuditLogs implemented; viewer page = follow-up) |
 | O2 | build-log WS no authz | **✅ P4** (resolve service by logPath + checkServiceAccess) |
 | O3 | request-analytics read gate | **✅ P4** (readStatsLogs → adminProcedure) |
-| O4 | metrics only while watched | **P7 (doc; opt. collector)** |
+| O4 | metrics only while watched | **✅ P7** (documented) |
 | O5 | remote/paid metrics half-wired | **✅ P6** (cut paid path + SSRF) |
 | O6 | in-memory queue loses state | **◑ deferred** — in-flight reconciled by `initCancelDeployments`; full durable queue needs live env |
 | O7 | audit resourceType inconsistency | **✅ P7** (= A5) |
@@ -874,9 +874,9 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | B1 | libSQL DB backup broken | **✅ P6** (registry-driven reject redis+libsql; dead code removed) |
 | B2 | S3 creds plaintext + cmdline | **✅ P1 (store)** + **✅ P2 (cmdline → RCLONE_S3_* env)** |
 | B3 | retention errors swallowed | **✅ P7** (logged with context, still non-throwing) |
-| B4 | retention sorts by filename | **P7 (sort by mtime)** |
+| B4 | retention sorts by filename | **✅ P7** (sort by rclone mtime) |
 | B5 | restore destructive no snapshot | **P7 guard (pre-snapshot)** |
-| B6 | stop-mode volume backup downtime | no action (documented) |
+| B6 | stop-mode volume backup downtime | **✅ P7** (already documented) |
 | B7 | scheduler no catch-up | **◑ deferred** — missed-cron backfill belongs in the durable-jobs abstraction (needs live env) |
 | B8 | destination test ignores worker | **P7 fix** |
 | B9 | backups naming smells | **P7 cleanup** |
@@ -893,7 +893,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | W3 | environment promotion absent | **◑ deferred** (real feature, design separately) |
 | W4 | orphaned layout rows | **✅ P7** (cleanup invoked on canvas load) |
 | W5 | apply/sync doesn't redeploy | **✅ P5** (binding re-resolves on next deploy) |
-| W6 | connection orientation auto-flip | **P7 (doc/UI hint)** |
+| W6 | connection orientation auto-flip | **✅ P7** (documented) |
 | W7 | permission gating correct | no action (positive) |
 | W8 | list view toggle / tags scope | no action (note) |
 

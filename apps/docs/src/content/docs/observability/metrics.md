@@ -52,6 +52,14 @@ host (`docklands`) is sampled the same way — only while the host-metrics page 
 open.
 :::
 
+:::caution[Don't read stored history as a complete time series]
+Because sampling happens only while a live stats stream is open, the stored
+history is sparse: it captures the moments people were actively looking, not
+continuous usage. Gaps in the charts mean nobody was watching then, not that the
+service was idle — do not use this data for capacity planning or to reconstruct a
+full timeline of resource usage.
+:::
+
 The metric files live under the runtime monitoring directory (`.docker/` paths
 in development, `/etc/docklands` paths in production). They are plain JSON and
 small by design, so they do not grow unbounded.

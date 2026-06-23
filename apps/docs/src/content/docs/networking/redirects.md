@@ -14,8 +14,9 @@ application's routers, so it runs at the edge before any request hits your
 service.
 
 :::note
-Redirects are available on **applications**. The HTTP→HTTPS redirect is separate
-and automatic — it is created for you whenever you enable
+Redirects are configured on **applications only** — Compose services and
+preview deployments do not have them. The HTTP→HTTPS redirect is separate and
+automatic — it is created for you whenever you enable
 [HTTPS on a domain](/networking/domains/#serve-over-https), so you do not add a
 redirect for that.
 :::

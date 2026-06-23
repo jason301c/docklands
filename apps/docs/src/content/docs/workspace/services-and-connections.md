@@ -84,6 +84,14 @@ draw the link in the "wrong" order — from an app to a database — Docklands
 silently flips the endpoints so the database is the source. You do not have to
 draw it in a particular direction.
 
+:::note[Drag direction does not matter]
+Docklands always orients a connection so the variable-producing database is the
+source, no matter which card you started the drag from. A connection between two
+non-database services (app-to-app, or app-to-Compose) still establishes the
+private link but produces **no** generated variables, because neither side has
+connection variables to project.
+:::
+
 ### Removing a connection
 
 Open the connection from the canvas and remove it. Removing a connection deletes

@@ -131,6 +131,15 @@ wired today:
 | PR/MR preview deployments | Yes | No | No | No |
 | Webhook signature verified | Yes (App webhook) | n/a (no provider webhook) | n/a | n/a |
 
+:::note[Only GitHub is fully integrated]
+Just the GitHub App integration auto-registers a single signed webhook and
+supports pull-request preview deployments and tag-triggered deploys. GitLab,
+Gitea, and Bitbucket rely on the per-service refresh-token webhook URL for
+auto-deploy and have no preview deployments. Bitbucket also has no OAuth
+flow — you connect it with an email plus an API token rather than authorizing an
+app.
+:::
+
 Pick the provider page for the exact setup steps. If your provider is not listed,
 or you would rather not authorize an app, use the [Git source](/applications/sources/)
 with an [SSH key](/git/ssh-keys/) instead.

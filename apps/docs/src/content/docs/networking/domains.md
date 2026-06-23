@@ -64,6 +64,14 @@ Cloudflare, validation still passes but warns you, because the resolved IP is th
 CDN's edge rather than your server.
 :::
 
+:::note[A "valid" result behind a CDN is not a guarantee]
+When the host resolves to a known CDN IP (for example Cloudflare), domain
+validation reports **success** even though it cannot confirm that the CDN's origin
+actually points back at this server. Treat a CDN-fronted pass as "DNS is plausibly
+wired," not as proof the origin is correct — verify the CDN's origin
+configuration separately if traffic does not reach your service.
+:::
+
 ## Serve over HTTPS
 
 Turn on the **HTTPS** switch to provision TLS. You then choose a **Certificate
@@ -86,6 +94,16 @@ When HTTPS is on, Docklands creates **two** routers for the domain:
   built-in `redirect-to-https` middleware;
 - an HTTPS (`websecure`) router that carries the real routing, middlewares, and
   TLS settings.
+
+:::caution[Let's Encrypt has limits — get DNS right first]
+Automatic HTTPS uses the Let's Encrypt **HTTP-01 challenge only**, so it cannot
+issue wildcard certificates, and it is wired up only when Docklands runs in
+production. Each toggle of HTTPS against a host whose DNS does not yet point at
+your server is a failed issuance attempt, and enough failures hit Let's Encrypt's
+weekly per-domain rate limit and lock you out of new certificates for that domain
+for up to a week. Confirm the domain's DNS resolves to your server before turning
+HTTPS on.
+:::
 
 :::caution
 **Custom certificate files and "Custom" certificate resolvers are different
