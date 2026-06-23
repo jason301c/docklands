@@ -3,12 +3,7 @@ import { requireUser } from "@/server/web/app-auth";
 import type { WorkspaceServiceType } from "@/shared/workspace-graph";
 import ApplicationClient from "./_clients/application-client";
 import ComposeClient from "./_clients/compose-client";
-import LibsqlClient from "./_clients/libsql-client";
-import MariadbClient from "./_clients/mariadb-client";
-import MongoClient from "./_clients/mongo-client";
-import MysqlClient from "./_clients/mysql-client";
-import PostgresClient from "./_clients/postgres-client";
-import RedisClient from "./_clients/redis-client";
+import DatabaseClient from "./_clients/database-client";
 
 type PageProps = {
 	params: Promise<{
@@ -41,17 +36,12 @@ export default async function Page({ params, searchParams }: PageProps) {
 		case "compose":
 			return <ComposeClient {...routeProps} composeId={serviceId} />;
 		case "postgres":
-			return <PostgresClient {...routeProps} postgresId={serviceId} />;
 		case "mysql":
-			return <MysqlClient {...routeProps} mysqlId={serviceId} />;
 		case "mariadb":
-			return <MariadbClient {...routeProps} mariadbId={serviceId} />;
 		case "mongo":
-			return <MongoClient {...routeProps} mongoId={serviceId} />;
 		case "redis":
-			return <RedisClient {...routeProps} redisId={serviceId} />;
 		case "libsql":
-			return <LibsqlClient {...routeProps} libsqlId={serviceId} />;
+			return <DatabaseClient {...routeProps} databaseId={serviceId} />;
 		default:
 			notFound();
 	}

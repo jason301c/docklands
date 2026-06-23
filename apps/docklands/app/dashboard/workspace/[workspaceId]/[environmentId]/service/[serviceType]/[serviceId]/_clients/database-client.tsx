@@ -9,23 +9,31 @@ import { ShowEnvironment } from "@/components/dashboard/application/environment/
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
+import { ShowExternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-external-database-credentials";
+import { ShowGeneralDatabase } from "@/components/dashboard/database-service/general/show-general-database";
+import { ShowInternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-internal-database-credentials";
+import { UpdateDatabase } from "@/components/dashboard/database-service/update-database";
 import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
-import { ShowExternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-external-postgres-credentials";
-import { ShowGeneralPostgres } from "@/components/dashboard/postgres/general/show-general-postgres";
-import { ShowInternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-internal-postgres-credentials";
-import { UpdatePostgres } from "@/components/dashboard/postgres/update-postgres";
 import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,
 } from "@/components/dashboard/service/runtime-placement-status";
 import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/shared/show-database-advanced-settings";
-import { PostgresqlIcon } from "@/components/icons/data-tools-icons";
+import {
+	LibsqlIcon,
+	MariadbIcon,
+	MongodbIcon,
+	MysqlIcon,
+	PostgresqlIcon,
+	RedisIcon,
+} from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import {
 	workspaceEnvironmentPath,
 	workspaceServicePath,
 } from "@/shared/routes";
+import type { WorkspaceVariableSourceType } from "@/shared/workspace-graph";
 
 type TabState =
 	| "general"
@@ -35,18 +43,54 @@ type TabState =
 	| "backups"
 	| "advanced";
 
-const Postgresql = (props: {
-	postgresId: string;
+const ENGINE_ICONS: Record<
+	WorkspaceVariableSourceType,
+	(props: { className?: string }) => React.JSX.Element
+> = {
+	postgres: PostgresqlIcon,
+	mysql: MysqlIcon,
+	mariadb: MariadbIcon,
+	mongo: MongodbIcon,
+	redis: RedisIcon,
+	libsql: LibsqlIcon,
+};
+
+/**
+ * Maps a database engine to its `UseKeyboardNav` page key. Engine keys match the
+ * page keys except `mongo`, whose keyboard-nav page is named `mongodb`.
+ */
+const ENGINE_KEYBOARD_PAGE: Record<
+	WorkspaceVariableSourceType,
+	"libsql" | "mariadb" | "mongodb" | "mysql" | "postgres" | "redis"
+> = {
+	postgres: "postgres",
+	mysql: "mysql",
+	mariadb: "mariadb",
+	mongo: "mongodb",
+	redis: "redis",
+	libsql: "libsql",
+};
+
+/** Engines that support logical (dump-based) backups. Redis/libSQL do not. */
+const BACKUP_ENGINES = ["postgres", "mysql", "mariadb", "mongo"] as const;
+type BackupEngine = (typeof BACKUP_ENGINES)[number];
+const supportsBackups = (
+	engine: WorkspaceVariableSourceType,
+): engine is BackupEngine =>
+	(BACKUP_ENGINES as readonly string[]).includes(engine);
+
+const DatabaseClient = (props: {
+	databaseId: string;
 	workspaceId: string;
 	environmentId: string;
 	activeTab: TabState;
 }) => {
 	const [_toggleMonitoring, _setToggleMonitoring] = useState(false);
-	const { postgresId, activeTab } = props;
+	const { databaseId, activeTab } = props;
 	const router = useRouter();
 	const { workspaceId, environmentId } = props;
 	const [tab, setSab] = useState<TabState>(activeTab);
-	const { data } = api.postgres.one.useQuery({ postgresId });
+	const { data } = api.database.one.useQuery({ databaseId });
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
 	const { data: serverIp } = api.settings.getIp.useQuery();
@@ -62,9 +106,15 @@ const Postgresql = (props: {
 			}),
 		})) || [];
 
+	const EngineIcon = data?.engine ? ENGINE_ICONS[data.engine] : null;
+	const backupEngine =
+		data?.engine && supportsBackups(data.engine) ? data.engine : null;
+
 	return (
 		<div className="pb-10">
-			<UseKeyboardNav forPage="postgres" />
+			<UseKeyboardNav
+				forPage={data?.engine ? ENGINE_KEYBOARD_PAGE[data.engine] : "postgres"}
+			/>
 			<AdvanceBreadcrumb />
 			<div className="w-full">
 				<div className="rounded-lg border bg-kumo-canvas p-6">
@@ -76,7 +126,9 @@ const Postgresql = (props: {
 										<StatusTooltip status={data?.applicationStatus} />
 									</div>
 
-									<PostgresqlIcon className="h-6 w-6 text-kumo-subtle" />
+									{EngineIcon && (
+										<EngineIcon className="h-6 w-6 text-kumo-subtle" />
+									)}
 								</div>
 								{data?.name}
 							</h3>
@@ -93,10 +145,10 @@ const Postgresql = (props: {
 
 							<div className="flex flex-row gap-2 justify-end">
 								{permissions?.service.create && (
-									<UpdatePostgres postgresId={postgresId} />
+									<UpdateDatabase databaseId={databaseId} />
 								)}
-								{permissions?.service.delete && (
-									<DeleteService id={postgresId} type="postgres" />
+								{permissions?.service.delete && data?.engine && (
+									<DeleteService id={databaseId} type={data.engine} />
 								)}
 							</div>
 						</div>
@@ -115,8 +167,8 @@ const Postgresql = (props: {
 										const newPath = workspaceServicePath({
 											workspaceId: workspaceId,
 											environmentId,
-											serviceType: "postgres",
-											serviceId: postgresId,
+											serviceType: data?.engine ?? "postgres",
+											serviceId: databaseId,
 											tab: e,
 										});
 
@@ -134,7 +186,9 @@ const Postgresql = (props: {
 											permissions?.monitoring.read && !data?.runtimeWorker
 												? { value: "monitoring", label: "Metrics" }
 												: null,
-											{ value: "backups", label: "Backups" },
+											backupEngine
+												? { value: "backups", label: "Backups" }
+												: null,
 											permissions?.service.create
 												? { value: "advanced", label: "Advanced" }
 												: null,
@@ -144,23 +198,25 @@ const Postgresql = (props: {
 								{tab === "general" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowGeneralPostgres postgresId={postgresId} />
-											<ShowInternalPostgresCredentials
-												postgresId={postgresId}
+											<ShowGeneralDatabase databaseId={databaseId} />
+											<ShowInternalDatabaseCredentials
+												databaseId={databaseId}
 											/>
-											<ShowExternalPostgresCredentials
-												postgresId={postgresId}
+											<ShowExternalDatabaseCredentials
+												databaseId={databaseId}
 											/>
 										</div>
 									</div>
 								)}
-								{permissions?.envVars.read && tab === "environment" && (
-									<div>
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowEnvironment id={postgresId} type="postgres" />
+								{permissions?.envVars.read &&
+									tab === "environment" &&
+									data?.engine && (
+										<div>
+											<div className="flex flex-col gap-4 pt-2.5">
+												<ShowEnvironment id={databaseId} type={data.engine} />
+											</div>
 										</div>
-									</div>
-								)}
+									)}
 								{permissions?.monitoring.read && tab === "monitoring" && (
 									<div>
 										<div className="pt-2.5">
@@ -182,27 +238,29 @@ const Postgresql = (props: {
 										</div>
 									</div>
 								)}
-								{tab === "backups" && (
+								{backupEngine && tab === "backups" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
 											<ShowBackups
-												id={postgresId}
-												databaseType="postgres"
+												id={databaseId}
+												databaseType={backupEngine}
 												backupType="database"
 											/>
 										</div>
 									</div>
 								)}
-								{permissions?.service.create && tab === "advanced" && (
-									<div>
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowDatabaseAdvancedSettings
-												id={postgresId}
-												type="postgres"
-											/>
+								{permissions?.service.create &&
+									tab === "advanced" &&
+									data?.engine && (
+										<div>
+											<div className="flex flex-col gap-4 pt-2.5">
+												<ShowDatabaseAdvancedSettings
+													id={databaseId}
+													type={data.engine}
+												/>
+											</div>
 										</div>
-									</div>
-								)}
+									)}
 							</div>
 						)}
 					</div>
@@ -212,4 +270,4 @@ const Postgresql = (props: {
 	);
 };
 
-export default Postgresql;
+export default DatabaseClient;

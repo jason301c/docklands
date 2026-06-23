@@ -27,18 +27,22 @@ export const ShowVolumes = ({ id, type }: Props) => {
 			api.application.one.useQuery({ applicationId: id }, { enabled: !!id }),
 		compose: () =>
 			api.compose.one.useQuery({ composeId: id }, { enabled: !!id }),
-		libsql: () => api.libsql.one.useQuery({ libsqlId: id }, { enabled: !!id }),
+		libsql: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		mariadb: () =>
-			api.mariadb.one.useQuery({ mariadbId: id }, { enabled: !!id }),
-		mongo: () => api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id }),
-		mysql: () => api.mysql.one.useQuery({ mysqlId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		mongo: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		mysql: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		postgres: () =>
-			api.postgres.one.useQuery({ postgresId: id }, { enabled: !!id }),
-		redis: () => api.redis.one.useQuery({ redisId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		redis: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 	};
 	const { data, refetch } = queryMap[type]
 		? queryMap[type]()
-		: api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id });
+		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
 	const { mutateAsync: deleteVolume, isPending: isRemoving } =
 		api.mounts.remove.useMutation();
 

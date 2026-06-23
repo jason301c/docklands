@@ -43,15 +43,15 @@ export const ShowBackups = ({
 		backupType === "database"
 			? {
 					mariadb: () =>
-						api.mariadb.one.useQuery({ mariadbId: id }, { enabled: !!id }),
+						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 					mongo: () =>
-						api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id }),
+						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 					mysql: () =>
-						api.mysql.one.useQuery({ mysqlId: id }, { enabled: !!id }),
+						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 					postgres: () =>
-						api.postgres.one.useQuery({ postgresId: id }, { enabled: !!id }),
+						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 					libsql: () =>
-						api.libsql.one.useQuery({ libsqlId: id }, { enabled: !!id }),
+						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 					"web-server": () => api.user.getBackups.useQuery(),
 				}
 			: {
@@ -63,7 +63,7 @@ export const ShowBackups = ({
 	const query = queryMap[key as keyof typeof queryMap];
 	const { data: postgres, refetch } = query
 		? query()
-		: api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id });
+		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
 
 	const mutationMap =
 		backupType === "database"

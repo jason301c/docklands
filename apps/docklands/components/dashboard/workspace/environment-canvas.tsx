@@ -500,18 +500,9 @@ const getActionInput = (service: WorkspaceService) => {
 			return { applicationId: service.id };
 		case "compose":
 			return { composeId: service.id };
-		case "postgres":
-			return { postgresId: service.id };
-		case "mysql":
-			return { mysqlId: service.id };
-		case "mariadb":
-			return { mariadbId: service.id };
-		case "redis":
-			return { redisId: service.id };
-		case "mongo":
-			return { mongoId: service.id };
-		case "libsql":
-			return { libsqlId: service.id };
+		default:
+			// all managed database engines resolve to the unified database router
+			return { databaseId: service.id };
 	}
 };
 
@@ -755,49 +746,20 @@ export const EnvironmentCanvas = ({
 			move: api.compose.move.useMutation(),
 			delete: api.compose.delete.useMutation(),
 		},
-		postgres: {
-			start: api.postgres.start.useMutation(),
-			stop: api.postgres.stop.useMutation(),
-			deploy: api.postgres.deploy.useMutation(),
-			move: api.postgres.move.useMutation(),
-			delete: api.postgres.remove.useMutation(),
-		},
-		mysql: {
-			start: api.mysql.start.useMutation(),
-			stop: api.mysql.stop.useMutation(),
-			deploy: api.mysql.deploy.useMutation(),
-			move: api.mysql.move.useMutation(),
-			delete: api.mysql.remove.useMutation(),
-		},
-		mariadb: {
-			start: api.mariadb.start.useMutation(),
-			stop: api.mariadb.stop.useMutation(),
-			deploy: api.mariadb.deploy.useMutation(),
-			move: api.mariadb.move.useMutation(),
-			delete: api.mariadb.remove.useMutation(),
-		},
-		redis: {
-			start: api.redis.start.useMutation(),
-			stop: api.redis.stop.useMutation(),
-			deploy: api.redis.deploy.useMutation(),
-			move: api.redis.move.useMutation(),
-			delete: api.redis.remove.useMutation(),
-		},
-		mongo: {
-			start: api.mongo.start.useMutation(),
-			stop: api.mongo.stop.useMutation(),
-			deploy: api.mongo.deploy.useMutation(),
-			move: api.mongo.move.useMutation(),
-			delete: api.mongo.remove.useMutation(),
-		},
-		libsql: {
-			start: api.libsql.start.useMutation(),
-			stop: api.libsql.stop.useMutation(),
-			deploy: api.libsql.deploy.useMutation(),
-			move: api.libsql.move.useMutation(),
-			delete: api.libsql.remove.useMutation(),
+		database: {
+			start: api.database.start.useMutation(),
+			stop: api.database.stop.useMutation(),
+			deploy: api.database.deploy.useMutation(),
+			move: api.database.move.useMutation(),
+			delete: api.database.remove.useMutation(),
 		},
 	};
+
+	// Managed database engines all dispatch to the unified `database` actions.
+	const getServiceActions = (type: WorkspaceService["type"]) =>
+		type === "application" || type === "compose"
+			? serviceActions[type]
+			: serviceActions.database;
 
 	useEffect(() => {
 		if (workspace?.nodes) setNodes(workspace.nodes);
@@ -1624,7 +1586,7 @@ export const EnvironmentCanvas = ({
 		service: WorkspaceService,
 		action: "start" | "stop" | "deploy",
 	) => {
-		const mutation = serviceActions[service.type][action];
+		const mutation = getServiceActions(service.type)[action];
 		const actionInput = getActionInput(service);
 		const actionPromise = (
 			mutation.mutateAsync as (input: never) => Promise<unknown>
@@ -1658,7 +1620,7 @@ export const EnvironmentCanvas = ({
 
 		try {
 			for (const service of servicesToRun) {
-				const mutation = serviceActions[service.type][action];
+				const mutation = getServiceActions(service.type)[action];
 				const actionInput = getActionInput(service);
 
 				try {
@@ -1714,7 +1676,7 @@ export const EnvironmentCanvas = ({
 
 		try {
 			for (const service of servicesToMove) {
-				const mutation = serviceActions[service.type].move;
+				const mutation = getServiceActions(service.type).move;
 				const actionInput = {
 					...getActionInput(service),
 					targetEnvironmentId: selectedTargetEnvironment,
@@ -1761,7 +1723,7 @@ export const EnvironmentCanvas = ({
 
 		try {
 			for (const service of servicesToDelete) {
-				const mutation = serviceActions[service.type].delete;
+				const mutation = getServiceActions(service.type).delete;
 				const actionInput = getDeleteInput(service, deleteComposeVolumes);
 
 				try {
@@ -1870,23 +1832,8 @@ export const EnvironmentCanvas = ({
 			case "compose":
 				await utils.compose.one.invalidate({ composeId: service.serviceId });
 				break;
-			case "postgres":
-				await utils.postgres.one.invalidate({ postgresId: service.serviceId });
-				break;
-			case "mysql":
-				await utils.mysql.one.invalidate({ mysqlId: service.serviceId });
-				break;
-			case "mariadb":
-				await utils.mariadb.one.invalidate({ mariadbId: service.serviceId });
-				break;
-			case "mongo":
-				await utils.mongo.one.invalidate({ mongoId: service.serviceId });
-				break;
-			case "redis":
-				await utils.redis.one.invalidate({ redisId: service.serviceId });
-				break;
-			case "libsql":
-				await utils.libsql.one.invalidate({ libsqlId: service.serviceId });
+			default:
+				await utils.database.one.invalidate({ databaseId: service.serviceId });
 				break;
 		}
 	};

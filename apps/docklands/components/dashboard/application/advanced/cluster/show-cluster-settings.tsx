@@ -38,31 +38,34 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 		application: () =>
 			api.application.one.useQuery({ applicationId: id }, { enabled: !!id }),
 		mariadb: () =>
-			api.mariadb.one.useQuery({ mariadbId: id }, { enabled: !!id }),
-		mongo: () => api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id }),
-		mysql: () => api.mysql.one.useQuery({ mysqlId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		mongo: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		mysql: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		postgres: () =>
-			api.postgres.one.useQuery({ postgresId: id }, { enabled: !!id }),
-		redis: () => api.redis.one.useQuery({ redisId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		redis: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 	};
 	const { data, refetch } = queryMap[type]
 		? queryMap[type]()
-		: api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id });
+		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
 	const { data: registries } = api.registry.all.useQuery();
 
 	const mutationMap = {
 		application: () => api.application.update.useMutation(),
-		libsql: () => api.libsql.update.useMutation(),
-		mariadb: () => api.mariadb.update.useMutation(),
-		mongo: () => api.mongo.update.useMutation(),
-		mysql: () => api.mysql.update.useMutation(),
-		postgres: () => api.postgres.update.useMutation(),
-		redis: () => api.redis.update.useMutation(),
+		libsql: () => api.database.update.useMutation(),
+		mariadb: () => api.database.update.useMutation(),
+		mongo: () => api.database.update.useMutation(),
+		mysql: () => api.database.update.useMutation(),
+		postgres: () => api.database.update.useMutation(),
+		redis: () => api.database.update.useMutation(),
 	};
 
 	const { mutateAsync, isPending } = mutationMap[type]
 		? mutationMap[type]()
-		: api.mongo.update.useMutation();
+		: api.database.update.useMutation();
 
 	const form = useForm<AddCommand>({
 		defaultValues: {
@@ -92,11 +95,7 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 	const onSubmit = async (data: AddCommand) => {
 		await mutateAsync({
 			applicationId: id || "",
-			mariadbId: id || "",
-			mongoId: id || "",
-			mysqlId: id || "",
-			postgresId: id || "",
-			redisId: id || "",
+			databaseId: id,
 			...(type === "application"
 				? {
 						registryId:

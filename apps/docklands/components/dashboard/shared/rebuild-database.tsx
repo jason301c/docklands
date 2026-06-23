@@ -14,12 +14,12 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 	const utils = api.useUtils();
 
 	const mutationMap = {
-		libsql: () => api.libsql.rebuild.useMutation(),
-		mariadb: () => api.mariadb.rebuild.useMutation(),
-		mongo: () => api.mongo.rebuild.useMutation(),
-		mysql: () => api.mysql.rebuild.useMutation(),
-		postgres: () => api.postgres.rebuild.useMutation(),
-		redis: () => api.redis.rebuild.useMutation(),
+		libsql: () => api.database.rebuild.useMutation(),
+		mariadb: () => api.database.rebuild.useMutation(),
+		mongo: () => api.database.rebuild.useMutation(),
+		mysql: () => api.database.rebuild.useMutation(),
+		postgres: () => api.database.rebuild.useMutation(),
+		redis: () => api.database.rebuild.useMutation(),
 	};
 
 	const { mutateAsync, isPending } = mutationMap[type]();
@@ -27,12 +27,7 @@ export const RebuildDatabase = ({ id, type }: Props) => {
 	const handleRebuild = async () => {
 		try {
 			await mutateAsync({
-				libsqlId: type === "libsql" ? id : "",
-				mariadbId: type === "mariadb" ? id : "",
-				mongoId: type === "mongo" ? id : "",
-				mysqlId: type === "mysql" ? id : "",
-				postgresId: type === "postgres" ? id : "",
-				redisId: type === "redis" ? id : "",
+				databaseId: id,
 			});
 			toast.success("Database rebuilt successfully");
 			await utils.invalidate();

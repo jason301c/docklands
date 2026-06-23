@@ -13,6 +13,7 @@ import {
 	buildAppName,
 	database,
 } from "@/server/core/db/schema";
+import { generatePassword } from "@/server/core/templates";
 import { buildDatabase } from "@/server/core/utils/databases/build";
 import { pullImage } from "@/server/core/utils/docker/utils";
 import { execAsyncRemote } from "@/server/core/utils/process/execAsync";
@@ -40,13 +41,21 @@ export const createDatabase = async (
 	}
 
 	// Validate (and normalize defaults for) the engine-specific config.
-	const config = parseDatabaseConfig(input.engine, input.config);
+	const config = parseDatabaseConfig(input.engine, input.config) as Record<
+		string,
+		unknown
+	>;
+	// Preserve the legacy per-engine behavior of generating a password when one
+	// isn't supplied (applies to both the user and root passwords).
+	for (const key of ["databasePassword", "databaseRootPassword"]) {
+		if (key in config && !config[key]) config[key] = generatePassword();
+	}
 
 	const newDatabase = await db
 		.insert(database)
 		.values({
 			...input,
-			config,
+			config: config as (typeof database.$inferInsert)["config"],
 			appName,
 		})
 		.returning()

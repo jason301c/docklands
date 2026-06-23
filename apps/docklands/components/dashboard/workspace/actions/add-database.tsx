@@ -37,7 +37,7 @@ type DbType = z.infer<typeof mySchema>["type"];
 
 const dockerImageDefaultPlaceholder: Record<DbType, string> = {
 	mongo: "mongo:8",
-	libsql: "ghcr.io/tursodatabase/libsql-runtimeWorker:v0.24.32",
+	libsql: "ghcr.io/tursodatabase/libsql-server:v0.24.32",
 	mariadb: "mariadb:11",
 	mysql: "mysql:8",
 	postgres: "postgres:18",
@@ -83,7 +83,7 @@ const mySchema = z
 				type: z.literal("libsql"),
 				dockerImage: z
 					.string()
-					.default("ghcr.io/tursodatabase/libsql-runtimeWorker:v0.24.32"),
+					.default("ghcr.io/tursodatabase/libsql-server:v0.24.32"),
 				databaseUser: z.string().default("libsql"),
 				sqldNode: z.enum(["primary", "replica"]).default("primary"),
 				sqldPrimaryUrl: z.string().optional(),
@@ -93,7 +93,7 @@ const mySchema = z
 		z
 			.object({
 				type: z.literal("mariadb"),
-				dockerImage: z.string().default("mariadb:4"),
+				dockerImage: z.string().default("mariadb:11"),
 				databaseRootPassword: z
 					.string()
 					.regex(/^[a-zA-Z0-9@#%^&*()_+\-=[\]{}|;:,.<>?~`]*$/, {
@@ -215,12 +215,7 @@ export const AddDatabase = ({
 		api.settings.getWebServerSettings.useQuery();
 	const showLocalOption = !webServerSettings?.remoteServersOnly;
 	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
-	const libsqlMutation = api.libsql.create.useMutation();
-	const mariadbMutation = api.mariadb.create.useMutation();
-	const mongoMutation = api.mongo.create.useMutation();
-	const mysqlMutation = api.mysql.create.useMutation();
-	const postgresMutation = api.postgres.create.useMutation();
-	const redisMutation = api.redis.create.useMutation();
+	const databaseMutation = api.database.create.useMutation();
 
 	// Get environment data to extract the backing workspace id.
 	const { data: environment } = api.environment.one.useQuery({ environmentId });
@@ -251,14 +246,6 @@ export const AddDatabase = ({
 
 	const sqldNode = form.watch("sqldNode");
 	const type = form.watch("type");
-	const activeMutation = {
-		libsql: libsqlMutation,
-		mariadb: mariadbMutation,
-		mongo: mongoMutation,
-		mysql: mysqlMutation,
-		postgres: postgresMutation,
-		redis: redisMutation,
-	};
 
 	const resetForm = (databaseType: DbType) => {
 		const base = {
@@ -328,79 +315,65 @@ export const AddDatabase = ({
 		const defaultDockerImage =
 			data.dockerImage || dockerImageDefaultPlaceholder[data.type];
 
-		let promise: Promise<unknown> | null = null;
-		const commonParams = {
+		const runtimeWorkerId =
+			data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId;
+
+		// Pack the engine-specific credentials/settings into `config`, validated
+		// per-engine by the database engine registry on the server.
+		let config: Record<string, unknown>;
+		if (data.type === "libsql") {
+			config = {
+				databaseUser:
+					data.databaseUser || databasesUserDefaultPlaceholder.libsql,
+				databasePassword: data.databasePassword,
+				sqldNode: data.sqldNode,
+				sqldPrimaryUrl: data.sqldPrimaryUrl,
+				enableNamespaces: data.enableNamespaces,
+			};
+		} else if (data.type === "mariadb") {
+			config = {
+				databaseName: data.databaseName || "mariadb",
+				databaseUser:
+					data.databaseUser || databasesUserDefaultPlaceholder.mariadb,
+				databasePassword: data.databasePassword,
+				databaseRootPassword: data.databaseRootPassword || "",
+			};
+		} else if (data.type === "mongo") {
+			config = {
+				databaseUser:
+					data.databaseUser || databasesUserDefaultPlaceholder.mongo,
+				databasePassword: data.databasePassword,
+				replicaSets: data.replicaSets,
+			};
+		} else if (data.type === "mysql") {
+			config = {
+				databaseName: data.databaseName || "mysql",
+				databaseUser:
+					data.databaseUser || databasesUserDefaultPlaceholder.mysql,
+				databasePassword: data.databasePassword,
+				databaseRootPassword: data.databaseRootPassword || "",
+			};
+		} else if (data.type === "postgres") {
+			config = {
+				databaseName: data.databaseName || "postgres",
+				databaseUser:
+					data.databaseUser || databasesUserDefaultPlaceholder.postgres,
+				databasePassword: data.databasePassword,
+			};
+		} else {
+			config = { databasePassword: data.databasePassword };
+		}
+
+		const promise = databaseMutation.mutateAsync({
+			engine: data.type,
 			name: data.name,
 			appName: data.appName,
 			dockerImage: defaultDockerImage,
-			runtimeWorkerId:
-				data.runtimeWorkerId === "docklands" ? undefined : data.runtimeWorkerId,
 			environmentId,
 			description: data.description,
-		};
-
-		if (data.type === "libsql") {
-			promise = libsqlMutation.mutateAsync({
-				...commonParams,
-				sqldNode: data.sqldNode,
-				sqldPrimaryUrl: data.sqldPrimaryUrl ?? null,
-				enableNamespaces: data.enableNamespaces,
-				databasePassword: data.databasePassword,
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				runtimeWorkerId:
-					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
-			});
-		} else if (data.type === "mariadb") {
-			promise = mariadbMutation.mutateAsync({
-				...commonParams,
-				databasePassword: data.databasePassword,
-				databaseRootPassword: data.databaseRootPassword || "",
-				databaseName: data.databaseName || "mariadb",
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				runtimeWorkerId:
-					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
-			});
-		} else if (data.type === "mongo") {
-			promise = mongoMutation.mutateAsync({
-				...commonParams,
-				databasePassword: data.databasePassword,
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				runtimeWorkerId:
-					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
-				replicaSets: data.replicaSets,
-			});
-		} else if (data.type === "mysql") {
-			promise = mysqlMutation.mutateAsync({
-				...commonParams,
-				databasePassword: data.databasePassword,
-				databaseName: data.databaseName || "mysql",
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				runtimeWorkerId:
-					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
-				databaseRootPassword: data.databaseRootPassword || "",
-			});
-		} else if (data.type === "postgres") {
-			promise = postgresMutation.mutateAsync({
-				...commonParams,
-				databasePassword: data.databasePassword,
-				databaseName: data.databaseName || "postgres",
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder[data.type],
-				runtimeWorkerId:
-					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
-			});
-		} else if (data.type === "redis") {
-			promise = redisMutation.mutateAsync({
-				...commonParams,
-				databasePassword: data.databasePassword,
-				runtimeWorkerId:
-					data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId,
-			});
-		}
+			runtimeWorkerId,
+			config,
+		});
 
 		if (promise) {
 			await promise
@@ -479,11 +452,11 @@ export const AddDatabase = ({
 										</Radio.Group>
 									</FormControl>
 									<FormMessage />
-									{activeMutation[field.value].isError && (
+									{databaseMutation.isError && (
 										<div className="flex flex-row gap-4 rounded-lg bg-kumo-danger-tint p-2">
 											<AlertTriangle className="text-kumo-danger" />
 											<span className="text-sm text-kumo-danger">
-												{activeMutation[field.value].error?.message}
+												{databaseMutation.error?.message}
 											</span>
 										</div>
 									)}

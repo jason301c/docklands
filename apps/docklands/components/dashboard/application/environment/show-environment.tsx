@@ -35,32 +35,36 @@ export const ShowEnvironment = ({ id, type }: Props) => {
 	const queryMap = {
 		compose: () =>
 			api.compose.one.useQuery({ composeId: id }, { enabled: !!id }),
-		libsql: () => api.libsql.one.useQuery({ libsqlId: id }, { enabled: !!id }),
+		libsql: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		mariadb: () =>
-			api.mariadb.one.useQuery({ mariadbId: id }, { enabled: !!id }),
-		mongo: () => api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id }),
-		mysql: () => api.mysql.one.useQuery({ mysqlId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		mongo: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		mysql: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		postgres: () =>
-			api.postgres.one.useQuery({ postgresId: id }, { enabled: !!id }),
-		redis: () => api.redis.one.useQuery({ redisId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		redis: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 	};
 	const { data, refetch } = queryMap[type]
 		? queryMap[type]()
-		: api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id });
+		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
 	const [isEnvVisible, setIsEnvVisible] = useState(true);
 
 	const mutationMap = {
 		compose: () => api.compose.saveEnvironment.useMutation(),
-		libsql: () => api.libsql.saveEnvironment.useMutation(),
-		mariadb: () => api.mariadb.saveEnvironment.useMutation(),
-		mongo: () => api.mongo.saveEnvironment.useMutation(),
-		mysql: () => api.mysql.saveEnvironment.useMutation(),
-		postgres: () => api.postgres.saveEnvironment.useMutation(),
-		redis: () => api.redis.saveEnvironment.useMutation(),
+		libsql: () => api.database.saveEnvironment.useMutation(),
+		mariadb: () => api.database.saveEnvironment.useMutation(),
+		mongo: () => api.database.saveEnvironment.useMutation(),
+		mysql: () => api.database.saveEnvironment.useMutation(),
+		postgres: () => api.database.saveEnvironment.useMutation(),
+		redis: () => api.database.saveEnvironment.useMutation(),
 	};
 	const { mutateAsync, isPending } = mutationMap[type]
 		? mutationMap[type]()
-		: api.mongo.saveEnvironment.useMutation();
+		: api.database.saveEnvironment.useMutation();
 
 	const form = useForm<EnvironmentSchema>({
 		defaultValues: {
@@ -84,12 +88,7 @@ export const ShowEnvironment = ({ id, type }: Props) => {
 	const onSubmit = async (formData: EnvironmentSchema) => {
 		mutateAsync({
 			composeId: id || "",
-			libsqlId: id || "",
-			mariadbId: id || "",
-			mongoId: id || "",
-			mysqlId: id || "",
-			postgresId: id || "",
-			redisId: id || "",
+			databaseId: id,
 			env: formData.environment,
 		})
 			.then(async () => {

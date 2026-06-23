@@ -32,33 +32,37 @@ export const ModeForm = ({ id, type }: ModeFormProps) => {
 
 	const queryMap = {
 		postgres: () =>
-			api.postgres.one.useQuery({ postgresId: id }, { enabled: !!id }),
-		redis: () => api.redis.one.useQuery({ redisId: id }, { enabled: !!id }),
-		mysql: () => api.mysql.one.useQuery({ mysqlId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		redis: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		mysql: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		mariadb: () =>
-			api.mariadb.one.useQuery({ mariadbId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		application: () =>
 			api.application.one.useQuery({ applicationId: id }, { enabled: !!id }),
-		mongo: () => api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id }),
-		libsql: () => api.libsql.one.useQuery({ libsqlId: id }, { enabled: !!id }),
+		mongo: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		libsql: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 	};
 	const { data, refetch } = queryMap[type]
 		? queryMap[type]()
-		: api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id });
+		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
 
 	const mutationMap = {
-		postgres: () => api.postgres.update.useMutation(),
-		redis: () => api.redis.update.useMutation(),
-		mysql: () => api.mysql.update.useMutation(),
-		mariadb: () => api.mariadb.update.useMutation(),
+		postgres: () => api.database.update.useMutation(),
+		redis: () => api.database.update.useMutation(),
+		mysql: () => api.database.update.useMutation(),
+		mariadb: () => api.database.update.useMutation(),
 		application: () => api.application.update.useMutation(),
-		mongo: () => api.mongo.update.useMutation(),
-		libsql: () => api.libsql.update.useMutation(),
+		mongo: () => api.database.update.useMutation(),
+		libsql: () => api.database.update.useMutation(),
 	};
 
 	const { mutateAsync } = mutationMap[type]
 		? mutationMap[type]()
-		: api.mongo.update.useMutation();
+		: api.database.update.useMutation();
 
 	const form = useForm<any>({
 		defaultValues: {
@@ -93,12 +97,7 @@ export const ModeForm = ({ id, type }: ModeFormProps) => {
 			if (!formData.type) {
 				await mutateAsync({
 					applicationId: id || "",
-					postgresId: id || "",
-					redisId: id || "",
-					mysqlId: id || "",
-					mariadbId: id || "",
-					mongoId: id || "",
-					libsqlId: id || "",
+					databaseId: id,
 					modeSwarm: null,
 				});
 				toast.success("Mode updated successfully");
@@ -121,12 +120,7 @@ export const ModeForm = ({ id, type }: ModeFormProps) => {
 
 			await mutateAsync({
 				applicationId: id || "",
-				postgresId: id || "",
-				redisId: id || "",
-				mysqlId: id || "",
-				mariadbId: id || "",
-				mongoId: id || "",
-				libsqlId: id || "",
+				databaseId: id,
 				modeSwarm: modeData,
 			});
 

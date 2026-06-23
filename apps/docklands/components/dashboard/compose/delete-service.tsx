@@ -44,35 +44,39 @@ export const DeleteService = ({ id, type }: Props) => {
 
 	const queryMap = {
 		postgres: () =>
-			api.postgres.one.useQuery({ postgresId: id }, { enabled: !!id }),
-		redis: () => api.redis.one.useQuery({ redisId: id }, { enabled: !!id }),
-		mysql: () => api.mysql.one.useQuery({ mysqlId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		redis: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		mysql: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		mariadb: () =>
-			api.mariadb.one.useQuery({ mariadbId: id }, { enabled: !!id }),
-		libsql: () => api.libsql.one.useQuery({ libsqlId: id }, { enabled: !!id }),
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
+		libsql: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		application: () =>
 			api.application.one.useQuery({ applicationId: id }, { enabled: !!id }),
-		mongo: () => api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id }),
+		mongo: () =>
+			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
 		compose: () =>
 			api.compose.one.useQuery({ composeId: id }, { enabled: !!id }),
 	};
 	const { data } = queryMap[type]
 		? queryMap[type]()
-		: api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id });
+		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
 
 	const mutationMap = {
-		postgres: () => api.postgres.remove.useMutation(),
-		redis: () => api.redis.remove.useMutation(),
-		mysql: () => api.mysql.remove.useMutation(),
-		mariadb: () => api.mariadb.remove.useMutation(),
-		libsql: () => api.libsql.remove.useMutation(),
+		postgres: () => api.database.remove.useMutation(),
+		redis: () => api.database.remove.useMutation(),
+		mysql: () => api.database.remove.useMutation(),
+		mariadb: () => api.database.remove.useMutation(),
+		libsql: () => api.database.remove.useMutation(),
 		application: () => api.application.delete.useMutation(),
-		mongo: () => api.mongo.remove.useMutation(),
+		mongo: () => api.database.remove.useMutation(),
 		compose: () => api.compose.delete.useMutation(),
 	};
 	const { mutateAsync, isPending } = mutationMap[type]
 		? mutationMap[type]()
-		: api.mongo.remove.useMutation();
+		: api.database.remove.useMutation();
 	const { push } = useRouter();
 	const form = useForm<DeleteCompose>({
 		defaultValues: {
@@ -87,12 +91,7 @@ export const DeleteService = ({ id, type }: Props) => {
 		if (formData.projectName === expectedName) {
 			const { deleteVolumes } = formData;
 			await mutateAsync({
-				mongoId: id || "",
-				postgresId: id || "",
-				redisId: id || "",
-				mysqlId: id || "",
-				mariadbId: id || "",
-				libsqlId: id || "",
+				databaseId: id,
 				applicationId: id || "",
 				composeId: id || "",
 				deleteVolumes,
