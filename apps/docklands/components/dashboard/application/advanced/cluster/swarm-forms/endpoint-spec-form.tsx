@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -15,6 +16,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 export const endpointSpecFormSchema = z.object({
 	Mode: z.string().optional(),
@@ -102,7 +105,8 @@ export const EndpointSpecForm = ({ id, type }: EndpointSpecFormProps) => {
 
 			toast.success("Endpoint spec updated successfully");
 			refetch();
-		} catch {
+		} catch (err) {
+			logger.error("Error updating endpoint spec", err);
 			toast.error("Error updating endpoint spec");
 		} finally {
 			setIsLoading(false);

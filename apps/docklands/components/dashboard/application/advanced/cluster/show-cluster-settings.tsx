@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -20,6 +21,8 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import { AddSwarmSettings } from "./modify-swarm-settings";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	id: string;
@@ -110,7 +113,8 @@ export const ShowClusterSettings = ({ id, type }: Props) => {
 				toast.success("Orchestration settings updated");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to update orchestration settings", err);
 				toast.error("Error updating orchestration settings");
 			});
 	};

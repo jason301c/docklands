@@ -1,8 +1,12 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Loader2, ShieldCheck, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("roles");
+
 import { HandleRole } from "./handle-role";
 
 const permissionCount = (permissions: Record<string, string[]>) =>
@@ -82,7 +86,8 @@ export const RoleManager = () => {
 																await utils.customRole.all.invalidate();
 																toast.success("Role deleted successfully");
 															})
-															.catch(() => {
+															.catch((err) => {
+																logger.error(err);
 																toast.error("Error deleting role");
 															});
 													}}

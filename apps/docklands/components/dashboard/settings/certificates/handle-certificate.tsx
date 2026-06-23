@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -18,6 +19,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("certificates");
 
 const certificateDataHolder =
 	"-----BEGIN CERTIFICATE-----\nMIIFRDCCAyygAwIBAgIUEPOR47ys6VDwMVB9tYoeEka83uQwDQYJKoZIhvcNAQELBQAwGTEXMBUGA1UEAwwObWktZG9taW5pby5jb20wHhcNMjQwMzExMDQyNzU3WhcN\n------END CERTIFICATE-----";
@@ -113,7 +116,8 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 				}
 				setOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(err);
 				toast.error(
 					certificateId
 						? "Error updating the Certificate"

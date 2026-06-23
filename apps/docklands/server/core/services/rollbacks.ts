@@ -1,6 +1,7 @@
 import type { CreateServiceOptions } from "dockerode";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
+import { createLogger } from "@/server/core/lib/logger";
 import { db } from "../db";
 import {
 	type createRollbackSchema,
@@ -18,6 +19,9 @@ import {
 import { execAsync, execAsyncRemote } from "../utils/process/execAsync";
 import { getRemoteDocker } from "../utils/servers/remote-docker";
 import { type Application, findApplicationById } from "./application";
+
+const logger = createLogger("rollback");
+
 import { findDeploymentById } from "./deployment";
 import type { Mount } from "./mount";
 import type { Port } from "./port";
@@ -162,7 +166,10 @@ export const removeRollbackById = async (rollbackId: string) => {
 			const application = await findApplicationById(deployment.applicationId);
 			await deleteRollbackImage(rollback.image, application.runtimeWorkerId);
 		} catch (error) {
-			console.error(error);
+			logger.warn(
+				{ err: error, rollbackId, image: rollback.image },
+				"Rollback image cleanup failed, proceeding with row deletion",
+			);
 		}
 	}
 
@@ -191,6 +198,16 @@ export const rollback = async (rollbackId: string) => {
 	if (!result.fullContext) {
 		throw new Error("Rollback context not found");
 	}
+
+	logger.info(
+		{
+			rollbackId,
+			image: result.image,
+			applicationId: deployment.applicationId,
+		},
+		"Executing rollback",
+	);
+
 	await rollbackApplication(
 		application.appName,
 		result.image || "",
@@ -345,7 +362,10 @@ const rollbackApplication = async (
 			},
 		});
 	} catch (error) {
-		console.error(error);
+		logger.warn(
+			{ err: error, appName },
+			"Swarm service update failed, attempting create as fallback",
+		);
 		await docker.createService(settings);
 	}
 };

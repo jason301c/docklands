@@ -11,6 +11,7 @@ import {
 	cleanAppName,
 	compose,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { getBuildComposeCommand } from "@/server/core/utils/builders/compose";
 import { randomizeSpecificationFile } from "@/server/core/utils/docker/compose";
 import {
@@ -49,6 +50,8 @@ import { validUniqueServerAppName } from "./workspace";
 import { refreshConnectionVariablesForDeploy } from "./workspace-graph";
 
 export type Compose = typeof compose.$inferSelect;
+
+const logger = createLogger("compose-service");
 
 export const createCompose = async (
 	input: z.infer<typeof apiCreateCompose>,
@@ -265,6 +268,16 @@ export const deployCompose = async ({
 		description: descriptionLog,
 	});
 
+	logger.info(
+		{
+			composeId,
+			appName: compose.appName,
+			runtimeWorkerId: compose.runtimeWorkerId,
+			deploymentId: deployment.deploymentId,
+		},
+		"Starting compose deployment",
+	);
+
 	try {
 		const entity = {
 			...compose,
@@ -320,6 +333,11 @@ export const deployCompose = async ({
 			composeStatus: "done",
 		});
 
+		logger.info(
+			{ deploymentId: deployment.deploymentId, composeId },
+			"Compose deployment completed",
+		);
+
 		await sendBuildSuccessNotifications({
 			projectName: compose.environment.workspace.name,
 			applicationName: compose.name,
@@ -330,6 +348,11 @@ export const deployCompose = async ({
 			environmentName: compose.environment.name,
 		});
 	} catch (error) {
+		logger.error(
+			{ err: error, deploymentId: deployment.deploymentId, composeId },
+			"Compose deployment failed",
+		);
+
 		let command = "";
 
 		// Only log details for non-ExecError errors
@@ -404,6 +427,16 @@ export const rebuildCompose = async ({
 		description: descriptionLog,
 	});
 
+	logger.info(
+		{
+			composeId,
+			appName: compose.appName,
+			runtimeWorkerId: compose.runtimeWorkerId,
+			deploymentId: deployment.deploymentId,
+		},
+		"Starting compose rebuild",
+	);
+
 	try {
 		let command = "set -e;";
 		if (compose.sourceType === "raw") {
@@ -445,7 +478,17 @@ export const rebuildCompose = async ({
 		await updateCompose(composeId, {
 			composeStatus: "done",
 		});
+
+		logger.info(
+			{ deploymentId: deployment.deploymentId, composeId },
+			"Compose rebuild completed",
+		);
 	} catch (error) {
+		logger.error(
+			{ err: error, deploymentId: deployment.deploymentId, composeId },
+			"Compose rebuild failed",
+		);
+
 		let command = "";
 
 		// Only log details for non-ExecError errors

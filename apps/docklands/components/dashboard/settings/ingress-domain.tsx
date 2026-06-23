@@ -9,7 +9,11 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+
+const logger = createClientLogger("ingress-domain");
+
 import {
 	Form,
 	FormControl,
@@ -92,7 +96,8 @@ export const IngressDomain = () => {
 				await refetch();
 				toast.success("Domain Assigned");
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(err);
 				toast.error("Error assigning the domain");
 			});
 	};

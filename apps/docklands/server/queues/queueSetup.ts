@@ -1,3 +1,4 @@
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	execAsync,
 	execAsyncRemote,
@@ -6,6 +7,8 @@ import { resolveBuildsConcurrency } from "./concurrency";
 import { processDeploymentJob } from "./deployments-queue";
 import { type InMemoryJob, InMemoryQueue } from "./in-memory-queue";
 import type { DeploymentJob } from "./queue-types";
+
+const logger = createLogger("deploy-queue");
 
 /**
  * Deployment queue.
@@ -75,6 +78,7 @@ export const getJobsByComposeId = async (composeId: string) => {
 };
 
 process.on("SIGTERM", () => {
+	logger.info("SIGTERM received, closing deployment queue");
 	myQueue.close();
 	process.exit(0);
 });
@@ -84,9 +88,7 @@ export const cleanQueuesByApplication = async (applicationId: string) => {
 		(data) => (data as any)?.applicationId === applicationId,
 	);
 	if (removed > 0) {
-		console.log(
-			`Removed ${removed} waiting job(s) for application ${applicationId}`,
-		);
+		logger.info({ applicationId, removed }, "queue cleared for application");
 	}
 };
 
@@ -95,7 +97,7 @@ export const cleanQueuesByCompose = async (composeId: string) => {
 		(data) => (data as any)?.composeId === composeId,
 	);
 	if (removed > 0) {
-		console.log(`Removed ${removed} waiting job(s) for compose ${composeId}`);
+		logger.info({ composeId, removed }, "queue cleared for compose");
 	}
 };
 
@@ -127,7 +129,10 @@ export const killDockerBuild = async (
 			}
 		}
 	} catch (error) {
-		console.error(error);
+		logger.error(
+			{ err: error, type, runtimeWorkerId },
+			"kill docker build failed",
+		);
 	}
 };
 

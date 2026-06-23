@@ -2,6 +2,9 @@ import os from "node:os";
 import path from "node:path";
 import { publicIpv4, publicIpv6 } from "public-ip";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("host");
 
 export const getShell = () => {
 	switch (os.platform()) {
@@ -19,18 +22,16 @@ export const getPublicIpWithFallback = async () => {
 	try {
 		ip = await publicIpv4();
 	} catch (error) {
-		console.log(
-			"Error obtaining public IPv4 address, falling back to IPv6",
-			// @ts-expect-error
-			error.message,
-		);
+		logger.warn({ err: error }, "Failed to get public IPv4, trying IPv6");
 		try {
 			ip = await publicIpv6();
 		} catch (error) {
-			// @ts-expect-error
-			console.error("Error obtaining public IPv6 address", error.message);
+			logger.error({ err: error }, "Failed to get public IPv6 address");
 			ip = null;
 		}
+	}
+	if (ip === null) {
+		logger.warn({}, "Could not obtain any public IP");
 	}
 	return ip;
 };
@@ -46,7 +47,7 @@ export const getLocalServerIp = async () => {
 			"We were unable to obtain the local runtimeWorker IP, please use your private IP address"
 		);
 	} catch (error) {
-		console.error("Error obtaining local runtimeWorker IP", error);
+		logger.error({ err: error }, "Failed to get local runtime worker IP");
 		return "We were unable to obtain the local runtimeWorker IP, please use your private IP address";
 	}
 };

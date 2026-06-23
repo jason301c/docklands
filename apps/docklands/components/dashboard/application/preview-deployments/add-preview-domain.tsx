@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import type z from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -22,6 +23,8 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import { domain } from "@/server/core/db/validations/domain";
+
+const logger = createClientLogger("preview");
 
 type Domain = z.infer<typeof domain>;
 
@@ -112,7 +115,8 @@ export const AddPreviewDomain = ({
 				}
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(dictionary.error, err);
 				toast.error(dictionary.error);
 			});
 	};
@@ -182,6 +186,10 @@ export const AddPreviewDomain = ({
 																		field.onChange(domain);
 																	})
 																	.catch((err) => {
+																		logger.error(
+																			"Failed to generate preview domain",
+																			err,
+																		);
 																		toast.error(err.message);
 																	});
 															}}

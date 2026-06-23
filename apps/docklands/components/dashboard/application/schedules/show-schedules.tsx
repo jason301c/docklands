@@ -12,10 +12,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { HandleSchedules } from "./handle-schedules";
+
+const logger = createClientLogger("schedules");
 
 interface Props {
 	id: string;
@@ -54,7 +57,8 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 			await runManually({ scheduleId });
 			toast.success("Automation run successfully");
 			await refetchSchedules();
-		} catch {
+		} catch (err) {
+			logger.error("Failed to run automation", err);
 			toast.error("Error running automation");
 		} finally {
 			setRunningSchedules((prev) => {
@@ -205,7 +209,8 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 														});
 														toast.success("Automation deleted successfully");
 													})
-													.catch(() => {
+													.catch((err) => {
+														logger.error("Failed to delete automation", err);
 														toast.error("Error deleting automation");
 													});
 											}}

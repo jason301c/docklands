@@ -58,7 +58,6 @@ export const rollbackRouter = createTRPCRouter({
 				});
 				return result;
 			} catch (error) {
-				console.error(error);
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Error input: Rolling back",

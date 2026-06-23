@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { notifications } from "@/server/core/db/schema";
 import DatabaseBackupEmail from "@/server/core/emails/emails/database-backup";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	sendCustomNotification,
 	sendDiscordNotification,
@@ -18,6 +19,8 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "./utils";
+
+const logger = createLogger("notify-dispatch");
 
 export const sendDatabaseBackupNotifications = async ({
 	projectName,
@@ -456,7 +459,10 @@ export const sendDatabaseBackupNotifications = async ({
 				});
 			}
 		} catch (error) {
-			console.log(error);
+			logger.warn(
+				{ err: error, notificationId: notification.notificationId },
+				"Database backup notification delivery failed",
+			);
 		}
 	}
 };

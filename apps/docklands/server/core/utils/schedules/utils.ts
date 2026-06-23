@@ -3,6 +3,7 @@ import path from "node:path";
 import { scheduledJobs, scheduleJob as scheduleJobNode } from "node-schedule";
 import { paths } from "@/server/core/constants/paths";
 import type { Schedule } from "@/server/core/db/schema/schedule";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	createDeploymentSchedule,
 	updateDeployment,
@@ -12,6 +13,8 @@ import { findScheduleById } from "@/server/core/services/schedule";
 import { getComposeContainer, getServiceContainer } from "../docker/utils";
 import { execAsyncRemote } from "../process/execAsync";
 import { spawnAsync } from "../process/spawnAsync";
+
+const logger = createLogger("schedule");
 
 export const scheduleJob = (schedule: Schedule) => {
 	const { cronExpression, scheduleId, timezone } = schedule;
@@ -54,6 +57,8 @@ export const runCommand = async (scheduleId: string) => {
 		description: "Schedule",
 	});
 
+	logger.info({ scheduleId, scheduleType, appName }, "Schedule run started");
+
 	if (scheduleType === "application" || scheduleType === "compose") {
 		let containerId = "";
 		let runtimeWorkerId = "";
@@ -78,7 +83,7 @@ export const runCommand = async (scheduleId: string) => {
 					`
 					set -e
 					echo "Running command: docker exec ${containerId} ${shellType} -c '${command}'" >> ${deployment.logPath};
-					docker exec ${containerId} ${shellType} -c '${command}' >> ${deployment.logPath} 2>> ${deployment.logPath} || { 
+					docker exec ${containerId} ${shellType} -c '${command}' >> ${deployment.logPath} 2>> ${deployment.logPath} || {
 						echo "❌ Command failed" >> ${deployment.logPath};
 						exit 1;
 					}
@@ -86,6 +91,10 @@ export const runCommand = async (scheduleId: string) => {
 					`,
 				);
 			} catch (error) {
+				logger.error(
+					{ err: error, scheduleId, containerId, runtimeWorkerId },
+					"Remote schedule command failed",
+				);
 				await updateDeploymentStatus(deployment.deploymentId, "error");
 				throw error;
 			}
@@ -113,6 +122,10 @@ export const runCommand = async (scheduleId: string) => {
 					error instanceof Error ? error.message : "Unknown error",
 				);
 				writeStream.end();
+				logger.error(
+					{ err: error, scheduleId, containerId },
+					"Local schedule command failed",
+				);
 				await updateDeploymentStatus(deployment.deploymentId, "error");
 				throw error;
 			}
@@ -144,6 +157,10 @@ export const runCommand = async (scheduleId: string) => {
 				},
 			);
 		} catch (error) {
+			logger.error(
+				{ err: error, scheduleId, appName },
+				"Server schedule script failed",
+			);
 			await updateDeploymentStatus(deployment.deploymentId, "error");
 			throw error;
 		}
@@ -154,7 +171,7 @@ export const runCommand = async (scheduleId: string) => {
 			const command = `
 				set -e
 				echo "Running script" >> ${deployment.logPath};
-				bash -c ${fullPath}/script.sh 2>&1 | tee -a ${deployment.logPath} || { 
+				bash -c ${fullPath}/script.sh 2>&1 | tee -a ${deployment.logPath} || {
 					echo "❌ Command failed" >> ${deployment.logPath};
 					exit 1;
 				  }
@@ -170,9 +187,14 @@ export const runCommand = async (scheduleId: string) => {
 				}
 			});
 		} catch (error) {
+			logger.error(
+				{ err: error, scheduleId, runtimeWorkerId, appName },
+				"Remote worker schedule script failed",
+			);
 			await updateDeploymentStatus(deployment.deploymentId, "error");
 			throw error;
 		}
 	}
+	logger.info({ scheduleId, scheduleType }, "Schedule run completed");
 	await updateDeploymentStatus(deployment.deploymentId, "done");
 };

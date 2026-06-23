@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { notifications } from "@/server/core/db/schema";
 import DockerCleanupEmail from "@/server/core/emails/emails/docker-cleanup";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	sendCustomNotification,
 	sendDiscordNotification,
@@ -18,6 +19,8 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "./utils";
+
+const logger = createLogger("notify-dispatch");
 
 export const sendDockerCleanupNotifications = async (
 	organizationId: string,
@@ -287,7 +290,10 @@ export const sendDockerCleanupNotifications = async (
 				});
 			}
 		} catch (error) {
-			console.log(error);
+			logger.warn(
+				{ err: error, notificationId: notification.notificationId },
+				"Container runtime cleanup notification delivery failed",
+			);
 		}
 	}
 };

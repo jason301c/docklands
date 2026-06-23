@@ -1,6 +1,7 @@
 import http from "node:http";
 import { config } from "dotenv";
 import next from "next";
+import { createLogger } from "@/server/core/lib/logger";
 import { setupDirectories } from "@/server/core/setup/config-paths";
 import { initializeNetwork } from "@/server/core/setup/setup";
 import {
@@ -15,6 +16,9 @@ import { initSchedules } from "@/server/core/utils/schedules/index";
 import { initCancelDeployments } from "@/server/core/utils/startup/cancel-deployments";
 import { initVolumeBackupsCronJobs } from "@/server/core/utils/volume-backups/index";
 import packageInfo from "../package.json";
+
+const logger = createLogger("server");
+
 import { setupDockerContainerLogsWebSocketServer } from "./wss/docker-container-logs";
 import { setupDockerContainerTerminalWebSocketServer } from "./wss/docker-container-terminal";
 import { setupDockerStatsMonitoringSocketServer } from "./wss/docker-stats";
@@ -33,7 +37,7 @@ if (process.env.NODE_ENV === "production") {
 	setupDirectories();
 	createDefaultTraefikConfig();
 	createDefaultServerTraefikConfig();
-	console.log("✅ initialization complete");
+	logger.info("production init complete");
 }
 
 const app = next({
@@ -47,7 +51,7 @@ void app.prepare().then(async () => {
 		const handle = app.getRequestHandler();
 		const handleUpgrade = app.getUpgradeHandler();
 
-		console.log("Running DocklandsVersion: ", packageInfo.version);
+		logger.info({ version: packageInfo.version }, "server starting");
 		const runtimeWorker = http.createServer((req, res) => {
 			handle(req, res);
 		});
@@ -69,7 +73,7 @@ void app.prepare().then(async () => {
 		setupDockerStatsMonitoringSocketServer(runtimeWorker);
 
 		runtimeWorker.listen(PORT, HOST);
-		console.log(`Server Started on: http://${HOST}:${PORT}`);
+		logger.info({ host: HOST, port: PORT }, "server listening");
 		if (process.env.NODE_ENV === "production") {
 			createDefaultMiddlewares();
 			await initializeNetwork();
@@ -80,10 +84,11 @@ void app.prepare().then(async () => {
 			initPreviewCleanupCron();
 			await sendDocklandsRestartNotifications();
 		}
-		console.log("Starting Deployment Worker");
+		logger.info("starting deployment worker");
 		const { startDeploymentWorker } = await import("./queues/queueSetup");
 		await startDeploymentWorker();
+		logger.info("deployment worker started");
 	} catch (e) {
-		console.error("Main Server Error", e);
+		logger.error({ err: e }, "server bootstrap failed");
 	}
 });

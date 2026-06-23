@@ -1,3 +1,4 @@
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	deployApplication,
 	deployPreviewApplication,
@@ -12,6 +13,8 @@ import {
 } from "@/server/core/services/compose";
 import { updatePreviewDeployment } from "@/server/core/services/preview-deployment";
 import type { InMemoryJob } from "./in-memory-queue";
+
+const logger = createLogger("deploy-queue");
 
 /**
  * Processes a single deployment job. Shared by the in-memory queue worker and
@@ -74,6 +77,20 @@ export const processDeploymentJob = async (job: InMemoryJob) => {
 			}
 		}
 	} catch (error) {
-		console.log("Error", error);
+		const applicationType = job.data.applicationType;
+		const serviceId =
+			applicationType === "compose"
+				? job.data.composeId
+				: job.data.applicationId;
+		logger.error(
+			{
+				err: error,
+				jobId: job.id,
+				applicationType,
+				serviceId,
+				type: job.data.type,
+			},
+			"deployment job failed",
+		);
 	}
 };

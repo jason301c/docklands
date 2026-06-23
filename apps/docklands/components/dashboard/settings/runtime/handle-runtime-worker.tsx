@@ -10,7 +10,11 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+
+const logger = createClientLogger("runtime-worker");
+
 import {
 	Form,
 	FormControl,
@@ -111,7 +115,8 @@ export const HandleRuntimeWorker = ({
 				toast.success(runtimeWorkerId ? "Worker updated" : "Worker created");
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(err);
 				toast.error(
 					runtimeWorkerId
 						? "Error updating a worker"

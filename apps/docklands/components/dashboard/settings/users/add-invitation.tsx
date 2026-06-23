@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -19,6 +20,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("users");
 
 const addInvitation = z
 	.object({
@@ -137,8 +140,11 @@ export const AddInvitation = () => {
 						.then(() => {
 							toast.success("Invitation created and email sent");
 						})
-						.catch((error: any) => {
-							toast.error(error.message);
+						.catch((error: unknown) => {
+							logger.error(error);
+							toast.error(
+								error instanceof Error ? error.message : "An error occurred",
+							);
 						});
 				} else {
 					toast.success("Invitation created");

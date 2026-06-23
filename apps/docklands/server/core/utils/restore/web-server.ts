@@ -2,9 +2,12 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Destination } from "@/server/core/services/destination";
 import { getS3CredentialEnv, getS3Credentials } from "../backups/utils";
 import { execAsync } from "../process/execAsync";
+
+const logger = createLogger("restore");
 
 export const restoreWebServerBackup = async (
 	destination: Destination,
@@ -17,6 +20,8 @@ export const restoreWebServerBackup = async (
 		const bucketPath = `:s3:${destination.bucket}`;
 		const backupPath = `${bucketPath}/${backupFile}`;
 		const { BASE_PATH } = paths();
+
+		logger.info({ backupFile }, "Web server restore started");
 
 		// Create a temporary directory outside of BASE_PATH
 		const tempDir = await mkdtemp(join(tmpdir(), "docklands-restore-"));
@@ -131,6 +136,7 @@ export const restoreWebServerBackup = async (
 				`docker exec ${postgresContainerId} rm /tmp/database.sql`,
 			);
 
+			logger.info({ backupFile }, "Web server restore completed");
 			emit("Restore completed successfully!");
 		} finally {
 			// Cleanup
@@ -138,7 +144,10 @@ export const restoreWebServerBackup = async (
 			await execAsync(`rm -rf ${tempDir}`);
 		}
 	} catch (error) {
-		console.error(error);
+		logger.error(
+			{ err: error, backupFile },
+			"Web server backup restore failed",
+		);
 		emit(
 			`Error: ${
 				error instanceof Error

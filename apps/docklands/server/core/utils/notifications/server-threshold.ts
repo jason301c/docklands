@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+import { createLogger } from "@/server/core/lib/logger";
 import { db } from "../../db";
 import { notifications } from "../../db/schema";
 import {
@@ -11,6 +12,8 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "./utils";
+
+const logger = createLogger("notify-dispatch");
 
 interface ServerThresholdPayload {
 	Type: "CPU" | "Memory";
@@ -298,22 +301,25 @@ export const sendServerThresholdNotifications = async (
 					`Runtime worker: ${payload.ServerName}\nType: ${payload.Type}\nCurrent: ${payload.Value.toFixed(2)}%\nThreshold: ${payload.Threshold.toFixed(2)}%\nMessage: ${payload.Message}\nTime: ${date.toLocaleString()}`,
 				);
 			}
-		} catch (error) {
-			console.log(error);
-		}
 
-		if (teams) {
-			await sendTeamsNotification(teams, {
-				title: `⚠️ Runtime Worker ${payload.Type} Alert`,
-				facts: [
-					{ name: "Runtime Worker Name", value: payload.ServerName },
-					{ name: "Type", value: payload.Type },
-					{ name: "Current Value", value: `${payload.Value.toFixed(2)}%` },
-					{ name: "Threshold", value: `${payload.Threshold.toFixed(2)}%` },
-					{ name: "Time", value: date.toLocaleString() },
-					{ name: "Message", value: payload.Message },
-				],
-			});
+			if (teams) {
+				await sendTeamsNotification(teams, {
+					title: `⚠️ Runtime Worker ${payload.Type} Alert`,
+					facts: [
+						{ name: "Runtime Worker Name", value: payload.ServerName },
+						{ name: "Type", value: payload.Type },
+						{ name: "Current Value", value: `${payload.Value.toFixed(2)}%` },
+						{ name: "Threshold", value: `${payload.Threshold.toFixed(2)}%` },
+						{ name: "Time", value: date.toLocaleString() },
+						{ name: "Message", value: payload.Message },
+					],
+				});
+			}
+		} catch (error) {
+			logger.warn(
+				{ err: error, notificationId: notification.notificationId },
+				"Server threshold notification delivery failed",
+			);
 		}
 	}
 };

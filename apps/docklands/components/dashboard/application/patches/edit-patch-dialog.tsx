@@ -3,8 +3,11 @@ import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Loader2, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("patches");
 
 interface Props {
 	patchId: string;
@@ -43,6 +46,7 @@ export const EditPatchDialog = ({
 				onSuccess?.();
 			})
 			.catch((err) => {
+				logger.error("Failed to save patch", err);
 				toast.error(err.message);
 			});
 	};

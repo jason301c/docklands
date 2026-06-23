@@ -12,12 +12,15 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { ShowBuildChooseForm } from "@/components/dashboard/application/build/show";
 import { ShowProviderForm } from "@/components/dashboard/application/general/generic/show";
 import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { workspaceServicePath } from "@/shared/routes";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	applicationId: string;
@@ -79,7 +82,8 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 												);
 											}
 										})
-										.catch(() => {
+										.catch((err) => {
+											logger.error("Failed to queue application build", err);
 											toast.error("Error queueing application build");
 										});
 								}}
@@ -123,7 +127,8 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 											toast.success("Application reloaded successfully");
 											refetch();
 										})
-										.catch(() => {
+										.catch((err) => {
+											logger.error("Failed to reload application", err);
 											toast.error("Error reloading application");
 										});
 								}}
@@ -163,7 +168,8 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 											toast.success("Application rebuilt successfully");
 											refetch();
 										})
-										.catch(() => {
+										.catch((err) => {
+											logger.error("Failed to rebuild application", err);
 											toast.error("Error rebuilding application");
 										});
 								}}
@@ -207,7 +213,8 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 											toast.success("Application started successfully");
 											refetch();
 										})
-										.catch(() => {
+										.catch((err) => {
+											logger.error("Failed to start application", err);
 											toast.error("Error starting application");
 										});
 								}}
@@ -248,7 +255,8 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 											toast.success("Application stopped successfully");
 											refetch();
 										})
-										.catch(() => {
+										.catch((err) => {
+											logger.error("Failed to stop application", err);
 											toast.error("Error stopping application");
 										});
 								}}
@@ -303,7 +311,8 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 											toast.success("Auto Build Updated");
 											await refetch();
 										})
-										.catch(() => {
+										.catch((err) => {
+											logger.error("Failed to update Auto Build", err);
 											toast.error("Error updating Auto Build");
 										});
 								}}
@@ -327,7 +336,8 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 											toast.success("Clean Cache Updated");
 											await refetch();
 										})
-										.catch(() => {
+										.catch((err) => {
+											logger.error("Failed to update Clean Cache", err);
 											toast.error("Error updating Clean Cache");
 										});
 								}}

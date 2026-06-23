@@ -4,6 +4,9 @@ import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { dbUrl } from "@/server/core/db";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("db");
 
 const pg = postgres(dbUrl, { max: 1 });
 const db = drizzle(pg);
@@ -12,11 +15,10 @@ const clearDb = async (): Promise<void> => {
 	try {
 		const tablesQuery = sql<string>`DROP SCHEMA public CASCADE; CREATE SCHEMA public; DROP schema drizzle CASCADE;`;
 		const tables = await db.execute(tablesQuery);
-		console.log(tables);
+		logger.debug({ result: tables }, "db: schema reset completed");
 		await pg.end();
 	} catch (error) {
-		console.error("Error cleaning database", error);
-	} finally {
+		logger.error({ err: error }, "db: schema reset failed");
 	}
 };
 

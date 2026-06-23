@@ -21,6 +21,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { useDebounce } from "@/client/hooks/use-debounce";
+import { createClientLogger } from "@/client/lib/logger";
 import { BreadcrumbSidebar } from "@/components/shared/breadcrumb-sidebar";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
@@ -34,6 +35,8 @@ import {
 } from "@/shared/routes";
 import { HandleWorkspace } from "./handle-workspace";
 import { WorkspaceVariables } from "./workspace-variables";
+
+const logger = createClientLogger("workspace");
 
 // The six managed-database engines now share one `database` collection.
 const serviceCollections = ["applications", "compose", "database"] as const;
@@ -482,7 +485,11 @@ export const WorkspaceList = () => {
 																							toast.success(
 																								"Workspace deleted",
 																							);
-																						} catch {
+																						} catch (err) {
+																							logger.error(
+																								"Error deleting workspace",
+																								err,
+																							);
 																							toast.error(
 																								"Error deleting this workspace",
 																							);

@@ -11,10 +11,13 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { CreateFileDialog } from "./create-file-dialog";
+
+const logger = createClientLogger("patches");
 
 interface Props {
 	id: string;
@@ -105,7 +108,8 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 				toast.success("Patch saved");
 				utils.patch.byEntityId.invalidate({ id, type });
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save patch", err);
 				toast.error("Failed to save patch");
 			});
 	};
@@ -117,7 +121,8 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 				toast.success("File marked for deletion");
 				utils.patch.byEntityId.invalidate({ id, type });
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to mark file for deletion", err);
 				toast.error("Failed to mark file for deletion");
 			});
 	};
@@ -136,7 +141,8 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 					toast.success("File created");
 					utils.patch.byEntityId.invalidate({ id, type });
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error("Failed to create file", err);
 					toast.error("Failed to create file");
 				});
 		},
@@ -159,7 +165,8 @@ export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 				toast.success("Deletion unmarked");
 				utils.patch.byEntityId.invalidate({ id, type });
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to unmark deletion", err);
 				toast.error("Failed to unmark deletion");
 			});
 	};

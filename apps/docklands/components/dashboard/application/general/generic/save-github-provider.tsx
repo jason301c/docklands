@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import {
 	Form,
@@ -37,6 +38,8 @@ const CommandList = Combobox.List;
 const CommandGroup = Combobox.Group;
 const CommandItem = Combobox.Item;
 const CommandEmpty = Combobox.Empty;
+
+const logger = createClientLogger("application");
 
 const GithubProviderSchema = z.object({
 	buildPath: z.string().min(1, "Path is required").default("/"),
@@ -146,7 +149,8 @@ export const SaveGithubProvider = ({ applicationId }: Props) => {
 				toast.success("Service Provider Saved");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save the github provider", err);
 				toast.error("Error saving the github provider");
 			});
 	};

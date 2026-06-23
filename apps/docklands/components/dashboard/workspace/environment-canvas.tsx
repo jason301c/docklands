@@ -53,6 +53,7 @@ import {
 	useState,
 } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { ShowPorts } from "@/components/dashboard/application/advanced/ports/show-port";
 import { ShowResources } from "@/components/dashboard/application/advanced/show-resources";
 import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
@@ -113,6 +114,8 @@ import {
 	type WorkspaceServiceStatus,
 	type WorkspaceServiceType,
 } from "@/shared/workspace-graph";
+
+const logger = createClientLogger("workspace-canvas");
 
 type WorkspaceData = RouterOutputs["workspaceGraph"]["byEnvironment"];
 type WorkspaceConnection = WorkspaceData["connections"][number];
@@ -1342,6 +1345,7 @@ export const EnvironmentCanvas = ({
 		try {
 			await persistNode(node);
 		} catch (error) {
+			logger.error("Could not save service position", error);
 			toast.error(
 				`Could not save service position: ${error instanceof Error ? error.message : "Unknown error"}`,
 			);
@@ -1443,6 +1447,7 @@ export const EnvironmentCanvas = ({
 						: edgeLabel,
 				);
 			} catch (error) {
+				logger.error("Could not connect services", error);
 				toast.error(
 					`Could not connect services: ${error instanceof Error ? error.message : "Unknown error"}`,
 				);
@@ -1614,7 +1619,8 @@ export const EnvironmentCanvas = ({
 						actionInput as never,
 					);
 					succeeded++;
-				} catch {
+				} catch (err) {
+					logger.debug("bulk action item failed:", err);
 					failed++;
 				}
 			}
@@ -1673,7 +1679,8 @@ export const EnvironmentCanvas = ({
 						actionInput as never,
 					);
 					succeeded++;
-				} catch {
+				} catch (err) {
+					logger.debug("bulk action item failed:", err);
 					failed++;
 				}
 			}
@@ -1717,7 +1724,8 @@ export const EnvironmentCanvas = ({
 						actionInput as never,
 					);
 					succeeded++;
-				} catch {
+				} catch (err) {
+					logger.debug("bulk action item failed:", err);
 					failed++;
 				}
 			}
@@ -1794,6 +1802,7 @@ export const EnvironmentCanvas = ({
 				);
 			}
 		} catch (error) {
+			logger.error("Could not duplicate services", error);
 			toast.error(
 				`Could not duplicate services: ${error instanceof Error ? error.message : "Unknown error"}`,
 			);

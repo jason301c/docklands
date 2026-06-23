@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { notifications } from "@/server/core/db/schema";
 import { VolumeBackupEmail } from "@/server/core/emails/emails/volume-backup";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	sendCustomNotification,
 	sendDiscordNotification,
@@ -18,6 +19,8 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "./utils";
+
+const logger = createLogger("notify-dispatch");
 
 export const sendVolumeBackupNotifications = async ({
 	projectName,
@@ -491,7 +494,10 @@ export const sendVolumeBackupNotifications = async ({
 				});
 			}
 		} catch (error) {
-			console.log(error);
+			logger.warn(
+				{ err: error, notificationId: notification.notificationId },
+				"Volume backup notification delivery failed",
+			);
 		}
 	}
 };

@@ -1,6 +1,9 @@
 import type { CreateServiceOptions } from "dockerode";
+import { createLogger } from "@/server/core/lib/logger";
 import { docker } from "../constants";
 import { pullImage } from "../utils/docker/utils";
+
+const logger = createLogger("setup:postgres");
 
 export const initializePostgres = async () => {
 	const imageName = "postgres:16";
@@ -50,12 +53,24 @@ export const initializePostgres = async () => {
 		await pullImage(imageName);
 
 		const service = docker.getService(containerName);
-		const inspect = await service.inspect();
+		let inspect: Awaited<ReturnType<typeof service.inspect>>;
+		try {
+			inspect = await service.inspect();
+		} catch (inspectErr) {
+			// Service not found is the expected path — fall through to create.
+			// Log unexpected errors (e.g. Docker daemon unreachable) at debug so
+			// they are visible without causing noise on first-run.
+			logger.debug(
+				{ err: inspectErr },
+				"Postgres service inspect failed — treating as not found",
+			);
+			throw inspectErr;
+		}
 		await service.update({
 			version: Number.parseInt(inspect.Version.Index, 10),
 			...settings,
 		});
-		console.log("Postgres Started ✅");
+		logger.info({ image: imageName }, "Postgres service updated");
 	} catch (_) {
 		try {
 			await docker.createService(settings);
@@ -63,8 +78,8 @@ export const initializePostgres = async () => {
 			if (error?.statusCode !== 409) {
 				throw error;
 			}
-			console.log("Postgres service already exists, continuing...");
+			logger.info("Postgres service already exists, continuing");
 		}
-		console.log("Postgres Not Found: Starting ✅");
+		logger.info({ image: imageName }, "Postgres service started");
 	}
 };

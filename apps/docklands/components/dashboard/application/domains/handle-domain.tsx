@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -23,6 +24,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("domains");
 
 export type CacheType = "fetch" | "cache";
 
@@ -294,7 +297,8 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 				}
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save domain", err);
 				toast.error(dictionary.error);
 			});
 	};
@@ -544,6 +548,10 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																		field.onChange(domain);
 																	})
 																	.catch((err) => {
+																		logger.error(
+																			"Failed to generate domain",
+																			err,
+																		);
 																		toast.error(err.message);
 																	});
 															}}

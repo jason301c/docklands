@@ -5,6 +5,7 @@ import { TrashIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { Dropzone } from "@/components/shared/dropzone";
 import {
 	Form,
@@ -16,6 +17,8 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import { type UploadFile, uploadFileSchema } from "@/shared/validation/schema";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	applicationId: string;
@@ -55,7 +58,8 @@ export const SaveDragNDrop = ({ applicationId }: Props) => {
 				toast.success("Source upload saved");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save the source upload", err);
 				toast.error("Error saving the source upload");
 			});
 	};

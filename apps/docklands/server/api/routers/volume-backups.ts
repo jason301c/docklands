@@ -9,6 +9,7 @@ import {
 	updateVolumeBackupSchema,
 	volumeBackups,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { findDestinationById } from "@/server/core/services/destination";
 import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
@@ -29,6 +30,8 @@ import {
 	scheduleVolumeBackup,
 } from "@/server/core/utils/volume-backups/utils";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
+
+const logger = createLogger("trpc");
 
 export const volumeBackupsRouter = createTRPCRouter({
 	list: protectedProcedure
@@ -185,7 +188,10 @@ export const volumeBackupsRouter = createTRPCRouter({
 				});
 				return result;
 			} catch (error) {
-				console.error(error);
+				logger.error(
+					{ err: error, volumeBackupId: input.volumeBackupId },
+					"runManually volume backup failed",
+				);
 				return false;
 			}
 		}),
@@ -277,7 +283,15 @@ export const volumeBackupsRouter = createTRPCRouter({
 						emit.next(
 							"🎉 All containers/services have been restarted with the restored volume.",
 						);
-					} catch {
+					} catch (error) {
+						logger.error(
+							{
+								err: error,
+								volumeName: input.volumeName,
+								backupFileName: input.backupFileName,
+							},
+							"volume restore failed",
+						);
 						emit.next("");
 						emit.next("❌ Volume restore failed!");
 					} finally {

@@ -1,3 +1,4 @@
+import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import {
@@ -6,17 +7,23 @@ import {
 	myQueue,
 } from "@/server/queues/queueSetup";
 
+const logger = createLogger("deploy-queue");
+
 export const deploy = async (jobData: DeploymentJob) => {
 	if (jobData.runtimeWorkerId) {
 		const runtimeWorker = await findRuntimeWorkerById(
 			jobData.runtimeWorkerId as string,
 		);
 		if (runtimeWorker.runtimeWorkerStatus === "inactive") {
+			logger.warn(
+				{ runtimeWorkerId: jobData.runtimeWorkerId },
+				"Deploy rejected: runtime worker is inactive",
+			);
 			throw new Error("Server is inactive");
 		}
 	}
 
-	return myQueue.add(
+	const result = await myQueue.add(
 		"deployments",
 		{ ...jobData },
 		{
@@ -24,6 +31,16 @@ export const deploy = async (jobData: DeploymentJob) => {
 			removeOnFail: true,
 		},
 	);
+
+	logger.info(
+		{
+			runtimeWorkerId: jobData.runtimeWorkerId,
+			applicationType: jobData.applicationType,
+		},
+		"Deployment job enqueued",
+	);
+
+	return result;
 };
 
 type CancelDeploymentData =

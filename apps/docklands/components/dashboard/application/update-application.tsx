@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -17,6 +18,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const updateApplicationSchema = z.object({
 	name: z.string().min(1, {
@@ -73,7 +76,8 @@ export const UpdateApplication = ({ applicationId }: Props) => {
 				});
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to update the Application", err);
 				toast.error("Error updating the Application");
 			})
 			.finally(() => {});

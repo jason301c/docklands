@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -19,6 +20,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("rollbacks");
 
 const formSchema = z
 	.object({
@@ -92,7 +95,8 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 				setIsOpen(false);
 				refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to update rollback settings", err);
 				toast.error("Failed to update rollback settings");
 			});
 	};

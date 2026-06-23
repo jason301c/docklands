@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { BitbucketIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -29,6 +30,8 @@ const Schema = z.object({
 });
 
 type Schema = z.infer<typeof Schema>;
+
+const logger = createClientLogger("git-providers");
 
 export const AddBitbucketProvider = () => {
 	const utils = api.useUtils();
@@ -67,7 +70,8 @@ export const AddBitbucketProvider = () => {
 				toast.success("Bitbucket configured successfully");
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error creating bitbucket provider", err);
 				toast.error("Error configuring Bitbucket");
 			});
 	};

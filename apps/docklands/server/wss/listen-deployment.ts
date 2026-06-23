@@ -3,12 +3,15 @@ import type http from "node:http";
 import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
 import { validateRequest } from "@/server/core/lib/auth";
+import { createLogger } from "@/server/core/lib/logger";
 import { readValidDirectory } from "@/server/core/runtime/host";
 import { findDeploymentServiceByLogPath } from "@/server/core/services/deployment";
 import { checkServiceAccess } from "@/server/core/services/permission";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { encodeBase64 } from "@/server/core/utils/docker/utils";
 import { getRuntimeWorkerIdParam } from "./utils";
+
+const logger = createLogger("wss-deployment-logs");
 
 export const setupDeploymentLogsWebSocketServer = (
 	runtimeWorker: http.Server<
@@ -40,7 +43,7 @@ export const setupDeploymentLogsWebSocketServer = (
 		// Generate unique connection ID for tracking
 		const connectionId = `deployment-logs-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 		if (!logPath) {
-			console.log(`[${connectionId}] logPath no provided`);
+			logger.warn({ connectionId }, "logPath not provided");
 			ws.close(4000, "logPath no provided");
 			return;
 		}
@@ -51,6 +54,7 @@ export const setupDeploymentLogsWebSocketServer = (
 		}
 
 		if (!user || !session) {
+			logger.warn({ connectionId }, "deployment-logs ws rejected: no session");
 			ws.close();
 			return;
 		}
@@ -73,7 +77,11 @@ export const setupDeploymentLogsWebSocketServer = (
 				serviceId,
 				"read",
 			);
-		} catch {
+		} catch (error) {
+			logger.warn(
+				{ err: error, logPath },
+				"deployment-logs ws authz check failed",
+			);
 			ws.close(4003, "Forbidden");
 			return;
 		}

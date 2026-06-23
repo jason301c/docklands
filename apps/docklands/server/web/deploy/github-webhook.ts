@@ -2,6 +2,7 @@ import { Webhooks } from "@octokit/webhooks";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { applications, compose, github } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	createSecurityBlockedComment,
 	findGithubById,
@@ -27,6 +28,8 @@ import {
 	extractHash,
 	logWebhookError,
 } from "./application-webhook";
+
+const logger = createLogger("github-webhook");
 
 export async function handleGithubDeployWebhook(request: Request) {
 	const headers = requestHeadersToObject(request.headers);
@@ -62,6 +65,10 @@ export async function handleGithubDeployWebhook(request: Request) {
 	);
 
 	if (!verified) {
+		logger.warn(
+			{ provider: "github", installationId: githubBody?.installation?.id },
+			"Webhook signature verification failed",
+		);
 		return jsonResponse({ message: "Unauthorized" }, 401);
 	}
 
@@ -313,7 +320,15 @@ export async function handleGithubDeployWebhook(request: Request) {
 							previewDeployment.previewDeploymentId,
 						);
 					} catch (error) {
-						console.log(error);
+						logger.warn(
+							{
+								err: error,
+								provider: "github",
+								previewDeploymentId: previewDeployment.previewDeploymentId,
+								prId,
+							},
+							"Preview deployment cleanup failed",
+						);
 					}
 				}
 			}
@@ -342,8 +357,9 @@ export async function handleGithubDeployWebhook(request: Request) {
 
 			// Validate PR author information is present
 			if (!prAuthor) {
-				console.warn(
-					"⚠️ SECURITY: PR author information missing in webhook payload",
+				logger.warn(
+					{ provider: "github", repository, action },
+					"PR author information missing in webhook payload",
 				);
 				return jsonResponse(
 					{
@@ -388,27 +404,46 @@ export async function handleGithubDeployWebhook(request: Request) {
 						userPermission = permission; // Store permission for comment
 
 						if (!hasWriteAccess) {
-							console.warn(
-								`🚨 SECURITY: Blocked preview deployment for ${app.name} from unauthorized user ${prAuthor} on ${owner}/${repository}. Permission: ${permission || "none"}`,
+							logger.warn(
+								{
+									provider: "github",
+									appName: app.name,
+									prAuthor,
+									repository: `${owner}/${repository}`,
+									permission: permission ?? "none",
+								},
+								"Blocked preview deployment from unauthorized PR author",
 							);
 							blockedApps.push(app.name);
 							continue;
 						}
 
-						console.log(
-							`✅ SECURITY: Preview deployment authorized for ${app.name} from user ${prAuthor} on ${owner}/${repository}. Permission: ${permission}`,
+						logger.info(
+							{
+								provider: "github",
+								appName: app.name,
+								prAuthor,
+								repository: `${owner}/${repository}`,
+								permission,
+							},
+							"Preview deployment authorized",
 						);
 					} catch (error) {
-						console.error(
-							`Error validating PR author permissions for ${app.name}:`,
-							error,
+						logger.warn(
+							{ err: error, provider: "github", appName: app.name, prAuthor },
+							"Error validating PR author permissions — blocking preview deployment",
 						);
 						blockedApps.push(app.name);
 						continue; // Skip this app on error
 					}
 				} else {
-					console.warn(
-						`⚠️  SECURITY: Preview deployment for ${app.name} allows deployment from any PR author (security check disabled)`,
+					logger.warn(
+						{
+							provider: "github",
+							appName: app.name,
+							repository: `${owner}/${repository}`,
+						},
+						"Preview deployment allows any PR author (collaborator check disabled)",
 					);
 				}
 				secureApps.push(app);

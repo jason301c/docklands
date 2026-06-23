@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
@@ -20,6 +21,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("compose");
 
 interface Props {
 	composeId: string;
@@ -77,7 +80,8 @@ export const RandomizeCompose = ({ composeId }: Props) => {
 				await refetch();
 				toast.success("Compose updated");
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to randomize the compose", err);
 				toast.error("Error randomizing the compose");
 			});
 	};

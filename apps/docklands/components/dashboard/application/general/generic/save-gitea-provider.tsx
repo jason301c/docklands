@@ -17,6 +17,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { GiteaIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -38,6 +39,8 @@ const CommandList = Combobox.List;
 const CommandGroup = Combobox.Group;
 const CommandItem = Combobox.Item;
 const CommandEmpty = Combobox.Empty;
+
+const logger = createClientLogger("application");
 
 interface GiteaRepository {
 	name: string;
@@ -169,7 +172,8 @@ export const SaveGiteaProvider = ({ applicationId }: Props) => {
 				toast.success("Service Provider Saved");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save the Gitea provider", err);
 				toast.error("Error saving the Gitea provider");
 			});
 	};

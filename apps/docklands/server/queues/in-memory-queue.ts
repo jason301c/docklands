@@ -1,4 +1,7 @@
+import { createLogger } from "@/server/core/lib/logger";
 import type { DeploymentJob } from "./queue-types";
+
+const logger = createLogger("queue");
 
 /**
  * In-memory deployment queue for self-hosted instances.
@@ -125,6 +128,7 @@ export class InMemoryQueue {
 	async add(data: DeploymentJob): Promise<{ id: string }> {
 		const id = `job-${++this.seq}`;
 		const partitionKey = getPartition(data);
+		const group = getGroup(data);
 		const job: InternalJob = {
 			id,
 			name: "deployments",
@@ -132,9 +136,13 @@ export class InMemoryQueue {
 			timestamp: this.now(),
 			state: "waiting",
 			partition: partitionKey,
-			group: getGroup(data),
+			group,
 		};
 		this.getPartitionState(partitionKey).waiting.push(job);
+		logger.debug(
+			{ jobId: id, partition: partitionKey, group, type: data.type },
+			"deployment job queued",
+		);
 		this.schedule();
 		return { id };
 	}
@@ -237,18 +245,41 @@ export class InMemoryQueue {
 			partition.activeGroups.add(job.group);
 			partition.active.push(job);
 
+			logger.info(
+				{ jobId: job.id, partition: key, group: job.group },
+				"deployment job started",
+			);
 			void this.runJob(job);
 		}
 	}
 
 	private async runJob(job: InternalJob) {
+		const startedAt = this.now();
 		try {
 			await this.processor?.(this.toPublic(job));
 		} catch (error) {
 			job.failedReason = error instanceof Error ? error.message : String(error);
-			console.error("In-memory deployment job failed", error);
+			logger.error(
+				{
+					err: error,
+					jobId: job.id,
+					partition: job.partition,
+					group: job.group,
+				},
+				"deployment job failed",
+			);
 		} finally {
 			job.finishedOn = this.now();
+			const duration = job.finishedOn - startedAt;
+			logger.info(
+				{
+					jobId: job.id,
+					partition: job.partition,
+					group: job.group,
+					durationMs: duration,
+				},
+				"deployment job finished",
+			);
 			const partition = this.partitions.get(job.partition);
 			if (partition) {
 				partition.active = partition.active.filter((j) => j.id !== job.id);

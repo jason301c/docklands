@@ -10,6 +10,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { getGiteaOAuthUrl } from "@/client/git/gitea";
 import { useUrl } from "@/client/hooks/use-url";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -35,6 +36,8 @@ const formSchema = z.object({
 interface Props {
 	giteaId: string;
 }
+
+const logger = createClientLogger("git-providers");
 
 export const EditGiteaProvider = ({ giteaId }: Props) => {
 	const router = useRouter();
@@ -114,7 +117,8 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 				await refetch();
 				setOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error updating gitea provider", err);
 				toast.error("Error updating Gitea provider");
 			});
 	};

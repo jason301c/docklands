@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -16,6 +17,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("organization");
 
 const instanceSchema = z.object({
 	name: z.string().min(1, {
@@ -65,7 +68,7 @@ export function EditInstance() {
 				setOpen(false);
 			})
 			.catch((error) => {
-				console.error(error);
+				logger.error(error);
 				toast.error(error?.message || "Failed to update instance settings");
 			});
 	};

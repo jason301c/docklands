@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -18,6 +19,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("image-registry");
 
 const AddRegistrySchema = z.object({
 	registryName: z.string().min(1, {
@@ -182,7 +185,8 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 				toast.success(registryId ? "Registry updated" : "Registry added");
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(err);
 				toast.error(
 					registryId ? "Error updating a registry" : "Error adding a registry",
 				);
@@ -440,7 +444,8 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 														toast.error("Registry Test Failed");
 													}
 												})
-												.catch(() => {
+												.catch((err) => {
+													logger.error(err);
 													toast.error("Error testing the registry");
 												});
 											return;
@@ -492,7 +497,8 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 													toast.error("Registry Test Failed");
 												}
 											})
-											.catch(() => {
+											.catch((err) => {
+												logger.error(err);
 												toast.error("Error testing the registry");
 											});
 									}}

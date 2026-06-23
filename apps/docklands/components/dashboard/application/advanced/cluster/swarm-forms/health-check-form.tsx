@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -15,6 +16,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const optionalNumber = z
 	.union([z.string(), z.number()])
@@ -123,7 +126,8 @@ export const HealthCheckForm = ({ id, type }: HealthCheckFormProps) => {
 
 			toast.success("Health check updated successfully");
 			refetch();
-		} catch {
+		} catch (err) {
+			logger.error("Error updating health check", err);
 			toast.error("Error updating health check");
 		} finally {
 			setIsLoading(false);

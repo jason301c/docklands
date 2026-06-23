@@ -1,5 +1,6 @@
 import path from "node:path";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import { findComposeById } from "@/server/core/services/compose";
 import { findDestinationById } from "@/server/core/services/destination";
 import type { findVolumeBackupById } from "@/server/core/services/volume-backups";
@@ -9,6 +10,8 @@ import {
 	getS3Credentials,
 	normalizeS3Path,
 } from "../backups/utils";
+
+const logger = createLogger("volume-backup");
 
 export const getVolumeServiceAppName = (
 	volumeBackup: Awaited<ReturnType<typeof findVolumeBackupById>>,
@@ -108,11 +111,9 @@ export const backupVolume = async (
 		echo "Volume backup lock released"
 	`;
 
-	console.log(
-		lockWrapper(`
-		echo "Volume backup lock acquired"
-		echo "Volume backup lock released"
-	`),
+	logger.info(
+		{ appName: volumeBackup.application?.appName, turnOff: true },
+		"Stopping service replicas for volume backup",
 	);
 
 	if (serviceType === "application") {

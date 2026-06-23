@@ -1,15 +1,18 @@
+import { createLogger } from "@/server/core/lib/logger";
 import { docker } from "../constants";
+
+const logger = createLogger("setup:swarm-network");
 
 export const initializeSwarm = async () => {
 	const swarmInitialized = await dockerSwarmInitialized();
 	if (swarmInitialized) {
-		console.log("Swarm is already initialized");
+		logger.info("Swarm is already initialized");
 	} else {
 		await docker.swarmInit({
 			AdvertiseAddr: "127.0.0.1",
 			ListenAddr: "0.0.0.0",
 		});
-		console.log("Swarm was initialized");
+		logger.info("Swarm initialized");
 	}
 };
 
@@ -18,7 +21,8 @@ export const dockerSwarmInitialized = async () => {
 		await docker.swarmInspect();
 
 		return true;
-	} catch {
+	} catch (err) {
+		logger.debug({ err }, "Swarm inspect failed — treating as not initialized");
 		return false;
 	}
 };
@@ -26,14 +30,19 @@ export const dockerSwarmInitialized = async () => {
 export const initializeNetwork = async () => {
 	const networkInitialized = await dockerNetworkInitialized();
 	if (networkInitialized) {
-		console.log("Network is already initialized");
+		logger.info("Docker network is already initialized");
 	} else {
-		docker.createNetwork({
-			Attachable: true,
-			Name: "docklands-network",
-			Driver: "overlay",
-		});
-		console.log("Network was initialized");
+		try {
+			await docker.createNetwork({
+				Attachable: true,
+				Name: "docklands-network",
+				Driver: "overlay",
+			});
+			logger.info("Docker network created");
+		} catch (err) {
+			logger.error({ err }, "Failed to create docklands-network");
+			throw err;
+		}
 	}
 };
 
@@ -41,7 +50,11 @@ export const dockerNetworkInitialized = async () => {
 	try {
 		await docker.getNetwork("docklands-network").inspect();
 		return true;
-	} catch {
+	} catch (err) {
+		logger.debug(
+			{ err },
+			"Network inspect failed — treating as not initialized",
+		);
 		return false;
 	}
 };

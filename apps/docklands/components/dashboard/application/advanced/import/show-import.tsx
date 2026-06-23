@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
@@ -21,6 +22,8 @@ import {
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { Separator } from "@/components/shared/separator";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const ImportSchema = z.object({
 	base64: z.string(),
@@ -95,7 +98,8 @@ export const ShowImport = ({ composeId }: Props) => {
 				composeId,
 			});
 			setShowModal(false);
-		} catch {
+		} catch (err) {
+			logger.error("Error importing compose file", err);
 			toast.error("Error importing compose file");
 		}
 	};
@@ -114,7 +118,8 @@ export const ShowImport = ({ composeId }: Props) => {
 			});
 			setTemplateInfo(result);
 			setShowModal(true);
-		} catch {
+		} catch (err) {
+			logger.error("Error processing compose file", err);
 			toast.error("Error processing compose file");
 		}
 	};

@@ -2,8 +2,11 @@ import type http from "node:http";
 import { applyWSSHandler } from "@trpc/server/adapters/ws";
 import { WebSocketServer } from "ws";
 import { validateRequest } from "@/server/core/lib/auth";
+import { createLogger } from "@/server/core/lib/logger";
 import { appRouter } from "../api/root";
-import { createWebSocketTRPCContext } from "../api/trpc";
+import { createWebSocketTRPCContext, logTRPCError } from "../api/trpc";
+
+const logger = createLogger("wss-drawer-logs");
 
 export const setupDrawerLogsWebSocketServer = (
 	runtimeWorker: http.Server<
@@ -21,6 +24,7 @@ export const setupDrawerLogsWebSocketServer = (
 		wss: wssTerm,
 		router: appRouter,
 		createContext: createWebSocketTRPCContext,
+		onError: ({ error, path, type }) => logTRPCError({ error, path, type }),
 	});
 
 	runtimeWorker.on("upgrade", (req, socket, head) => {
@@ -38,6 +42,7 @@ export const setupDrawerLogsWebSocketServer = (
 		const { user, session } = await validateRequest(req);
 
 		if (!user || !session) {
+			logger.warn("drawer-logs ws rejected: no session");
 			ws.close();
 			return;
 		}

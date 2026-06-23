@@ -6,7 +6,11 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+
+const logger = createClientLogger("runtime-script");
+
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
 	Form,
@@ -77,7 +81,8 @@ export const EditScript = ({ runtimeWorkerId }: Props) => {
 				.then((_data) => {
 					toast.success("Script modified successfully");
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error(err);
 					toast.error("Error modifying the script");
 				});
 		}

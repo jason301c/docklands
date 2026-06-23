@@ -9,6 +9,7 @@ import {
 	mounts,
 	type ServiceType,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	createFile,
 	encodeBase64,
@@ -21,6 +22,8 @@ import {
 } from "@/server/core/utils/process/execAsync";
 
 export type Mount = typeof mounts.$inferSelect;
+
+const logger = createLogger("mount");
 
 const MANAGED_DATABASE_SERVICE_TYPES = new Set<ServiceType>([
 	"postgres",
@@ -68,7 +71,7 @@ export const createMount = async (input: z.infer<typeof apiCreateMount>) => {
 		}
 		return value;
 	} catch (error) {
-		console.log(error);
+		logger.error({ err: error }, "createMount failed");
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: `Error ${error instanceof Error ? error.message : error}`,
@@ -132,7 +135,7 @@ export const createFileMount = async (mountId: string) => {
 			await createFile(baseFilePath, mount.filePath || "", mount.content || "");
 		}
 	} catch (error) {
-		console.log(`Error creating the file mount: ${error}`);
+		logger.error({ err: error, mountId }, "createFileMount failed");
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: `Error creating the mount ${error instanceof Error ? error.message : error}`,
@@ -283,8 +286,8 @@ export const updateFileMount = async (mountId: string) => {
 		} else {
 			await execAsync(command);
 		}
-	} catch {
-		console.log("Error updating file mount");
+	} catch (e) {
+		logger.error({ err: e, mountId }, "updateFileMount failed");
 	}
 };
 
@@ -302,7 +305,12 @@ export const deleteFileMount = async (mountId: string) => {
 		} else {
 			await removeFileOrDirectory(fullPath);
 		}
-	} catch {}
+	} catch (e) {
+		logger.warn(
+			{ err: e, mountId, fullPath },
+			"deleteFileMount filesystem cleanup failed",
+		);
+	}
 };
 
 export const getBaseFilesPath = async (mountId: string) => {

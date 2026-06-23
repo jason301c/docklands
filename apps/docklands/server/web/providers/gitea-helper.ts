@@ -1,5 +1,8 @@
+import { createLogger } from "@/server/core/lib/logger";
 import { findGiteaById } from "@/server/core/services/gitea";
 import { redirectResponse } from "@/server/web/request";
+
+const logger = createLogger("gitea-helper");
 
 export interface Gitea {
 	giteaId: string;
@@ -27,7 +30,10 @@ export const findGitea = async (giteaId: string): Promise<Gitea | null> => {
 		const gitea = await findGiteaById(giteaId);
 		return gitea;
 	} catch (findError) {
-		console.error("Error finding Gitea provider:", findError);
+		logger.error(
+			{ err: findError, provider: "gitea", giteaId },
+			"Error finding Gitea provider",
+		);
 		return null;
 	}
 };

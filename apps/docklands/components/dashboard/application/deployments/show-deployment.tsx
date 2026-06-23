@@ -5,8 +5,12 @@ import { Dialog } from "@cloudflare/kumo/components/dialog";
 import copy from "copy-to-clipboard";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { createClientLogger } from "@/client/lib/logger";
+import { toast } from "@/components/shared/toast";
 import { TerminalLine } from "../../container-runtime/logs/terminal-line";
 import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
+
+const logger = createClientLogger("deployment-logs");
 
 interface Props {
 	logPath: string | null;
@@ -59,7 +63,8 @@ export const ShowDeployment = ({
 		};
 
 		ws.onerror = (error) => {
-			console.error("WebSocket error: ", error);
+			logger.error("WebSocket error:", error);
+			toast.warning("Log stream interrupted");
 		};
 
 		ws.onclose = () => {

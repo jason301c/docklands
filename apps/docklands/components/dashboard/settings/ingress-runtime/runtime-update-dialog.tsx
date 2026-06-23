@@ -13,7 +13,11 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("runtime-update");
+
 import type { IUpdateData } from "@/server/core/services/settings";
 import { ApplyRuntimeUpdate } from "./apply-runtime-update";
 import { ToggleAutoCheckUpdates } from "./toggle-auto-check-updates";
@@ -61,7 +65,7 @@ export const RuntimeUpdateDialog = ({
 				toast.info("No updates available");
 			}
 		} catch (error) {
-			console.error("Error checking for updates:", error);
+			logger.error("Error checking for updates:", error);
 			setHasCheckedUpdate(true);
 			setIsUpdateAvailable(false);
 			toast.error(

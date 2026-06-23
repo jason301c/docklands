@@ -3,6 +3,7 @@ import { Input } from "@cloudflare/kumo/components/input";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -13,6 +14,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const hasStopGracePeriodSwarm = (
 	value: unknown,
@@ -98,7 +101,8 @@ export const StopGracePeriodForm = ({ id, type }: StopGracePeriodFormProps) => {
 
 			toast.success("Stop grace period updated successfully");
 			refetch();
-		} catch {
+		} catch (err) {
+			logger.error("Error updating stop grace period", err);
 			toast.error("Error updating stop grace period");
 		} finally {
 			setIsLoading(false);

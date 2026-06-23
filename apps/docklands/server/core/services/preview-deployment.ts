@@ -8,6 +8,7 @@ import {
 	organization,
 	previewDeployments,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { generatePassword } from "../templates";
 import { removeService } from "../utils/docker/utils";
 import { removeDirectoryCode } from "../utils/filesystem/directory";
@@ -21,6 +22,8 @@ import { type Github, getIssueComment } from "./github";
 import { getWebServerSettings } from "./web-server-settings";
 
 export type PreviewDeployment = typeof previewDeployments.$inferSelect;
+
+const logger = createLogger("preview");
 
 export const findPreviewDeploymentById = async (
 	previewDeploymentId: string,
@@ -55,6 +58,12 @@ export const removePreviewDeployment = async (previewDeploymentId: string) => {
 		);
 
 		application.appName = previewDeployment.appName;
+
+		logger.info(
+			{ previewDeploymentId, appName: previewDeployment.appName },
+			"Removing preview deployment",
+		);
+
 		const cleanupOperations = [
 			async () =>
 				await removeService(application?.appName, application?.runtimeWorkerId),
@@ -81,11 +90,14 @@ export const removePreviewDeployment = async (previewDeploymentId: string) => {
 					)
 					.returning(),
 		];
-		for (const operation of cleanupOperations) {
+		for (let i = 0; i < cleanupOperations.length; i++) {
 			try {
-				await operation();
+				await cleanupOperations[i]?.();
 			} catch (error) {
-				console.error(error);
+				logger.warn(
+					{ err: error, previewDeploymentId, step: i },
+					"Preview deployment cleanup step failed",
+				);
 			}
 		}
 		return previewDeployment;

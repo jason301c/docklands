@@ -4,10 +4,13 @@ import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { workspaceServicePath } from "@/shared/routes";
+
+const logger = createClientLogger("compose");
 
 interface Props {
 	composeId: string;
@@ -57,7 +60,8 @@ export const ComposeActions = ({ composeId }: Props) => {
 										);
 									}
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error("Failed to queue compose build", err);
 									toast.error("Error queueing compose build");
 								});
 						}}
@@ -99,7 +103,8 @@ export const ComposeActions = ({ composeId }: Props) => {
 									toast.success("Compose reloaded successfully");
 									refetch();
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error("Failed to reload compose", err);
 									toast.error("Error reloading compose");
 								});
 						}}
@@ -141,7 +146,8 @@ export const ComposeActions = ({ composeId }: Props) => {
 										toast.success("Compose started successfully");
 										refetch();
 									})
-									.catch(() => {
+									.catch((err) => {
+										logger.error("Failed to start compose", err);
 										toast.error("Error starting compose");
 									});
 							}}
@@ -181,7 +187,8 @@ export const ComposeActions = ({ composeId }: Props) => {
 										toast.success("Compose stopped successfully");
 										refetch();
 									})
-									.catch(() => {
+									.catch((err) => {
+										logger.error("Failed to stop compose", err);
 										toast.error("Error stopping compose");
 									});
 							}}
@@ -237,7 +244,8 @@ export const ComposeActions = ({ composeId }: Props) => {
 									toast.success("Auto Build Updated");
 									await refetch();
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error("Failed to update auto build", err);
 									toast.error("Error updating Auto Build");
 								});
 						}}

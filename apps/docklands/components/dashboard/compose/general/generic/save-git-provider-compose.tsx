@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { GitIcon } from "@/components/icons/data-tools-icons";
 import {
 	Form,
@@ -23,6 +24,8 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
+
+const logger = createClientLogger("compose");
 
 const GitProviderSchema = z.object({
 	composePath: z.string().min(1),
@@ -92,7 +95,8 @@ export const SaveGitProviderCompose = ({ composeId }: Props) => {
 				toast.success("Git Provider Saved");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save the Git provider", err);
 				toast.error("Error saving the Git provider");
 			});
 	};

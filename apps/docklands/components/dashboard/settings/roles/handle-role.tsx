@@ -5,8 +5,11 @@ import { Input } from "@cloudflare/kumo/components/input";
 import { PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("roles");
 
 interface Props {
 	role?: { role: string; permissions: Record<string, string[]> };
@@ -74,7 +77,8 @@ export const HandleRole = ({ role }: Props) => {
 			await utils.customRole.all.invalidate();
 			toast.success(isEdit ? "Role updated" : "Role created");
 			setIsOpen(false);
-		} catch {
+		} catch (err) {
+			logger.error(err);
 			toast.error(isEdit ? "Error updating role" : "Error creating role");
 		}
 	};

@@ -25,7 +25,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
+
+const logger = createClientLogger("database-backup");
+
 import {
 	Form,
 	FormControl,
@@ -259,7 +263,8 @@ export const RestoreBackup = ({
 				setFilteredLogs((prev) => [...prev, ...parsedLogs]);
 			},
 			onError(error) {
-				console.error("Restore logs error:", error);
+				logger.error("restore logs error:", error);
+				toast.warning("Restore log stream failed");
 				setIsDeploying(false);
 			},
 		},

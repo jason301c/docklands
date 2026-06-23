@@ -2,6 +2,7 @@ import fs, { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse, stringify } from "yaml";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Compose } from "@/server/core/services/compose";
 import type { Domain } from "@/server/core/services/domain";
 import { execAsyncRemote } from "../process/execAsync";
@@ -20,7 +21,13 @@ import type {
 } from "./types";
 import { encodeBase64 } from "./utils";
 
+const logger = createLogger("docker-compose");
+
 export const cloneCompose = async (compose: Compose) => {
+	logger.info(
+		{ appName: compose.appName, sourceType: compose.sourceType },
+		"cloning compose source",
+	);
 	let command = "set -e;";
 	const entity = {
 		...compose,
@@ -248,7 +255,11 @@ export const writeComposeFile = async (
 		});
 		fs.writeFileSync(path, composeFile, "utf8");
 	} catch (e) {
-		console.error("Error saving the YAML config file:", e);
+		logger.error(
+			{ err: e, path, appName: compose.appName },
+			"failed to write compose file",
+		);
+		throw e;
 	}
 };
 

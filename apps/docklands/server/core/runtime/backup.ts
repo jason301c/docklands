@@ -1,4 +1,5 @@
 import { scheduledJobs, scheduleJob as scheduleNodeJob } from "node-schedule";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	type BackupScheduleList,
 	findBackupById,
@@ -19,6 +20,8 @@ import {
 	removeVolumeBackupJob,
 	scheduleVolumeBackup,
 } from "@/server/core/utils/volume-backups/utils";
+
+const logger = createLogger("backup-schedule");
 
 type QueueJob =
 	| {
@@ -48,9 +51,23 @@ const scheduleServerCleanup = async (
 ) => {
 	const runtimeWorker = await findRuntimeWorkerById(job.runtimeWorkerId);
 	scheduleNodeJob(job.runtimeWorkerId, job.cronSchedule, async () => {
-		console.log(`Docker Cleanup ${new Date().toLocaleString()}] Running...`);
-		await cleanupAll(job.runtimeWorkerId);
-		await sendDockerCleanupNotifications(runtimeWorker.organizationId);
+		logger.info(
+			{ runtimeWorkerId: job.runtimeWorkerId },
+			"Docker cleanup job running",
+		);
+		try {
+			await cleanupAll(job.runtimeWorkerId);
+			await sendDockerCleanupNotifications(runtimeWorker.organizationId);
+			logger.info(
+				{ runtimeWorkerId: job.runtimeWorkerId },
+				"Docker cleanup job completed",
+			);
+		} catch (err) {
+			logger.error(
+				{ err, runtimeWorkerId: job.runtimeWorkerId },
+				"Docker cleanup job failed",
+			);
+		}
 	});
 };
 

@@ -28,6 +28,10 @@ import {
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
+import { createClientLogger } from "@/client/lib/logger";
+
+const logger = createClientLogger("impersonation");
+
 import {
 	Avatar,
 	AvatarFallback,
@@ -86,7 +90,7 @@ export const ImpersonationBar = () => {
 				setUsers(filteredUsers || []);
 			}
 		} catch (error) {
-			console.error("Error fetching users:", error);
+			logger.error("Error fetching users:", error);
 			toast.error("Error loading users");
 		} finally {
 			setIsLoading(false);
@@ -108,7 +112,7 @@ export const ImpersonationBar = () => {
 			});
 			window.location.reload();
 		} catch (error) {
-			console.error("Error impersonating user:", error);
+			logger.error("Error impersonating user:", error);
 			toast.error("Error impersonating user");
 		}
 	};
@@ -122,7 +126,7 @@ export const ImpersonationBar = () => {
 			toast.success("Stopped impersonating user");
 			window.location.reload();
 		} catch (error) {
-			console.error("Error stopping impersonation:", error);
+			logger.error("Error stopping impersonation:", error);
 			toast.error("Error stopping impersonation");
 		}
 	};
@@ -137,7 +141,7 @@ export const ImpersonationBar = () => {
 					// setSelectedUser(data);
 				}
 			} catch (error) {
-				console.error("Error checking impersonation status:", error);
+				logger.error("Error checking impersonation status:", error);
 			}
 		};
 

@@ -1,4 +1,8 @@
 import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
+import { createClientLogger } from "@/client/lib/logger";
+
+const logger = createClientLogger("terminal-config");
+
 import { Collapsible } from "@cloudflare/kumo/components/collapsible";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -37,6 +41,9 @@ export const getLocalRuntimeTerminalData = () => {
 
 		return parsedLocalServerData;
 	} catch {
+		logger.warn(
+			"LocalStorage parse failed for terminal config, using defaults",
+		);
 		return DEFAULT_LOCAL_SERVER_DATA;
 	}
 };

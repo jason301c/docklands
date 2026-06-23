@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { compose } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { shouldDeploy } from "@/server/core/utils/watch-paths/should-deploy";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
@@ -17,6 +18,8 @@ import {
 	getProviderByHeader,
 	logWebhookError,
 } from "./application-webhook";
+
+const logger = createLogger("compose-webhook");
 
 export async function handleComposeDeployWebhook(
 	request: Request,
@@ -45,6 +48,10 @@ export async function handleComposeDeployWebhook(
 			return jsonResponse({ message: "Compose Not Found" }, 404);
 		}
 		if (!composeResult?.autoDeploy) {
+			logger.info(
+				{ composeId: composeResult.composeId, appName: composeResult.name },
+				"Webhook received but autoDeploy is disabled",
+			);
 			return jsonResponse(
 				{
 					message: "Automatic deployments are disabled for this compose",
@@ -182,6 +189,14 @@ export async function handleComposeDeployWebhook(
 					removeOnComplete: true,
 					removeOnFail: true,
 				},
+			);
+			logger.info(
+				{
+					composeId: composeResult.composeId,
+					appName: composeResult.name,
+					sourceType: composeResult.sourceType,
+				},
+				"Compose deploy job enqueued",
 			);
 		} catch (error) {
 			logWebhookError("Error deploying Compose:", error);

@@ -1,8 +1,11 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { runtimeWorkers } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { LOCAL_PARTITION } from "./in-memory-queue";
+
+const logger = createLogger("queue");
 
 /**
  * Resolve the effective builds concurrency for a queue partition.
@@ -21,9 +24,9 @@ export const resolveBuildsConcurrency = async (
 		}
 		return await resolveRuntimeWorkerConcurrency(partition);
 	} catch (error) {
-		console.error(
-			"Failed to resolve builds concurrency, defaulting to 1",
-			error,
+		logger.error(
+			{ err: error, partition },
+			"concurrency lookup failed, defaulting to 1",
 		);
 		return 1;
 	}

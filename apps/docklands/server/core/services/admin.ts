@@ -7,7 +7,10 @@ import {
 	organization,
 	user,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { getWebServerSettings } from "./web-server-settings";
+
+const logger = createLogger("auth");
 
 export const findUserById = async (userId: string) => {
 	const userResult = await db.query.user.findFirst({
@@ -126,7 +129,8 @@ export const getTrustedOrigins = async () => {
 	try {
 		return await runQuery();
 	} catch (error) {
-		console.error("Failed to fetch trusted origins:", error);
+		logger.error({ err: error }, "Failed to fetch trusted origins");
+		logger.warn({}, "Trusted-origin set is degraded; returning empty list");
 		return [];
 	}
 };

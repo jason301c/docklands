@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { createClientLogger } from "@/client/lib/logger";
+
+const logger = createClientLogger("local-storage");
 
 export const useLocalStorage = (key: string, initialValue: boolean) => {
 	// State to store our value
@@ -9,7 +12,7 @@ export const useLocalStorage = (key: string, initialValue: boolean) => {
 			const item = window.localStorage.getItem(key);
 			return item ? JSON.parse(item) : initialValue;
 		} catch (error) {
-			console.error(error);
+			logger.warn("localStorage read failed:", error);
 			return initialValue;
 		}
 	});
@@ -25,7 +28,7 @@ export const useLocalStorage = (key: string, initialValue: boolean) => {
 				window.localStorage.setItem(key, JSON.stringify(valueToStore));
 			}
 		} catch (error) {
-			console.error(error);
+			logger.warn("localStorage write failed:", error);
 		}
 	};
 

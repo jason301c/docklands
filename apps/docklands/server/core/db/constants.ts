@@ -1,4 +1,7 @@
 import fs from "node:fs";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("db");
 
 export const {
 	DATABASE_URL,
@@ -12,8 +15,9 @@ export const {
 export function readSecret(path: string): string {
 	try {
 		return fs.readFileSync(path, "utf8").trim();
-	} catch {
-		throw new Error(`Cannot read secret at ${path}`);
+	} catch (e) {
+		logger.debug({ err: e, path }, "db: failed to read secret file");
+		throw new Error(`Cannot read secret at ${path}`, { cause: e });
 	}
 }
 
@@ -45,6 +49,9 @@ export function resolveDbUrl(env: NodeJS.ProcessEnv = process.env): string {
 		return TEST_DATABASE_URL;
 	}
 
+	logger.fatal(
+		"db: DB URL resolution failed — missing DATABASE_URL and POSTGRES_PASSWORD_FILE",
+	);
 	throw new Error("DATABASE_URL or POSTGRES_PASSWORD_FILE must be set.");
 }
 

@@ -4,6 +4,7 @@ import {
 	spawn,
 } from "node:child_process";
 import BufferList from "bl";
+import { redactSecrets } from "./redactSecrets";
 
 export const spawnAsync = (
 	command: string,
@@ -39,7 +40,11 @@ export const spawnAsync = (
 			if (code === 0) {
 				resolve(stdout);
 			} else {
-				const err = new Error(`${stderr.toString()}`) as Error & {
+				// Redact the message before it can reach logs / the deploy stream.
+				// `execAsync` redacts via ExecError; `spawnAsync` must do the same so
+				// SSH keys and base64 secrets embedded in shelled commands (e.g.
+				// remote provisioning) never leak through the rejected error.
+				const err = new Error(redactSecrets(stderr.toString())) as Error & {
 					code: number;
 					stderr: BufferList;
 					stdout: BufferList;

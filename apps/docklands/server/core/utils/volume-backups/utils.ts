@@ -1,6 +1,7 @@
 import path from "node:path";
 import { scheduledJobs, scheduleJob } from "node-schedule";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	createDeploymentVolumeBackup,
 	updateDeploymentStatus,
@@ -18,6 +19,8 @@ import {
 } from "../backups/utils";
 import { sendVolumeBackupNotifications } from "../notifications/volume-backup";
 import { backupVolume, getVolumeServiceAppName } from "./backup";
+
+const logger = createLogger("volume-backup");
 
 // Helper functions to extract workspace info from volume backup
 const getProjectName = (
@@ -98,12 +101,16 @@ const cleanupOldVolumeBackups = async (
 		} else {
 			await execAsync(fullCommand);
 		}
+		logger.info(
+			{ volumeName, keepLatestCount },
+			"Volume backup retention enforced",
+		);
 	} catch (error) {
 		// A retention failure must not fail the backup, but it must not be
 		// swallowed silently either — stale files would accumulate unnoticed.
-		console.error(
-			`[VolumeBackup] Retention pruning failed for ${volumeName}; backup succeeded but old backups may not have been deleted:`,
-			error,
+		logger.warn(
+			{ err: error, volumeName },
+			"Volume backup retention pruning failed",
 		);
 	}
 };
@@ -120,6 +127,14 @@ export const runVolumeBackup = async (volumeBackupId: string) => {
 	});
 	const projectName = getProjectName(volumeBackup);
 	const organizationId = getOrganizationId(volumeBackup);
+	logger.info(
+		{
+			volumeBackupId,
+			volumeName: volumeBackup.volumeName,
+			serviceType: volumeBackup.serviceType,
+		},
+		"Volume backup started",
+	);
 	try {
 		const command = await backupVolume(volumeBackup);
 
@@ -133,6 +148,8 @@ export const runVolumeBackup = async (volumeBackupId: string) => {
 		if (volumeBackup.keepLatestCount && volumeBackup.keepLatestCount > 0) {
 			await cleanupOldVolumeBackups(volumeBackup, runtimeWorkerId);
 		}
+
+		logger.info({ volumeBackupId }, "Volume backup completed");
 
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 
@@ -152,12 +169,16 @@ export const runVolumeBackup = async (volumeBackupId: string) => {
 				organizationId,
 			});
 		} catch (notificationError) {
-			console.error(
+			logger.warn(
+				{ err: notificationError, volumeBackupId },
 				"Failed to send volume backup success notification",
-				notificationError,
 			);
 		}
 	} catch (error) {
+		logger.error(
+			{ err: error, volumeBackupId, volumeName: volumeBackup.volumeName },
+			"Volume backup failed",
+		);
 		const { VOLUME_BACKUPS_PATH } = paths(!!runtimeWorkerId);
 		const volumeBackupPath = path.join(
 			VOLUME_BACKUPS_PATH,
@@ -189,9 +210,9 @@ export const runVolumeBackup = async (volumeBackupId: string) => {
 				errorMessage: error instanceof Error ? error.message : String(error),
 			});
 		} catch (notificationError) {
-			console.error(
+			logger.warn(
+				{ err: notificationError, volumeBackupId },
 				"Failed to send volume backup error notification",
-				notificationError,
 			);
 		}
 	}

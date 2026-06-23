@@ -1,6 +1,9 @@
 import { parse } from "yaml";
 import { detectDatabaseEngine } from "@/server/core/databases/detection";
 import type { DatabaseEngineKey } from "@/server/core/databases/registry";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("templates:analyze");
 
 export interface TemplateDatabaseAnalysis {
 	/** databases detected among the template's services */
@@ -33,8 +36,12 @@ export const analyzeTemplateDatabases = (
 		if (spec?.services && typeof spec.services === "object") {
 			services = spec.services;
 		}
-	} catch {
+	} catch (err) {
 		/* malformed compose → treat as no databases */
+		logger.debug(
+			{ err },
+			"Malformed template compose — treating as no databases",
+		);
 	}
 
 	const entries = Object.entries(services);

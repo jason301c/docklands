@@ -1,3 +1,4 @@
+import { createLogger } from "@/server/core/lib/logger";
 import { findGitlabById, updateGitlab } from "@/server/core/services/gitlab";
 import {
 	getQueryParam,
@@ -5,12 +6,18 @@ import {
 	redirectResponse,
 } from "@/server/web/request";
 
+const logger = createLogger("gitlab-callback");
+
 export async function handleGitlabCallback(request: Request) {
 	const urlParams = new URL(request.url);
 	const code = getQueryParam(urlParams, "code");
 	const gitlabId = getQueryParam(urlParams, "gitlabId");
 
 	if (!code || !gitlabId) {
+		logger.warn(
+			{ provider: "gitlab" },
+			"OAuth callback missing code or gitlabId",
+		);
 		return jsonResponse({ error: "Missing or invalid code" }, 400);
 	}
 
@@ -53,6 +60,15 @@ export async function handleGitlabCallback(request: Request) {
 	const result = await response.json();
 
 	if (!result.access_token || !result.refresh_token) {
+		logger.warn(
+			{
+				provider: "gitlab",
+				gitlabId,
+				error: result.error,
+				error_description: result.error_description,
+			},
+			"GitLab OAuth token exchange returned no access token",
+		);
 		return jsonResponse({ error: "Missing or invalid code" }, 400);
 	}
 
@@ -63,5 +79,9 @@ export async function handleGitlabCallback(request: Request) {
 		expiresAt,
 	});
 
+	logger.info(
+		{ provider: "gitlab", gitlabId },
+		"GitLab OAuth callback succeeded",
+	);
 	return redirectResponse(request, "/dashboard/settings/git-providers");
 }

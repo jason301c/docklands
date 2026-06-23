@@ -4,6 +4,7 @@ import { Select } from "@cloudflare/kumo/components/select";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -14,6 +15,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 interface ModeFormProps {
 	id: string;
@@ -126,7 +129,8 @@ export const ModeForm = ({ id, type }: ModeFormProps) => {
 
 			toast.success("Mode updated successfully");
 			refetch();
-		} catch {
+		} catch (err) {
+			logger.error("Error updating mode", err);
 			toast.error("Error updating mode");
 		} finally {
 			setIsLoading(false);

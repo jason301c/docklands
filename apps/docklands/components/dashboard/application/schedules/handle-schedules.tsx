@@ -29,6 +29,7 @@ import {
 } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
@@ -45,6 +46,8 @@ import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import type { CacheType } from "../domains/handle-domain";
 import { getTimezoneLabel, TIMEZONES } from "./timezones";
+
+const logger = createClientLogger("schedules");
 
 const Command = Combobox;
 const CommandInput = Combobox.TriggerInput;
@@ -305,6 +308,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 				setIsOpen(false);
 			})
 			.catch((error) => {
+				logger.error("Failed to save automation", error);
 				toast.error(
 					error instanceof Error ? error.message : "An unknown error occurred",
 				);

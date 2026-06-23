@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { GitlabIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -35,6 +36,8 @@ const Schema = z.object({
 });
 
 type Schema = z.infer<typeof Schema>;
+
+const logger = createClientLogger("git-providers");
 
 interface Props {
 	gitlabId: string;
@@ -90,7 +93,8 @@ export const EditGitlabProvider = ({ gitlabId }: Props) => {
 				setIsOpen(false);
 				refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error updating gitlab provider", err);
 				toast.error("Error updating Gitlab");
 			});
 	};
@@ -211,6 +215,10 @@ export const EditGitlabProvider = ({ gitlabId }: Props) => {
 													toast.info(`Message: ${message}`);
 												})
 												.catch((error) => {
+													logger.error(
+														"Error testing gitlab connection",
+														error,
+													);
 													toast.error(`Error: ${error.message}`);
 												});
 										}}

@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { notifications } from "@/server/core/db/schema";
 import DocklandsRestartEmail from "@/server/core/emails/emails/docklands-restart";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	sendCustomNotification,
 	sendDiscordNotification,
@@ -18,6 +19,8 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "./utils";
+
+const logger = createLogger("notify-dispatch");
 
 export const sendDocklandsRestartNotifications = async () => {
 	try {
@@ -170,19 +173,14 @@ export const sendDocklandsRestartNotifications = async () => {
 				}
 
 				if (custom) {
-					try {
-						await sendCustomNotification(custom, {
-							title: "Docklands Server Restarted",
-							message:
-								"Docklands runtimeWorker has been restarted successfully",
-							timestamp: date.toISOString(),
-							date: date.toLocaleString(),
-							status: "success",
-							type: "docklands-restart",
-						});
-					} catch (error) {
-						console.log(error);
-					}
+					await sendCustomNotification(custom, {
+						title: "Docklands Server Restarted",
+						message: "Docklands runtimeWorker has been restarted successfully",
+						timestamp: date.toISOString(),
+						date: date.toLocaleString(),
+						status: "success",
+						type: "docklands-restart",
+					});
 				}
 
 				if (lark) {
@@ -278,10 +276,13 @@ export const sendDocklandsRestartNotifications = async () => {
 					});
 				}
 			} catch (error) {
-				console.log(error);
+				logger.warn(
+					{ err: error, notificationId: notification.notificationId },
+					"Docklands restart notification delivery failed",
+				);
 			}
 		}
 	} catch (error) {
-		console.error("[Docklands] Restart notifications failed:", error);
+		logger.error({ err: error }, "Docklands restart notifications failed");
 	}
 };

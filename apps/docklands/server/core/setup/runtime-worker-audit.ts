@@ -1,5 +1,8 @@
 import { Client } from "ssh2";
+import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "../services/runtime-worker";
+
+const logger = createLogger("setup:worker-audit");
 
 // Thanks for the idea to https://github.com/healthyhost/audit-vps-script/tree/main
 const validateUfw = () => `
@@ -126,7 +129,9 @@ export const runtimeWorkerAudit = async (runtimeWorkerId: string) => {
 						.on("data", (data: string) => {
 							output += data;
 						})
-						.stderr.on("data", (_data) => {});
+						.stderr.on("data", (data: Buffer) => {
+							logger.debug({ data: data.toString() }, "Audit command stderr");
+						});
 				});
 			})
 			.on("error", (err) => {

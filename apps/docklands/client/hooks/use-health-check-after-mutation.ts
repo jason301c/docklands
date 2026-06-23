@@ -1,5 +1,8 @@
 import { useCallback, useState } from "react";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("health-check");
 
 const HEALTH_CHECK_URL = "/api/health";
 
@@ -44,6 +47,7 @@ export const useHealthCheckAfterMutation = ({
 			const response = await fetch(HEALTH_CHECK_URL);
 			return response.ok;
 		} catch {
+			logger.debug("health endpoint unreachable, will retry");
 			return false;
 		}
 	}, []);

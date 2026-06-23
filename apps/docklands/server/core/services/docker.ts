@@ -1,7 +1,10 @@
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	execAsync,
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
+
+const logger = createLogger("docker");
 
 export const getContainers = async (runtimeWorkerId?: string | null) => {
 	try {
@@ -21,7 +24,7 @@ export const getContainers = async (runtimeWorkerId?: string | null) => {
 			stderr = result.stderr;
 		}
 		if (stderr) {
-			console.error(`Error: ${stderr}`);
+			logger.warn({ stderr, runtimeWorkerId }, "docker ps stderr");
 			return;
 		}
 
@@ -66,8 +69,7 @@ export const getContainers = async (runtimeWorkerId?: string | null) => {
 
 		return containers;
 	} catch (error) {
-		console.error(error);
-
+		logger.error({ err: error, runtimeWorkerId }, "getContainers failed");
 		return [];
 	}
 };
@@ -91,14 +93,20 @@ export const getConfig = async (
 		}
 
 		if (stderr) {
-			console.error(`Error: ${stderr}`);
+			logger.warn(
+				{ stderr, containerId, runtimeWorkerId },
+				"docker inspect stderr",
+			);
 			return;
 		}
 
 		const config = JSON.parse(stdout);
 
 		return config;
-	} catch {}
+	} catch (e) {
+		logger.warn({ err: e, containerId }, "getConfig failed");
+		return undefined;
+	}
 };
 
 export const getContainersByAppNameMatch = async (
@@ -163,7 +171,9 @@ export const getContainersByAppNameMatch = async (
 		});
 
 		return containers || [];
-	} catch {}
+	} catch (e) {
+		logger.warn({ err: e, appName }, "getContainersByAppNameMatch failed");
+	}
 
 	return [];
 };
@@ -177,7 +187,7 @@ export const getStackContainersByAppName = async (
 
 		const command = `docker stack ps ${appName} --no-trunc --format 'CONTAINER ID : {{.ID}} | Name: {{.Name}} | State: {{.DesiredState}} | Node: {{.Node}} | CurrentState: {{.CurrentState}} | Error: {{.Error}}'`;
 
-		console.log("command	", command);
+		logger.debug({ command }, "getStackContainersByAppName command");
 		if (runtimeWorkerId) {
 			const { stdout, stderr } = await execAsyncRemote(
 				runtimeWorkerId,
@@ -232,7 +242,9 @@ export const getStackContainersByAppName = async (
 		});
 
 		return containers || [];
-	} catch {}
+	} catch (e) {
+		logger.warn({ err: e, appName }, "getStackContainersByAppName failed");
+	}
 
 	return [];
 };
@@ -301,7 +313,9 @@ export const getServiceContainersByAppName = async (
 		});
 
 		return containers || [];
-	} catch {}
+	} catch (e) {
+		logger.warn({ err: e, appName }, "getServiceContainersByAppName failed");
+	}
 
 	return [];
 };
@@ -331,7 +345,10 @@ export const getContainersByAppLabel = async (
 			stderr = result.stderr;
 		}
 		if (stderr) {
-			console.error(`Error: ${stderr}`);
+			logger.warn(
+				{ stderr, appName, type, runtimeWorkerId },
+				"getContainersByAppLabel stderr",
+			);
 			return;
 		}
 
@@ -358,7 +375,9 @@ export const getContainersByAppLabel = async (
 		});
 
 		return containers || [];
-	} catch {}
+	} catch (e) {
+		logger.warn({ err: e, appName, type }, "getContainersByAppLabel failed");
+	}
 
 	return [];
 };
@@ -436,7 +455,7 @@ export const containerRestart = async (
 		: await execAsync(command);
 
 	if (stderr) {
-		console.error(`Error: ${stderr}`);
+		logger.error({ stderr, containerId }, "containerRestart stderr");
 		throw new Error(stderr);
 	}
 };
@@ -451,7 +470,7 @@ export const containerStart = async (
 		: await execAsync(command);
 
 	if (stderr) {
-		console.error(`Error: ${stderr}`);
+		logger.error({ stderr, containerId }, "containerStart stderr");
 		throw new Error(stderr);
 	}
 };
@@ -466,7 +485,7 @@ export const containerStop = async (
 		: await execAsync(command);
 
 	if (stderr) {
-		console.error(`Error: ${stderr}`);
+		logger.error({ stderr, containerId }, "containerStop stderr");
 		throw new Error(stderr);
 	}
 };
@@ -481,7 +500,7 @@ export const containerKill = async (
 		: await execAsync(command);
 
 	if (stderr) {
-		console.error(`Error: ${stderr}`);
+		logger.error({ stderr, containerId }, "containerKill stderr");
 		throw new Error(stderr);
 	}
 };
@@ -496,7 +515,7 @@ export const containerRemove = async (
 		: await execAsync(command);
 
 	if (stderr) {
-		console.error(`Error: ${stderr}`);
+		logger.error({ stderr, containerId }, "containerRemove stderr");
 		throw new Error(stderr);
 	}
 };
@@ -518,7 +537,7 @@ export const getSwarmNodes = async (runtimeWorkerId?: string) => {
 		}
 
 		if (stderr) {
-			console.error(`Error: ${stderr}`);
+			logger.warn({ stderr, runtimeWorkerId }, "getSwarmNodes stderr");
 			return;
 		}
 
@@ -528,7 +547,7 @@ export const getSwarmNodes = async (runtimeWorkerId?: string) => {
 			.map((line) => JSON.parse(line));
 		return nodesArray;
 	} catch (error) {
-		console.error("getSwarmNodes error:", error);
+		logger.error({ err: error, runtimeWorkerId }, "getSwarmNodes failed");
 	}
 };
 
@@ -548,14 +567,17 @@ export const getNodeInfo = async (nodeId: string, runtimeWorkerId?: string) => {
 		}
 
 		if (stderr) {
-			console.error(`Error: ${stderr}`);
+			logger.warn({ stderr, nodeId, runtimeWorkerId }, "getNodeInfo stderr");
 			return;
 		}
 
 		const nodeInfo = JSON.parse(stdout);
 
 		return nodeInfo;
-	} catch {}
+	} catch (e) {
+		logger.warn({ err: e, nodeId }, "getNodeInfo failed");
+		return undefined;
+	}
 };
 
 export const getNodeApplications = async (runtimeWorkerId?: string) => {
@@ -576,7 +598,7 @@ export const getNodeApplications = async (runtimeWorkerId?: string) => {
 		}
 
 		if (stderr) {
-			console.error(`Error: ${stderr}`);
+			logger.warn({ stderr, runtimeWorkerId }, "getNodeApplications stderr");
 			return;
 		}
 
@@ -592,7 +614,7 @@ export const getNodeApplications = async (runtimeWorkerId?: string) => {
 
 		return appArray;
 	} catch (error) {
-		console.error("getNodeApplications error:", error);
+		logger.error({ err: error, runtimeWorkerId }, "getNodeApplications failed");
 		return [];
 	}
 };
@@ -620,7 +642,10 @@ export const getApplicationInfo = async (
 		}
 
 		if (stderr) {
-			console.error(`Error: ${stderr}`);
+			logger.warn(
+				{ stderr, appNames, runtimeWorkerId },
+				"getApplicationInfo stderr",
+			);
 			return;
 		}
 
@@ -635,7 +660,7 @@ export const getApplicationInfo = async (
 
 		return appArray;
 	} catch (error) {
-		console.error("getApplicationInfo error:", error);
+		logger.error({ err: error, appNames }, "getApplicationInfo failed");
 		return [];
 	}
 };
@@ -665,7 +690,10 @@ export const getAllContainerStats = async (runtimeWorkerId?: string) => {
 
 		return stats;
 	} catch (error) {
-		console.error("getAllContainerStats error:", error);
+		logger.error(
+			{ err: error, runtimeWorkerId },
+			"getAllContainerStats failed",
+		);
 		return [];
 	}
 };
@@ -707,8 +735,6 @@ export const uploadFileToContainer = async (
 			await execAsync(command);
 		}
 	} catch (error) {
-		throw new Error(
-			`Failed to upload file to container: ${error instanceof Error ? error.message : String(error)}`,
-		);
+		throw new Error("Failed to upload file to container", { cause: error });
 	}
 };

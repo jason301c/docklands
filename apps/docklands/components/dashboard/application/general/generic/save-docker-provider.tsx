@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -14,6 +15,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const DockerProviderSchema = z.object({
 	dockerImage: z.string().min(1, {
@@ -67,7 +70,8 @@ export const SaveDockerProvider = ({ applicationId }: Props) => {
 				toast.success("Container image source saved");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save container image source", err);
 				toast.error("Error saving container image source");
 			});
 	};

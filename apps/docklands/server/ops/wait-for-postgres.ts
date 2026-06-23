@@ -1,12 +1,15 @@
 import net from "node:net";
 import postgres from "postgres";
 import { dbUrl } from "@/server/core/db/constants";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	formatPostgresConnectionFailure,
 	isFatalPostgresConfigError,
 	type PostgresTarget,
 	resolvePostgresTargetFromUrl,
 } from "./postgres-wait";
+
+const logger = createLogger("ops:wait-for-postgres");
 
 const TIMEOUT_MS = Number(process.env.POSTGRES_WAIT_TIMEOUT || 120_000);
 const RETRY_DELAY_MS = Number(process.env.POSTGRES_WAIT_RETRY || 2000);
@@ -19,14 +22,28 @@ function resolvePostgresTarget(): PostgresTarget {
 	const databaseUrl = dbUrl;
 
 	if (!databaseUrl) {
-		console.error("[wait-for-postgres] DATABASE_URL is not set");
+		logger.fatal("DATABASE_URL is not set");
 		process.exit(1);
 	}
 
 	try {
 		return resolvePostgresTargetFromUrl(databaseUrl);
 	} catch (err) {
-		console.error("[wait-for-postgres] Invalid DATABASE_URL:", databaseUrl);
+		// Parse a safe subset from the URL before logging — never log the full URL
+		// because it contains credentials. Best-effort: if URL parsing itself fails
+		// we can only log that the URL is malformed.
+		let safeInfo: { host?: string; port?: string; database?: string } = {};
+		try {
+			const parsed = new URL(databaseUrl);
+			safeInfo = {
+				host: parsed.hostname,
+				port: parsed.port || "5432",
+				database: parsed.pathname.replace(/^\//, "") || undefined,
+			};
+		} catch {
+			// URL could not be parsed at all — log no fields
+		}
+		logger.fatal({ err, ...safeInfo }, "Invalid DATABASE_URL");
 		process.exit(1);
 	}
 }
@@ -69,41 +86,48 @@ async function waitForPostgres() {
 	const start = Date.now();
 	let lastDatabaseError: unknown;
 
-	console.log(
-		`[wait-for-postgres] Waiting for postgres at ${target.host}:${target.port} (timeout ${TIMEOUT_MS}ms)`,
+	logger.info(
+		{ host: target.host, port: target.port, timeoutMs: TIMEOUT_MS },
+		"Waiting for Postgres",
 	);
 
 	while (true) {
 		try {
 			await checkTcpConnection(target.host, target.port);
 			await checkDatabaseConnection(dbUrl);
-			console.log(
-				"[wait-for-postgres] Postgres is reachable and accepts DATABASE_URL ✅",
+			logger.info(
+				{ host: target.host, port: target.port },
+				"Postgres is reachable and accepts DATABASE_URL",
 			);
 			return;
 		} catch (error) {
 			lastDatabaseError = error;
 			if (isFatalPostgresConfigError(error)) {
-				console.error(formatPostgresConnectionFailure(error, target));
+				logger.fatal(
+					{ err: error, host: target.host, port: target.port },
+					formatPostgresConnectionFailure(error, target),
+				);
 				process.exit(1);
 			}
 
 			const elapsed = Date.now() - start;
 
 			if (elapsed > TIMEOUT_MS) {
-				console.error(
-					`[wait-for-postgres] Timeout after ${elapsed}ms. Postgres not reachable ❌`,
+				logger.fatal(
+					{
+						err: lastDatabaseError,
+						host: target.host,
+						port: target.port,
+						elapsedMs: elapsed,
+					},
+					"Timeout reached — Postgres not reachable",
 				);
-				if (lastDatabaseError) {
-					console.error(
-						formatPostgresConnectionFailure(lastDatabaseError, target),
-					);
-				}
 				process.exit(1);
 			}
 
-			console.log(
-				`[wait-for-postgres] Postgres not ready yet, retrying in ${RETRY_DELAY_MS}ms...`,
+			logger.debug(
+				{ retryDelayMs: RETRY_DELAY_MS },
+				"Postgres not ready yet, retrying",
 			);
 			await sleep(RETRY_DELAY_MS);
 		}
@@ -111,6 +135,6 @@ async function waitForPostgres() {
 }
 
 waitForPostgres().catch((err) => {
-	console.error("[wait-for-postgres] Fatal error:", err);
+	logger.fatal({ err }, "Fatal error waiting for Postgres");
 	process.exit(1);
 });

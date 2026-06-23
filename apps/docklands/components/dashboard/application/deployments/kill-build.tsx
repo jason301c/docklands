@@ -2,7 +2,10 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Scissors } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("deployments");
 
 interface Props {
 	id: string;
@@ -44,6 +47,7 @@ export const KillBuild = ({ id, type }: Props) => {
 									toast.success("Build killed successfully");
 								})
 								.catch((err) => {
+									logger.error("Failed to kill build", err);
 									toast.error(err.message);
 								});
 						}}

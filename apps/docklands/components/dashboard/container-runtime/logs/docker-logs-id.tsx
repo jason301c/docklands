@@ -11,7 +11,12 @@ import {
 } from "lucide-react";
 import React, { useEffect, useRef } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("docker-logs");
+
 import { LineCountFilter } from "./line-count-filter";
 import { SinceLogsFilter, type TimeFilter } from "./since-logs-filter";
 import { StatusLogsFilter } from "./status-logs-filter";
@@ -202,14 +207,15 @@ export const DockerLogsId: React.FC<Props> = ({
 
 		ws.onerror = (error) => {
 			if (!isCurrentConnection) return;
-			console.error("WebSocket error:", error);
+			logger.error("docker-logs WS error:", error);
+			toast.warning("Log connection failed");
 			setIsLoading(false);
 			if (noDataTimeout) clearTimeout(noDataTimeout);
 		};
 
 		ws.onclose = (e) => {
 			if (!isCurrentConnection) return;
-			console.log("WebSocket closed:", e.reason);
+			logger.debug("docker-logs WS closed:", e.reason);
 			setIsLoading(false);
 			if (noDataTimeout) clearTimeout(noDataTimeout);
 		};

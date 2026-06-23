@@ -6,8 +6,11 @@ import { quote } from "shell-quote";
 import type { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import type { apiFindGithubBranches } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { findGithubById, type Github } from "@/server/core/services/github";
 import type { InferResultType } from "@/server/core/types/with";
+
+const logger = createLogger("github-provider");
 
 export const authGithub = (githubProvider: Github): Octokit => {
 	if (!haveGithubRequirements(githubProvider)) {
@@ -73,9 +76,14 @@ export const checkUserRepositoryPermissions = async (
 		};
 	} catch (error) {
 		// If user is not a collaborator, GitHub API returns 404
-		console.warn(
-			`User ${username} is not a collaborator of ${owner}/${repo}:`,
-			error,
+		logger.warn(
+			{
+				err: error,
+				provider: "github",
+				username,
+				repository: `${owner}/${repo}`,
+			},
+			"GitHub collaborator permission check failed — treating as no access",
 		);
 		return {
 			hasWriteAccess: false,

@@ -1,5 +1,6 @@
+import type { TRPCError } from "@trpc/server";
 import { appRouter } from "@/server/api/root";
-import { createFetchTRPCContext } from "@/server/api/trpc";
+import { createFetchTRPCContext, logTRPCError } from "@/server/api/trpc";
 import { validateRequestHeaders } from "@/server/core/lib/auth";
 import { createOpenApiFetchHandler } from "@/server/core/openapi/adapters/fetch.mjs";
 
@@ -17,14 +18,8 @@ const handler = async (req: Request) => {
 		req,
 		router: appRouter,
 		createContext: createFetchTRPCContext,
-		onError:
-			process.env.NODE_ENV === "development"
-				? ({ path, error }: { path: string | undefined; error: Error }) => {
-						console.error(
-							`❌ OpenAPI failed on ${path ?? "<no-path>"}: ${error.message}`,
-						);
-					}
-				: undefined,
+		onError: ({ path, error }: { path: string | undefined; error: Error }) =>
+			logTRPCError({ path, error: error as TRPCError, type: "openapi" }),
 	});
 };
 

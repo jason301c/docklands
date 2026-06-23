@@ -3,9 +3,12 @@ import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { CheckCircle2, Cpu, Loader2, RefreshCw, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("gpu");
 
 interface GPUSupportProps {
 	runtimeWorkerId?: string;
@@ -50,7 +53,8 @@ export function GPUSupport({ runtimeWorkerId }: GPUSupportProps) {
 		try {
 			await utils.settings.checkGPUStatus.invalidate({ runtimeWorkerId });
 			await refetch();
-		} catch {
+		} catch (err) {
+			logger.warn(err);
 			toast.error("Failed to refresh GPU status");
 		} finally {
 			setIsRefreshing(false);

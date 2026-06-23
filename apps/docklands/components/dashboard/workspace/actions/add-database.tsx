@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	LibsqlIcon,
 	MariadbIcon,
@@ -32,6 +33,8 @@ import { toast } from "@/components/shared/toast";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 import { PlacementFormField } from "./placement-select";
+
+const logger = createClientLogger("workspace");
 
 type DbType = z.infer<typeof mySchema>["type"];
 
@@ -386,7 +389,8 @@ export const AddDatabase = ({
 						environmentId,
 					});
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error("Error creating a database", err);
 					toast.error("Error creating a database");
 				});
 		}

@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	DiscordIcon,
 	GotifyIcon,
@@ -37,6 +38,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("notifications");
 
 const notificationBaseSchema = z.object({
 	name: z.string().min(1, {
@@ -807,7 +810,8 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 						await utils.notification.one.invalidate({ notificationId });
 					}
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error(err);
 					toast.error(
 						notificationId
 							? "Error updating a notification"

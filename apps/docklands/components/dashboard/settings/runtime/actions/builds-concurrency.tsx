@@ -2,7 +2,10 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("runtime-actions");
 
 const MAX_BUILDS_CONCURRENCY = 100;
 
@@ -70,7 +73,8 @@ export const BuildsConcurrency = ({ runtimeWorkerId, label }: Props) => {
 			}
 			await refetch();
 			toast.success("Builds concurrency updated");
-		} catch {
+		} catch (err) {
+			logger.error(err);
 			toast.error("Error updating builds concurrency");
 		}
 	};

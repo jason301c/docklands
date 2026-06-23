@@ -1,5 +1,8 @@
 import { Client } from "ssh2";
+import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "../services/runtime-worker";
+
+const logger = createLogger("setup:worker-validate");
 
 export const validateDocker = () => `
   if command_exists docker; then
@@ -165,7 +168,12 @@ export const runtimeWorkerValidate = async (runtimeWorkerId: string) => {
 						.on("data", (data: string) => {
 							output += data;
 						})
-						.stderr.on("data", (_data) => {});
+						.stderr.on("data", (data: Buffer) => {
+							logger.debug(
+								{ data: data.toString() },
+								"Validate command stderr",
+							);
+						});
 				});
 			})
 			.on("error", (err) => {

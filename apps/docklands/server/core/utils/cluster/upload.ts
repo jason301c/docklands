@@ -1,3 +1,4 @@
+import { createLogger } from "@/server/core/lib/logger";
 import { findAllDeploymentsByApplicationId } from "@/server/core/services/deployment";
 import {
 	findRegistryByIdWithCredentials,
@@ -6,6 +7,8 @@ import {
 } from "@/server/core/services/registry";
 import { createRollback } from "@/server/core/services/rollbacks";
 import type { ApplicationNested } from "../builders";
+
+const logger = createLogger("registry");
 
 export const uploadImageRemoteCommand = async (
 	application: ApplicationNested,
@@ -19,6 +22,16 @@ export const uploadImageRemoteCommand = async (
 	}
 
 	const { appName } = application;
+	logger.debug(
+		{
+			appName,
+			registryType:
+				registry?.registryType ??
+				buildRegistry?.registryType ??
+				rollbackRegistry?.registryType,
+		},
+		"assembling registry upload command",
+	);
 	const imageName =
 		application.sourceType === "docker"
 			? application.dockerImage || ""
@@ -70,11 +83,7 @@ export const uploadImageRemoteCommand = async (
 			commands.push(getRegistryCommands(r, imageName, rollbackRegistryTag));
 		}
 	}
-	try {
-		return commands.join("\n");
-	} catch (error) {
-		throw error;
-	}
+	return commands.join("\n");
 };
 
 /**

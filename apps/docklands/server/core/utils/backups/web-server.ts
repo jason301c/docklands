@@ -3,6 +3,7 @@ import { mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import type { BackupSchedule } from "@/server/core/services/backup";
 import {
 	createDeploymentBackup,
@@ -17,6 +18,8 @@ import {
 	getS3Credentials,
 	normalizeS3Path,
 } from "./utils";
+
+const logger = createLogger("backup");
 
 function formatBytes(bytes?: number) {
 	if (bytes === undefined) return "Unknown size";
@@ -115,11 +118,17 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 			try {
 				await rm(tempDir, { recursive: true, force: true });
 			} catch (cleanupError) {
-				console.error("Cleanup error:", cleanupError);
+				logger.warn(
+					{ err: cleanupError },
+					"Failed to clean up temp backup directory",
+				);
 			}
 		}
 	} catch (error) {
-		console.error("Backup error:", error);
+		logger.error(
+			{ err: error, backupId: backup.backupId },
+			"Web server backup failed",
+		);
 		writeStream.write("Backup error❌\n");
 		writeStream.write(
 			error instanceof Error ? error.message : "Unknown error\n",
@@ -127,8 +136,8 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 		writeStream.end();
 		await sendDocklandsBackupNotifications({
 			type: "error",
-			// @ts-expect-error
-			errorMessage: error?.message || "Error message not provided",
+			errorMessage:
+				error instanceof Error ? error.message : "Error message not provided",
 			backupSize: formatBytes(computedBackupSize),
 		});
 		await updateDeploymentStatus(deployment.deploymentId, "error");

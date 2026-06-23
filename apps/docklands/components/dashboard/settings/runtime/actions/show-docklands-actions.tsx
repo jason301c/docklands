@@ -1,11 +1,14 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { ServiceLogsModal } from "@/components/dashboard/container-runtime/logs/service-logs-modal";
 import { UpdatePublicIp } from "@/components/dashboard/settings/ingress-runtime/update-public-ip";
 import { RuntimeTerminalModal } from "@/components/dashboard/settings/runtime/terminal/runtime-terminal-modal";
 import { toast } from "@/components/shared/toast";
 import { GPUSupportModal } from "../gpu-support-modal";
+
+const logger = createClientLogger("runtime-actions");
 
 export const ShowDocklandsActions = () => {
 	const { mutateAsync: reloadServer, isPending } =
@@ -36,8 +39,9 @@ export const ShowDocklandsActions = () => {
 								.then(async () => {
 									toast.success("Runtime reloaded");
 								})
-								.catch(() => {
-									toast.success("Runtime reloaded");
+								.catch((err) => {
+									logger.error("runtime reload failed", err);
+									toast.error("Failed to reload runtime. Check server logs.");
 								});
 						}}
 						className="cursor-pointer"
@@ -72,7 +76,8 @@ export const ShowDocklandsActions = () => {
 								.then(() => {
 									toast.success("Deployment queue cleaned");
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error("deployment queue clean failed", err);
 									toast.error("Error cleaning deployment queue");
 								});
 						}}

@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -23,6 +24,8 @@ import {
 	NumberInputWithSteps,
 } from "@/components/shared/number-input";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const CPU_STEP = 0.25;
 const MEMORY_STEP_MB = 256;
@@ -167,7 +170,8 @@ export const ShowResources = ({ id, type }: Props) => {
 				toast.success("Resources Updated");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to update resources", err);
 				toast.error("Error updating the resources");
 			});
 	};

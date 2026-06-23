@@ -6,9 +6,12 @@ import { Table } from "@cloudflare/kumo/components/table";
 import { File, FilePlus2, Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
 import { EditPatchDialog } from "./edit-patch-dialog";
 import { PatchEditor } from "./patch-editor";
+
+const logger = createClientLogger("patches");
 
 interface Props {
 	id: string;
@@ -62,6 +65,7 @@ export const ShowPatches = ({ id, type }: Props) => {
 				setRepoPath(result);
 			})
 			.catch((err) => {
+				logger.error("Failed to prepare patch repository", err);
 				toast.error(err.message);
 			})
 			.finally(() => {
@@ -162,6 +166,7 @@ export const ShowPatches = ({ id, type }: Props) => {
 														});
 													})
 													.catch((err) => {
+														logger.error("Failed to toggle patch", err);
 														toast.error(err.message);
 													})
 													.finally(() => {
@@ -193,6 +198,7 @@ export const ShowPatches = ({ id, type }: Props) => {
 															});
 														})
 														.catch((err) => {
+															logger.error("Failed to delete patch", err);
 															toast.error(err.message);
 														});
 												}}

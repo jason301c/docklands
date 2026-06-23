@@ -2,12 +2,15 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Package, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import type { ServiceType } from "../show-resources";
 import { AddVolumes } from "./add-volumes";
 import { UpdateVolume } from "./update-volume";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	id: string;
@@ -160,7 +163,8 @@ export const ShowVolumes = ({ id, type }: Props) => {
 																refetch();
 																toast.success("Volume deleted successfully");
 															})
-															.catch(() => {
+															.catch((err) => {
+																logger.error("Failed to delete volume", err);
 																toast.error("Error deleting volume");
 															});
 													}}

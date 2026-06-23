@@ -3,6 +3,7 @@ import path, { join } from "node:path";
 import AdmZip from "adm-zip";
 import { Client, type SFTPWrapper } from "ssh2";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import { readValidDirectory } from "@/server/core/runtime/host";
 import type { Application } from "@/server/core/services/application";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
@@ -11,6 +12,8 @@ import {
 	recreateDirectoryRemote,
 } from "../filesystem/directory";
 import { execAsyncRemote } from "../process/execAsync";
+
+const logger = createLogger("build");
 
 export const unzipDrop = async (zipFile: File, application: Application) => {
 	let sftp: SFTPWrapper | null = null;
@@ -90,7 +93,7 @@ export const unzipDrop = async (zipFile: File, application: Application) => {
 						);
 						await uploadFileToServer(sftp, entry.getData(), fullPath);
 					} catch (err) {
-						console.error(`Error uploading file ${fullPath}:`, err);
+						logger.error({ err, path: fullPath }, "SFTP file upload failed");
 						throw err;
 					}
 				}
@@ -103,8 +106,15 @@ export const unzipDrop = async (zipFile: File, application: Application) => {
 				}
 			}
 		}
+		logger.info(
+			{ appName: application.appName, entryCount: zipEntries.length },
+			"ZIP extracted successfully",
+		);
 	} catch (error) {
-		console.error("Error processing ZIP file:", error);
+		logger.error(
+			{ err: error, appName: application.appName },
+			"ZIP extraction failed",
+		);
 		throw error;
 	} finally {
 		sftp?.end();
@@ -123,7 +133,14 @@ const getSFTPConnection = async (
 		conn
 			.on("ready", () => {
 				conn.sftp((err, sftp) => {
-					if (err) return reject(err);
+					if (err) {
+						logger.error(
+							{ err, runtimeWorkerId },
+							"SFTP session creation failed",
+						);
+						return reject(err);
+					}
+					logger.debug({ runtimeWorkerId }, "SFTP connection established");
 					resolve(sftp);
 				});
 			})
@@ -144,7 +161,7 @@ const uploadFileToServer = (
 	return new Promise((resolve, reject) => {
 		sftp.writeFile(remotePath, data, (err) => {
 			if (err) {
-				console.error(`SFTP write error for ${remotePath}:`, err);
+				logger.error({ err, path: remotePath }, "SFTP write failed");
 				return reject(err);
 			}
 			resolve();

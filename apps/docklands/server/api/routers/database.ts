@@ -24,6 +24,7 @@ import {
 	environments,
 	workspaces,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	createDatabase,
 	deployDatabase,
@@ -57,6 +58,8 @@ import {
 	execAsync,
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
+
+const logger = createLogger("database-router");
 
 export const databaseRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -308,9 +311,9 @@ export const databaseRouter = createTRPCRouter({
 				} catch (error) {
 					// Best-effort cleanup: keep going, but surface failures so an
 					// orphaned container/volume isn't left behind silently.
-					console.error(
-						`Failed to clean up database resource during delete for ${service.appName}:`,
-						error,
+					logger.warn(
+						{ err: error, appName: service.appName },
+						"Failed to clean up database resource during delete",
 					);
 				}
 			}

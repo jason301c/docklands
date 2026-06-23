@@ -17,6 +17,7 @@ import {
 	apiUpdateDockerCleanup,
 	apiUpdateWebServerBuildsConcurrency,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { generateOpenApiDocument } from "@/server/core/openapi/generator/index.mjs";
 import { checkPermission } from "@/server/core/services/permission";
 import {
@@ -84,6 +85,8 @@ import {
 	publicProcedure,
 } from "../trpc";
 
+const logger = createLogger("settings");
+
 const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || "jason301c/docklands";
 
 export const settingsRouter = createTRPCRouter({
@@ -117,7 +120,10 @@ export const settingsRouter = createTRPCRouter({
 				"docklands-traefik",
 				input?.runtimeWorkerId,
 			).catch((err) => {
-				console.error("reloadTraefik background:", err);
+				logger.error(
+					{ err, runtimeWorkerId: input?.runtimeWorkerId },
+					"Background Traefik reload failed",
+				);
 			});
 			await audit(ctx, {
 				action: "reload",
@@ -165,7 +171,10 @@ export const settingsRouter = createTRPCRouter({
 				additionalPorts: newPorts,
 				runtimeWorkerId: input.runtimeWorkerId,
 			}).catch((err) => {
-				console.error("toggleDashboard background writeTraefikSetup:", err);
+				logger.error(
+					{ err, runtimeWorkerId: input.runtimeWorkerId },
+					"Background Traefik setup failed (toggle dashboard)",
+				);
 			});
 			await audit(ctx, {
 				action: "update",
@@ -306,8 +315,9 @@ export const settingsRouter = createTRPCRouter({
 						runtimeWorkers.runtimeWorkerId,
 						CLEANUP_CRON_JOB,
 						async () => {
-							console.log(
-								`Container Runtime Cleanup ${new Date().toLocaleString()}] Running...`,
+							logger.info(
+								{ runtimeWorkerId: runtimeWorkers.runtimeWorkerId },
+								"Container runtime cleanup running",
 							);
 
 							await cleanupAll(runtimeWorkers.runtimeWorkerId);
@@ -328,9 +338,7 @@ export const settingsRouter = createTRPCRouter({
 
 				if (settingsUpdated?.enableDockerCleanup) {
 					scheduleJob("docker-cleanup", CLEANUP_CRON_JOB, async () => {
-						console.log(
-							`Container Runtime Cleanup ${new Date().toLocaleString()}] Running...`,
-						);
+						logger.info("Container runtime cleanup running");
 
 						await cleanupAll();
 
@@ -611,7 +619,10 @@ export const settingsRouter = createTRPCRouter({
 				additionalPorts: ports,
 				runtimeWorkerId: input.runtimeWorkerId,
 			}).catch((err) => {
-				console.error("writeTraefikEnv background writeTraefikSetup:", err);
+				logger.error(
+					{ err, runtimeWorkerId: input.runtimeWorkerId },
+					"Background Traefik setup failed (write env)",
+				);
 			});
 			await audit(ctx, {
 				action: "update",
@@ -741,7 +752,7 @@ export const settingsRouter = createTRPCRouter({
 			await db.execute(sql`SELECT 1`);
 			return { status: "ok" };
 		} catch (error) {
-			console.error("Database connection error:", error);
+			logger.error({ err: error }, "Database health check failed");
 			throw error;
 		}
 	}),
@@ -769,7 +780,10 @@ export const settingsRouter = createTRPCRouter({
 				});
 				return { success: true };
 			} catch (error) {
-				console.error("GPU Setup Error:", error);
+				logger.error(
+					{ err: error, runtimeWorkerId: input.runtimeWorkerId },
+					"GPU setup failed",
+				);
 				throw error;
 			}
 		}),
@@ -831,9 +845,9 @@ export const settingsRouter = createTRPCRouter({
 					additionalPorts: input.additionalPorts,
 					runtimeWorkerId: input.runtimeWorkerId,
 				}).catch((err) => {
-					console.error(
-						"updateTraefikPorts background writeTraefikSetup:",
-						err,
+					logger.error(
+						{ err, runtimeWorkerId: input.runtimeWorkerId },
+						"Background Traefik setup failed (update ports)",
 					);
 				});
 				await audit(ctx, {

@@ -14,6 +14,7 @@ import {
 	Trash2,
 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { ServiceLogsModal } from "@/components/dashboard/container-runtime/logs/service-logs-modal";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { DateTooltip } from "@/components/shared/date-tooltip";
@@ -23,6 +24,8 @@ import { toast } from "@/components/shared/toast";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { AddPreviewDomain } from "./add-preview-domain";
 import { ShowPreviewSettings } from "./show-preview-settings";
+
+const logger = createClientLogger("preview");
 
 interface Props {
 	applicationId: string;
@@ -58,6 +61,7 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 				toast.success("Preview environment deleted");
 			})
 			.catch((error) => {
+				logger.error("Failed to delete preview environment", error);
 				toast.error(error.message);
 			});
 	};
@@ -208,7 +212,11 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 																		);
 																		refetchPreviewDeployments();
 																	})
-																	.catch(() => {
+																	.catch((err) => {
+																		logger.error(
+																			"Error rebuilding preview environment",
+																			err,
+																		);
 																		toast.error(
 																			"Error rebuilding preview environment",
 																		);

@@ -1,4 +1,8 @@
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { createClientLogger } from "@/client/lib/logger";
+
+const logger = createClientLogger("metrics");
+
 import { Meter } from "@cloudflare/kumo/components/meter";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
@@ -195,7 +199,7 @@ export const ContainerFreeMonitoring = ({
 		};
 
 		ws.onclose = (e) => {
-			console.log(e.reason);
+			logger.debug("monitoring WS closed:", e.reason);
 		};
 
 		return () => ws.close();

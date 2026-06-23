@@ -2,11 +2,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { scheduledJobs, scheduleJob } from "node-schedule";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	getWebServerSettings,
 	updateWebServerSettings,
 } from "@/server/core/services/web-server-settings";
 import { execAsync } from "../process/execAsync";
+
+const logger = createLogger("access-log");
 
 const LOG_CLEANUP_JOB_NAME = "access-log-cleanup";
 
@@ -21,11 +24,15 @@ export const startLogCleanup = async (
 
 		scheduleJob(LOG_CLEANUP_JOB_NAME, cronExpression, async () => {
 			try {
+				logger.info({ cronExpression }, "Access log cleanup running");
 				const { DYNAMIC_TRAEFIK_PATH } = paths();
 				const accessLogPath = path.join(DYNAMIC_TRAEFIK_PATH, "access.log");
 
 				if (!fs.existsSync(accessLogPath)) {
-					console.error("Access log file does not exist");
+					logger.warn(
+						{ accessLogPath },
+						"Access log file not found; skipping cleanup",
+					);
 					return;
 				}
 
@@ -41,12 +48,13 @@ export const startLogCleanup = async (
 				);
 				const traefikContainerId = containerId.trim();
 				if (!traefikContainerId) {
-					console.error("Traefik container not found, skipping log reopen");
+					logger.warn("Traefik container not found; log reopen skipped");
 					return;
 				}
 				await execAsync(`docker exec ${traefikContainerId} kill -USR1 1`);
+				logger.info({ traefikContainerId }, "Traefik log file reopened");
 			} catch (error) {
-				console.error("Error during log cleanup:", error);
+				logger.error({ err: error }, "Access log cleanup error");
 			}
 		});
 
@@ -56,7 +64,10 @@ export const startLogCleanup = async (
 
 		return true;
 	} catch (error) {
-		console.error("Error starting log cleanup:", error);
+		logger.error(
+			{ err: error, cronExpression },
+			"Failed to start access-log cleanup job",
+		);
 		return false;
 	}
 };
@@ -75,7 +86,7 @@ export const stopLogCleanup = async (): Promise<boolean> => {
 
 		return true;
 	} catch (error) {
-		console.error("Error stopping log cleanup:", error);
+		logger.error({ err: error }, "Failed to stop access-log cleanup job");
 		return false;
 	}
 };

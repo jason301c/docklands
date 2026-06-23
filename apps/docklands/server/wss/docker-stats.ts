@@ -2,6 +2,7 @@ import type http from "node:http";
 import { WebSocketServer } from "ws";
 import { docker } from "@/server/core/constants/docker";
 import { validateRequest } from "@/server/core/lib/auth";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	getHostSystemStats,
 	getLastAdvancedStatsFile,
@@ -9,6 +10,8 @@ import {
 } from "@/server/core/monitoring/utils";
 import { execAsync } from "@/server/core/utils/process/execAsync";
 import { canAccessDockerWs } from "./utils";
+
+const logger = createLogger("wss-stats");
 
 export const setupDockerStatsMonitoringSocketServer = (
 	runtimeWorker: http.Server<
@@ -98,7 +101,10 @@ export const setupDockerStatsMonitoringSocketServer = (
 					`docker stats ${container.Id} --no-stream --format '{"BlockIO":"{{.BlockIO}}","CPUPerc":"{{.CPUPerc}}","Container":"{{.Container}}","ID":"{{.ID}}","MemPerc":"{{.MemPerc}}","MemUsage":"{{.MemUsage}}","Name":"{{.Name}}","NetIO":"{{.NetIO}}"}'`,
 				);
 				if (stderr) {
-					console.error("Docker stats error:", stderr);
+					logger.warn(
+						{ appName, stderr: stderr.slice(0, 500) },
+						"docker stats stderr",
+					);
 					return;
 				}
 				const stat = JSON.parse(stdout);
@@ -112,8 +118,11 @@ export const setupDockerStatsMonitoringSocketServer = (
 					}),
 				);
 			} catch (error) {
-				// @ts-expect-error
-				ws.close(4000, `Error: ${error.message}`);
+				logger.error({ err: error, appName }, "docker stats polling error");
+				ws.close(
+					4000,
+					`Error: ${error instanceof Error ? error.message : "stats error"}`,
+				);
 			}
 		}, 1300);
 

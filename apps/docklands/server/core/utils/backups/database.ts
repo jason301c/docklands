@@ -115,6 +115,16 @@ export const runDatabaseBackup = async (
 
 		logger.info(
 			{
+				databaseId: database.databaseId,
+				backupId: backup.backupId,
+				appName,
+				engine,
+			},
+			"Database backup started",
+		);
+
+		logger.info(
+			{
 				containerSearch,
 				backupCommand,
 				rcloneCommand: redactRcloneCredentials(rcloneCommand),
@@ -138,6 +148,16 @@ export const runDatabaseBackup = async (
 			});
 		}
 
+		logger.info(
+			{
+				databaseId: database.databaseId,
+				backupId: backup.backupId,
+				appName,
+				engine,
+			},
+			"Database backup completed",
+		);
+
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
 			projectName: workspace.name,
@@ -149,6 +169,16 @@ export const runDatabaseBackup = async (
 
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 	} catch (error) {
+		logger.error(
+			{
+				err: error,
+				databaseId: database.databaseId,
+				appName,
+				engine,
+				backupId: backup.backupId,
+			},
+			"Database backup failed",
+		);
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
 			projectName: workspace.name,

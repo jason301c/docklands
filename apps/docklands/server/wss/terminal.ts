@@ -2,6 +2,7 @@ import type http from "node:http";
 import { Client, type ConnectConfig } from "ssh2";
 import { WebSocketServer } from "ws";
 import { validateRequest } from "@/server/core/lib/auth";
+import { createLogger } from "@/server/core/lib/logger";
 import { getDockerHost } from "@/server/core/runtime/docker";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
@@ -9,6 +10,8 @@ import {
 	getRuntimeWorkerIdParam,
 	setupLocalServerSSHKey,
 } from "./utils";
+
+const logger = createLogger("wss-terminal");
 
 const COMMAND_TO_ALLOW_LOCAL_ACCESS = `
 # ----------------------------------------
@@ -57,6 +60,10 @@ export const setupTerminalWebSocketServer = (
 
 		// Host/runtime-worker shell access is owner/admin only.
 		if (!canAccessHostTerminalWs(user)) {
+			logger.warn(
+				{ runtimeWorkerId, userId: user?.id },
+				"host-terminal ws rejected: not owner/admin",
+			);
 			ws.close();
 			return;
 		}
@@ -94,7 +101,10 @@ export const setupTerminalWebSocketServer = (
 					privateKey,
 				};
 			} catch (error) {
-				console.error(`Error setting up private SSH key: ${error}`);
+				logger.error(
+					{ err: error, runtimeWorkerId },
+					"error setting up private SSH key",
+				);
 				ws.send(`Error setting up private SSH key: ${error}\n`);
 
 				if (
@@ -131,6 +141,10 @@ export const setupTerminalWebSocketServer = (
 			} = runtimeWorker;
 
 			if (!sshKeyId) {
+				logger.error(
+					{ runtimeWorkerId },
+					"no SSH key configured for remote worker terminal",
+				);
 				throw new Error("No SSH key available for this runtimeWorker");
 			}
 
@@ -168,7 +182,7 @@ export const setupTerminalWebSocketServer = (
 						.stderr.on("data", (data) => {
 							_stderr += data.toString();
 							ws.send(data.toString());
-							console.error("Error: ", data.toString());
+							logger.debug({ runtimeWorkerId }, "ssh stderr chunk received");
 						});
 
 					ws.on("message", (message) => {

@@ -1,7 +1,10 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("storage-actions");
 
 interface Props {
 	runtimeWorkerId?: string;
@@ -77,7 +80,8 @@ export const ShowStorageActions = ({ runtimeWorkerId }: Props) => {
 								.then(async () => {
 									toast.success("Cleaned images");
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error(err);
 									toast.error("Error cleaning images");
 								});
 						}}
@@ -93,7 +97,8 @@ export const ShowStorageActions = ({ runtimeWorkerId }: Props) => {
 								.then(async () => {
 									toast.success("Cleaned volumes");
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error(err);
 									toast.error("Error cleaning volumes");
 								});
 						}}
@@ -110,7 +115,8 @@ export const ShowStorageActions = ({ runtimeWorkerId }: Props) => {
 								.then(async () => {
 									toast.success("Stopped containers cleaned");
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error(err);
 									toast.error("Error cleaning stopped containers");
 								});
 						}}
@@ -127,7 +133,8 @@ export const ShowStorageActions = ({ runtimeWorkerId }: Props) => {
 								.then(async () => {
 									toast.success("Cleaned Patch Caches");
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error(err);
 									toast.error("Error cleaning Patch Caches");
 								});
 						}}
@@ -144,7 +151,8 @@ export const ShowStorageActions = ({ runtimeWorkerId }: Props) => {
 								.then(async () => {
 									toast.success("Cleaned build cache");
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error(err);
 									toast.error("Error cleaning build cache");
 								});
 						}}
@@ -159,7 +167,8 @@ export const ShowStorageActions = ({ runtimeWorkerId }: Props) => {
 									.then(async () => {
 										toast.success("Cleaned metrics");
 									})
-									.catch(() => {
+									.catch((err) => {
+										logger.error(err);
 										toast.error("Error cleaning metrics");
 									});
 							}}
@@ -177,7 +186,8 @@ export const ShowStorageActions = ({ runtimeWorkerId }: Props) => {
 								.then(async () => {
 									toast.success("Cleaning in progress... Please wait");
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error(err);
 									toast.error("Error cleaning all");
 								});
 						}}

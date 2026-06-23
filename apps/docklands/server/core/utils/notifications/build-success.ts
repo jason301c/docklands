@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { notifications } from "@/server/core/db/schema";
 import BuildSuccessEmail from "@/server/core/emails/emails/build-success";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Domain } from "@/server/core/services/domain";
 import {
 	sendCustomNotification,
@@ -19,6 +20,8 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "./utils";
+
+const logger = createLogger("notify-dispatch");
 
 interface Props {
 	projectName: string;
@@ -428,7 +431,10 @@ export const sendBuildSuccessNotifications = async ({
 				});
 			}
 		} catch (error) {
-			console.log(error);
+			logger.warn(
+				{ err: error, notificationId: notification.notificationId },
+				"Build success notification delivery failed",
+			);
 		}
 	}
 };

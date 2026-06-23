@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { parse, stringify } from "yaml";
 import { paths } from "@/server/core/constants/paths";
 import type { webServerSettings } from "@/server/core/db/schema/web-server-settings";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	loadOrCreateConfig,
 	removeTraefikConfig,
@@ -10,6 +11,8 @@ import {
 } from "./application";
 import type { FileConfig } from "./file-types";
 import type { MainTraefikConfig } from "./types";
+
+const logger = createLogger("traefik-config");
 
 export const updateServerTraefik = (
 	settings: typeof webServerSettings.$inferSelect | null,
@@ -95,6 +98,7 @@ export const updateLetsEncryptEmail = (newEmail: string | null) => {
 		const newYamlContent = stringify(config);
 		writeFileSync(configPath, newYamlContent, "utf8");
 	} catch (error) {
+		logger.error({ err: error }, "Failed to update Let's Encrypt email");
 		throw error;
 	}
 };
@@ -115,6 +119,10 @@ export const writeMainConfig = (traefikConfig: string) => {
 		const configPath = join(MAIN_TRAEFIK_PATH, "traefik.yml");
 		writeFileSync(configPath, traefikConfig, "utf8");
 	} catch (e) {
-		console.error("Error saving the YAML config file:", e);
+		logger.error(
+			{ err: e },
+			"Failed to write main Traefik config (traefik.yml)",
+		);
+		throw e;
 	}
 };

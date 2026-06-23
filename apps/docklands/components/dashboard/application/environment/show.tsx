@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -25,6 +26,8 @@ const addEnvironmentSchema = z.object({
 });
 
 type EnvironmentSchema = z.infer<typeof addEnvironmentSchema>;
+
+const logger = createClientLogger("environment");
 
 interface Props {
 	applicationId: string;
@@ -89,7 +92,8 @@ export const ShowEnvironment = ({ applicationId }: Props) => {
 				toast.success("Environments Added");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save environment", err);
 				toast.error("Error adding environment");
 			});
 	};

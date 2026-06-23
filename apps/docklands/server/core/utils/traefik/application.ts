@@ -3,10 +3,13 @@ import path from "node:path";
 import { createInterface } from "node:readline";
 import { parse, stringify } from "yaml";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Domain } from "@/server/core/services/domain";
 import { encodeBase64 } from "../docker/utils";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import type { FileConfig, HttpLoadBalancerService } from "./file-types";
+
+const logger = createLogger("traefik-config");
 
 export const createTraefikConfig = (appName: string) => {
 	const defaultPort = 3000;
@@ -65,7 +68,8 @@ export const removeTraefikConfig = async (
 			await execAsync(command);
 		}
 	} catch (error) {
-		console.error(`Error removing traefik config for ${appName}:`, error);
+		logger.error({ err: error, appName }, "Failed to remove Traefik config");
+		throw error;
 	}
 };
 
@@ -78,10 +82,11 @@ export const removeTraefikConfigRemote = async (
 		const configPath = path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`);
 		await execAsyncRemote(runtimeWorkerId, `rm -f ${configPath}`);
 	} catch (error) {
-		console.error(
-			`Error removing remote traefik config for ${appName}:`,
-			error,
+		logger.error(
+			{ err: error, appName, runtimeWorkerId },
+			"Failed to remove remote Traefik config",
 		);
+		throw error;
 	}
 };
 
@@ -221,7 +226,8 @@ export const writeConfig = (appName: string, traefikConfig: string) => {
 		const configPath = path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`);
 		fs.writeFileSync(configPath, traefikConfig, "utf8");
 	} catch (e) {
-		console.error("Error saving the YAML config file:", e);
+		logger.error({ err: e, appName }, "Failed to write Traefik config");
+		throw e;
 	}
 };
 
@@ -239,7 +245,11 @@ export const writeConfigRemote = async (
 			`echo "${encoded}" | base64 -d > "${configPath}"`,
 		);
 	} catch (e) {
-		console.error("Error saving the YAML config file:", e);
+		logger.error(
+			{ err: e, runtimeWorkerId, appName },
+			"Failed to write remote Traefik config",
+		);
+		throw e;
 	}
 };
 
@@ -260,7 +270,11 @@ export const writeTraefikConfigInPath = async (
 			fs.writeFileSync(configPath, traefikConfig, "utf8");
 		}
 	} catch (e) {
-		console.error("Error saving the YAML config file:", e);
+		logger.error(
+			{ err: e, pathFile, runtimeWorkerId },
+			"Failed to write Traefik config at path",
+		);
+		throw e;
 	}
 };
 
@@ -274,7 +288,8 @@ export const writeTraefikConfig = (
 		const yamlStr = stringify(traefikConfig);
 		fs.writeFileSync(configPath, yamlStr, "utf8");
 	} catch (e) {
-		console.error("Error saving the YAML config file:", e);
+		logger.error({ err: e, appName }, "Failed to write Traefik config");
+		throw e;
 	}
 };
 
@@ -295,7 +310,11 @@ export const writeTraefikConfigRemote = async (
 			`echo "${encoded}" | base64 -d > "${configPath}"`,
 		);
 	} catch (e) {
-		console.error("Error saving the YAML config file:", e);
+		logger.error(
+			{ err: e, appName, runtimeWorkerId },
+			"Failed to write remote Traefik config",
+		);
+		throw e;
 	}
 };
 

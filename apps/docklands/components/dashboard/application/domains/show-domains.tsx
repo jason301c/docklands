@@ -34,6 +34,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { createColumns } from "./columns";
@@ -50,6 +51,8 @@ export type ValidationState = {
 };
 
 export type ValidationStates = Record<string, ValidationState>;
+
+const logger = createClientLogger("domains");
 
 interface Props {
 	id: string;
@@ -128,7 +131,8 @@ export const ShowDomains = ({ id, type }: Props) => {
 			await deleteDomain({ domainId });
 			refetch();
 			toast.success("Domain deleted successfully");
-		} catch {
+		} catch (err) {
+			logger.error("Failed to delete domain", err);
 			toast.error("Error deleting domain");
 		}
 	};
@@ -451,7 +455,11 @@ export const ShowDomains = ({ id, type }: Props) => {
 																				"Domain deleted successfully",
 																			);
 																		})
-																		.catch(() => {
+																		.catch((err) => {
+																			logger.error(
+																				"Failed to delete domain",
+																				err,
+																			);
 																			toast.error("Error deleting domain");
 																		});
 																}}

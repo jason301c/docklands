@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
@@ -18,6 +19,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const mountSchema = z.object({
 	mountPath: z.string().min(1, "Mount path required"),
@@ -136,7 +139,8 @@ export const UpdateVolume = ({
 					toast.success("Mount Update");
 					setIsOpen(false);
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error("Failed to update the Bind mount", err);
 					toast.error("Error updating the Bind mount");
 				});
 		} else if (data.type === "volume") {
@@ -150,7 +154,8 @@ export const UpdateVolume = ({
 					toast.success("Mount Update");
 					setIsOpen(false);
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error("Failed to update the Volume mount", err);
 					toast.error("Error updating the Volume mount");
 				});
 		} else if (data.type === "file") {
@@ -165,7 +170,8 @@ export const UpdateVolume = ({
 					toast.success("Mount Update");
 					setIsOpen(false);
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error("Failed to update the File mount", err);
 					toast.error("Error updating the File mount");
 				});
 		}

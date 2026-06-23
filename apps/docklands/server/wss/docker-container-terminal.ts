@@ -3,6 +3,7 @@ import { spawn } from "node-pty";
 import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
 import { validateRequest } from "@/server/core/lib/auth";
+import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	canAccessDockerWs,
@@ -10,6 +11,8 @@ import {
 	isValidContainerId,
 	isValidShell,
 } from "./utils";
+
+const logger = createLogger("wss-container-terminal");
 
 export const setupDockerContainerTerminalWebSocketServer = (
 	runtimeWorker: http.Server<
@@ -98,7 +101,7 @@ export const setupDockerContainerTerminalWebSocketServer = (
 						].join(" ");
 						conn.exec(dockerCommand, { pty: true }, (err, stream) => {
 							if (err) {
-								console.error("SSH exec error:", err);
+								logger.error({ err, containerId }, "SSH exec error");
 								ws.close();
 								conn.end();
 								return;
@@ -116,7 +119,10 @@ export const setupDockerContainerTerminalWebSocketServer = (
 								.stderr.on("data", (data) => {
 									_stderr += data.toString();
 									ws.send(data.toString());
-									console.error("Error: ", data.toString());
+									logger.debug(
+										{ containerId },
+										"container stderr chunk received",
+									);
 								});
 
 							ws.on("message", (message) => {
@@ -143,7 +149,10 @@ export const setupDockerContainerTerminalWebSocketServer = (
 						});
 					})
 					.on("error", (err) => {
-						console.error("SSH connection error:", err);
+						logger.error(
+							{ err, containerId, runtimeWorkerId },
+							"SSH connection error",
+						);
 						if (ws.readyState === ws.OPEN) {
 							ws.send(`SSH error: ${err.message}`);
 							ws.close();

@@ -1,10 +1,13 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Loader2, TagIcon, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { TagBadge } from "@/components/shared/tag-badge";
 import { toast } from "@/components/shared/toast";
 import { HandleTag } from "./handle-tag";
+
+const logger = createClientLogger("tags");
 
 export const TagManager = () => {
 	const utils = api.useUtils();
@@ -74,7 +77,8 @@ export const TagManager = () => {
 																			await utils.tag.all.invalidate();
 																			toast.success("Tag deleted successfully");
 																		})
-																		.catch(() => {
+																		.catch((err) => {
+																			logger.error(err);
 																			toast.error("Error deleting tag");
 																		});
 																}}

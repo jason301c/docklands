@@ -20,6 +20,7 @@ import {
 	serviceDatabase,
 	workspaces,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { cancelDeployment } from "@/server/core/runtime/deploy";
 import {
 	createCompose,
@@ -86,6 +87,8 @@ import { slugify } from "@/shared/slug";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { audit } from "../utils/audit";
 
+const logger = createLogger("trpc");
+
 const decodeComposeTemplatePayload = (base64: string) => {
 	const decodedData = Buffer.from(base64, "base64").toString("utf-8");
 	try {
@@ -98,7 +101,11 @@ const decodeComposeTemplatePayload = (base64: string) => {
 		) {
 			return (parsed as { compose: string }).compose;
 		}
-	} catch {}
+	} catch {
+		// Not a JSON envelope — fall through and treat the decoded payload as a
+		// raw compose string. This is expected for the common case, so it is
+		// deliberately not logged.
+	}
 	return decodedData;
 };
 
@@ -204,6 +211,9 @@ export const composeRouter = createTRPCRouter({
 				});
 				return newService;
 			} catch (error) {
+				if (!(error instanceof TRPCError)) {
+					logger.error({ err: error }, "compose.create failed");
+				}
 				throw error;
 			}
 		}),
@@ -351,9 +361,13 @@ export const composeRouter = createTRPCRouter({
 				try {
 					await operation.run();
 				} catch (error) {
-					console.error(
-						`Failed to clean up compose resource during delete (${operation.label}) for ${composeResult.appName}:`,
-						error,
+					logger.error(
+						{
+							err: error,
+							label: operation.label,
+							appName: composeResult.appName,
+						},
+						"failed to clean up compose resource during delete",
 					);
 				}
 			}
@@ -710,7 +724,7 @@ export const composeRouter = createTRPCRouter({
 				return templates;
 			}
 		} catch (error) {
-			console.warn("Failed to read local templates:", error);
+			logger.warn({ err: error }, "failed to load template catalog");
 		}
 		return [];
 	}),
@@ -721,7 +735,7 @@ export const composeRouter = createTRPCRouter({
 			const allTags = templates.flatMap((template) => template.tags);
 			return _.uniq(allTags);
 		} catch (error) {
-			console.warn("Failed to fetch template tags:", error);
+			logger.warn({ err: error }, "failed to fetch template tags");
 			return [];
 		}
 	}),
@@ -847,6 +861,7 @@ export const composeRouter = createTRPCRouter({
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: `Error processing template: ${error instanceof Error ? error.message : error}`,
+					cause: error,
 				});
 			}
 		}),
@@ -889,6 +904,7 @@ export const composeRouter = createTRPCRouter({
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: `Error processing template: ${error instanceof Error ? error.message : error}`,
+					cause: error,
 				});
 			}
 		}),
@@ -950,6 +966,7 @@ export const composeRouter = createTRPCRouter({
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: `Error importing template: ${error instanceof Error ? error.message : error}`,
+					cause: error,
 				});
 			}
 		}),
@@ -996,6 +1013,7 @@ export const composeRouter = createTRPCRouter({
 						error instanceof Error
 							? error.message
 							: "Failed to cancel deployment",
+					cause: error,
 				});
 			}
 		}),

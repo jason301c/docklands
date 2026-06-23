@@ -100,6 +100,16 @@ export const runServiceDatabaseBackup = async (
 
 		logger.info(
 			{
+				serviceName,
+				engine,
+				backupId: backup.backupId,
+				composeAppName: compose.appName,
+			},
+			"Service database backup started",
+		);
+
+		logger.info(
+			{
 				containerSearch,
 				backupCommand,
 				rcloneCommand: redactRcloneCredentials(rcloneCommand),
@@ -121,8 +131,17 @@ export const runServiceDatabaseBackup = async (
 			await execAsync(command, { shell: "/bin/bash" });
 		}
 
+		logger.info(
+			{ serviceName, engine, backupId: backup.backupId },
+			"Service database backup completed",
+		);
+
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 	} catch (error) {
+		logger.error(
+			{ err: error, serviceName, engine, backupId: backup.backupId },
+			"Service database backup failed",
+		);
 		await updateDeploymentStatus(deployment.deploymentId, "error");
 		throw error;
 	}

@@ -17,6 +17,7 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { GitlabIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -31,6 +32,8 @@ import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
 import { cn } from "@/shared/utils";
+
+const logger = createClientLogger("compose");
 
 const Command = Combobox;
 const CommandInput = Combobox.TriggerInput;
@@ -167,7 +170,8 @@ export const SaveGitlabProviderCompose = ({ composeId }: Props) => {
 				toast.success("Service Provider Saved");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save the Gitlab provider", err);
 				toast.error("Error saving the Gitlab provider");
 			});
 	};

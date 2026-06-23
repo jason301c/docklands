@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -16,6 +17,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("database-service");
 
 const addDockerImage = z.object({
 	dockerImage: z.string().min(1, "Docker image is required"),
@@ -77,7 +80,8 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 				toast.success("Custom Command Updated");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error updating the custom command", err);
 				toast.error("Error updating the custom command");
 			});
 	};

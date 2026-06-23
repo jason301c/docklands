@@ -1,9 +1,12 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Database, FolderUp, Loader2, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { HandleStorageProvider } from "./handle-storage-provider";
+
+const logger = createClientLogger("storage-providers");
 
 export const ShowStorageProviders = () => {
 	const { data, isPending, refetch } = api.destination.all.useQuery();
@@ -79,7 +82,8 @@ export const ShowStorageProviders = () => {
 																			);
 																			refetch();
 																		})
-																		.catch(() => {
+																		.catch((err) => {
+																			logger.error(err);
 																			toast.error(
 																				"Error deleting storage provider",
 																			);

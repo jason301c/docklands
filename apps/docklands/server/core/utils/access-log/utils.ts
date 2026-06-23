@@ -1,5 +1,8 @@
 import _ from "lodash";
+import { createLogger } from "@/server/core/lib/logger";
 import type { LogEntry } from "./types";
+
+const logger = createLogger("access-log");
 
 interface HourlyData {
 	hour: string;
@@ -44,7 +47,7 @@ export function processLogs(
 
 				return `${date.toISOString().slice(0, 13)}:00:00Z`;
 			} catch (error) {
-				console.error("Error parsing log entry:", error);
+				logger.debug({ err: error }, "Malformed access log entry");
 				return null;
 			}
 		})
@@ -92,7 +95,7 @@ export function parseRawConfig(
 				try {
 					return JSON.parse(line) as LogEntry;
 				} catch (error) {
-					console.error("Error parsing log line:", error);
+					logger.debug({ err: error }, "Malformed access log line");
 					return null;
 				}
 			})
@@ -149,7 +152,7 @@ export function parseRawConfig(
 
 		return { data: parsedLogs, totalCount };
 	} catch (error) {
-		console.error("Error parsing rawConfig:", error);
+		logger.error({ err: error }, "Failed to parse access-log raw config");
 		throw new Error("Failed to parse rawConfig");
 	}
 }

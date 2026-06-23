@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -23,6 +24,8 @@ import {
 	ADDITIONAL_FLAG_REGEX,
 } from "@/server/core/db/validations/destination";
 import { S3_PROVIDERS } from "./provider-options";
+
+const logger = createClientLogger("storage-provider");
 
 const storageProviderSchema = z.object({
 	name: z.string().min(1, "Name is required"),
@@ -135,6 +138,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 				setOpen(false);
 			})
 			.catch((e) => {
+				logger.error(e);
 				toast.error(
 					`Error ${destinationId ? "updating" : "creating"} the storage provider`,
 					{
@@ -192,6 +196,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 				toast.success("Connection Success");
 			})
 			.catch((e) => {
+				logger.error(e);
 				toast.error("Error connecting to provider", {
 					description: `${e.message}\n\nTry manually: rclone ls ${connectionString}`,
 				});

@@ -9,10 +9,13 @@ import {
 import path from "node:path";
 import type { ContainerCreateOptions, CreateServiceOptions } from "dockerode";
 import { stringify } from "yaml";
+import { createLogger } from "@/server/core/lib/logger";
 import { paths } from "../constants";
 import { getRemoteDocker } from "../utils/servers/remote-docker";
 import type { FileConfig } from "../utils/traefik/file-types";
 import type { MainTraefikConfig } from "../utils/traefik/types";
+
+const logger = createLogger("setup:traefik");
 
 export const TRAEFIK_SSL_PORT =
 	Number.parseInt(process.env.TRAEFIK_SSL_PORT!, 10) || 443;
@@ -97,23 +100,38 @@ export const initializeStandaloneTraefik = async ({
 	try {
 		await docker.pull(imageName);
 		await new Promise((resolve) => setTimeout(resolve, 3000));
-		console.log("Traefik Image Pulled ✅");
+		logger.info({ image: imageName }, "Traefik image pulled");
 	} catch (error) {
-		console.log("Traefik Image Not Found: Pulling ", error);
+		logger.error(
+			{ err: error, image: imageName },
+			"Failed to pull Traefik image — will attempt start with existing local image",
+		);
 	}
 	try {
 		const container = docker.getContainer(containerName);
 		await container.remove({ force: true });
 		await new Promise((resolve) => setTimeout(resolve, 5000));
-	} catch {}
+	} catch (err) {
+		logger.debug(
+			{ err },
+			"Could not remove existing Traefik container (may not exist)",
+		);
+	}
 
 	try {
 		await docker.createContainer(settings);
 		const newContainer = docker.getContainer(containerName);
 		await newContainer.start();
-		console.log("Traefik Started ✅");
+		logger.info(
+			{ image: imageName, container: containerName },
+			"Traefik container started",
+		);
 	} catch (error) {
-		console.log("Traefik Not Found: Starting ", error);
+		logger.error(
+			{ err: error, image: imageName, container: containerName },
+			"Failed to start Traefik container",
+		);
+		throw error;
 	}
 };
 
@@ -203,10 +221,16 @@ export const initializeTraefikService = async ({
 				ForceUpdate: inspect.Spec.TaskTemplate.ForceUpdate + 1,
 			},
 		});
-		console.log("Traefik Updated ✅");
+		logger.info(
+			{ image: imageName, service: appName },
+			"Traefik service updated",
+		);
 	} catch {
 		await docker.createService(settings);
-		console.log("Traefik Started ✅");
+		logger.info(
+			{ image: imageName, service: appName },
+			"Traefik service started",
+		);
 	}
 };
 
@@ -215,7 +239,10 @@ export const createDefaultServerTraefikConfig = () => {
 	const configFilePath = path.join(DYNAMIC_TRAEFIK_PATH, "docklands.yml");
 
 	if (existsSync(configFilePath)) {
-		console.log("Default traefik config already exists");
+		logger.debug(
+			{ path: configFilePath },
+			"Default server Traefik config already exists",
+		);
 		return;
 	}
 
@@ -391,17 +418,20 @@ export const createDefaultTraefikConfig = () => {
 		const stats = statSync(mainConfig);
 		if (stats.isDirectory()) {
 			// If traefik.yml is a directory, remove it
-			console.log("Found traefik.yml as directory, removing it...");
+			logger.warn(
+				{ path: mainConfig },
+				"Found traefik.yml as directory — removing it",
+			);
 			rmSync(mainConfig, { recursive: true, force: true });
 		} else if (stats.isFile()) {
-			console.log("Main config already exists");
+			logger.debug({ path: mainConfig }, "Main Traefik config already exists");
 			return;
 		}
 	}
 
 	const yamlStr = getDefaultTraefikConfig();
 	writeFileSync(mainConfig, yamlStr, "utf8");
-	console.log("Traefik config created successfully");
+	logger.info({ path: mainConfig }, "Traefik config created");
 };
 
 export const getDefaultMiddlewares = () => {
@@ -424,7 +454,10 @@ export const createDefaultMiddlewares = () => {
 	const { DYNAMIC_TRAEFIK_PATH } = paths();
 	const middlewaresPath = path.join(DYNAMIC_TRAEFIK_PATH, "middlewares.yml");
 	if (existsSync(middlewaresPath)) {
-		console.log("Default middlewares already exists");
+		logger.debug(
+			{ path: middlewaresPath },
+			"Default middlewares already exist",
+		);
 		return;
 	}
 	const yamlStr = getDefaultMiddlewares();

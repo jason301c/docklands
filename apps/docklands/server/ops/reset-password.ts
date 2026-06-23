@@ -2,7 +2,10 @@ import { eq } from "drizzle-orm";
 import { generateRandomPassword } from "@/server/core/auth/random-password";
 import { db } from "@/server/core/db";
 import { account } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { findOwner } from "@/server/core/services/admin";
+
+const logger = createLogger("ops:reset-password");
 
 (async () => {
 	try {
@@ -18,14 +21,19 @@ import { findOwner } from "@/server/core/services/admin";
 			.where(eq(account.userId, result.userId));
 
 		if (update) {
-			console.log("Password reset successful");
+			logger.info("Password reset successful");
+			// Deliberate plain stdout — the operator runs this script to obtain the
+			// new credential. Do NOT route through structured logger.
 			console.log("New password: ", randomPassword.randomPassword);
 		} else {
-			console.log("Password reset failed");
+			logger.warn(
+				"Password reset returned no-op — check owner account record exists",
+			);
 		}
 
 		process.exit(0);
 	} catch (error) {
-		console.log("Error resetting password", error);
+		logger.error({ err: error }, "Error resetting password");
+		process.exit(1);
 	}
 })();

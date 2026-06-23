@@ -3,9 +3,12 @@ import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Loader2, Puzzle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("compose");
 
 interface Props {
 	composeId: string;
@@ -33,7 +36,10 @@ export const ShowConvertedCompose = ({ composeId }: Props) => {
 				.then(() => {
 					refetch();
 				})
-				.catch(() => {});
+				.catch((err) => {
+					logger.error("fetchSourceType failed", err);
+					toast.error("Failed to load compose source type");
+				});
 		}
 	}, [isOpen]);
 

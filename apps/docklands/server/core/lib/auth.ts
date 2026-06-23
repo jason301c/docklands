@@ -8,6 +8,10 @@ import { organization, twoFactor } from "better-auth/plugins";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "../db";
 import * as schema from "../db/schema";
+import { createLogger } from "./logger";
+
+const logger = createLogger("lib:auth");
+
 import { getPublicIpWithFallback } from "../runtime/host";
 import { getTrustedOrigins, getUserByToken } from "../services/admin";
 import { createAuditLog } from "../services/audit-log";
@@ -96,7 +100,10 @@ const { handler, api } = betterAuth({
 				...trustedOrigins,
 			];
 		} catch (error) {
-			console.error("Failed to resolve trusted origins:", error);
+			logger.warn(
+				{ err: error },
+				"Failed to resolve trusted origins — falling back to empty list",
+			);
 			return [];
 		}
 	},
@@ -416,7 +423,7 @@ export const validateRequestHeaders = async (headers: Headers) => {
 
 			return mockSession;
 		} catch (error) {
-			console.error("Error verifying API key", error);
+			logger.error({ err: error }, "Error verifying API key");
 			return {
 				session: null,
 				user: null,

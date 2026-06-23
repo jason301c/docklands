@@ -2,12 +2,15 @@ import { join } from "node:path";
 import { TRPCError } from "@trpc/server";
 import { quote } from "shell-quote";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	findGiteaById,
 	type Gitea,
 	updateGitea,
 } from "@/server/core/services/gitea";
 import type { InferResultType } from "@/server/core/types/with";
+
+const logger = createLogger("gitea-provider");
 
 export const getErrorCloneRequirements = (entity: {
 	giteaRepository?: string | null;
@@ -91,7 +94,10 @@ export const refreshGiteaToken = async (giteaProviderId: string) => {
 
 		return access_token;
 	} catch (error) {
-		console.error("Error refreshing Gitea token:", error);
+		logger.warn(
+			{ err: error, provider: "gitea", giteaProviderId },
+			"Gitea token refresh failed — using stale token; next clone may fail",
+		);
 		const giteaProvider = await findGiteaById(giteaProviderId);
 		return giteaProvider?.accessToken || null;
 	}

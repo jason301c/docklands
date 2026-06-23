@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { applications } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Bitbucket } from "@/server/core/services/bitbucket";
 import { getBitbucketHeaders } from "@/server/core/utils/providers/bitbucket";
 import { shouldDeploy } from "@/server/core/utils/watch-paths/should-deploy";
@@ -12,13 +13,15 @@ import {
 	requestHeadersToObject,
 } from "@/server/web/request";
 
+const logger = createLogger("application-webhook");
+
 /**
  * Log a webhook handler error runtimeWorker-side without leaking its shape to the HTTP
  * response. Drizzle errors carry the raw SQL query, column list and parameters,
  * so we never forward the error object to the client.
  */
 export const logWebhookError = (context: string, error: unknown) => {
-	console.error(context, error);
+	logger.error({ err: error }, context);
 };
 
 /**
@@ -59,6 +62,10 @@ export async function handleApplicationDeployWebhook(
 			return jsonResponse({ message: "Application Not Found" }, 404);
 		}
 		if (!application?.autoDeploy) {
+			logger.info(
+				{ applicationId: application.applicationId, appName: application.name },
+				"Webhook received but autoDeploy is disabled",
+			);
 			return jsonResponse(
 				{
 					message: "Automatic deployments are disabled for this application",
@@ -256,6 +263,14 @@ export async function handleApplicationDeployWebhook(
 					removeOnComplete: true,
 					removeOnFail: true,
 				},
+			);
+			logger.info(
+				{
+					applicationId: application.applicationId,
+					appName: application.name,
+					sourceType: application.sourceType,
+				},
+				"Application deploy job enqueued",
 			);
 		} catch (error) {
 			logWebhookError("Error deploying Application:", error);
@@ -569,11 +584,10 @@ export const extractCommittedPaths = async (
 				if (value?.new?.path) committedPaths.push(value.new.path);
 			}
 		} catch (error) {
-			console.error(
-				`Error fetching Bitbucket diffstat for commit ${commit}:`,
-				error instanceof Error ? error.message : "Unknown error",
+			logger.warn(
+				{ err: error, provider: "bitbucket", commit },
+				"Error fetching Bitbucket diffstat",
 			);
-
 			return [];
 		}
 	}

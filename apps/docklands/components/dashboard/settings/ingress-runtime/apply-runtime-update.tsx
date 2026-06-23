@@ -10,7 +10,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("runtime-update");
 
 type ServiceStatus = {
 	status: "healthy" | "unhealthy";
@@ -64,8 +67,8 @@ export const ApplyRuntimeUpdate = () => {
 			if (result.data) {
 				setHealthResult(result.data);
 			}
-		} catch {
-			// checkHealth failed entirely
+		} catch (err) {
+			logger.warn("health check failed:", err);
 		}
 		setModalState("results");
 	};
@@ -90,6 +93,7 @@ export const ApplyRuntimeUpdate = () => {
 				window.location.reload();
 			}, 2000);
 		} catch {
+			logger.debug("runtime not yet healthy, retrying...");
 			await new Promise((resolve) => setTimeout(resolve, 2000));
 			void checkIsUpdateFinished();
 		}
@@ -105,7 +109,7 @@ export const ApplyRuntimeUpdate = () => {
 			await checkIsUpdateFinished();
 		} catch (error) {
 			setModalState("results");
-			console.error("Error updating runtime:", error);
+			logger.error("Error updating runtime:", error);
 			toast.error(
 				"An error occurred while updating the runtime, please try again.",
 			);

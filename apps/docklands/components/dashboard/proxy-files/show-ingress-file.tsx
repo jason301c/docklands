@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
@@ -20,6 +21,8 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import { validateAndFormatYAML } from "../application/advanced/ingress/update-ingress-config";
+
+const logger = createClientLogger("proxy-files");
 
 const UpdateIngressFileConfigSchema = z.object({
 	traefikConfig: z.string(),
@@ -87,7 +90,8 @@ export const ShowIngressFile = ({ path, runtimeWorkerId }: Props) => {
 				toast.success("Ingress config updated");
 				refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error updating ingress config", err);
 				toast.error("Error updating ingress config");
 			});
 	};

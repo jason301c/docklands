@@ -1,6 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Bell, Loader2, Mail, PenBoxIcon, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	DiscordIcon,
 	GotifyIcon,
@@ -15,6 +16,8 @@ import {
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { HandleNotifications } from "./handle-notifications";
+
+const logger = createClientLogger("notifications");
 
 export const ShowNotifications = () => {
 	const { data, isPending, refetch } = api.notification.all.useQuery();
@@ -140,7 +143,8 @@ export const ShowNotifications = () => {
 																			);
 																			refetch();
 																		})
-																		.catch(() => {
+																		.catch((err) => {
+																			logger.error(err);
 																			toast.error(
 																				"Error deleting notification",
 																			);

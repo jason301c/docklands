@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { BitbucketIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -32,6 +33,8 @@ const Schema = z.object({
 });
 
 type Schema = z.infer<typeof Schema>;
+
+const logger = createClientLogger("git-providers");
 
 interface Props {
 	bitbucketId: string;
@@ -92,7 +95,8 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 				toast.success("Bitbucket updated successfully");
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error updating bitbucket provider", err);
 				toast.error("Error updating Bitbucket");
 			});
 	};
@@ -237,6 +241,10 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 													toast.info(`Message: ${message}`);
 												})
 												.catch((error) => {
+													logger.error(
+														"Error testing bitbucket connection",
+														error,
+													);
 													toast.error(`Error: ${error.message}`);
 												});
 										}}

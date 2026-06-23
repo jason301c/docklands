@@ -6,12 +6,15 @@ import { parse } from "dotenv";
 import { quote } from "shell-quote";
 import { docker } from "@/server/core/constants/docker";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Compose } from "@/server/core/services/compose";
 import type { ApplicationNested } from "../builders";
 import type { DatabaseNested } from "../databases/build";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import { spawnAsync } from "../process/spawnAsync";
 import { getRemoteDocker } from "../servers/remote-docker";
+
+const logger = createLogger("docker");
 
 interface RegistryAuth {
 	username: string;
@@ -24,29 +27,27 @@ export const pullImage = async (
 	onData?: (data: any) => void,
 	authConfig?: Partial<RegistryAuth>,
 ): Promise<void> => {
-	try {
-		if (!dockerImage) {
-			throw new Error("Docker image not found");
-		}
-
-		if (authConfig?.username && authConfig?.password) {
-			await spawnAsync(
-				"docker",
-				[
-					"login",
-					authConfig.registryUrl || "",
-					"-u",
-					authConfig.username,
-					"-p",
-					authConfig.password,
-				],
-				onData,
-			);
-		}
-		await spawnAsync("docker", ["pull", dockerImage], onData);
-	} catch (error) {
-		throw error;
+	if (!dockerImage) {
+		throw new Error("Docker image not found");
 	}
+
+	logger.info({ image: dockerImage }, "pulling image");
+
+	if (authConfig?.username && authConfig?.password) {
+		await spawnAsync(
+			"docker",
+			[
+				"login",
+				authConfig.registryUrl || "",
+				"-u",
+				authConfig.username,
+				"-p",
+				authConfig.password,
+			],
+			onData,
+		);
+	}
+	await spawnAsync("docker", ["pull", dockerImage], onData);
 };
 
 export const pullRemoteImage = async (
@@ -55,43 +56,41 @@ export const pullRemoteImage = async (
 	onData?: (data: any) => void,
 	authConfig?: Partial<RegistryAuth>,
 ): Promise<void> => {
-	try {
-		if (!dockerImage) {
-			throw new Error("Docker image not found");
-		}
-
-		const remoteDocker = await getRemoteDocker(runtimeWorkerId);
-
-		await new Promise((resolve, reject) => {
-			remoteDocker.pull(
-				dockerImage,
-				{ authconfig: authConfig },
-				(err, stream) => {
-					if (err) {
-						reject(err);
-						return;
-					}
-
-					remoteDocker.modem.followProgress(
-						stream as Readable,
-						(err: Error | null, res) => {
-							if (!err) {
-								resolve(res);
-							}
-							if (err) {
-								reject(err);
-							}
-						},
-						(event) => {
-							onData?.(event);
-						},
-					);
-				},
-			);
-		});
-	} catch (error) {
-		throw error;
+	if (!dockerImage) {
+		throw new Error("Docker image not found");
 	}
+
+	logger.info({ image: dockerImage, runtimeWorkerId }, "pulling remote image");
+
+	const remoteDocker = await getRemoteDocker(runtimeWorkerId);
+
+	await new Promise((resolve, reject) => {
+		remoteDocker.pull(
+			dockerImage,
+			{ authconfig: authConfig },
+			(err, stream) => {
+				if (err) {
+					reject(err);
+					return;
+				}
+
+				remoteDocker.modem.followProgress(
+					stream as Readable,
+					(err: Error | null, res) => {
+						if (!err) {
+							resolve(res);
+						}
+						if (err) {
+							reject(err);
+						}
+					},
+					(event) => {
+						onData?.(event);
+					},
+				);
+			},
+		);
+	});
 };
 
 export const containerExists = async (containerName: string) => {
@@ -108,8 +107,8 @@ export const stopService = async (appName: string) => {
 	try {
 		await execAsync(`docker service scale ${appName}=0 `);
 	} catch (error) {
-		console.error(error);
-		return error;
+		logger.error({ err: error, appName }, "failed to stop service");
+		throw error;
 	}
 };
 
@@ -123,8 +122,11 @@ export const stopServiceRemote = async (
 			`docker service scale ${appName}=0 `,
 		);
 	} catch (error) {
-		console.error(error);
-		return error;
+		logger.error(
+			{ err: error, appName, runtimeWorkerId },
+			"failed to stop remote service",
+		);
+		throw error;
 	}
 };
 
@@ -193,8 +195,7 @@ export const cleanupContainers = async (runtimeWorkerId?: string) => {
 			await execAsync(dockerSafeExec(command));
 		}
 	} catch (error) {
-		console.error(error);
-
+		logger.error({ err: error, runtimeWorkerId }, "cleanupContainers failed");
 		throw error;
 	}
 };
@@ -207,8 +208,7 @@ export const cleanupImages = async (runtimeWorkerId?: string) => {
 			await execAsyncRemote(runtimeWorkerId, dockerSafeExec(command));
 		} else await execAsync(dockerSafeExec(command));
 	} catch (error) {
-		console.error(error);
-
+		logger.error({ err: error, runtimeWorkerId }, "cleanupImages failed");
 		throw error;
 	}
 };
@@ -223,8 +223,7 @@ export const cleanupVolumes = async (runtimeWorkerId?: string) => {
 			await execAsync(dockerSafeExec(command));
 		}
 	} catch (error) {
-		console.error(error);
-
+		logger.error({ err: error, runtimeWorkerId }, "cleanupVolumes failed");
 		throw error;
 	}
 };
@@ -239,8 +238,7 @@ export const cleanupBuilders = async (runtimeWorkerId?: string) => {
 			await execAsync(dockerSafeExec(command));
 		}
 	} catch (error) {
-		console.error(error);
-
+		logger.error({ err: error, runtimeWorkerId }, "cleanupBuilders failed");
 		throw error;
 	}
 };
@@ -255,8 +253,7 @@ export const cleanupSystem = async (runtimeWorkerId?: string) => {
 			await execAsync(dockerSafeExec(command));
 		}
 	} catch (error) {
-		console.error(error);
-
+		logger.error({ err: error, runtimeWorkerId }, "cleanupSystem failed");
 		throw error;
 	}
 };
@@ -325,7 +322,12 @@ export const cleanupAll = async (runtimeWorkerId?: string) => {
 			} else {
 				await execAsync(dockerSafeExec(command));
 			}
-		} catch {}
+		} catch (err) {
+			logger.warn(
+				{ err, key, runtimeWorkerId },
+				"cleanup operation failed, continuing",
+			);
+		}
 	}
 };
 
@@ -349,12 +351,23 @@ export const cleanupAllBackground = async (runtimeWorkerId?: string) => {
 		.then((results) => {
 			const failed = results.filter((r) => r.status === "rejected");
 			if (failed.length > 0) {
-				console.error(`Docker cleanup: ${failed.length} operations failed`);
+				logger.error(
+					{ failedCount: failed.length, runtimeWorkerId },
+					"Docker cleanup: some operations failed",
+				);
 			} else {
-				console.log("Docker cleanup completed successfully");
+				logger.debug(
+					{ runtimeWorkerId },
+					"Docker cleanup completed successfully",
+				);
 			}
 		})
-		.catch((error) => console.error("Error in cleanup:", error));
+		.catch((error) =>
+			logger.error(
+				{ err: error, runtimeWorkerId },
+				"Docker cleanup allSettled failed",
+			),
+		);
 
 	return {
 		status: "scheduled",
@@ -366,7 +379,7 @@ export const startService = async (appName: string) => {
 	try {
 		await execAsync(`docker service scale ${appName}=1 `);
 	} catch (error) {
-		console.error(error);
+		logger.error({ err: error, appName }, "failed to start service");
 		throw error;
 	}
 };
@@ -381,7 +394,10 @@ export const startServiceRemote = async (
 			`docker service scale ${appName}=1 `,
 		);
 	} catch (error) {
-		console.error(error);
+		logger.error(
+			{ err: error, appName, runtimeWorkerId },
+			"failed to start remote service",
+		);
 		throw error;
 	}
 };
@@ -400,7 +416,11 @@ export const removeService = async (
 			await execAsync(command);
 		}
 	} catch (error) {
-		return error;
+		logger.error(
+			{ err: error, appName, runtimeWorkerId },
+			"failed to remove Docker service",
+		);
+		throw error;
 	}
 };
 
@@ -718,19 +738,15 @@ export const createFile = async (
 	filePath: string,
 	content: string,
 ) => {
-	try {
-		const fullPath = path.join(outputPath, filePath);
-		if (fullPath.endsWith(path.sep) || filePath.endsWith("/")) {
-			fs.mkdirSync(fullPath, { recursive: true });
-			return;
-		}
-
-		const directory = path.dirname(fullPath);
-		fs.mkdirSync(directory, { recursive: true });
-		fs.writeFileSync(fullPath, content || "");
-	} catch (error) {
-		throw error;
+	const fullPath = path.join(outputPath, filePath);
+	if (fullPath.endsWith(path.sep) || filePath.endsWith("/")) {
+		fs.mkdirSync(fullPath, { recursive: true });
+		return;
 	}
+
+	const directory = path.dirname(fullPath);
+	fs.mkdirSync(directory, { recursive: true });
+	fs.writeFileSync(fullPath, content || "");
 };
 export const encodeBase64 = (content: string) =>
 	Buffer.from(content, "utf-8").toString("base64");
@@ -757,65 +773,54 @@ export const getServiceContainer = async (
 	appName: string,
 	runtimeWorkerId?: string | null,
 ) => {
-	try {
-		const filter = {
-			status: ["running"],
-			label: [`com.docker.swarm.service.name=${appName}`],
-		};
-		const remoteDocker = await getRemoteDocker(runtimeWorkerId);
-		const containers = await remoteDocker.listContainers({
-			filters: JSON.stringify(filter),
-		});
+	const filter = {
+		status: ["running"],
+		label: [`com.docker.swarm.service.name=${appName}`],
+	};
+	const remoteDocker = await getRemoteDocker(runtimeWorkerId);
+	const containers = await remoteDocker.listContainers({
+		filters: JSON.stringify(filter),
+	});
 
-		if (containers.length === 0 || !containers[0]) {
-			return null;
-		}
-
-		const container = containers[0];
-
-		return container;
-	} catch (error) {
-		throw error;
+	if (containers.length === 0 || !containers[0]) {
+		return null;
 	}
+
+	return containers[0];
 };
 
 export const getComposeContainer = async (
 	compose: Compose,
 	serviceName: string,
 ) => {
-	try {
-		const { appName, composeType, runtimeWorkerId } = compose;
-		// 1. Determine the correct labels based on composeType
-		const labels: string[] = [];
-		if (composeType === "stack") {
-			// Labels for Docker Swarm stack services
-			labels.push(`com.docker.stack.namespace=${appName}`);
-			labels.push(`com.docker.swarm.service.name=${appName}_${serviceName}`);
-		} else {
-			// Labels for Docker Compose workspaces (default)
-			labels.push(`com.docker.compose.workspace=${appName}`);
-			labels.push(`com.docker.compose.service=${serviceName}`);
-		}
-		const filter = {
-			status: ["running"],
-			label: labels,
-		};
-
-		const remoteDocker = await getRemoteDocker(runtimeWorkerId);
-		const containers = await remoteDocker.listContainers({
-			filters: JSON.stringify(filter),
-			limit: 1,
-		});
-
-		if (containers.length === 0 || !containers[0]) {
-			return null;
-		}
-
-		const container = containers[0];
-		return container;
-	} catch (error) {
-		throw error;
+	const { appName, composeType, runtimeWorkerId } = compose;
+	// 1. Determine the correct labels based on composeType
+	const labels: string[] = [];
+	if (composeType === "stack") {
+		// Labels for Docker Swarm stack services
+		labels.push(`com.docker.stack.namespace=${appName}`);
+		labels.push(`com.docker.swarm.service.name=${appName}_${serviceName}`);
+	} else {
+		// Labels for Docker Compose workspaces (default)
+		labels.push(`com.docker.compose.workspace=${appName}`);
+		labels.push(`com.docker.compose.service=${serviceName}`);
 	}
+	const filter = {
+		status: ["running"],
+		label: labels,
+	};
+
+	const remoteDocker = await getRemoteDocker(runtimeWorkerId);
+	const containers = await remoteDocker.listContainers({
+		filters: JSON.stringify(filter),
+		limit: 1,
+	});
+
+	if (containers.length === 0 || !containers[0]) {
+		return null;
+	}
+
+	return containers[0];
 };
 
 type ServiceHealthStatus = {

@@ -1,5 +1,9 @@
 // @ts-nocheck
 
+import { createClientLogger } from "@/client/lib/logger";
+
+const logger = createClientLogger("certificates");
+
 // Split certificate chain into individual certificates
 export const splitCertificateChain = (certData: string): string[] => {
 	const certRegex =
@@ -96,7 +100,7 @@ export const extractExpirationDate = (certData: string): Date | null => {
 
 		return parseTime(notAfterStr);
 	} catch (error) {
-		console.error("Error parsing certificate:", error);
+		logger.error("Error parsing certificate:", error);
 		return null;
 	}
 };
@@ -204,7 +208,7 @@ export const extractCommonName = (certData: string): string | null => {
 
 		return null;
 	} catch (error) {
-		console.error("Error parsing certificate CN:", error);
+		logger.error("Error parsing certificate CN:", error);
 		return null;
 	}
 };

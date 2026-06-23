@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -22,6 +23,8 @@ import {
 } from "@/components/shared/form";
 import { Separator } from "@/components/shared/separator";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const AddRedirectSchema = z.object({
 	regex: z.string().min(1, "Regex required"),
@@ -124,7 +127,13 @@ export const HandleRedirect = ({
 				});
 				onDialogToggle(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(
+					redirectId
+						? "Failed to update the redirect"
+						: "Failed to create the redirect",
+					err,
+				);
 				toast.error(
 					redirectId
 						? "Error updating the redirect"

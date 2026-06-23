@@ -16,7 +16,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+
+const logger = createClientLogger("volume-backup");
+
 import { DrawerLogs } from "@/components/shared/drawer-logs";
 import {
 	Form,
@@ -124,7 +128,8 @@ export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 				setFilteredLogs((prev) => [...prev, ...parsedLogs]);
 			},
 			onError(error) {
-				console.error("Restore logs error:", error);
+				logger.error("restore logs error:", error);
+				toast.warning("Restore log stream failed");
 				setIsDeploying(false);
 			},
 		},

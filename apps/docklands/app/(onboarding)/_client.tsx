@@ -12,6 +12,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -24,6 +25,8 @@ import {
 import { InputOTP } from "@/components/shared/input-otp";
 import { Logo } from "@/components/shared/logo";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("onboarding");
 
 const LoginSchema = z.object({
 	email: z.string().email(),
@@ -87,7 +90,8 @@ export default function Home() {
 
 			toast.success("Logged in successfully");
 			router.push("/dashboard/workspace");
-		} catch {
+		} catch (err) {
+			logger.error("An error occurred while logging in", err);
 			toast.error("An error occurred while logging in");
 		} finally {
 			setIsLoginLoading(false);
@@ -114,7 +118,8 @@ export default function Home() {
 
 			toast.success("Logged in successfully");
 			router.push("/dashboard/workspace");
-		} catch {
+		} catch (err) {
+			logger.error("An error occurred while verifying 2FA code", err);
 			toast.error("An error occurred while verifying 2FA code");
 		} finally {
 			setIsTwoFactorLoading(false);
@@ -144,7 +149,8 @@ export default function Home() {
 
 			toast.success("Logged in successfully");
 			router.push("/dashboard/workspace");
-		} catch {
+		} catch (err) {
+			logger.error("An error occurred while verifying backup code", err);
 			toast.error("An error occurred while verifying backup code");
 		} finally {
 			setIsBackupCodeLoading(false);

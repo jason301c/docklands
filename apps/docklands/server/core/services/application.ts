@@ -8,6 +8,7 @@ import {
 	applications,
 	buildAppName,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { getAdvancedStats } from "@/server/core/monitoring/utils";
 import {
 	getBuildCommand,
@@ -54,6 +55,8 @@ import {
 } from "./preview-deployment";
 import { validUniqueServerAppName } from "./workspace";
 import { refreshConnectionVariablesForDeploy } from "./workspace-graph";
+
+const logger = createLogger("app-service");
 
 export type Application = typeof applications.$inferSelect;
 
@@ -203,6 +206,17 @@ export const deployApplication = async ({
 		description: descriptionLog,
 	});
 
+	logger.info(
+		{
+			applicationId,
+			appName: application.appName,
+			sourceType: application.sourceType,
+			runtimeWorkerId,
+			deploymentId: deployment.deploymentId,
+		},
+		"Starting deployment",
+	);
+
 	try {
 		let command = "set -e;";
 		if (application.sourceType === "github") {
@@ -240,6 +254,11 @@ export const deployApplication = async ({
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 		await updateApplicationStatus(applicationId, "done");
 
+		logger.info(
+			{ deploymentId: deployment.deploymentId, applicationId },
+			"Deployment completed",
+		);
+
 		await sendBuildSuccessNotifications({
 			projectName: application.environment.workspace.name,
 			applicationName: application.name,
@@ -250,6 +269,11 @@ export const deployApplication = async ({
 			environmentName: application.environment.name,
 		});
 	} catch (error) {
+		logger.error(
+			{ err: error, deploymentId: deployment.deploymentId, applicationId },
+			"Deployment failed",
+		);
+
 		let command = "";
 
 		// Only log details for non-ExecError errors
@@ -336,6 +360,16 @@ export const rebuildApplication = async ({
 		description: descriptionLog,
 	});
 
+	logger.info(
+		{
+			applicationId,
+			appName: application.appName,
+			runtimeWorkerId,
+			deploymentId: deployment.deploymentId,
+		},
+		"Starting rebuild",
+	);
+
 	try {
 		let command = "set -e;";
 		// Check case for docker only
@@ -350,6 +384,11 @@ export const rebuildApplication = async ({
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 		await updateApplicationStatus(applicationId, "done");
 
+		logger.info(
+			{ deploymentId: deployment.deploymentId, applicationId },
+			"Rebuild completed",
+		);
+
 		await sendBuildSuccessNotifications({
 			projectName: application.environment.workspace.name,
 			applicationName: application.name,
@@ -360,6 +399,11 @@ export const rebuildApplication = async ({
 			environmentName: application.environment.name,
 		});
 	} catch (error) {
+		logger.error(
+			{ err: error, deploymentId: deployment.deploymentId, applicationId },
+			"Rebuild failed",
+		);
+
 		let command = "";
 
 		// Only log details for non-ExecError errors
@@ -417,6 +461,17 @@ export const deployPreviewApplication = async ({
 		comment_id: Number.parseInt(previewDeployment.pullRequestCommentId, 10),
 		githubId: application?.githubId || "",
 	};
+
+	logger.info(
+		{
+			applicationId,
+			previewDeploymentId,
+			deploymentId: deployment.deploymentId,
+			appName: previewDeployment.appName,
+		},
+		"Starting preview deployment",
+	);
+
 	try {
 		const commentExists = await issueCommentExists({
 			...issueParams,
@@ -490,7 +545,26 @@ export const deployPreviewApplication = async ({
 		await updatePreviewDeployment(previewDeploymentId, {
 			previewStatus: "done",
 		});
+
+		logger.info(
+			{
+				deploymentId: deployment.deploymentId,
+				applicationId,
+				previewDeploymentId,
+			},
+			"Preview deployment completed",
+		);
 	} catch (error) {
+		logger.error(
+			{
+				err: error,
+				deploymentId: deployment.deploymentId,
+				applicationId,
+				previewDeploymentId,
+			},
+			"Preview deployment failed",
+		);
+
 		const comment = getIssueComment(application.name, "error", previewDomain);
 		await updateIssueComment({
 			...issueParams,
@@ -535,6 +609,16 @@ export const rebuildPreviewApplication = async ({
 		comment_id: Number.parseInt(previewDeployment.pullRequestCommentId, 10),
 		githubId: application?.githubId || "",
 	};
+
+	logger.info(
+		{
+			applicationId,
+			previewDeploymentId,
+			deploymentId: deployment.deploymentId,
+			appName: previewDeployment.appName,
+		},
+		"Starting preview rebuild",
+	);
 
 	try {
 		const commentExists = await issueCommentExists({
@@ -607,7 +691,26 @@ export const rebuildPreviewApplication = async ({
 		await updatePreviewDeployment(previewDeploymentId, {
 			previewStatus: "done",
 		});
+
+		logger.info(
+			{
+				deploymentId: deployment.deploymentId,
+				applicationId,
+				previewDeploymentId,
+			},
+			"Preview rebuild completed",
+		);
 	} catch (error) {
+		logger.error(
+			{
+				err: error,
+				deploymentId: deployment.deploymentId,
+				applicationId,
+				previewDeploymentId,
+			},
+			"Preview rebuild failed",
+		);
+
 		let command = "";
 
 		// Only log details for non-ExecError errors

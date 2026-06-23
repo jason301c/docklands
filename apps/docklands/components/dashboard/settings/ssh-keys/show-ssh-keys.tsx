@@ -2,8 +2,12 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { formatDistanceToNow } from "date-fns";
 import { KeyRound, Loader2, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("ssh-keys");
+
 import { HandleSSHKeys } from "./handle-ssh-keys";
 
 export const ShowSshKeys = () => {
@@ -92,7 +96,8 @@ export const ShowSshKeys = () => {
 																			);
 																			refetch();
 																		})
-																		.catch(() => {
+																		.catch((err) => {
+																			logger.error(err);
 																			toast.error("Error deleting SSH Key");
 																		});
 																}}

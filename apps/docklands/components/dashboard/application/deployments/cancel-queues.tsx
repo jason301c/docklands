@@ -2,7 +2,10 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Ban } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("deployments");
 
 interface Props {
 	id: string;
@@ -46,6 +49,7 @@ export const CancelQueues = ({ id, type }: Props) => {
 									toast.success("Queued builds are being cancelled");
 								})
 								.catch((err) => {
+									logger.error("Failed to cancel queued builds", err);
 									toast.error(err.message);
 								});
 						}}

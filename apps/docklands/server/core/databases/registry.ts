@@ -14,6 +14,9 @@
  * derived from these descriptors.
  */
 import { z } from "zod";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("db");
 
 export const DATABASE_ENGINE_KEYS = [
 	"postgres",
@@ -719,6 +722,10 @@ export class UnsafeDatabaseShellValueError extends Error {
 
 const assertShellSafe = (field: string, value: string | undefined) => {
 	if (value !== undefined && !SHELL_SAFE_DB_VALUE.test(value)) {
+		logger.error(
+			{ field },
+			"db: unsafe shell value rejected for engine command",
+		);
 		throw new UnsafeDatabaseShellValueError(field);
 	}
 };
@@ -792,8 +799,11 @@ export const extractDatabaseCredentials = <K extends DatabaseEngineKey>(
 					.toString("utf-8")
 					.split(":");
 				return { user: user ?? "", password: rest.join(":") };
-			} catch {
-				/* ignore */
+			} catch (err) {
+				logger.warn(
+					{ err },
+					"db: malformed SQLD_HTTP_AUTH base64 value — falling back to empty credentials",
+				);
 			}
 		}
 		return { user: env.SQLD_USER ?? "libsql", password: "" };

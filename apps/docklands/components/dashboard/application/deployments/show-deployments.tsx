@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
@@ -26,6 +27,8 @@ import { ClearDeployments } from "./clear-deployments";
 import { KillBuild } from "./kill-build";
 import { RefreshToken } from "./refresh-token";
 import { ShowDeployment } from "./show-deployment";
+
+const logger = createClientLogger("deployments");
 
 interface Props {
 	id: string;
@@ -279,7 +282,8 @@ export const ShowDeployments = ({
 															.then(() => {
 																toast.success("Process killed successfully");
 															})
-															.catch(() => {
+															.catch((err) => {
+																logger.error("Failed to kill process", err);
 																toast.error("Error killing process");
 															});
 													}}
@@ -360,7 +364,11 @@ export const ShowDeployments = ({
 																		"Rollback initiated successfully",
 																	);
 																})
-																.catch(() => {
+																.catch((err) => {
+																	logger.error(
+																		"Failed to initiate rollback",
+																		err,
+																	);
 																	toast.error("Error initiating rollback");
 																});
 														}}

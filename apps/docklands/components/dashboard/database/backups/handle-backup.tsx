@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -42,6 +43,8 @@ import {
 import { cn } from "@/shared/utils";
 import { ScheduleFormField } from "../../application/schedules/handle-schedules";
 import { ENGINE_LABELS } from "../../database-service/general/engine-labels";
+
+const logger = createClientLogger("database-backup");
 
 /**
  * Engines that support a logical (dump-based) backup, derived from the engine
@@ -301,7 +304,8 @@ export const HandleBackup = ({
 				refetch();
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error saving backup", err);
 				toast.error(`Error ${backupId ? "updating" : "creating"} a backup`);
 			});
 	};

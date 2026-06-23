@@ -5,6 +5,7 @@ import {
 	parseDatabaseConfig,
 } from "@/server/core/databases/registry";
 import type { apiRestoreBackup } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Database } from "@/server/core/services/database";
 import type { Destination } from "@/server/core/services/destination";
 import {
@@ -15,6 +16,8 @@ import {
 } from "../backups/utils";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import { getRestoreCommand } from "./utils";
+
+const logger = createLogger("restore");
 
 /**
  * Build a command that snapshots the *current* database to a local file before a
@@ -76,6 +79,12 @@ export const restoreDatabaseBackup = async (
 ) => {
 	try {
 		const { appName, runtimeWorkerId, engine } = database;
+
+		logger.info(
+			{ appName, engine, backupFile: backupInput.backupFile },
+			"Database restore started",
+		);
+
 		const config = parseDatabaseConfig(engine, database.config);
 
 		const rcloneFlags = getS3Credentials(destination);
@@ -172,6 +181,10 @@ export const restoreDatabaseBackup = async (
 					`Pre-restore snapshot saved to ${snapshot.file} — delete it once you've verified the restore.`,
 				);
 			} catch (snapshotError) {
+				logger.warn(
+					{ err: snapshotError, appName, engine },
+					"Pre-restore snapshot failed",
+				);
 				emit(
 					`⚠️ Could not take a pre-restore snapshot (${
 						snapshotError instanceof Error
@@ -188,9 +201,18 @@ export const restoreDatabaseBackup = async (
 			await execAsync(command);
 		}
 
+		logger.info({ appName, engine }, "Database restore completed");
 		emit("Restore completed successfully!");
 	} catch (error) {
-		console.error(error);
+		logger.error(
+			{
+				err: error,
+				appName: database.appName,
+				engine: database.engine,
+				backupFile: backupInput.backupFile,
+			},
+			"Database backup restore failed",
+		);
 		emit(
 			`Error: ${
 				error instanceof Error

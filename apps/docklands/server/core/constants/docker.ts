@@ -1,5 +1,8 @@
 import fs from "node:fs";
 import Docker from "dockerode";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("docker");
 
 export const DOCKLANDS_DOCKER_API_VERSION =
 	process.env.DOCKLANDS_DOCKER_API_VERSION;
@@ -19,8 +22,9 @@ const getDockerConfig = (): Docker => {
 		: {};
 
 	if (DOCKLANDS_DOCKER_HOST) {
-		console.info(
-			`Using remote Docker host: ${DOCKLANDS_DOCKER_HOST}${DOCKLANDS_DOCKER_PORT ? `:${DOCKLANDS_DOCKER_PORT}` : ""}`,
+		logger.info(
+			{ host: DOCKLANDS_DOCKER_HOST, port: DOCKLANDS_DOCKER_PORT },
+			"Using remote Docker host",
 		);
 		return new Docker({
 			host: DOCKLANDS_DOCKER_HOST,
@@ -53,8 +57,9 @@ const getDockerConfig = (): Docker => {
 	for (const candidate of dockerSocketCandidates) {
 		try {
 			if (candidate.path && fs.existsSync(candidate.path)) {
-				console.info(
-					`Using Docker socket (${candidate.label}): ${candidate.path}`,
+				logger.info(
+					{ label: candidate.label, socketPath: candidate.path },
+					"Using Docker socket",
 				);
 				return new Docker({
 					socketPath: candidate.path,
@@ -62,15 +67,18 @@ const getDockerConfig = (): Docker => {
 				});
 			}
 		} catch (e) {
-			console.info(
-				`Docker socket initialization failed for ${candidate.label} (${candidate.path}): ${e instanceof Error ? e.message : "Unknown error"}`,
+			logger.warn(
+				{
+					label: candidate.label,
+					socketPath: candidate.path,
+					err: e instanceof Error ? e.message : e,
+				},
+				"Docker socket candidate failed",
 			);
 		}
 	}
 
-	console.info(
-		"Using default Docker configuration. You can set the DOCKER_HOST environment variable to specify a custom Docker socket path.",
-	);
+	logger.info({}, "Using default Docker configuration");
 	return new Docker({ ...versionOption });
 };
 

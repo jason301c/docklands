@@ -1,5 +1,8 @@
 import { customType } from "drizzle-orm/pg-core";
 import { decryptSecret, encryptSecret } from "@/server/core/crypto/secret-box";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("db");
 
 /**
  * Transparent column encryption for secret material — the Drizzle analog of
@@ -15,7 +18,14 @@ export const encryptedText = (name: string) =>
 	customType<{ data: string; driverData: string }>({
 		dataType: () => "text",
 		toDriver: (value) => encryptSecret(value),
-		fromDriver: (value) => decryptSecret(value),
+		fromDriver: (value) => {
+			try {
+				return decryptSecret(value);
+			} catch (err) {
+				logger.error({ err, name }, "db: column decryption failed");
+				throw err;
+			}
+		},
 	})(name);
 
 /**
@@ -29,5 +39,12 @@ export const encryptedJson = <T>(name: string) =>
 	customType<{ data: T; driverData: string }>({
 		dataType: () => "text",
 		toDriver: (value) => encryptSecret(JSON.stringify(value)),
-		fromDriver: (value) => JSON.parse(decryptSecret(value)) as T,
+		fromDriver: (value) => {
+			try {
+				return JSON.parse(decryptSecret(value)) as T;
+			} catch (err) {
+				logger.error({ err, name }, "db: column decryption failed");
+				throw err;
+			}
+		},
 	})(name);

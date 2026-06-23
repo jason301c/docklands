@@ -1,7 +1,10 @@
 import { render } from "@react-email/components";
+import { createLogger } from "@/server/core/lib/logger";
 import InvitationEmail from "../emails/emails/invitation";
 import VerifyEmailTemplate from "../emails/emails/verify-email";
 import { sendEmailNotification } from "../utils/notifications/utils";
+
+const logger = createLogger("verification:email");
 
 export const sendEmail = async ({
 	email,
@@ -14,19 +17,25 @@ export const sendEmail = async ({
 	text: string;
 	attachments?: { filename: string; content: Buffer }[];
 }) => {
-	await sendEmailNotification(
-		{
-			fromAddress: process.env.SMTP_FROM_ADDRESS || "",
-			toAddresses: [email],
-			smtpServer: process.env.SMTP_SERVER || "",
-			smtpPort: Number(process.env.SMTP_PORT),
-			username: process.env.SMTP_USERNAME || "",
-			password: process.env.SMTP_PASSWORD || "",
-		},
-		subject,
-		text,
-		attachments,
-	);
+	try {
+		await sendEmailNotification(
+			{
+				fromAddress: process.env.SMTP_FROM_ADDRESS || "",
+				toAddresses: [email],
+				smtpServer: process.env.SMTP_SERVER || "",
+				smtpPort: Number(process.env.SMTP_PORT),
+				username: process.env.SMTP_USERNAME || "",
+				password: process.env.SMTP_PASSWORD || "",
+			},
+			subject,
+			text,
+			attachments,
+		);
+		logger.info({ to: email, subject }, "Email sent");
+	} catch (err) {
+		logger.error({ err, to: email, subject }, "Email delivery failed");
+		throw err;
+	}
 
 	return true;
 };

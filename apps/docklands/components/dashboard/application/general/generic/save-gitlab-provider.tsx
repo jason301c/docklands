@@ -17,6 +17,7 @@ import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { GitlabIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -38,6 +39,8 @@ const CommandList = Combobox.List;
 const CommandGroup = Combobox.Group;
 const CommandItem = Combobox.Item;
 const CommandEmpty = Combobox.Empty;
+
+const logger = createClientLogger("application");
 
 const GitlabProviderSchema = z.object({
 	buildPath: z.string().min(1, "Path is required").default("/"),
@@ -164,7 +167,8 @@ export const SaveGitlabProvider = ({ applicationId }: Props) => {
 				toast.success("Service Provider Saved");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to save the gitlab provider", err);
 				toast.error("Error saving the gitlab provider");
 			});
 	};

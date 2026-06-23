@@ -15,6 +15,7 @@ import {
 	session,
 	user,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	findOrganizationById,
 	getDocklandsUrl,
@@ -46,6 +47,8 @@ import {
 	publicProcedure,
 	withPermission,
 } from "../trpc";
+
+const logger = createLogger("trpc");
 
 const apiCreateApiKey = z.object({
 	name: z.string().min(1),
@@ -586,7 +589,7 @@ export const userRouter = createTRPCRouter({
 					);
 				}
 			} catch (error) {
-				console.log(error);
+				logger.error({ err: error }, "invitation email send failed");
 				throw error;
 			}
 			await audit(ctx, {

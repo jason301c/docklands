@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -23,6 +24,8 @@ import {
 } from "@/components/shared/form";
 import { Secrets } from "@/components/shared/secrets";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("preview");
 
 const schema = z
 	.object({
@@ -134,6 +137,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 				toast.success("Preview environment settings updated");
 			})
 			.catch((error) => {
+				logger.error("Failed to update preview environment settings", error);
 				toast.error(error.message);
 			});
 	};
@@ -426,6 +430,10 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 														);
 													})
 													.catch((error) => {
+														logger.error(
+															"Failed to toggle preview environments",
+															error,
+														);
 														toast.error(error.message);
 													});
 											}}

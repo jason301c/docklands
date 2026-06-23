@@ -365,6 +365,44 @@ before side effects; routers should audit meaningful mutations to the
   nosniff, referrer policy) are set in `next.config.mjs`; `cpu-features`,
   `node-pty`, and `ssh2` are `serverExternalPackages`.
 
+## Logging
+
+Backend code logs through one structured logger; do not reach for `console.*`.
+
+- **Server (Node): pino.** `server/core/lib/logger.ts` exports `logger` and
+  `createLogger(module)`. Give each file its own module logger
+  (`const logger = createLogger("docker")`) and log error-object-first:
+  `logger.error({ err, appName }, "Failed to pull image")`. The `err`/`error`
+  keys are serialized with their cause chain; put IDs/context as sibling fields,
+  not interpolated into the message. Output is `pino-pretty` in development and
+  JSON in production; level is `LOG_LEVEL` (default `info` in prod, `debug` in
+  dev); `LOG_PRETTY=true|false` overrides the format. A `redact` list scrubs
+  known secret keys as a backstop — it is **not** a license to log secrets.
+- **Browser: `client/lib/logger.ts`.** Client components/hooks use
+  `createClientLogger(scope)` (a thin `console` wrapper). `debug`/`info` are
+  dev-only; `warn`/`error` always emit. **Never import the Node pino logger into
+  client code** — it won't bundle, and the production build will fail.
+- **tRPC errors are logged centrally.** `logTRPCError` (exported from
+  `server/api/trpc.ts`) is wired into every tRPC adapter (fetch, OpenAPI, WS
+  `onError`), so a thrown `TRPCError` is always recorded server-side. When a
+  router catches and rethrows, pass `cause` (`new TRPCError({ ..., cause })`) so
+  the root error survives — do not add a redundant per-router `logger.error` for
+  rethrown TRPCErrors. Fire-and-forget/background work (`.catch(...)`) is *not*
+  seen by the sink, so it must log explicitly.
+- **Don't silence errors.** No empty `catch {}` and no swallow-and-return without
+  a log. Best-effort cleanup may continue past a failure, but log it (usually
+  `warn`/`debug`) so it isn't invisible. Demote hot-loop/per-line/per-byte logs
+  to `debug`.
+- **Secrets never go to logs.** No tokens, passwords, `DATABASE_URL`, private
+  keys, or raw env values — not even inside an error message. Redact
+  command/stderr strings at the boundary (`utils/process/redactSecrets`,
+  `utils/backups/redact`) before logging them.
+- **`server/ops/` exception.** CLI scripts that deliberately print a value for a
+  human (e.g. `reset-password` revealing a generated password, a setup success
+  banner) keep using `console`; route only diagnostics/errors through the logger.
+- **`tools/`** are Node dev scripts; `console` is acceptable there, but errors
+  must still surface (no empty catches; exit non-zero on failure).
+
 ## Security-Sensitive Boundaries
 
 Treat these as test-worthy and review them carefully:

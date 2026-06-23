@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -16,6 +17,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 export const updateConfigFormSchema = z.object({
 	Parallelism: z.coerce.number().optional(),
@@ -117,7 +120,8 @@ export const UpdateConfigForm = ({ id, type }: UpdateConfigFormProps) => {
 
 			toast.success("Update config updated successfully");
 			refetch();
-		} catch {
+		} catch (err) {
+			logger.error("Error updating update config", err);
 			toast.error("Error updating update config");
 		} finally {
 			setIsLoading(false);

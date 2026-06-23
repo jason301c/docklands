@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -22,6 +23,8 @@ import {
 import { toast } from "@/components/shared/toast";
 import type { ServiceType } from "@/server/core/db/schema";
 import { workspaceEnvironmentPath } from "@/shared/routes";
+
+const logger = createClientLogger("compose");
 
 const deleteComposeSchema = z.object({
 	projectName: z.string().min(1, {
@@ -111,7 +114,8 @@ export const DeleteService = ({ id, type }: Props) => {
 					toast.success("Service deleted successfully");
 					setIsOpen(false);
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error("Failed to delete the service", err);
 					toast.error("Error deleting the service");
 				});
 		} else {

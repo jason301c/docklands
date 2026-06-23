@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { notifications } from "@/server/core/db/schema";
 import DocklandsBackupEmail from "@/server/core/emails/emails/docklands-backup";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	sendCustomNotification,
 	sendDiscordNotification,
@@ -18,6 +19,8 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "./utils";
+
+const logger = createLogger("notify-dispatch");
 
 export const sendDocklandsBackupNotifications = async ({
 	type,
@@ -410,7 +413,10 @@ export const sendDocklandsBackupNotifications = async ({
 				});
 			}
 		} catch (error) {
-			console.error(error);
+			logger.warn(
+				{ err: error, notificationId: notification.notificationId },
+				"Docklands backup notification delivery failed",
+			);
 		}
 	}
 };

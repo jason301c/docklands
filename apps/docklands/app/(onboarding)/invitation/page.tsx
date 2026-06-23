@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
+import { createLogger } from "@/server/core/lib/logger";
 import { getUserByToken } from "@/server/core/services/admin";
 import ClientPage from "./_client";
+
+const logger = createLogger("invitation");
 
 type PageProps = {
 	searchParams: Promise<{ token?: string | string[] }>;
@@ -25,7 +28,8 @@ export default async function Page({ searchParams }: PageProps) {
 				userAlreadyExists={!!invitation.userAlreadyExists}
 			/>
 		);
-	} catch {
+	} catch (err) {
+		logger.warn({ err }, "invitation lookup failed");
 		redirect("/");
 	}
 }

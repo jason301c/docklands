@@ -5,10 +5,13 @@ import { Table } from "@cloudflare/kumo/components/table";
 import { format } from "date-fns";
 import { Loader2, MoreHorizontal, Users } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { AddUserPermissions } from "./add-permissions";
 import { ChangeRole } from "./change-role";
+
+const logger = createClientLogger("users");
 
 export const ShowUsers = () => {
 	const { data, isPending, refetch } = api.user.all.useQuery();
@@ -186,6 +189,7 @@ export const ShowUsers = () => {
 																							refetch();
 																						})
 																						.catch((err) => {
+																							logger.error(err);
 																							toast.error(
 																								err?.message ||
 																									"Error deleting user",

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -18,6 +19,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("users");
 
 const changeRoleSchema = z.object({
 	role: z.string().min(1),
@@ -68,6 +71,7 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 				setIsOpen(false);
 			})
 			.catch((error) => {
+				logger.error(error);
 				toast.error(error?.message || "Error updating role");
 			});
 	};

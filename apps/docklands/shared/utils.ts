@@ -22,9 +22,9 @@ export function formatTimestamp(timestamp: string | number) {
 				return date.toLocaleString();
 			}
 		}
-		return "Fecha inválida";
+		return "Invalid date";
 	} catch {
-		return "Fecha inválida";
+		return "Invalid date";
 	}
 }
 

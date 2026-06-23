@@ -7,7 +7,11 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+
+const logger = createClientLogger("ssh-keys");
+
 import {
 	Form,
 	FormControl,
@@ -82,7 +86,8 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 				form.reset();
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(err);
 				toast.error(
 					sshKeyId
 						? "Error updating the SSH key"
@@ -99,7 +104,8 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 				form.setValue("privateKey", data.privateKey);
 				form.setValue("publicKey", data.publicKey);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(err);
 				toast.error("Error generating the SSH Key");
 			});
 

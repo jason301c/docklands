@@ -107,10 +107,10 @@ export const giteaRouter = createTRPCRouter({
 				const repositories = await getGiteaRepositories(giteaId);
 				return repositories;
 			} catch (error) {
-				console.error("Error fetching Gitea repositories:", error);
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: error instanceof Error ? error.message : String(error),
+					cause: error,
 				});
 			}
 		}),
@@ -135,10 +135,10 @@ export const giteaRouter = createTRPCRouter({
 					repo: repositoryName,
 				});
 			} catch (error) {
-				console.error("Error fetching Gitea branches:", error);
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: error instanceof Error ? error.message : String(error),
+					cause: error,
 				});
 			}
 		}),
@@ -155,10 +155,10 @@ export const giteaRouter = createTRPCRouter({
 
 				return `Found ${result} repositories`;
 			} catch (error) {
-				console.error("Gitea connection test error:", error);
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: error instanceof Error ? error.message : String(error),
+					cause: error,
 				});
 			}
 		}),

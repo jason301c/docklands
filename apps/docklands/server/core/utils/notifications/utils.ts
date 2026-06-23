@@ -14,6 +14,9 @@ import type {
 	teams,
 	telegram,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("notify-dispatch");
 
 export const sendEmailNotification = async (
 	connection: typeof email.$inferInsert,
@@ -45,10 +48,8 @@ export const sendEmailNotification = async (
 			attachments,
 		});
 	} catch (err) {
-		console.log(err);
-		throw new Error(
-			`Failed to send email notification ${err instanceof Error ? err.message : "Unknown error"}`,
-		);
+		logger.warn({ err }, "Email notification delivery failed");
+		throw new Error("Failed to send email notification", { cause: err });
 	}
 };
 
@@ -71,10 +72,8 @@ export const sendResendNotification = async (
 			throw new Error(result.error.message);
 		}
 	} catch (err) {
-		console.log(err);
-		throw new Error(
-			`Failed to send Resend notification ${err instanceof Error ? err.message : "Unknown error"}`,
-		);
+		logger.warn({ err }, "Resend notification delivery failed");
+		throw new Error("Failed to send Resend notification", { cause: err });
 	}
 };
 
@@ -94,10 +93,11 @@ export const sendDiscordNotification = async (
 			);
 		}
 	} catch (err) {
-		console.log("error", err);
-		throw new Error(
-			`Failed to send discord notification ${err instanceof Error ? err.message : "Unknown error"}`,
+		logger.warn(
+			{ err, channel: "discord" },
+			"Discord notification delivery failed",
 		);
+		throw new Error("Failed to send discord notification", { cause: err });
 	}
 };
 
@@ -126,7 +126,10 @@ export const sendTelegramNotification = async (
 			}),
 		});
 	} catch (err) {
-		console.log(err);
+		logger.warn(
+			{ err, channel: "telegram" },
+			"Telegram notification delivery failed",
+		);
 	}
 };
 
@@ -146,10 +149,11 @@ export const sendSlackNotification = async (
 			);
 		}
 	} catch (err) {
-		console.log("error", err);
-		throw new Error(
-			`Failed to send slack notification ${err instanceof Error ? err.message : "Unknown error"}`,
+		logger.warn(
+			{ err, channel: "slack" },
+			"Slack notification delivery failed",
 		);
+		throw new Error("Failed to send slack notification", { cause: err });
 	}
 };
 
@@ -264,7 +268,10 @@ export const sendCustomNotification = async (
 
 		return response;
 	} catch (error) {
-		console.error("Error sending custom notification:", error);
+		logger.warn(
+			{ err: error, channel: "custom" },
+			"Custom notification delivery failed",
+		);
 		throw error;
 	}
 };
@@ -280,7 +287,7 @@ export const sendLarkNotification = async (
 			body: JSON.stringify(message),
 		});
 	} catch (err) {
-		console.log(err);
+		logger.warn({ err, channel: "lark" }, "Lark notification delivery failed");
 	}
 };
 
@@ -355,10 +362,11 @@ export const sendTeamsNotification = async (
 			);
 		}
 	} catch (err) {
-		console.log(err);
-		throw new Error(
-			`Failed to send Teams notification ${err instanceof Error ? err.message : "Unknown error"}`,
+		logger.warn(
+			{ err, channel: "teams" },
+			"Teams notification delivery failed",
 		);
+		throw new Error("Failed to send Teams notification", { cause: err });
 	}
 };
 

@@ -2,6 +2,9 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { Sql } from "postgres";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("ops:migrate-db");
 
 type JournalEntry = {
 	tag: string;
@@ -216,6 +219,6 @@ export async function adoptResetBaseline(
 			insert into "drizzle"."__drizzle_migrations" ("hash", "created_at")
 			values (${baseline.hash}, ${baseline.when})
 		`;
-		console.log("[migrate-db] Adopted reset baseline for existing schema");
+		logger.info("Adopted reset baseline for existing schema");
 	}
 }

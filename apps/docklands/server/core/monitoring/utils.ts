@@ -1,6 +1,9 @@
 import { promises } from "node:fs";
 import { OSUtils } from "node-os-utils";
+import { createLogger } from "@/server/core/lib/logger";
 import { paths } from "../constants";
+
+const logger = createLogger("monitoring:stats");
 
 export interface Container {
 	BlockIO: string;
@@ -173,7 +176,11 @@ export const readStatsFile = async (
 		const filePath = `${MONITORING_PATH}/${appName}/${statType}.json`;
 		const data = await promises.readFile(filePath, "utf-8");
 		return JSON.parse(data);
-	} catch {
+	} catch (err) {
+		logger.debug(
+			{ err, appName, statType },
+			"Stats file unreadable — returning empty array",
+		);
 		return [];
 	}
 };
@@ -208,7 +215,11 @@ export const readLastValueStatsFile = async (
 		const data = await promises.readFile(filePath, "utf-8");
 		const stats = JSON.parse(data);
 		return stats[stats.length - 1] || null;
-	} catch {
+	} catch (err) {
+		logger.debug(
+			{ err, appName, statType },
+			"Stats file unreadable — returning null",
+		);
 		return null;
 	}
 };

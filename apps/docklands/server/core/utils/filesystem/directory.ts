@@ -1,15 +1,20 @@
 import fs, { promises as fsPromises } from "node:fs";
 import path from "node:path";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Application } from "@/server/core/services/application";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
+
+const logger = createLogger("fs");
 
 export const recreateDirectory = async (pathFolder: string): Promise<void> => {
 	try {
 		await removeDirectoryIfExistsContent(pathFolder);
 		await fsPromises.mkdir(pathFolder, { recursive: true });
+		logger.debug({ path: pathFolder }, "directory recreated");
 	} catch (error) {
-		console.error(`Error recreating directory '${pathFolder}':`, error);
+		logger.error({ err: error, path: pathFolder }, "recreateDirectory failed");
+		throw error;
 	}
 };
 
@@ -22,8 +27,16 @@ export const recreateDirectoryRemote = async (
 			runtimeWorkerId,
 			`rm -rf ${pathFolder}; mkdir -p ${pathFolder}`,
 		);
+		logger.debug(
+			{ path: pathFolder, runtimeWorkerId },
+			"remote directory recreated",
+		);
 	} catch (error) {
-		console.error(`Error recreating directory '${pathFolder}':`, error);
+		logger.error(
+			{ err: error, path: pathFolder, runtimeWorkerId },
+			"recreateDirectoryRemote failed",
+		);
+		throw error;
 	}
 };
 
@@ -39,7 +52,7 @@ export const removeFileOrDirectory = async (path: string) => {
 	try {
 		await execAsync(`rm -rf ${path}`);
 	} catch (error) {
-		console.error(`Error removing ${path}: ${error}`);
+		logger.error({ err: error, path }, "removeFileOrDirectory failed");
 		throw error;
 	}
 };
@@ -58,7 +71,10 @@ export const removeDirectoryCode = async (
 			await execAsync(command);
 		}
 	} catch (error) {
-		console.error(`Error removing ${directoryPath}: ${error}`);
+		logger.error(
+			{ err: error, path: directoryPath, appName, runtimeWorkerId },
+			"removeDirectoryCode failed",
+		);
 		throw error;
 	}
 };
@@ -77,7 +93,10 @@ export const removeComposeDirectory = async (
 			await execAsync(command);
 		}
 	} catch (error) {
-		console.error(`Error removing ${directoryPath}: ${error}`);
+		logger.error(
+			{ err: error, path: directoryPath, appName, runtimeWorkerId },
+			"removeComposeDirectory failed",
+		);
 		throw error;
 	}
 };
@@ -96,7 +115,10 @@ export const removeMonitoringDirectory = async (
 			await execAsync(command);
 		}
 	} catch (error) {
-		console.error(`Error removing ${directoryPath}: ${error}`);
+		logger.error(
+			{ err: error, path: directoryPath, appName, runtimeWorkerId },
+			"removeMonitoringDirectory failed",
+		);
 		throw error;
 	}
 };

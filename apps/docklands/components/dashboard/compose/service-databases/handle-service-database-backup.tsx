@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -27,6 +28,8 @@ import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import { ScheduleFormField } from "../../application/schedules/handle-schedules";
+
+const logger = createClientLogger("compose");
 
 /**
  * Backup engines that support logical backups. Mirrors the managed-database
@@ -112,7 +115,11 @@ export const HandleServiceDatabaseBackup = ({
 				await utils.serviceDatabase.backups.invalidate({ serviceDatabaseId });
 				refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(
+					`Failed to ${backupId ? "update" : "create"} a backup`,
+					err,
+				);
 				toast.error(`Error ${backupId ? "updating" : "creating"} a backup`);
 			});
 	};

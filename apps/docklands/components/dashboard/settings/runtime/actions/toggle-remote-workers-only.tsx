@@ -3,7 +3,10 @@ import { Switch } from "@cloudflare/kumo/components/switch";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { HelpCircle } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("runtime-actions");
 
 export const ToggleRemoteWorkersOnly = () => {
 	const { data, refetch } = api.settings.getWebServerSettings.useQuery();
@@ -15,7 +18,8 @@ export const ToggleRemoteWorkersOnly = () => {
 			await mutateAsync({ remoteServersOnly: checked });
 			await refetch();
 			toast.success("Remote workers only updated");
-		} catch {
+		} catch (err) {
+			logger.error(err);
 			toast.error("Error updating remote workers only");
 		}
 	};

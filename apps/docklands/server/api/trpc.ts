@@ -20,6 +20,7 @@ import {
 	validateRequest,
 	validateRequestHeaders,
 } from "@/server/core/lib/auth";
+import { createLogger } from "@/server/core/lib/logger";
 import type { OpenApiMeta } from "@/server/core/openapi/types";
 import { checkPermission } from "@/server/core/services/permission";
 
@@ -182,6 +183,57 @@ const t = initTRPC
  * @see https://trpc.io/docs/router
  */
 export const createTRPCRouter = t.router;
+
+const trpcLogger = createLogger("trpc");
+
+/**
+ * TRPCError codes that represent an expected client-side problem (bad input,
+ * auth, missing/duplicate resource) rather than a server fault. These are logged
+ * at `debug` so the error stream stays focused on genuine server failures, while
+ * still leaving a trace when debugging. Everything else (notably
+ * `INTERNAL_SERVER_ERROR`) is logged at `error` with its cause chain.
+ */
+const EXPECTED_TRPC_CODES = new Set([
+	"UNAUTHORIZED",
+	"FORBIDDEN",
+	"NOT_FOUND",
+	"BAD_REQUEST",
+	"PARSE_ERROR",
+	"CONFLICT",
+	"PRECONDITION_FAILED",
+	"TOO_MANY_REQUESTS",
+	"UNPROCESSABLE_CONTENT",
+	"PAYLOAD_TOO_LARGE",
+	"METHOD_NOT_SUPPORTED",
+	"CLIENT_CLOSED_REQUEST",
+]);
+
+/**
+ * Shared tRPC `onError` sink. Wire this into every tRPC adapter (fetch handler,
+ * OpenAPI handler, WebSocket handler) so server-side failures are never silent —
+ * a TRPCError shown to the user should not be the only record of a server fault.
+ * The pino `err` serializer preserves the original `cause`, so wrapped errors
+ * keep their root context.
+ */
+export const logTRPCError = (opts: {
+	error: TRPCError;
+	path?: string | null;
+	type?: string | null;
+}) => {
+	const { error, path, type } = opts;
+	const payload = {
+		err: error,
+		code: error.code,
+		path: path ?? null,
+		type: type ?? null,
+	};
+	const message = `tRPC ${type ?? "call"} failed on ${path ?? "<no-path>"}: ${error.code}`;
+	if (EXPECTED_TRPC_CODES.has(error.code)) {
+		trpcLogger.debug(payload, message);
+	} else {
+		trpcLogger.error(payload, message);
+	}
+};
 
 /**
  * Public (unauthenticated) procedure

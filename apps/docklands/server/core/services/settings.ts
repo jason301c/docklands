@@ -2,6 +2,7 @@ import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { and, eq } from "drizzle-orm";
 import semver from "semver";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	execAsync,
 	execAsyncRemote,
@@ -13,6 +14,8 @@ import {
 	initializeTraefikService,
 	type TraefikOptions,
 } from "../setup/traefik-setup";
+
+const logger = createLogger("settings");
 
 export interface IUpdateData {
 	latestVersion: string | null;
@@ -134,7 +137,7 @@ export const getUpdateData = async (
 			updateAvailable,
 		};
 	} catch (error) {
-		console.error("Error fetching update data:", error);
+		logger.warn({ err: error }, "Error fetching update data from Docker Hub");
 		return DEFAULT_UPDATE_DATA;
 	}
 };
@@ -278,7 +281,10 @@ fi`;
 		}
 		return "unknown";
 	} catch (error) {
-		console.error(error);
+		logger.warn(
+			{ err: error, resourceName, runtimeWorkerId },
+			"getDockerResourceType failed",
+		);
 		return "unknown";
 	}
 };
@@ -458,7 +464,10 @@ export const checkPortInUse = async (
 
 		return { isInUse: false };
 	} catch (error) {
-		console.error("Error checking port availability:", error);
+		logger.warn(
+			{ err: error, port, runtimeWorkerId },
+			"checkPortInUse failed, defaulting to not-in-use",
+		);
 		return { isInUse: false };
 	}
 };

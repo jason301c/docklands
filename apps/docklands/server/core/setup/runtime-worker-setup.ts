@@ -2,6 +2,10 @@ import path from "node:path";
 import slug from "slugify";
 import { Client } from "ssh2";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("setup:worker-setup");
+
 import {
 	createServerDeployment,
 	updateDeploymentStatus,
@@ -60,7 +64,7 @@ export const runtimeWorkerSetup = async (
 
 		onData?.(`\nSetup ${workerKind}: ✅\n`);
 	} catch (err) {
-		console.log(err);
+		logger.error({ err }, "Runtime worker setup failed");
 
 		await updateDeploymentStatus(deployment.deploymentId, "error");
 		onData?.(`${err} ❌\n`);

@@ -6,6 +6,9 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { resolve } from "node:path";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("ops:ensure-encryption-key");
 
 const envPath = resolve(process.cwd(), ".env");
 const keyPattern =
@@ -15,14 +18,14 @@ if (
 	process.env.DOCKLANDS_ENCRYPTION_KEY ||
 	process.env.DOCKLANDS_ENCRYPTION_KEY_FILE
 ) {
-	console.log("[ensure-encryption-key] Encryption key is already configured");
+	logger.info("Encryption key is already configured");
 	process.exit(0);
 }
 
 const currentEnv = existsSync(envPath) ? readFileSync(envPath, "utf8") : "";
 
 if (keyPattern.test(currentEnv)) {
-	console.log("[ensure-encryption-key] Encryption key is already in .env");
+	logger.info("Encryption key is already in .env");
 	process.exit(0);
 }
 
@@ -37,6 +40,4 @@ if (existsSync(envPath)) {
 	writeFileSync(envPath, entry);
 }
 
-console.log(
-	"[ensure-encryption-key] Generated DOCKLANDS_ENCRYPTION_KEY in .env",
-);
+logger.info("Generated DOCKLANDS_ENCRYPTION_KEY in .env");

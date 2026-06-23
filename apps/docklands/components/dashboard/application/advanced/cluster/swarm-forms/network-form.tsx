@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -15,6 +16,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const driverOptEntrySchema = z.object({
 	key: z.string(),
@@ -146,7 +149,8 @@ export const NetworkForm = ({ id, type }: NetworkFormProps) => {
 
 			toast.success("Network configuration updated successfully");
 			refetch();
-		} catch {
+		} catch (err) {
+			logger.error("Error updating network configuration", err);
 			toast.error("Error updating network configuration");
 		} finally {
 			setIsLoading(false);

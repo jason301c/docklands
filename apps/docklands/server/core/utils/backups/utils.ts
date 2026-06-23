@@ -245,6 +245,13 @@ export const getBackupCommand = (
 	const containerSearch = getContainerSearchCommand(backup);
 	const backupCommand = generateBackupCommand(backup);
 
+	if (!backupCommand) {
+		logger.warn(
+			{ databaseType: backup.databaseType, backupType: backup.backupType },
+			"No backup command generated; backup will be a no-op",
+		);
+	}
+
 	logger.info(
 		{
 			containerSearch,

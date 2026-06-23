@@ -1,5 +1,8 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { readSecret } from "@/server/core/db/constants";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("crypto:secret-box");
 
 /**
  * Application-level encryption-at-rest for secret material (the Docklands analog
@@ -50,12 +53,18 @@ export const resolveEncryptionKey = (
 	env: NodeJS.ProcessEnv = process.env,
 ): string => {
 	if (env.DOCKLANDS_ENCRYPTION_KEY) {
+		logger.debug({ source: "env" }, "Encryption key resolved");
 		return env.DOCKLANDS_ENCRYPTION_KEY;
 	}
 	if (env.DOCKLANDS_ENCRYPTION_KEY_FILE) {
+		logger.debug(
+			{ source: "file", path: env.DOCKLANDS_ENCRYPTION_KEY_FILE },
+			"Encryption key resolved",
+		);
 		return readSecret(env.DOCKLANDS_ENCRYPTION_KEY_FILE);
 	}
 	if (env.NODE_ENV === "test") {
+		logger.debug({ source: "test-fallback" }, "Encryption key resolved");
 		return TEST_ENCRYPTION_KEY;
 	}
 	throw new Error(

@@ -3,6 +3,10 @@ import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Download } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
+
+const logger = createClientLogger("runtime-update");
+
 import { RuntimeUpdateDialog } from "@/components/dashboard/settings/ingress-runtime/runtime-update-dialog";
 import type { IUpdateData } from "@/server/core/services/settings";
 
@@ -46,7 +50,7 @@ export const RuntimeUpdateButton = () => {
 					setUpdateData(fetchedUpdateData);
 				}
 			} catch (error) {
-				console.error("Error auto-checking for updates:", error);
+				logger.error("auto-update check failed:", error);
 			}
 		};
 

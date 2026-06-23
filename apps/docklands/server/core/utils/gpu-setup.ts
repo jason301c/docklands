@@ -1,5 +1,8 @@
 import * as fs from "node:fs/promises";
+import { createLogger } from "@/server/core/lib/logger";
 import { execAsync, execAsyncRemote, sleep } from "../utils/process/execAsync";
+
+const logger = createLogger("gpu");
 
 interface GPUInfo {
 	driverInstalled: boolean;
@@ -35,7 +38,11 @@ export async function checkGPUStatus(
 			...gpuInfo,
 			...cudaInfo,
 		};
-	} catch {
+	} catch (err) {
+		logger.warn(
+			{ err },
+			"checkGPUStatus encountered unexpected error, returning defaults",
+		);
 		return {
 			driverInstalled: false,
 			driverVersion: undefined,
@@ -76,7 +83,10 @@ const checkGpuDriver = async (runtimeWorkerId?: string) => {
 			availableGPUs = Number.parseInt(gpuCount.trim(), 10);
 		}
 	} catch (error) {
-		console.debug("GPU driver check:", error);
+		logger.debug(
+			{ err: error },
+			"GPU driver check failed (GPU may not be present)",
+		);
 	}
 
 	return { driverVersion, driverInstalled, availableGPUs };
@@ -95,7 +105,7 @@ const checkRuntime = async (runtimeWorkerId?: string) => {
 				: await execAsync(checkBinaryCommand);
 			runtimeInstalled = !!stdout.trim();
 		} catch (error) {
-			console.debug("Runtime binary check:", error);
+			logger.debug({ err: error }, "GPU runtime binary check failed");
 		}
 
 		// Second check: Is it configured in Docker?
@@ -117,10 +127,10 @@ const checkRuntime = async (runtimeWorkerId?: string) => {
 			// Only set runtimeConfigured if both conditions are met
 			runtimeConfigured = hasNvidiaRuntime && isDefaultRuntime;
 		} catch (error) {
-			console.debug("Runtime configuration check:", error);
+			logger.debug({ err: error }, "GPU runtime configuration check failed");
 		}
 	} catch (error) {
-		console.debug("Runtime check:", error);
+		logger.debug({ err: error }, "GPU runtime check failed");
 	}
 
 	return { runtimeInstalled, runtimeConfigured };
@@ -152,7 +162,7 @@ const checkSwarmResources = async (runtimeWorkerId?: string) => {
 			}
 		}
 	} catch (error) {
-		console.debug("Swarm resource check:", error);
+		logger.debug({ err: error }, "GPU swarm resource check failed");
 	}
 
 	return { swarmEnabled, gpuResources };
@@ -171,7 +181,7 @@ const checkGpuInfo = async (runtimeWorkerId?: string) => {
 
 		[gpuModel, memoryInfo] = gpuInfo.split(",").map((s) => s.trim());
 	} catch (error) {
-		console.debug("GPU info check:", error);
+		logger.debug({ err: error }, "GPU info check failed");
 	}
 
 	return { gpuModel, memoryInfo };
@@ -191,7 +201,7 @@ const checkCudaSupport = async (runtimeWorkerId?: string) => {
 		cudaVersion = cudaMatch ? cudaMatch[1] : undefined;
 		cudaSupport = !!cudaVersion;
 	} catch (error) {
-		console.debug("CUDA support check:", error);
+		logger.debug({ err: error }, "CUDA support check failed");
 	}
 
 	return { cudaVersion, cudaSupport };
@@ -199,33 +209,54 @@ const checkCudaSupport = async (runtimeWorkerId?: string) => {
 
 export async function setupGPUSupport(runtimeWorkerId?: string): Promise<void> {
 	try {
+		logger.info({ runtimeWorkerId }, "GPU support setup started");
+
 		// 1. Initial status check and validation
 		const initialStatus = await checkGPUStatus(runtimeWorkerId);
 		const shouldContinue = await validatePrerequisites(initialStatus);
-		if (!shouldContinue) return;
+		if (!shouldContinue) {
+			logger.info(
+				{ runtimeWorkerId },
+				"GPU support already configured, skipping setup",
+			);
+			return;
+		}
 
 		// 2. Get node ID
 		const nodeId = await getNodeId(runtimeWorkerId);
+		logger.info({ nodeId, runtimeWorkerId }, "obtained Docker Swarm node ID");
 
 		// 3. Create daemon configuration
 		const daemonConfig = createDaemonConfig(initialStatus.availableGPUs);
 
 		// 4. Setup runtimeWorker based on environment
 		if (runtimeWorkerId) {
+			logger.info({ runtimeWorkerId }, "configuring GPU on remote server");
 			await setupRemoteServer(runtimeWorkerId, daemonConfig);
 		} else {
+			logger.info({}, "configuring GPU on local server");
 			await setupLocalServer(daemonConfig);
 		}
+		logger.info(
+			{ runtimeWorkerId },
+			"Docker daemon config written, waiting for restart",
+		);
 
 		// 5. Wait for Docker restart
 		await sleep(10000);
 
 		// 6. Add GPU label
+		logger.info({ nodeId, runtimeWorkerId }, "adding GPU label to Swarm node");
 		await addGpuLabel(nodeId, runtimeWorkerId);
 
 		// 7. Final verification
 		await sleep(5000);
 		await verifySetup(nodeId, runtimeWorkerId);
+
+		logger.info(
+			{ runtimeWorkerId },
+			"GPU support setup completed successfully",
+		);
 	} catch (error) {
 		if (
 			error instanceof Error &&
@@ -319,9 +350,10 @@ const setupLocalServer = async (daemonConfig: any) => {
 
 	try {
 		await execAsync(setupCommands);
-	} catch {
+	} catch (cause) {
 		throw new Error(
 			"Failed to configure GPU support. Please ensure you have sudo privileges and try again.",
+			{ cause },
 		);
 	}
 };
@@ -346,10 +378,23 @@ const verifySetup = async (nodeId: string, runtimeWorkerId?: string) => {
 			"cat /etc/nvidia-container-runtime/config.toml",
 		].join(" && ");
 
-		await (runtimeWorkerId
-			? execAsyncRemote(runtimeWorkerId, diagnosticCommands)
-			: execAsync(diagnosticCommands));
+		let diagnosticOutput: string | undefined;
+		try {
+			const { stdout } = await (runtimeWorkerId
+				? execAsyncRemote(runtimeWorkerId, diagnosticCommands)
+				: execAsync(diagnosticCommands));
+			diagnosticOutput = stdout;
+		} catch (diagErr) {
+			logger.warn(
+				{ err: diagErr, runtimeWorkerId },
+				"GPU verification diagnostic command failed",
+			);
+		}
 
+		logger.error(
+			{ nodeId, runtimeWorkerId, diagnosticOutput },
+			"GPU support not detected in swarm after setup",
+		);
 		throw new Error("GPU support not detected in swarm after setup");
 	}
 

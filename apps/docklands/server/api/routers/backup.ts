@@ -14,6 +14,7 @@ import {
 	apiRestoreBackup,
 	apiUpdateBackup,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	createBackup,
 	findBackupById,
@@ -47,6 +48,8 @@ import {
 	restoreDatabaseBackup,
 	restoreWebServerBackup,
 } from "@/server/core/utils/restore";
+
+const logger = createLogger("trpc");
 
 interface RcloneFile {
 	Path: string;
@@ -110,7 +113,6 @@ export const backupRouter = createTRPCRouter({
 					resourceId: backup.backupId,
 				});
 			} catch (error) {
-				console.error(error);
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message:
@@ -338,8 +340,10 @@ export const backupRouter = createTRPCRouter({
 				try {
 					files = JSON.parse(stdout) as RcloneFile[];
 				} catch (error) {
-					console.error("Error parsing JSON response:", error);
-					console.error("Raw stdout:", stdout);
+					logger.error(
+						{ err: error, stdoutPreview: stdout.slice(0, 500) },
+						"error parsing rclone JSON response",
+					);
 					throw new Error("Failed to parse backup files list");
 				}
 
@@ -362,7 +366,6 @@ export const backupRouter = createTRPCRouter({
 
 				return results.slice(0, 100);
 			} catch (error) {
-				console.error("Error in listBackupFiles:", error);
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message:

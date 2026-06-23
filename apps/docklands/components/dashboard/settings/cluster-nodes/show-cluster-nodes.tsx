@@ -11,11 +11,14 @@ import {
 	MoreHorizontal,
 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { AddClusterNode } from "./add-cluster-node";
 import { ShowClusterNodeData } from "./show-cluster-node-data";
+
+const logger = createClientLogger("cluster-nodes");
 
 interface Props {
 	runtimeWorkerId?: string;
@@ -141,7 +144,8 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 																					"Node deleted successfully",
 																				);
 																			})
-																			.catch(() => {
+																			.catch((err) => {
+																				logger.error(err);
 																				toast.error("Error deleting node");
 																			});
 																	}}

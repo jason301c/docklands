@@ -1,3 +1,4 @@
+import { createLogger } from "@/server/core/lib/logger";
 import type { BackupSchedule } from "@/server/core/services/backup";
 import type { Compose } from "@/server/core/services/compose";
 import {
@@ -9,6 +10,7 @@ import { findEnvironmentById } from "@/server/core/services/environment";
 import { findWorkspaceById } from "@/server/core/services/workspace";
 import { sendDatabaseBackupNotifications } from "../notifications/database-backup";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
+import { redactRcloneCredentials } from "./redact";
 import {
 	getBackupCommand,
 	getBackupTimestamp,
@@ -16,6 +18,8 @@ import {
 	getS3Credentials,
 	normalizeS3Path,
 } from "./utils";
+
+const logger = createLogger("backup");
 
 export const runComposeBackup = async (
 	compose: Compose,
@@ -34,6 +38,11 @@ export const runComposeBackup = async (
 		title: "Compose Backup",
 		description: "Compose Backup",
 	});
+
+	logger.info(
+		{ appName, databaseType, bucketDestination, backupId: backup.backupId },
+		"Compose backup started",
+	);
 
 	try {
 		const rcloneFlags = getS3Credentials(destination);
@@ -54,6 +63,11 @@ export const runComposeBackup = async (
 			});
 		}
 
+		logger.info(
+			{ appName, databaseType, backupId: backup.backupId },
+			"Compose backup completed",
+		);
+
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
 			projectName: workspace.name,
@@ -65,14 +79,25 @@ export const runComposeBackup = async (
 
 		await updateDeploymentStatus(deployment.deploymentId, "done");
 	} catch (error) {
-		console.log(error);
+		logger.error(
+			{
+				err: error,
+				appName,
+				databaseType,
+				backupId: backup.backupId,
+				rcloneDestination: redactRcloneCredentials(
+					`:s3:${destination.bucket}/${bucketDestination}`,
+				),
+			},
+			"Compose backup failed",
+		);
 		await sendDatabaseBackupNotifications({
 			applicationName: name,
 			projectName: workspace.name,
 			databaseType: getDatabaseType(databaseType),
 			type: "error",
-			// @ts-expect-error
-			errorMessage: error?.message || "Error message not provided",
+			errorMessage:
+				error instanceof Error ? error.message : "Error message not provided",
 			organizationId: workspace.organizationId,
 			databaseName: backup.database,
 		});

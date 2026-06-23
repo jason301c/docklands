@@ -18,11 +18,14 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { RequestDistributionChart } from "./request-distribution-chart";
 import { RequestsTable } from "./requests-table";
+
+const logger = createClientLogger("requests");
 
 export type LogEntry = NonNullable<
 	RouterOutputs["settings"]["readStatsLogs"]["data"]
@@ -172,6 +175,7 @@ export const ShowRequests = () => {
 											);
 										})
 										.catch((err) => {
+											logger.error("Error fetching requests", err);
 											toast.error(err.message);
 										});
 								}}

@@ -13,22 +13,23 @@ import { symmetricDecrypt, symmetricEncrypt } from "better-auth/crypto";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { twoFactor } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("ops:migrate-auth-secret");
 
 const OLD_SECRET = process.env.OLD_SECRET as string;
 const NEW_SECRET = process.env.NEW_SECRET as string;
 
 if (!OLD_SECRET || !NEW_SECRET) {
-	console.error(
-		"❌ OLD_SECRET and NEW_SECRET environment variables are required.",
-	);
-	console.error(
-		"   Usage: OLD_SECRET=<old> NEW_SECRET=<new> npx tsx server/ops/migrate-auth-secret.ts",
+	logger.fatal(
+		"OLD_SECRET and NEW_SECRET environment variables are required. " +
+			"Usage: OLD_SECRET=<old> NEW_SECRET=<new> npx tsx server/ops/migrate-auth-secret.ts",
 	);
 	process.exit(1);
 }
 
 if (OLD_SECRET === NEW_SECRET) {
-	console.error("❌ OLD_SECRET and NEW_SECRET must be different.");
+	logger.fatal("OLD_SECRET and NEW_SECRET must be different");
 	process.exit(1);
 }
 
@@ -42,18 +43,17 @@ async function reEncrypt(
 }
 
 async function main() {
-	console.log("🔍 Fetching 2FA records...");
+	logger.info("Fetching 2FA records");
 	const records = await db.select().from(twoFactor);
 
 	if (records.length === 0) {
-		console.log("✅ No 2FA records found, nothing to migrate.");
+		logger.info("No 2FA records found, nothing to migrate");
 		process.exit(0);
 	}
 
-	console.log(`📦 Found ${records.length} 2FA record(s) to migrate.`);
+	logger.info({ total: records.length }, "Found 2FA records to migrate");
 
 	let migrated = 0;
-	let failed = 0;
 
 	await db.transaction(async (tx) => {
 		for (const record of records) {
@@ -70,29 +70,20 @@ async function main() {
 
 				migrated++;
 			} catch (err) {
-				console.error(
-					`❌ Failed to migrate record ${record.id} (userId: ${record.userId}):`,
-					err,
+				logger.error(
+					{ err, recordId: record.id, userId: record.userId },
+					"Failed to migrate 2FA record — rolling back transaction",
 				);
-				failed++;
 				throw err; // rollback the whole transaction
 			}
 		}
 	});
 
-	console.log(`✅ Migrated ${migrated} record(s) successfully.`);
-
-	if (failed > 0) {
-		console.error(
-			`❌ ${failed} record(s) failed — transaction was rolled back.`,
-		);
-		process.exit(1);
-	} else {
-		process.exit(0);
-	}
+	logger.info({ migrated, total: records.length }, "Migration complete");
+	process.exit(0);
 }
 
 main().catch((err) => {
-	console.error("❌ Migration failed:", err);
+	logger.fatal({ err }, "Migration failed");
 	process.exit(1);
 });

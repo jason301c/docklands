@@ -9,6 +9,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -22,6 +23,8 @@ import { toast } from "@/components/shared/toast";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 import { PlacementFormField } from "./placement-select";
+
+const logger = createClientLogger("workspace");
 
 const AddTemplateSchema = z.object({
 	name: z.string().min(1, {
@@ -99,7 +102,8 @@ export const AddApplication = ({
 					environmentId,
 				});
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error creating the service", err);
 				toast.error("Error creating the service");
 			});
 	};

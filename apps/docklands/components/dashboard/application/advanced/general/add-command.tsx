@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
 	FormControl,
@@ -16,6 +17,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	applicationId: string;
@@ -80,7 +83,8 @@ export const AddCommand = ({ applicationId }: Props) => {
 					applicationId,
 				});
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to update the command", err);
 				toast.error("Error updating the command");
 			});
 	};

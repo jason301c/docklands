@@ -2,9 +2,12 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Split, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { HandleRedirect } from "./handle-redirect";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	applicationId: string;
@@ -98,7 +101,8 @@ export const ShowRedirects = ({ applicationId }: Props) => {
 															});
 															toast.success("Redirect deleted successfully");
 														})
-														.catch(() => {
+														.catch((err) => {
+															logger.error("Failed to delete redirect", err);
 															toast.error("Error deleting redirect");
 														});
 												}}

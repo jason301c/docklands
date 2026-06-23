@@ -4,6 +4,10 @@ import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
+
+const logger = createClientLogger("database-service");
+
 import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
@@ -57,7 +61,8 @@ export const ShowGeneralDatabase = ({ databaseId }: Props) => {
 				setFilteredLogs((prev) => [...prev, ...parsedLogs]);
 			},
 			onError(error) {
-				console.error("Deployment logs error:", error);
+				logger.error("deployment logs error:", error);
+				toast.warning("Log stream interrupted");
 				setIsDeploying(false);
 			},
 		},
@@ -120,7 +125,8 @@ export const ShowGeneralDatabase = ({ databaseId }: Props) => {
 												toast.success(`${engineLabel} reloaded successfully`);
 												refetch();
 											})
-											.catch(() => {
+											.catch((err) => {
+												logger.error("Error reloading database:", err);
 												toast.error(`Error reloading ${engineLabel}`);
 											});
 									}}
@@ -163,7 +169,8 @@ export const ShowGeneralDatabase = ({ databaseId }: Props) => {
 													toast.success(`${engineLabel} started successfully`);
 													refetch();
 												})
-												.catch(() => {
+												.catch((err) => {
+													logger.error("Error starting database:", err);
 													toast.error(`Error starting ${engineLabel}`);
 												});
 										}}
@@ -204,7 +211,8 @@ export const ShowGeneralDatabase = ({ databaseId }: Props) => {
 													toast.success(`${engineLabel} stopped successfully`);
 													refetch();
 												})
-												.catch(() => {
+												.catch((err) => {
+													logger.error("Error stopping database:", err);
 													toast.error(`Error stopping ${engineLabel}`);
 												});
 										}}

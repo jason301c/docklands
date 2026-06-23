@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
@@ -18,6 +19,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("workspace");
 
 const updateWorkspaceSchema = z.object({
 	env: z.string().optional(),
@@ -70,7 +73,8 @@ export const WorkspaceVariables = ({ workspaceId, children }: Props) => {
 				toast.success("Workspace variables updated");
 				utils.workspaces.all.invalidate();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error updating workspace variables", err);
 				toast.error("Error updating workspace variables");
 			})
 			.finally(() => {});

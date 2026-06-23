@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -21,6 +22,8 @@ import {
 } from "@/components/shared/form";
 import { Logo } from "@/components/shared/logo";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("invitation");
 
 const registerSchema = z
 	.object({
@@ -130,7 +133,8 @@ const Invitation = ({ token, invitation, userAlreadyExists }: Props) => {
 
 			toast.success("Account created successfully");
 			router.push("/dashboard/workspace");
-		} catch {
+		} catch (err) {
+			logger.error("invitation signup failed", err);
 			toast.error("An error occurred while creating your account");
 		}
 	};

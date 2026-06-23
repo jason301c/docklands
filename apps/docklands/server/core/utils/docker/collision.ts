@@ -1,4 +1,5 @@
 import { stringify } from "yaml";
+import { createLogger } from "@/server/core/lib/logger";
 import { findComposeById } from "@/server/core/services/compose";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import { addAppNameToAllServiceNames } from "./collision/root-network";
@@ -10,6 +11,8 @@ import {
 	loadDockerComposeRemote,
 } from "./domain";
 import type { ComposeSpecification } from "./types";
+
+const logger = createLogger("docker-compose");
 
 export const addAppNameToPreventCollision = (
 	composeData: ComposeSpecification,
@@ -30,6 +33,10 @@ export const randomizeIsolatedDeploymentComposeFile = async (
 	suffix?: string,
 ) => {
 	const compose = await findComposeById(composeId);
+	logger.info(
+		{ appName: compose.appName, composeId, suffix },
+		"randomizing isolated deployment compose file",
+	);
 
 	const command = await cloneCompose(compose);
 	if (compose.runtimeWorkerId) {

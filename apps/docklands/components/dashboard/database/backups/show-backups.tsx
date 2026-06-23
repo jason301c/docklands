@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	MariadbIcon,
 	MongodbIcon,
@@ -25,6 +26,8 @@ import type { ServiceType } from "../../application/advanced/show-resources";
 import { ShowDeploymentsModal } from "../../application/deployments/show-deployments-modal";
 import { HandleBackup } from "./handle-backup";
 import { RestoreBackup } from "./restore-backup";
+
+const logger = createClientLogger("database-backup");
 
 interface Props {
 	id: string;
@@ -316,7 +319,11 @@ export const ShowBackups = ({
 																					"Manual Backup Successful",
 																				);
 																			})
-																			.catch(() => {
+																			.catch((err) => {
+																				logger.error(
+																					"Error creating the manual backup",
+																					err,
+																				);
 																				toast.error(
 																					"Error creating the manual backup",
 																				);
@@ -349,7 +356,8 @@ export const ShowBackups = ({
 																			"Backup deleted successfully",
 																		);
 																	})
-																	.catch(() => {
+																	.catch((err) => {
+																		logger.error("Error deleting backup", err);
 																		toast.error("Error deleting backup");
 																	});
 															}}

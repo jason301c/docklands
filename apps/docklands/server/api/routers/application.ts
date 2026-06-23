@@ -133,10 +133,10 @@ export const applicationRouter = createTRPCRouter({
 				});
 				return newApplication;
 			} catch (error: unknown) {
-				console.log("error", error);
 				if (error instanceof TRPCError) {
 					throw error;
 				}
+				logger.error({ err: error }, "application.create failed");
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Error creating the application",
@@ -280,9 +280,9 @@ export const applicationRouter = createTRPCRouter({
 				} catch (error) {
 					// Best-effort cleanup: keep deleting the rest, but don't swallow
 					// silently — a failed step can leave orphaned Docker/Traefik state.
-					console.error(
-						`Failed to clean up application resource during delete for ${application.appName}:`,
-						error,
+					logger.error(
+						{ err: error, appName: application.appName },
+						"failed to clean up application resource during delete",
 					);
 				}
 			}
@@ -992,6 +992,7 @@ export const applicationRouter = createTRPCRouter({
 						error instanceof Error
 							? error.message
 							: "Failed to cancel deployment",
+					cause: error,
 				});
 			}
 		}),

@@ -3,7 +3,10 @@ import { Switch } from "@cloudflare/kumo/components/switch";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { HelpCircle } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("runtime-actions");
 
 interface Props {
 	runtimeWorkerId?: string;
@@ -47,7 +50,8 @@ export const ToggleDockerCleanup = ({ runtimeWorkerId }: Props) => {
 				await refetch();
 			}
 			toast.success("Runtime cleanup updated");
-		} catch {
+		} catch (err) {
+			logger.error(err);
 			toast.error("Runtime cleanup error");
 		}
 	};

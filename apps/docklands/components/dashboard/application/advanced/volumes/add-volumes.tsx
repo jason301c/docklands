@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
@@ -21,6 +22,8 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	serviceId: string;
@@ -106,7 +109,8 @@ export const AddVolumes = ({
 					toast.success("Mount Created");
 					setIsOpen(false);
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error("Failed to create the Bind mount", err);
 					toast.error("Error creating the Bind mount");
 				});
 		} else if (data.type === "volume") {
@@ -121,7 +125,8 @@ export const AddVolumes = ({
 					toast.success("Mount Created");
 					setIsOpen(false);
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error("Failed to create the Volume mount", err);
 					toast.error("Error creating the Volume mount");
 				});
 		} else if (data.type === "file") {
@@ -137,7 +142,8 @@ export const AddVolumes = ({
 					toast.success("Mount Created");
 					setIsOpen(false);
 				})
-				.catch(() => {
+				.catch((err) => {
+					logger.error("Failed to create the File mount", err);
 					toast.error("Error creating the File mount");
 				});
 		}

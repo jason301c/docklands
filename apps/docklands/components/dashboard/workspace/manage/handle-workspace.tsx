@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -21,6 +22,8 @@ import {
 import { TagSelector } from "@/components/shared/tag-selector";
 import { toast } from "@/components/shared/toast";
 import { workspaceEnvironmentPath } from "@/shared/routes";
+
+const logger = createClientLogger("workspace");
 
 const WorkspaceSchema = z.object({
 	name: z
@@ -116,6 +119,7 @@ export const HandleWorkspace = ({ workspaceId }: Props) => {
 							tagIds: selectedTagIds,
 						});
 					} catch (error) {
+						logger.error("Failed to assign tags to workspace", error);
 						toast.error("Failed to assign tags to workspace");
 					}
 				}
@@ -141,7 +145,8 @@ export const HandleWorkspace = ({ workspaceId }: Props) => {
 					refetch();
 				}
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error creating/updating workspace", err);
 				toast.error(
 					workspaceId
 						? "Error updating this workspace"

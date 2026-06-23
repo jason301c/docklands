@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
 	Form,
@@ -14,6 +15,8 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import { validateAndFormatYAML } from "../../application/advanced/ingress/update-ingress-config";
+
+const logger = createClientLogger("compose");
 
 interface Props {
 	composeId: string;
@@ -87,7 +90,8 @@ export const ComposeFileEditor = ({ composeId }: Props) => {
 					composeId,
 				});
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to update compose config", err);
 				toast.error("Error updating the Compose config");
 			});
 	};

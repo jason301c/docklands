@@ -5,6 +5,7 @@ import {
 	buildDatabasePublishedPorts,
 	parseDatabaseConfig,
 } from "@/server/core/databases/registry";
+import { createLogger } from "@/server/core/lib/logger";
 import type { InferResultType } from "@/server/core/types/with";
 import {
 	calculateResources,
@@ -15,6 +16,8 @@ import {
 	prepareEnvironmentVariables,
 } from "../docker/utils";
 import { getRemoteDocker } from "../servers/remote-docker";
+
+const logger = createLogger("database-build");
 
 export type DatabaseNested = InferResultType<
 	"database",
@@ -141,7 +144,12 @@ export const buildDatabase = async (service: DatabaseNested) => {
 			},
 		});
 	} catch (error) {
-		console.log("error", error);
+		// Service not found is the expected first-deploy path; log at info level
+		// so operators can distinguish a normal create from an unexpected error.
+		logger.info(
+			{ err: error, appName, engine },
+			"Database service not found, creating (first deploy)",
+		);
 		await docker.createService(settings);
 	}
 };

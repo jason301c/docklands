@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { useUrl } from "@/client/hooks/use-url";
+import { createClientLogger } from "@/client/lib/logger";
 import { GitlabIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -47,6 +48,8 @@ const Schema = z.object({
 });
 
 type Schema = z.infer<typeof Schema>;
+
+const logger = createClientLogger("git-providers");
 
 export const AddGitlabProvider = () => {
 	const utils = api.useUtils();
@@ -99,7 +102,8 @@ export const AddGitlabProvider = () => {
 				toast.success("GitLab created successfully");
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error creating gitlab provider", err);
 				toast.error("Error configuring GitLab");
 			});
 	};

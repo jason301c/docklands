@@ -1,10 +1,13 @@
 import { eq, inArray } from "drizzle-orm";
 import { applications, compose, deployments } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { db } from "../../db/index";
+
+const logger = createLogger("startup");
 
 export const initCancelDeployments = async () => {
 	try {
-		console.log("Setting up cancel deployments....");
+		logger.info("Cancelling in-progress deployments from previous run");
 
 		const result = await db
 			.update(deployments)
@@ -44,8 +47,12 @@ export const initCancelDeployments = async () => {
 				.where(inArray(compose.composeId, composeIds));
 		}
 
-		console.log(`Cancelled ${result.length} deployments`);
+		logger.info(
+			{ cancelled: result.length },
+			"In-progress deployments cancelled",
+		);
 	} catch (error) {
-		console.error(error);
+		logger.error({ err: error }, "Failed to cancel in-progress deployments");
+		throw error;
 	}
 };

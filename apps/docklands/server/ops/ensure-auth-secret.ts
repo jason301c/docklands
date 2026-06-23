@@ -6,19 +6,22 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { resolve } from "node:path";
+import { createLogger } from "@/server/core/lib/logger";
+
+const logger = createLogger("ops:ensure-auth-secret");
 
 const envPath = resolve(process.cwd(), ".env");
 const secretPattern = /^(BETTER_AUTH_SECRET|BETTER_AUTH_SECRET_FILE)=.+$/m;
 
 if (process.env.BETTER_AUTH_SECRET || process.env.BETTER_AUTH_SECRET_FILE) {
-	console.log("[ensure-auth-secret] Better Auth secret is already configured");
+	logger.info("Better Auth secret is already configured");
 	process.exit(0);
 }
 
 const currentEnv = existsSync(envPath) ? readFileSync(envPath, "utf8") : "";
 
 if (secretPattern.test(currentEnv)) {
-	console.log("[ensure-auth-secret] Better Auth secret is already in .env");
+	logger.info("Better Auth secret is already in .env");
 	process.exit(0);
 }
 
@@ -32,4 +35,4 @@ if (existsSync(envPath)) {
 	writeFileSync(envPath, entry);
 }
 
-console.log("[ensure-auth-secret] Generated BETTER_AUTH_SECRET in .env");
+logger.info("Generated BETTER_AUTH_SECRET in .env");

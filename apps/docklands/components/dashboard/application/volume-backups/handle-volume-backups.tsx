@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -24,6 +25,8 @@ import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import type { CacheType } from "../domains/handle-domain";
 import { ScheduleFormField } from "../schedules/handle-schedules";
+
+const logger = createClientLogger("volume-backup");
 
 const formSchema = z
 	.object({
@@ -218,6 +221,7 @@ export const HandleVolumeBackups = ({
 				setIsOpen(false);
 			})
 			.catch((error) => {
+				logger.error("Failed to save volume backup", error);
 				toast.error(
 					error instanceof Error ? error.message : "An unknown error occurred",
 				);

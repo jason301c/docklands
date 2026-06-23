@@ -16,7 +16,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+
+const logger = createClientLogger("runtime-workers");
+
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { ShowRuntimeWorkerActions } from "./actions/show-runtime-worker-actions";
@@ -307,6 +311,7 @@ export const ShowRuntimeWorkers = () => {
 																										);
 																									})
 																									.catch((err) => {
+																										logger.error(err);
 																										toast.error(err.message);
 																									});
 																							}}

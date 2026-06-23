@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -17,6 +18,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("database-service");
 
 const updateDatabaseSchema = z.object({
 	name: z.string().min(1, {
@@ -83,7 +86,8 @@ export const UpdateDatabase = ({ databaseId }: Props) => {
 				});
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error updating Database", err);
 				toast.error("Error updating Database");
 			})
 			.finally(() => {});

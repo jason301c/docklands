@@ -1,6 +1,9 @@
+import { createLogger } from "@/server/core/lib/logger";
 import { updateGitea } from "@/server/core/services/gitea";
 import { getQueryParam, redirectResponse } from "@/server/web/request";
 import { findGitea, type Gitea, redirectWithError } from "./gitea-helper";
+
+const logger = createLogger("gitea-callback");
 
 // Helper to parse the state parameter
 const parseState = (state: string): string | null => {
@@ -62,12 +65,24 @@ export async function handleGiteaCallback(request: Request) {
 	const result = await fetchAccessToken(gitea, code);
 
 	if (result.error) {
-		console.error("Token exchange failed:", result);
+		// Log only the error fields — never the full result which may echo back client_secret
+		logger.warn(
+			{
+				provider: "gitea",
+				giteaId,
+				error: result.error,
+				error_description: result.error_description,
+			},
+			"Gitea OAuth token exchange failed",
+		);
 		return redirectWithError(request, result.error);
 	}
 
 	if (!result.access_token) {
-		console.error("Missing access token:", result);
+		logger.warn(
+			{ provider: "gitea", giteaId },
+			"Gitea OAuth token exchange returned no access token",
+		);
 		return redirectWithError(request, "No access token received");
 	}
 
@@ -85,12 +100,19 @@ export async function handleGiteaCallback(request: Request) {
 				: {}),
 		});
 
+		logger.info(
+			{ provider: "gitea", giteaId },
+			"Gitea OAuth callback succeeded",
+		);
 		return redirectResponse(
 			request,
 			"/dashboard/settings/git-providers?connected=true",
 		);
 	} catch (updateError) {
-		console.error("Failed to update Gitea provider:", updateError);
+		logger.error(
+			{ err: updateError, provider: "gitea", giteaId },
+			"Failed to persist Gitea access token",
+		);
 		return redirectWithError(request, "Failed to store access token");
 	}
 }

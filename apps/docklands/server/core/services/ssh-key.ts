@@ -16,8 +16,7 @@ export const createSshKey = async (input: z.infer<typeof apiCreateSshKey>) => {
 			.insert(sshKeys)
 			.values(input)
 			.returning()
-			.then((response) => response[0])
-			.catch((e) => console.error(e));
+			.then((response) => response[0]);
 
 		if (!sshKey) {
 			throw new TRPCError({

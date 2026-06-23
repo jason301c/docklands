@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -18,6 +19,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const AddPortSchema = z.object({
 	publishedPort: z.number().int().min(1).max(65535),
@@ -89,7 +92,11 @@ export const HandlePorts = ({
 				});
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(
+					portId ? "Failed to update the port" : "Failed to create the port",
+					err,
+				);
 				toast.error(
 					portId ? "Error updating the port" : "Error creating the port",
 				);

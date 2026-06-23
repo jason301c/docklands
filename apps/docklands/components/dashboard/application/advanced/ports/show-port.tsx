@@ -2,10 +2,13 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Rss, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { HandlePorts } from "./handle-ports";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	applicationId: string;
@@ -96,7 +99,8 @@ export const ShowPorts = ({ applicationId }: Props) => {
 															refetch();
 															toast.success("Port deleted successfully");
 														})
-														.catch(() => {
+														.catch((err) => {
+															logger.error("Failed to delete port", err);
 															toast.error("Error deleting port");
 														});
 												}}

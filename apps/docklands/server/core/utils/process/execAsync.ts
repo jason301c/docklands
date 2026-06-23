@@ -1,8 +1,11 @@
 import { exec, execFile } from "node:child_process";
 import util from "node:util";
 import { Client } from "ssh2";
+import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { ExecError } from "./ExecError";
+
+const logger = createLogger("process");
 
 // Re-export ExecError for easier imports
 export { ExecError } from "./ExecError";
@@ -88,15 +91,18 @@ export const execAsyncStream = (
 		});
 
 		childProcess.on("error", (error) => {
-			console.log(error);
-			reject(
-				new ExecError(`Command execution error: ${error.message}`, {
+			// ExecError redacts command/stderr; log the wrapped form, not the raw error.
+			const execError = new ExecError(
+				`Command execution error: ${error.message}`,
+				{
 					command,
 					stdout: stdoutComplete,
 					stderr: stderrComplete,
 					originalError: error,
-				}),
+				},
 			);
+			logger.error({ err: execError }, "Streamed command failed to spawn");
+			reject(execError);
 		});
 	});
 };
@@ -130,7 +136,12 @@ export const execFileAsync = async (
 				resolve({ stdout, stderr });
 			} else {
 				reject(
-					new Error(`Command failed with code ${code}. Stderr: ${stderr}`),
+					new ExecError(`Command failed with code ${code}`, {
+						command,
+						stdout,
+						stderr,
+						exitCode: code ?? undefined,
+					}),
 				);
 			}
 		});

@@ -1,7 +1,11 @@
 import type { CreateServiceOptions } from "dockerode";
+import { createLogger } from "@/server/core/lib/logger";
 import { findRegistryByIdWithCredentials } from "@/server/core/services/registry";
 import type { InferResultType } from "@/server/core/types/with";
 import { getRegistryTag, uploadImageRemoteCommand } from "../cluster/upload";
+
+const logger = createLogger("build");
+
 import {
 	calculateResources,
 	generateBindMounts,
@@ -181,13 +185,18 @@ export const mechanizeDockerContainer = async (
 				ForceUpdate: inspect.Spec.TaskTemplate.ForceUpdate + 1,
 			},
 		});
+		logger.info({ appName }, "Docker service updated");
 	} catch (error) {
-		console.log(error);
+		logger.warn(
+			{ err: error, appName },
+			"service update failed, attempting create",
+		);
 		if (authConfig) {
 			await docker.createService(authConfig, settings);
 		} else {
 			await docker.createService(settings);
 		}
+		logger.info({ appName }, "Docker service created");
 	}
 };
 

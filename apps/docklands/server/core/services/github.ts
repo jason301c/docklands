@@ -7,8 +7,11 @@ import {
 	github,
 	gitProvider,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { authGithub } from "../utils/providers/github";
 import { updatePreviewDeployment } from "./preview-deployment";
+
+const logger = createLogger("github");
 
 export type Github = typeof github.$inferSelect;
 export const createGithub = async (
@@ -274,9 +277,9 @@ export const hasExistingSecurityComment = async ({
 
 		return securityCommentExists;
 	} catch (error) {
-		console.error(
-			`❌ Failed to check existing comments on PR #${prNumber}:`,
-			error,
+		logger.warn(
+			{ err: error, prNumber, owner, repository },
+			"Failed to check existing security comment on PR",
 		);
 		// If we can't check, assume no comment exists to avoid blocking functionality
 		return false;
@@ -311,9 +314,7 @@ export const createSecurityBlockedComment = async ({
 		});
 
 		if (commentExists) {
-			console.log(
-				`ℹ️  Security notification comment already exists on PR #${prNumber}, skipping duplicate`,
-			);
+			logger.info({ prNumber }, "Security comment already exists, skipping");
 			return null;
 		}
 
@@ -333,14 +334,15 @@ export const createSecurityBlockedComment = async ({
 			body: securityMessage,
 		});
 
-		console.log(
-			`✅ Security notification comment created on PR #${prNumber}: ${issue.data.html_url}`,
+		logger.info(
+			{ prNumber, commentUrl: issue.data.html_url },
+			"Security comment created",
 		);
 		return issue.data;
 	} catch (error) {
-		console.error(
-			`❌ Failed to create security comment on PR #${prNumber}:`,
-			error,
+		logger.warn(
+			{ err: error, prNumber, owner, repository },
+			"Failed to create security comment",
 		);
 		// Don't throw error - security comment is nice-to-have, not critical
 		return null;

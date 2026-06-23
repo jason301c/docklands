@@ -3,6 +3,7 @@ import { spawn } from "node-pty";
 import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
 import { validateRequest } from "@/server/core/lib/auth";
+import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	canAccessDockerWs,
@@ -13,6 +14,8 @@ import {
 	isValidSince,
 	isValidTail,
 } from "./utils";
+
+const logger = createLogger("wss-container-logs");
 
 export const setupDockerContainerLogsWebSocketServer = (
 	runtimeWorker: http.Server<
@@ -115,7 +118,10 @@ export const setupDockerContainerLogsWebSocketServer = (
 						// This is crucial for terminating docker logs processes when the connection is closed
 						client.exec(command, { pty: true }, (err, stream) => {
 							if (err) {
-								console.error("Execution error:", err);
+								logger.error(
+									{ err, containerId, runtimeWorkerId },
+									"SSH exec error",
+								);
 								ws.close();
 								client.end();
 								return;
@@ -134,10 +140,13 @@ export const setupDockerContainerLogsWebSocketServer = (
 						});
 					})
 					.on("error", (err) => {
-						console.error("SSH connection error:", err);
+						logger.error(
+							{ err, containerId, runtimeWorkerId },
+							"SSH connection error",
+						);
 						ws.send(`SSH error: ${err.message}`);
 						clearInterval(pingInterval);
-						ws.close(); // Cierra el WebSocket si hay un error con SSH
+						ws.close();
 						client.end();
 					})
 					.connect({

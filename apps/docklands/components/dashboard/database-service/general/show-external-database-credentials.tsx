@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -26,6 +27,8 @@ import {
 	asPostgres,
 	asRedis,
 } from "./engine-config";
+
+const logger = createClientLogger("database-service");
 
 const DockerProviderSchema = z.object({
 	externalPort: z.preprocess((a) => {
@@ -78,6 +81,7 @@ export const ShowExternalDatabaseCredentials = ({ databaseId }: Props) => {
 				await refetch();
 			})
 			.catch((error: Error) => {
+				logger.error("Error fetching external database credentials", error);
 				toast.error(error?.message || "Error saving the external port");
 			});
 	};

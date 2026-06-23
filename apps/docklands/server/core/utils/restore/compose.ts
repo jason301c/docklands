@@ -1,10 +1,13 @@
 import type { z } from "zod";
 import type { apiRestoreBackup } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Compose } from "@/server/core/services/compose";
 import type { Destination } from "@/server/core/services/destination";
 import { getS3CredentialEnv, getS3Credentials } from "../backups/utils";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import { getRestoreCommand } from "./utils";
+
+const logger = createLogger("restore");
 
 interface DatabaseCredentials {
 	databaseUser?: string;
@@ -19,6 +22,10 @@ export const restoreComposeBackup = async (
 ) => {
 	try {
 		if (backupInput.databaseType === "web-server") {
+			logger.warn(
+				{ databaseType: backupInput.databaseType },
+				"Compose restore called with web-server type; skipping",
+			);
 			return;
 		}
 		const { runtimeWorkerId, appName, composeType } = compose;
@@ -77,6 +84,11 @@ export const restoreComposeBackup = async (
 			backupFile: backupInput.backupFile,
 		});
 
+		logger.info(
+			{ appName, databaseType: backupInput.databaseType },
+			"Compose backup restore started",
+		);
+
 		emit("Starting restore...");
 		emit(
 			`Restoring database: ${backupInput.databaseName} from ${backupInput.backupFile}`,
@@ -88,16 +100,22 @@ export const restoreComposeBackup = async (
 			await execAsync(restoreCommand);
 		}
 
+		logger.info({ appName }, "Compose backup restore completed");
 		emit("Restore completed successfully!");
 	} catch (error) {
-		console.error(error);
+		logger.error(
+			{
+				err: error,
+				appName: compose.appName,
+				databaseType: backupInput.databaseType,
+			},
+			"Compose backup restore failed",
+		);
 		emit(
 			`Error: ${
 				error instanceof Error ? error.message : "Error restoring mongo backup"
 			}`,
 		);
-		throw new Error(
-			error instanceof Error ? error.message : "Error restoring mongo backup",
-		);
+		throw new Error("Error restoring compose backup", { cause: error });
 	}
 };

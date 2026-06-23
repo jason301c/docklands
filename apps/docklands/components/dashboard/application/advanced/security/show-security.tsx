@@ -4,10 +4,13 @@ import { Label } from "@cloudflare/kumo/components/label";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { LockKeyhole, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import { HandleSecurity } from "./handle-security";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	applicationId: string;
@@ -93,7 +96,8 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 															});
 															toast.success("Security deleted successfully");
 														})
-														.catch(() => {
+														.catch((err) => {
+															logger.error("Failed to delete security", err);
 															toast.error("Error deleting security");
 														});
 												}}

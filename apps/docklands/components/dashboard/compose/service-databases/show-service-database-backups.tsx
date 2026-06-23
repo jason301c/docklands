@@ -4,11 +4,14 @@ import { ClipboardList, DatabaseBackup, Play, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { ShowDeploymentsModal } from "@/components/dashboard/application/deployments/show-deployments-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import { HandleServiceDatabaseBackup } from "./handle-service-database-backup";
+
+const logger = createClientLogger("compose");
 
 type ServiceDatabaseEngine = "postgres" | "mariadb" | "mysql" | "mongo";
 
@@ -182,7 +185,11 @@ export const ShowServiceDatabaseBackups = ({
 															.then(() => {
 																toast.success("Manual Backup Successful");
 															})
-															.catch(() => {
+															.catch((err) => {
+																logger.error(
+																	"Failed to create the manual backup",
+																	err,
+																);
 																toast.error("Error creating the manual backup");
 															});
 														setActiveManualBackup(undefined);
@@ -210,7 +217,8 @@ export const ShowServiceDatabaseBackups = ({
 														refetch();
 														toast.success("Backup deleted successfully");
 													})
-													.catch(() => {
+													.catch((err) => {
+														logger.error("Failed to delete backup", err);
 														toast.error("Error deleting backup");
 													});
 											}}

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { scheduleJob } from "node-schedule";
 import { CLEANUP_CRON_JOB } from "@/server/core/constants/cleanup";
 import { member } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import type { BackupSchedule } from "@/server/core/services/backup";
 import { findDestinationById } from "@/server/core/services/destination";
 import { getAllRuntimeWorkers } from "@/server/core/services/runtime-worker";
@@ -19,8 +20,10 @@ import {
 	scheduleBackup,
 } from "./utils";
 
+const logger = createLogger("backup");
+
 export const initCronJobs = async () => {
-	console.log("Setting up cron jobs....");
+	logger.info("Initializing backup cron jobs");
 
 	const admin = await db.query.member.findFirst({
 		where: eq(member.role, "owner"),
@@ -38,16 +41,14 @@ export const initCronJobs = async () => {
 	if (webServerSettings?.enableDockerCleanup) {
 		try {
 			scheduleJob("docker-cleanup", CLEANUP_CRON_JOB, async () => {
-				console.log(
-					`Docker Cleanup ${new Date().toLocaleString()}]  Running docker cleanup`,
-				);
+				logger.info("Docker cleanup running");
 
 				await cleanupAll();
 
 				await sendDockerCleanupNotifications(admin.user.id);
 			});
 		} catch (error) {
-			console.error("[Backup] Docker Cleanup Error", error);
+			logger.error({ err: error }, "Docker cleanup schedule error");
 		}
 	}
 
@@ -58,8 +59,9 @@ export const initCronJobs = async () => {
 		if (enableDockerCleanup) {
 			try {
 				scheduleJob(runtimeWorkerId, CLEANUP_CRON_JOB, async () => {
-					console.log(
-						`SERVER-BACKUP[${new Date().toLocaleString()}] Running Cleanup ${name}`,
+					logger.info(
+						{ runtimeWorkerId, name },
+						"Remote docker cleanup running",
 					);
 
 					await cleanupAll(runtimeWorkerId);
@@ -70,7 +72,10 @@ export const initCronJobs = async () => {
 					);
 				});
 			} catch (error) {
-				console.error(`[Backup] ${error}`);
+				logger.error(
+					{ err: error, runtimeWorkerId, name },
+					"Remote docker cleanup error",
+				);
 			}
 		}
 	}
@@ -88,24 +93,36 @@ export const initCronJobs = async () => {
 		try {
 			if (backup.enabled) {
 				scheduleBackup(backup);
-				console.log(
-					`[Backup] ${backup.databaseType} Enabled with cron: [${backup.schedule}]`,
+				logger.info(
+					{
+						backupId: backup.backupId,
+						databaseType: backup.databaseType,
+						schedule: backup.schedule,
+					},
+					"Backup job scheduled",
 				);
 			}
 		} catch (error) {
-			console.error(`[Backup] ${backup.databaseType} Error`, error);
+			logger.error(
+				{
+					err: error,
+					backupId: backup.backupId,
+					databaseType: backup.databaseType,
+				},
+				"Failed to schedule backup job",
+			);
 		}
 	}
 
 	if (webServerSettings?.logCleanupCron) {
 		try {
-			console.log(
-				"Starting log requests cleanup",
-				webServerSettings.logCleanupCron,
+			logger.info(
+				{ cron: webServerSettings.logCleanupCron },
+				"Starting access-log cleanup",
 			);
 			await startLogCleanup(webServerSettings.logCleanupCron);
 		} catch (error) {
-			console.error("[Backup] Log Cleanup Error", error);
+			logger.error({ err: error }, "Failed to start log cleanup");
 		}
 	}
 };
@@ -157,11 +174,21 @@ export const keepLatestNBackups = async (
 		} else {
 			await execAsync(rcloneCommand);
 		}
+
+		logger.info(
+			{ appName, kept: backup.keepLatestCount },
+			"Backup retention enforced",
+		);
 	} catch (error) {
 		// A retention failure must not fail the backup, but it must not be
 		// swallowed silently either — stale files would accumulate unnoticed.
-		console.error(
-			`[Backup] Retention pruning failed for ${getServiceAppName(backup)}; backup succeeded but old backups may not have been deleted: ${redactRcloneCredentials(String(error))}`,
+		logger.warn(
+			{
+				err: error,
+				appName: getServiceAppName(backup),
+				redactedError: redactRcloneCredentials(String(error)),
+			},
+			"Backup retention pruning failed",
 		);
 	}
 };

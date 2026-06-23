@@ -1,11 +1,14 @@
 import path, { join } from "node:path";
 import { quote } from "shell-quote";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	findSSHKeyById,
 	updateSSHKeyById,
 } from "@/server/core/services/ssh-key";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
+
+const logger = createLogger("git-provider");
 
 interface CloneGitRepository {
 	appName: string;
@@ -191,7 +194,7 @@ export const getGitCommitInfo = async ({
 			result.message = parts[1]?.trim() || "";
 		}
 	} catch (error) {
-		console.error(`Error getting git commit info: ${error}`);
+		logger.warn({ err: error, appName }, "Failed to read git commit info");
 		return null;
 	}
 	return result;

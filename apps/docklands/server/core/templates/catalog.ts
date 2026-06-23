@@ -2,7 +2,10 @@ import { readdir, readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { TRPCError } from "@trpc/server";
 import type { DatabaseEngineKey } from "@/server/core/databases/registry";
+import { createLogger } from "@/server/core/lib/logger";
 import { analyzeTemplateDatabases } from "./analyze";
+
+const logger = createLogger("templates:catalog");
 
 export const DEFAULT_TEMPLATES_DIR =
 	process.env.DOCKLANDS_TEMPLATES_DIR || join(process.cwd(), "templates");
@@ -164,9 +167,11 @@ async function readTemplateFile(fileName: string) {
 export async function loadTemplateCatalog(): Promise<TemplateMetadata[]> {
 	const files = await listTemplateFiles();
 	const templates = await Promise.all(files.map(readTemplateFile));
-	return templates
+	const catalog = templates
 		.map((template) => template.metadata)
 		.filter((template) => !template.ignored);
+	logger.info({ count: catalog.length }, "Template catalog loaded");
+	return catalog;
 }
 
 export async function loadTemplateDefinition(

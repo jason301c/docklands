@@ -2,11 +2,14 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { parse, stringify } from "yaml";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import type { Domain } from "@/server/core/services/domain";
 import type { ApplicationNested } from "../builders";
 import { execAsyncRemote } from "../process/execAsync";
 import { writeTraefikConfigRemote } from "./application";
 import type { FileConfig } from "./file-types";
+
+const logger = createLogger("traefik-config");
 
 export const addMiddleware = (config: FileConfig, middlewareName: string) => {
 	if (config.http?.routers) {
@@ -97,13 +100,16 @@ export const loadRemoteMiddlewares = async (runtimeWorkerId: string) => {
 		);
 
 		if (stderr) {
-			console.error(`Error: ${stderr}`);
+			logger.warn(
+				{ runtimeWorkerId, stderr },
+				"Traefik remote middlewares: SSH stderr output",
+			);
 			throw new Error(`File not found: ${configPath}`);
 		}
 		const config = parse(stdout) as FileConfig;
 		return config;
 	} catch (_) {
-		throw new Error(`File not found: ${configPath}`);
+		throw new Error(`File not found: ${configPath}`, { cause: _ });
 	}
 };
 export const writeMiddleware = (config: FileConfig) => {

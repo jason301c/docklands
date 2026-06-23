@@ -7,11 +7,15 @@ import { CopyIcon, ExternalLinkIcon, ServerIcon, Settings } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("runtime-worker");
+
 import { ShowDeployment } from "../../application/deployments/show-deployment";
 import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
 import { EditScript } from "./edit-script";
@@ -62,7 +66,8 @@ export const SetupRuntimeWorker = ({
 				setFilteredLogs((prev) => [...prev, ...parsedLogs]);
 			},
 			onError(error) {
-				console.error("Deployment logs error:", error);
+				logger.error("deployment logs error:", error);
+				toast.warning("Log stream interrupted — try reopening the dialog.");
 				setIsDeploying(false);
 			},
 		},

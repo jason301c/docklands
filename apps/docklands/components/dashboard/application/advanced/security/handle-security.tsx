@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -17,6 +18,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 const AddSecuritychema = z.object({
 	username: z.string().min(1, "Username is required"),
@@ -83,7 +86,13 @@ export const HandleSecurity = ({
 				await refetch();
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error(
+					securityId
+						? "Failed to update the security"
+						: "Failed to create security",
+					err,
+				);
 				toast.error(
 					securityId
 						? "Error updating the security"

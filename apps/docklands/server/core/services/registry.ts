@@ -118,6 +118,7 @@ export const updateRegistry = async (
 			.returning()
 			.then((res) => res[0]);
 
+		// NEVER log loginCommand — contains registry password
 		const loginCommand = safeDockerLoginCommand(
 			response?.registryUrl,
 			response?.username,

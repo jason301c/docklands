@@ -1,10 +1,13 @@
 import { chmodSync, existsSync, mkdirSync } from "node:fs";
+import { createLogger } from "@/server/core/lib/logger";
 import { paths } from "../constants";
+
+const logger = createLogger("setup:dirs");
 
 const createDirectoryIfNotExist = (dirPath: string) => {
 	if (!existsSync(dirPath)) {
 		mkdirSync(dirPath, { recursive: true });
-		console.log(`Directory created: ${dirPath}`);
+		logger.debug({ path: dirPath }, "Directory created");
 	}
 };
 
@@ -41,7 +44,7 @@ export const setupDirectories = () => {
 				chmodSync(SSH_PATH, "700");
 			}
 		} catch (error) {
-			console.log(error, " On path: ", dir);
+			logger.error({ err: error, path: dir }, "Failed to create directory");
 		}
 	}
 };

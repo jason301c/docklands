@@ -1,7 +1,10 @@
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("container-runtime");
 
 interface Props {
 	containerId: string;
@@ -49,6 +52,7 @@ export const RemoveContainerDialog = ({
 									await utils.docker.getContainers.invalidate();
 								})
 								.catch((err) => {
+									logger.error("Failed to remove container", err);
 									toast.error(err.message);
 								});
 						}}

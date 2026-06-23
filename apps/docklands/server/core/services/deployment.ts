@@ -21,6 +21,7 @@ import {
 	environments,
 	workspaces,
 } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { removeDirectoryIfExistsContent } from "@/server/core/utils/filesystem/directory";
 import {
 	execAsync,
@@ -32,6 +33,9 @@ import {
 	findApplicationById,
 	updateApplicationStatus,
 } from "./application";
+
+const logger = createLogger("deployment");
+
 import { findBackupById } from "./backup";
 import { type Compose, findComposeById, updateCompose } from "./compose";
 import {
@@ -79,7 +83,11 @@ export const getDeploymentErrorMessage = async ({
 
 		const trimmed = content.trim();
 		return trimmed.length > 0 ? trimmed : fallback;
-	} catch {
+	} catch (err) {
+		logger.warn(
+			{ err },
+			"Could not read deployment log file, using fallback message",
+		);
 		return fallback;
 	}
 };
@@ -261,7 +269,10 @@ export const createDeployment = async (
 			})
 			.returning();
 		await updateApplicationStatus(application.applicationId, "error");
-		console.log(error);
+		logger.error(
+			{ err: error, applicationId: deployment.applicationId },
+			"Failed to create deployment",
+		);
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: "Error creating the deployment",
@@ -345,7 +356,10 @@ export const createDeploymentPreview = async (
 		await updatePreviewDeployment(deployment.previewDeploymentId, {
 			previewStatus: "error",
 		});
-		console.log(error);
+		logger.error(
+			{ err: error, previewDeploymentId: deployment.previewDeploymentId },
+			"Failed to create preview deployment",
+		);
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: "Error creating the deployment",
@@ -424,7 +438,10 @@ echo "Initializing deployment\n" >> ${logFilePath};
 		await updateCompose(compose.composeId, {
 			composeStatus: "error",
 		});
-		console.log(error);
+		logger.error(
+			{ err: error, composeId: deployment.composeId },
+			"Failed to create compose deployment",
+		);
 		throw new TRPCError({
 			code: "BAD_REQUEST",
 			message: "Error creating the deployment",
@@ -570,7 +587,10 @@ export const createDeploymentSchedule = async (
 		}
 		return deploymentCreate[0];
 	} catch (error) {
-		console.log(error);
+		logger.error(
+			{ err: error, scheduleId: deployment.scheduleId },
+			"Failed to create schedule deployment",
+		);
 		await db
 			.insert(deployments)
 			.values({
@@ -656,7 +676,10 @@ export const createDeploymentVolumeBackup = async (
 		}
 		return deploymentCreate[0];
 	} catch (error) {
-		console.log(error);
+		logger.error(
+			{ err: error, volumeBackupId: deployment.volumeBackupId },
+			"Failed to create volume-backup deployment",
+		);
 		await db
 			.insert(deployments)
 			.values({
@@ -768,6 +791,10 @@ const removeLastTenDeployments = async (
 	const deploymentList = await getDeploymentsByType(id, type);
 	if (deploymentList.length > 10) {
 		const deploymentsToDelete = deploymentList.slice(10);
+		logger.debug(
+			{ count: deploymentsToDelete.length, id, type },
+			"Removing old deployments",
+		);
 		if (runtimeWorkerId) {
 			let command = "";
 			for (const oldDeployment of deploymentsToDelete) {
@@ -782,9 +809,9 @@ const removeLastTenDeployments = async (
 					}
 					await removeDeployment(oldDeployment.deploymentId);
 				} catch (err) {
-					console.error(
-						`Failed to remove deployment ${oldDeployment.deploymentId} during cleanup:`,
-						err,
+					logger.warn(
+						{ err, deploymentId: oldDeployment.deploymentId },
+						"Failed to remove old deployment during cleanup",
 					);
 				}
 			}
@@ -809,9 +836,9 @@ const removeLastTenDeployments = async (
 					}
 					await removeDeployment(oldDeployment.deploymentId);
 				} catch (err) {
-					console.error(
-						`Failed to remove deployment ${oldDeployment.deploymentId} during cleanup:`,
-						err,
+					logger.warn(
+						{ err, deploymentId: oldDeployment.deploymentId },
+						"Failed to remove old deployment during cleanup",
 					);
 				}
 			}

@@ -1,4 +1,7 @@
+import { createLogger } from "@/server/core/lib/logger";
 import { execAsync } from "@/server/core/utils/process/execAsync";
+
+const logger = createLogger("docker");
 
 /** Returns if the current operating system is Windows Subsystem for Linux (WSL). */
 export const isWSL = async () => {
@@ -28,7 +31,10 @@ export const getDockerHost = async (): Promise<string> => {
 
 				return hostIp;
 			} catch (error) {
-				console.error("Failed to get Docker host IP:", error);
+				logger.warn(
+					{ err: error },
+					"Failed to get Docker host IP, falling back to 172.17.0.1",
+				);
 				return "172.17.0.1"; // Default Docker bridge network IP
 			}
 		}

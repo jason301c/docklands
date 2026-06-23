@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { api } from "@/client/api/trpc";
 import { useUrl } from "@/client/hooks/use-url";
+import { createClientLogger } from "@/client/lib/logger";
 import {
 	BitbucketIcon,
 	GiteaIcon,
@@ -30,6 +31,8 @@ import { AddGithubProvider } from "./github/add-github-provider";
 import { EditGithubProvider } from "./github/edit-github-provider";
 import { AddGitlabProvider } from "./gitlab/add-gitlab-provider";
 import { EditGitlabProvider } from "./gitlab/edit-gitlab-provider";
+
+const logger = createClientLogger("git-providers");
 
 export const ShowGitProviders = () => {
 	const { data, isPending, refetch } = api.gitProvider.getAll.useQuery();
@@ -191,7 +194,8 @@ export const ShowGitProviders = () => {
 																							);
 																							refetch();
 																						})
-																						.catch(() => {
+																						.catch((err) => {
+																							logger.error(err);
 																							toast.error(
 																								"Error updating sharing",
 																							);
@@ -305,7 +309,8 @@ export const ShowGitProviders = () => {
 																					);
 																					refetch();
 																				})
-																				.catch(() => {
+																				.catch((err) => {
+																					logger.error(err);
 																					toast.error(
 																						"Error deleting Git Provider",
 																					);

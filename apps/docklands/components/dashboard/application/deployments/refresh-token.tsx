@@ -1,7 +1,10 @@
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { RefreshCcw } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("deployments");
 
 interface Props {
 	id: string;
@@ -46,7 +49,8 @@ export const RefreshToken = ({ id, type }: Props) => {
 									}
 									toast.success("Refresh updated");
 								})
-								.catch(() => {
+								.catch((err) => {
+									logger.error("Failed to update refresh token", err);
 									toast.error("Error updating the refresh token");
 								});
 						}}

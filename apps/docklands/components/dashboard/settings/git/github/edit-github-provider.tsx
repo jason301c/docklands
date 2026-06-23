@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -29,6 +30,8 @@ const Schema = z.object({
 });
 
 type Schema = z.infer<typeof Schema>;
+
+const logger = createClientLogger("git-providers");
 
 interface Props {
 	githubId: string;
@@ -75,7 +78,8 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 				toast.success("Github updated successfully");
 				setIsOpen(false);
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Error updating github provider", err);
 				toast.error("Error updating Github");
 			});
 	};
@@ -156,6 +160,10 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 													toast.info(`Message: ${message}`);
 												})
 												.catch((error) => {
+													logger.error(
+														"Error testing github connection",
+														error,
+													);
 													toast.error(`Error: ${error.message}`);
 												});
 										}}

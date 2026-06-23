@@ -11,11 +11,14 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { HandleVolumeBackups } from "./handle-volume-backups";
 import { RestoreVolumeBackups } from "./restore-volume-backups";
+
+const logger = createClientLogger("volume-backup");
 
 interface Props {
 	id: string;
@@ -54,7 +57,8 @@ export const ShowVolumeBackups = ({
 			await runManually({ volumeBackupId });
 			toast.success("Volume backup run successfully");
 			await refetchVolumeBackups();
-		} catch {
+		} catch (err) {
+			logger.error("Failed to run volume backup", err);
 			toast.error("Error running volume backup");
 		} finally {
 			setRunningBackups((prev) => {
@@ -198,7 +202,8 @@ export const ShowVolumeBackups = ({
 														});
 														toast.success("Volume backup deleted successfully");
 													})
-													.catch(() => {
+													.catch((err) => {
+														logger.error("Failed to delete volume backup", err);
 														toast.error("Error deleting volume backup");
 													});
 											}}

@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -18,6 +19,8 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+
+const logger = createClientLogger("application");
 
 interface Props {
 	applicationId: string;
@@ -95,7 +98,8 @@ export const ShowBuildWorker = ({ applicationId }: Props) => {
 				toast.success("Build worker settings updated");
 				await refetch();
 			})
-			.catch(() => {
+			.catch((err) => {
+				logger.error("Failed to update build worker settings", err);
 				toast.error("Error updating build worker settings");
 			});
 	};

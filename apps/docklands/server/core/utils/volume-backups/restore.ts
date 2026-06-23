@@ -1,5 +1,6 @@
 import path from "node:path";
 import { paths } from "@/server/core/constants/paths";
+import { createLogger } from "@/server/core/lib/logger";
 import { findApplicationById } from "@/server/core/services/application";
 import { findComposeById } from "@/server/core/services/compose";
 import { findDestinationById } from "@/server/core/services/destination";
@@ -7,6 +8,8 @@ import {
 	getS3CredentialEnv,
 	getS3Credentials,
 } from "@/server/core/utils/backups/utils";
+
+const logger = createLogger("volume-backup");
 
 export const restoreVolume = async (
 	id: string,
@@ -16,6 +19,10 @@ export const restoreVolume = async (
 	runtimeWorkerId: string,
 	serviceType: "application" | "compose",
 ) => {
+	logger.info(
+		{ id, volumeName, serviceType },
+		"Constructing volume restore command",
+	);
 	const destination = await findDestinationById(destinationId);
 	const { VOLUME_BACKUPS_PATH } = paths(!!runtimeWorkerId);
 	const volumeBackupPath = path.join(VOLUME_BACKUPS_PATH, volumeName);

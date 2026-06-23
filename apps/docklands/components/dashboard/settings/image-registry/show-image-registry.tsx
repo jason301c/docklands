@@ -1,9 +1,12 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Loader2, Package, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { HandleImageRegistry } from "./handle-image-registry";
+
+const logger = createClientLogger("image-registry");
 
 export const ShowImageRegistry = () => {
 	const { mutateAsync, isPending: isRemoving } =
@@ -79,7 +82,8 @@ export const ShowImageRegistry = () => {
 																			);
 																			refetch();
 																		})
-																		.catch(() => {
+																		.catch((err) => {
+																			logger.error(err);
 																			toast.error(
 																				"Error deleting image registry",
 																			);

@@ -1,9 +1,12 @@
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	getQueryParam,
 	jsonResponse,
 	redirectResponse,
 } from "@/server/web/request";
 import { findGitea, redirectWithError } from "./gitea-helper";
+
+const logger = createLogger("gitea-authorize");
 
 export async function handleGiteaAuthorize(request: Request) {
 	try {
@@ -34,7 +37,10 @@ export async function handleGiteaAuthorize(request: Request) {
 		// Redirect user to Gitea authorization URL
 		return redirectResponse(request, authorizationUrl);
 	} catch (error) {
-		console.error("Error initiating Gitea OAuth flow:", error);
+		logger.error(
+			{ err: error, provider: "gitea" },
+			"Error initiating Gitea OAuth flow",
+		);
 		return jsonResponse({ error: "Internal runtimeWorker error" }, 500);
 	}
 }

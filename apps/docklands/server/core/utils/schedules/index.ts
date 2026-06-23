@@ -1,7 +1,10 @@
 import { eq } from "drizzle-orm";
 import { schedules } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { db } from "../../db/index";
 import { scheduleJob } from "./utils";
+
+const logger = createLogger("schedule");
 
 export const initSchedules = async () => {
 	try {
@@ -15,14 +18,23 @@ export const initSchedules = async () => {
 			},
 		});
 
-		console.log(`Initializing ${schedulesResult.length} schedules`);
+		logger.info(
+			{ count: schedulesResult.length },
+			"Initializing schedule jobs",
+		);
 		for (const schedule of schedulesResult) {
 			scheduleJob(schedule);
-			console.log(
-				`Initialized schedule: ${schedule.name} ${schedule.scheduleType} ✅`,
+			logger.info(
+				{
+					scheduleId: schedule.scheduleId,
+					name: schedule.name,
+					type: schedule.scheduleType,
+				},
+				"Schedule job registered",
 			);
 		}
 	} catch (error) {
-		console.log(`Error initializing schedules: ${error}`);
+		logger.error({ err: error }, "Failed to initialize schedule jobs");
+		throw error;
 	}
 };

@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { notifications } from "@/server/core/db/schema";
 import BuildFailedEmail from "@/server/core/emails/emails/build-failed";
+import { createLogger } from "@/server/core/lib/logger";
 import {
 	sendCustomNotification,
 	sendDiscordNotification,
@@ -18,6 +19,8 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "./utils";
+
+const logger = createLogger("notify-dispatch");
 
 interface Props {
 	projectName: string;
@@ -434,7 +437,10 @@ ${errorMessage}
 				});
 			}
 		} catch (error) {
-			console.log(error);
+			logger.warn(
+				{ err: error, notificationId: notification.notificationId },
+				"Build error notification delivery failed",
+			);
 		}
 	}
 };
