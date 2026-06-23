@@ -135,9 +135,7 @@ export const AddBitbucketProvider = () => {
 								<ul className="list-disc list-inside ml-4 text-sm text-kumo-subtle">
 									<li>read:repository:bitbucket</li>
 									<li>read:pullrequest:bitbucket</li>
-									<li>read:webhook:bitbucket</li>
 									<li>read:workspace:bitbucket</li>
-									<li>write:webhook:bitbucket</li>
 								</ul>
 
 								<FormField
