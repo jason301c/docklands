@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { integer, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import { index, integer, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -8,20 +8,24 @@ import { applications } from "./application";
 export const protocolType = pgEnum("protocolType", ["tcp", "udp"]);
 export const publishModeType = pgEnum("publishModeType", ["ingress", "host"]);
 
-export const ports = pgTable("port", {
-	portId: text("portId")
-		.notNull()
-		.primaryKey()
-		.$defaultFn(() => nanoid()),
-	publishedPort: integer("publishedPort").notNull(),
-	publishMode: publishModeType("publishMode").notNull().default("host"),
-	targetPort: integer("targetPort").notNull(),
-	protocol: protocolType("protocol").notNull(),
+export const ports = pgTable(
+	"port",
+	{
+		portId: text("portId")
+			.notNull()
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
+		publishedPort: integer("publishedPort").notNull(),
+		publishMode: publishModeType("publishMode").notNull().default("host"),
+		targetPort: integer("targetPort").notNull(),
+		protocol: protocolType("protocol").notNull(),
 
-	applicationId: text("applicationId")
-		.notNull()
-		.references(() => applications.applicationId, { onDelete: "cascade" }),
-});
+		applicationId: text("applicationId")
+			.notNull()
+			.references(() => applications.applicationId, { onDelete: "cascade" }),
+	},
+	(t) => [index("port_applicationId_idx").on(t.applicationId)],
+);
 
 export const portsRelations = relations(ports, ({ one }) => ({
 	application: one(applications, {

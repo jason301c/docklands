@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { boolean, integer, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import {
+	boolean,
+	index,
+	integer,
+	pgEnum,
+	pgTable,
+	text,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -32,93 +39,100 @@ export const sourceTypeCompose = pgEnum("sourceTypeCompose", [
 
 export const composeType = pgEnum("composeType", ["docker-compose", "stack"]);
 
-export const compose = pgTable("compose", {
-	composeId: text("composeId")
-		.notNull()
-		.primaryKey()
-		.$defaultFn(() => nanoid()),
-	name: text("name").notNull(),
-	appName: text("appName")
-		.notNull()
-		.$defaultFn(() => generateAppName("compose"))
-		.unique(),
-	description: text("description"),
-	// Env encrypted at rest (carries credentials). `composeFile` stays plaintext
-	// (user-authored config); `refreshToken` below must stay plaintext because
-	// the deploy webhook looks a compose row up *by* that token.
-	env: encryptedText("env"),
-	composeFile: text("composeFile").notNull().default(""),
-	refreshToken: text("refreshToken").$defaultFn(() => nanoid()),
-	sourceType: sourceTypeCompose("sourceType").notNull().default("github"),
-	composeType: composeType("composeType").notNull().default("docker-compose"),
-	// Github
-	repository: text("repository"),
-	owner: text("owner"),
-	branch: text("branch"),
-	autoDeploy: boolean("autoDeploy").$defaultFn(() => true),
-	// Gitlab
-	gitlabProjectId: integer("gitlabProjectId"),
-	gitlabRepository: text("gitlabRepository"),
-	gitlabOwner: text("gitlabOwner"),
-	gitlabBranch: text("gitlabBranch"),
-	gitlabPathNamespace: text("gitlabPathNamespace"),
-	// Bitbucket
-	bitbucketRepository: text("bitbucketRepository"),
-	bitbucketRepositorySlug: text("bitbucketRepositorySlug"),
-	bitbucketOwner: text("bitbucketOwner"),
-	bitbucketBranch: text("bitbucketBranch"),
-	// Gitea
-	giteaRepository: text("giteaRepository"),
-	giteaOwner: text("giteaOwner"),
-	giteaBranch: text("giteaBranch"),
-	// Git
-	customGitUrl: text("customGitUrl"),
-	customGitBranch: text("customGitBranch"),
-	customGitSSHKeyId: text("customGitSSHKeyId").references(
-		() => sshKeys.sshKeyId,
-		{
+export const compose = pgTable(
+	"compose",
+	{
+		composeId: text("composeId")
+			.notNull()
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
+		name: text("name").notNull(),
+		appName: text("appName")
+			.notNull()
+			.$defaultFn(() => generateAppName("compose"))
+			.unique(),
+		description: text("description"),
+		// Env encrypted at rest (carries credentials). `composeFile` stays plaintext
+		// (user-authored config); `refreshToken` below must stay plaintext because
+		// the deploy webhook looks a compose row up *by* that token.
+		env: encryptedText("env"),
+		composeFile: text("composeFile").notNull().default(""),
+		refreshToken: text("refreshToken").$defaultFn(() => nanoid()),
+		sourceType: sourceTypeCompose("sourceType").notNull().default("github"),
+		composeType: composeType("composeType").notNull().default("docker-compose"),
+		// Github
+		repository: text("repository"),
+		owner: text("owner"),
+		branch: text("branch"),
+		autoDeploy: boolean("autoDeploy").$defaultFn(() => true),
+		// Gitlab
+		gitlabProjectId: integer("gitlabProjectId"),
+		gitlabRepository: text("gitlabRepository"),
+		gitlabOwner: text("gitlabOwner"),
+		gitlabBranch: text("gitlabBranch"),
+		gitlabPathNamespace: text("gitlabPathNamespace"),
+		// Bitbucket
+		bitbucketRepository: text("bitbucketRepository"),
+		bitbucketRepositorySlug: text("bitbucketRepositorySlug"),
+		bitbucketOwner: text("bitbucketOwner"),
+		bitbucketBranch: text("bitbucketBranch"),
+		// Gitea
+		giteaRepository: text("giteaRepository"),
+		giteaOwner: text("giteaOwner"),
+		giteaBranch: text("giteaBranch"),
+		// Git
+		customGitUrl: text("customGitUrl"),
+		customGitBranch: text("customGitBranch"),
+		customGitSSHKeyId: text("customGitSSHKeyId").references(
+			() => sshKeys.sshKeyId,
+			{
+				onDelete: "set null",
+			},
+		),
+		command: text("command").notNull().default(""),
+		//
+		enableSubmodules: boolean("enableSubmodules").notNull().default(false),
+		composePath: text("composePath").notNull().default("./docker-compose.yml"),
+		suffix: text("suffix").notNull().default(""),
+		randomize: boolean("randomize").notNull().default(false),
+		isolatedDeployment: boolean("isolatedDeployment").notNull().default(false),
+		// Keep this for backward compatibility since we will not add the prefix anymore to volumes
+		isolatedDeploymentsVolume: boolean("isolatedDeploymentsVolume")
+			.notNull()
+			.default(false),
+		triggerType: triggerType("triggerType").default("push"),
+		composeStatus: applicationStatus("composeStatus").notNull().default("idle"),
+		environmentId: text("environmentId")
+			.notNull()
+			.references(() => environments.environmentId, { onDelete: "cascade" }),
+		createdAt: text("createdAt")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+		watchPaths: text("watchPaths").array(),
+		githubId: text("githubId").references(() => github.githubId, {
 			onDelete: "set null",
-		},
-	),
-	command: text("command").notNull().default(""),
-	//
-	enableSubmodules: boolean("enableSubmodules").notNull().default(false),
-	composePath: text("composePath").notNull().default("./docker-compose.yml"),
-	suffix: text("suffix").notNull().default(""),
-	randomize: boolean("randomize").notNull().default(false),
-	isolatedDeployment: boolean("isolatedDeployment").notNull().default(false),
-	// Keep this for backward compatibility since we will not add the prefix anymore to volumes
-	isolatedDeploymentsVolume: boolean("isolatedDeploymentsVolume")
-		.notNull()
-		.default(false),
-	triggerType: triggerType("triggerType").default("push"),
-	composeStatus: applicationStatus("composeStatus").notNull().default("idle"),
-	environmentId: text("environmentId")
-		.notNull()
-		.references(() => environments.environmentId, { onDelete: "cascade" }),
-	createdAt: text("createdAt")
-		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
-	watchPaths: text("watchPaths").array(),
-	githubId: text("githubId").references(() => github.githubId, {
-		onDelete: "set null",
-	}),
-	gitlabId: text("gitlabId").references(() => gitlab.gitlabId, {
-		onDelete: "set null",
-	}),
-	bitbucketId: text("bitbucketId").references(() => bitbucket.bitbucketId, {
-		onDelete: "set null",
-	}),
-	giteaId: text("giteaId").references(() => gitea.giteaId, {
-		onDelete: "set null",
-	}),
-	runtimeWorkerId: text("runtimeWorkerId").references(
-		() => runtimeWorkers.runtimeWorkerId,
-		{
-			onDelete: "cascade",
-		},
-	),
-});
+		}),
+		gitlabId: text("gitlabId").references(() => gitlab.gitlabId, {
+			onDelete: "set null",
+		}),
+		bitbucketId: text("bitbucketId").references(() => bitbucket.bitbucketId, {
+			onDelete: "set null",
+		}),
+		giteaId: text("giteaId").references(() => gitea.giteaId, {
+			onDelete: "set null",
+		}),
+		runtimeWorkerId: text("runtimeWorkerId").references(
+			() => runtimeWorkers.runtimeWorkerId,
+			{
+				onDelete: "cascade",
+			},
+		),
+	},
+	(t) => [
+		index("compose_environmentId_idx").on(t.environmentId),
+		index("compose_runtimeWorkerId_idx").on(t.runtimeWorkerId),
+	],
+);
 
 export const composeRelations = relations(compose, ({ one, many }) => ({
 	environment: one(environments, {

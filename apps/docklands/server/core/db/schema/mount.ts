@@ -1,5 +1,11 @@
 import { relations } from "drizzle-orm";
-import { type AnyPgColumn, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import {
+	type AnyPgColumn,
+	index,
+	pgEnum,
+	pgTable,
+	text,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -22,30 +28,38 @@ export type ServiceType = (typeof serviceType.enumValues)[number];
 
 export const mountType = pgEnum("mountType", ["bind", "volume", "file"]);
 
-export const mounts = pgTable("mount", {
-	mountId: text("mountId")
-		.notNull()
-		.primaryKey()
-		.$defaultFn(() => nanoid()),
-	type: mountType("type").notNull(),
-	hostPath: text("hostPath"),
-	volumeName: text("volumeName"),
-	filePath: text("filePath"),
-	content: text("content"),
-	serviceType: serviceType("serviceType").notNull().default("application"),
-	mountPath: text("mountPath").notNull(),
-	applicationId: text("applicationId").references(
-		() => applications.applicationId,
-		{ onDelete: "cascade" },
-	),
-	composeId: text("composeId").references(() => compose.composeId, {
-		onDelete: "cascade",
-	}),
-	databaseId: text("databaseId").references(
-		(): AnyPgColumn => database.databaseId,
-		{ onDelete: "cascade" },
-	),
-});
+export const mounts = pgTable(
+	"mount",
+	{
+		mountId: text("mountId")
+			.notNull()
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
+		type: mountType("type").notNull(),
+		hostPath: text("hostPath"),
+		volumeName: text("volumeName"),
+		filePath: text("filePath"),
+		content: text("content"),
+		serviceType: serviceType("serviceType").notNull().default("application"),
+		mountPath: text("mountPath").notNull(),
+		applicationId: text("applicationId").references(
+			() => applications.applicationId,
+			{ onDelete: "cascade" },
+		),
+		composeId: text("composeId").references(() => compose.composeId, {
+			onDelete: "cascade",
+		}),
+		databaseId: text("databaseId").references(
+			(): AnyPgColumn => database.databaseId,
+			{ onDelete: "cascade" },
+		),
+	},
+	(t) => [
+		index("mount_applicationId_idx").on(t.applicationId),
+		index("mount_composeId_idx").on(t.composeId),
+		index("mount_databaseId_idx").on(t.databaseId),
+	],
+);
 
 export const MountssRelations = relations(mounts, ({ one }) => ({
 	application: one(applications, {

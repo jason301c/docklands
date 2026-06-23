@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
 	bigint,
+	index,
 	integer,
 	json,
 	pgEnum,
@@ -54,62 +55,69 @@ export const databaseEngine = pgEnum("databaseEngine", [
  * columns; everything engine-specific (credentials + engine settings) lives in
  * the `config` jsonb, validated per-engine by the engine registry.
  */
-export const database = pgTable("database", {
-	databaseId: text("databaseId")
-		.notNull()
-		.primaryKey()
-		.$defaultFn(() => nanoid()),
-	engine: databaseEngine("engine").notNull(),
-	name: text("name").notNull(),
-	appName: text("appName")
-		.notNull()
-		.$defaultFn(() => generateAppName("database"))
-		.unique(),
-	description: text("description"),
-	/**
-	 * Engine-specific credentials + settings, validated by the registry.
-	 * Encrypted at rest (stored as text) since it holds the database password;
-	 * transparent to call sites, which still read/write a typed object.
-	 */
-	config:
-		encryptedJson<DatabaseConfigByKey[DatabaseEngineKey]>("config").notNull(),
-	dockerImage: text("dockerImage").notNull(),
-	command: text("command"),
-	args: text("args").array(),
-	env: encryptedText("env"),
-	memoryReservation: text("memoryReservation"),
-	externalPort: integer("externalPort"),
-	memoryLimit: text("memoryLimit"),
-	cpuReservation: text("cpuReservation"),
-	cpuLimit: text("cpuLimit"),
-	applicationStatus: applicationStatus("applicationStatus")
-		.notNull()
-		.default("idle"),
+export const database = pgTable(
+	"database",
+	{
+		databaseId: text("databaseId")
+			.notNull()
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
+		engine: databaseEngine("engine").notNull(),
+		name: text("name").notNull(),
+		appName: text("appName")
+			.notNull()
+			.$defaultFn(() => generateAppName("database"))
+			.unique(),
+		description: text("description"),
+		/**
+		 * Engine-specific credentials + settings, validated by the registry.
+		 * Encrypted at rest (stored as text) since it holds the database password;
+		 * transparent to call sites, which still read/write a typed object.
+		 */
+		config:
+			encryptedJson<DatabaseConfigByKey[DatabaseEngineKey]>("config").notNull(),
+		dockerImage: text("dockerImage").notNull(),
+		command: text("command"),
+		args: text("args").array(),
+		env: encryptedText("env"),
+		memoryReservation: text("memoryReservation"),
+		externalPort: integer("externalPort"),
+		memoryLimit: text("memoryLimit"),
+		cpuReservation: text("cpuReservation"),
+		cpuLimit: text("cpuLimit"),
+		applicationStatus: applicationStatus("applicationStatus")
+			.notNull()
+			.default("idle"),
 
-	healthCheckSwarm: json("healthCheckSwarm").$type<HealthCheckSwarm>(),
-	restartPolicySwarm: json("restartPolicySwarm").$type<RestartPolicySwarm>(),
-	placementSwarm: json("placementSwarm").$type<PlacementSwarm>(),
-	updateConfigSwarm: json("updateConfigSwarm").$type<UpdateConfigSwarm>(),
-	rollbackConfigSwarm: json("rollbackConfigSwarm").$type<UpdateConfigSwarm>(),
-	modeSwarm: json("modeSwarm").$type<ServiceModeSwarm>(),
-	labelsSwarm: json("labelsSwarm").$type<LabelsSwarm>(),
-	networkSwarm: json("networkSwarm").$type<NetworkSwarm[]>(),
-	stopGracePeriodSwarm: bigint("stopGracePeriodSwarm", { mode: "number" }),
-	endpointSpecSwarm: json("endpointSpecSwarm").$type<EndpointSpecSwarm>(),
-	ulimitsSwarm: json("ulimitsSwarm").$type<UlimitsSwarm>(),
-	replicas: integer("replicas").default(1).notNull(),
-	createdAt: text("createdAt")
-		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
+		healthCheckSwarm: json("healthCheckSwarm").$type<HealthCheckSwarm>(),
+		restartPolicySwarm: json("restartPolicySwarm").$type<RestartPolicySwarm>(),
+		placementSwarm: json("placementSwarm").$type<PlacementSwarm>(),
+		updateConfigSwarm: json("updateConfigSwarm").$type<UpdateConfigSwarm>(),
+		rollbackConfigSwarm: json("rollbackConfigSwarm").$type<UpdateConfigSwarm>(),
+		modeSwarm: json("modeSwarm").$type<ServiceModeSwarm>(),
+		labelsSwarm: json("labelsSwarm").$type<LabelsSwarm>(),
+		networkSwarm: json("networkSwarm").$type<NetworkSwarm[]>(),
+		stopGracePeriodSwarm: bigint("stopGracePeriodSwarm", { mode: "number" }),
+		endpointSpecSwarm: json("endpointSpecSwarm").$type<EndpointSpecSwarm>(),
+		ulimitsSwarm: json("ulimitsSwarm").$type<UlimitsSwarm>(),
+		replicas: integer("replicas").default(1).notNull(),
+		createdAt: text("createdAt")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
 
-	environmentId: text("environmentId")
-		.notNull()
-		.references(() => environments.environmentId, { onDelete: "cascade" }),
-	runtimeWorkerId: text("runtimeWorkerId").references(
-		() => runtimeWorkers.runtimeWorkerId,
-		{ onDelete: "cascade" },
-	),
-});
+		environmentId: text("environmentId")
+			.notNull()
+			.references(() => environments.environmentId, { onDelete: "cascade" }),
+		runtimeWorkerId: text("runtimeWorkerId").references(
+			() => runtimeWorkers.runtimeWorkerId,
+			{ onDelete: "cascade" },
+		),
+	},
+	(t) => [
+		index("database_environmentId_idx").on(t.environmentId),
+		index("database_runtimeWorkerId_idx").on(t.runtimeWorkerId),
+	],
+);
 
 export const databaseRelations = relations(database, ({ one, many }) => ({
 	environment: one(environments, {

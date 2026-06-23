@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
 	type AnyPgColumn,
 	boolean,
+	index,
 	pgEnum,
 	pgTable,
 	text,
@@ -25,62 +26,73 @@ export const deploymentStatus = pgEnum("deploymentStatus", [
 	"cancelled",
 ]);
 
-export const deployments = pgTable("deployment", {
-	deploymentId: text("deploymentId")
-		.notNull()
-		.primaryKey()
-		.$defaultFn(() => nanoid()),
-	title: text("title").notNull(),
-	description: text("description"),
-	status: deploymentStatus("status").default("running"),
-	logPath: text("logPath").notNull(),
-	pid: text("pid"),
-	applicationId: text("applicationId").references(
-		() => applications.applicationId,
-		{ onDelete: "cascade" },
-	),
-	composeId: text("composeId").references(() => compose.composeId, {
-		onDelete: "cascade",
-	}),
-	runtimeWorkerId: text("runtimeWorkerId").references(
-		() => runtimeWorkers.runtimeWorkerId,
-		{
+export const deployments = pgTable(
+	"deployment",
+	{
+		deploymentId: text("deploymentId")
+			.notNull()
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
+		title: text("title").notNull(),
+		description: text("description"),
+		status: deploymentStatus("status").default("running"),
+		logPath: text("logPath").notNull(),
+		pid: text("pid"),
+		applicationId: text("applicationId").references(
+			() => applications.applicationId,
+			{ onDelete: "cascade" },
+		),
+		composeId: text("composeId").references(() => compose.composeId, {
 			onDelete: "cascade",
-		},
-	),
-	isPreviewDeployment: boolean("isPreviewDeployment").default(false),
-	previewDeploymentId: text("previewDeploymentId").references(
-		(): AnyPgColumn => previewDeployments.previewDeploymentId,
-		{ onDelete: "cascade" },
-	),
-	createdAt: text("createdAt")
-		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
-	startedAt: text("startedAt"),
-	finishedAt: text("finishedAt"),
-	errorMessage: text("errorMessage"),
-	scheduleId: text("scheduleId").references(
-		(): AnyPgColumn => schedules.scheduleId,
-		{ onDelete: "cascade" },
-	),
-	backupId: text("backupId").references((): AnyPgColumn => backups.backupId, {
-		onDelete: "cascade",
-	}),
-	rollbackId: text("rollbackId").references(
-		(): AnyPgColumn => rollbacks.rollbackId,
-		{ onDelete: "cascade" },
-	),
-	volumeBackupId: text("volumeBackupId").references(
-		(): AnyPgColumn => volumeBackups.volumeBackupId,
-		{ onDelete: "cascade" },
-	),
-	buildRuntimeWorkerId: text("buildRuntimeWorkerId").references(
-		() => runtimeWorkers.runtimeWorkerId,
-		{
+		}),
+		runtimeWorkerId: text("runtimeWorkerId").references(
+			() => runtimeWorkers.runtimeWorkerId,
+			{
+				onDelete: "cascade",
+			},
+		),
+		isPreviewDeployment: boolean("isPreviewDeployment").default(false),
+		previewDeploymentId: text("previewDeploymentId").references(
+			(): AnyPgColumn => previewDeployments.previewDeploymentId,
+			{ onDelete: "cascade" },
+		),
+		createdAt: text("createdAt")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+		startedAt: text("startedAt"),
+		finishedAt: text("finishedAt"),
+		errorMessage: text("errorMessage"),
+		scheduleId: text("scheduleId").references(
+			(): AnyPgColumn => schedules.scheduleId,
+			{ onDelete: "cascade" },
+		),
+		backupId: text("backupId").references((): AnyPgColumn => backups.backupId, {
 			onDelete: "cascade",
-		},
-	),
-});
+		}),
+		rollbackId: text("rollbackId").references(
+			(): AnyPgColumn => rollbacks.rollbackId,
+			{ onDelete: "cascade" },
+		),
+		volumeBackupId: text("volumeBackupId").references(
+			(): AnyPgColumn => volumeBackups.volumeBackupId,
+			{ onDelete: "cascade" },
+		),
+		buildRuntimeWorkerId: text("buildRuntimeWorkerId").references(
+			() => runtimeWorkers.runtimeWorkerId,
+			{
+				onDelete: "cascade",
+			},
+		),
+	},
+	(t) => [
+		index("deployment_applicationId_createdAt_idx").on(
+			t.applicationId,
+			t.createdAt,
+		),
+		index("deployment_composeId_createdAt_idx").on(t.composeId, t.createdAt),
+		index("deployment_runtimeWorkerId_idx").on(t.runtimeWorkerId),
+	],
+);
 
 export const deploymentsRelations = relations(deployments, ({ one }) => ({
 	application: one(applications, {

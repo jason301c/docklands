@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { boolean, pgTable, text } from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { applications } from "./application";
@@ -11,22 +11,26 @@ import {
 	workspaceServiceLayouts,
 } from "./workspace-graph";
 
-export const environments = pgTable("environment", {
-	environmentId: text("environmentId")
-		.notNull()
-		.primaryKey()
-		.$defaultFn(() => nanoid()),
-	name: text("name").notNull(),
-	description: text("description"),
-	createdAt: text("createdAt")
-		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
-	env: text("env").notNull().default(""),
-	workspaceId: text("workspaceId")
-		.notNull()
-		.references(() => workspaces.workspaceId, { onDelete: "cascade" }),
-	isDefault: boolean("isDefault").notNull().default(false),
-});
+export const environments = pgTable(
+	"environment",
+	{
+		environmentId: text("environmentId")
+			.notNull()
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
+		name: text("name").notNull(),
+		description: text("description"),
+		createdAt: text("createdAt")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+		env: text("env").notNull().default(""),
+		workspaceId: text("workspaceId")
+			.notNull()
+			.references(() => workspaces.workspaceId, { onDelete: "cascade" }),
+		isDefault: boolean("isDefault").notNull().default(false),
+	},
+	(t) => [index("environment_workspaceId_idx").on(t.workspaceId)],
+);
 
 export const environmentRelations = relations(
 	environments,

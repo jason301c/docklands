@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import {
 	bigint,
 	boolean,
+	index,
 	integer,
 	json,
 	pgEnum,
@@ -73,175 +74,182 @@ export const buildType = pgEnum("buildType", [
 	"railpack",
 ]);
 
-export const applications = pgTable("application", {
-	applicationId: text("applicationId")
-		.notNull()
-		.primaryKey()
-		.$defaultFn(() => nanoid()),
-	name: text("name").notNull(),
-	appName: text("appName")
-		.notNull()
-		.$defaultFn(() => generateAppName("app"))
-		.unique(),
-	description: text("description"),
-	// Env, build args, and build secrets encrypted at rest (they routinely carry
-	// credentials). Transparent: read/write as plain text via Drizzle.
-	env: encryptedText("env"),
-	previewEnv: encryptedText("previewEnv"),
-	watchPaths: text("watchPaths").array(),
-	previewBuildArgs: encryptedText("previewBuildArgs"),
-	previewBuildSecrets: encryptedText("previewBuildSecrets"),
-	previewLabels: text("previewLabels").array(),
-	previewWildcard: text("previewWildcard"),
-	previewPort: integer("previewPort").default(3000),
-	previewHttps: boolean("previewHttps").notNull().default(false),
-	previewPath: text("previewPath").default("/"),
-	previewCertificateType: certificateType("certificateType")
-		.notNull()
-		.default("none"),
-	previewCustomCertResolver: text("previewCustomCertResolver"),
-	previewLimit: integer("previewLimit").default(3),
-	// Days of inactivity after which a preview is automatically torn down.
-	// 0 (the default) disables expiry; previews still clean up on PR close.
-	previewExpirationDays: integer("previewExpirationDays").default(0),
-	isPreviewDeploymentsActive: boolean("isPreviewDeploymentsActive").default(
-		false,
-	),
-	// Security: Require collaborator permissions for preview deployments
-	previewRequireCollaboratorPermissions: boolean(
-		"previewRequireCollaboratorPermissions",
-	).default(true),
-	rollbackActive: boolean("rollbackActive").default(false),
-	buildArgs: encryptedText("buildArgs"),
-	buildSecrets: encryptedText("buildSecrets"),
-	memoryReservation: text("memoryReservation"),
-	memoryLimit: text("memoryLimit"),
-	cpuReservation: text("cpuReservation"),
-	cpuLimit: text("cpuLimit"),
-	title: text("title"),
-	enabled: boolean("enabled"),
-	subtitle: text("subtitle"),
-	command: text("command"),
-	args: text("args").array(),
-	icon: text("icon"),
-	refreshToken: text("refreshToken").$defaultFn(() => nanoid()),
-	sourceType: sourceType("sourceType").notNull().default("github"),
-	cleanCache: boolean("cleanCache").default(false),
-	// Github
-	repository: text("repository"),
-	owner: text("owner"),
-	branch: text("branch"),
-	buildPath: text("buildPath").default("/"),
-	triggerType: triggerType("triggerType").default("push"),
-	autoDeploy: boolean("autoDeploy").$defaultFn(() => true),
-	// Gitlab
-	gitlabProjectId: integer("gitlabProjectId"),
-	gitlabRepository: text("gitlabRepository"),
-	gitlabOwner: text("gitlabOwner"),
-	gitlabBranch: text("gitlabBranch"),
-	gitlabBuildPath: text("gitlabBuildPath").default("/"),
-	gitlabPathNamespace: text("gitlabPathNamespace"),
-	// Gitea
-	giteaRepository: text("giteaRepository"),
-	giteaOwner: text("giteaOwner"),
-	giteaBranch: text("giteaBranch"),
-	giteaBuildPath: text("giteaBuildPath").default("/"),
-	// Bitbucket
-	bitbucketRepository: text("bitbucketRepository"),
-	bitbucketRepositorySlug: text("bitbucketRepositorySlug"),
-	bitbucketOwner: text("bitbucketOwner"),
-	bitbucketBranch: text("bitbucketBranch"),
-	bitbucketBuildPath: text("bitbucketBuildPath").default("/"),
-	// Docker
-	username: text("username"),
-	password: text("password"),
-	dockerImage: text("dockerImage"),
-	registryUrl: text("registryUrl"),
-	// Git
-	customGitUrl: text("customGitUrl"),
-	customGitBranch: text("customGitBranch"),
-	customGitBuildPath: text("customGitBuildPath"),
-	customGitSSHKeyId: text("customGitSSHKeyId").references(
-		() => sshKeys.sshKeyId,
-		{
+export const applications = pgTable(
+	"application",
+	{
+		applicationId: text("applicationId")
+			.notNull()
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
+		name: text("name").notNull(),
+		appName: text("appName")
+			.notNull()
+			.$defaultFn(() => generateAppName("app"))
+			.unique(),
+		description: text("description"),
+		// Env, build args, and build secrets encrypted at rest (they routinely carry
+		// credentials). Transparent: read/write as plain text via Drizzle.
+		env: encryptedText("env"),
+		previewEnv: encryptedText("previewEnv"),
+		watchPaths: text("watchPaths").array(),
+		previewBuildArgs: encryptedText("previewBuildArgs"),
+		previewBuildSecrets: encryptedText("previewBuildSecrets"),
+		previewLabels: text("previewLabels").array(),
+		previewWildcard: text("previewWildcard"),
+		previewPort: integer("previewPort").default(3000),
+		previewHttps: boolean("previewHttps").notNull().default(false),
+		previewPath: text("previewPath").default("/"),
+		previewCertificateType: certificateType("certificateType")
+			.notNull()
+			.default("none"),
+		previewCustomCertResolver: text("previewCustomCertResolver"),
+		previewLimit: integer("previewLimit").default(3),
+		// Days of inactivity after which a preview is automatically torn down.
+		// 0 (the default) disables expiry; previews still clean up on PR close.
+		previewExpirationDays: integer("previewExpirationDays").default(0),
+		isPreviewDeploymentsActive: boolean("isPreviewDeploymentsActive").default(
+			false,
+		),
+		// Security: Require collaborator permissions for preview deployments
+		previewRequireCollaboratorPermissions: boolean(
+			"previewRequireCollaboratorPermissions",
+		).default(true),
+		rollbackActive: boolean("rollbackActive").default(false),
+		buildArgs: encryptedText("buildArgs"),
+		buildSecrets: encryptedText("buildSecrets"),
+		memoryReservation: text("memoryReservation"),
+		memoryLimit: text("memoryLimit"),
+		cpuReservation: text("cpuReservation"),
+		cpuLimit: text("cpuLimit"),
+		title: text("title"),
+		enabled: boolean("enabled"),
+		subtitle: text("subtitle"),
+		command: text("command"),
+		args: text("args").array(),
+		icon: text("icon"),
+		refreshToken: text("refreshToken").$defaultFn(() => nanoid()),
+		sourceType: sourceType("sourceType").notNull().default("github"),
+		cleanCache: boolean("cleanCache").default(false),
+		// Github
+		repository: text("repository"),
+		owner: text("owner"),
+		branch: text("branch"),
+		buildPath: text("buildPath").default("/"),
+		triggerType: triggerType("triggerType").default("push"),
+		autoDeploy: boolean("autoDeploy").$defaultFn(() => true),
+		// Gitlab
+		gitlabProjectId: integer("gitlabProjectId"),
+		gitlabRepository: text("gitlabRepository"),
+		gitlabOwner: text("gitlabOwner"),
+		gitlabBranch: text("gitlabBranch"),
+		gitlabBuildPath: text("gitlabBuildPath").default("/"),
+		gitlabPathNamespace: text("gitlabPathNamespace"),
+		// Gitea
+		giteaRepository: text("giteaRepository"),
+		giteaOwner: text("giteaOwner"),
+		giteaBranch: text("giteaBranch"),
+		giteaBuildPath: text("giteaBuildPath").default("/"),
+		// Bitbucket
+		bitbucketRepository: text("bitbucketRepository"),
+		bitbucketRepositorySlug: text("bitbucketRepositorySlug"),
+		bitbucketOwner: text("bitbucketOwner"),
+		bitbucketBranch: text("bitbucketBranch"),
+		bitbucketBuildPath: text("bitbucketBuildPath").default("/"),
+		// Docker
+		username: text("username"),
+		password: text("password"),
+		dockerImage: text("dockerImage"),
+		registryUrl: text("registryUrl"),
+		// Git
+		customGitUrl: text("customGitUrl"),
+		customGitBranch: text("customGitBranch"),
+		customGitBuildPath: text("customGitBuildPath"),
+		customGitSSHKeyId: text("customGitSSHKeyId").references(
+			() => sshKeys.sshKeyId,
+			{
+				onDelete: "set null",
+			},
+		),
+		enableSubmodules: boolean("enableSubmodules").notNull().default(false),
+		dockerfile: text("dockerfile").default("Dockerfile"),
+		dockerContextPath: text("dockerContextPath"),
+		dockerBuildStage: text("dockerBuildStage"),
+		// Drop
+		dropBuildPath: text("dropBuildPath"),
+		// Docker swarm json
+		healthCheckSwarm: json("healthCheckSwarm").$type<HealthCheckSwarm>(),
+		restartPolicySwarm: json("restartPolicySwarm").$type<RestartPolicySwarm>(),
+		placementSwarm: json("placementSwarm").$type<PlacementSwarm>(),
+		updateConfigSwarm: json("updateConfigSwarm").$type<UpdateConfigSwarm>(),
+		rollbackConfigSwarm: json("rollbackConfigSwarm").$type<UpdateConfigSwarm>(),
+		modeSwarm: json("modeSwarm").$type<ServiceModeSwarm>(),
+		labelsSwarm: json("labelsSwarm").$type<LabelsSwarm>(),
+		networkSwarm: json("networkSwarm").$type<NetworkSwarm[]>(),
+		stopGracePeriodSwarm: bigint("stopGracePeriodSwarm", { mode: "number" }),
+		endpointSpecSwarm: json("endpointSpecSwarm").$type<EndpointSpecSwarm>(),
+		ulimitsSwarm: json("ulimitsSwarm").$type<UlimitsSwarm>(),
+		//
+		replicas: integer("replicas").default(1).notNull(),
+		applicationStatus: applicationStatus("applicationStatus")
+			.notNull()
+			.default("idle"),
+		buildType: buildType("buildType").notNull().default("nixpacks"),
+		railpackVersion: text("railpackVersion").default("0.15.4"),
+		herokuVersion: text("herokuVersion").default("24"),
+		publishDirectory: text("publishDirectory"),
+		isStaticSpa: boolean("isStaticSpa"),
+		createEnvFile: boolean("createEnvFile").notNull().default(true),
+		createdAt: text("createdAt")
+			.notNull()
+			.$defaultFn(() => new Date().toISOString()),
+		registryId: text("registryId").references(() => registry.registryId, {
 			onDelete: "set null",
-		},
-	),
-	enableSubmodules: boolean("enableSubmodules").notNull().default(false),
-	dockerfile: text("dockerfile").default("Dockerfile"),
-	dockerContextPath: text("dockerContextPath"),
-	dockerBuildStage: text("dockerBuildStage"),
-	// Drop
-	dropBuildPath: text("dropBuildPath"),
-	// Docker swarm json
-	healthCheckSwarm: json("healthCheckSwarm").$type<HealthCheckSwarm>(),
-	restartPolicySwarm: json("restartPolicySwarm").$type<RestartPolicySwarm>(),
-	placementSwarm: json("placementSwarm").$type<PlacementSwarm>(),
-	updateConfigSwarm: json("updateConfigSwarm").$type<UpdateConfigSwarm>(),
-	rollbackConfigSwarm: json("rollbackConfigSwarm").$type<UpdateConfigSwarm>(),
-	modeSwarm: json("modeSwarm").$type<ServiceModeSwarm>(),
-	labelsSwarm: json("labelsSwarm").$type<LabelsSwarm>(),
-	networkSwarm: json("networkSwarm").$type<NetworkSwarm[]>(),
-	stopGracePeriodSwarm: bigint("stopGracePeriodSwarm", { mode: "number" }),
-	endpointSpecSwarm: json("endpointSpecSwarm").$type<EndpointSpecSwarm>(),
-	ulimitsSwarm: json("ulimitsSwarm").$type<UlimitsSwarm>(),
-	//
-	replicas: integer("replicas").default(1).notNull(),
-	applicationStatus: applicationStatus("applicationStatus")
-		.notNull()
-		.default("idle"),
-	buildType: buildType("buildType").notNull().default("nixpacks"),
-	railpackVersion: text("railpackVersion").default("0.15.4"),
-	herokuVersion: text("herokuVersion").default("24"),
-	publishDirectory: text("publishDirectory"),
-	isStaticSpa: boolean("isStaticSpa"),
-	createEnvFile: boolean("createEnvFile").notNull().default(true),
-	createdAt: text("createdAt")
-		.notNull()
-		.$defaultFn(() => new Date().toISOString()),
-	registryId: text("registryId").references(() => registry.registryId, {
-		onDelete: "set null",
-	}),
-	rollbackRegistryId: text("rollbackRegistryId").references(
-		() => registry.registryId,
-		{
+		}),
+		rollbackRegistryId: text("rollbackRegistryId").references(
+			() => registry.registryId,
+			{
+				onDelete: "set null",
+			},
+		),
+		environmentId: text("environmentId")
+			.notNull()
+			.references(() => environments.environmentId, { onDelete: "cascade" }),
+		githubId: text("githubId").references(() => github.githubId, {
 			onDelete: "set null",
-		},
-	),
-	environmentId: text("environmentId")
-		.notNull()
-		.references(() => environments.environmentId, { onDelete: "cascade" }),
-	githubId: text("githubId").references(() => github.githubId, {
-		onDelete: "set null",
-	}),
-	gitlabId: text("gitlabId").references(() => gitlab.gitlabId, {
-		onDelete: "set null",
-	}),
-	giteaId: text("giteaId").references(() => gitea.giteaId, {
-		onDelete: "set null",
-	}),
-	bitbucketId: text("bitbucketId").references(() => bitbucket.bitbucketId, {
-		onDelete: "set null",
-	}),
-	runtimeWorkerId: text("runtimeWorkerId").references(
-		() => runtimeWorkers.runtimeWorkerId,
-		{
-			onDelete: "cascade",
-		},
-	),
-	buildRuntimeWorkerId: text("buildRuntimeWorkerId").references(
-		() => runtimeWorkers.runtimeWorkerId,
-		{
+		}),
+		gitlabId: text("gitlabId").references(() => gitlab.gitlabId, {
 			onDelete: "set null",
-		},
-	),
-	buildRegistryId: text("buildRegistryId").references(
-		() => registry.registryId,
-		{
+		}),
+		giteaId: text("giteaId").references(() => gitea.giteaId, {
 			onDelete: "set null",
-		},
-	),
-});
+		}),
+		bitbucketId: text("bitbucketId").references(() => bitbucket.bitbucketId, {
+			onDelete: "set null",
+		}),
+		runtimeWorkerId: text("runtimeWorkerId").references(
+			() => runtimeWorkers.runtimeWorkerId,
+			{
+				onDelete: "cascade",
+			},
+		),
+		buildRuntimeWorkerId: text("buildRuntimeWorkerId").references(
+			() => runtimeWorkers.runtimeWorkerId,
+			{
+				onDelete: "set null",
+			},
+		),
+		buildRegistryId: text("buildRegistryId").references(
+			() => registry.registryId,
+			{
+				onDelete: "set null",
+			},
+		),
+	},
+	(t) => [
+		index("application_environmentId_idx").on(t.environmentId),
+		index("application_runtimeWorkerId_idx").on(t.runtimeWorkerId),
+	],
+);
 
 export const applicationsRelations = relations(
 	applications,
