@@ -132,6 +132,34 @@ export const findPreviewDeploymentsByApplicationId = async (
 	return deploymentsList;
 };
 
+/**
+ * Compute an ISO `expiresAt` timestamp from a per-app expiration window, or
+ * `null` when expiry is disabled (a non-positive number of days).
+ */
+export const computePreviewExpiresAt = (
+	expirationDays: number | null | undefined,
+): string | null => {
+	const days = expirationDays ?? 0;
+	if (days <= 0) {
+		return null;
+	}
+	return new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+};
+
+/**
+ * Refresh a preview's `expiresAt` window after a (re)deploy so actively updated
+ * PRs are never reaped while abandoned ones eventually expire.
+ */
+export const refreshPreviewDeploymentExpiration = async (
+	previewDeploymentId: string,
+	expirationDays: number | null | undefined,
+) => {
+	await db
+		.update(previewDeployments)
+		.set({ expiresAt: computePreviewExpiresAt(expirationDays) })
+		.where(eq(previewDeployments.previewDeploymentId, previewDeploymentId));
+};
+
 export const createPreviewDeployment = async (
 	schema: z.infer<typeof apiCreatePreviewDeployment>,
 ) => {
@@ -172,6 +200,7 @@ export const createPreviewDeployment = async (
 			...schema,
 			appName: appName,
 			pullRequestCommentId: `${issue.data.id}`,
+			expiresAt: computePreviewExpiresAt(application.previewExpirationDays),
 		})
 		.returning()
 		.then((value) => value[0]);

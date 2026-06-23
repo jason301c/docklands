@@ -32,6 +32,7 @@ const schema = z
 		wildcardDomain: z.string(),
 		port: z.number(),
 		previewLimit: z.number(),
+		previewExpirationDays: z.number(),
 		previewLabels: z.array(z.string()).optional(),
 		previewHttps: z.boolean(),
 		previewPath: z.string(),
@@ -72,6 +73,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 			wildcardDomain: "*.sslip.io",
 			port: 3000,
 			previewLimit: 3,
+			previewExpirationDays: 0,
 			previewLabels: [],
 			previewHttps: false,
 			previewPath: "/",
@@ -99,6 +101,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 				port: data.previewPort || 3000,
 				previewLabels: data.previewLabels || [],
 				previewLimit: data.previewLimit || 3,
+				previewExpirationDays: data.previewExpirationDays || 0,
 				previewHttps: data.previewHttps || false,
 				previewPath: data.previewPath || "/",
 				previewCertificateType: data.previewCertificateType || "none",
@@ -119,6 +122,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 			previewLabels: formData.previewLabels,
 			applicationId,
 			previewLimit: formData.previewLimit,
+			previewExpirationDays: formData.previewExpirationDays,
 			previewHttps: formData.previewHttps,
 			previewPath: formData.previewPath,
 			previewCertificateType: formData.previewCertificateType,
@@ -301,6 +305,24 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 												<FormControl>
 													<Input type="number" placeholder="3000" {...field} />
 												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="previewExpirationDays"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>Auto-expire after (days)</FormLabel>
+												<FormControl>
+													<Input type="number" placeholder="0" {...field} />
+												</FormControl>
+												<FormDescription>
+													Tear down a preview after this many days without a new
+													deployment. 0 disables expiry (previews still clean up
+													when the pull request closes).
+												</FormDescription>
 												<FormMessage />
 											</FormItem>
 										)}

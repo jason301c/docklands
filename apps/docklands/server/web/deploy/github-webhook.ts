@@ -10,6 +10,7 @@ import {
 	createPreviewDeployment,
 	findPreviewDeploymentByApplicationId,
 	findPreviewDeploymentsByPullRequestId,
+	refreshPreviewDeploymentExpiration,
 	removePreviewDeployment,
 } from "@/server/core/services/preview-deployment";
 import { checkUserRepositoryPermissions } from "@/server/core/utils/providers/github";
@@ -485,6 +486,13 @@ export async function handleGithubDeployWebhook(request: Request) {
 						pullRequestURL: prURL,
 					});
 					previewDeploymentId = previewDeployment.previewDeploymentId;
+				} else if (previewDeploymentResult) {
+					// Refresh the expiry window on every redeploy of an open PR so
+					// actively-updated previews are never reaped before abandoned ones.
+					await refreshPreviewDeploymentExpiration(
+						previewDeploymentId,
+						app?.previewExpirationDays ?? 0,
+					);
 				}
 
 				const jobData: DeploymentJob = {

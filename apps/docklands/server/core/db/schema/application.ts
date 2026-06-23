@@ -101,6 +101,9 @@ export const applications = pgTable("application", {
 		.default("none"),
 	previewCustomCertResolver: text("previewCustomCertResolver"),
 	previewLimit: integer("previewLimit").default(3),
+	// Days of inactivity after which a preview is automatically torn down.
+	// 0 (the default) disables expiry; previews still clean up on PR close.
+	previewExpirationDays: integer("previewExpirationDays").default(0),
 	isPreviewDeploymentsActive: boolean("isPreviewDeploymentsActive").default(
 		false,
 	),
@@ -375,6 +378,7 @@ const createSchema = createInsertSchema(applications, {
 	previewBuildSecrets: z.string().nullish(),
 	previewWildcard: z.string().nullish(),
 	previewLimit: z.number().nullish(),
+	previewExpirationDays: z.number().nullish(),
 	previewHttps: z.boolean().optional(),
 	previewPath: z.string().nullish(),
 	previewCertificateType: z.enum(["letsencrypt", "none", "custom"]).optional(),
