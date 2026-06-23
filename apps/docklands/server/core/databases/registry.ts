@@ -330,7 +330,7 @@ const postgresEngine: DatabaseEngine<"postgres"> = {
 			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; pg_dump -Fc --no-acl --no-owner -h localhost -U ${databaseUser} --no-password '${database}' | gzip"`,
 	},
 	changePassword: ({ databaseUser, newPassword }) =>
-		`docker exec "$CONTAINER_ID" psql -U ${databaseUser} -c "ALTER USER \\"${databaseUser}\\" WITH PASSWORD '${newPassword}';"`,
+		`docker exec "$CONTAINER_ID" psql -U "${databaseUser}" -c "ALTER USER \\"${databaseUser}\\" WITH PASSWORD '${newPassword}';"`,
 };
 
 // ---------------------------------------------------------------------------
@@ -680,15 +680,51 @@ export const buildDatabasePublishedPorts = <K extends DatabaseEngineKey>(
 		: [];
 };
 
+/**
+ * Values interpolated into the change-password / dump shell commands must not
+ * contain shell-dangerous characters. This mirrors `DATABASE_PASSWORD_REGEX`
+ * (duplicated locally so this module stays import-free and unit-testable) and is
+ * enforced *here*, at the shell-building boundary, so the commands can never be
+ * built from unsafe input even if a caller bypasses the schema validation.
+ */
+const SHELL_SAFE_DB_VALUE = /^[a-zA-Z0-9@#%^&*()_+\-=[\]{}|;:,.<>?~]*$/;
+
+export class UnsafeDatabaseShellValueError extends Error {
+	constructor(field: string) {
+		super(
+			`Database ${field} contains characters that are unsafe to interpolate ` +
+				"into a shell command.",
+		);
+		this.name = "UnsafeDatabaseShellValueError";
+	}
+}
+
+const assertShellSafe = (field: string, value: string | undefined) => {
+	if (value !== undefined && !SHELL_SAFE_DB_VALUE.test(value)) {
+		throw new UnsafeDatabaseShellValueError(field);
+	}
+};
+
 export const databaseBackupCommand = <K extends DatabaseEngineKey>(
 	key: K,
 	args: BackupCommandArgs,
-): string | null => databaseEngines[key].backup?.dumpCommand(args) ?? null;
+): string | null => {
+	assertShellSafe("name", args.database);
+	assertShellSafe("user", args.databaseUser);
+	assertShellSafe("password", args.databasePassword);
+	return databaseEngines[key].backup?.dumpCommand(args) ?? null;
+};
 
 export const databaseChangePasswordCommand = <K extends DatabaseEngineKey>(
 	key: K,
 	args: ChangePasswordArgs,
-): string | null => databaseEngines[key].changePassword?.(args) ?? null;
+): string | null => {
+	assertShellSafe("user", args.databaseUser);
+	assertShellSafe("target user", args.targetUser);
+	assertShellSafe("password", args.newPassword);
+	assertShellSafe("root password", args.databaseRootPassword);
+	return databaseEngines[key].changePassword?.(args) ?? null;
+};
 
 /**
  * Thrown when a managed-database engine is detected inside a compose stack but

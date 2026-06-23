@@ -5,6 +5,7 @@ import { findDestinationById } from "@/server/core/services/destination";
 import type { findVolumeBackupById } from "@/server/core/services/volume-backups";
 import {
 	getBackupTimestamp,
+	getS3CredentialEnv,
 	getS3Credentials,
 	normalizeS3Path,
 } from "../backups/utils";
@@ -37,10 +38,11 @@ export const backupVolume = async (
 	const backupFileName = `${volumeName}-${getBackupTimestamp()}.tar`;
 	const bucketDestination = `${s3AppName}/${normalizeS3Path(prefix || "")}${backupFileName}`;
 	const rcloneFlags = getS3Credentials(destination);
+	const s3Env = getS3CredentialEnv(destination);
 	const rcloneDestination = `:s3:${destination.bucket}/${bucketDestination}`;
 	const volumeBackupPath = path.join(VOLUME_BACKUPS_PATH, volumeBackup.appName);
 
-	const rcloneCommand = `rclone copyto ${rcloneFlags.join(" ")} "${volumeBackupPath}/${backupFileName}" "${rcloneDestination}"`;
+	const rcloneCommand = `${s3Env} rclone copyto ${rcloneFlags.join(" ")} "${volumeBackupPath}/${backupFileName}" "${rcloneDestination}"`;
 
 	const backupCommand = `
 	set -e

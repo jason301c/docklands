@@ -47,4 +47,15 @@ describe("redactRcloneCredentials (#4621)", () => {
 		expect(redacted).not.toContain("MYSECRET");
 		expect(redacted).toContain("[REDACTED]");
 	});
+
+	it("should redact the RCLONE_S3_* env-prefix form", () => {
+		const cmd =
+			"RCLONE_S3_ACCESS_KEY_ID='AKIA123' RCLONE_S3_SECRET_ACCESS_KEY='secret456' rclone rcat --s3-region=\"us-east-1\" :s3:bucket/file.gz";
+		const redacted = redactRcloneCredentials(cmd);
+		expect(redacted).not.toContain("AKIA123");
+		expect(redacted).not.toContain("secret456");
+		expect(redacted).toContain("RCLONE_S3_ACCESS_KEY_ID='[REDACTED]'");
+		expect(redacted).toContain("RCLONE_S3_SECRET_ACCESS_KEY='[REDACTED]'");
+		expect(redacted).toContain('--s3-region="us-east-1"');
+	});
 });

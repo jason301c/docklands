@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { nanoid } from "nanoid";
-import { quote } from "shell-quote";
 import {
+	encodeBase64,
 	parseEnvironmentKeyValuePair,
 	prepareEnvironmentVariables,
 	prepareEnvironmentVariablesForShell,
@@ -81,7 +81,11 @@ export const getRailpackCommand = (application: ApplicationNested) => {
 		const [key, value] = parseEnvironmentKeyValuePair(pair);
 		if (key && value) {
 			buildArgs.push("--secret", `id=${key},env=${key}`);
-			exportEnvs.push(`export ${key}=${quote([value])}`);
+			// base64-decode into the exported env (read by `--secret ...,env=KEY`)
+			// rather than embedding the plaintext value in the build script.
+			exportEnvs.push(
+				`export ${key}="$(echo '${encodeBase64(value)}' | base64 -d)"`,
+			);
 		}
 	}
 

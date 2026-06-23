@@ -1,5 +1,5 @@
-import { quote } from "shell-quote";
 import {
+	encodeBase64,
 	getEnvironmentVariablesObject,
 	prepareEnvironmentVariablesForShell,
 } from "@/server/core/utils/docker/utils";
@@ -58,9 +58,16 @@ export const getDockerCommand = (application: ApplicationNested) => {
 			application.environment.env,
 		);
 
-		const joinedSecrets = Object.entries(secrets)
-			.map(([key, value]) => `${key}=${quote([value])}`)
-			.join(" ");
+		// Feed build secrets to BuildKit via `--secret type=env` (below). The
+		// values are base64-decoded into exported env vars rather than placed on
+		// the `docker` command line, so they don't surface in process listings or
+		// an echoed command. BuildKit keeps them out of the final image.
+		const exportSecrets = Object.entries(secrets)
+			.map(
+				([key, value]) =>
+					`export ${key}="$(echo '${encodeBase64(value)}' | base64 -d)";`,
+			)
+			.join("\n");
 
 		/*
 			Do not generate an environment file when publishDirectory is specified,
@@ -91,7 +98,8 @@ cd ${dockerContextPath} || {
   exit 1;
 }
 
-${joinedSecrets} docker ${commandArgs.join(" ")} || {
+${exportSecrets}
+docker ${commandArgs.join(" ")} || {
   echo "❌ Docker build failed" ;
   exit 1;
 }

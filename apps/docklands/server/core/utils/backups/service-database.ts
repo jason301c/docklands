@@ -16,6 +16,7 @@ import {
 	buildBackupShellCommand,
 	getBackupTimestamp,
 	getComposeContainerCommand,
+	getS3CredentialEnv,
 	getS3Credentials,
 	normalizeS3Path,
 } from "./utils";
@@ -83,8 +84,9 @@ export const runServiceDatabaseBackup = async (
 
 	try {
 		const rcloneFlags = getS3Credentials(destination);
+		const s3Env = getS3CredentialEnv(destination);
 		const rcloneDestination = `:s3:${destination.bucket}/${bucketDestination}`;
-		const rcloneCommand = `rclone rcat ${rcloneFlags.join(" ")} "${rcloneDestination}"`;
+		const rcloneCommand = `${s3Env} rclone rcat ${rcloneFlags.join(" ")} "${rcloneDestination}"`;
 
 		const containerSearch = getComposeContainerCommand(
 			compose.appName,

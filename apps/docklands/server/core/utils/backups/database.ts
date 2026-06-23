@@ -18,6 +18,7 @@ import { redactRcloneCredentials } from "./redact";
 import {
 	buildBackupShellCommand,
 	getBackupTimestamp,
+	getS3CredentialEnv,
 	getS3Credentials,
 	getServiceContainerCommand,
 	normalizeS3Path,
@@ -105,8 +106,9 @@ export const runDatabaseBackup = async (
 
 	try {
 		const rcloneFlags = getS3Credentials(destination);
+		const s3Env = getS3CredentialEnv(destination);
 		const rcloneDestination = `:s3:${destination.bucket}/${bucketDestination}`;
-		const rcloneCommand = `rclone rcat ${rcloneFlags.join(" ")} "${rcloneDestination}"`;
+		const rcloneCommand = `${s3Env} rclone rcat ${rcloneFlags.join(" ")} "${rcloneDestination}"`;
 
 		const containerSearch = getServiceContainerCommand(appName);
 		const backupCommand = buildDatabaseBackupCommand(database, backup.database);

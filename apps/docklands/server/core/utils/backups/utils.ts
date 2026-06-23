@@ -49,12 +49,15 @@ export const normalizeS3Path = (prefix: string) => {
 	return normalizedPrefix ? `${normalizedPrefix}/` : "";
 };
 
+/**
+ * Non-secret rclone flags for an S3 destination. The access/secret keys are
+ * intentionally NOT here — they're passed via {@link getS3CredentialEnv} as
+ * environment variables so they never appear in the worker's process listing.
+ * Every rclone invocation must be prefixed with `getS3CredentialEnv(...)`.
+ */
 export const getS3Credentials = (destination: Destination) => {
-	const { accessKey, secretAccessKey, region, endpoint, provider } =
-		destination;
+	const { region, endpoint, provider } = destination;
 	const rcloneFlags = [
-		`--s3-access-key-id="${accessKey}"`,
-		`--s3-secret-access-key="${secretAccessKey}"`,
 		`--s3-region="${region}"`,
 		`--s3-endpoint="${endpoint}"`,
 		"--s3-no-check-bucket",
@@ -70,6 +73,21 @@ export const getS3Credentials = (destination: Destination) => {
 	}
 
 	return rcloneFlags;
+};
+
+/**
+ * S3 credentials as an env-var prefix for an rclone command, e.g.
+ * `RCLONE_S3_ACCESS_KEY_ID='…' RCLONE_S3_SECRET_ACCESS_KEY='…'`. rclone reads
+ * these for on-the-fly `:s3:` remotes, so the secrets live in the rclone
+ * process environment instead of its argv (not visible via `ps`). Single-quoted
+ * because S3 keys are base64-ish and never contain a single quote.
+ */
+export const getS3CredentialEnv = (destination: Destination): string => {
+	const { accessKey, secretAccessKey } = destination;
+	return (
+		`RCLONE_S3_ACCESS_KEY_ID='${accessKey}' ` +
+		`RCLONE_S3_SECRET_ACCESS_KEY='${secretAccessKey}'`
+	);
 };
 
 export const getPostgresBackupCommand = (

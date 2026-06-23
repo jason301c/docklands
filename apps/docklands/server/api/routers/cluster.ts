@@ -11,6 +11,11 @@ import {
 import { getRemoteDocker } from "@/server/core/utils/servers/remote-docker";
 import { createTRPCRouter, withPermission } from "../trpc";
 
+// A Docker node reference (node ID or hostname). Restricting to this charset
+// keeps `input.nodeId` safe to interpolate into the `docker node ...` commands
+// that run locally or over SSH (no shell metacharacters).
+const nodeIdRegex = /^[a-zA-Z0-9.\-_]+$/;
+
 export const clusterRouter = createTRPCRouter({
 	getNodes: withPermission("runtimeWorker", "read")
 		.input(
@@ -36,7 +41,7 @@ export const clusterRouter = createTRPCRouter({
 	removeWorker: withPermission("runtimeWorker", "delete")
 		.input(
 			z.object({
-				nodeId: z.string(),
+				nodeId: z.string().min(1).regex(nodeIdRegex, "Invalid node id."),
 				runtimeWorkerId: z.string().optional(),
 			}),
 		)

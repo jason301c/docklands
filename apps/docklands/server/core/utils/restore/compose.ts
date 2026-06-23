@@ -2,7 +2,7 @@ import type { z } from "zod";
 import type { apiRestoreBackup } from "@/server/core/db/schema";
 import type { Compose } from "@/server/core/services/compose";
 import type { Destination } from "@/server/core/services/destination";
-import { getS3Credentials } from "../backups/utils";
+import { getS3CredentialEnv, getS3Credentials } from "../backups/utils";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import { getRestoreCommand } from "./utils";
 
@@ -24,12 +24,13 @@ export const restoreComposeBackup = async (
 		const { runtimeWorkerId, appName, composeType } = compose;
 
 		const rcloneFlags = getS3Credentials(destination);
+		const s3Env = getS3CredentialEnv(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
 		const backupPath = `${bucketPath}/${backupInput.backupFile}`;
-		let rcloneCommand = `rclone cat ${rcloneFlags.join(" ")} "${backupPath}" | gunzip`;
+		let rcloneCommand = `${s3Env} rclone cat ${rcloneFlags.join(" ")} "${backupPath}" | gunzip`;
 
 		if (backupInput.metadata?.mongo) {
-			rcloneCommand = `rclone copy ${rcloneFlags.join(" ")} "${backupPath}"`;
+			rcloneCommand = `${s3Env} rclone copy ${rcloneFlags.join(" ")} "${backupPath}"`;
 		}
 
 		let credentials: DatabaseCredentials = {};

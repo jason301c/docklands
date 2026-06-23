@@ -3,7 +3,11 @@ import { parseDatabaseConfig } from "@/server/core/databases/registry";
 import type { apiRestoreBackup } from "@/server/core/db/schema";
 import type { Database } from "@/server/core/services/database";
 import type { Destination } from "@/server/core/services/destination";
-import { getS3Credentials, getServiceContainerCommand } from "../backups/utils";
+import {
+	getS3CredentialEnv,
+	getS3Credentials,
+	getServiceContainerCommand,
+} from "../backups/utils";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import { getRestoreCommand } from "./utils";
 
@@ -25,6 +29,7 @@ export const restoreDatabaseBackup = async (
 		const config = parseDatabaseConfig(engine, database.config);
 
 		const rcloneFlags = getS3Credentials(destination);
+		const s3Env = getS3CredentialEnv(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
 		const backupPath = `${bucketPath}/${backupInput.backupFile}`;
 
@@ -32,7 +37,7 @@ export const restoreDatabaseBackup = async (
 
 		if (engine === "libsql") {
 			// libSQL restores by untarring the gzip archive into /var/lib/sqld.
-			const rcloneCommand = `rclone cat ${rcloneFlags.join(" ")} "${backupPath}"`;
+			const rcloneCommand = `${s3Env} rclone cat ${rcloneFlags.join(" ")} "${backupPath}"`;
 			const containerSearch = getServiceContainerCommand(appName);
 			const restoreCommand = `docker exec -i $CONTAINER_ID sh -c "tar xzf - -C /var/lib/sqld"`;
 			command = `CONTAINER_ID=$(${containerSearch}) && ${rcloneCommand} | ${restoreCommand}`;
@@ -40,7 +45,7 @@ export const restoreDatabaseBackup = async (
 			emit("Starting restore...");
 			emit(`Restoring libsql from ${backupInput.backupFile}`);
 		} else if (engine === "mongo") {
-			const rcloneCommand = `rclone copy ${rcloneFlags.join(" ")} "${backupPath}"`;
+			const rcloneCommand = `${s3Env} rclone copy ${rcloneFlags.join(" ")} "${backupPath}"`;
 			command = getRestoreCommand({
 				appName,
 				type: "mongo",
@@ -65,7 +70,7 @@ export const restoreDatabaseBackup = async (
 			engine === "mariadb"
 		) {
 			// postgres / mysql / mariadb: pipe a gunzipped SQL dump into the client.
-			const rcloneCommand = `rclone cat ${rcloneFlags.join(" ")} "${backupPath}" | gunzip`;
+			const rcloneCommand = `${s3Env} rclone cat ${rcloneFlags.join(" ")} "${backupPath}" | gunzip`;
 			const databaseUser = "databaseUser" in config ? config.databaseUser : "";
 			// MySQL restores as root; the registry stores the root password.
 			const databasePassword =

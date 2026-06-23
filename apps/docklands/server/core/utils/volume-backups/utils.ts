@@ -11,7 +11,11 @@ import {
 	execAsync,
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
-import { getS3Credentials, normalizeS3Path } from "../backups/utils";
+import {
+	getS3CredentialEnv,
+	getS3Credentials,
+	normalizeS3Path,
+} from "../backups/utils";
 import { sendVolumeBackupNotifications } from "../notifications/volume-backup";
 import { backupVolume, getVolumeServiceAppName } from "./backup";
 
@@ -75,11 +79,12 @@ const cleanupOldVolumeBackups = async (
 
 	try {
 		const rcloneFlags = getS3Credentials(destination);
+		const s3Env = getS3CredentialEnv(destination);
 		const s3AppName = getVolumeServiceAppName(volumeBackup);
 		const backupFilesPath = `:s3:${destination.bucket}/${s3AppName}/${normalizeS3Path(prefix || "")}`;
-		const listCommand = `rclone lsf ${rcloneFlags.join(" ")} --include "${volumeName}-*.tar" ${backupFilesPath}`;
+		const listCommand = `${s3Env} rclone lsf ${rcloneFlags.join(" ")} --include "${volumeName}-*.tar" ${backupFilesPath}`;
 		const sortAndPick = `sort -r | tail -n +$((${keepLatestCount}+1)) | xargs -I{}`;
-		const deleteCommand = `rclone delete ${rcloneFlags.join(" ")} ${backupFilesPath}{}`;
+		const deleteCommand = `${s3Env} rclone delete ${rcloneFlags.join(" ")} ${backupFilesPath}{}`;
 		const fullCommand = `${listCommand} | ${sortAndPick} ${deleteCommand}`;
 
 		if (runtimeWorkerId) {

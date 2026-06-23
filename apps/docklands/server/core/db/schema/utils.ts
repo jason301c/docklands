@@ -12,12 +12,18 @@ export const APP_NAME_REGEX = /^[a-zA-Z0-9._-]+$/;
 export const APP_NAME_MESSAGE =
 	"App name can only contain letters, numbers, dots, underscores and hyphens";
 
-/** Database password: blocks shell-dangerous characters like $ ! ' " \ / and spaces. */
+/**
+ * Database password: blocks shell-dangerous characters. The password is
+ * interpolated into change-password / dump shell commands (inside both single-
+ * and double-quoted contexts), so it must exclude `$ ! ' " \ / `` `` (backtick)
+ * and spaces — backtick in particular would trigger command substitution inside
+ * the double-quoted `psql -c "..."` form.
+ */
 export const DATABASE_PASSWORD_REGEX =
-	/^[a-zA-Z0-9@#%^&*()_+\-=[\]{}|;:,.<>?~`]*$/;
+	/^[a-zA-Z0-9@#%^&*()_+\-=[\]{}|;:,.<>?~]*$/;
 
 export const DATABASE_PASSWORD_MESSAGE =
-	"Password contains invalid characters. Please avoid: $ ! ' \" \\ / and space characters for database compatibility";
+	"Password contains invalid characters. Please avoid: $ ! ' \" \\ / ` and space characters for database compatibility";
 
 export const generateAppName = (type: string) => {
 	const verb = faker.hacker.verb().replace(/ /g, "-");

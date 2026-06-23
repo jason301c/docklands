@@ -41,16 +41,6 @@ export const cloneGitRepository = async ({
 		return command;
 	}
 
-	const temporalKeyPath = path.join("/tmp", "id_rsa");
-
-	if (customGitSSHKeyId) {
-		const sshKey = await findSSHKeyById(customGitSSHKeyId);
-
-		command += `
-			echo "${sshKey.privateKey}" > ${temporalKeyPath}
-			chmod 600 ${temporalKeyPath};
-			`;
-	}
 	const basePath = type === "compose" ? COMPOSE_PATH : APPLICATIONS_PATH;
 	const outputPath = outputPathOverride ?? join(basePath, appName, "code");
 	const knownHostsPath = path.join(SSH_PATH, "known_hosts");
@@ -73,19 +63,30 @@ export const cloneGitRepository = async ({
 		});
 	}
 
+	let cleanupKey = "";
 	if (customGitSSHKeyId) {
 		const sshKey = await findSSHKeyById(customGitSSHKeyId);
 		const { port } = sanitizeRepoPathSSH(customGitUrl);
-		const gitSshCommand = `ssh -i /tmp/id_rsa${port ? ` -p ${port}` : ""} -o UserKnownHostsFile=${knownHostsPath} -o StrictHostKeyChecking=accept-new`;
-		command += `echo "${sshKey.privateKey}" > /tmp/id_rsa;`;
-		command += "chmod 600 /tmp/id_rsa;";
+		// base64-encode the key in JS so its raw bytes never touch the shell
+		// (PEM is normally safe, but a crafted key with quotes/`$`/backticks
+		// would otherwise break out of the `echo`). Decode on the worker.
+		const keyB64 = Buffer.from(sshKey.privateKey, "utf8").toString("base64");
+		// Per-clone temp file (was a shared `/tmp/id_rsa` — concurrent clones
+		// raced and clobbered each other's key). mktemp creates it mode 600.
+		command += `DOCKLANDS_SSH_KEY="$(mktemp)";`;
+		command += `printf '%s' '${keyB64}' | base64 -d > "$DOCKLANDS_SSH_KEY";`;
+		command += `chmod 600 "$DOCKLANDS_SSH_KEY";`;
+		const gitSshCommand = `ssh -i $DOCKLANDS_SSH_KEY${port ? ` -p ${port}` : ""} -o UserKnownHostsFile=${knownHostsPath} -o StrictHostKeyChecking=accept-new`;
 		command += `export GIT_SSH_COMMAND="${gitSshCommand}";`;
+		cleanupKey = `rm -f "$DOCKLANDS_SSH_KEY";`;
 	}
 	command += `if ! git clone --branch ${quote([customGitBranch ?? ""])} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} --progress ${customGitUrl} ${outputPath}; then
 				echo "❌ [ERROR] Fail to clone the repository ${customGitUrl}";
+				${cleanupKey}
 				exit 1;
 			fi
 			`;
+	command += cleanupKey;
 
 	return command;
 };

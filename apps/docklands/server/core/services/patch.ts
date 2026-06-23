@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import type { z } from "zod";
@@ -155,16 +155,33 @@ export const generateApplyPatchesCommand = async ({
 
 	let command = `echo "Applying ${patches.length} patch(es)...";`;
 
+	const codeRoot = resolve(codePath);
 	for (const p of patches) {
 		const filePath = join(codePath, p.filePath);
 
+		// Containment: a patch must not escape the cloned code directory (a
+		// `../` path would otherwise let it write/delete arbitrary files on the
+		// worker).
+		const resolved = resolve(filePath);
+		if (resolved !== codeRoot && !resolved.startsWith(codeRoot + sep)) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: `Patch path escapes the repository: ${p.filePath}`,
+			});
+		}
+
+		// base64-encode the path so its bytes never reach the shell raw (a path
+		// with quotes / `$` / backticks used to break out of the quoting and
+		// execute on the build worker). Decode into a quoted shell variable.
+		const fileB64 = encodeBase64(filePath);
 		if (p.type === "delete") {
 			command += `
-			rm -f "${filePath}";
+			file="$(echo "${fileB64}" | base64 -d)"
+			rm -f "$file";
 			`;
 		} else {
 			command += `
-file="${filePath}"
+file="$(echo "${fileB64}" | base64 -d)"
 dir="$(dirname "$file")"
 mkdir -p "$dir"
 echo "${encodeBase64(p.content)}" | base64 -d > "$file"

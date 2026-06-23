@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { paths } from "@/server/core/constants/paths";
 import type { Destination } from "@/server/core/services/destination";
-import { getS3Credentials } from "../backups/utils";
+import { getS3CredentialEnv, getS3Credentials } from "../backups/utils";
 import { execAsync } from "../process/execAsync";
 
 export const restoreWebServerBackup = async (
@@ -13,6 +13,7 @@ export const restoreWebServerBackup = async (
 ) => {
 	try {
 		const rcloneFlags = getS3Credentials(destination);
+		const s3Env = getS3CredentialEnv(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
 		const backupPath = `${bucketPath}/${backupFile}`;
 		const { BASE_PATH } = paths();
@@ -32,7 +33,7 @@ export const restoreWebServerBackup = async (
 			// Download backup from S3
 			emit("Downloading backup from S3...");
 			await execAsync(
-				`rclone copyto ${rcloneFlags.join(" ")} "${backupPath}" "${tempDir}/${backupFile}"`,
+				`${s3Env} rclone copyto ${rcloneFlags.join(" ")} "${backupPath}" "${tempDir}/${backupFile}"`,
 			);
 
 			// List files before extraction

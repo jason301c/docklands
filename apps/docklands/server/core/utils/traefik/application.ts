@@ -286,8 +286,14 @@ export const writeTraefikConfigRemote = async (
 	try {
 		const { DYNAMIC_TRAEFIK_PATH } = paths(true);
 		const configPath = path.join(DYNAMIC_TRAEFIK_PATH, `${appName}.yml`);
-		const yamlStr = stringify(traefikConfig);
-		await execAsyncRemote(runtimeWorkerId, `echo '${yamlStr}' > ${configPath}`);
+		// base64-encode the YAML so it can't break out of the shell command (a
+		// single quote in the config used to corrupt it / allow injection over
+		// SSH). Same pattern as the cert/config writers above.
+		const encoded = encodeBase64(stringify(traefikConfig));
+		await execAsyncRemote(
+			runtimeWorkerId,
+			`echo "${encoded}" | base64 -d > "${configPath}"`,
+		);
 	} catch (e) {
 		console.error("Error saving the YAML config file:", e);
 	}

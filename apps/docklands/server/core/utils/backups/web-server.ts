@@ -11,7 +11,12 @@ import {
 import { findDestinationById } from "@/server/core/services/destination";
 import { sendDocklandsBackupNotifications } from "../notifications/docklands-backup";
 import { execAsync } from "../process/execAsync";
-import { getBackupTimestamp, getS3Credentials, normalizeS3Path } from "./utils";
+import {
+	getBackupTimestamp,
+	getS3CredentialEnv,
+	getS3Credentials,
+	normalizeS3Path,
+} from "./utils";
 
 function formatBytes(bytes?: number) {
 	if (bytes === undefined) return "Unknown size";
@@ -33,6 +38,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 	try {
 		const destination = await findDestinationById(backup.destinationId);
 		const rcloneFlags = getS3Credentials(destination);
+		const s3Env = getS3CredentialEnv(destination);
 		const timestamp = getBackupTimestamp();
 		const { BASE_PATH } = paths();
 		const tempDir = await mkdtemp(join(tmpdir(), "docklands-backup-"));
@@ -94,7 +100,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 				// If stat fails, keep undefined
 			}
 
-			const uploadCommand = `rclone copyto ${rcloneFlags.join(" ")} "${zipPath}" "${s3Path}"`;
+			const uploadCommand = `${s3Env} rclone copyto ${rcloneFlags.join(" ")} "${zipPath}" "${s3Path}"`;
 			writeStream.write("Running command to upload backup to S3\n");
 			await execAsync(uploadCommand);
 			writeStream.write("Uploaded backup to S3 ✅\n");

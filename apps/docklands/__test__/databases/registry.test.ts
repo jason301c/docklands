@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
 	DATABASE_ENGINE_KEYS,
 	DatabaseCredentialExtractionError,
+	databaseBackupCommand,
+	databaseChangePasswordCommand,
 	databaseEngines,
 	extractDatabaseCredentials,
 	getDatabaseEngine,
 	parseDatabaseConfig,
+	UnsafeDatabaseShellValueError,
 } from "@/server/core/databases/registry";
 
 describe("database engine registry", () => {
@@ -332,6 +335,48 @@ describe("database engine registry", () => {
 			expect(() => extractDatabaseCredentials("mongo", {})).not.toThrow();
 			expect(() => extractDatabaseCredentials("libsql", {})).not.toThrow();
 			expect(extractDatabaseCredentials("redis", {}).databasePassword).toBe("");
+		});
+	});
+
+	describe("shell-safety boundary (change-password / backup commands)", () => {
+		it("builds a postgres change-password command for safe input", () => {
+			const cmd = databaseChangePasswordCommand("postgres", {
+				databaseUser: "admin",
+				databasePassword: "old",
+				newPassword: "Str0ng-Pass_1",
+			});
+			expect(cmd).toContain("ALTER USER");
+			expect(cmd).toContain("Str0ng-Pass_1");
+		});
+
+		it("rejects a password with a backtick (command substitution)", () => {
+			expect(() =>
+				databaseChangePasswordCommand("postgres", {
+					databaseUser: "admin",
+					databasePassword: "old",
+					newPassword: "a`whoami`b",
+				}),
+			).toThrow(UnsafeDatabaseShellValueError);
+		});
+
+		it("rejects a username with a shell metacharacter", () => {
+			expect(() =>
+				databaseChangePasswordCommand("postgres", {
+					databaseUser: "admin$(id)",
+					databasePassword: "old",
+					newPassword: "ok",
+				}),
+			).toThrow(UnsafeDatabaseShellValueError);
+		});
+
+		it("validates backup-command inputs too", () => {
+			expect(() =>
+				databaseBackupCommand("postgres", {
+					database: "app",
+					databaseUser: "admin",
+					databasePassword: "p'w",
+				}),
+			).toThrow(UnsafeDatabaseShellValueError);
 		});
 	});
 });

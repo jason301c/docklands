@@ -472,6 +472,23 @@ means shipped and green (`typecheck` + `test:ci`).
   `build` exits 0. **Deliberately left plaintext:** Better Auth tables (managed
   by its adapter / its own 2FA crypto), and `*.refreshToken` webhook tokens
   (looked up *by value*, so GCM's non-determinism would break the `WHERE`).
+- **P2 — Shell-exec safety — ✅ done (2026-06-23).** Closed A2, A10, D4, N3, G5,
+  R4, B2-cmdline. **G5:** SSH clone now base64-decodes the key into a per-clone
+  `mktemp` file (was raw `echo "${privateKey}"` to a shared `/tmp/id_rsa` — fixed
+  the injection *and* the concurrent-clone race) + cleans it up. **A10:** patch
+  `filePath` base64-encoded into a shell var + a path-containment check (closes
+  both shell injection *and* a `../` path-traversal escape). **N3:** remote
+  Traefik write switched from `echo '${yamlStr}'` to base64 `| base64 -d`.
+  **R4:** `nodeId` now charset-validated before `docker node rm`. **D4:** the
+  password regex had a real **backtick gap** (allowed `` ` ``, which is command
+  substitution inside the double-quoted `psql -c "…"`); tightened it, added a
+  shell-safe boundary assertion enforced *at* the change-password/backup command
+  builders (`UnsafeDatabaseShellValueError`), and quoted the one top-level
+  unquoted `-U`. **A2:** build secrets now base64-decoded into exported env (read
+  by BuildKit `--secret type=env`/`env=`) instead of plaintext on the `docker`
+  command line. **B2-cmdline:** S3 creds moved off the rclone argv into an
+  `RCLONE_S3_*` env prefix (+ redaction updated). All green: `tsc` clean, 83
+  files / 667 tests pass (5 new shell-safety/redact tests), Biome clean.
 
 ### Discovered during remediation
 
@@ -594,7 +611,7 @@ the cleanup. Phases are independently shippable and each ends green
 |---|---|---|---|
 | **P0** ✅ | Pure bugs | spot fixes, no new abstraction | A1, G1, S1, C3, N7, R8, A8, G7 (+ X1–X4) |
 | **P1** ✅ | Secrets at rest | abstraction ① + apply to inventory + `DOCKLANDS_ENCRYPTION_KEY` + docs | G3, G4, N2, S2, S3, B2(store), D1(store), C2(store) |
-| **P2** | Shell-exec safety | `shellArg`/arg-array sweep + secrets off cmdline | A2, A10, D4, N3, G5, R4, B2(cmdline) |
+| **P2** ✅ | Shell-exec safety | `shellArg`/arg-array sweep + secrets off cmdline | A2, A10, D4, N3, G5, R4, B2(cmdline) |
 | **P3** | Durable jobs | abstraction ② (queue + scheduler + backups) | O6, B7, R1 |
 | **P4** | RBAC hard boundary | per-service authz everywhere + API-key scope + webhook signing | AC1, O2, O3, R5, AC2, AC4, AC5, AC6, G2, AC3, C2(read) |
 | **P5** | Connection-var binding | abstraction ③ | D1(expose), D2, W2, W5 |
@@ -679,7 +696,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | ID | Finding (short) | Disposition |
 |---|---|---|
 | A1 | nginx `runtimeWorker {` token | **✅ P0** |
-| A2 | build secrets exported as plain env | **P2** |
+| A2 | build secrets exported as plain env | **✅ P2** (base64 → exported env, not cmdline) |
 | A3 | publishDir + SPA no coupling | **P7 guard** |
 | A4 | drop + buildType unvalidated | **P7 guard** |
 | A5 | audit resourceType inconsistent | **P7 (canonical taxonomy)** |
@@ -687,13 +704,13 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | A7 | paketo/railpack version pinning | **P7 (railpack: configurable)** |
 | A8 | disconnect resets to github | **✅ P0** (→ neutral `git`, app + compose) |
 | A9 | env reference resolution order | no action (documented) |
-| A10 | patch filePath shell interpolation | **P2** |
+| A10 | patch filePath shell interpolation | **✅ P2** (base64 + path-containment check) |
 | A11 | patches re-apply conflicts | no action (documented) |
 | A12 | patch audit resourceType:settings | **P7 (taxonomy)** |
 | D1 | conn vars embed plaintext password | **✅ P1 (store)** + P5 (expose) |
 | D2 | password change no propagation | **P5** |
 | D3 | external-port TOCTOU | **P7 (best-effort + clear error)** |
-| D4 | changePassword shell interpolation | **P2** |
+| D4 | changePassword shell interpolation | **✅ P2** (regex backtick gap fixed + boundary assert) |
 | D5 | backup UI hardcodes engines | **P7 (registry-drive)** |
 | D6 | redis/libsql no logical backup | no action (by design) |
 | D7 | config jsonb validated at boundary | no action (positive) |
@@ -709,7 +726,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | C9 | libsql embedded detection weak | **P7 (note/strengthen)** |
 | N1 | "custom" cert provider ≠ upload | **P7 (UI clarity)** |
 | N2 | cert private keys plaintext | **✅ P1** |
-| N3 | remote traefik write interpolation | **P2** |
+| N3 | remote traefik write interpolation | **✅ P2** (base64 `| base64 -d`) |
 | N4 | placeholder ACME email | **P7 guard (require email)** |
 | N5 | LE prod-only + rate-limit | **P7 (doc + dev resolver)** |
 | N6 | proxy-file editing can brick ingress | **P7 guard (validate)** |
@@ -720,7 +737,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | G2 | refresh-token webhook no signature | **P4 (sign/verify)** |
 | G3 | SSH keys plaintext + wrong comment | **✅ P1** (+ comment fixed) |
 | G4 | all provider creds plaintext | **✅ P1** |
-| G5 | SSH key echo interpolation + race | **P2** |
+| G5 | SSH key echo interpolation + race | **✅ P2** (base64 + per-clone mktemp + cleanup) |
 | G6 | provider parity uneven | **P7 (document)** |
 | G7 | bitbucket isConfigured false | **✅ P0** (derives from apiToken + email) |
 | G8 | provider URLs from window.origin | **P7 (use configured URL)** |
@@ -751,7 +768,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | S7 | tags workspace-only / bulkAssign | no action (note) |
 | S8 | per-app security is basic-auth | no action (note) |
 | B1 | libSQL DB backup broken | **P6 cut (volume-only)** |
-| B2 | S3 creds plaintext + cmdline | **✅ P1 (store)** + P2 (cmdline) |
+| B2 | S3 creds plaintext + cmdline | **✅ P1 (store)** + **✅ P2 (cmdline → RCLONE_S3_* env)** |
 | B3 | retention errors swallowed | **P7 (surface)** |
 | B4 | retention sorts by filename | **P7 (sort by mtime)** |
 | B5 | restore destructive no snapshot | **P7 guard (pre-snapshot)** |
@@ -762,7 +779,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | R1 | deploy queue wrong partition | **P3** |
 | R2 | no build worker for compose | **P6 defer** |
 | R3 | node removal force-rm | **P7 guard (drain-wait/quorum)** |
-| R4 | nodeId no regex guard | **P2** |
+| R4 | nodeId no regex guard | **✅ P2** (charset-validated) |
 | R5 | getServerMetrics SSRF | **P4 (+ removed by P6 cut)** |
 | R6 | server→runtimeWorker rename | **P7 (finish rename)** |
 | R7 | build-workers route is concurrency | no action (documented) |
