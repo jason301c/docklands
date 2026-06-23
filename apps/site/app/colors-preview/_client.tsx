@@ -180,7 +180,7 @@ export function ColorsPreview() {
 							className="text-lg"
 							style={{ color: `var(--text-color-kumo-${t.token})` }}
 						>
-							{t.name} — the quick brown fox
+							{t.name} - the quick brown fox
 						</span>
 					))}
 					<div className="rounded-md bg-kumo-contrast px-3 py-1">
@@ -188,7 +188,7 @@ export function ColorsPreview() {
 							className="text-lg"
 							style={{ color: "var(--text-color-kumo-inverse)" }}
 						>
-							Inverse — on a dark surface
+							Inverse - on a dark surface
 						</span>
 					</div>
 				</div>
@@ -198,13 +198,13 @@ export function ColorsPreview() {
 			<Section title="Typography">
 				<div className="space-y-6 rounded-xl border border-kumo-hairline bg-kumo-base p-6">
 					<div>
-						<p className="text-kumo-subtle text-xs">Display — Fraunces</p>
+						<p className="text-kumo-subtle text-xs">Display - Fraunces</p>
 						<p className="mt-1 font-display font-semibold text-4xl text-kumo-strong tracking-tight">
 							Deploy anything on infrastructure you own.
 						</p>
 					</div>
 					<div>
-						<p className="text-kumo-subtle text-xs">Body — Inter</p>
+						<p className="text-kumo-subtle text-xs">Body - Inter</p>
 						<p className="mt-1 text-base text-kumo-default leading-relaxed">
 							Docklands is a self-hosted deployment control plane. The quick
 							brown fox jumps over the lazy dog. 0123456789
@@ -295,7 +295,7 @@ export function ColorsPreview() {
 							This service has no health check configured.
 						</Banner>
 						<Banner variant="error">
-							Build failed — exit code 1. Check the logs.
+							Build failed - exit code 1. Check the logs.
 						</Banner>
 					</div>
 					<div className="flex flex-col gap-4 rounded-xl border border-kumo-hairline bg-kumo-base p-6">
@@ -383,7 +383,9 @@ export function ColorsPreview() {
 							</p>
 						</LayerCard.Primary>
 						<LayerCard.Secondary className="p-5">
-							<p className="font-medium text-kumo-strong">Secondary layer card</p>
+							<p className="font-medium text-kumo-strong">
+								Secondary layer card
+							</p>
 							<p className="mt-1 text-kumo-subtle text-sm">
 								A quieter, recessed grouping.
 							</p>

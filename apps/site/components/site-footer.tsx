@@ -26,12 +26,17 @@ export function SiteFooter() {
 	const year = new Date().getFullYear();
 
 	return (
-		<footer className="border-kumo-hairline border-t">
+		<footer>
 			<div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4">
 				<div className="lg:col-span-2">
 					<div className="flex items-center gap-2.5">
-						<Image src="/docklands-logo-dark.svg" alt="" width={24} height={24} />
-						<span className="font-semibold text-kumo-strong tracking-tight">
+						<Image
+							src="/docklands-logo-light.svg"
+							alt=""
+							width={24}
+							height={24}
+						/>
+						<span className="font-display font-semibold text-kumo-strong text-lg tracking-tight">
 							{siteConfig.name}
 						</span>
 					</div>
@@ -61,7 +66,7 @@ export function SiteFooter() {
 				))}
 			</div>
 
-			<div className="border-kumo-hairline border-t">
+			<div>
 				<div className="mx-auto flex w-full max-w-7xl flex-col gap-2 px-6 py-6 text-kumo-subtle text-xs sm:flex-row sm:items-center sm:justify-between">
 					<p>
 						© {year} {siteConfig.name}. Apache-2.0 licensed.

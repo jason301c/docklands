@@ -2,7 +2,9 @@ import type { Icon } from "@phosphor-icons/react";
 import {
 	ArchiveIcon,
 	DatabaseIcon,
+	GaugeIcon,
 	GitBranchIcon,
+	GitPullRequestIcon,
 	GlobeHemisphereWestIcon,
 	HardDrivesIcon,
 	ShieldCheckIcon,
@@ -19,37 +21,49 @@ const FEATURES: Feature[] = [
 		icon: GitBranchIcon,
 		title: "Deploy from anywhere",
 		description:
-			"Ship from Git, prebuilt Docker images, or full Docker Compose stacks. Buildpacks, Dockerfiles, and Nixpacks all work out of the box.",
+			"Ship from Git, prebuilt images, or full Compose stacks. Dockerfiles, buildpacks, and Nixpacks all work.",
 	},
 	{
 		icon: DatabaseIcon,
 		title: "Managed databases",
 		description:
-			"Provision Postgres, MySQL, MariaDB, MongoDB, Redis, and libSQL as first-class services, with generated connection variables wired into your apps.",
+			"Postgres, MySQL, MariaDB, MongoDB, Redis, and libSQL as first-class services, with connection variables wired in.",
 	},
 	{
 		icon: GlobeHemisphereWestIcon,
-		title: "Ingress & TLS",
+		title: "Ingress and TLS",
 		description:
-			"Route traffic through the built-in ingress runtime with automatic certificates and per-service domains — Traefik under the hood, no YAML to babysit.",
+			"Per-service domains with automatic certificates. Traefik runs under the hood, with no YAML to babysit.",
 	},
 	{
 		icon: ArchiveIcon,
 		title: "Backups you control",
 		description:
-			"Schedule database and volume backups to your own destinations. Your data never leaves infrastructure you own.",
+			"Schedule database and volume backups to your own destinations. Your data stays on storage you own.",
 	},
 	{
 		icon: HardDrivesIcon,
-		title: "Multi-machine workers",
+		title: "Many machines, one plane",
 		description:
-			"Add remote runtime workers over SSH to build and run containers across several machines from one control plane.",
+			"Add remote runtime workers over SSH and build across several machines from a single control plane.",
 	},
 	{
 		icon: ShieldCheckIcon,
 		title: "Self-hosted by design",
 		description:
-			"One organization per instance, your VM, your Docker engine, your secrets. No hosted dependency, no phone-home, Apache-2.0 licensed.",
+			"Your VM, your Docker engine, your secrets. No hosted dependency, no phone-home, no seat pricing.",
+	},
+	{
+		icon: GaugeIcon,
+		title: "Logs and metrics",
+		description:
+			"Stream live logs and watch CPU, memory, and disk for every service from one dashboard.",
+	},
+	{
+		icon: GitPullRequestIcon,
+		title: "Preview environments",
+		description:
+			"Every pull request gets its own deployment and URL, torn down again when you merge.",
 	},
 ];
 
@@ -57,26 +71,26 @@ export function FeatureGrid() {
 	return (
 		<section
 			id="features"
-			className="mx-auto w-full max-w-7xl scroll-mt-20 px-6 py-20"
+			className="mx-auto w-full max-w-7xl scroll-mt-20 px-6 py-24"
 		>
-			<div className="mx-auto max-w-2xl text-center">
+			<div className="max-w-2xl">
 				<h2 className="font-display font-semibold text-3xl text-kumo-strong tracking-tight sm:text-4xl">
-					Everything to run your own platform
+					Everything a deploy needs
 				</h2>
-				<p className="mt-4 text-kumo-subtle leading-relaxed">
-					The deployment surface of a managed PaaS, on hardware you control.
+				<p className="mt-4 text-kumo-subtle text-lg leading-relaxed">
+					The deployment surface of a managed platform, on hardware you control.
 				</p>
 			</div>
 
-			<div className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-kumo-hairline bg-kumo-hairline sm:grid-cols-2 lg:grid-cols-3">
+			<div className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-kumo-hairline bg-kumo-hairline sm:grid-cols-2 lg:grid-cols-4">
 				{FEATURES.map((feature) => {
 					const Glyph = feature.icon;
 					return (
 						<div
 							key={feature.title}
-							className="flex flex-col gap-4 bg-kumo-canvas p-7 transition-colors hover:bg-kumo-fill"
+							className="group flex flex-col gap-4 bg-kumo-canvas p-8 transition-colors hover:bg-kumo-base"
 						>
-							<span className="flex size-10 items-center justify-center rounded-lg bg-kumo-brand/10 text-kumo-brand">
+							<span className="flex size-11 items-center justify-center rounded-xl bg-kumo-brand/10 text-kumo-brand transition-colors group-hover:bg-kumo-brand/20">
 								<Glyph size={22} weight="duotone" />
 							</span>
 							<h3 className="font-medium text-kumo-strong text-lg">

@@ -4,42 +4,48 @@ import { siteConfig } from "@/lib/site";
 
 export function GetStarted() {
 	return (
-		<section id="get-started" className="scroll-mt-20 px-6 py-20">
-			<div className="mx-auto max-w-3xl rounded-3xl border border-kumo-hairline bg-kumo-fill p-8 text-center sm:p-12">
-				<h2 className="font-display font-semibold text-3xl text-kumo-strong tracking-tight sm:text-4xl">
-					Up and running in minutes
-				</h2>
-				<p className="mt-4 text-kumo-subtle leading-relaxed">
-					Point Docklands at any Linux VM with Docker installed. One command to
-					bootstrap the control plane, then deploy from the dashboard.
-				</p>
+		<section id="get-started" className="scroll-mt-20 px-6 pb-28">
+			{/* The signature gradient fills the whole panel; text and buttons go white.
+			 * Buttons use the ghost variant so their colors aren't locked by Kumo's
+			 * `!text-white` primary/secondary classes. */}
+			<div
+				className="mx-auto max-w-5xl rounded-3xl px-6 py-20 text-center sm:px-12"
+				style={{
+					// A dark overlay over the gradient takes the card a touch deeper.
+					backgroundImage:
+						"linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), var(--gradient-brand)",
+				}}
+			>
+				<div className="mx-auto max-w-2xl">
+					<h2 className="font-display font-semibold text-4xl text-white tracking-tight sm:text-5xl">
+						Ship in one command.
+					</h2>
+					<p className="mt-5 text-pretty text-lg text-white/85 leading-relaxed">
+						Go from a bare server to live apps in minutes.
+					</p>
 
-				<div className="mx-auto mt-8 flex max-w-xl items-center gap-3 rounded-xl border border-kumo-hairline bg-kumo-canvas px-4 py-3 text-left font-mono text-sm">
-					<span className="select-none text-kumo-brand">$</span>
-					<code className="overflow-x-auto text-kumo-default">
-						{siteConfig.install}
-					</code>
-				</div>
-
-				<div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-					<LinkButton
-						href={siteConfig.links.docs}
-						variant="primary"
-						size="lg"
-						external
-						icon={<BookOpenIcon weight="bold" />}
-					>
-						Read the install guide
-					</LinkButton>
-					<LinkButton
-						href={siteConfig.links.github}
-						variant="secondary"
-						size="lg"
-						external
-						icon={<GithubLogoIcon weight="fill" />}
-					>
-						Browse the source
-					</LinkButton>
+					<div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+						<LinkButton
+							href={siteConfig.links.docs}
+							variant="ghost"
+							size="lg"
+							external
+							className="bg-white text-kumo-inverse hover:bg-white/90"
+							icon={<BookOpenIcon weight="bold" />}
+						>
+							Read the install guide
+						</LinkButton>
+						<LinkButton
+							href={siteConfig.links.github}
+							variant="ghost"
+							size="lg"
+							external
+							className="text-white ring ring-white/40 hover:bg-white/10"
+							icon={<GithubLogoIcon weight="fill" />}
+						>
+							View on GitHub
+						</LinkButton>
+					</div>
 				</div>
 			</div>
 		</section>

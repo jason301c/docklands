@@ -4,10 +4,10 @@ import { Button, LinkButton } from "@cloudflare/kumo/components/button";
 import { ArrowClockwiseIcon, HouseIcon } from "@phosphor-icons/react";
 import { useEffect } from "react";
 import { ErrorState } from "@/components/error-state";
+import { SiteBrand } from "@/components/site-brand";
 import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 
-export default function Error({
+export default function ErrorBoundary({
 	error,
 	reset,
 }: {
@@ -21,12 +21,14 @@ export default function Error({
 
 	return (
 		<>
-			<SiteHeader />
+			<div className="mx-auto w-full max-w-7xl px-6 pt-6">
+				<SiteBrand />
+			</div>
 			<main className="flex flex-1 flex-col">
 				<ErrorState
 					code="500"
 					headline="The cow tipped over."
-					message="Something on our end fell off the dock. The error's been logged — give it another go, and if it keeps mooing, the issue tracker is the place to yell."
+					message="Something on our end fell off the dock. The error's been logged - give it another go, and if it keeps mooing, the issue tracker is the place to yell."
 					cowRotation={180}
 				>
 					<Button

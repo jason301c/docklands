@@ -15,7 +15,7 @@ interface Props {
 
 /**
  * Shared empty/error state for the site's 404 and 500 pages. The mascot is a
- * tipped-over cow emoji — a nod to John Kelly's "Cow Up a Tree" sculpture that
+ * tipped-over cow emoji - a nod to John Kelly's "Cow Up a Tree" sculpture that
  * actually lives in Docklands. No hooks here, so both the server `not-found`
  * page and the client `error` boundary can render it.
  */

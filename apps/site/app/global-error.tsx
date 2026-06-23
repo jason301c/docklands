@@ -28,7 +28,7 @@ export default function GlobalError({
 				<ErrorState
 					code="500"
 					headline="The whole herd went over."
-					message="Docklands hit an error it couldn't recover from. It's been logged — reload to try again."
+					message="Docklands hit an error it couldn't recover from. It's been logged - reload to try again."
 					cowRotation={180}
 				>
 					<Button

@@ -1,14 +1,14 @@
 /*
- * Kumo + Tailwind v4 entrypoint — mirrors apps/docklands/app/globals.css.
+ * Kumo + Tailwind v4 entrypoint - mirrors apps/docklands/app/globals.css.
  *
  * `@cloudflare/kumo/styles` registers the Kumo design tokens as Tailwind `@theme`
  * variables, which is what generates the `*-kumo-*` utilities (bg-kumo-canvas,
  * text-kumo-subtle, border-kumo-hairline, ...). The `@source` glob keeps Kumo's
  * own class names from being purged; `@config` pulls in dark-mode + the Inter
- * font family. The theme is selected by `data-theme="kumo"` on <html>; dark mode
- * by `data-mode="dark"`. Inter (body) and Fraunces (display) are self-hosted via
- * `@fontsource-variable/*` (imported in app/layout.tsx) and surfaced through
- * `--font-inter` / `--font-fraunces`.
+ * font family. The theme is selected by `data-theme="kumo"` on <html>; light vs
+ * dark by `color-scheme` (Kumo flips it on `data-mode="dark"`). Inter (body) and
+ * Fraunces (display) are self-hosted via `@fontsource-variable/*` (imported in
+ * app/layout.tsx) and surfaced through `--font-inter` / `--font-fraunces`.
  */
 @import "@cloudflare/kumo/styles";
 @import "tailwindcss";
@@ -16,62 +16,69 @@
 @config "../tailwind.config.ts";
 
 /*
- * Docklands "warm clay" theme.
+ * Docklands premium theme - a near-monochrome "ink" system with a single
+ * electric-iris accent, defined for BOTH light and dark via `light-dark()`.
+ * Every token carries (lightValue, darkValue), so switching is just a matter of
+ * `color-scheme`: the app can offer a real light/dark toggle, while the
+ * marketing site pins dark (see app/layout.tsx) for its high-contrast look.
  *
- * Kumo ships a cool blue-on-white identity; the marketing site reskins it warm
- * by overriding Kumo's color *variables* — every `bg-kumo-*` / `text-kumo-*`
- * utility reads these vars, so this single block reskins the whole site with no
- * component changes. The site is light-only (see app/layout.tsx), so we replace
- * Kumo's `light-dark()` token values with flat warm colors. Scoped to
- * `[data-theme="kumo"]` (an attribute selector) so it outranks Kumo's `:root`
- * `@theme` defaults regardless of layer order.
- *
- * The move that actually kills the "generic SaaS" feel isn't the terracotta
- * accent — it's biasing every neutral warm (canvas/surfaces/borders/text).
+ * Scoped to `[data-theme="kumo"]` (an attribute selector) so it outranks Kumo's
+ * `:root` `@theme` defaults regardless of layer order. The signature is the
+ * restraint plus the gradient accent (`.text-gradient`), not a colored chrome.
  */
 [data-theme="kumo"] {
-	/* Surfaces, lightest → deepest */
-	--color-kumo-canvas: #faf9f7; /* page background (warm off-white) */
-	--color-kumo-base: #ffffff; /* cards/popovers lift above the canvas */
-	--color-kumo-elevated: #ffffff;
-	--color-kumo-control: #ffffff; /* inputs */
-	--color-kumo-recessed: #f2f0ec; /* inset wells (surface-1) */
-	--color-kumo-overlay: #f2f0ec;
-	--color-kumo-tint: #f2f0ec;
-	--color-kumo-contrast: #1a1a18; /* dark backing for inverse text */
+	/* Surfaces, lightest → deepest in their own mode */
+	--color-kumo-canvas: light-dark(#fbfbfc, #0a0a0c); /* page background */
+	--color-kumo-base: light-dark(#ffffff, #131316); /* cards / popovers */
+	--color-kumo-elevated: light-dark(#ffffff, #1a1a1f);
+	--color-kumo-control: light-dark(#ffffff, #131316); /* inputs */
+	--color-kumo-recessed: light-dark(#f4f4f6, #0f0f12); /* inset wells */
+	--color-kumo-overlay: light-dark(#ffffff, #1a1a1f);
+	--color-kumo-tint: light-dark(#f4f4f6, #161619);
+	--color-kumo-contrast: light-dark(#111114, #f4f4f6); /* inverse surface */
 
 	/* Filled chips / hovers / interactive neutrals */
-	--color-kumo-fill: #efece7;
-	--color-kumo-fill-hover: #e8e5e0; /* surface-2 */
-	--color-kumo-interact: #d8d4cc;
+	--color-kumo-fill: light-dark(#f1f1f3, #1b1b20);
+	--color-kumo-fill-hover: light-dark(#e8e8ec, #232329);
+	--color-kumo-interact: light-dark(#d8d8de, #2d2d34);
 
 	/* Lines */
-	--color-kumo-hairline: #d8d4cc; /* warm border, not cool gray */
-	--color-kumo-line: #cfc9bf;
+	--color-kumo-hairline: light-dark(#e6e6ea, #252529);
+	--color-kumo-line: light-dark(#d4d4da, #34343b);
 
-	/* Brand (warehouse brick / oxblood) + focus */
-	--color-kumo-brand: #9e3b32;
-	--color-kumo-brand-hover: #852f28;
-	--color-kumo-focus: #9e3b32;
+	/* Brand (electric iris) + focus. Deep enough for white button text in both. */
+	--color-kumo-brand: light-dark(#6450e6, #6f5cf2);
+	--color-kumo-brand-hover: light-dark(#5641d4, #7e6dff);
+	--color-kumo-focus: light-dark(#6450e6, #6f5cf2);
 
-	/* A secondary warm accent (sand) for incidental highlights */
-	--color-accent-warm: #d4a574;
-
-	/* Text — warm near-blacks and a clay link/brand */
-	--text-color-kumo-default: #2a2a26;
-	--text-color-kumo-strong: #1a1a18;
-	--text-color-kumo-subtle: #6b6b63;
-	--text-color-kumo-inactive: #b8b4ac;
-	--text-color-kumo-placeholder: #9a9890;
-	--text-color-kumo-inverse: #faf9f7;
-	--text-color-kumo-link: #9e3b32;
-	--text-color-kumo-brand: #9e3b32;
+	/* Text */
+	--text-color-kumo-default: light-dark(#2a2a30, #d7d7de);
+	--text-color-kumo-strong: light-dark(#0d0d12, #f5f5f8);
+	--text-color-kumo-subtle: light-dark(#6a6a74, #8a8a95);
+	--text-color-kumo-inactive: light-dark(#a9a9b2, #56565f);
+	--text-color-kumo-placeholder: light-dark(#9a9aa3, #6b6b75);
+	--text-color-kumo-inverse: light-dark(#fbfbfc, #0a0a0c);
+	--text-color-kumo-link: light-dark(#5a46dc, #9d90ff);
+	--text-color-kumo-brand: light-dark(#5a46dc, #9d90ff);
 }
 
 @layer base {
 	:root {
 		--font-inter: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 		--font-fraunces: "Fraunces Variable", ui-serif, Georgia, serif;
+		/* A brand-tinted *surface* (not the saturated accent): a near-black with a
+		 * violet cast for large fills below the hero. The accent itself stays for
+		 * small intense moments (buttons, the gradient word, the CTA card). */
+		--surface-brand: light-dark(#f5f3fc, #120d26);
+		/* The signature accent: blue → iris → violet → pink → amber. */
+		--gradient-brand: linear-gradient(
+			100deg,
+			#4f8bff 0%,
+			#8b6bff 28%,
+			#c95cff 52%,
+			#ff5c9c 76%,
+			#ff8a3d 100%
+		);
 	}
 
 	*,
@@ -93,12 +100,83 @@
 	}
 
 	::-webkit-scrollbar-thumb {
-		background: var(--color-kumo-hairline);
+		background: var(--color-kumo-line);
 		border-radius: 0.3125rem;
 	}
 
 	* {
 		scrollbar-width: thin;
-		scrollbar-color: var(--color-kumo-hairline) transparent;
+		scrollbar-color: var(--color-kumo-line) transparent;
+	}
+}
+
+@layer utilities {
+	/* Clip the signature gradient to text. Apply to a span inside a heading. */
+	.text-gradient {
+		background-image: var(--gradient-brand);
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+	}
+
+	/* The hero's rotating word: fade and rise on each swap. The span is keyed in
+	 * React so React remounts it, re-running this animation every cycle. */
+	@keyframes word-in {
+		from {
+			opacity: 0;
+			transform: translateY(0.5em);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.animate-word-in {
+		animation: word-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.animate-word-in {
+			animation: none;
+		}
+	}
+
+	/* Screenshot gallery: a sweeping sheen over the (still blank) placeholder so it
+	 * reads as content loading in. */
+	@keyframes gallery-shimmer {
+		0% {
+			transform: translateX(-100%);
+		}
+		100% {
+			transform: translateX(100%);
+		}
+	}
+
+	.animate-gallery-shimmer {
+		animation: gallery-shimmer 1.8s ease-in-out infinite;
+	}
+
+	/* Gallery auto-rotate timer: a bar that fills over the dwell time. Keyed by the
+	 * active folder in React so it restarts on every switch. */
+	@keyframes gallery-progress {
+		from {
+			width: 0%;
+		}
+		to {
+			width: 100%;
+		}
+	}
+
+	.animate-gallery-progress {
+		animation: gallery-progress 10s linear;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.animate-gallery-shimmer,
+		.animate-gallery-progress {
+			animation: none;
+		}
 	}
 }
