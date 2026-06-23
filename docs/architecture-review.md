@@ -550,6 +550,30 @@ means shipped and green (`typecheck` + `test:ci`).
   leaving stale credentials behind. The manual apply/sync mutations remain as a
   convenience but are no longer the source of truth. Green: `tsc` clean, 83 files
   / 675 tests pass (4 new env-string tests), Biome clean.
+- **P6 — Keep / cut — ◑ partial (2026-06-23): O1, O5, B1 done; S5 partial;
+  AC9/C1/R2/W3 deferred.** **O1 (finish)** — the audit log is no longer a no-op:
+  `createAuditLog` now inserts (resilient — a write failure never breaks the
+  operation it records) and `getAuditLogs` queries with org scope + filters +
+  pagination; the `audit-log` router returns real data. (A read-only viewer
+  *page* remains as additive UI polish; the trail now persists and is queryable
+  via tRPC/OpenAPI.) **O5 (cut)** — removed the dead paid/remote-metrics path:
+  the `getServerMetrics` SSRF (**this closes R5**), `getContainerMetrics`,
+  `getMetricsToken`, and the entire `components/dashboard/metrics/paid/` tree;
+  host-metrics now renders the free/local path only. (Vestigial
+  `enablePaidFeatures`/`metricsConfig` columns left to avoid a migration.) **B1
+  (cut)** — backup creation is now registry-driven (`databaseEngineSupportsBackup`)
+  and rejects *both* redis and libsql (libsql has no dump command, so a libsql
+  backup used to be schedulable but always fail); removed the dead
+  `getLibsqlBackupCommand`. **S5 (partial)** — removed the dead
+  `apiEnableSelfHostedRegistry` export; the harmless `registryType` enum vestige
+  (`selfHosted`, never set) is left as a low-priority migration. **Deferred:**
+  **AC9** (`user.role`/`admin()`/impersonation vestiges) is interwoven with Better
+  Auth session handling — cutting blind risks the auth flow. **C1** (ship
+  single-engine catalog templates) is data-file authoring (YAML + metadata +
+  icons); the routing logic is already correct and just waits on catalog content.
+  **R2** (compose build worker) and **W3** (environment promotion) are real
+  features to design separately, not bugs. Green: `tsc` clean, 83 files / 675
+  tests pass, Biome clean, OpenAPI regenerated (411 endpoints).
 
 ### Discovered during remediation
 
@@ -676,7 +700,7 @@ the cleanup. Phases are independently shippable and each ends green
 | **P3** ◑ | Durable jobs | R1 fixed; durable-queue rewrite (O6/B7) deferred — needs live env | **R1 ✅**; O6, B7 deferred |
 | **P4** ◑ | RBAC hard boundary | 5 closed (O2,O3,AC3,AC5,AC6) + 2 already-enforced (C2-read,R5); AC1/AC2/AC4/G2 deferred | O2,O3,AC3,AC5,AC6 ✅; AC1,AC2,AC4,G2 deferred |
 | **P5** ✅ | Connection-var binding | abstraction ③ | D1(expose), D2, W2, W5 |
-| **P6** | Keep / cut | finish or remove the 8 half-built features | O1, C1, O5, S5, AC9, B1, R2, W3 |
+| **P6** ◑ | Keep / cut | O1/O5/B1 done, S5 partial; AC9/C1/R2/W3 deferred | O1,O5,B1 ✅; S5 ◑; AC9,C1,R2,W3 deferred |
 | **P7** | Guardrails + consistency | guard safety-critical footguns; finish rename; canonical taxonomy | N1, N4, N5, N6, A3, A4, D3, D5, B3, B4, B5, B6, B8, B9, C4, C5, C6, C7, C8, C9, R3, R6, W1, W4, S4, A5/O7, N8, N9, A6, A7, A12, G6, G8, W6 |
 
 ### Phase detail
@@ -776,7 +800,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | D6 | redis/libsql no logical backup | no action (by design) |
 | D7 | config jsonb validated at boundary | no action (positive) |
 | D8 | mysql/mariadb dumps as root | no action (note) |
-| C1 | bare-DB routing dead in catalog | **P6 finish (ship templates)** |
+| C1 | bare-DB routing dead in catalog | **◑ deferred** — routing correct; needs catalog template data files |
 | C2 | compose creds plaintext/served | **✅ P1 (store)** + **✅ already checkServiceAccess-scoped (read)** |
 | C3 | extractDatabaseCredentials defaults | **✅ P0** (throws for auth-required engines; caller skips + warns) |
 | C4 | backup user/password engine quirk | **P7 fix** |
@@ -810,12 +834,12 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | AC6 | assignPermissions near-no-op check | **✅ P4** (removed no-op; documented real guards) |
 | AC7 | custom-role multi-row merge | no action (by design) |
 | AC8 | owner-role sealing consistent | no action (positive) |
-| AC9 | user.role + admin vestiges | **P6 cut** |
-| O1 | audit log no-op | **P6 finish** |
+| AC9 | user.role + admin vestiges | **◑ deferred** — interwoven with Better Auth session handling |
+| O1 | audit log no-op | **✅ P6** (createAuditLog/getAuditLogs implemented; viewer page = follow-up) |
 | O2 | build-log WS no authz | **✅ P4** (resolve service by logPath + checkServiceAccess) |
 | O3 | request-analytics read gate | **✅ P4** (readStatsLogs → adminProcedure) |
 | O4 | metrics only while watched | **P7 (doc; opt. collector)** |
-| O5 | remote/paid metrics half-wired | **P6 cut** |
+| O5 | remote/paid metrics half-wired | **✅ P6** (cut paid path + SSRF) |
 | O6 | in-memory queue loses state | **◑ deferred** — in-flight reconciled by `initCancelDeployments`; full durable queue needs live env |
 | O7 | audit resourceType inconsistency | **P7 (= A5)** |
 | O8 | request analytics 1000-line window | no action (note) |
@@ -824,11 +848,11 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | S2 | registry passwords plaintext | **✅ P1** |
 | S3 | notification secrets plaintext | **✅ P1** |
 | S4 | restart notif not org-scoped | **P7 fix** |
-| S5 | registry cloud/selfHosted vestiges | **P6 cut** |
+| S5 | registry cloud/selfHosted vestiges | **◑ P6** (dead export removed; enum vestige = minor migration) |
 | S6 | registry delete nulls refs | no action (note) |
 | S7 | tags workspace-only / bulkAssign | no action (note) |
 | S8 | per-app security is basic-auth | no action (note) |
-| B1 | libSQL DB backup broken | **P6 cut (volume-only)** |
+| B1 | libSQL DB backup broken | **✅ P6** (registry-driven reject redis+libsql; dead code removed) |
 | B2 | S3 creds plaintext + cmdline | **✅ P1 (store)** + **✅ P2 (cmdline → RCLONE_S3_* env)** |
 | B3 | retention errors swallowed | **P7 (surface)** |
 | B4 | retention sorts by filename | **P7 (sort by mtime)** |
@@ -838,16 +862,16 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | B8 | destination test ignores worker | **P7 fix** |
 | B9 | backups naming smells | **P7 cleanup** |
 | R1 | deploy queue wrong partition | **✅ P3** (partition by build worker) |
-| R2 | no build worker for compose | **P6 defer** |
+| R2 | no build worker for compose | **◑ deferred** (real feature, design separately) |
 | R3 | node removal force-rm | **P7 guard (drain-wait/quorum)** |
 | R4 | nodeId no regex guard | **✅ P2** (charset-validated) |
-| R5 | getServerMetrics SSRF | **already monitoring:read-gated; removed by P6 cut** |
+| R5 | getServerMetrics SSRF | **✅ P6** (procedure deleted in the paid-metrics cut) |
 | R6 | server→runtimeWorker rename | **P7 (finish rename)** |
 | R7 | build-workers route is concurrency | no action (documented) |
 | R8 | execAsyncRemote timeout + dead sleep | **✅ P0** (drop sleep; timeout 30s; rm dead var) |
 | W1 | canvas layout race | **P7 (debounce + guard)** |
 | W2 | conn vars snapshot not binding | **✅ P5** (re-resolve at deploy + retract on disconnect) |
-| W3 | environment promotion absent | **P6 defer** |
+| W3 | environment promotion absent | **◑ deferred** (real feature, design separately) |
 | W4 | orphaned layout rows | **P7 (call cleanup)** |
 | W5 | apply/sync doesn't redeploy | **✅ P5** (binding re-resolves on next deploy) |
 | W6 | connection orientation auto-flip | **P7 (doc/UI hint)** |

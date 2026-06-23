@@ -6,6 +6,7 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
+import { databaseEngineSupportsBackup } from "@/server/core/databases/registry";
 import {
 	apiCreateBackup,
 	apiFindOneBackup,
@@ -76,13 +77,25 @@ export const backupRouter = createTRPCRouter({
 				let createInput = input;
 				if (input.backupType === "database" && input.databaseId) {
 					const database = await findDatabaseById(input.databaseId);
-					if (database.engine === "redis") {
+					// Registry-driven: engines without a logical-backup command
+					// (redis, libsql) can't be backed up this way — use a volume
+					// backup instead. (Previously only redis was rejected, so a
+					// libsql backup was schedulable but always failed.)
+					if (!databaseEngineSupportsBackup(database.engine)) {
 						throw new TRPCError({
 							code: "BAD_REQUEST",
-							message: "Redis databases do not support backups",
+							message: `${database.engine} databases do not support logical backups. Use a volume backup instead.`,
 						});
 					}
-					createInput = { ...input, databaseType: database.engine };
+					// Safe after the guard above: redis/libsql are rejected, leaving
+					// only logical-backup engines (all valid `databaseType` values).
+					createInput = {
+						...input,
+						databaseType: database.engine as Exclude<
+							typeof database.engine,
+							"redis"
+						>,
+					};
 				}
 
 				const newBackup = await createBackup(createInput);

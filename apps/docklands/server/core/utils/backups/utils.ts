@@ -120,10 +120,6 @@ export const getMongoBackupCommand = (
 	return `docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mongodump -d '${database}' -u '${databaseUser}' -p '${databasePassword}' --archive --authenticationDatabase admin --gzip"`;
 };
 
-export const getLibsqlBackupCommand = (database: string) => {
-	return `docker exec -i $CONTAINER_ID sh -c "tar cf - -C /var/lib/sqld ${database} | gzip"`;
-};
-
 export const getServiceContainerCommand = (appName: string) => {
 	return `docker ps -q --filter "status=running" --filter "label=com.docker.swarm.service.name=${appName}" | head -n 1`;
 };

@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { observable } from "@trpc/server/observable";
 import { and, desc, eq, getTableColumns, isNotNull, sql } from "drizzle-orm";
-import { z } from "zod";
 import {
 	createTRPCRouter,
 	protectedProcedure,
@@ -449,62 +448,4 @@ export const runtimeWorkerRouter = createTRPCRouter({
 			timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 		};
 	}),
-	getServerMetrics: withPermission("monitoring", "read")
-		.input(
-			z.object({
-				url: z.string(),
-				token: z.string(),
-				dataPoints: z.string(),
-			}),
-		)
-		.query(async ({ input }) => {
-			try {
-				const url = new URL(input.url);
-				url.searchParams.append("limit", input.dataPoints);
-				const response = await fetch(url.toString(), {
-					headers: {
-						Authorization: `Bearer ${input.token}`,
-					},
-				});
-				if (!response.ok) {
-					throw new Error(
-						`Error ${response.status}: ${response.statusText}. Ensure the container is running and this service is included in the monitoring configuration.`,
-					);
-				}
-
-				const data = await response.json();
-				if (!Array.isArray(data) || data.length === 0) {
-					throw new Error(
-						[
-							"No monitoring data available. This could be because:",
-							"",
-							"1. You don't have setup the monitoring service, you can do in web server section.",
-							"2. If you already have setup the monitoring service, wait a few minutes and refresh the page.",
-						].join("\n"),
-					);
-				}
-				return data as {
-					cpu: string;
-					cpuModel: string;
-					cpuCores: number;
-					cpuPhysicalCores: number;
-					cpuSpeed: number;
-					os: string;
-					distro: string;
-					kernel: string;
-					arch: string;
-					memUsed: string;
-					memUsedGB: string;
-					memTotal: string;
-					uptime: number;
-					diskUsed: string;
-					totalDisk: string;
-					networkIn: string;
-					networkOut: string;
-					timestamp: string;
-				}[];
-			} catch (error) {
-				throw error;
-			}
-		}),
 });

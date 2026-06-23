@@ -122,11 +122,3 @@ export const apiUpdateRegistry = createSchema.partial().extend({
 	registryId: z.string().min(1),
 	runtimeWorkerId: z.string().optional(),
 });
-
-export const apiEnableSelfHostedRegistry = createSchema
-	.pick({
-		registryUrl: true,
-		username: true,
-		password: true,
-	})
-	.required();

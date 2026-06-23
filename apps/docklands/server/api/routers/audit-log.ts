@@ -1,4 +1,6 @@
 import { z } from "zod";
+import type { AuditAction, AuditResourceType } from "@/server/core/db/schema";
+import { getAuditLogs } from "@/server/core/services/audit-log";
 import { createTRPCRouter, withPermission } from "../trpc";
 
 export const auditLogRouter = createTRPCRouter({
@@ -16,7 +18,18 @@ export const auditLogRouter = createTRPCRouter({
 				offset: z.number().min(0).default(0),
 			}),
 		)
-		.query(() => {
-			return { logs: [], total: 0 };
-		}),
+		.query(({ input, ctx }) =>
+			getAuditLogs({
+				organizationId: ctx.session.activeOrganizationId,
+				userId: input.userId,
+				userEmail: input.userEmail,
+				resourceName: input.resourceName,
+				action: input.action as AuditAction | undefined,
+				resourceType: input.resourceType as AuditResourceType | undefined,
+				from: input.from,
+				to: input.to,
+				limit: input.limit,
+				offset: input.offset,
+			}),
+		),
 });
