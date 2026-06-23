@@ -829,7 +829,10 @@ export const EnvironmentCanvas = ({
 		return () => window.removeEventListener("keydown", onKeyDown);
 	}, []);
 
-	const services = workspace?.services ?? [];
+	const services = useMemo(
+		() => workspace?.services ?? [],
+		[workspace?.services],
+	);
 	const servicesByKey = useMemo(
 		() =>
 			new Map(
@@ -876,9 +879,10 @@ export const EnvironmentCanvas = ({
 		[selectedProjectEnvironments, environmentId],
 	);
 	useEffect(() => {
-		setSelectedBulkKeys((current) =>
-			current.filter((key) => servicesByKey.has(key)),
-		);
+		setSelectedBulkKeys((current) => {
+			const next = current.filter((key) => servicesByKey.has(key));
+			return next.length === current.length ? current : next;
+		});
 	}, [servicesByKey]);
 
 	const selectedServiceModel = selectedService

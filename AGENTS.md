@@ -179,6 +179,35 @@ Next behavior.
 rg -n "Route Handlers|App Router|Server Actions" apps/docklands/node_modules/next/dist/docs
 ```
 
+### Kumo UI docs
+
+The UI is built on Cloudflare Kumo (`@cloudflare/kumo`), a thin styled layer
+over Base UI. For component APIs, props, and — most importantly — the required
+**composition/hierarchy** of compound components, consult the docs before
+guessing:
+
+- Online index (markdown, LLM-friendly): <https://kumo-ui.com/llms.txt>. Each
+  component links to a `.md` page, e.g. <https://kumo-ui.com/components/dropdown.md>.
+  The site 403s the default fetcher; pull pages with a browser User-Agent:
+
+  ```sh
+  curl -sL -A "Mozilla/5.0" https://kumo-ui.com/components/dropdown.md
+  ```
+
+- Offline source of truth: the installed type defs in
+  `apps/docklands/node_modules/@cloudflare/kumo/dist/src/components/*/*.d.ts`.
+  They name the Base UI primitive each part wraps, which tells you the
+  composition rules (e.g. `DropdownMenu.Label`/`Select.GroupLabel` must live
+  inside the matching `.Group`; `*.Trigger`/`*.Close` expect a native `<button>`
+  unless you pass `nativeButton={false}`).
+
+These Base UI composition rules fail only at render time (often after a click),
+so run the static scanner to catch them ahead of time:
+
+```sh
+bun --filter docklands check:baseui
+```
+
 ## Repo-Wide Hard Rules
 
 - Do not reintroduce AI features or AI dependencies. The AI router, schema,
