@@ -52,11 +52,12 @@ single instance.
 
 3. **Shell commands built by string interpolation on security boundaries.**
    Database change-password/backup commands, SSH clone (`echo "${privateKey}"`),
-   remote Traefik config writes (`echo '${yamlStr}'`), and cluster `nodeId`
-   commands all interpolate values into shell strings run locally or over SSH.
-   Several are saved only by a validation regex elsewhere; if that regex loosens,
-   they become injection vectors. A couple (remote YAML write, `nodeId`) have no
-   guard at all.
+   remote Traefik config writes (`echo '${yamlStr}'`), source-patch `filePath`
+   (`services/patch.ts`), and cluster `nodeId` commands all interpolate values
+   into shell strings run locally or over SSH. Several are saved only by a
+   validation regex elsewhere; if that regex loosens, they become injection
+   vectors. Some (remote YAML write, `nodeId`, patch `filePath`) have no guard at
+   all.
 
 4. **The in-memory queue / in-process scheduler lose work on restart.**
    Deployments and scheduled jobs live in process memory (`node-schedule`,
@@ -125,6 +126,20 @@ The per-domain sections below have the full lists and the feature→impl maps.
 - 📝 **`paketo_buildpacks` has no version field** (hard-pinned `paketobuildpacks/builder-jammy-full`), unlike heroku (`herokuVersion`) / railpack (`railpackVersion` default `0.15.4`, a stale-pin candidate).
 - 📝 **`disconnectGitProvider` resets `sourceType` to `"github"`** (`application.ts:608`), not a neutral state.
 - 📝 **Env reference resolution order**: `${{workspace.X}}` / `${{environment.X}}` resolve before `${{SELF}}` (`utils/docker/utils.ts:455`); a missing ref throws and fails the whole deploy (deliberate fail-fast). Legacy `${{project.X}}` is rejected.
+
+#### Source patches (the `patch` router)
+
+Overlay create/update/delete file edits onto a service's cloned repo at build
+time (after clone, before build). `routers/patch.ts`; `services/patch.ts`
+(`generateApplyPatchesCommand:136`); schema `db/schema/patch.ts` (`patchType`
+create/update/delete, unique on `filePath`+`applicationId`/`composeId`); applied
+via `services/application.ts:50`. UI `components/dashboard/application/patches/**`;
+working clones cleaned via `cleanPatchRepos` (admin), also surfaced under
+Settings → Runtime storage actions.
+
+- 🔒 **Patch apply interpolates `filePath` raw into a shell command.** `generateApplyPatchesCommand` (`services/patch.ts:159-170`) base64-encodes the file *content* (safe) but builds `file="${filePath}"`, `rm -f "${filePath}"`, `mkdir -p "$(dirname "$file")"` with the path double-quoted but unescaped. A patch `filePath` containing `"`, `$(...)`, or backticks would break out of the quoting and execute on the build worker (local or over SSH). The path comes from the repo file browser, gated by `service:create`, but it's still attacker-influenceable input on a shell boundary. Validate/escape `filePath`.
+- 📝 **Patches re-apply to a fresh clone every deploy** — an *update* patch silently overwrites whatever upstream now has at that path; a *delete* patch no-ops if the path moved. No conflict detection. Documented as a user caution.
+- 🏗️ **Patch audit uses `resourceType:"settings"`** for a per-service resource (`routers/patch.ts` throughout) — another audit-taxonomy inconsistency (and moot while audit logging is a no-op).
 
 ---
 

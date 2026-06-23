@@ -84,6 +84,7 @@ export default defineConfig({
 						{ slug: "applications/ports" },
 						{ slug: "applications/domains" },
 						{ slug: "applications/advanced" },
+						{ slug: "applications/patches" },
 						{ slug: "applications/security" },
 						{ slug: "applications/preview-deployments" },
 						{ slug: "applications/rollbacks" },
