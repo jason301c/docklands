@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import {
 	databaseConnectionVars,
 	parseDatabaseConfig,
@@ -292,8 +292,49 @@ export const removeWorkspaceConnection = async (connectionId: string) => {
 	return removed;
 };
 
+type DatabaseSource = Pick<
+	typeof database.$inferSelect,
+	"appName" | "engine" | "config"
+>;
+
+/**
+ * Batch-load the database source rows for a set of connections in a single
+ * `inArray` query, keyed by databaseId. Only database-engine sources are looked
+ * up; application/compose sources have nothing to project, so they're skipped.
+ * This replaces a per-connection `findFirst` (N+1) with one round-trip — the
+ * per-connection projection in `getConnectionVariableEntriesFromSource` is
+ * unchanged, it just reads from this map.
+ */
+const loadDatabaseSources = async (
+	connections: WorkspaceConnection[],
+): Promise<Map<string, DatabaseSource>> => {
+	const sourceIds = Array.from(
+		new Set(
+			connections
+				.filter(
+					(connection) =>
+						connection.sourceServiceType !== "application" &&
+						connection.sourceServiceType !== "compose",
+				)
+				.map((connection) => connection.sourceServiceId),
+		),
+	);
+
+	if (sourceIds.length === 0) {
+		return new Map();
+	}
+
+	const rows = await db.query.database.findMany({
+		where: inArray(database.databaseId, sourceIds),
+		columns: { databaseId: true, appName: true, engine: true, config: true },
+	});
+
+	return new Map(rows.map((row) => [row.databaseId, row]));
+};
+
 const getConnectionVariableEntriesFromSource = async (
 	connection: WorkspaceConnection,
+	prefetchedSources?: Map<string, DatabaseSource>,
 ): Promise<EnvEntry[]> => {
 	// Only managed-database engines expose generated connection variables.
 	// Application/compose sources have nothing to project.
@@ -304,10 +345,12 @@ const getConnectionVariableEntriesFromSource = async (
 		return [];
 	}
 
-	const source = await db.query.database.findFirst({
-		where: eq(database.databaseId, connection.sourceServiceId),
-		columns: { appName: true, engine: true, config: true },
-	});
+	const source = prefetchedSources
+		? prefetchedSources.get(connection.sourceServiceId)
+		: await db.query.database.findFirst({
+				where: eq(database.databaseId, connection.sourceServiceId),
+				columns: { appName: true, engine: true, config: true },
+			});
 	if (!source) return [];
 
 	return databaseConnectionVars(source.engine, {
@@ -388,12 +431,17 @@ export const updateWorkspaceServiceEnv = async (input: {
 
 export const getWorkspaceConnectionVariableEntries = async (
 	connection: WorkspaceConnection,
-) => getConnectionVariableEntriesFromSource(connection);
+	prefetchedSources?: Map<string, DatabaseSource>,
+) => getConnectionVariableEntriesFromSource(connection, prefetchedSources);
 
 export const applyWorkspaceConnectionVariables = async (
 	connection: WorkspaceConnection,
+	prefetchedSources?: Map<string, DatabaseSource>,
 ) => {
-	const entries = await getConnectionVariableEntriesFromSource(connection);
+	const entries = await getConnectionVariableEntriesFromSource(
+		connection,
+		prefetchedSources,
+	);
 
 	if (entries.length === 0) {
 		throw new TRPCError({
@@ -432,13 +480,23 @@ export const syncWorkspaceConnectionVariablesForService = async (input: {
 		),
 	});
 
+	// Batch the source lookups up front (single inArray query) instead of a
+	// `findFirst` per connection; the per-connection logic below is unchanged.
+	const prefetchedSources = await loadDatabaseSources(connections);
+
 	const applied: { connectionId: string; keys: string[] }[] = [];
 
 	for (const connection of connections) {
-		const entries = await getWorkspaceConnectionVariableEntries(connection);
+		const entries = await getWorkspaceConnectionVariableEntries(
+			connection,
+			prefetchedSources,
+		);
 		if (entries.length === 0) continue;
 
-		const result = await applyWorkspaceConnectionVariables(connection);
+		const result = await applyWorkspaceConnectionVariables(
+			connection,
+			prefetchedSources,
+		);
 		applied.push({
 			connectionId: connection.connectionId,
 			keys: result.entries.map(({ key }) => key),
@@ -510,20 +568,15 @@ export const deleteWorkspaceNodesForMissingServices = async (
 
 	if (staleLayoutIds.length === 0) return [];
 
-	const deleted = [];
-	for (const layoutId of staleLayoutIds) {
-		const row = await db
-			.delete(workspaceServiceLayouts)
-			.where(
-				and(
-					eq(workspaceServiceLayouts.environmentId, environment.environmentId),
-					eq(workspaceServiceLayouts.layoutId, layoutId),
-				),
-			)
-			.returning()
-			.then((rows) => rows[0]);
-		if (row) deleted.push(row);
-	}
-
-	return deleted;
+	// Delete every stale layout row in a single statement instead of one
+	// round-trip per id. Scoped to this environment to match the per-id loop.
+	return db
+		.delete(workspaceServiceLayouts)
+		.where(
+			and(
+				eq(workspaceServiceLayouts.environmentId, environment.environmentId),
+				inArray(workspaceServiceLayouts.layoutId, staleLayoutIds),
+			),
+		)
+		.returning();
 };
