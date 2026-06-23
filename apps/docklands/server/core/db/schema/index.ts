@@ -6,6 +6,7 @@ export * from "./bitbucket";
 export * from "./certificate";
 export * from "./compose";
 export * from "./database";
+export * from "./service-database";
 export * from "./deployment";
 export * from "./destination";
 export * from "./domain";

@@ -17,6 +17,7 @@ import {
 	apiUpdateCompose,
 	compose as composeTable,
 	environments,
+	serviceDatabase,
 	workspaces,
 } from "@/server/core/db/schema";
 import { cancelDeployment } from "@/server/core/runtime/deploy";
@@ -135,6 +136,18 @@ const persistProcessedTemplateRecords = async (
 			certificateType: "none",
 			composeId,
 			host: domain.host,
+		});
+	}
+
+	// Detection bridge: promote databases detected inside the stack to
+	// `service_database` so they become first-class for backups and connection
+	// variables (auto-detect, opt-out — the locked decision).
+	for (const detected of processed.databases) {
+		await db.insert(serviceDatabase).values({
+			composeId,
+			serviceName: detected.serviceName,
+			engine: detected.engine,
+			image: detected.image,
 		});
 	}
 };

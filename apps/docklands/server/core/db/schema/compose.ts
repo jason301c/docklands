@@ -15,6 +15,7 @@ import { mounts } from "./mount";
 import { patch } from "./patch";
 import { runtimeWorkers } from "./runtime-worker";
 import { schedules } from "./schedule";
+import { serviceDatabase } from "./service-database";
 import { applicationStatus, triggerType } from "./shared";
 import { sshKeys } from "./ssh-key";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX, generateAppName } from "./utils";
@@ -149,6 +150,7 @@ export const composeRelations = relations(compose, ({ one, many }) => ({
 	backups: many(backups),
 	schedules: many(schedules),
 	patches: many(patch),
+	serviceDatabases: many(serviceDatabase),
 }));
 
 const createSchema = createInsertSchema(compose, {

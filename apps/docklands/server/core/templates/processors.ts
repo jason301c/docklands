@@ -1,6 +1,8 @@
 import { randomBytes } from "node:crypto";
 import path from "node:path";
 import { parse, stringify } from "yaml";
+import { detectDatabaseEngine } from "@/server/core/databases/detection";
+import type { DatabaseEngineKey } from "@/server/core/databases/registry";
 import type { ComposeSpecification } from "@/server/core/utils/docker/types";
 import {
 	generateBase64,
@@ -26,11 +28,18 @@ export interface TemplateMount {
 	content: string;
 }
 
+export interface TemplateDatabase {
+	serviceName: string;
+	engine: DatabaseEngineKey;
+	image: string;
+}
+
 export interface ProcessedTemplate {
 	compose: string;
 	envs: string[];
 	domains: TemplateDomain[];
 	mounts: TemplateMount[];
+	databases: TemplateDatabase[];
 }
 
 export interface ProcessComposeTemplateOptions extends Schema {
@@ -806,6 +815,7 @@ export function processComposeTemplate(
 	const envs = new Map<string, string>();
 	const domains: TemplateDomain[] = [];
 	const mounts: TemplateMount[] = [];
+	const databases: TemplateDatabase[] = [];
 	const domainCache = new Map<string, string>();
 	const magicCache = new Map<string, string>();
 
@@ -817,6 +827,25 @@ export function processComposeTemplate(
 	)) {
 		if (!serviceConfig || typeof serviceConfig !== "object") continue;
 		const service = serviceConfig as AnyRecord;
+
+		// Detection bridge: flag compose services that are managed databases so
+		// they can be promoted to `service_database` (backups + connection vars).
+		const detectedEngine =
+			typeof service.image === "string"
+				? detectDatabaseEngine(service.image, {
+						image: service.image,
+						ports: service.ports,
+						environment: service.environment,
+						healthcheck: service.healthcheck,
+					})
+				: null;
+		if (detectedEngine) {
+			databases.push({
+				serviceName,
+				engine: detectedEngine,
+				image: service.image,
+			});
+		}
 		setEnv(
 			envs,
 			`SERVICE_NAME_${serviceName.toUpperCase().replace(/[^A-Z0-9]+/g, "_")}`,
@@ -851,5 +880,6 @@ export function processComposeTemplate(
 		envs: Array.from(envs.entries()).map(([key, value]) => `${key}=${value}`),
 		domains,
 		mounts,
+		databases,
 	};
 }
