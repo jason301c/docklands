@@ -1,6 +1,8 @@
 import { readdir, readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { TRPCError } from "@trpc/server";
+import type { DatabaseEngineKey } from "@/server/core/databases/registry";
+import { analyzeTemplateDatabases } from "./analyze";
 
 export const DEFAULT_TEMPLATES_DIR =
 	process.env.DOCKLANDS_TEMPLATES_DIR || join(process.cwd(), "templates");
@@ -20,7 +22,32 @@ export interface TemplateMetadata {
 		website?: string;
 		github?: string;
 	};
+	/** managed-database engines detected among the template's services */
+	databaseEngines: DatabaseEngineKey[];
+	/**
+	 * Set when the template is *just* a single managed database — the UI steers
+	 * these to the managed-database picker instead of an opaque compose deploy.
+	 */
+	bareDatabaseEngine: DatabaseEngineKey | null;
 }
+
+/**
+ * Cheap pre-filter: only parse the compose for database detection when the raw
+ * content even mentions a database image. Avoids 300+ YAML parses for the many
+ * templates that contain no database at all.
+ */
+const DB_IMAGE_HINTS = [
+	"postgres",
+	"mysql",
+	"mariadb",
+	"mongo",
+	"redis",
+	"libsql-server",
+];
+const mightContainDatabase = (content: string) => {
+	const lower = content.toLowerCase();
+	return DB_IMAGE_HINTS.some((hint) => lower.includes(hint));
+};
 
 export interface TemplateDefinition {
 	metadata: TemplateMetadata;
@@ -95,6 +122,10 @@ async function readTemplateFile(fileName: string) {
 	const docs = headers.documentation || undefined;
 	const port = parsePort(headers.port);
 
+	const analysis = mightContainDatabase(content)
+		? analyzeTemplateDatabases(content)
+		: null;
+
 	return {
 		metadata: {
 			id,
@@ -111,6 +142,10 @@ async function readTemplateFile(fileName: string) {
 				website: headers.website || undefined,
 				github: headers.github || undefined,
 			},
+			databaseEngines: analysis
+				? [...new Set(analysis.databases.map((d) => d.engine))]
+				: [],
+			bareDatabaseEngine: analysis?.bareDatabaseEngine ?? null,
 		},
 		compose: content,
 	} satisfies TemplateDefinition;

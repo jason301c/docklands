@@ -29,6 +29,7 @@ import { AlertBlock } from "@/components/shared/alert-block";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
+import { AddDatabase } from "./add-database";
 import { PlacementSelect } from "./placement-select";
 
 const Command = Combobox;
@@ -58,6 +59,11 @@ export const AddTemplate = ({
 	const [viewMode, setViewMode] = useState<"detailed" | "icon">("detailed");
 	const [selectedTags, setSelectedTags] = useState<string[]>([]);
 	const [showBookmarksOnly, setShowBookmarksOnly] = useState(false);
+	// Id of the bare-database template whose managed-database picker is open. Only
+	// one can be open at a time, so a single id (not a per-card boolean) is enough.
+	const [managedDbTemplateId, setManagedDbTemplateId] = useState<string | null>(
+		null,
+	);
 
 	// Get environment data to extract the backing workspace id.
 	const { data: environment } = api.environment.one.useQuery({ environmentId });
@@ -389,6 +395,16 @@ export const AddTemplate = ({
 												<span className="text-sm font-medium line-clamp-1">
 													{template?.name}
 												</span>
+												{template.databaseEngines.length > 0 && (
+													<Badge
+														variant="secondary"
+														className="text-[10px] px-2 py-0"
+													>
+														{template.bareDatabaseEngine
+															? "Database"
+															: "Includes database"}
+													</Badge>
+												)}
 												{viewMode === "detailed" &&
 													template?.tags?.length > 0 && (
 														<div className="flex flex-wrap justify-center gap-1.5">
@@ -455,86 +471,127 @@ export const AddTemplate = ({
 													)}
 												</div>
 											)}
-											<Dialog.Root role="alertdialog">
-												<Dialog.Trigger
-													render={
-														<Button
-															variant="secondary"
-															size="sm"
-															className={cn(
-																"w-auto",
-																viewMode === "detailed" && "w-auto",
-															)}
-														>
-															Create
-														</Button>
-													}
-												/>
-												<Dialog>
-													<div>
-														<Dialog.Title>
-															Are you absolutely sure?
-														</Dialog.Title>
-														<Dialog.Description>
-															This will create an application from the{" "}
-															{template?.name} template and add it to your
-															workspace.
-														</Dialog.Description>
+											{template.bareDatabaseEngine ? (
+												// A bare single-database template is steered to the
+												// managed-database picker (preset to the detected
+												// engine) instead of an opaque compose deploy.
+												<div
+													className={cn(
+														"flex items-center gap-3",
+														viewMode === "detailed"
+															? "flex-col items-end"
+															: "flex-col",
+													)}
+												>
+													{viewMode === "detailed" && (
+														<span className="text-[11px] text-kumo-subtle text-right">
+															Create as a managed database
+														</span>
+													)}
+													<Button
+														variant="secondary"
+														size="sm"
+														className="w-auto"
+														onClick={() => setManagedDbTemplateId(template.id)}
+													>
+														Create
+													</Button>
+													<AddDatabase
+														environmentId={environmentId}
+														initialType={template.bareDatabaseEngine}
+														hideTrigger
+														open={managedDbTemplateId === template.id}
+														onOpenChange={(dbOpen) =>
+															setManagedDbTemplateId(
+																dbOpen ? template.id : null,
+															)
+														}
+													/>
+												</div>
+											) : (
+												<Dialog.Root role="alertdialog">
+													<Dialog.Trigger
+														render={
+															<Button
+																variant="secondary"
+																size="sm"
+																className={cn(
+																	"w-auto",
+																	viewMode === "detailed" && "w-auto",
+																)}
+															>
+																Create
+															</Button>
+														}
+													/>
+													<Dialog>
+														<div>
+															<Dialog.Title>
+																Are you absolutely sure?
+															</Dialog.Title>
+															<Dialog.Description>
+																This will create an application from the{" "}
+																{template?.name} template and add it to your
+																workspace.
+															</Dialog.Description>
 
-														{shouldShowRuntimeWorkerDropdown && (
-															<PlacementSelect
-																ariaLabel="Template placement"
-																value={runtimeWorkerId}
-																onValueChange={setRuntimeWorkerId}
-																workers={runtimeWorkers}
-																showAutomaticPlacement={showAutomaticPlacement}
-																optional={showAutomaticPlacement}
-																description="Docklands uses automatic placement by default. Choose a runtime worker only when this template needs manual placement."
+															{shouldShowRuntimeWorkerDropdown && (
+																<PlacementSelect
+																	ariaLabel="Template placement"
+																	value={runtimeWorkerId}
+																	onValueChange={setRuntimeWorkerId}
+																	workers={runtimeWorkers}
+																	showAutomaticPlacement={
+																		showAutomaticPlacement
+																	}
+																	optional={showAutomaticPlacement}
+																	description="Docklands uses automatic placement by default. Choose a runtime worker only when this template needs manual placement."
+																/>
+															)}
+														</div>
+														<div>
+															<Dialog.Close
+																render={
+																	<Button variant="secondary">Cancel</Button>
+																}
 															/>
-														)}
-													</div>
-													<div>
-														<Dialog.Close
-															render={
-																<Button variant="secondary">Cancel</Button>
-															}
-														/>
-														<Dialog.Close
-															render={
-																<Button
-																	disabled={isPending}
-																	onClick={async () => {
-																		const promise = mutateAsync({
-																			runtimeWorkerId:
-																				runtimeWorkerId === "docklands"
-																					? undefined
-																					: runtimeWorkerId,
-																			environmentId,
-																			id: template.id,
-																		});
-																		toast.promise(promise, {
-																			loading: "Setting up...",
-																			success: () => {
-																				// Refresh the workspace environment data.
-																				utils.environment.one.invalidate({
-																					environmentId,
-																				});
-																				setOpen(false);
-																				return `${template.name} template created successfully`;
-																			},
-																			error: () => {
-																				return `An error occurred deploying ${template.name} template`;
-																			},
-																		});
-																	}}
-																>
-																	Confirm
-																</Button>
-															}
-														/>
-													</div>
-												</Dialog>
-											</Dialog.Root>
+															<Dialog.Close
+																render={
+																	<Button
+																		disabled={isPending}
+																		onClick={async () => {
+																			const promise = mutateAsync({
+																				runtimeWorkerId:
+																					runtimeWorkerId === "docklands"
+																						? undefined
+																						: runtimeWorkerId,
+																				environmentId,
+																				id: template.id,
+																			});
+																			toast.promise(promise, {
+																				loading: "Setting up...",
+																				success: () => {
+																					// Refresh the workspace environment data.
+																					utils.environment.one.invalidate({
+																						environmentId,
+																					});
+																					setOpen(false);
+																					return `${template.name} template created successfully`;
+																				},
+																				error: () => {
+																					return `An error occurred deploying ${template.name} template`;
+																				},
+																			});
+																		}}
+																	>
+																		Confirm
+																	</Button>
+																}
+															/>
+														</div>
+													</Dialog>
+												</Dialog.Root>
+											)}
 										</div>
 									</div>
 								))}
