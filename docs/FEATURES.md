@@ -264,6 +264,11 @@ Schema: `server/core/db/schema/application.ts`.
 - **Provider webhooks** auto-deploy on push/tag, gated by branch and `watchPaths`
   (matched with `micromatch`). GitHub deploy webhooks validate the
   `x-hub-signature-256` signature.
+- **Webhook registration.** Only GitHub registers its webhook automatically (it is
+  declared in the GitHub App manifest at connect time). GitLab, Gitea, Bitbucket,
+  and generic Git use the **manual-webhook model**: copy the per-service deploy URL
+  (shown in the service's Deployments view) into the repository's webhook settings.
+  Docklands does not request webhook write scopes it never uses.
 - **Refresh-token URL** — `POST/GET /api/deploy/[refreshToken]` lets any provider
   or custom Git server trigger a deploy without a first-class integration; the
   handler detects the provider from headers, validates branch + watch-paths, and
@@ -310,9 +315,11 @@ rest.
 | **Generic Git** | SSH key / HTTPS URL | SSH temp-file key or plain HTTPS | n/a | any |
 
 All providers support listing repos/branches and auto-deploy on push (filtered by
-branch + watch-paths). GitHub additionally drives PR
-[preview environments](#12-preview-environments) and can require collaborator
-permissions for PR authors.
+branch + watch-paths). GitHub registers its push webhook automatically via the App
+manifest; the others use the manual-webhook model (paste the deploy URL shown in
+the Deployments view). GitHub additionally drives PR
+[preview environments](#12-preview-environments) — the only provider that does —
+and can require collaborator permissions for PR authors.
 
 ---
 
@@ -449,13 +456,23 @@ template bridge, and the password-rotation command.
 
 - **What.** Per-pull-request ephemeral deployments of an application, each isolated
   under a generated app name and optionally given its own domain. Status is tracked
-  independently; previews can carry their own env/build-args and have an optional
-  expiry.
+  independently and reported back as a status comment on the PR. **GitHub only** —
+  the feature is built on the GitHub App (PR webhooks + Octokit PR comments), so the
+  Previews tab is shown only for GitHub-sourced services.
+- **Lifecycle & limits.** Previews are created/redeployed on PR open/synchronize and
+  torn down on PR close. `previewLimit` caps concurrent previews per app — at the cap
+  the **oldest preview is evicted** to make room for a new PR (re-deploys of an
+  existing PR never count against the cap). `previewExpirationDays` (per app, `0` =
+  disabled) sets an inactivity TTL: `expiresAt` is refreshed on every deploy and an
+  hourly cron reaps previews past it, so abandoned PRs don't linger.
 - **How.** Schema `preview-deployments.ts`, router `preview-deployment.ts`, service
-  in `server/core/services/`. Application fields `isPreviewDeploymentsActive`,
-  `previewPort/Https/Path`, `previewWildcard`, `previewLimit`, and
+  in `server/core/services/preview-deployment.ts`; the expiry reaper in
+  `server/core/utils/previews/` (wired into startup as `initPreviewCleanupCron`).
+  Application fields `isPreviewDeploymentsActive`, `previewPort/Https/Path`,
+  `previewWildcard`, `previewLimit`, `previewExpirationDays`, and
   `previewRequireCollaboratorPermissions` configure behavior; GitHub PR webhooks
-  drive creation. Preview domains skip inherited redirect middlewares.
+  (`server/web/deploy/github-webhook.ts`) drive creation. Preview domains skip
+  inherited redirect middlewares.
 
 ---
 
