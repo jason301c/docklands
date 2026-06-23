@@ -702,8 +702,19 @@ export const composeRouter = createTRPCRouter({
 				isolatedDeployment: true,
 			});
 
-			await addNewService(ctx, compose.composeId);
-			await persistProcessedTemplateRecords(compose.composeId, processed);
+			try {
+				await addNewService(ctx, compose.composeId);
+				await persistProcessedTemplateRecords(compose.composeId, processed);
+			} catch (error) {
+				// Template mounts/domains/detected databases are inserted in loops
+				// with no transaction; roll the whole compose back on a partial
+				// failure (cascade removes its children) so it is not left
+				// half-built.
+				await db
+					.delete(composeTable)
+					.where(eq(composeTable.composeId, compose.composeId));
+				throw error;
+			}
 
 			await audit(ctx, {
 				action: "create",
