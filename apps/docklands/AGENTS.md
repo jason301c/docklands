@@ -40,9 +40,24 @@ Docklands is a single Node process that serves both the UI and the backend:
   reached over SSH (`ssh2`); local Docker is reached via `dockerode`.
 - **In-memory deployment queue.** `server/queues/` is a per-runtime-worker FIFO
   queue with per-service serialization, kept as a process-global singleton. There
-  is **no Redis / BullMQ** in the control plane (it was removed). The `redis`
-  schema/router is the *managed Redis database service*, not a control-plane
-  dependency.
+  is **no Redis / BullMQ** in the control plane (it was removed). Managed Redis is
+  just one engine of the unified database table, not a control-plane dependency.
+- **Managed databases — one registry-driven engine.** All six managed engines
+  (postgres, mysql, mariadb, mongo, redis, libsql) live in a **single `database`
+  table** discriminated by an `engine` column, with engine-specific credentials in
+  a registry-validated `config` jsonb. The **engine registry**
+  (`server/core/databases/registry.ts`) is the single source of truth for each
+  engine's detection signals, deploy specifics (image, port, env recipe, mount
+  path, container command), connection-variable recipe, backup/restore command,
+  and credential rotation — so adding an engine is a registry entry, not new
+  schema/router/service/builder/UI. One generic router
+  (`api.database`), service (`services/database.ts`), builder
+  (`utils/databases/build.ts`), and UI tree (`components/dashboard/database-service/`)
+  serve them all; **do not reintroduce per-engine tables/routers/components.**
+  Coolify-style **detection** (`databases/detection.ts`) promotes databases found
+  inside a compose stack to `service_database` rows (the template bridge). This
+  replaced six near-identical per-engine stacks; the upstream Dokploy per-engine
+  model is gone.
 - **Better Auth + custom RBAC.** Better Auth handles identity, sessions, orgs,
   2FA, and API keys; Docklands layers organization roles, custom roles, and
   per-resource access on top.
@@ -112,8 +127,9 @@ like `@/server/...`, `@/components/...`, `@/shared/...`, `@/client/...`.
 
 The **workspace canvas** is the centerpiece: `components/dashboard/workspace/`
 (`environment-canvas.tsx`, `workspace-overview.tsx`, plus `actions/` and
-`manage/`). Per-service feature trees (`application/`, `compose/`, `postgres/`,
-`mysql/`, `mariadb/`, `mongo/`, `redis/`, `libsql/`, `database/backups/`),
+`manage/`). Per-service feature trees (`application/`, `compose/`, and the
+**single** `database-service/` tree that serves all six managed engines,
+`database/backups/`),
 runtime surfaces (`container-runtime/`, `cluster-runtime/`, `proxy-files/`,
 `deployments/`, `metrics/`), and `settings/*` (including `settings/roles/` for
 the custom-role manager) all hang off `components/dashboard/`.
@@ -189,11 +205,16 @@ reason to move code out.
   effects explicit and testable; routers call services, not the other way around.
   `services/permission.ts` is the RBAC core (see below).
 - `db/` — Drizzle setup. `db/index.ts` is the connection (dev reuses a global
-  singleton). `db/schema/` holds ~43 schema modules (one per table/domain,
+  singleton). `db/schema/` holds the schema modules (one per table/domain,
   including `member-resource-access.ts`, `workspace.ts`, `workspace-graph.ts`,
-  the database-service tables, providers, domains, certs, backups, audit-log,
-  etc.). After schema edits run `bun run migration:generate` and commit the SQL
-  plus `drizzle/meta` updates. `db/drizzle.config.ts` is the Drizzle Kit config.
+  `database.ts` (the **single unified managed-database table** — see "Managed
+  databases" below), `service-database.ts`, providers, domains, certs, backups,
+  audit-log, etc.). After schema edits run `bun run migration:generate` and
+  commit the SQL plus `drizzle/meta` updates. `db/drizzle.config.ts` is the
+  Drizzle Kit config.
+- `databases/` — the **database engine registry** (`registry.ts`) and detection
+  (`detection.ts`): the single source of truth for the six managed engines
+  (postgres/mysql/mariadb/mongo/redis/libsql). See "Managed databases" below.
 - `lib/` — `auth.ts` (Better Auth setup: Drizzle adapter, organization/admin/
   two-factor/api-key plugins, trusted origins, request validators for Fetch and
   Node WS), `access-control.ts` (the canonical permission `statements`: resources

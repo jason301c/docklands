@@ -329,6 +329,14 @@ replacing any per-engine description.
 
 ---
 
+## Implementation status
+
+- **Phase 1 — DONE.** Engine registry (`server/core/databases/registry.ts`) + detection (`detection.ts`), 36 tests. Fixed latent `redis-server`/`libsql-server` image bugs.
+- **Phase 2 (collapse) — DONE.** One `database` table + generic service/router/builder replace the six per-engine schemas/routers/services/builders; the six per-engine UI trees collapse to `components/dashboard/database-service/` + one route client. All consumers (workspace-graph, environment, workspace, mount, backups/restore, volume-backups, runtime-worker, canvas) read the unified table. Migrations 0003 (add) + 0005 (drop the six tables + FK columns). Net ≈ −6.2k lines.
+- **Phase 3 (bridge) — DONE.** `service_database` table + registry-backed detection wired into `processComposeTemplate`; template instantiation auto-promotes detected databases. `test-database-detection.yaml` drives a real test.
+- **Phase 4 (generalize) — PARTIAL.** Backups/restore are registry-driven over the unified `database`. Making `service_database` (compose-embedded DBs) a first-class **backup + connection-variable source** is the remaining piece (needs container-env credential extraction, per Coolify's `ServiceDatabase`).
+- **Phase 5 (boundary/catalog) — TODO.** Route bare single-DB templates to the managed path; label the catalog.
+
 ## Locked decisions
 
 All four confirmed during review — the plan above is build-ready.
