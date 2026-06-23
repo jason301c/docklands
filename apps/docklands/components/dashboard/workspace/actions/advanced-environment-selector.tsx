@@ -202,7 +202,9 @@ export const AdvancedEnvironmentSelector = ({
 					}
 				/>
 				<DropdownMenu.Content className="w-[300px]" align="start">
-					<DropdownMenu.Label>Environments</DropdownMenu.Label>
+					<DropdownMenu.Group>
+						<DropdownMenu.Label>Environments</DropdownMenu.Label>
+					</DropdownMenu.Group>
 					<DropdownMenu.Separator />
 
 					{environments?.map((environment) => {

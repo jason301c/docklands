@@ -192,8 +192,11 @@ const ContainerRow = ({
 							}
 						/>
 						<DropdownMenu.Content align="end">
-							<DropdownMenu.Label>Actions</DropdownMenu.Label>
+							<DropdownMenu.Group>
+								<DropdownMenu.Label>Actions</DropdownMenu.Label>
+							</DropdownMenu.Group>
 							<Dialog.Trigger
+				nativeButton={false}
 								render={
 									<DropdownMenu.Item
 										className="cursor-pointer"

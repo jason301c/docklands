@@ -75,6 +75,7 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
 			<Dialog.Trigger
+				nativeButton={false}
 				className=""
 				render={
 					<DropdownMenu.Item

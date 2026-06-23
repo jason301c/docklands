@@ -93,6 +93,7 @@ export function AddOrganization({ organizationId }: Props) {
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
 			<Dialog.Trigger
+				nativeButton={false}
 				render={
 					organizationId ? (
 						<DropdownMenu.Item

@@ -438,9 +438,11 @@ export const WorkspaceList = () => {
 															className="w-[200px] space-y-2 overflow-y-auto max-h-[280px]"
 															onClick={(e) => e.stopPropagation()}
 														>
-															<DropdownMenu.Label className="font-normal">
-																Actions
-															</DropdownMenu.Label>
+															<DropdownMenu.Group>
+																<DropdownMenu.Label className="font-normal">
+																	Actions
+																</DropdownMenu.Label>
+															</DropdownMenu.Group>
 															<div onClick={(e) => e.stopPropagation()}>
 																<WorkspaceVariables
 																	workspaceId={workspace.workspaceId}

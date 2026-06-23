@@ -27,6 +27,7 @@ export const ShowDockerModalLogs = ({
 	return (
 		<Dialog.Root>
 			<Dialog.Trigger
+				nativeButton={false}
 				render={
 					<DropdownMenu.Item
 						className="w-full cursor-pointer space-x-3"

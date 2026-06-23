@@ -27,6 +27,7 @@
 		"typegen": "rm -rf .next/dev/types && next typegen",
 		"typecheck": "bun run typegen && tsc --noEmit",
 		"check:bundler": "bun ../../tools/check-bundler.mjs",
+		"check:baseui": "node tools/scan-baseui-pitfalls.mjs",
 		"db:clean": "tsx -r dotenv/config ./server/core/db/reset.ts",
 		"test": "vitest --config __test__/vitest.config.ts",
 		"test:ci": "vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts",

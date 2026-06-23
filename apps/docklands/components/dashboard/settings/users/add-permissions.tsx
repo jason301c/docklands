@@ -250,6 +250,7 @@ export const AddUserPermissions = ({ userId }: Props) => {
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
 			<Dialog.Trigger
+				nativeButton={false}
 				className=""
 				render={
 					<DropdownMenu.Item

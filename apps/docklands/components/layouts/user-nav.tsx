@@ -34,7 +34,7 @@ export const UserNav = () => {
 						size="base"
 						className="h-auto min-h-14 w-full gap-3 px-2 py-2 data-[state=open]:bg-kumo-fill-hover data-[state=open]:text-kumo-default group-data-[collapsible=icon]:min-h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-1"
 					>
-						<Avatar className="h-8 w-8 shrink-0 rounded-lg">
+						<Avatar className="size-8 shrink-0 rounded-lg border">
 							<AvatarImage
 								className="object-cover"
 								src={data?.user?.image || undefined}
@@ -45,24 +45,26 @@ export const UserNav = () => {
 							</AvatarFallback>
 						</Avatar>
 						<div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-							<span className="truncate font-semibold">Account</span>
+							<span className="truncate font-semibold">{userName}</span>
 							<span className="truncate text-xs text-kumo-subtle">
 								{data?.user?.email}
 							</span>
 						</div>
-						<ChevronsUpDown className="ml-auto size-4 shrink-0 group-data-[collapsible=icon]:hidden" />
+						<ChevronsUpDown className="ml-auto size-4 shrink-0 text-kumo-subtle group-data-[collapsible=icon]:hidden" />
 					</SidebarMenuButton>
 				}
 			/>
 			<DropdownMenu.Content
-				className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+				className="min-w-56 rounded-lg"
 				side="bottom"
 				align="end"
 				sideOffset={4}
 			>
 				<div className="flex items-center justify-between px-2 py-1.5">
 					<div className="min-w-0">
-						<DropdownMenu.Label>My Account</DropdownMenu.Label>
+						<DropdownMenu.Group>
+							<DropdownMenu.Label>My Account</DropdownMenu.Label>
+						</DropdownMenu.Group>
 						<span className="text-xs font-normal text-kumo-subtle">
 							{data?.user?.email}
 						</span>

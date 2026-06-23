@@ -117,7 +117,9 @@ export const columns: ColumnDef<Container>[] = [
 						}
 					/>
 					<DropdownMenu.Content align="end">
-						<DropdownMenu.Label>Actions</DropdownMenu.Label>
+						<DropdownMenu.Group>
+							<DropdownMenu.Label>Actions</DropdownMenu.Label>
+						</DropdownMenu.Group>
 						<ShowDockerModalLogs
 							containerId={container.containerId}
 							runtimeWorkerId={container.runtimeWorkerId}

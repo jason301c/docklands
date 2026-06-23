@@ -47,6 +47,7 @@ export const DockerTerminalModal = ({
 			onOpenChange={handleMainDialogOpenChange}
 		>
 			<Dialog.Trigger
+				nativeButton={false}
 				render={
 					<DropdownMenu.Item
 						className="w-full cursor-pointer space-x-3"

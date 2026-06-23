@@ -229,7 +229,9 @@ export const columns: ColumnDef<ApplicationList>[] = [
 							}
 						/>
 						<DropdownMenu.Content align="end">
-							<DropdownMenu.Label>Actions</DropdownMenu.Label>
+							<DropdownMenu.Group>
+								<DropdownMenu.Label>Actions</DropdownMenu.Label>
+							</DropdownMenu.Group>
 							<ShowDockerModalStackLogs
 								containerId={row.original.ID}
 								runtimeWorkerId={row.original.runtimeWorkerId}

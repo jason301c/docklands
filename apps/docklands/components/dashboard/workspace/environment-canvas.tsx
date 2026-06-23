@@ -2886,9 +2886,11 @@ export const EnvironmentCanvas = ({
 								}
 							/>
 							<DropdownMenu.Content className="w-[240px] space-y-1" align="end">
-								<DropdownMenu.Label className="text-sm font-normal">
-									System settings
-								</DropdownMenu.Label>
+								<DropdownMenu.Group>
+									<DropdownMenu.Label className="text-sm font-normal">
+										System settings
+									</DropdownMenu.Label>
+								</DropdownMenu.Group>
 								<DropdownMenu.Separator />
 								<Link href="/dashboard/settings/ingress">
 									<DropdownMenu.Item className="cursor-pointer">
@@ -2953,9 +2955,11 @@ export const EnvironmentCanvas = ({
 									className="w-[220px] space-y-1"
 									align="end"
 								>
-									<DropdownMenu.Label className="text-sm font-normal">
-										Add service
-									</DropdownMenu.Label>
+									<DropdownMenu.Group>
+										<DropdownMenu.Label className="text-sm font-normal">
+											Add service
+										</DropdownMenu.Label>
+									</DropdownMenu.Group>
 									<DropdownMenu.Separator />
 									<AddApplication
 										projectName={workspace.workspace.name}

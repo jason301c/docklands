@@ -18,6 +18,7 @@ export const RemoveContainerDialog = ({
 	return (
 		<Dialog.Root role="alertdialog">
 			<Dialog.Trigger
+				nativeButton={false}
 				render={
 					<DropdownMenu.Item
 						className="w-full cursor-pointer text-kumo-danger hover:!text-kumo-danger"

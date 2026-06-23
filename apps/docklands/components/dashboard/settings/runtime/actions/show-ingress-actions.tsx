@@ -69,7 +69,9 @@ export const ShowIngressActions = ({ runtimeWorkerId }: Props) => {
 				}
 			/>
 			<DropdownMenu.Content className="w-56" align="start">
-				<DropdownMenu.Label>Actions</DropdownMenu.Label>
+				<DropdownMenu.Group>
+					<DropdownMenu.Label>Actions</DropdownMenu.Label>
+				</DropdownMenu.Group>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Group>
 					<DropdownMenu.Item

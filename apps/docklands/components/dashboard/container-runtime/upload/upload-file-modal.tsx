@@ -78,6 +78,7 @@ export const UploadFileModal = ({
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
 			<Dialog.Trigger
+				nativeButton={false}
 				render={
 					<DropdownMenu.Item
 						className="w-full cursor-pointer space-x-3"

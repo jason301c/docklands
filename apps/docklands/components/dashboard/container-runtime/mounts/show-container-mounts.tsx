@@ -39,6 +39,7 @@ export const ShowContainerMounts = ({
 	return (
 		<Dialog.Root>
 			<Dialog.Trigger
+				nativeButton={false}
 				render={
 					<DropdownMenu.Item
 						className="w-full cursor-pointer"

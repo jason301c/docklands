@@ -121,7 +121,9 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 															}
 														/>
 														<DropdownMenu.Content align="end">
-															<DropdownMenu.Label>Actions</DropdownMenu.Label>
+															<DropdownMenu.Group>
+																<DropdownMenu.Label>Actions</DropdownMenu.Label>
+															</DropdownMenu.Group>
 															<ShowClusterNodeData data={node} />
 															{!node?.ManagerStatus?.Leader && (
 																<DialogAction

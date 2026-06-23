@@ -156,9 +156,11 @@ export const ShowUsers = () => {
 																		}
 																	/>
 																	<DropdownMenu.Content align="end">
-																		<DropdownMenu.Label>
-																			Actions
-																		</DropdownMenu.Label>
+																		<DropdownMenu.Group>
+																			<DropdownMenu.Label>
+																				Actions
+																			</DropdownMenu.Label>
+																		</DropdownMenu.Group>
 
 																		{canChangeRole && (
 																			<ChangeRole

@@ -110,46 +110,38 @@ function SidebarLogo() {
 							<DropdownMenu.Trigger
 								render={
 									<SidebarMenuButton
-										size={isCollapsed ? "sm" : "base"}
+										size="base"
 										className={cn(
-											"data-[state=open]:bg-kumo-fill-hover data-[state=open]:text-kumo-default",
-											isCollapsed &&
-												"flex justify-center items-center p-2 h-10 w-10 mx-auto",
+											"h-auto min-h-14 w-full gap-3 px-2 py-2 data-[state=open]:bg-kumo-fill-hover data-[state=open]:text-kumo-default",
+											isCollapsed && "min-h-10 justify-center px-1",
 										)}
 									>
+										<div className="flex size-8 shrink-0 items-center justify-center rounded-lg border">
+											<Logo
+												className="size-5 transition-all"
+												logoUrl={activeOrganization?.logo || undefined}
+											/>
+										</div>
 										<div
 											className={cn(
-												"flex items-center gap-2",
-												isCollapsed && "justify-center",
+												"grid min-w-0 flex-1 text-left text-sm leading-tight",
+												isCollapsed && "hidden",
 											)}
 										>
-											<div
-												className={cn(
-													"flex items-center justify-center rounded-sm border",
-													"size-6",
-												)}
-											>
-												<Logo
-													className={cn(
-														"transition-all",
-														isCollapsed ? "size-4" : "size-5",
-													)}
-													logoUrl={activeOrganization?.logo || undefined}
-												/>
-											</div>
-											<div
-												className={cn(
-													"flex flex-col items-start",
-													isCollapsed && "hidden",
-												)}
-											>
-												<p className="text-sm font-medium leading-none">
-													{activeOrganization?.name ?? "Select Organization"}
-												</p>
-											</div>
+											<span className="truncate font-semibold">
+												{activeOrganization?.name ?? "Select Organization"}
+											</span>
+											{user?.role && (
+												<span className="truncate text-xs text-kumo-subtle capitalize">
+													{user.role}
+												</span>
+											)}
 										</div>
 										<ChevronsUpDown
-											className={cn("ml-auto", isCollapsed && "hidden")}
+											className={cn(
+												"ml-auto size-4 shrink-0 text-kumo-subtle",
+												isCollapsed && "hidden",
+											)}
 										/>
 									</SidebarMenuButton>
 								}
@@ -160,9 +152,11 @@ function SidebarLogo() {
 								side={isMobile ? "bottom" : "right"}
 								sideOffset={4}
 							>
-								<DropdownMenu.Label className="text-xs text-kumo-subtle shrink-0">
-									Organizations
-								</DropdownMenu.Label>
+								<DropdownMenu.Group>
+									<DropdownMenu.Label className="text-xs text-kumo-subtle shrink-0">
+										Organizations
+									</DropdownMenu.Label>
+								</DropdownMenu.Group>
 								<div className="overflow-y-auto overflow-x-hidden min-h-0 -mx-1 px-1">
 									{organizations?.map((org) => {
 										const isDefault = org.members?.[0]?.isDefault ?? false;
@@ -332,7 +326,9 @@ function SidebarLogo() {
 								side={"right"}
 								className="w-80"
 							>
-								<DropdownMenu.Label>Pending Invitations</DropdownMenu.Label>
+								<DropdownMenu.Group>
+									<DropdownMenu.Label>Pending Invitations</DropdownMenu.Label>
+								</DropdownMenu.Group>
 								<div className="flex flex-col gap-2">
 									{invitations && invitations.length > 0 ? (
 										invitations.map((invitation) => (
@@ -662,7 +658,7 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 				</SidebarContent>
-				<SidebarFooter className="border-t bg-kumo-canvas p-2 pb-3">
+				<SidebarFooter className="h-auto flex-col items-stretch gap-0 overflow-visible border-t bg-kumo-canvas p-2 pb-3">
 					<SidebarMenu className="flex flex-col gap-2">
 						{!isCloud && permissions?.organization.update && (
 							<SidebarMenuItem>

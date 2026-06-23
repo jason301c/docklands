@@ -63,7 +63,9 @@ export const ShowStorageActions = ({ runtimeWorkerId }: Props) => {
 				}
 			/>
 			<DropdownMenu.Content className="w-64" align="start">
-				<DropdownMenu.Label>Actions</DropdownMenu.Label>
+				<DropdownMenu.Group>
+					<DropdownMenu.Label>Actions</DropdownMenu.Label>
+				</DropdownMenu.Group>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Group>
 					<DropdownMenu.Item
