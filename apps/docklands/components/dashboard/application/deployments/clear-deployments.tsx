@@ -14,10 +14,13 @@ interface Props {
 
 export const ClearDeployments = ({ id, type }: Props) => {
 	const utils = api.useUtils();
+	const applicationClearDeployments =
+		api.application.clearDeployments.useMutation();
+	const composeClearDeployments = api.compose.clearDeployments.useMutation();
 	const { mutateAsync, isPending } =
 		type === "application"
-			? api.application.clearDeployments.useMutation()
-			: api.compose.clearDeployments.useMutation();
+			? applicationClearDeployments
+			: composeClearDeployments;
 
 	return (
 		<Dialog.Root role="alertdialog">

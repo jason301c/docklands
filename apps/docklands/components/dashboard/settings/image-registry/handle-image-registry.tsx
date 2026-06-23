@@ -82,9 +82,11 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 		},
 	);
 
+	const updateRegistry = api.registry.update.useMutation();
+	const createRegistry = api.registry.create.useMutation();
 	const { mutateAsync, error, isError } = registryId
-		? api.registry.update.useMutation()
-		: api.registry.create.useMutation();
+		? updateRegistry
+		: createRegistry;
 	const { data: deployWorkers } = api.runtimeWorker.withSSHKey.useQuery();
 	const { data: buildWorkers } = api.runtimeWorker.buildWorkers.useQuery();
 	const runtimeWorkers = [...(deployWorkers || []), ...(buildWorkers || [])];

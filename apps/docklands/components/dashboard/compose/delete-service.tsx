@@ -45,41 +45,35 @@ export const DeleteService = ({ id, type }: Props) => {
 	const canDelete = permissions?.service.delete ?? false;
 	const [isOpen, setIsOpen] = useState(false);
 
-	const queryMap = {
-		postgres: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		redis: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mysql: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mariadb: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		libsql: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		application: () =>
-			api.application.one.useQuery({ applicationId: id }, { enabled: !!id }),
-		mongo: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		compose: () =>
-			api.compose.one.useQuery({ composeId: id }, { enabled: !!id }),
-	};
-	const { data } = queryMap[type]
-		? queryMap[type]()
-		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
+	const isApplication = type === "application";
+	const isCompose = type === "compose";
 
-	const mutationMap = {
-		postgres: () => api.database.remove.useMutation(),
-		redis: () => api.database.remove.useMutation(),
-		mysql: () => api.database.remove.useMutation(),
-		mariadb: () => api.database.remove.useMutation(),
-		libsql: () => api.database.remove.useMutation(),
-		application: () => api.application.delete.useMutation(),
-		mongo: () => api.database.remove.useMutation(),
-		compose: () => api.compose.delete.useMutation(),
-	};
-	const { mutateAsync, isPending } = mutationMap[type]
-		? mutationMap[type]()
-		: api.database.remove.useMutation();
+	const applicationQuery = api.application.one.useQuery(
+		{ applicationId: id },
+		{ enabled: !!id && isApplication },
+	);
+	const composeQuery = api.compose.one.useQuery(
+		{ composeId: id },
+		{ enabled: !!id && isCompose },
+	);
+	const databaseQuery = api.database.one.useQuery(
+		{ databaseId: id },
+		{ enabled: !!id && !isApplication && !isCompose },
+	);
+	const { data } = isApplication
+		? applicationQuery
+		: isCompose
+			? composeQuery
+			: databaseQuery;
+
+	const applicationMutation = api.application.delete.useMutation();
+	const composeMutation = api.compose.delete.useMutation();
+	const databaseMutation = api.database.remove.useMutation();
+	const { mutateAsync, isPending } = isApplication
+		? applicationMutation
+		: isCompose
+			? composeMutation
+			: databaseMutation;
 	const { push } = useRouter();
 	const form = useForm<DeleteCompose>({
 		defaultValues: {

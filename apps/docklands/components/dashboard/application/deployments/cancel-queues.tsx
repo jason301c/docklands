@@ -13,10 +13,10 @@ interface Props {
 }
 
 export const CancelQueues = ({ id, type }: Props) => {
+	const applicationCleanQueues = api.application.cleanQueues.useMutation();
+	const composeCleanQueues = api.compose.cleanQueues.useMutation();
 	const { mutateAsync, isPending } =
-		type === "application"
-			? api.application.cleanQueues.useMutation()
-			: api.compose.cleanQueues.useMutation();
+		type === "application" ? applicationCleanQueues : composeCleanQueues;
 
 	return (
 		<Dialog.Root role="alertdialog">

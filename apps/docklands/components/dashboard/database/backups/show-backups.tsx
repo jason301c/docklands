@@ -42,52 +42,37 @@ export const ShowBackups = ({
 	const [activeManualBackup, setActiveManualBackup] = useState<
 		string | undefined
 	>();
-	const queryMap =
-		backupType === "database"
-			? {
-					mariadb: () =>
-						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-					mongo: () =>
-						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-					mysql: () =>
-						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-					postgres: () =>
-						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-					libsql: () =>
-						api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-					"web-server": () => api.user.getBackups.useQuery(),
-				}
-			: {
-					compose: () =>
-						api.compose.one.useQuery({ composeId: id }, { enabled: !!id }),
-				};
 	const { data } = api.destination.all.useQuery();
 	const key = backupType === "database" ? databaseType : "compose";
-	const query = queryMap[key as keyof typeof queryMap];
-	const { data: postgres, refetch } = query
-		? query()
-		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
+	const isWebServer = key === "web-server";
+	const isCompose = key === "compose";
+
+	const databaseQuery = api.database.one.useQuery(
+		{ databaseId: id },
+		{ enabled: !!id && !isWebServer && !isCompose },
+	);
+	const webServerQuery = api.user.getBackups.useQuery(undefined, {
+		enabled: isWebServer,
+	});
+	const composeQuery = api.compose.one.useQuery(
+		{ composeId: id },
+		{ enabled: !!id && isCompose },
+	);
+	const { data: postgres, refetch } = isWebServer
+		? webServerQuery
+		: isCompose
+			? composeQuery
+			: databaseQuery;
 
 	const manualBackupDatabase = api.backup.manualBackupDatabase.useMutation();
-	const mutationMap =
-		backupType === "database"
-			? {
-					mariadb: manualBackupDatabase,
-					mongo: manualBackupDatabase,
-					mysql: manualBackupDatabase,
-					postgres: manualBackupDatabase,
-					libsql: manualBackupDatabase,
-					"web-server": api.backup.manualBackupWebServer.useMutation(),
-				}
-			: {
-					compose: api.backup.manualBackupCompose.useMutation(),
-				};
+	const manualBackupWebServer = api.backup.manualBackupWebServer.useMutation();
+	const manualBackupCompose = api.backup.manualBackupCompose.useMutation();
 
-	const mutation = mutationMap[key as keyof typeof mutationMap];
-
-	const { mutateAsync: manualBackup, isPending: isManualBackup } = mutation
-		? mutation
-		: manualBackupDatabase;
+	const { mutateAsync: manualBackup, isPending: isManualBackup } = isWebServer
+		? manualBackupWebServer
+		: isCompose
+			? manualBackupCompose
+			: manualBackupDatabase;
 
 	const { mutateAsync: deleteBackup, isPending: isRemoving } =
 		api.backup.remove.useMutation();

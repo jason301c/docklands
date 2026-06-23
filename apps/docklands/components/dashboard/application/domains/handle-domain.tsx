@@ -136,28 +136,30 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 		},
 	);
 
-	const { data: application } =
-		type === "application"
-			? api.application.one.useQuery(
-					{
-						applicationId: id,
-					},
-					{
-						enabled: !!id,
-					},
-				)
-			: api.compose.one.useQuery(
-					{
-						composeId: id,
-					},
-					{
-						enabled: !!id,
-					},
-				);
+	const isApplication = type === "application";
+	const applicationQuery = api.application.one.useQuery(
+		{
+			applicationId: id,
+		},
+		{
+			enabled: !!id && isApplication,
+		},
+	);
+	const composeQuery = api.compose.one.useQuery(
+		{
+			composeId: id,
+		},
+		{
+			enabled: !!id && !isApplication,
+		},
+	);
+	const { data: application } = isApplication ? applicationQuery : composeQuery;
 
+	const updateDomain = api.domain.update.useMutation();
+	const createDomain = api.domain.create.useMutation();
 	const { mutateAsync, isError, error, isPending } = domainId
-		? api.domain.update.useMutation()
-		: api.domain.create.useMutation();
+		? updateDomain
+		: createDomain;
 
 	const { mutateAsync: generateDomain, isPending: isLoadingGenerate } =
 		api.domain.generateDomain.useMutation();

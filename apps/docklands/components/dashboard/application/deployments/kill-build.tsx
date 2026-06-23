@@ -13,10 +13,10 @@ interface Props {
 }
 
 export const KillBuild = ({ id, type }: Props) => {
+	const applicationKillBuild = api.application.killBuild.useMutation();
+	const composeKillBuild = api.compose.killBuild.useMutation();
 	const { mutateAsync, isPending } =
-		type === "application"
-			? api.application.killBuild.useMutation()
-			: api.compose.killBuild.useMutation();
+		type === "application" ? applicationKillBuild : composeKillBuild;
 
 	return (
 		<Dialog.Root role="alertdialog">

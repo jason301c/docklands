@@ -23,31 +23,29 @@ export const ShowVolumes = ({ id, type }: Props) => {
 	const canCreate = permissions?.volume.create ?? false;
 	const canDelete = permissions?.volume.delete ?? false;
 
-	if (!canRead) return null;
-
-	const queryMap = {
-		application: () =>
-			api.application.one.useQuery({ applicationId: id }, { enabled: !!id }),
-		compose: () =>
-			api.compose.one.useQuery({ composeId: id }, { enabled: !!id }),
-		libsql: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mariadb: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mongo: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mysql: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		postgres: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		redis: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-	};
-	const { data, refetch } = queryMap[type]
-		? queryMap[type]()
-		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
+	const isApplication = type === "application";
+	const isCompose = type === "compose";
+	const applicationQuery = api.application.one.useQuery(
+		{ applicationId: id },
+		{ enabled: !!id && isApplication },
+	);
+	const composeQuery = api.compose.one.useQuery(
+		{ composeId: id },
+		{ enabled: !!id && isCompose },
+	);
+	const databaseQuery = api.database.one.useQuery(
+		{ databaseId: id },
+		{ enabled: !!id && !isApplication && !isCompose },
+	);
+	const { data, refetch } = isApplication
+		? applicationQuery
+		: isCompose
+			? composeQuery
+			: databaseQuery;
 	const { mutateAsync: deleteVolume, isPending: isRemoving } =
 		api.mounts.remove.useMutation();
+
+	if (!canRead) return null;
 
 	return (
 		<LayerCard className="bg-kumo-canvas">

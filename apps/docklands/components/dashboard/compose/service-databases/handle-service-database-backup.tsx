@@ -68,9 +68,11 @@ export const HandleServiceDatabaseBackup = ({
 		{ enabled: !!backupId },
 	);
 
+	const updateBackup = api.backup.update.useMutation();
+	const createBackupMutation = api.backup.create.useMutation();
 	const { mutateAsync: createBackup, isPending: isCreating } = backupId
-		? api.backup.update.useMutation()
-		: api.backup.create.useMutation();
+		? updateBackup
+		: createBackupMutation;
 
 	const form = useForm({
 		defaultValues: {

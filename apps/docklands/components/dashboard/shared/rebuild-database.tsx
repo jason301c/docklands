@@ -10,19 +10,10 @@ interface Props {
 	type: "libsql" | "mariadb" | "mongo" | "mysql" | "postgres" | "redis";
 }
 
-export const RebuildDatabase = ({ id, type }: Props) => {
+export const RebuildDatabase = ({ id }: Props) => {
 	const utils = api.useUtils();
 
-	const mutationMap = {
-		libsql: () => api.database.rebuild.useMutation(),
-		mariadb: () => api.database.rebuild.useMutation(),
-		mongo: () => api.database.rebuild.useMutation(),
-		mysql: () => api.database.rebuild.useMutation(),
-		postgres: () => api.database.rebuild.useMutation(),
-		redis: () => api.database.rebuild.useMutation(),
-	};
-
-	const { mutateAsync, isPending } = mutationMap[type]();
+	const { mutateAsync, isPending } = api.database.rebuild.useMutation();
 
 	const handleRebuild = async () => {
 		try {

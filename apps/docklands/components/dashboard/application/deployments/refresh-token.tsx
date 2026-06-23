@@ -11,10 +11,10 @@ interface Props {
 	type: "application" | "compose";
 }
 export const RefreshToken = ({ id, type }: Props) => {
+	const applicationRefreshToken = api.application.refreshToken.useMutation();
+	const composeRefreshToken = api.compose.refreshToken.useMutation();
 	const { mutateAsync } =
-		type === "application"
-			? api.application.refreshToken.useMutation()
-			: api.compose.refreshToken.useMutation();
+		type === "application" ? applicationRefreshToken : composeRefreshToken;
 	const utils = api.useUtils();
 	return (
 		<Dialog.Root role="alertdialog">

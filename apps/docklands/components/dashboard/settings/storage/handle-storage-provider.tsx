@@ -58,9 +58,11 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 	const [open, setOpen] = useState(false);
 	const utils = api.useUtils();
 
+	const updateDestination = api.destination.update.useMutation();
+	const createDestination = api.destination.create.useMutation();
 	const { mutateAsync, isError, error, isPending } = destinationId
-		? api.destination.update.useMutation()
-		: api.destination.create.useMutation();
+		? updateDestination
+		: createDestination;
 
 	const { data: destination } = api.destination.one.useQuery(
 		{

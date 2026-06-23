@@ -59,9 +59,11 @@ export const HandleWorkspace = ({ workspaceId }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
+	const updateWorkspace = api.workspaces.update.useMutation();
+	const createWorkspace = api.workspaces.create.useMutation();
 	const { mutateAsync, error, isError } = workspaceId
-		? api.workspaces.update.useMutation()
-		: api.workspaces.create.useMutation();
+		? updateWorkspace
+		: createWorkspace;
 
 	const { data, refetch } = api.workspaces.one.useQuery(
 		{

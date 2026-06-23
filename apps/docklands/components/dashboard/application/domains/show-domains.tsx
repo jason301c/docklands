@@ -63,24 +63,24 @@ export const ShowDomains = ({ id, type }: Props) => {
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const canCreateDomain = permissions?.domain.create ?? false;
 	const canDeleteDomain = permissions?.domain.delete ?? false;
-	const { data: application } =
-		type === "application"
-			? api.application.one.useQuery(
-					{
-						applicationId: id,
-					},
-					{
-						enabled: !!id,
-					},
-				)
-			: api.compose.one.useQuery(
-					{
-						composeId: id,
-					},
-					{
-						enabled: !!id,
-					},
-				);
+	const isApplication = type === "application";
+	const applicationQuery = api.application.one.useQuery(
+		{
+			applicationId: id,
+		},
+		{
+			enabled: !!id && isApplication,
+		},
+	);
+	const composeQuery = api.compose.one.useQuery(
+		{
+			composeId: id,
+		},
+		{
+			enabled: !!id && !isApplication,
+		},
+	);
+	const { data: application } = isApplication ? applicationQuery : composeQuery;
 	const [validationStates, setValidationStates] = useState<ValidationStates>(
 		{},
 	);
@@ -99,27 +99,27 @@ export const ShowDomains = ({ id, type }: Props) => {
 	const [rowSelection, setRowSelection] = useState({});
 	const { data: ip } = api.settings.getIp.useQuery();
 
+	const byApplicationIdQuery = api.domain.byApplicationId.useQuery(
+		{
+			applicationId: id,
+		},
+		{
+			enabled: !!id && isApplication,
+		},
+	);
+	const byComposeIdQuery = api.domain.byComposeId.useQuery(
+		{
+			composeId: id,
+		},
+		{
+			enabled: !!id && !isApplication,
+		},
+	);
 	const {
 		data,
 		refetch,
 		isLoading: isLoadingDomains,
-	} = type === "application"
-		? api.domain.byApplicationId.useQuery(
-				{
-					applicationId: id,
-				},
-				{
-					enabled: !!id,
-				},
-			)
-		: api.domain.byComposeId.useQuery(
-				{
-					composeId: id,
-				},
-				{
-					enabled: !!id,
-				},
-			);
+	} = isApplication ? byApplicationIdQuery : byComposeIdQuery;
 
 	const { mutateAsync: validateDomain } =
 		api.domain.validateDomain.useMutation();

@@ -274,9 +274,11 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 		}
 	}, [form, schedule, scheduleId]);
 
+	const updateMutation = api.schedule.update.useMutation();
+	const createMutation = api.schedule.create.useMutation();
 	const { mutateAsync, isPending } = scheduleId
-		? api.schedule.update.useMutation()
-		: api.schedule.create.useMutation();
+		? updateMutation
+		: createMutation;
 
 	const onSubmit = async (values: z.output<typeof formSchema>) => {
 		if (!id && !scheduleId) return;

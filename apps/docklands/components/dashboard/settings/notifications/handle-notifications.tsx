@@ -273,42 +273,64 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 	const { mutateAsync: testPushoverConnection, isPending: isLoadingPushover } =
 		api.notification.testPushoverConnection.useMutation();
 
+	const updateCustomMutation = api.notification.updateCustom.useMutation();
+	const createCustomMutation = api.notification.createCustom.useMutation();
 	const customMutation = notificationId
-		? api.notification.updateCustom.useMutation()
-		: api.notification.createCustom.useMutation();
+		? updateCustomMutation
+		: createCustomMutation;
+	const updateSlackMutation = api.notification.updateSlack.useMutation();
+	const createSlackMutation = api.notification.createSlack.useMutation();
 	const slackMutation = notificationId
-		? api.notification.updateSlack.useMutation()
-		: api.notification.createSlack.useMutation();
+		? updateSlackMutation
+		: createSlackMutation;
+	const updateTelegramMutation = api.notification.updateTelegram.useMutation();
+	const createTelegramMutation = api.notification.createTelegram.useMutation();
 	const telegramMutation = notificationId
-		? api.notification.updateTelegram.useMutation()
-		: api.notification.createTelegram.useMutation();
+		? updateTelegramMutation
+		: createTelegramMutation;
+	const updateDiscordMutation = api.notification.updateDiscord.useMutation();
+	const createDiscordMutation = api.notification.createDiscord.useMutation();
 	const discordMutation = notificationId
-		? api.notification.updateDiscord.useMutation()
-		: api.notification.createDiscord.useMutation();
+		? updateDiscordMutation
+		: createDiscordMutation;
+	const updateEmailMutation = api.notification.updateEmail.useMutation();
+	const createEmailMutation = api.notification.createEmail.useMutation();
 	const emailMutation = notificationId
-		? api.notification.updateEmail.useMutation()
-		: api.notification.createEmail.useMutation();
+		? updateEmailMutation
+		: createEmailMutation;
+	const updateResendMutation = api.notification.updateResend.useMutation();
+	const createResendMutation = api.notification.createResend.useMutation();
 	const resendMutation = notificationId
-		? api.notification.updateResend.useMutation()
-		: api.notification.createResend.useMutation();
+		? updateResendMutation
+		: createResendMutation;
+	const updateGotifyMutation = api.notification.updateGotify.useMutation();
+	const createGotifyMutation = api.notification.createGotify.useMutation();
 	const gotifyMutation = notificationId
-		? api.notification.updateGotify.useMutation()
-		: api.notification.createGotify.useMutation();
-	const ntfyMutation = notificationId
-		? api.notification.updateNtfy.useMutation()
-		: api.notification.createNtfy.useMutation();
+		? updateGotifyMutation
+		: createGotifyMutation;
+	const updateNtfyMutation = api.notification.updateNtfy.useMutation();
+	const createNtfyMutation = api.notification.createNtfy.useMutation();
+	const ntfyMutation = notificationId ? updateNtfyMutation : createNtfyMutation;
+	const updateMattermostMutation =
+		api.notification.updateMattermost.useMutation();
+	const createMattermostMutation =
+		api.notification.createMattermost.useMutation();
 	const mattermostMutation = notificationId
-		? api.notification.updateMattermost.useMutation()
-		: api.notification.createMattermost.useMutation();
-	const larkMutation = notificationId
-		? api.notification.updateLark.useMutation()
-		: api.notification.createLark.useMutation();
+		? updateMattermostMutation
+		: createMattermostMutation;
+	const updateLarkMutation = api.notification.updateLark.useMutation();
+	const createLarkMutation = api.notification.createLark.useMutation();
+	const larkMutation = notificationId ? updateLarkMutation : createLarkMutation;
+	const updateTeamsMutation = api.notification.updateTeams.useMutation();
+	const createTeamsMutation = api.notification.createTeams.useMutation();
 	const teamsMutation = notificationId
-		? api.notification.updateTeams.useMutation()
-		: api.notification.createTeams.useMutation();
+		? updateTeamsMutation
+		: createTeamsMutation;
+	const updatePushoverMutation = api.notification.updatePushover.useMutation();
+	const createPushoverMutation = api.notification.createPushover.useMutation();
 	const pushoverMutation = notificationId
-		? api.notification.updatePushover.useMutation()
-		: api.notification.createPushover.useMutation();
+		? updatePushoverMutation
+		: createPushoverMutation;
 
 	const form = useForm({
 		defaultValues: {

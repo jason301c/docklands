@@ -89,9 +89,11 @@ export const HandleRedirect = ({
 
 	const utils = api.useUtils();
 
+	const updateRedirect = api.redirects.update.useMutation();
+	const createRedirect = api.redirects.create.useMutation();
 	const { mutateAsync, isPending, error, isError } = redirectId
-		? api.redirects.update.useMutation()
-		: api.redirects.create.useMutation();
+		? updateRedirect
+		: createRedirect;
 
 	const form = useForm({
 		defaultValues: {

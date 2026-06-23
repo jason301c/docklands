@@ -35,39 +35,23 @@ interface Props {
 export const ShowEnvironment = ({ id, type }: Props) => {
 	const { data: permissions } = api.user.getPermissions.useQuery();
 	const canWrite = permissions?.envVars.write ?? false;
-	const queryMap = {
-		compose: () =>
-			api.compose.one.useQuery({ composeId: id }, { enabled: !!id }),
-		libsql: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mariadb: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mongo: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mysql: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		postgres: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		redis: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-	};
-	const { data, refetch } = queryMap[type]
-		? queryMap[type]()
-		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
+	const isCompose = type === "compose";
+	const composeQuery = api.compose.one.useQuery(
+		{ composeId: id },
+		{ enabled: !!id && isCompose },
+	);
+	const databaseQuery = api.database.one.useQuery(
+		{ databaseId: id },
+		{ enabled: !!id && !isCompose },
+	);
+	const { data, refetch } = isCompose ? composeQuery : databaseQuery;
 	const [isEnvVisible, setIsEnvVisible] = useState(true);
 
-	const mutationMap = {
-		compose: () => api.compose.saveEnvironment.useMutation(),
-		libsql: () => api.database.saveEnvironment.useMutation(),
-		mariadb: () => api.database.saveEnvironment.useMutation(),
-		mongo: () => api.database.saveEnvironment.useMutation(),
-		mysql: () => api.database.saveEnvironment.useMutation(),
-		postgres: () => api.database.saveEnvironment.useMutation(),
-		redis: () => api.database.saveEnvironment.useMutation(),
-	};
-	const { mutateAsync, isPending } = mutationMap[type]
-		? mutationMap[type]()
-		: api.database.saveEnvironment.useMutation();
+	const composeMutation = api.compose.saveEnvironment.useMutation();
+	const databaseMutation = api.database.saveEnvironment.useMutation();
+	const { mutateAsync, isPending } = isCompose
+		? composeMutation
+		: databaseMutation;
 
 	const form = useForm<EnvironmentSchema>({
 		defaultValues: {

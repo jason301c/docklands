@@ -67,9 +67,11 @@ export const HandleRuntimeWorker = ({
 	);
 
 	const { data: sshKeys } = api.sshKey.all.useQuery();
+	const updateRuntimeWorker = api.runtimeWorker.update.useMutation();
+	const createRuntimeWorker = api.runtimeWorker.create.useMutation();
 	const { mutateAsync, error, isPending, isError } = runtimeWorkerId
-		? api.runtimeWorker.update.useMutation()
-		: api.runtimeWorker.create.useMutation();
+		? updateRuntimeWorker
+		: createRuntimeWorker;
 	const form = useForm({
 		defaultValues: {
 			description: "",

@@ -42,39 +42,22 @@ interface RestartPolicyFormProps {
 export const RestartPolicyForm = ({ id, type }: RestartPolicyFormProps) => {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const queryMap = {
-		postgres: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		redis: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mysql: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		mariadb: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		application: () =>
-			api.application.one.useQuery({ applicationId: id }, { enabled: !!id }),
-		mongo: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-		libsql: () =>
-			api.database.one.useQuery({ databaseId: id }, { enabled: !!id }),
-	};
-	const { data, refetch } = queryMap[type]
-		? queryMap[type]()
-		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
+	const isApplication = type === "application";
+	const applicationQuery = api.application.one.useQuery(
+		{ applicationId: id },
+		{ enabled: !!id && isApplication },
+	);
+	const databaseQuery = api.database.one.useQuery(
+		{ databaseId: id },
+		{ enabled: !!id && !isApplication },
+	);
+	const { data, refetch } = isApplication ? applicationQuery : databaseQuery;
 
-	const mutationMap = {
-		postgres: () => api.database.update.useMutation(),
-		redis: () => api.database.update.useMutation(),
-		mysql: () => api.database.update.useMutation(),
-		mariadb: () => api.database.update.useMutation(),
-		application: () => api.application.update.useMutation(),
-		mongo: () => api.database.update.useMutation(),
-		libsql: () => api.database.update.useMutation(),
-	};
-
-	const { mutateAsync } = mutationMap[type]
-		? mutationMap[type]()
-		: api.database.update.useMutation();
+	const applicationMutation = api.application.update.useMutation();
+	const databaseMutation = api.database.update.useMutation();
+	const { mutateAsync } = isApplication
+		? applicationMutation
+		: databaseMutation;
 
 	const form = useForm<any>({
 		resolver: zodResolver(restartPolicyFormSchema),

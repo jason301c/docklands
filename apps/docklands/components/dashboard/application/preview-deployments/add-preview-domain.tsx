@@ -59,9 +59,11 @@ export const AddPreviewDomain = ({
 		},
 	);
 
+	const updateDomain = api.domain.update.useMutation();
+	const createDomain = api.domain.create.useMutation();
 	const { mutateAsync, isError, error, isPending } = domainId
-		? api.domain.update.useMutation()
-		: api.domain.create.useMutation();
+		? updateDomain
+		: createDomain;
 
 	const { mutateAsync: generateDomain, isPending: isLoadingGenerate } =
 		api.domain.generateDomain.useMutation();

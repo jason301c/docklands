@@ -207,10 +207,10 @@ export const HandleBackup = ({
 		},
 	);
 	const [cacheType, setCacheType] = useState<CacheType>("cache");
+	const updateBackup = api.backup.update.useMutation();
+	const createBackupMutation = api.backup.create.useMutation();
 	const { mutateAsync: createBackup, isPending: isCreatingPostgresBackup } =
-		backupId
-			? api.backup.update.useMutation()
-			: api.backup.create.useMutation();
+		backupId ? updateBackup : createBackupMutation;
 
 	const form = useForm({
 		defaultValues: {

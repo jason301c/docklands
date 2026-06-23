@@ -44,7 +44,7 @@
 				"noUnusedImports": "error",
 				"noUnusedFunctionParameters": "error",
 				"noUnusedVariables": "off",
-				"useHookAtTopLevel": "off"
+				"useHookAtTopLevel": "error"
 			},
 			"style": {
 				"noNonNullAssertion": "off",
