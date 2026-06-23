@@ -30,7 +30,7 @@ export function SiteFooter() {
 			<div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-4">
 				<div className="lg:col-span-2">
 					<div className="flex items-center gap-2.5">
-						<Image src="/docklands-logo.svg" alt="" width={24} height={24} />
+						<Image src="/docklands-logo-dark.svg" alt="" width={24} height={24} />
 						<span className="font-semibold text-kumo-strong tracking-tight">
 							{siteConfig.name}
 						</span>

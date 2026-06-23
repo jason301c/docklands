@@ -18,6 +18,7 @@
 @layer base {
 	:root {
 		--font-inter: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+		--font-fraunces: "Fraunces Variable", ui-serif, Georgia, serif;
 	}
 
 	*,
