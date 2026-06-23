@@ -1,7 +1,7 @@
-import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "../db";
+import { orThrowNotFound } from "../db/find-or-throw";
 import {
 	type createVolumeBackupSchema,
 	type updateVolumeBackupSchema,
@@ -9,53 +9,47 @@ import {
 } from "../db/schema";
 
 export const findVolumeBackupById = async (volumeBackupId: string) => {
-	const volumeBackup = await db.query.volumeBackups.findFirst({
-		where: eq(volumeBackups.volumeBackupId, volumeBackupId),
-		with: {
-			application: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
+	return orThrowNotFound(
+		db.query.volumeBackups.findFirst({
+			where: eq(volumeBackups.volumeBackupId, volumeBackupId),
+			with: {
+				application: {
+					with: {
+						environment: {
+							with: {
+								workspace: true,
+							},
 						},
 					},
 				},
-			},
-			database: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
+				database: {
+					with: {
+						environment: {
+							with: {
+								workspace: true,
+							},
 						},
 					},
 				},
-			},
-			compose: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
+				compose: {
+					with: {
+						environment: {
+							with: {
+								workspace: true,
+							},
 						},
 					},
 				},
-			},
-			destination: {
-				columns: {
-					accessKey: false,
-					secretAccessKey: false,
+				destination: {
+					columns: {
+						accessKey: false,
+						secretAccessKey: false,
+					},
 				},
 			},
-		},
-	});
-
-	if (!volumeBackup) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Volume backup not found",
-		});
-	}
-
-	return volumeBackup;
+		}),
+		"Volume backup",
+	);
 };
 
 export const createVolumeBackup = async (

@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { paths } from "../constants";
 import { db } from "../db";
+import { orThrowNotFound } from "../db/find-or-throw";
 import type {
 	createScheduleSchema,
 	updateScheduleSchema,
@@ -35,42 +36,37 @@ export const createSchedule = async (
 };
 
 export const findScheduleById = async (scheduleId: string) => {
-	const schedule = await db.query.schedules.findFirst({
-		where: eq(schedules.scheduleId, scheduleId),
-		with: {
-			application: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
+	return orThrowNotFound(
+		db.query.schedules.findFirst({
+			where: eq(schedules.scheduleId, scheduleId),
+			with: {
+				application: {
+					with: {
+						environment: {
+							with: {
+								workspace: true,
+							},
 						},
 					},
 				},
-			},
-			compose: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
+				compose: {
+					with: {
+						environment: {
+							with: {
+								workspace: true,
+							},
 						},
 					},
 				},
-			},
-			runtimeWorker: {
-				with: {
-					organization: true,
+				runtimeWorker: {
+					with: {
+						organization: true,
+					},
 				},
 			},
-		},
-	});
-
-	if (!schedule) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Schedule not found",
-		});
-	}
-	return schedule;
+		}),
+		"Schedule",
+	);
 };
 
 export const findScheduleOrganizationId = async (scheduleId: string) => {

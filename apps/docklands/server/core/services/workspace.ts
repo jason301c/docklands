@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateWorkspace,
 	applications,
@@ -60,30 +61,26 @@ export const createWorkspace = async (
 };
 
 export const findWorkspaceById = async (workspaceId: string) => {
-	const workspace = await db.query.workspaces.findFirst({
-		where: eq(workspaces.workspaceId, workspaceId),
-		with: {
-			environments: {
-				with: {
-					applications: true,
-					compose: true,
-					database: true,
+	return orThrowNotFound(
+		db.query.workspaces.findFirst({
+			where: eq(workspaces.workspaceId, workspaceId),
+			with: {
+				environments: {
+					with: {
+						applications: true,
+						compose: true,
+						database: true,
+					},
+				},
+				workspaceTags: {
+					with: {
+						tag: true,
+					},
 				},
 			},
-			workspaceTags: {
-				with: {
-					tag: true,
-				},
-			},
-		},
-	});
-	if (!workspace) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Workspace not found",
-		});
-	}
-	return workspace;
+		}),
+		"Workspace",
+	);
 };
 
 export const deleteWorkspace = async (workspaceId: string) => {

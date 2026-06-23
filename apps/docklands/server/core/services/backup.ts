@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import { type apiCreateBackup, backups } from "@/server/core/db/schema";
 
 export type Backup = typeof backups.$inferSelect;
@@ -26,26 +27,22 @@ export const createBackup = async (input: z.infer<typeof apiCreateBackup>) => {
 };
 
 export const findBackupById = async (backupId: string) => {
-	const backup = await db.query.backups.findFirst({
-		where: eq(backups.backupId, backupId),
-		with: {
-			database: true,
-			destination: {
-				columns: {
-					accessKey: false,
-					secretAccessKey: false,
+	return orThrowNotFound(
+		db.query.backups.findFirst({
+			where: eq(backups.backupId, backupId),
+			with: {
+				database: true,
+				destination: {
+					columns: {
+						accessKey: false,
+						secretAccessKey: false,
+					},
 				},
+				compose: true,
 			},
-			compose: true,
-		},
-	});
-	if (!backup) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Backup not found",
-		});
-	}
-	return backup;
+		}),
+		"Backup",
+	);
 };
 
 export const updateBackupById = async (

@@ -5,6 +5,7 @@ import {
 	parseDatabaseConfig,
 } from "@/server/core/databases/registry";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	applications,
 	compose,
@@ -234,18 +235,12 @@ export const createWorkspaceConnection = async (input: {
 };
 
 export const findWorkspaceConnectionById = async (connectionId: string) => {
-	const connection = await db.query.workspaceServiceConnections.findFirst({
-		where: eq(workspaceServiceConnections.connectionId, connectionId),
-	});
-
-	if (!connection) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Workspace connection not found",
-		});
-	}
-
-	return connection;
+	return orThrowNotFound(
+		db.query.workspaceServiceConnections.findFirst({
+			where: eq(workspaceServiceConnections.connectionId, connectionId),
+		}),
+		"Workspace connection",
+	);
 };
 
 export const removeWorkspaceConnection = async (connectionId: string) => {

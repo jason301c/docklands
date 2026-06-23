@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	invitation,
 	member,
@@ -13,19 +14,15 @@ import { getWebServerSettings } from "./web-server-settings";
 const logger = createLogger("auth");
 
 export const findUserById = async (userId: string) => {
-	const userResult = await db.query.user.findFirst({
-		where: eq(user.id, userId),
-		// with: {
-		// 	account: true,
-		// },
-	});
-	if (!userResult) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "User not found",
-		});
-	}
-	return userResult;
+	return orThrowNotFound(
+		db.query.user.findFirst({
+			where: eq(user.id, userId),
+			// with: {
+			// 	account: true,
+			// },
+		}),
+		"User",
+	);
 };
 
 export const findOrganizationById = async (organizationId: string) => {
@@ -50,20 +47,15 @@ export const isAdminPresent = async () => {
 };
 
 export const findOwner = async () => {
-	const admin = await db.query.member.findFirst({
-		where: eq(member.role, "owner"),
-		with: {
-			user: true,
-		},
-	});
-
-	if (!admin) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Admin not found",
-		});
-	}
-	return admin;
+	return orThrowNotFound(
+		db.query.member.findFirst({
+			where: eq(member.role, "owner"),
+			with: {
+				user: true,
+			},
+		}),
+		"Admin",
+	);
 };
 
 export const getUserByToken = async (token: string) => {

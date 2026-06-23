@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateDestination,
 	destinations,
@@ -33,16 +34,12 @@ export const createDestination = async (
 };
 
 export const findDestinationById = async (destinationId: string) => {
-	const destination = await db.query.destinations.findFirst({
-		where: and(eq(destinations.destinationId, destinationId)),
-	});
-	if (!destination) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Destination not found",
-		});
-	}
-	return destination;
+	return orThrowNotFound(
+		db.query.destinations.findFirst({
+			where: and(eq(destinations.destinationId, destinationId)),
+		}),
+		"Destination",
+	);
 };
 
 export const removeDestinationById = async (

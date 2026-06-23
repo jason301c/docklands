@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { docker } from "@/server/core/constants/docker";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateApplication,
 	applications,
@@ -99,34 +100,30 @@ export const createApplication = async (
 };
 
 export const findApplicationById = async (applicationId: string) => {
-	const application = await db.query.applications.findFirst({
-		where: eq(applications.applicationId, applicationId),
-		with: {
-			environment: { with: { workspace: true } },
-			domains: true,
-			deployments: true,
-			mounts: true,
-			redirects: true,
-			security: true,
-			ports: true,
-			gitlab: true,
-			github: true,
-			bitbucket: true,
-			gitea: true,
-			runtimeWorker: true,
-			previewDeployments: true,
-			registry: { columns: { password: false } },
-			buildRegistry: { columns: { password: false } },
-			rollbackRegistry: { columns: { password: false } },
-		},
-	});
-	if (!application) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Application not found",
-		});
-	}
-	return application;
+	return orThrowNotFound(
+		db.query.applications.findFirst({
+			where: eq(applications.applicationId, applicationId),
+			with: {
+				environment: { with: { workspace: true } },
+				domains: true,
+				deployments: true,
+				mounts: true,
+				redirects: true,
+				security: true,
+				ports: true,
+				gitlab: true,
+				github: true,
+				bitbucket: true,
+				gitea: true,
+				runtimeWorker: true,
+				previewDeployments: true,
+				registry: { columns: { password: false } },
+				buildRegistry: { columns: { password: false } },
+				rollbackRegistry: { columns: { password: false } },
+			},
+		}),
+		"Application",
+	);
 };
 
 export const findApplicationByName = async (appName: string) => {

@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateGitlab,
 	gitlab,
@@ -46,21 +47,15 @@ export const createGitlab = async (
 };
 
 export const findGitlabById = async (gitlabId: string) => {
-	const gitlabProviderResult = await db.query.gitlab.findFirst({
-		where: eq(gitlab.gitlabId, gitlabId),
-		with: {
-			gitProvider: true,
-		},
-	});
-
-	if (!gitlabProviderResult) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Gitlab Provider not found",
-		});
-	}
-
-	return gitlabProviderResult;
+	return orThrowNotFound(
+		db.query.gitlab.findFirst({
+			where: eq(gitlab.gitlabId, gitlabId),
+			with: {
+				gitProvider: true,
+			},
+		}),
+		"Gitlab Provider",
+	);
 };
 
 export const updateGitlab = async (

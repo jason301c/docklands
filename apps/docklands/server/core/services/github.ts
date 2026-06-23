@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateGithub,
 	github,
@@ -50,21 +51,15 @@ export const createGithub = async (
 };
 
 export const findGithubById = async (githubId: string) => {
-	const githubProviderResult = await db.query.github.findFirst({
-		where: eq(github.githubId, githubId),
-		with: {
-			gitProvider: true,
-		},
-	});
-
-	if (!githubProviderResult) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Github Provider not found",
-		});
-	}
-
-	return githubProviderResult;
+	return orThrowNotFound(
+		db.query.github.findFirst({
+			where: eq(github.githubId, githubId),
+			with: {
+				gitProvider: true,
+			},
+		}),
+		"Github Provider",
+	);
 };
 
 export const updateGithub = async (

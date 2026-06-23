@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateBitbucket,
 	type apiUpdateBitbucket,
@@ -47,21 +48,15 @@ export const createBitbucket = async (
 };
 
 export const findBitbucketById = async (bitbucketId: string) => {
-	const bitbucketProviderResult = await db.query.bitbucket.findFirst({
-		where: eq(bitbucket.bitbucketId, bitbucketId),
-		with: {
-			gitProvider: true,
-		},
-	});
-
-	if (!bitbucketProviderResult) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Bitbucket Provider not found",
-		});
-	}
-
-	return bitbucketProviderResult;
+	return orThrowNotFound(
+		db.query.bitbucket.findFirst({
+			where: eq(bitbucket.bitbucketId, bitbucketId),
+			with: {
+				gitProvider: true,
+			},
+		}),
+		"Bitbucket Provider",
+	);
 };
 
 export const updateBitbucket = async (

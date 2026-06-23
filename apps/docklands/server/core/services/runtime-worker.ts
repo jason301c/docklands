@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateRuntimeWorker,
 	organization,
@@ -36,20 +37,16 @@ export const createRuntimeWorker = async (
 };
 
 export const findRuntimeWorkerById = async (runtimeWorkerId: string) => {
-	const runtimeWorker = await db.query.runtimeWorkers.findFirst({
-		where: eq(runtimeWorkers.runtimeWorkerId, runtimeWorkerId),
-		with: {
-			deployments: true,
-			sshKey: true,
-		},
-	});
-	if (!runtimeWorker) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Runtime worker not found",
-		});
-	}
-	return runtimeWorker;
+	return orThrowNotFound(
+		db.query.runtimeWorkers.findFirst({
+			where: eq(runtimeWorkers.runtimeWorkerId, runtimeWorkerId),
+			with: {
+				deployments: true,
+				sshKey: true,
+			},
+		}),
+		"Runtime worker",
+	);
 };
 
 export const findRuntimeWorkersByUserId = async (userId: string) => {

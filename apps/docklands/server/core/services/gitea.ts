@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateGitea,
 	gitea,
@@ -59,25 +60,15 @@ export const createGitea = async (
 };
 
 export const findGiteaById = async (giteaId: string) => {
-	try {
-		const giteaProviderResult = await db.query.gitea.findFirst({
+	return orThrowNotFound(
+		db.query.gitea.findFirst({
 			where: eq(gitea.giteaId, giteaId),
 			with: {
 				gitProvider: true,
 			},
-		});
-
-		if (!giteaProviderResult) {
-			throw new TRPCError({
-				code: "NOT_FOUND",
-				message: "Gitea Provider not found",
-			});
-		}
-
-		return giteaProviderResult;
-	} catch (error) {
-		throw error;
-	}
+		}),
+		"Gitea Provider",
+	);
 };
 
 export const updateGitea = async (giteaId: string, input: Partial<Gitea>) => {

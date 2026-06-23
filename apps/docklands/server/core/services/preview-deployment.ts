@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreatePreviewDeployment,
 	deployments,
@@ -28,25 +29,21 @@ const logger = createLogger("preview");
 export const findPreviewDeploymentById = async (
 	previewDeploymentId: string,
 ) => {
-	const application = await db.query.previewDeployments.findFirst({
-		where: eq(previewDeployments.previewDeploymentId, previewDeploymentId),
-		with: {
-			domain: true,
-			application: {
-				columns: {
-					applicationId: true,
-					runtimeWorkerId: true,
+	return orThrowNotFound(
+		db.query.previewDeployments.findFirst({
+			where: eq(previewDeployments.previewDeploymentId, previewDeploymentId),
+			with: {
+				domain: true,
+				application: {
+					columns: {
+						applicationId: true,
+						runtimeWorkerId: true,
+					},
 				},
 			},
-		},
-	});
-	if (!application) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Preview Deployment not found",
-		});
-	}
-	return application;
+		}),
+		"Preview Deployment",
+	);
 };
 
 export const removePreviewDeployment = async (previewDeploymentId: string) => {

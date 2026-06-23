@@ -7,6 +7,7 @@ import {
 	parseDatabaseConfig,
 } from "@/server/core/databases/registry";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateDatabase,
 	backups,
@@ -72,36 +73,32 @@ export const createDatabase = async (
 };
 
 export const findDatabaseById = async (databaseId: string) => {
-	const result = await db.query.database.findFirst({
-		where: eq(database.databaseId, databaseId),
-		with: {
-			environment: {
-				with: {
-					workspace: true,
-				},
-			},
-			mounts: true,
-			runtimeWorker: true,
-			backups: {
-				with: {
-					destination: {
-						columns: {
-							accessKey: false,
-							secretAccessKey: false,
-						},
+	return orThrowNotFound(
+		db.query.database.findFirst({
+			where: eq(database.databaseId, databaseId),
+			with: {
+				environment: {
+					with: {
+						workspace: true,
 					},
-					deployments: true,
+				},
+				mounts: true,
+				runtimeWorker: true,
+				backups: {
+					with: {
+						destination: {
+							columns: {
+								accessKey: false,
+								secretAccessKey: false,
+							},
+						},
+						deployments: true,
+					},
 				},
 			},
-		},
-	});
-	if (!result) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Database not found",
-		});
-	}
-	return result;
+		}),
+		"Database",
+	);
 };
 
 export const findDatabaseByBackupId = async (backupId: string) => {

@@ -6,31 +6,28 @@ import {
 	parseDatabaseConfig,
 } from "@/server/core/databases/registry";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import { backups, serviceDatabase } from "@/server/core/db/schema";
 
 export type ServiceDatabase = typeof serviceDatabase.$inferSelect;
 
 /** A compose-embedded database with its owning compose + environment loaded. */
 export const findServiceDatabaseById = async (serviceDatabaseId: string) => {
-	const result = await db.query.serviceDatabase.findFirst({
-		where: eq(serviceDatabase.serviceDatabaseId, serviceDatabaseId),
-		with: {
-			compose: {
-				with: {
-					environment: {
-						with: { workspace: true },
+	return orThrowNotFound(
+		db.query.serviceDatabase.findFirst({
+			where: eq(serviceDatabase.serviceDatabaseId, serviceDatabaseId),
+			with: {
+				compose: {
+					with: {
+						environment: {
+							with: { workspace: true },
+						},
 					},
 				},
 			},
-		},
-	});
-	if (!result) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Service database not found",
-		});
-	}
-	return result;
+		}),
+		"Service database",
+	);
 };
 
 export const findServiceDatabasesByComposeId = async (composeId: string) =>

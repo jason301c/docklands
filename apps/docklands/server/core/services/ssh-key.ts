@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateSshKey,
 	type apiFindOneSshKey,
@@ -55,14 +56,10 @@ export const updateSSHKeyById = async ({
 export const findSSHKeyById = async (
 	sshKeyId: z.infer<typeof apiFindOneSshKey>["sshKeyId"],
 ) => {
-	const sshKey = await db.query.sshKeys.findFirst({
-		where: eq(sshKeys.sshKeyId, sshKeyId),
-	});
-	if (!sshKey) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "SSH Key not found",
-		});
-	}
-	return sshKey;
+	return orThrowNotFound(
+		db.query.sshKeys.findFirst({
+			where: eq(sshKeys.sshKeyId, sshKeyId),
+		}),
+		"SSH Key",
+	);
 };

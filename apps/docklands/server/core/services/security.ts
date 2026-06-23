@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import { type apiCreateSecurity, security } from "@/server/core/db/schema";
 import {
 	createSecurityMiddleware,
@@ -12,16 +13,12 @@ import { findApplicationById } from "./application";
 export type Security = typeof security.$inferSelect;
 
 export const findSecurityById = async (securityId: string) => {
-	const application = await db.query.security.findFirst({
-		where: eq(security.securityId, securityId),
-	});
-	if (!application) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Security not found",
-		});
-	}
-	return application;
+	return orThrowNotFound(
+		db.query.security.findFirst({
+			where: eq(security.securityId, securityId),
+		}),
+		"Security",
+	);
 };
 
 export const createSecurity = async (

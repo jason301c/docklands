@@ -4,6 +4,7 @@ import { eq, getTableColumns } from "drizzle-orm";
 import type { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateCompose,
 	backups,
@@ -120,42 +121,38 @@ export const createComposeByTemplate = async (
 };
 
 export const findComposeById = async (composeId: string) => {
-	const result = await db.query.compose.findFirst({
-		where: eq(compose.composeId, composeId),
-		with: {
-			environment: {
-				with: {
-					workspace: true,
-				},
-			},
-			deployments: true,
-			mounts: true,
-			domains: true,
-			github: true,
-			gitlab: true,
-			bitbucket: true,
-			gitea: true,
-			runtimeWorker: true,
-			backups: {
-				with: {
-					destination: {
-						columns: {
-							accessKey: false,
-							secretAccessKey: false,
-						},
+	return orThrowNotFound(
+		db.query.compose.findFirst({
+			where: eq(compose.composeId, composeId),
+			with: {
+				environment: {
+					with: {
+						workspace: true,
 					},
-					deployments: true,
+				},
+				deployments: true,
+				mounts: true,
+				domains: true,
+				github: true,
+				gitlab: true,
+				bitbucket: true,
+				gitea: true,
+				runtimeWorker: true,
+				backups: {
+					with: {
+						destination: {
+							columns: {
+								accessKey: false,
+								secretAccessKey: false,
+							},
+						},
+						deployments: true,
+					},
 				},
 			},
-		},
-	});
-	if (!result) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Compose not found",
-		});
-	}
-	return result;
+		}),
+		"Compose",
+	);
 };
 
 export const findComposeByBackupId = async (backupId: string) => {

@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { asc, desc, eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateEnvironment,
 	type apiDuplicateEnvironment,
@@ -33,81 +34,77 @@ export const createEnvironment = async (
 };
 
 export const findEnvironmentById = async (environmentId: string) => {
-	const environment = await db.query.environments.findFirst({
-		where: eq(environments.environmentId, environmentId),
-		columns: {
-			name: true,
-			description: true,
-			environmentId: true,
-			isDefault: true,
-			workspaceId: true,
-			env: true,
-		},
-		with: {
-			applications: {
-				with: {
-					deployments: {
-						columns: {
-							createdAt: true,
-							startedAt: true,
-							finishedAt: true,
+	return orThrowNotFound(
+		db.query.environments.findFirst({
+			where: eq(environments.environmentId, environmentId),
+			columns: {
+				name: true,
+				description: true,
+				environmentId: true,
+				isDefault: true,
+				workspaceId: true,
+				env: true,
+			},
+			with: {
+				applications: {
+					with: {
+						deployments: {
+							columns: {
+								createdAt: true,
+								startedAt: true,
+								finishedAt: true,
+							},
+							orderBy: [desc(deployments.createdAt)],
+							limit: 1,
 						},
-						orderBy: [desc(deployments.createdAt)],
-						limit: 1,
+					},
+					columns: {
+						name: true,
+						applicationId: true,
+						createdAt: true,
+						applicationStatus: true,
+						description: true,
+						runtimeWorkerId: true,
+						icon: true,
 					},
 				},
-				columns: {
-					name: true,
-					applicationId: true,
-					createdAt: true,
-					applicationStatus: true,
-					description: true,
-					runtimeWorkerId: true,
-					icon: true,
-				},
-			},
-			database: {
-				columns: {
-					databaseId: true,
-					engine: true,
-					name: true,
-					createdAt: true,
-					applicationStatus: true,
-					description: true,
-					runtimeWorkerId: true,
-				},
-			},
-			compose: {
-				with: {
-					deployments: {
-						columns: {
-							createdAt: true,
-							startedAt: true,
-							finishedAt: true,
-						},
-						orderBy: [desc(deployments.createdAt)],
-						limit: 1,
+				database: {
+					columns: {
+						databaseId: true,
+						engine: true,
+						name: true,
+						createdAt: true,
+						applicationStatus: true,
+						description: true,
+						runtimeWorkerId: true,
 					},
 				},
-				columns: {
-					composeId: true,
-					name: true,
-					createdAt: true,
-					composeStatus: true,
-					description: true,
-					runtimeWorkerId: true,
+				compose: {
+					with: {
+						deployments: {
+							columns: {
+								createdAt: true,
+								startedAt: true,
+								finishedAt: true,
+							},
+							orderBy: [desc(deployments.createdAt)],
+							limit: 1,
+						},
+					},
+					columns: {
+						composeId: true,
+						name: true,
+						createdAt: true,
+						composeStatus: true,
+						description: true,
+						runtimeWorkerId: true,
+					},
 				},
+				workspace: true,
 			},
-			workspace: true,
-		},
-	});
-	if (!environment) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Environment not found",
-		});
-	}
-	return environment;
+		}),
+		"Environment",
+	);
 };
 
 export const findEnvironmentsByWorkspaceId = async (workspaceId: string) => {

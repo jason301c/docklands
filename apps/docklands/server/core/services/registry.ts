@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import { type apiCreateRegistry, registry } from "@/server/core/db/schema";
 import {
 	execAsync,
@@ -154,32 +155,24 @@ export const updateRegistry = async (
 };
 
 export const findRegistryById = async (registryId: string) => {
-	const registryResponse = await db.query.registry.findFirst({
-		where: eq(registry.registryId, registryId),
-		columns: {
-			password: false,
-		},
-	});
-	if (!registryResponse) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Registry not found",
-		});
-	}
-	return registryResponse;
+	return orThrowNotFound(
+		db.query.registry.findFirst({
+			where: eq(registry.registryId, registryId),
+			columns: {
+				password: false,
+			},
+		}),
+		"Registry",
+	);
 };
 
 export const findRegistryByIdWithCredentials = async (registryId: string) => {
-	const registryResponse = await db.query.registry.findFirst({
-		where: eq(registry.registryId, registryId),
-	});
-	if (!registryResponse) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Registry not found",
-		});
-	}
-	return registryResponse;
+	return orThrowNotFound(
+		db.query.registry.findFirst({
+			where: eq(registry.registryId, registryId),
+		}),
+		"Registry",
+	);
 };
 
 export const findAllRegistryByOrganizationId = async (

@@ -1,6 +1,6 @@
-import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import { gitProvider, member } from "@/server/core/db/schema";
 import { getMemberResourceAccessSet, isOwnerOrAdmin } from "./permission";
 
@@ -16,17 +16,12 @@ export const removeGitProvider = async (gitProviderId: string) => {
 };
 
 export const findGitProviderById = async (gitProviderId: string) => {
-	const result = await db.query.gitProvider.findFirst({
-		where: eq(gitProvider.gitProviderId, gitProviderId),
-	});
-
-	if (!result) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Git Provider not found",
-		});
-	}
-	return result;
+	return orThrowNotFound(
+		db.query.gitProvider.findFirst({
+			where: eq(gitProvider.gitProviderId, gitProviderId),
+		}),
+		"Git Provider",
+	);
 };
 
 export const updateGitProvider = async (

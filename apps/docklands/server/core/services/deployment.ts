@@ -7,6 +7,7 @@ import { quote } from "shell-quote";
 import type { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateDeployment,
 	type apiCreateDeploymentBackup,
@@ -138,20 +139,16 @@ export async function resolveServicePath(
 export type Deployment = typeof deployments.$inferSelect;
 
 export const findDeploymentById = async (deploymentId: string) => {
-	const deployment = await db.query.deployments.findFirst({
-		where: eq(deployments.deploymentId, deploymentId),
-		with: {
-			application: true,
-			schedule: true,
-		},
-	});
-	if (!deployment) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Deployment not found",
-		});
-	}
-	return deployment;
+	return orThrowNotFound(
+		db.query.deployments.findFirst({
+			where: eq(deployments.deploymentId, deploymentId),
+			with: {
+				application: true,
+				schedule: true,
+			},
+		}),
+		"Deployment",
+	);
 };
 
 /**
@@ -182,17 +179,12 @@ export const findDeploymentServiceByLogPath = async (logPath: string) => {
 };
 
 export const findDeploymentByApplicationId = async (applicationId: string) => {
-	const deployment = await db.query.deployments.findFirst({
-		where: eq(deployments.applicationId, applicationId),
-	});
-
-	if (!deployment) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Deployment not found",
-		});
-	}
-	return deployment;
+	return orThrowNotFound(
+		db.query.deployments.findFirst({
+			where: eq(deployments.applicationId, applicationId),
+		}),
+		"Deployment",
+	);
 };
 
 /**

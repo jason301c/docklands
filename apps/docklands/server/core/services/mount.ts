@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateMount,
 	mounts,
@@ -145,45 +146,41 @@ export const createFileMount = async (mountId: string) => {
 };
 
 export const findMountById = async (mountId: string) => {
-	const mount = await db.query.mounts.findFirst({
-		where: eq(mounts.mountId, mountId),
-		with: {
-			application: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
+	return orThrowNotFound(
+		db.query.mounts.findFirst({
+			where: eq(mounts.mountId, mountId),
+			with: {
+				application: {
+					with: {
+						environment: {
+							with: {
+								workspace: true,
+							},
+						},
+					},
+				},
+				compose: {
+					with: {
+						environment: {
+							with: {
+								workspace: true,
+							},
+						},
+					},
+				},
+				database: {
+					with: {
+						environment: {
+							with: {
+								workspace: true,
+							},
 						},
 					},
 				},
 			},
-			compose: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			database: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-		},
-	});
-	if (!mount) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Mount not found",
-		});
-	}
-	return mount;
+		}),
+		"Mount",
+	);
 };
 
 export const findMountOrganizationId = async (mountId: string) => {

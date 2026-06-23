@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import { type apiCreateRedirect, redirects } from "@/server/core/db/schema";
 import {
 	createRedirectMiddleware,
@@ -13,16 +14,12 @@ import { findApplicationById } from "./application";
 export type Redirect = typeof redirects.$inferSelect;
 
 export const findRedirectById = async (redirectId: string) => {
-	const application = await db.query.redirects.findFirst({
-		where: eq(redirects.redirectId, redirectId),
-	});
-	if (!application) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Redirect not found",
-		});
-	}
-	return application;
+	return orThrowNotFound(
+		db.query.redirects.findFirst({
+			where: eq(redirects.redirectId, redirectId),
+		}),
+		"Redirect",
+	);
 };
 
 export const createRedirect = async (

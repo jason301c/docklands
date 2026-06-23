@@ -6,6 +6,7 @@ import { stringify } from "yaml";
 import type { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateCertificate,
 	certificates,
@@ -17,18 +18,12 @@ import { execAsyncRemote } from "../utils/process/execAsync";
 export type Certificate = typeof certificates.$inferSelect;
 
 export const findCertificateById = async (certificateId: string) => {
-	const certificate = await db.query.certificates.findFirst({
-		where: eq(certificates.certificateId, certificateId),
-	});
-
-	if (!certificate) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Certificate not found",
-		});
-	}
-
-	return certificate;
+	return orThrowNotFound(
+		db.query.certificates.findFirst({
+			where: eq(certificates.certificateId, certificateId),
+		}),
+		"Certificate",
+	);
 };
 
 export const createCertificate = async (

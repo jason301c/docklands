@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 import type { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import { type apiCreatePatch, patch } from "@/server/core/db/schema";
 import { encodeBase64 } from "../utils/docker/utils";
 import { findApplicationById } from "./application";
@@ -40,18 +41,12 @@ export const createPatch = async (input: z.infer<typeof apiCreatePatch>) => {
 };
 
 export const findPatchById = async (patchId: string) => {
-	const result = await db.query.patch.findFirst({
-		where: eq(patch.patchId, patchId),
-	});
-
-	if (!result) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Patch not found",
-		});
-	}
-
-	return result;
+	return orThrowNotFound(
+		db.query.patch.findFirst({
+			where: eq(patch.patchId, patchId),
+		}),
+		"Patch",
+	);
 };
 
 export const findPatchesByEntityId = async (

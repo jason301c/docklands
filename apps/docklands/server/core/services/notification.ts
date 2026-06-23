@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import {
 	type apiCreateCustom,
 	type apiCreateDiscord,
@@ -807,30 +808,26 @@ export const updateCustomNotification = async (
 };
 
 export const findNotificationById = async (notificationId: string) => {
-	const notification = await db.query.notifications.findFirst({
-		where: eq(notifications.notificationId, notificationId),
-		with: {
-			slack: true,
-			telegram: true,
-			discord: true,
-			email: true,
-			resend: true,
-			gotify: true,
-			ntfy: true,
-			mattermost: true,
-			custom: true,
-			lark: true,
-			pushover: true,
-			teams: true,
-		},
-	});
-	if (!notification) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Notification not found",
-		});
-	}
-	return notification;
+	return orThrowNotFound(
+		db.query.notifications.findFirst({
+			where: eq(notifications.notificationId, notificationId),
+			with: {
+				slack: true,
+				telegram: true,
+				discord: true,
+				email: true,
+				resend: true,
+				gotify: true,
+				ntfy: true,
+				mattermost: true,
+				custom: true,
+				lark: true,
+				pushover: true,
+				teams: true,
+			},
+		}),
+		"Notification",
+	);
 };
 
 export const removeNotificationById = async (notificationId: string) => {

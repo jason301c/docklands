@@ -5,6 +5,7 @@ import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { detectCDNProvider } from "@/server/core/constants/cdn";
 import { db } from "@/server/core/db";
+import { orThrowNotFound } from "@/server/core/db/find-or-throw";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { generateRandomDomain } from "@/server/core/templates";
 import { manageDomain } from "@/server/core/utils/traefik/domain";
@@ -77,19 +78,15 @@ export const generateWildcardDomain = (
 };
 
 export const findDomainById = async (domainId: string) => {
-	const domain = await db.query.domains.findFirst({
-		where: eq(domains.domainId, domainId),
-		with: {
-			application: true,
-		},
-	});
-	if (!domain) {
-		throw new TRPCError({
-			code: "NOT_FOUND",
-			message: "Domain not found",
-		});
-	}
-	return domain;
+	return orThrowNotFound(
+		db.query.domains.findFirst({
+			where: eq(domains.domainId, domainId),
+			with: {
+				application: true,
+			},
+		}),
+		"Domain",
+	);
 };
 
 export const findDomainsByApplicationId = async (applicationId: string) => {
