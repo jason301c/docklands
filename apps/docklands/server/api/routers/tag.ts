@@ -1,181 +1,47 @@
-import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { db } from "@/server/core/db";
 import {
 	apiCreateTag,
 	apiFindOneTag,
 	apiRemoveTag,
 	apiUpdateTag,
-	tags,
-	workspaces,
-	workspaceTags,
 } from "@/server/core/db/schema";
-import { findMemberByUserId } from "@/server/core/services/permission";
+import {
+	assignTagToWorkspace,
+	bulkAssignTagsToWorkspace,
+	createTag,
+	findTagById,
+	findTagsByOrganization,
+	removeTag,
+	removeTagFromWorkspace,
+	updateTag,
+} from "@/server/core/services/tag";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 
 export const tagRouter = createTRPCRouter({
 	create: withPermission("tag", "create")
 		.input(apiCreateTag)
 		.mutation(async ({ input, ctx }) => {
-			try {
-				const newTag = await db
-					.insert(tags)
-					.values({
-						name: input.name,
-						color: input.color,
-						organizationId: ctx.session.activeOrganizationId,
-					})
-					.returning();
-
-				return newTag[0];
-			} catch (error) {
-				if (
-					error instanceof Error &&
-					error.message.includes("unique_org_tag_name")
-				) {
-					throw new TRPCError({
-						code: "CONFLICT",
-						message: "A tag with this name already exists in your organization",
-					});
-				}
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Error creating tag: ${error instanceof Error ? error.message : error}`,
-					cause: error,
-				});
-			}
+			return createTag(input, ctx.session.activeOrganizationId);
 		}),
 
 	all: protectedProcedure.query(async ({ ctx }) => {
-		try {
-			const organizationTags = await db.query.tags.findMany({
-				where: eq(tags.organizationId, ctx.session.activeOrganizationId),
-				orderBy: (tags, { asc }) => [asc(tags.name)],
-			});
-
-			return organizationTags;
-		} catch (error) {
-			throw new TRPCError({
-				code: "INTERNAL_SERVER_ERROR",
-				message: `Error fetching tags: ${error instanceof Error ? error.message : error}`,
-				cause: error,
-			});
-		}
+		return findTagsByOrganization(ctx.session.activeOrganizationId);
 	}),
 
 	one: protectedProcedure.input(apiFindOneTag).query(async ({ input, ctx }) => {
-		try {
-			const tag = await db.query.tags.findFirst({
-				where: and(
-					eq(tags.tagId, input.tagId),
-					eq(tags.organizationId, ctx.session.activeOrganizationId),
-				),
-			});
-
-			if (!tag) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "Tag not found",
-				});
-			}
-
-			return tag;
-		} catch (error) {
-			if (error instanceof TRPCError) {
-				throw error;
-			}
-			throw new TRPCError({
-				code: "INTERNAL_SERVER_ERROR",
-				message: `Error fetching tag: ${error instanceof Error ? error.message : error}`,
-				cause: error,
-			});
-		}
+		return findTagById(input.tagId, ctx.session.activeOrganizationId);
 	}),
 
 	update: withPermission("tag", "update")
 		.input(apiUpdateTag)
 		.mutation(async ({ input, ctx }) => {
-			try {
-				// First verify the tag belongs to the user's organization
-				const existingTag = await db.query.tags.findFirst({
-					where: and(
-						eq(tags.tagId, input.tagId),
-						eq(tags.organizationId, ctx.session.activeOrganizationId),
-					),
-				});
-
-				if (!existingTag) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: "Tag not found or you don't have permission to update it",
-					});
-				}
-
-				const updatedTag = await db
-					.update(tags)
-					.set({
-						...(input.name !== undefined && { name: input.name }),
-						...(input.color !== undefined && { color: input.color }),
-					})
-					.where(eq(tags.tagId, input.tagId))
-					.returning();
-
-				return updatedTag[0];
-			} catch (error) {
-				if (error instanceof TRPCError) {
-					throw error;
-				}
-				if (
-					error instanceof Error &&
-					error.message.includes("unique_org_tag_name")
-				) {
-					throw new TRPCError({
-						code: "CONFLICT",
-						message: "A tag with this name already exists in your organization",
-					});
-				}
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Error updating tag: ${error instanceof Error ? error.message : error}`,
-					cause: error,
-				});
-			}
+			return updateTag(input, ctx.session.activeOrganizationId);
 		}),
 
 	remove: withPermission("tag", "delete")
 		.input(apiRemoveTag)
 		.mutation(async ({ input, ctx }) => {
-			try {
-				// First verify the tag belongs to the user's organization
-				const existingTag = await db.query.tags.findFirst({
-					where: and(
-						eq(tags.tagId, input.tagId),
-						eq(tags.organizationId, ctx.session.activeOrganizationId),
-					),
-				});
-
-				if (!existingTag) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: "Tag not found or you don't have permission to delete it",
-					});
-				}
-
-				// Delete the tag - cascade delete will handle workspaceTags associations
-				await db.delete(tags).where(eq(tags.tagId, input.tagId));
-
-				return { success: true };
-			} catch (error) {
-				if (error instanceof TRPCError) {
-					throw error;
-				}
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Error deleting tag: ${error instanceof Error ? error.message : error}`,
-					cause: error,
-				});
-			}
+			return removeTag(input.tagId, ctx.session.activeOrganizationId);
 		}),
 
 	assignToWorkspace: protectedProcedure
@@ -186,84 +52,12 @@ export const tagRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			try {
-				const memberRecord = await findMemberByUserId(
-					ctx.user.id,
-					ctx.session.activeOrganizationId,
-				);
-
-				// Verify the workspace belongs to the user's organization
-				const workspace = await db.query.workspaces.findFirst({
-					where: and(
-						eq(workspaces.workspaceId, input.workspaceId),
-						eq(workspaces.organizationId, ctx.session.activeOrganizationId),
-					),
-				});
-
-				if (!workspace) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message:
-							"Workspace not found or you don't have permission to modify it",
-					});
-				}
-
-				// Verify the member has access to the workspace
-				if (
-					memberRecord.role !== "owner" &&
-					memberRecord.role !== "admin" &&
-					!memberRecord.accessedWorkspaces.includes(input.workspaceId)
-				) {
-					throw new TRPCError({
-						code: "UNAUTHORIZED",
-						message: "You don't have access to this workspace",
-					});
-				}
-
-				// Verify the tag belongs to the user's organization
-				const tag = await db.query.tags.findFirst({
-					where: and(
-						eq(tags.tagId, input.tagId),
-						eq(tags.organizationId, ctx.session.activeOrganizationId),
-					),
-				});
-
-				if (!tag) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: "Tag not found or you don't have permission to use it",
-					});
-				}
-
-				// Insert the workspace-tag association
-				const newAssociation = await db
-					.insert(workspaceTags)
-					.values({
-						workspaceId: input.workspaceId,
-						tagId: input.tagId,
-					})
-					.returning();
-
-				return newAssociation[0];
-			} catch (error) {
-				if (error instanceof TRPCError) {
-					throw error;
-				}
-				if (
-					error instanceof Error &&
-					error.message.includes("unique_workspace_tag")
-				) {
-					throw new TRPCError({
-						code: "CONFLICT",
-						message: "This tag is already assigned to this workspace",
-					});
-				}
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Error assigning tag to workspace: ${error instanceof Error ? error.message : error}`,
-					cause: error,
-				});
-			}
+			return assignTagToWorkspace({
+				userId: ctx.user.id,
+				organizationId: ctx.session.activeOrganizationId,
+				workspaceId: input.workspaceId,
+				tagId: input.tagId,
+			});
 		}),
 
 	removeFromWorkspace: protectedProcedure
@@ -274,76 +68,12 @@ export const tagRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			try {
-				const memberRecord = await findMemberByUserId(
-					ctx.user.id,
-					ctx.session.activeOrganizationId,
-				);
-
-				// Verify the workspace belongs to the user's organization
-				const workspace = await db.query.workspaces.findFirst({
-					where: and(
-						eq(workspaces.workspaceId, input.workspaceId),
-						eq(workspaces.organizationId, ctx.session.activeOrganizationId),
-					),
-				});
-
-				if (!workspace) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message:
-							"Workspace not found or you don't have permission to modify it",
-					});
-				}
-
-				// Verify the member has access to the workspace
-				if (
-					memberRecord.role !== "owner" &&
-					memberRecord.role !== "admin" &&
-					!memberRecord.accessedWorkspaces.includes(input.workspaceId)
-				) {
-					throw new TRPCError({
-						code: "UNAUTHORIZED",
-						message: "You don't have access to this workspace",
-					});
-				}
-
-				// Verify the tag belongs to the user's organization
-				const tag = await db.query.tags.findFirst({
-					where: and(
-						eq(tags.tagId, input.tagId),
-						eq(tags.organizationId, ctx.session.activeOrganizationId),
-					),
-				});
-
-				if (!tag) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: "Tag not found or you don't have permission to use it",
-					});
-				}
-
-				// Delete the workspace-tag association
-				await db
-					.delete(workspaceTags)
-					.where(
-						and(
-							eq(workspaceTags.workspaceId, input.workspaceId),
-							eq(workspaceTags.tagId, input.tagId),
-						),
-					);
-
-				return { success: true };
-			} catch (error) {
-				if (error instanceof TRPCError) {
-					throw error;
-				}
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Error removing tag from workspace: ${error instanceof Error ? error.message : error}`,
-					cause: error,
-				});
-			}
+			return removeTagFromWorkspace({
+				userId: ctx.user.id,
+				organizationId: ctx.session.activeOrganizationId,
+				workspaceId: input.workspaceId,
+				tagId: input.tagId,
+			});
 		}),
 
 	bulkAssign: protectedProcedure
@@ -354,86 +84,11 @@ export const tagRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			try {
-				const memberRecord = await findMemberByUserId(
-					ctx.user.id,
-					ctx.session.activeOrganizationId,
-				);
-
-				// Verify the workspace belongs to the user's organization
-				const workspace = await db.query.workspaces.findFirst({
-					where: and(
-						eq(workspaces.workspaceId, input.workspaceId),
-						eq(workspaces.organizationId, ctx.session.activeOrganizationId),
-					),
-				});
-
-				if (!workspace) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message:
-							"Workspace not found or you don't have permission to modify it",
-					});
-				}
-
-				// Verify the member has access to the workspace
-				if (
-					memberRecord.role !== "owner" &&
-					memberRecord.role !== "admin" &&
-					!memberRecord.accessedWorkspaces.includes(input.workspaceId)
-				) {
-					throw new TRPCError({
-						code: "UNAUTHORIZED",
-						message: "You don't have access to this workspace",
-					});
-				}
-
-				// Verify all tags belong to the user's organization
-				if (input.tagIds.length > 0) {
-					const tagCount = await db.query.tags.findMany({
-						where: and(
-							eq(tags.organizationId, ctx.session.activeOrganizationId),
-						),
-					});
-
-					const validTagIds = tagCount.map((tag) => tag.tagId);
-					const invalidTags = input.tagIds.filter(
-						(id) => !validTagIds.includes(id),
-					);
-
-					if (invalidTags.length > 0) {
-						throw new TRPCError({
-							code: "NOT_FOUND",
-							message: "One or more tags not found in your organization",
-						});
-					}
-				}
-
-				// Delete all existing tag associations for this workspace
-				await db
-					.delete(workspaceTags)
-					.where(eq(workspaceTags.workspaceId, input.workspaceId));
-
-				// Insert new tag associations
-				if (input.tagIds.length > 0) {
-					await db.insert(workspaceTags).values(
-						input.tagIds.map((tagId) => ({
-							workspaceId: input.workspaceId,
-							tagId,
-						})),
-					);
-				}
-
-				return { success: true };
-			} catch (error) {
-				if (error instanceof TRPCError) {
-					throw error;
-				}
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: `Error bulk assigning tags to workspace: ${error instanceof Error ? error.message : error}`,
-					cause: error,
-				});
-			}
+			return bulkAssignTagsToWorkspace({
+				userId: ctx.user.id,
+				organizationId: ctx.session.activeOrganizationId,
+				workspaceId: input.workspaceId,
+				tagIds: input.tagIds,
+			});
 		}),
 });

@@ -1,16 +1,14 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
-import { db } from "@/server/core/db";
 import {
-	invitation,
-	member,
-	organization,
-	organizationRole,
-	user,
-} from "@/server/core/db/schema";
+	findActiveOrganization,
+	findInvitations,
+	inviteMember,
+	removeInvitation,
+	updateMemberRole,
+	updateOrganization,
+} from "@/server/core/services/organization";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 
 // Docklands is single-tenant: every instance has exactly one organization,
@@ -36,14 +34,11 @@ export const organizationRouter = createTRPCRouter({
 				});
 			}
 
-			const result = await db
-				.update(organization)
-				.set({
-					name: input.name,
-					logo: input.logo,
-				})
-				.where(eq(organization.id, organizationId))
-				.returning();
+			const result = await updateOrganization({
+				organizationId,
+				name: input.name,
+				logo: input.logo,
+			});
 
 			await audit(ctx, {
 				action: "update",
@@ -51,7 +46,7 @@ export const organizationRouter = createTRPCRouter({
 				resourceId: organizationId,
 				resourceName: input.name,
 			});
-			return result[0];
+			return result;
 		}),
 	inviteMember: withPermission("member", "create")
 		.input(
@@ -61,126 +56,33 @@ export const organizationRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const orgId = ctx.session.activeOrganizationId;
-			const email = input.email.toLowerCase();
-
-			// Check if user is already a member
-			const existingUser = await db.query.user.findFirst({
-				where: eq(user.email, email),
+			const created = await inviteMember({
+				orgId: ctx.session.activeOrganizationId,
+				email: input.email,
+				role: input.role,
+				inviterId: ctx.user.id,
 			});
-
-			if (existingUser) {
-				const existingMember = await db.query.member.findFirst({
-					where: and(
-						eq(member.organizationId, orgId),
-						eq(member.userId, existingUser.id),
-					),
-				});
-
-				if (existingMember) {
-					throw new TRPCError({
-						code: "CONFLICT",
-						message: "User is already a member of this organization",
-					});
-				}
-			}
-
-			// Check for pending invitation
-			const existingInvitation = await db.query.invitation.findFirst({
-				where: and(
-					eq(invitation.organizationId, orgId),
-					eq(invitation.email, email),
-					eq(invitation.status, "pending"),
-				),
-			});
-
-			if (existingInvitation) {
-				throw new TRPCError({
-					code: "CONFLICT",
-					message: "An invitation has already been sent to this email",
-				});
-			}
-
-			// Owner role is non-delegable — no one can invite as owner
-			if (input.role === "owner") {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Cannot invite a user with the owner role",
-				});
-			}
-
-			// If assigning a custom role, verify it exists
-			if (!["owner", "admin", "member"].includes(input.role)) {
-				const customRole = await db.query.organizationRole.findFirst({
-					where: and(
-						eq(organizationRole.organizationId, orgId),
-						eq(organizationRole.role, input.role),
-					),
-				});
-
-				if (!customRole) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: `Role "${input.role}" not found`,
-					});
-				}
-			}
-
-			const [created] = await db
-				.insert(invitation)
-				.values({
-					id: nanoid(),
-					organizationId: orgId,
-					email,
-					role: input.role as any,
-					status: "pending",
-					expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000),
-					inviterId: ctx.user.id,
-				})
-				.returning();
 
 			await audit(ctx, {
 				action: "create",
 				resourceType: "organization",
 				resourceId: created?.id,
-				resourceName: email,
+				resourceName: input.email.toLowerCase(),
 				metadata: { type: "inviteMember", role: input.role },
 			});
 			return created;
 		}),
 
 	allInvitations: withPermission("member", "create").query(async ({ ctx }) => {
-		return await db.query.invitation.findMany({
-			where: eq(invitation.organizationId, ctx.session.activeOrganizationId),
-			orderBy: [desc(invitation.status), desc(invitation.expiresAt)],
-		});
+		return findInvitations(ctx.session.activeOrganizationId);
 	}),
 	removeInvitation: withPermission("member", "create")
 		.input(z.object({ invitationId: z.string() }))
 		.mutation(async ({ ctx, input }) => {
-			const invitationResult = await db.query.invitation.findFirst({
-				where: eq(invitation.id, input.invitationId),
+			const { result, invitationResult } = await removeInvitation({
+				invitationId: input.invitationId,
+				organizationId: ctx.session.activeOrganizationId,
 			});
-
-			if (!invitationResult) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "Invitation not found",
-				});
-			}
-
-			if (
-				invitationResult?.organizationId !== ctx.session.activeOrganizationId
-			) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "You are not allowed to remove this invitation",
-				});
-			}
-
-			const result = await db
-				.delete(invitation)
-				.where(eq(invitation.id, input.invitationId));
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "organization",
@@ -198,74 +100,13 @@ export const organizationRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			// Fetch the target member
-			const target = await db.query.member.findFirst({
-				where: eq(member.id, input.memberId),
-				with: { user: true },
+			const target = await updateMemberRole({
+				memberId: input.memberId,
+				role: input.role,
+				organizationId: ctx.session.activeOrganizationId,
+				currentUserId: ctx.user.id,
+				currentUserRole: ctx.user.role,
 			});
-
-			if (!target) {
-				throw new TRPCError({ code: "NOT_FOUND", message: "Member not found" });
-			}
-
-			if (target.organizationId !== ctx.session.activeOrganizationId) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "You are not allowed to update this member's role",
-				});
-			}
-
-			// Prevent users from changing their own role
-			if (target.userId === ctx.user.id) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "You cannot change your own role",
-				});
-			}
-
-			// Owner role is nontransferable - cannot change to or from owner
-			if (target.role === "owner" || input.role === "owner") {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "The owner role is nontransferable",
-				});
-			}
-
-			// Only owners can change admin roles
-			// Admins can only change member roles
-			if (ctx.user.role === "admin" && target.role === "admin") {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message:
-						"Only the organization owner can change admin roles. Admins can only modify member roles.",
-				});
-			}
-
-			// If assigning a custom role (not admin/member), verify it exists
-			if (input.role !== "admin" && input.role !== "member") {
-				const customRole = await db.query.organizationRole.findFirst({
-					where: and(
-						eq(
-							organizationRole.organizationId,
-							ctx.session.activeOrganizationId,
-						),
-						eq(organizationRole.role, input.role),
-					),
-				});
-
-				if (!customRole) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: `Custom role "${input.role}" not found`,
-					});
-				}
-			}
-
-			// Update the target member's role
-			await db
-				.update(member)
-				.set({ role: input.role })
-				.where(eq(member.id, input.memberId));
 
 			await audit(ctx, {
 				action: "update",
@@ -277,12 +118,6 @@ export const organizationRouter = createTRPCRouter({
 			return true;
 		}),
 	active: protectedProcedure.query(async ({ ctx }) => {
-		if (!ctx.session.activeOrganizationId) {
-			return null;
-		}
-
-		return await db.query.organization.findFirst({
-			where: eq(organization.id, ctx.session.activeOrganizationId),
-		});
+		return findActiveOrganization(ctx.session.activeOrganizationId);
 	}),
 });
