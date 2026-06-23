@@ -1,6 +1,6 @@
 import path from "node:path";
 import { TRPCError } from "@trpc/server";
-import { eq, type SQL, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import { db } from "@/server/core/db";
@@ -229,31 +229,6 @@ export const updateMount = async (
 	if (mount.type === "file") {
 		await updateFileMount(mountId);
 	}
-	return mount;
-};
-
-export const findMountsByApplicationId = async (
-	serviceId: string,
-	serviceType: ServiceType,
-) => {
-	const sqlChunks: SQL[] = [];
-
-	switch (serviceType) {
-		case "application":
-			sqlChunks.push(eq(mounts.applicationId, serviceId));
-			break;
-		case "compose":
-			sqlChunks.push(eq(mounts.composeId, serviceId));
-			break;
-		default:
-			// all managed database engines link via the unified databaseId
-			sqlChunks.push(eq(mounts.databaseId, serviceId));
-			break;
-	}
-	const mount = await db.query.mounts.findMany({
-		where: sql.join(sqlChunks, sql.raw(" ")),
-	});
-
 	return mount;
 };
 

@@ -110,14 +110,6 @@ export const apiRemoveMount = createSchema
 	// })
 	.required();
 
-export const apiFindMountByApplicationId = z.object({
-	serviceType: z
-		.string()
-		.min(1)
-		.transform((val) => val as ServiceType),
-	serviceId: z.string().min(1),
-});
-
 export const apiUpdateMount = createSchema.partial().extend({
 	mountId: z.string().min(1),
 });

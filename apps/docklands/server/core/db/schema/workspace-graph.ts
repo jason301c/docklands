@@ -138,13 +138,3 @@ export const apiSyncWorkspaceServiceConnectionVariables = z.object({
 	serviceId: z.string().min(1),
 	serviceType: z.enum(workspaceServiceType.enumValues),
 });
-
-export const apiWorkspaceServiceEnv = z.object({
-	environmentId: z.string().min(1),
-	serviceId: z.string().min(1),
-	serviceType: z.enum(workspaceServiceType.enumValues),
-});
-
-export const apiUpdateWorkspaceServiceEnv = apiWorkspaceServiceEnv.extend({
-	env: z.string(),
-});
