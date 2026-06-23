@@ -184,21 +184,6 @@ export const userRouter = createTRPCRouter({
 
 		return memberResult?.user;
 	}),
-	getServerMetrics: withPermission("monitoring", "read").query(
-		async ({ ctx }) => {
-			const memberResult = await db.query.member.findFirst({
-				where: and(
-					eq(member.userId, ctx.user.id),
-					eq(member.organizationId, ctx.session?.activeOrganizationId || ""),
-				),
-				with: {
-					user: true,
-				},
-			});
-
-			return memberResult?.user;
-		},
-	),
 	update: protectedProcedure
 		.input(apiUpdateUser)
 		.mutation(async ({ input, ctx }) => {
@@ -387,10 +372,6 @@ export const userRouter = createTRPCRouter({
 		});
 	}),
 
-	generateToken: protectedProcedure.mutation(async () => {
-		return "token";
-	}),
-
 	deleteApiKey: protectedProcedure
 		.input(
 			z.object({
@@ -460,47 +441,6 @@ export const userRouter = createTRPCRouter({
 			return apiKey;
 		}),
 
-	checkUserOrganizations: protectedProcedure
-		.input(
-			z.object({
-				userId: z.string(),
-			}),
-		)
-		.query(async ({ input, ctx }) => {
-			// Users can check their own organizations
-			// Admins and owners can check organizations of members in their active organization
-			if (input.userId !== ctx.user.id) {
-				// Verify the target user is a member of the active organization
-				const targetMember = await db.query.member.findFirst({
-					where: and(
-						eq(member.userId, input.userId),
-						eq(member.organizationId, ctx.session?.activeOrganizationId || ""),
-					),
-				});
-
-				if (!targetMember) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message: "User is not a member of your active organization",
-					});
-				}
-
-				// Only admins and owners can check other users' organizations
-				if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"Only admins and owners can check other users' organizations",
-					});
-				}
-			}
-
-			const organizations = await db.query.member.findMany({
-				where: eq(member.userId, input.userId),
-			});
-
-			return organizations.length;
-		}),
 	createUserWithCredentials: withPermission("member", "create")
 		.input(
 			z.object({

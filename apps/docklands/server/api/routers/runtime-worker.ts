@@ -17,7 +17,6 @@ import {
 	applications,
 	compose,
 	database,
-	organization,
 	runtimeWorkers,
 } from "@/server/core/db/schema";
 import { applyDockerCleanupSchedule } from "@/server/core/runtime/docker-cleanup";
@@ -143,18 +142,6 @@ export const runtimeWorkerRouter = createTRPCRouter({
 			});
 		},
 	),
-	count: protectedProcedure.query(async ({ ctx }) => {
-		const organizations = await db.query.organization.findMany({
-			where: eq(organization.ownerId, ctx.user.id),
-			with: {
-				runtimeWorkers: true,
-			},
-		});
-
-		const workers = organizations.flatMap((org) => org.runtimeWorkers);
-
-		return workers.length ?? 0;
-	}),
 	withSSHKey: withPermission("runtimeWorker", "read").query(async ({ ctx }) => {
 		const accessibleIds = await getAccessibleRuntimeWorkerIds(ctx.session);
 

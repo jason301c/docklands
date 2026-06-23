@@ -18,7 +18,6 @@ import {
 	apiUpdateWebServerBuildsConcurrency,
 } from "@/server/core/db/schema";
 import { createLogger } from "@/server/core/lib/logger";
-import { generateOpenApiDocument } from "@/server/core/openapi/generator/index.mjs";
 import { checkPermission } from "@/server/core/services/permission";
 import {
 	findRuntimeWorkerById,
@@ -77,7 +76,6 @@ import {
 import { assertBuildsConcurrencyAllowed } from "@/server/queues/concurrency";
 import { cleanAllDeploymentQueue } from "@/server/queues/queueSetup";
 import packageInfo from "../../../package.json";
-import { appRouter } from "../root";
 import {
 	adminProcedure,
 	createTRPCRouter,
@@ -514,84 +512,6 @@ export const settingsRouter = createTRPCRouter({
 			return settings;
 		}),
 
-	getOpenApiDocument: protectedProcedure.query(
-		async ({ ctx }): Promise<unknown> => {
-			const protocol = ctx.req.headers["x-forwarded-proto"];
-			const url = `${protocol}://${ctx.req.headers.host}/api`;
-			const openApiDocument = generateOpenApiDocument(appRouter, {
-				title: "tRPC OpenAPI",
-				version: packageInfo.version,
-				baseUrl: url,
-				docsUrl: `${url}/settings.getOpenApiDocument`,
-				tags: [
-					"admin",
-					"docker",
-					"compose",
-					"registry",
-					"cluster",
-					"user",
-					"domain",
-					"destination",
-					"backup",
-					"deployment",
-					"mounts",
-					"certificates",
-					"settings",
-					"security",
-					"redirects",
-					"port",
-					"workspace",
-					"application",
-					"mysql",
-					"postgres",
-					"redis",
-					"mongo",
-					"libsql",
-					"mariadb",
-					"sshRouter",
-					"gitProvider",
-					"bitbucket",
-					"github",
-					"gitlab",
-					"gitea",
-					"tag",
-					"patch",
-					"runtimeWorker",
-					"volumeBackups",
-					"environment",
-					"organization",
-					"previewDeployment",
-				],
-			});
-
-			openApiDocument.info = {
-				title: "Docklands API",
-				description: "Endpoints for docklands",
-				version: packageInfo.version,
-			};
-
-			// Add security schemes configuration
-			openApiDocument.components = {
-				...openApiDocument.components,
-				securitySchemes: {
-					apiKey: {
-						type: "apiKey",
-						in: "header",
-						name: "x-api-key",
-						description: "API key authentication",
-					},
-				},
-			};
-
-			// Apply security globally to all endpoints
-			openApiDocument.security = [
-				{
-					apiKey: [],
-				},
-			];
-			return openApiDocument;
-		},
-	),
 	readTraefikEnv: adminProcedure
 		.input(apiRuntimeWorkerSchema)
 		.query(async ({ input }) => {
