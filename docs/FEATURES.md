@@ -121,7 +121,9 @@ and a `withPermission(resource, action)` factory).
 - **How.** `server/api/routers/custom-role.ts` (CRUD + `membersByRole` +
   `getStatements`), stored in the `organization_role` table as JSON permission
   rows, resolved in `permission.ts` (`resolveRole` merges static + custom). UI at
-  `app/dashboard/settings/roles/`.
+  `app/dashboard/settings/roles/` — the role manager shows each role's member
+  count and lets an admin drill into exactly which members hold it
+  (`membersByRole`).
 
 ### Per-resource access grants
 - **What.** Members can be granted access to specific workspaces, environments,
@@ -425,7 +427,10 @@ template bridge, and the password-rotation command.
   takes a **best-effort snapshot** of the current data (dump or tar) into
   `pre-restore-snapshots/`, then downloads the backup and replays it
   (`pg_restore --clean`, `mysql`/`mariadb` replay, `mongorestore --drop`, or untar
-  for libSQL/volumes). Progress streams to the UI. Logic in
+  for libSQL/volumes). Progress streams to the UI via a tRPC subscription
+  (`restoreBackupWithLogs`); a non-streaming `backup.restoreBackup` mutation
+  exposes the same operation over REST so API/CLI operators can restore too (it
+  awaits completion and returns the collected logs). Logic in
   `server/core/utils/restore/`.
 - **Scheduling engine.** Cron expressions are registered with `node-schedule` at
   startup (and on enable/disable); jobs run where the service runs — locally via
@@ -447,8 +452,9 @@ template bridge, and the password-rotation command.
   a worker's `buildsConcurrency` takes effect without a restart. No Redis/BullMQ.
 - **Rollbacks.** On a successful deploy, Docklands captures the image tag plus the
   full application context (mounts, ports, env, registry) into a `rollback` row.
-  Rolling back re-deploys the stored image without rebuilding. Router `rollback.ts`,
-  schema `rollbacks.ts`.
+  Rolling back re-deploys the stored image without rebuilding; a stored rollback
+  can also be **deleted** from the deployments view (which removes its captured
+  Docker image to reclaim disk). Router `rollback.ts`, schema `rollbacks.ts`.
 
 ---
 
@@ -525,6 +531,9 @@ the Swarm service, applying auth/redirect/path middlewares in order.
     `runtime-worker-audit.ts` reports the host's security posture (UFW, SSH config,
     fail2ban, unattended-upgrades). Router `runtime-worker.ts` (incl. streaming
     setup logs), schema `runtime-worker.ts`.
+  - **Remote Workers Only.** An owner/admin toggle on the Runtime Workers page
+    (`remoteServersOnly`) enforces that every service must run on a remote worker,
+    blocking deploys to the local control-plane host runtime.
 - **Swarm cluster.** Initialize Swarm (auto-detecting the advertise address),
   create the overlay network, and manage nodes: list nodes, get join commands for
   workers/managers, and drain+remove a node (guarded so you can't break manager
@@ -654,7 +663,8 @@ base64-passed to avoid shell expansion.
   action, type, and date range.
 - **How.** Router `audit-log.ts`, service `server/core/services/audit-log.ts`,
   schema `audit-log.ts`. Routers call an `audit(...)` helper inline after meaningful
-  mutations; audit writes never break the operation.
+  mutations; audit writes never break the operation. A filterable, paginated
+  **viewer** (owner/admin) reads `auditLog.all` at `/dashboard/settings/audit-log`.
 
 ---
 
@@ -675,7 +685,7 @@ Under `/dashboard/settings/`, product-named modules configure the instance:
 
 `ingress` · `runtime` · `storage` · `build-workers` · `image-registry` ·
 `cluster-nodes` · `roles` · `git-providers` · `ssh-keys` · `certificates` · `tags` ·
-`users` · `notifications` · `profile`.
+`users` · `notifications` · `audit-log` · `profile`.
 
 Instance-wide configuration (server IP/host, HTTPS + Let's Encrypt email, Docker
 cleanup, log rotation, build concurrency, monitoring `metricsConfig`) is a
@@ -688,6 +698,13 @@ cleanup, log rotation, build concurrency, monitoring `metricsConfig`) is a
 - **What.** A REST surface mirroring the tRPC routers, authenticated by **API key**
   (`Authorization: Bearer <key>`). A machine-readable `openapi.json` is generated
   from the routers (no Swagger UI is shipped).
+- **Surface parity.** **Every** tRPC procedure is auto-exposed as a REST endpoint
+  unless it explicitly opts out (`meta.openapi.enabled: false`), so the API and the
+  Web UI stay at feature parity. The surface is curated to a 1:1 mapping: redundant
+  or internal procedures are kept off it, while genuine capabilities are reachable
+  both ways — e.g. admin request-stats/`swarm.getAppInfos` reads and the
+  non-streaming `backup.restoreBackup` are exposed so API/CLI operators have the
+  same reach as the UI.
 - **How.** Generation in `server/core/openapi/` and `tools/generate-openapi.ts`
   (`bun run generate:openapi`); the request handler is `app/api/[...openapi]/` which
   validates auth headers first. A tRPC call like `schedule.create` maps to
