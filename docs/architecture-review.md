@@ -439,6 +439,333 @@ Traefik config: dynamic per-service files + `middlewares.yml` under `server/core
 - 🔒 **Permission gating here is consistent and correct** — variable-writing paths all `checkPermission(ctx, { envVars: ["write"] })`; `getAuthorizedEnvironment` enforces org scoping + per-member service filtering (`routers/workspace-graph.ts:55-87`); connection mutations `assertWorkspaceServiceExists` both endpoints. Positive finding.
 - 📝 **List view is a thin `?view=workspaces` query-param toggle**; tags attach to **workspaces only** (`workspace_tag`), never environments/services/cards.
 
+---
+---
+
+# Part II — Remediation Plan
+
+> Companion to Part I. Part I is the *diagnosis*; this is the *treatment*. It
+> encodes the decisions taken on 2026-06-23, defines the shared abstractions the
+> decisions imply, sequences the work into phases, and maps **every** Part I
+> finding to a disposition so nothing is silently dropped.
+
+## Decisions locked
+
+These four (plus the encryption-key choice) were decided deliberately and gate
+everything below. The pre-release "no compatibility debt" latitude applies — we
+build the clean end-state, not a bridge.
+
+| # | Decision | Choice | Rationale |
+|---|---|---|---|
+| **D-SECRETS** | Credentials at rest | **Encrypt** — match Coolify. A transparent `encryptedText()` column type over all secret columns *and* env-var values. | Coolify (the engine we model) encrypts ~everything via the Laravel `encrypted` cast / `APP_KEY`. We already have a symmetric primitive (`better-auth/crypto`) and now a dedicated key. Pre-release ⇒ trivial migration. |
+| **D-KEY** | Encryption key source | **Dedicated `DOCKLANDS_ENCRYPTION_KEY`** (file/env), separate from `BETTER_AUTH_SECRET`. | Separates data-encryption from auth-signing; rotating the auth secret doesn't force a data re-encrypt. |
+| **D-RBAC** | Threat model | **Hard boundary.** Per-member RBAC + resource-access is a real security boundary; close every per-service authz gap, scope API keys, sign webhooks. | A multi-user deploy control plane must not let a scoped member read/stream/act on resources outside their grant. |
+| **D-QUEUE** | Queue & scheduler durability | **Postgres-backed durable jobs**, exposed through **one shared abstraction** used by deploys, schedules, and backups (no per-subsystem duplication). | Survives restarts, recovers interrupted deploys, backfills missed crons — without re-introducing Redis. |
+| **D-CONNVAR** | Connection variables | **Binding** — re-resolve from the source's current config at deploy time; retract on disconnect. No stored snapshot as the source of truth. | Eliminates the staleness class entirely (rotation, disconnect) rather than patching propagation. |
+
+**Posture defaults** (my recommendations — proceeding on these unless overridden):
+provider parity → *document the GitHub-first asymmetry, don't invest yet*;
+footguns → *guard the safety-critical, document the cosmetic*; naming →
+*finish the `server→runtimeWorker` rename now (incl. the OpenAPI path), pick one
+canonical audit `resourceType`*.
+
+## Foundational abstractions (build these first)
+
+Three of the decisions reduce to "build one primitive, apply it widely." These
+are the long poles; everything in their phase hangs off them.
+
+### ① `encryptedText()` — transparent column encryption (D-SECRETS, D-KEY)
+
+A Drizzle `customType` that encrypts on write / decrypts on read, so call sites
+stay unchanged — the Drizzle analog of Laravel's one-word `encrypted` cast.
+
+```ts
+// server/core/db/encrypted.ts  (sketch)
+import { customType } from "drizzle-orm/pg-core";
+import { encryptSecret, decryptSecret } from "@/server/core/crypto/secret-box";
+
+// AES-256-GCM via DOCKLANDS_ENCRYPTION_KEY; output is versioned: "v1:<iv>:<tag>:<ct>"
+export const encryptedText = (name: string) =>
+  customType<{ data: string; driverData: string }>({
+    dataType: () => "text",
+    toDriver: (v) => encryptSecret(v),
+    fromDriver: (v) => decryptSecret(v),
+  })(name);
+
+// JSON variant for credential blobs (database.config, service_database.config)
+export const encryptedJson = <T>(name: string) => /* encrypt JSON.stringify(...) */;
+```
+
+- `secret-box.ts` wraps `node:crypto` AES-256-GCM; key loaded once from
+  `DOCKLANDS_ENCRYPTION_KEY` (32-byte base64). A version prefix (`v1:`) leaves
+  room for rotation later (re-encrypt migration, like `migrate-auth-secret`).
+- Apply to the columns in the **Secret-columns inventory** below. No per-callsite
+  changes — reads/writes already go through Drizzle.
+- Pre-release: the migration just changes the column comment/type; existing dev
+  data can be wiped (no backfill bridge).
+
+### ② Durable job primitive (D-QUEUE)
+
+One Postgres-backed queue + handler registry that the deploy queue, the cron
+scheduler, and backups all sit on — replacing the in-memory `myQueue` and the
+in-process `node-schedule` registrations.
+
+```ts
+// server/core/jobs/  (sketch)
+// table: job(id, kind, payload jsonb, status, run_at, attempts, max_attempts,
+//            partition_key, locked_by, locked_at, result, created_at)
+registerHandler("deploy", deployHandler);
+registerHandler("backup", backupHandler);
+registerHandler("schedule.tick", scheduleHandler);
+
+await jobs.enqueue("deploy", payload, { partitionKey: buildWorkerId });   // concurrency by partition
+await jobs.schedule("backup", payload, { cron, timezone });               // materializes due rows
+
+// worker loop: SELECT … FOR UPDATE SKIP LOCKED where run_at<=now() and status='queued'
+// boot: release stale locks; mark in-flight 'running' deploys as 'interrupted';
+//       catch up cron rows whose run_at passed while down.
+```
+
+- Fixes the build-worker concurrency bug for free: `partitionKey` keys on the
+  **build** worker, not the deploy worker.
+- Schedules survive restart *and* backfill; History (DB) and Queue stop diverging
+  because the queue *is* the DB.
+
+### ③ Connection-variable resolver (D-CONNVAR)
+
+A pure function that computes a target service's connection env from its current
+upstream connections at deploy time, merged into the build env — not persisted.
+
+```ts
+// server/core/services/connection-vars.ts  (sketch)
+// at deploy: resolveConnectionEnv(service) → reads inbound workspace_service_connection
+//   rows, pulls each source DB's *current* config via the registry, returns entries.
+// merged into prepareEnvironmentVariables() output for the container.
+// disconnect: delete the connection row — nothing to retract (nothing was stored).
+// UI "applied vars" becomes a read-only preview computed the same way.
+```
+
+- Removes D2 / W2 / W5 entirely. A password rotation is reflected on the next
+  deploy with no manual re-apply.
+
+## Phased sequence
+
+Ordering favors fast wins first, then the abstractions in dependency order, then
+the cleanup. Phases are independently shippable and each ends green
+(typecheck + tests + build).
+
+| Phase | Theme | Builds / changes | Closes (Part I IDs) |
+|---|---|---|---|
+| **P0** | Pure bugs | spot fixes, no new abstraction | A1, G1, S1, C3, N7, R8, A8, G7 |
+| **P1** | Secrets at rest | abstraction ① + apply to inventory + `DOCKLANDS_ENCRYPTION_KEY` + docs | G3, G4, N2, S2, S3, B2(store), D1(store), C2(store) |
+| **P2** | Shell-exec safety | `shellArg`/arg-array sweep + secrets off cmdline | A2, A10, D4, N3, G5, R4, B2(cmdline) |
+| **P3** | Durable jobs | abstraction ② (queue + scheduler + backups) | O6, B7, R1 |
+| **P4** | RBAC hard boundary | per-service authz everywhere + API-key scope + webhook signing | AC1, O2, O3, R5, AC2, AC4, AC5, AC6, G2, AC3, C2(read) |
+| **P5** | Connection-var binding | abstraction ③ | D1(expose), D2, W2, W5 |
+| **P6** | Keep / cut | finish or remove the 8 half-built features | O1, C1, O5, S5, AC9, B1, R2, W3 |
+| **P7** | Guardrails + consistency | guard safety-critical footguns; finish rename; canonical taxonomy | N1, N4, N5, N6, A3, A4, D3, D5, B3, B4, B5, B6, B8, B9, C4, C5, C6, C7, C8, C9, R3, R6, W1, W4, S4, A5/O7, N8, N9, A6, A7, A12, G6, G8, W6 |
+
+### Phase detail
+
+**P0 — Pure bugs.** `runtimeWorker {`→`server {` in `builders/static.ts`; GitLab
+`/api/v4/workspaces`→`/projects`; render the missing `serverThreshold` toggle;
+make `extractDatabaseCredentials` fail/warn instead of defaulting; reconcile the
+`publishMode` default; drop the dead `sleep`/fix the 99999 timeout; neutral
+`disconnectGitProvider` state; real `bitbucket.isConfigured`.
+
+**P1 — Secrets at rest.** Build ①; flip the **Secret-columns inventory** to
+`encryptedText`/`encryptedJson`; add `DOCKLANDS_ENCRYPTION_KEY` to `.env.example`,
+`ensure-auth-secret`-style generation in `setup`, and the
+[Configuration](../apps/docs) page; fix the lying `ssh-key.ts:42` comment.
+
+**P2 — Shell-exec safety.** A single `shellArg()` helper (or arg-array exec); pipe
+secrets via stdin/files not `echo`; per-clone temp paths (kill the `/tmp/id_rsa`
+race); validate `nodeId`; keep the DB password regex *and* escape; pull S3 creds
+and build secrets off the command line into env/secret mounts.
+
+**P3 — Durable jobs.** Build ②; migrate deploy enqueue, `initCronJobs`, and
+backup scheduling onto it; add boot-recovery + missed-cron catch-up; partition by
+build worker.
+
+**P4 — RBAC hard boundary.** Add `checkServiceAccess` to the build-log and docker
+WS streams; gate request-analytics reads behind `monitoring:read`/admin; remove or
+allow-list `getServerMetrics` (note: cutting paid metrics in P6 removes this
+surface); introduce per-API-key permission scope; org-level "require 2FA"; fix the
+roles-page gating altitude and the `assignPermissions` ownership check; verify
+webhook signatures where providers support it; scope "Delete User" to the org (or
+warn loudly).
+
+**P5 — Connection-var binding.** Build ③; delete the persisted-snapshot apply path;
+make disconnect a pure row delete; turn the UI "applied vars" into a computed
+preview.
+
+**P6 — Keep / cut.**
+- **Finish:** audit log (implement the two stubs + a viewer); bare-DB templates
+  (ship ~6 single-engine catalog files so the routing goes live).
+- **Cut:** remote/"paid" metrics path (also removes the SSRF surface); registry
+  `cloud`/`selfHosted` vestiges; `user.role` + `admin()`/impersonation vestiges;
+  libSQL *logical* backup (volume-backup only — drop it from the backup enums/UI).
+- **Defer (tracked, not now):** environment promotion; Compose build worker.
+
+**P7 — Guardrails + consistency.** Require an LE email before enabling Let's
+Encrypt; take a pre-restore snapshot; validate proxy-file edits + warn on
+generated-file clobber; clarify the cert-provider naming (`custom` resolver vs
+uploaded file); drain-wait + quorum guard on node removal; surface
+retention/cleanup errors and sort retention by mtime; honor `runtimeWorkerId` in
+destination tests; couple `publishDirectory`/SPA and validate drop+buildType;
+single detection call site; robust catalog header parsing; finish the
+`server→runtimeWorker` rename incl. the OpenAPI path; one canonical audit
+`resourceType`; fix the backups naming smells; debounce + optimistic-guard the
+canvas layout save; clean orphaned layout rows; org-scope the restart
+notification; document provider parity + CDN-validation + stop-mode downtime.
+
+## Secret-columns inventory (P1 target)
+
+Apply `encryptedText` / `encryptedJson` to these (mirrors Coolify's set):
+
+| Table.column | Source finding |
+|---|---|
+| `ssh_key.privateKey` (+ fix comment) | G3 |
+| `github.*` (privateKey, clientSecret, webhookSecret), `gitlab/gitea` (tokens, clientSecret), `bitbucket` (appToken) | G4 |
+| `certificate.certificateData`, `certificate.privateKey` | N2 |
+| `registry.password` | S2 |
+| `notification.*` secrets (SMTP password, bot tokens, webhook URLs, Resend/Pushover/Gotify/ntfy) | S3 |
+| `destination.accessKey`, `destination.secretAccessKey` | B2 |
+| `database.config` (password/rootPassword), `service_database.config` | D1, C2 |
+| env storage: `application.env`, `compose.env`, `database.env` (+ build args) | Coolify parity (env values) |
+| `security.password` (basic-auth, must stay reversible for Traefik) | — |
+
+## Full finding → disposition map
+
+Every Part I note, accounted for. (Positives and intentional-design notes are
+"no action".)
+
+| ID | Finding (short) | Disposition |
+|---|---|---|
+| A1 | nginx `runtimeWorker {` token | **P0 fix** |
+| A2 | build secrets exported as plain env | **P2** |
+| A3 | publishDir + SPA no coupling | **P7 guard** |
+| A4 | drop + buildType unvalidated | **P7 guard** |
+| A5 | audit resourceType inconsistent | **P7 (canonical taxonomy)** |
+| A6 | rollbacks inert; image-less row leak | **P7 fix** |
+| A7 | paketo/railpack version pinning | **P7 (railpack: configurable)** |
+| A8 | disconnect resets to github | **P0 fix** |
+| A9 | env reference resolution order | no action (documented) |
+| A10 | patch filePath shell interpolation | **P2** |
+| A11 | patches re-apply conflicts | no action (documented) |
+| A12 | patch audit resourceType:settings | **P7 (taxonomy)** |
+| D1 | conn vars embed plaintext password | **P1 (store) + P5 (expose)** |
+| D2 | password change no propagation | **P5** |
+| D3 | external-port TOCTOU | **P7 (best-effort + clear error)** |
+| D4 | changePassword shell interpolation | **P2** |
+| D5 | backup UI hardcodes engines | **P7 (registry-drive)** |
+| D6 | redis/libsql no logical backup | no action (by design) |
+| D7 | config jsonb validated at boundary | no action (positive) |
+| D8 | mysql/mariadb dumps as root | no action (note) |
+| C1 | bare-DB routing dead in catalog | **P6 finish (ship templates)** |
+| C2 | compose creds plaintext/served | **P1 (store) + P4 (read perm)** |
+| C3 | extractDatabaseCredentials defaults | **P0 fix (fail loud)** |
+| C4 | backup user/password engine quirk | **P7 fix** |
+| C5 | detection runs twice | **P7 (single call site)** |
+| C6 | stack stop/start asymmetry | **P7 (add start path)** |
+| C7 | delete swallows cleanup errors | **P7 (surface errors)** |
+| C8 | catalog header parsing fragile | **P7 (robust parse)** |
+| C9 | libsql embedded detection weak | **P7 (note/strengthen)** |
+| N1 | "custom" cert provider ≠ upload | **P7 (UI clarity)** |
+| N2 | cert private keys plaintext | **P1** |
+| N3 | remote traefik write interpolation | **P2** |
+| N4 | placeholder ACME email | **P7 guard (require email)** |
+| N5 | LE prod-only + rate-limit | **P7 (doc + dev resolver)** |
+| N6 | proxy-file editing can brick ingress | **P7 guard (validate)** |
+| N7 | port default contradiction | **P0 fix** |
+| N8 | domain validation CDN gap | **P7 (doc)** |
+| N9 | redirects application-only | no action (note) |
+| G1 | GitLab `/api/v4/workspaces` | **P0 fix** |
+| G2 | refresh-token webhook no signature | **P4 (sign/verify)** |
+| G3 | SSH keys plaintext + wrong comment | **P1** |
+| G4 | all provider creds plaintext | **P1** |
+| G5 | SSH key echo interpolation + race | **P2** |
+| G6 | provider parity uneven | **P7 (document)** |
+| G7 | bitbucket isConfigured false | **P0 fix** |
+| G8 | provider URLs from window.origin | **P7 (use configured URL)** |
+| AC1 | docker WS skip per-service access | **P4** |
+| AC2 | API keys full identity | **P4 (per-key scope)** |
+| AC3 | "Delete User" global delete | **P4 (scope/warn)** |
+| AC4 | 2FA not enforceable org-wide | **P4 (require-2FA)** |
+| AC5 | roles page under-gates | **P4 fix** |
+| AC6 | assignPermissions near-no-op check | **P4 fix** |
+| AC7 | custom-role multi-row merge | no action (by design) |
+| AC8 | owner-role sealing consistent | no action (positive) |
+| AC9 | user.role + admin vestiges | **P6 cut** |
+| O1 | audit log no-op | **P6 finish** |
+| O2 | build-log WS no authz | **P4** |
+| O3 | request-analytics read gate | **P4** |
+| O4 | metrics only while watched | **P7 (doc; opt. collector)** |
+| O5 | remote/paid metrics half-wired | **P6 cut** |
+| O6 | in-memory queue loses state | **P3** |
+| O7 | audit resourceType inconsistency | **P7 (= A5)** |
+| O8 | request analytics 1000-line window | no action (note) |
+| O9 | host metrics Linux-only | no action (note) |
+| S1 | serverThreshold no UI toggle | **P0 fix** |
+| S2 | registry passwords plaintext | **P1** |
+| S3 | notification secrets plaintext | **P1** |
+| S4 | restart notif not org-scoped | **P7 fix** |
+| S5 | registry cloud/selfHosted vestiges | **P6 cut** |
+| S6 | registry delete nulls refs | no action (note) |
+| S7 | tags workspace-only / bulkAssign | no action (note) |
+| S8 | per-app security is basic-auth | no action (note) |
+| B1 | libSQL DB backup broken | **P6 cut (volume-only)** |
+| B2 | S3 creds plaintext + cmdline | **P1 (store) + P2 (cmdline)** |
+| B3 | retention errors swallowed | **P7 (surface)** |
+| B4 | retention sorts by filename | **P7 (sort by mtime)** |
+| B5 | restore destructive no snapshot | **P7 guard (pre-snapshot)** |
+| B6 | stop-mode volume backup downtime | no action (documented) |
+| B7 | scheduler no catch-up | **P3** |
+| B8 | destination test ignores worker | **P7 fix** |
+| B9 | backups naming smells | **P7 cleanup** |
+| R1 | deploy queue wrong partition | **P3** |
+| R2 | no build worker for compose | **P6 defer** |
+| R3 | node removal force-rm | **P7 guard (drain-wait/quorum)** |
+| R4 | nodeId no regex guard | **P2** |
+| R5 | getServerMetrics SSRF | **P4 (+ removed by P6 cut)** |
+| R6 | server→runtimeWorker rename | **P7 (finish rename)** |
+| R7 | build-workers route is concurrency | no action (documented) |
+| R8 | execAsyncRemote timeout + dead sleep | **P0 fix** |
+| W1 | canvas layout race | **P7 (debounce + guard)** |
+| W2 | conn vars snapshot not binding | **P5 (= D2)** |
+| W3 | environment promotion absent | **P6 defer** |
+| W4 | orphaned layout rows | **P7 (call cleanup)** |
+| W5 | apply/sync doesn't redeploy | **P5 (binding resolves)** |
+| W6 | connection orientation auto-flip | **P7 (doc/UI hint)** |
+| W7 | permission gating correct | no action (positive) |
+| W8 | list view toggle / tags scope | no action (note) |
+
+## Keep / cut ledger
+
+| Feature | Call | Action |
+|---|---|---|
+| Audit log | **Finish** | implement `createAuditLog`/`getAuditLogs` + a viewer page |
+| Bare-DB → managed template routing | **Finish** | ship ~6 single-engine catalog templates |
+| libSQL logical backup | **Cut** | remove from backup enums/UI; volume-backup only |
+| Remote/"paid" metrics | **Cut** | delete `metrics/paid/**` + `getServerMetrics` (kills SSRF) |
+| Registry `cloud`/`selfHosted` | **Cut** | drop dead enum + `apiEnableSelfHostedRegistry` |
+| `user.role` / `admin()` / impersonation | **Cut** | remove vestigial column, fields, impersonation bar |
+| Environment promotion | **Defer** | tracked; real feature, design separately |
+| Compose build worker | **Defer** | tracked; parity gap, not broken |
+
+## Sequencing notes
+
+- **P1 before P2** on the storage/cmdline split: encrypt at rest first, then stop
+  leaking the same secrets onto the command line.
+- **P3 before/with R1**: the build-worker concurrency bug is most cleanly fixed by
+  the durable queue's `partitionKey`, not a one-off patch.
+- **P4 and P6 overlap** on `getServerMetrics`: P6's "cut paid metrics" removes the
+  SSRF surface; if P4 ships first, gate it, then delete in P6.
+- **P5 depends on P1** only loosely (binding reads `database.config`, which P1
+  encrypts transparently — no ordering constraint beyond the column type existing).
+- Each phase is its own PR-sized unit and must end green
+  (`typecheck` + `test:ci` + `build`), matching the existing commit discipline.
+
 
 
 
