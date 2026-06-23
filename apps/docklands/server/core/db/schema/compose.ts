@@ -40,7 +40,8 @@ export const compose = pgTable("compose", {
 	name: text("name").notNull(),
 	appName: text("appName")
 		.notNull()
-		.$defaultFn(() => generateAppName("compose")),
+		.$defaultFn(() => generateAppName("compose"))
+		.unique(),
 	description: text("description"),
 	// Env encrypted at rest (carries credentials). `composeFile` stays plaintext
 	// (user-authored config); `refreshToken` below must stay plaintext because

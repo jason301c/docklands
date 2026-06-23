@@ -5,6 +5,7 @@ import { db } from "@/server/core/db";
 import {
 	type apiCreateWorkspace,
 	applications,
+	compose,
 	database,
 	environments,
 	workspaces,
@@ -112,22 +113,24 @@ export const updateWorkspaceById = async (
 };
 
 export const validUniqueServerAppName = async (appName: string) => {
-	const query = await db.query.environments.findMany({
-		with: {
-			applications: {
-				where: eq(applications.appName, appName),
-			},
-			database: {
-				where: eq(database.appName, appName),
-			},
-		},
-	});
+	// appName feeds the host-wide Docker/Swarm namespace, so it must be unique
+	// across applications, databases AND compose services. Three targeted lookups
+	// (backed by the appName indexes/unique constraints) instead of loading every
+	// environment and its children just to test one name.
+	const [app, db_, comp] = await Promise.all([
+		db.query.applications.findFirst({
+			where: eq(applications.appName, appName),
+			columns: { applicationId: true },
+		}),
+		db.query.database.findFirst({
+			where: eq(database.appName, appName),
+			columns: { databaseId: true },
+		}),
+		db.query.compose.findFirst({
+			where: eq(compose.appName, appName),
+			columns: { composeId: true },
+		}),
+	]);
 
-	// Filter out items with non-empty fields
-	const nonEmptyProjects = query.filter(
-		(workspace) =>
-			workspace.applications.length > 0 || workspace.database.length > 0,
-	);
-
-	return nonEmptyProjects.length === 0;
+	return !app && !db_ && !comp;
 };
