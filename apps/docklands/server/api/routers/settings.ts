@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { scheduledJobs, scheduleJob } from "node-schedule";
 import { parse, stringify } from "yaml";
 import { z } from "zod";
@@ -16,8 +16,6 @@ import {
 	apiRuntimeWorkerSchema,
 	apiUpdateDockerCleanup,
 	apiUpdateWebServerBuildsConcurrency,
-	runtimeWorkers,
-	workspaces,
 } from "@/server/core/db/schema";
 import { generateOpenApiDocument } from "@/server/core/openapi/generator/index.mjs";
 import { checkPermission } from "@/server/core/services/permission";
@@ -738,21 +736,6 @@ export const settingsRouter = createTRPCRouter({
 			});
 			return true;
 		}),
-	isUserSubscribed: protectedProcedure.query(async ({ ctx }) => {
-		const haveServers = await db.query.runtimeWorkers.findMany({
-			where: eq(
-				runtimeWorkers.organizationId,
-				ctx.session?.activeOrganizationId || "",
-			),
-		});
-		const haveProjects = await db.query.workspaces.findMany({
-			where: eq(
-				workspaces.organizationId,
-				ctx.session?.activeOrganizationId || "",
-			),
-		});
-		return haveServers.length > 0 || haveProjects.length > 0;
-	}),
 	health: publicProcedure.query(async () => {
 		try {
 			await db.execute(sql`SELECT 1`);
