@@ -9,7 +9,7 @@ import {
 	GitIcon,
 	GitlabIcon,
 } from "@/components/icons/data-tools-icons";
-import { Alert, AlertDescription } from "@/components/shared/alert";
+import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
 
 interface Props {
@@ -78,15 +78,11 @@ export const UnauthorizedGitProvider = ({ service, onDisconnect }: Props) => {
 
 	return (
 		<div className="space-y-4">
-			<Alert>
-				<AlertCircle className="h-4 w-4" />
-				<AlertDescription>
-					This application is connected to a {service.sourceType} repository
-					through a git provider that you don't have access to. You can see
-					basic repository information below, but cannot modify the
-					configuration.
-				</AlertDescription>
-			</Alert>
+			<AlertBlock type="info" icon={<AlertCircle className="h-4 w-4" />}>
+				This application is connected to a {service.sourceType} repository
+				through a git provider that you don't have access to. You can see basic
+				repository information below, but cannot modify the configuration.
+			</AlertBlock>
 
 			<LayerCard className="border-dashed border-2 border-muted-foreground/20 bg-transparent">
 				<div>

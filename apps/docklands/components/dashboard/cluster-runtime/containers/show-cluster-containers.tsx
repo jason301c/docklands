@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { Alert, AlertDescription, AlertTitle } from "@/components/shared/alert";
+import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	ClusterRuntimeUnavailable,
 	NoRunningContainers,
@@ -282,49 +282,45 @@ export const ShowClusterContainers = ({ runtimeWorkerId }: Props) => {
 			/>
 
 			{downNodes.length > 0 && (
-				<Alert variant="destructive">
-					<AlertTriangle className="h-4 w-4" />
-					<AlertTitle>{downNodes.length} Worker(s) Unavailable</AlertTitle>
-					<AlertDescription>
-						<p className="mb-2">
-							The following workers are not ready or have been drained.
-							Containers scheduled on these workers may not be running.
-						</p>
-						<ul className="list-disc list-inside space-y-1 text-xs">
-							{downNodes.map((node: ClusterNode) => (
-								<li key={node.ID}>
-									<strong>{node.Hostname}</strong> &mdash; Status: {node.Status}
-									, Availability: {node.Availability}
-									{node.ManagerStatus && ` (${node.ManagerStatus})`}
-								</li>
-							))}
-						</ul>
-						<p className="mt-2 text-xs">
-							Manage workers in{" "}
-							<Link
-								href="/dashboard/settings/cluster-nodes"
-								className="underline underline-offset-4"
-							>
-								Cluster Nodes
-							</Link>
-						</p>
-					</AlertDescription>
-				</Alert>
+				<AlertBlock type="error" icon={<AlertTriangle className="h-4 w-4" />}>
+					<span className="font-medium block">
+						{downNodes.length} Worker(s) Unavailable
+					</span>
+					<p className="mb-2">
+						The following workers are not ready or have been drained. Containers
+						scheduled on these workers may not be running.
+					</p>
+					<ul className="list-disc list-inside space-y-1 text-xs">
+						{downNodes.map((node: ClusterNode) => (
+							<li key={node.ID}>
+								<strong>{node.Hostname}</strong> &mdash; Status: {node.Status},
+								Availability: {node.Availability}
+								{node.ManagerStatus && ` (${node.ManagerStatus})`}
+							</li>
+						))}
+					</ul>
+					<p className="mt-2 text-xs">
+						Manage workers in{" "}
+						<Link
+							href="/dashboard/settings/cluster-nodes"
+							className="underline underline-offset-4"
+						>
+							Cluster Nodes
+						</Link>
+					</p>
+				</AlertBlock>
 			)}
 
 			{isMultiNode && (
-				<Alert>
-					<Info className="h-4 w-4" />
-					<AlertTitle>Multi-Worker Metrics Note</AlertTitle>
-					<AlertDescription>
-						CPU, memory, and I/O metrics are collected from the manager via{" "}
-						<code className="bg-kumo-fill px-1 py-0.5 rounded text-xs">
-							docker stats
-						</code>
-						. Containers running on remote workers will show &ldquo;--&rdquo;
-						for metrics.
-					</AlertDescription>
-				</Alert>
+				<AlertBlock type="info" icon={<Info className="h-4 w-4" />}>
+					<span className="font-medium block">Multi-Worker Metrics Note</span>
+					CPU, memory, and I/O metrics are collected from the manager via{" "}
+					<code className="bg-kumo-fill px-1 py-0.5 rounded text-xs">
+						docker stats
+					</code>
+					. Containers running on remote workers will show &ldquo;--&rdquo; for
+					metrics.
+				</AlertBlock>
 			)}
 
 			<div className="flex flex-col gap-4">
@@ -340,30 +336,27 @@ export const ShowClusterContainers = ({ runtimeWorkerId }: Props) => {
 			</div>
 
 			{unscheduledServices.length > 0 && (
-				<Alert>
-					<Info className="h-4 w-4" />
-					<AlertTitle>
+				<AlertBlock type="info" icon={<Info className="h-4 w-4" />}>
+					<span className="font-medium block">
 						{unscheduledServices.length} Service(s) With No Running Tasks
-					</AlertTitle>
-					<AlertDescription>
-						<p className="mb-2">
-							These services exist in the cluster runtime but have no running
-							containers. They may be scaled to 0 replicas or failing to start.
-						</p>
-						<ul className="list-disc list-inside space-y-1 text-xs">
-							{unscheduledServices.map((svc) => (
-								<li key={svc.ID}>
-									<strong>{svc.Name}</strong>
-									{svc.Error && svc.Error.trim() !== "" && (
-										<span className="text-kumo-danger ml-1">
-											&mdash; {svc.Error}
-										</span>
-									)}
-								</li>
-							))}
-						</ul>
-					</AlertDescription>
-				</Alert>
+					</span>
+					<p className="mb-2">
+						These services exist in the cluster runtime but have no running
+						containers. They may be scaled to 0 replicas or failing to start.
+					</p>
+					<ul className="list-disc list-inside space-y-1 text-xs">
+						{unscheduledServices.map((svc) => (
+							<li key={svc.ID}>
+								<strong>{svc.Name}</strong>
+								{svc.Error && svc.Error.trim() !== "" && (
+									<span className="text-kumo-danger ml-1">
+										&mdash; {svc.Error}
+									</span>
+								)}
+							</li>
+						))}
+					</ul>
+				</AlertBlock>
 			)}
 		</div>
 	);

@@ -7,7 +7,7 @@ import {
 	RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
-import { Alert, AlertDescription, AlertTitle } from "@/components/shared/alert";
+import { AlertBlock } from "@/components/shared/alert-block";
 import type { ContainerInfo } from "./types";
 
 export const DocLinks = () => (
@@ -52,16 +52,13 @@ export const ClusterRuntimeUnavailable = ({
 	onRetry,
 }: ClusterRuntimeUnavailableProps) => (
 	<div className="flex flex-col gap-4 py-6 max-w-2xl mx-auto">
-		<Alert variant="destructive">
-			<AlertTriangle className="h-4 w-4" />
-			<AlertTitle>Cluster Runtime Unavailable</AlertTitle>
-			<AlertDescription>
-				Could not reach the cluster runtime.{" "}
-				{errorMessage && (
-					<span className="block mt-1 text-xs opacity-80">{errorMessage}</span>
-				)}
-			</AlertDescription>
-		</Alert>
+		<AlertBlock type="error" icon={<AlertTriangle className="h-4 w-4" />}>
+			<span className="font-medium block">Cluster Runtime Unavailable</span>
+			Could not reach the cluster runtime.{" "}
+			{errorMessage && (
+				<span className="block mt-1 text-xs opacity-80">{errorMessage}</span>
+			)}
+		</AlertBlock>
 		<div className="space-y-3 text-sm text-kumo-subtle">
 			<p>
 				This view uses Docker Swarm under the hood, so the runtime worker needs
@@ -110,16 +107,13 @@ export const ServicesError = ({
 	onRetry,
 }: ServicesErrorProps) => (
 	<div className="flex flex-col gap-4 py-6 max-w-2xl mx-auto">
-		<Alert variant="destructive">
-			<AlertTriangle className="h-4 w-4" />
-			<AlertTitle>Failed to Load Services</AlertTitle>
-			<AlertDescription>
-				The cluster runtime is reachable but service listing failed.{" "}
-				{errorMessage && (
-					<span className="block mt-1 text-xs opacity-80">{errorMessage}</span>
-				)}
-			</AlertDescription>
-		</Alert>
+		<AlertBlock type="error" icon={<AlertTriangle className="h-4 w-4" />}>
+			<span className="font-medium block">Failed to Load Services</span>
+			The cluster runtime is reachable but service listing failed.{" "}
+			{errorMessage && (
+				<span className="block mt-1 text-xs opacity-80">{errorMessage}</span>
+			)}
+		</AlertBlock>
 		<div className="space-y-3 text-sm text-kumo-subtle">
 			<p>This could be caused by:</p>
 			<ul className="list-disc list-inside space-y-1 ml-1">
@@ -150,15 +144,11 @@ interface NoServicesProps {
 
 export const NoServices = ({ nodeCount, onRefresh }: NoServicesProps) => (
 	<div className="flex flex-col gap-4 py-6 max-w-2xl mx-auto">
-		<Alert>
-			<Info className="h-4 w-4" />
-			<AlertTitle>No Cluster Services Found</AlertTitle>
-			<AlertDescription>
-				The cluster runtime is active with{" "}
-				<strong>{nodeCount} worker(s)</strong>, but there are no application
-				services running yet.
-			</AlertDescription>
-		</Alert>
+		<AlertBlock type="info" icon={<Info className="h-4 w-4" />}>
+			<span className="font-medium block">No Cluster Services Found</span>
+			The cluster runtime is active with <strong>{nodeCount} worker(s)</strong>,
+			but there are no application services running yet.
+		</AlertBlock>
 		<div className="space-y-3 text-sm text-kumo-subtle">
 			<p>
 				This view shows containers running through the{" "}
@@ -220,31 +210,25 @@ export const NoRunningContainers = ({
 	const hasErrors = containers.some((c) => c.Error && c.Error.trim() !== "");
 	return (
 		<div className="flex flex-col gap-4 py-6 max-w-2xl mx-auto">
-			<Alert>
-				<AlertTriangle className="h-4 w-4" />
-				<AlertTitle>No Running Containers</AlertTitle>
-				<AlertDescription>
-					Found <strong>{serviceCount} service(s)</strong> in the cluster
-					runtime, but none have running containers.
-				</AlertDescription>
-			</Alert>
+			<AlertBlock type="info" icon={<AlertTriangle className="h-4 w-4" />}>
+				<span className="font-medium block">No Running Containers</span>
+				Found <strong>{serviceCount} service(s)</strong> in the cluster runtime,
+				but none have running containers.
+			</AlertBlock>
 			{hasErrors && (
-				<Alert variant="destructive">
-					<AlertCircle className="h-4 w-4" />
-					<AlertTitle>Container Errors Detected</AlertTitle>
-					<AlertDescription>
-						<ul className="list-disc list-inside space-y-1 mt-1">
-							{containers
-								.filter((c) => c.Error && c.Error.trim() !== "")
-								.slice(0, 5)
-								.map((c) => (
-									<li key={c.ID} className="text-xs">
-										<strong>{c.Name}</strong>: {c.Error}
-									</li>
-								))}
-						</ul>
-					</AlertDescription>
-				</Alert>
+				<AlertBlock type="error" icon={<AlertCircle className="h-4 w-4" />}>
+					<span className="font-medium block">Container Errors Detected</span>
+					<ul className="list-disc list-inside space-y-1 mt-1">
+						{containers
+							.filter((c) => c.Error && c.Error.trim() !== "")
+							.slice(0, 5)
+							.map((c) => (
+								<li key={c.ID} className="text-xs">
+									<strong>{c.Name}</strong>: {c.Error}
+								</li>
+							))}
+					</ul>
+				</AlertBlock>
 			)}
 			<div className="space-y-3 text-sm text-kumo-subtle">
 				<p>This can happen when:</p>
