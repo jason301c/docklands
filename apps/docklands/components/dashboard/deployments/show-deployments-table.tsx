@@ -6,23 +6,17 @@ import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Table } from "@cloudflare/kumo/components/table";
 import {
-	type ColumnFiltersState,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	type PaginationState,
-	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table";
-import type { inferRouterOutputs } from "@trpc/server";
 import { formatDistanceToNow } from "date-fns";
 import {
 	Activity,
 	AlertCircle,
-	ArrowUpDown,
-	Boxes,
 	CheckCircle2,
 	ChevronLeft,
 	ChevronRight,
@@ -31,76 +25,14 @@ import {
 	Loader2,
 	Rocket,
 } from "lucide-react";
-import { type ReactNode, useMemo, useState } from "react";
-import { api } from "@/client/api/trpc";
-import type { AppRouter } from "@/server/api/root";
-import { workspaceServicePath } from "@/shared/routes";
-
-type DeploymentRow =
-	inferRouterOutputs<AppRouter>["deployment"]["allCentralized"][number];
-
-const statusVariants: Record<
-	string,
-	| "secondary"
-	| "secondary"
-	| "destructive"
-	| "outline"
-	| "warning"
-	| "green"
-	| "red"
-> = {
-	running: "warning",
-	done: "green",
-	error: "red",
-	cancelled: "outline",
-};
-
-const statusDotClass: Record<string, string> = {
-	running: "bg-kumo-warning",
-	done: "bg-kumo-success",
-	error: "bg-kumo-danger",
-	cancelled: "bg-kumo-fill",
-};
-
-function getServiceInfo(d: DeploymentRow) {
-	const app = d.application;
-	const comp = d.compose;
-	if (app?.environment?.workspace && app.environment) {
-		return {
-			type: "Application" as const,
-			name: app.name,
-			workspaceId: app.environment.workspace.workspaceId,
-			environmentId: app.environment.environmentId,
-			workspaceName: app.environment.workspace.name,
-			environmentName: app.environment.name,
-			serviceId: app.applicationId,
-			href: workspaceServicePath({
-				workspaceId: app.environment.workspace.workspaceId,
-				environmentId: app.environment.environmentId,
-				serviceType: "application",
-				serviceId: app.applicationId,
-			}),
-		};
-	}
-	if (comp?.environment?.workspace && comp.environment) {
-		return {
-			type: "Compose" as const,
-			name: comp.name,
-			workspaceId: comp.environment.workspace.workspaceId,
-			environmentId: comp.environment.environmentId,
-			workspaceName: comp.environment.workspace.name,
-			environmentName: comp.environment.name,
-			serviceId: comp.composeId,
-			href: workspaceServicePath({
-				workspaceId: comp.environment.workspace.workspaceId,
-				environmentId: comp.environment.environmentId,
-				serviceType: "compose",
-				serviceId: comp.composeId,
-			}),
-		};
-	}
-	return null;
-}
+import { type ReactNode, useMemo } from "react";
+import {
+	createDeploymentsColumns,
+	getServiceInfo,
+	statusDotClass,
+	statusVariants,
+} from "./deployments-columns";
+import { useDeploymentsTable } from "./use-deployments-table";
 
 function DeploymentMetricCard({
 	label,
@@ -130,290 +62,26 @@ function DeploymentMetricCard({
 }
 
 export function ShowDeploymentsTable() {
-	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "createdAt", desc: true },
-	]);
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-	const [globalFilter, setGlobalFilter] = useState("");
-	const [statusFilter, setStatusFilter] = useState<string>("all");
-	const [typeFilter, setTypeFilter] = useState<string>("all");
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 50,
-	});
+	const {
+		isLoading,
+		filteredData,
+		recentDeploymentStream,
+		deploymentStats,
+		sorting,
+		setSorting,
+		columnFilters,
+		setColumnFilters,
+		globalFilter,
+		setGlobalFilter,
+		statusFilter,
+		setStatusFilter,
+		typeFilter,
+		setTypeFilter,
+		pagination,
+		setPagination,
+	} = useDeploymentsTable();
 
-	const { data: deploymentsList, isLoading } =
-		api.deployment.allCentralized.useQuery(undefined, {
-			// Poll fast while a build is active; drop to a slow heartbeat when idle
-			// (instance-wide view, so it must still catch new deployments).
-			refetchInterval: (query) =>
-				query.state.data?.some((d) => d.status === "running") ? 5000 : 30000,
-		});
-
-	const filteredData = useMemo(() => {
-		if (!deploymentsList) return [];
-		let list = deploymentsList;
-		if (statusFilter !== "all") {
-			list = list.filter((d) => d.status === statusFilter);
-		}
-		if (typeFilter === "application") {
-			list = list.filter((d) => d.applicationId != null);
-		} else if (typeFilter === "compose") {
-			list = list.filter((d) => d.composeId != null);
-		}
-		if (globalFilter.trim()) {
-			const q = globalFilter.toLowerCase();
-			list = list.filter((d) => {
-				const info = getServiceInfo(d);
-				if (!info) return false;
-				return (
-					info.name.toLowerCase().includes(q) ||
-					info.workspaceName.toLowerCase().includes(q) ||
-					info.environmentName.toLowerCase().includes(q) ||
-					(d.title?.toLowerCase().includes(q) ?? false)
-				);
-			});
-		}
-		return list;
-	}, [deploymentsList, statusFilter, typeFilter, globalFilter]);
-
-	const deploymentStats = useMemo(() => {
-		const list = deploymentsList ?? [];
-		const active = list.filter((deployment) => deployment.status === "running");
-		const failed = list.filter((deployment) => deployment.status === "error");
-		const successful = list.filter(
-			(deployment) => deployment.status === "done",
-		);
-		const latest = [...list].sort(
-			(a, b) =>
-				new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-		)[0];
-
-		return {
-			active: active.length,
-			failed: failed.length,
-			successful: successful.length,
-			total: list.length,
-			latest,
-		};
-	}, [deploymentsList]);
-
-	const recentDeploymentStream = useMemo(
-		() =>
-			[...filteredData]
-				.sort(
-					(a, b) =>
-						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-				)
-				.slice(0, 5),
-		[filteredData],
-	);
-
-	const columns = useMemo(
-		() => [
-			{
-				id: "serviceName",
-				accessorFn: (row: DeploymentRow) => getServiceInfo(row)?.name ?? "",
-				header: ({
-					column,
-				}: {
-					column: {
-						getIsSorted: () => false | "asc" | "desc";
-						toggleSorting: (asc: boolean) => void;
-					};
-				}) => (
-					<Button
-						variant="ghost"
-						className="-ml-3 h-8"
-						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-					>
-						Service
-						<ArrowUpDown className="ml-2 size-4" />
-					</Button>
-				),
-				cell: ({ row }: { row: { original: DeploymentRow } }) => {
-					const info = getServiceInfo(row.original);
-					if (!info) return <span className="text-kumo-subtle">—</span>;
-					return (
-						<div className="flex items-center gap-2">
-							{info.type === "Application" ? (
-								<Rocket className="size-4 text-kumo-subtle shrink-0" />
-							) : (
-								<Boxes className="size-4 text-kumo-subtle shrink-0" />
-							)}
-							<div className="flex flex-col min-w-0">
-								<span className="font-medium truncate">{info.name}</span>
-								<Badge variant="outline" className="w-fit text-[10px]">
-									{info.type}
-								</Badge>
-							</div>
-						</div>
-					);
-				},
-			},
-			{
-				id: "workspaceName",
-				accessorFn: (row: DeploymentRow) =>
-					getServiceInfo(row)?.workspaceName ?? "",
-				header: ({
-					column,
-				}: {
-					column: {
-						getIsSorted: () => false | "asc" | "desc";
-						toggleSorting: (asc: boolean) => void;
-					};
-				}) => (
-					<Button
-						variant="ghost"
-						className="-ml-3 h-8"
-						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-					>
-						Workspace
-						<ArrowUpDown className="ml-2 size-4" />
-					</Button>
-				),
-				cell: ({ row }: { row: { original: DeploymentRow } }) => {
-					const info = getServiceInfo(row.original);
-					return (
-						<span className="text-kumo-subtle">
-							{info?.workspaceName ?? "—"}
-						</span>
-					);
-				},
-			},
-			{
-				id: "environmentName",
-				accessorFn: (row: DeploymentRow) =>
-					getServiceInfo(row)?.environmentName ?? "",
-				header: ({
-					column,
-				}: {
-					column: {
-						getIsSorted: () => false | "asc" | "desc";
-						toggleSorting: (asc: boolean) => void;
-					};
-				}) => (
-					<Button
-						variant="ghost"
-						className="-ml-3 h-8"
-						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-					>
-						Environment
-						<ArrowUpDown className="ml-2 size-4" />
-					</Button>
-				),
-				cell: ({ row }: { row: { original: DeploymentRow } }) => {
-					const info = getServiceInfo(row.original);
-					return (
-						<span className="text-kumo-subtle">
-							{info?.environmentName ?? "—"}
-						</span>
-					);
-				},
-			},
-			{
-				accessorKey: "title",
-				header: ({
-					column,
-				}: {
-					column: {
-						getIsSorted: () => false | "asc" | "desc";
-						toggleSorting: (asc: boolean) => void;
-					};
-				}) => (
-					<Button
-						variant="ghost"
-						className="-ml-3 h-8"
-						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-					>
-						Title
-						<ArrowUpDown className="ml-2 size-4" />
-					</Button>
-				),
-				cell: ({ row }: { row: { original: DeploymentRow } }) => (
-					<span className="text-sm truncate max-w-[200px] block">
-						{row.original.title || "—"}
-					</span>
-				),
-			},
-			{
-				accessorKey: "status",
-				header: ({
-					column,
-				}: {
-					column: {
-						getIsSorted: () => false | "asc" | "desc";
-						toggleSorting: (asc: boolean) => void;
-					};
-				}) => (
-					<Button
-						variant="ghost"
-						className="-ml-3 h-8"
-						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-					>
-						Status
-						<ArrowUpDown className="ml-2 size-4" />
-					</Button>
-				),
-				cell: ({ row }: { row: { original: DeploymentRow } }) => {
-					const status = row.original.status ?? "running";
-					return (
-						<Badge variant={statusVariants[status] ?? "secondary"}>
-							{status}
-						</Badge>
-					);
-				},
-			},
-			{
-				accessorKey: "createdAt",
-				header: ({
-					column,
-				}: {
-					column: {
-						getIsSorted: () => false | "asc" | "desc";
-						toggleSorting: (asc: boolean) => void;
-					};
-				}) => (
-					<Button
-						variant="ghost"
-						className="-ml-3 h-8"
-						onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-					>
-						Created
-						<ArrowUpDown className="ml-2 size-4" />
-					</Button>
-				),
-				cell: ({ row }: { row: { original: DeploymentRow } }) => (
-					<span className="text-kumo-subtle text-sm whitespace-nowrap">
-						{row.original.createdAt
-							? new Date(row.original.createdAt).toLocaleString()
-							: "—"}
-					</span>
-				),
-			},
-			{
-				header: "",
-				id: "actions",
-				enableSorting: false,
-				cell: ({ row }: { row: { original: DeploymentRow } }) => {
-					const info = getServiceInfo(row.original);
-					if (!info) return null;
-					return (
-						<LinkButton
-							href={info.href}
-							variant="ghost"
-							size="sm"
-							className="gap-1"
-						>
-							<ExternalLink className="size-4" />
-							Open
-						</LinkButton>
-					);
-				},
-			},
-		],
-		[],
-	);
+	const columns = useMemo(() => createDeploymentsColumns(), []);
 
 	const table = useReactTable({
 		data: filteredData,

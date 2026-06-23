@@ -3,15 +3,17 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const deploymentsSource = () =>
-	readFileSync(
-		fileURLToPath(
-			new URL(
-				"../../components/dashboard/deployments/show-deployments-table.tsx",
-				import.meta.url,
+	[
+		"../../components/dashboard/deployments/show-deployments-table.tsx",
+		"../../components/dashboard/deployments/deployments-columns.tsx",
+	]
+		.map((relativePath) =>
+			readFileSync(
+				fileURLToPath(new URL(relativePath, import.meta.url)),
+				"utf8",
 			),
-		),
-		"utf8",
-	);
+		)
+		.join("\n");
 
 describe("deployment history copy", () => {
 	it("uses workspace language for the deployment table surface", () => {
