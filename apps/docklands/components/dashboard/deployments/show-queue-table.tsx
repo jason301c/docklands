@@ -103,7 +103,12 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 	const { embedded: _embedded = false } = props;
 	const { data: queueList, isLoading } = api.deployment.queueList.useQuery(
 		undefined,
-		{ refetchInterval: 3000 },
+		{
+			// Poll fast while the queue has jobs; slow heartbeat when empty so new
+			// arrivals are still picked up without hammering the DB.
+			refetchInterval: (query) =>
+				(query.state.data?.length ?? 0) > 0 ? 3000 : 15000,
+		},
 	);
 
 	const queueStats = useMemo(() => {

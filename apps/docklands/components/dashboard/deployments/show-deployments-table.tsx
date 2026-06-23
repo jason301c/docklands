@@ -144,7 +144,10 @@ export function ShowDeploymentsTable() {
 
 	const { data: deploymentsList, isLoading } =
 		api.deployment.allCentralized.useQuery(undefined, {
-			refetchInterval: 5000,
+			// Poll fast while a build is active; drop to a slow heartbeat when idle
+			// (instance-wide view, so it must still catch new deployments).
+			refetchInterval: (query) =>
+				query.state.data?.some((d) => d.status === "running") ? 5000 : 30000,
 		});
 
 	const filteredData = useMemo(() => {

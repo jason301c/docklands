@@ -68,7 +68,9 @@ export const ShowDeployments = ({
 			},
 			{
 				enabled: !!id,
-				refetchInterval: 1000,
+				// Only poll while a build is in flight; stop once all are terminal.
+				refetchInterval: (query) =>
+					query.state.data?.some((d) => d.status === "running") ? 1000 : false,
 			},
 		);
 

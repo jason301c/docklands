@@ -48,7 +48,11 @@ export const ShowPreviewDeployments = ({ applicationId }: Props) => {
 		{ applicationId },
 		{
 			enabled: !!applicationId,
-			refetchInterval: 2000,
+			// Only poll while a preview build is in flight; stop once all terminal.
+			refetchInterval: (query) =>
+				query.state.data?.some((d) => d.previewStatus === "running")
+					? 2000
+					: false,
 		},
 	);
 
