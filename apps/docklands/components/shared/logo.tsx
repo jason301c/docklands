@@ -23,10 +23,10 @@ export const Logo = ({ className = "size-14", logoUrl }: Props) => {
 };
 
 /**
- * Docklands brand mark — a container ship carrying a 3/2/1 stack of containers
- * with one highlighted "deploying" container (the orange apex). The hull and
- * containers use `currentColor`, so the mark adapts to the surrounding text
- * color (dark on light surfaces, light on dark) while the accent stays fixed.
+ * Docklands brand mark — three stacked containers with the top one highlighted
+ * as the "deploying" container (the brand-colored bar). The lower two bars use
+ * `currentColor`, so the mark adapts to the surrounding text color (dark on
+ * light surfaces, light on dark), while the accent tracks the Kumo brand token.
  */
 export const DocklandsLogo = ({ className }: { className?: string }) => (
 	<svg
@@ -36,15 +36,15 @@ export const DocklandsLogo = ({ className }: { className?: string }) => (
 		aria-label="Docklands"
 		xmlns="http://www.w3.org/2000/svg"
 	>
-		<path
-			d="M64 300 H448 L414 416 Q256 450 98 416 L64 300 Z"
-			fill="currentColor"
+		<rect x="116" y="316" width="280" height="76" rx="20" fill="currentColor" />
+		<rect x="116" y="222" width="280" height="76" rx="20" fill="currentColor" />
+		<rect
+			x="116"
+			y="128"
+			width="280"
+			height="76"
+			rx="20"
+			fill="var(--color-kumo-brand)"
 		/>
-		<rect x="134" y="224" width="76" height="76" rx="14" fill="currentColor" />
-		<rect x="218" y="224" width="76" height="76" rx="14" fill="currentColor" />
-		<rect x="302" y="224" width="76" height="76" rx="14" fill="currentColor" />
-		<rect x="176" y="144" width="76" height="76" rx="14" fill="currentColor" />
-		<rect x="260" y="144" width="76" height="76" rx="14" fill="currentColor" />
-		<rect x="218" y="64" width="76" height="76" rx="14" fill="#F6821F" />
 	</svg>
 );
