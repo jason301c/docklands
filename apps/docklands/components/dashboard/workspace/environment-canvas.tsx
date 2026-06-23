@@ -53,6 +53,7 @@ import {
 	useState,
 } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { ShowPorts } from "@/components/dashboard/application/advanced/ports/show-port";
 import { ShowResources } from "@/components/dashboard/application/advanced/show-resources";
@@ -580,7 +581,7 @@ export const EnvironmentCanvas = ({
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
 	const utils = api.useUtils();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const workspaceQuery = api.workspaceGraph.byEnvironment.useQuery({
 		environmentId,
 	});

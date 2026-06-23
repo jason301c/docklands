@@ -21,6 +21,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { useDebounce } from "@/client/hooks/use-debounce";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
@@ -79,7 +80,7 @@ export const WorkspaceList = () => {
 	const searchParams = useSearchParams();
 	const currentPathname = pathname ?? workspaceOverviewPath;
 	const { data, isPending } = api.workspaces.all.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const { mutateAsync } = api.workspaces.remove.useMutation();
 	const { data: availableTags } = api.tag.all.useQuery();
 

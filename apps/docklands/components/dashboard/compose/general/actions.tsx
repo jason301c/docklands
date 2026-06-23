@@ -4,6 +4,7 @@ import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
@@ -17,7 +18,7 @@ interface Props {
 }
 export const ComposeActions = ({ composeId }: Props) => {
 	const router = useRouter();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canDeploy = permissions?.deployment.create ?? false;
 	const canUpdateService = permissions?.service.create ?? false;
 	const { data, refetch } = api.compose.one.useQuery(

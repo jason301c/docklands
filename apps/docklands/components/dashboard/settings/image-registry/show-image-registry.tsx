@@ -1,6 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Loader2, Package, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
@@ -12,7 +13,7 @@ export const ShowImageRegistry = () => {
 	const { mutateAsync, isPending: isRemoving } =
 		api.registry.remove.useMutation();
 	const { data, isPending, refetch } = api.registry.all.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 
 	return (
 		<div className="w-full">

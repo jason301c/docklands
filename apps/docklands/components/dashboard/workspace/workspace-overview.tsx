@@ -4,6 +4,7 @@ import { ArrowRight, BookIcon, FolderInput, Rocket } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { HandleWorkspace } from "@/components/dashboard/workspace/manage/handle-workspace";
 import {
 	workspaceEnvironmentPath,
@@ -198,7 +199,7 @@ export const WorkspaceOverview = () => {
 	const { data: auth } = api.user.get.useQuery();
 	const { data: homeStats } = api.workspaces.homeStats.useQuery();
 	const { data: workspaces } = api.workspaces.all.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canCreateWorkspaces = !!permissions?.workspace.create;
 	const canReadDeployments = !!permissions?.deployment.read;
 	const { data: deployments } = api.deployment.allCentralized.useQuery(

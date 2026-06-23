@@ -6,6 +6,7 @@ import { type CSSProperties, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
@@ -33,7 +34,7 @@ interface Props {
 }
 
 export const ShowEnvironment = ({ id, type }: Props) => {
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canWrite = permissions?.envVars.write ?? false;
 	const isCompose = type === "compose";
 	const composeQuery = api.compose.one.useQuery(

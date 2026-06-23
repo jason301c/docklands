@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { ShowImport } from "@/components/dashboard/application/advanced/import/show-import";
 import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
@@ -77,7 +78,7 @@ const Service = (props: {
 		composeId,
 	});
 
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const { data: serverIp } = api.settings.getIp.useQuery();
 	const { data: environments } = api.environment.byWorkspaceId.useQuery({
 		workspaceId: data?.environment?.workspaceId || "",

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { ShowClusterSettings } from "@/components/dashboard/application/advanced/cluster/show-cluster-settings";
 import { AddCommand } from "@/components/dashboard/application/advanced/general/add-command";
 import { ShowIngressConfig } from "@/components/dashboard/application/advanced/ingress/show-ingress-config";
@@ -80,7 +81,7 @@ const Service = (props: {
 	);
 
 	const { data: serverIp } = api.settings.getIp.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 
 	const { data: environments } = api.environment.byWorkspaceId.useQuery({
 		workspaceId: data?.environment?.workspace?.workspaceId || "",

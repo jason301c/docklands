@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -41,7 +42,7 @@ interface Props {
 }
 
 export const DeleteService = ({ id, type }: Props) => {
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canDelete = permissions?.service.delete ?? false;
 	const [isOpen, setIsOpen] = useState(false);
 

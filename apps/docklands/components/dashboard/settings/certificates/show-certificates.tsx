@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
@@ -29,7 +30,7 @@ export const ShowCertificates = () => {
 	const { mutateAsync, isPending: isRemoving } =
 		api.certificates.remove.useMutation();
 	const { data, isPending, refetch } = api.certificates.all.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
 
 	return (

@@ -34,6 +34,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
@@ -60,7 +61,7 @@ interface Props {
 }
 
 export const ShowDomains = ({ id, type }: Props) => {
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canCreateDomain = permissions?.domain.create ?? false;
 	const canDeleteDomain = permissions?.domain.delete ?? false;
 	const isApplication = type === "application";

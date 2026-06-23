@@ -2,6 +2,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Package, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
@@ -18,7 +19,7 @@ interface Props {
 }
 
 export const ShowVolumes = ({ id, type }: Props) => {
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canRead = permissions?.volume.read ?? false;
 	const canCreate = permissions?.volume.create ?? false;
 	const canDelete = permissions?.volume.delete ?? false;

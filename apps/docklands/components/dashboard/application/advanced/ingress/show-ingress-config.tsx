@@ -1,6 +1,7 @@
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { File, Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { UpdateIngressConfig } from "./update-ingress-config";
 
@@ -9,7 +10,7 @@ interface Props {
 }
 
 export const ShowIngressConfig = ({ applicationId }: Props) => {
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canRead = permissions?.traefikFiles.read ?? false;
 	const { data, isPending } = api.application.readTraefikConfig.useQuery(
 		{

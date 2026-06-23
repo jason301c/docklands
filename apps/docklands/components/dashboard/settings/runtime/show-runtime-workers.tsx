@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/client/api/trpc";
+import { useCurrentUser } from "@/client/hooks/use-current-user";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 
@@ -33,10 +35,8 @@ export const ShowRuntimeWorkers = () => {
 	const { data, refetch, isPending } = api.runtimeWorker.all.useQuery();
 	const { mutateAsync } = api.runtimeWorker.remove.useMutation();
 	const { data: sshKeys } = api.sshKey.all.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
-	const { data: currentMember } = api.user.get.useQuery();
-	const isAdmin =
-		currentMember?.role === "owner" || currentMember?.role === "admin";
+	const { permissions } = usePermissions();
+	const { isOwnerOrAdmin: isAdmin } = useCurrentUser();
 
 	return (
 		<div className="w-full">

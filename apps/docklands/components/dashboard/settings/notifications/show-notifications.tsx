@@ -1,6 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Bell, Loader2, Mail, PenBoxIcon, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import {
 	DiscordIcon,
@@ -23,7 +24,7 @@ export const ShowNotifications = () => {
 	const { data, isPending, refetch } = api.notification.all.useQuery();
 	const { mutateAsync, isPending: isRemoving } =
 		api.notification.remove.useMutation();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 
 	return (
 		<div className="w-full">

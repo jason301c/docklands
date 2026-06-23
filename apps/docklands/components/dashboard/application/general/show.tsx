@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { ShowBuildChooseForm } from "@/components/dashboard/application/build/show";
 import { ShowProviderForm } from "@/components/dashboard/application/general/generic/show";
@@ -28,7 +29,7 @@ interface Props {
 
 export const ShowGeneralApplication = ({ applicationId }: Props) => {
 	const router = useRouter();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canDeploy = permissions?.deployment.create ?? false;
 	const canUpdateService = permissions?.service.create ?? false;
 	const { data, refetch } = api.application.one.useQuery(

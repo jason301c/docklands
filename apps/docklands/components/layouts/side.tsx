@@ -26,6 +26,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
+import { useCurrentUser } from "@/client/hooks/use-current-user";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { Separator } from "@/components/shared/separator";
 import { TimeBadge } from "@/components/shared/time-badge";
 import { toast } from "@/components/shared/toast";
@@ -55,7 +57,7 @@ function LogoWrapper() {
 
 function SidebarLogo() {
 	const { state } = useSidebar();
-	const { data: user } = api.user.get.useQuery();
+	const { user, isOwnerOrAdmin: canEditInstance } = useCurrentUser();
 	const { isMobile } = useSidebar();
 	const isCollapsed = state === "collapsed" && !isMobile;
 	const { data: activeOrganization, isLoading } =
@@ -63,8 +65,6 @@ function SidebarLogo() {
 
 	const { data: invitations, refetch: refetchInvitations } =
 		api.user.getInvitations.useQuery();
-
-	const canEditInstance = user?.role === "owner" || user?.role === "admin";
 
 	return (
 		<>
@@ -236,8 +236,8 @@ export default function Page({ children }: Props) {
 	}, []);
 
 	const pathname = usePathname() ?? "";
-	const { data: auth } = api.user.get.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { user: auth } = useCurrentUser();
+	const { permissions } = usePermissions();
 	const { data: docklandsVersion } =
 		api.settings.getDocklandsVersion.useQuery();
 

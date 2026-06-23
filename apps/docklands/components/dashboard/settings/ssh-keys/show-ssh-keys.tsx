@@ -2,6 +2,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { formatDistanceToNow } from "date-fns";
 import { KeyRound, Loader2, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
@@ -14,7 +15,7 @@ export const ShowSshKeys = () => {
 	const { data, isPending, refetch } = api.sshKey.all.useQuery();
 	const { mutateAsync, isPending: isRemoving } =
 		api.sshKey.remove.useMutation();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 
 	return (
 		<div className="w-full">

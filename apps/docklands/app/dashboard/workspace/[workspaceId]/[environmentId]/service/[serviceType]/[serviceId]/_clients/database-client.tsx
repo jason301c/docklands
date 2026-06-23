@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { ShowEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
@@ -91,7 +92,7 @@ const DatabaseClient = (props: {
 	const { workspaceId, environmentId } = props;
 	const [tab, setSab] = useState<TabState>(activeTab);
 	const { data } = api.database.one.useQuery({ databaseId });
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 
 	const { data: serverIp } = api.settings.getIp.useQuery();
 	const { data: environments } = api.environment.byWorkspaceId.useQuery({

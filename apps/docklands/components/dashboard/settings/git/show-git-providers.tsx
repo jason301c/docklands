@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { api } from "@/client/api/trpc";
+import { useCurrentUser } from "@/client/hooks/use-current-user";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { useUrl } from "@/client/hooks/use-url";
 import { createClientLogger } from "@/client/lib/logger";
 import {
@@ -40,11 +42,9 @@ export const ShowGitProviders = () => {
 		api.gitProvider.remove.useMutation();
 	const { mutateAsync: toggleShare, isPending: isToggling } =
 		api.gitProvider.toggleShare.useMutation();
-	const { data: currentMember } = api.user.get.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { isOwnerOrAdmin: isOrgAdmin } = useCurrentUser();
+	const { permissions } = usePermissions();
 	const url = useUrl();
-	const isOrgAdmin =
-		currentMember?.role === "owner" || currentMember?.role === "admin";
 
 	const getGitlabUrl = (
 		clientId: string,

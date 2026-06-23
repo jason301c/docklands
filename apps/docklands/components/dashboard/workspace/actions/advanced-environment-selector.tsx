@@ -7,6 +7,7 @@ import { ChevronDownIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { toast } from "@/components/shared/toast";
 import type { findEnvironmentsByWorkspaceId } from "@/server/core/services/environment";
@@ -43,7 +44,7 @@ export const AdvancedEnvironmentSelector = ({
 	const [description, setDescription] = useState("");
 
 	// Get current user's permissions
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 
 	// Check if user can create environments
 	const canCreateEnvironments = !!permissions?.environment.create;

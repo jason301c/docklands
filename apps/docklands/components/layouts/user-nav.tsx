@@ -4,6 +4,7 @@ import { ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import {
 	Avatar,
 	AvatarFallback,
@@ -17,7 +18,7 @@ const _AUTO_CHECK_UPDATES_INTERVAL_MINUTES = 7;
 export const UserNav = () => {
 	const router = useRouter();
 	const { data } = api.user.get.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const userName =
 		`${data?.user?.firstName ?? ""} ${data?.user?.lastName ?? ""}`.trim() ||
 		data?.user?.email ||

@@ -1,6 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Loader2, TagIcon, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { TagBadge } from "@/components/shared/tag-badge";
@@ -14,7 +15,7 @@ export const TagManager = () => {
 	const { data: tags, isPending } = api.tag.all.useQuery();
 	const { mutateAsync: deleteTag, isPending: isRemoving } =
 		api.tag.remove.useMutation();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 
 	return (
 		<div className="w-full">

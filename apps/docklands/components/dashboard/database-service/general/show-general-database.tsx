@@ -4,6 +4,7 @@ import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Ban, CheckCircle2, RefreshCcw, Rocket, Terminal } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 
 const logger = createClientLogger("database-service");
@@ -20,7 +21,7 @@ interface Props {
 }
 
 export const ShowGeneralDatabase = ({ databaseId }: Props) => {
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canDeploy = permissions?.deployment.create ?? false;
 	const { data, refetch } = api.database.one.useQuery(
 		{

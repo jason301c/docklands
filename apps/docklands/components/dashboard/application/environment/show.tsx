@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
@@ -34,7 +35,7 @@ interface Props {
 }
 
 export const ShowEnvironment = ({ applicationId }: Props) => {
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canWrite = permissions?.envVars.write ?? false;
 	const { mutateAsync, isPending } =
 		api.application.saveEnvironment.useMutation();

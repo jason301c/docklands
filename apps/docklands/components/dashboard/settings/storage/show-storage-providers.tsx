@@ -1,6 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Database, FolderUp, Loader2, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
@@ -12,7 +13,7 @@ export const ShowStorageProviders = () => {
 	const { data, isPending, refetch } = api.destination.all.useQuery();
 	const { mutateAsync, isPending: isRemoving } =
 		api.destination.remove.useMutation();
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	return (
 		<div className="w-full">
 			<div className="w-full rounded-lg border bg-kumo-canvas p-6">

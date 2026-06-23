@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
@@ -34,7 +35,7 @@ interface Props {
 }
 
 export const EnvironmentVariables = ({ environmentId, children }: Props) => {
-	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { permissions } = usePermissions();
 	const canRead = permissions?.environmentEnvVars.read ?? false;
 	const canWrite = permissions?.environmentEnvVars.write ?? false;
 	const [isOpen, setIsOpen] = useState(false);
