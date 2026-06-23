@@ -597,15 +597,7 @@ means shipped and green (`typecheck` + `test:ci`).
   password the callers pass), **B8** (destination test runs on the worker, creds
   via env), **N4** (block enabling Let's Encrypt until the ingress LE email is
   set). Documentation notes shipped to `apps/docs`: **N5, N8, N9, G6, W6, A7,
-  O4** (and **B6** was already documented). **Remaining backlog (tracked, not yet
-  actioned — the larger/UI/cluster-risky ones):** C5 (consolidate the double
-  detection pass), C6 (add a start path for removed Swarm stacks), C9 (strengthen
-  libsql embedded detection), D5 (drive the backup UI off the registry), N1
-  (cert-provider "custom" naming clarity in the UI), N6 (validate proxy-file
-  edits before they can brick ingress), R3 (drain-wait + quorum guard on node
-  removal), R6 (finish the `server→runtimeWorker` rename incl. the OpenAPI path),
-  W1 (debounce + optimistic-guard the canvas layout save), G8 (use the configured
-  URL instead of `window.origin` for provider callbacks). Green so far: `tsc`
+  O4** (and **B6** was already documented). **All remaining P7 guards subsequently landed** across five more batches (B4/C7; A3/A4/D3/B9/C8; C4/B8/N4; C5/C6/C9/N6/R3; N1/D5/G8/W1) plus R6 (finish the internal rename) and B5 (pre-restore snapshot); the seven doc notes shipped to `apps/docs`. Every Part I finding is now done, no-action, or explicitly deferred (the larger features: full durable queue, AC1/AC2/AC4/G2, AC9, C1, R2, W3). Green so far: `tsc`
   clean, 83 files / 676 tests pass, Biome clean.
 
 ### Discovered during remediation
@@ -734,7 +726,7 @@ the cleanup. Phases are independently shippable and each ends green
 | **P4** ◑ | RBAC hard boundary | 5 closed (O2,O3,AC3,AC5,AC6) + 2 already-enforced (C2-read,R5); AC1/AC2/AC4/G2 deferred | O2,O3,AC3,AC5,AC6 ✅; AC1,AC2,AC4,G2 deferred |
 | **P5** ✅ | Connection-var binding | abstraction ③ | D1(expose), D2, W2, W5 |
 | **P6** ◑ | Keep / cut | O1/O5/B1 done, S5 partial; AC9/C1/R2/W3 deferred | O1,O5,B1 ✅; S5 ◑; AC9,C1,R2,W3 deferred |
-| **P7** ◑ | Guardrails + consistency | batch 1 done (B3,A6,W4,A5/O7/A12); S4 no-action; rest tracked | B3,A6,W4,A5/O7/A12 ✅; S4 n/a; rest open |
+| **P7** ✅ | Guardrails + consistency | all guards landed across 6 batches + 7 doc notes; S4 no-action | B3,B4,A6,W4,A3,A4,A5/A12,C4–C9,D3,D5,N1,N4,N6,B5,B8,B9,R3,R6,W1,G8 ✅ |
 
 ### Phase detail
 
