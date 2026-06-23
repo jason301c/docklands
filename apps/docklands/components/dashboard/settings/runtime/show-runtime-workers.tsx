@@ -24,6 +24,7 @@ const logger = createClientLogger("runtime-workers");
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { ShowRuntimeWorkerActions } from "./actions/show-runtime-worker-actions";
+import { ToggleRemoteWorkersOnly } from "./actions/toggle-remote-workers-only";
 import { HandleRuntimeWorker } from "./handle-runtime-worker";
 import { SetupRuntimeWorker } from "./setup-runtime-worker";
 import { RuntimeTerminalModal } from "./terminal/runtime-terminal-modal";
@@ -33,16 +34,22 @@ export const ShowRuntimeWorkers = () => {
 	const { mutateAsync } = api.runtimeWorker.remove.useMutation();
 	const { data: sshKeys } = api.sshKey.all.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
+	const { data: currentMember } = api.user.get.useQuery();
+	const isAdmin =
+		currentMember?.role === "owner" || currentMember?.role === "admin";
 
 	return (
 		<div className="w-full">
 			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
-				<div className="">
-					<h3 className="text-xl font-semibold flex items-center gap-2">
-						<ServerIcon className="size-6 text-kumo-subtle self-center" />
-						Runtime Workers
-					</h3>
-					<p>Add workers to run services on remote machines.</p>
+				<div className="flex flex-row items-start justify-between gap-4">
+					<div>
+						<h3 className="text-xl font-semibold flex items-center gap-2">
+							<ServerIcon className="size-6 text-kumo-subtle self-center" />
+							Runtime Workers
+						</h3>
+						<p>Add workers to run services on remote machines.</p>
+					</div>
+					{isAdmin && <ToggleRemoteWorkersOnly />}
 				</div>
 				<div className="space-y-2 py-8 border-t">
 					{isPending ? (
