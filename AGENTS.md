@@ -15,6 +15,28 @@ branding. Everything specific to the control-plane app — its architecture,
 directory layout, product conventions, backend domain, and security boundaries —
 lives in `apps/docklands/AGENTS.md`. Read both when working inside the app.
 
+## Project Status — Pre-Release, No Compatibility Debt
+
+Docklands has **not been released**. There are no real users, no deployed
+instances to upgrade, and no published API to keep stable. This is a deliberate
+latitude: **prefer the cleanest end-state design over backward-compatible
+incrementalism.** Concretely, agents may, in service of a better architecture:
+
+- drop, rename, merge, or restructure database tables and columns freely;
+- replace the schema wholesale rather than writing additive/compat migrations —
+  a single fresh migration that reaches the right shape is preferred over a
+  backfill-and-bridge sequence that preserves old data;
+- break or remove tRPC routers, internal APIs, and on-disk formats;
+- delete dead or superseded code paths instead of leaving shims.
+
+You must still **generate the Drizzle migration and commit the matching
+`drizzle/meta` snapshot/journal** for any schema change (see the migration rule
+below) — "no compat debt" means we don't preserve old data, not that we skip
+migrations. And security-sensitive behavior still gets the same scrutiny. This
+freedom is about avoiding self-imposed legacy, not about lowering quality. When
+in doubt, build the thing you'd want if you were starting clean today — because
+we are.
+
 ## AGENTS.md Policy
 
 Docklands keeps exactly **two** `AGENTS.md` files:
