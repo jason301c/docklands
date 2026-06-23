@@ -19,6 +19,19 @@ import packageInfo from "../package.json";
 
 const logger = createLogger("server");
 
+// The whole control plane — UI, tRPC API, deployment queue, WebSocket servers,
+// and cron jobs — runs in this single Node process. A stray throw from an async
+// I/O callback (e.g. an ssh2 socket event) would otherwise become an
+// uncaughtException and take down every deployment and session at once. Log and
+// keep running so one bad callback can't kill everything; individual handlers
+// still do their own graceful cleanup.
+process.on("uncaughtException", (err) => {
+	logger.error({ err }, "uncaughtException (process kept alive)");
+});
+process.on("unhandledRejection", (reason) => {
+	logger.error({ err: reason }, "unhandledRejection (process kept alive)");
+});
+
 import { setupDockerContainerLogsWebSocketServer } from "./wss/docker-container-logs";
 import { setupDockerContainerTerminalWebSocketServer } from "./wss/docker-container-terminal";
 import { setupDockerStatsMonitoringSocketServer } from "./wss/docker-stats";

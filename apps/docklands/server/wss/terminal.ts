@@ -168,7 +168,15 @@ export const setupTerminalWebSocketServer = (
 				ws.send("\x1bc");
 
 				conn.shell({}, (err, stream) => {
-					if (err) throw err;
+					if (err) {
+						// ssh2 invokes this from its own I/O loop, outside the
+						// surrounding try/Promise — throwing here would surface as an
+						// uncaughtException and kill the whole single-process server.
+						logger.error({ err, runtimeWorkerId }, "failed to open ssh shell");
+						ws.send(`\nFailed to open shell: ${err.message}\n`);
+						conn.end();
+						return;
+					}
 
 					stream
 						.on("close", (code: number, _signal: string) => {
