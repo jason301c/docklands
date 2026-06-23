@@ -25,7 +25,6 @@ const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
 	prefix: z.string().optional(),
 	expiresIn: z.number().nullable(),
-	organizationId: z.string().min(1, "Organization is required"),
 	// Rate limiting fields
 	rateLimitEnabled: z.boolean().optional(),
 	rateLimitTimeWindow: z.number().nullable(),
@@ -70,7 +69,9 @@ export const AddApiKey = () => {
 	const [showSuccessModal, setShowSuccessModal] = useState(false);
 	const [newApiKey, setNewApiKey] = useState("");
 	const { refetch } = api.user.get.useQuery();
-	const { data: organizations } = api.organization.all.useQuery();
+	// Single-tenant: API keys are scoped to the one organization this instance
+	// has, so there is no organization to pick — we resolve it automatically.
+	const { data: organization } = api.organization.active.useQuery();
 	const createApiKey = api.user.createApiKey.useMutation({
 		onSuccess: (data) => {
 			if (!data) return;
@@ -92,7 +93,6 @@ export const AddApiKey = () => {
 			name: "",
 			prefix: "",
 			expiresIn: null,
-			organizationId: "",
 			rateLimitEnabled: false,
 			rateLimitTimeWindow: null,
 			rateLimitMax: null,
@@ -105,12 +105,16 @@ export const AddApiKey = () => {
 	const rateLimitEnabled = form.watch("rateLimitEnabled");
 
 	const onSubmit = async (values: FormValues) => {
+		if (!organization) {
+			toast.error("No active organization");
+			return;
+		}
 		createApiKey.mutate({
 			name: values.name,
 			expiresIn: values.expiresIn || undefined,
 			prefix: values.prefix || undefined,
 			metadata: {
-				organizationId: values.organizationId,
+				organizationId: organization.id,
 			},
 			// Rate limiting
 			rateLimitEnabled: values.rateLimitEnabled,
@@ -195,33 +199,6 @@ export const AddApiKey = () => {
 									</FormItem>
 								)}
 							/>
-							<FormField
-								control={form.control}
-								name="organizationId"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Organization</FormLabel>
-										<Select
-											aria-label="API key organization"
-											value={field.value}
-											onValueChange={field.onChange}
-										>
-											<FormControl>
-												<></>
-											</FormControl>
-											<>
-												{organizations?.map((org) => (
-													<Select.Option key={org.id} value={org.id}>
-														{org.name}
-													</Select.Option>
-												))}
-											</>
-										</Select>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
 							{/* Rate Limiting Section */}
 							<div className="space-y-4 rounded-lg border p-4">
 								<h3 className="text-lg font-medium">Rate Limiting</h3>

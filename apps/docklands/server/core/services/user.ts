@@ -76,7 +76,6 @@ export const createOrganizationUserWithCredentials = async ({
 			userId: createdUser.id,
 			role,
 			createdAt: now,
-			isDefault: true,
 		});
 
 		await tx

@@ -128,10 +128,11 @@ export const member = pgTable("member", {
 		.$type<"owner" | "member" | "admin" | (string & {})>(),
 	createdAt: timestamp("created_at").notNull(),
 	teamId: text("team_id"),
-	isDefault: boolean("is_default").notNull().default(false),
 	// Capabilities are governed entirely by the member's role (static
 	// owner/admin/member or a custom organization_role). Per-resource access
-	// scoping lives in the normalized `member_resource_access` table.
+	// scoping lives in the normalized `member_resource_access` table. There is
+	// exactly one organization per instance, so there is no "default org" to
+	// track on the membership.
 });
 
 export const memberRelations = relations(member, ({ one }) => ({

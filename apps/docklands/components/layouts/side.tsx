@@ -21,14 +21,7 @@ import {
 	SidebarTrigger,
 	useSidebar,
 } from "@cloudflare/kumo/components/sidebar";
-import {
-	Bell,
-	ChevronRight,
-	ChevronsUpDown,
-	Loader2,
-	Star,
-	Trash2,
-} from "lucide-react";
+import { Bell, ChevronRight, Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
@@ -44,7 +37,7 @@ import {
 } from "@/shared/dashboard-nav";
 import { isWorkspaceDetailPath } from "@/shared/routes";
 import { cn } from "@/shared/utils";
-import { AddOrganization } from "../dashboard/organization/handle-organization";
+import { EditInstance } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
 import { Logo } from "../shared/logo";
 import { RuntimeUpdateButton } from "./runtime-update";
@@ -63,32 +56,15 @@ function LogoWrapper() {
 function SidebarLogo() {
 	const { state } = useSidebar();
 	const { data: user } = api.user.get.useQuery();
-	const { data: session } = api.user.session.useQuery();
-	const {
-		data: organizations,
-		refetch,
-		isLoading,
-	} = api.organization.all.useQuery();
-	const { mutateAsync: deleteOrganization, isPending: isRemoving } =
-		api.organization.delete.useMutation();
-	const { mutateAsync: setDefaultOrganization, isPending: isSettingDefault } =
-		api.organization.setDefault.useMutation();
 	const { isMobile } = useSidebar();
 	const isCollapsed = state === "collapsed" && !isMobile;
-	const { data: activeOrganization } = api.organization.active.useQuery();
+	const { data: activeOrganization, isLoading } =
+		api.organization.active.useQuery();
 
 	const { data: invitations, refetch: refetchInvitations } =
 		api.user.getInvitations.useQuery();
 
-	const [_activeTeam, setActiveTeam] = useState<
-		typeof activeOrganization | null
-	>(null);
-
-	useEffect(() => {
-		if (activeOrganization) {
-			setActiveTeam(activeOrganization);
-		}
-	}, [activeOrganization]);
+	const canEditInstance = user?.role === "owner" || user?.role === "admin";
 
 	return (
 		<>
@@ -103,196 +79,37 @@ function SidebarLogo() {
 						isCollapsed ? "flex-col" : "flex-row justify-between items-center",
 					)}
 				>
-					{/* Organization Logo and Selector */}
+					{/* Instance identity — single-tenant, so no organization switcher */}
 					<SidebarMenuItem className={"w-full"}>
-						<DropdownMenu>
-							<DropdownMenu.Trigger
-								render={
-									<SidebarMenuButton
-										size="base"
-										className={cn(
-											"h-auto min-h-14 w-full gap-3 px-2 py-2 data-[state=open]:bg-kumo-fill-hover data-[state=open]:text-kumo-default",
-											isCollapsed && "min-h-10 justify-center px-1",
-										)}
-									>
-										<div className="flex size-8 shrink-0 items-center justify-center rounded-lg border">
-											<Logo
-												className="size-5 transition-all"
-												logoUrl={activeOrganization?.logo || undefined}
-											/>
-										</div>
-										<div
-											className={cn(
-												"grid min-w-0 flex-1 text-left text-sm leading-tight",
-												isCollapsed && "hidden",
-											)}
-										>
-											<span className="truncate font-semibold">
-												{activeOrganization?.name ?? "Select Organization"}
-											</span>
-											{user?.role && (
-												<span className="truncate text-xs text-kumo-subtle capitalize">
-													{user.role}
-												</span>
-											)}
-										</div>
-										<ChevronsUpDown
-											className={cn(
-												"ml-auto size-4 shrink-0 text-kumo-subtle",
-												isCollapsed && "hidden",
-											)}
-										/>
-									</SidebarMenuButton>
-								}
-							/>
-							<DropdownMenu.Content
-								className="rounded-lg max-h-[min(70vh,28rem)] flex flex-col"
-								align="start"
-								side={isMobile ? "bottom" : "right"}
-								sideOffset={4}
-							>
-								<DropdownMenu.Group>
-									<DropdownMenu.Label className="text-xs text-kumo-subtle shrink-0">
-										Organizations
-									</DropdownMenu.Label>
-								</DropdownMenu.Group>
-								<div className="overflow-y-auto overflow-x-hidden min-h-0 -mx-1 px-1">
-									{organizations?.map((org) => {
-										const isDefault = org.members?.[0]?.isDefault ?? false;
-										return (
-											<div
-												className="flex flex-row justify-between"
-												key={org.name}
-											>
-												<DropdownMenu.Item
-													onClick={async () => {
-														await authClient.organization.setActive({
-															organizationId: org.id,
-														});
-														window.location.reload();
-													}}
-													className="w-full gap-2 p-2"
-												>
-													<div className="flex flex-col gap-1">
-														<div className="flex items-center gap-2">
-															{org.name}
-														</div>
-													</div>
-													<div className="flex size-6 items-center justify-center rounded-sm border">
-														<Logo
-															className={cn(
-																"transition-all",
-																state === "collapsed" ? "size-6" : "size-10",
-															)}
-															logoUrl={org.logo ?? undefined}
-														/>
-													</div>
-												</DropdownMenu.Item>
-
-												<div className="flex items-center gap-2">
-													<Button
-														variant="ghost"
-														shape="square"
-														aria-label={
-															isDefault
-																? "Default organization"
-																: "Set as default organization"
-														}
-														className={cn(
-															"group",
-															isDefault
-																? "hover:bg-kumo-warning/10"
-																: "hover:bg-kumo-brand/10",
-														)}
-														loading={isSettingDefault && !isDefault}
-														disabled={isDefault}
-														onClick={async (e) => {
-															if (isDefault) return;
-															e.stopPropagation();
-															await setDefaultOrganization({
-																organizationId: org.id,
-															})
-																.then(() => {
-																	refetch();
-																	toast.success("Default organization updated");
-																})
-																.catch((error) => {
-																	toast.error(
-																		error?.message ||
-																			"Error setting default organization",
-																	);
-																});
-														}}
-														title={
-															isDefault
-																? "Default organization"
-																: "Set as default"
-														}
-													>
-														{isDefault ? (
-															<Star
-																fill="#eab308"
-																stroke="#eab308"
-																className="size-4 text-kumo-warning"
-															/>
-														) : (
-															<Star
-																fill="none"
-																stroke="currentColor"
-																className="size-4 text-kumo-subtle group-hover:text-kumo-brand transition-colors"
-															/>
-														)}
-													</Button>
-													{org.ownerId === session?.user?.id && (
-														<>
-															<AddOrganization organizationId={org.id} />
-															<DialogAction
-																title="Delete Organization"
-																description="Are you sure you want to delete this organization?"
-																type="destructive"
-																onClick={async () => {
-																	await deleteOrganization({
-																		organizationId: org.id,
-																	})
-																		.then(() => {
-																			refetch();
-																			toast.success(
-																				"Organization deleted successfully",
-																			);
-																		})
-																		.catch((error) => {
-																			toast.error(
-																				error?.message ||
-																					"Error deleting organization",
-																			);
-																		});
-																}}
-															>
-																<Button
-																	variant="ghost"
-																	shape="square"
-																	aria-label="Delete organization"
-																	className="group hover:bg-kumo-danger/10"
-																	loading={isRemoving}
-																>
-																	<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
-																</Button>
-															</DialogAction>
-														</>
-													)}
-												</div>
-											</div>
-										);
-									})}
-								</div>
-								{(user?.role === "owner" || user?.role === "admin") && (
-									<>
-										<DropdownMenu.Separator />
-										<AddOrganization />
-									</>
+						<div
+							className={cn(
+								"flex h-auto min-h-14 w-full items-center gap-3 rounded-md px-2 py-2",
+								isCollapsed && "min-h-10 justify-center px-1",
+							)}
+						>
+							<div className="flex size-8 shrink-0 items-center justify-center rounded-lg border">
+								<Logo
+									className="size-5 transition-all"
+									logoUrl={activeOrganization?.logo || undefined}
+								/>
+							</div>
+							<div
+								className={cn(
+									"grid min-w-0 flex-1 text-left text-sm leading-tight",
+									isCollapsed && "hidden",
 								)}
-							</DropdownMenu.Content>
-						</DropdownMenu>
+							>
+								<span className="truncate font-semibold">
+									{activeOrganization?.name ?? "Docklands"}
+								</span>
+								{user?.role && (
+									<span className="truncate text-xs text-kumo-subtle capitalize">
+										{user.role}
+									</span>
+								)}
+							</div>
+							{!isCollapsed && canEditInstance && <EditInstance />}
+						</div>
 					</SidebarMenuItem>
 
 					{/* Notification Bell */}
@@ -362,7 +179,9 @@ function SidebarLogo() {
 														} else {
 															toast.success("Invitation accepted successfully");
 															await refetchInvitations();
-															await refetch();
+															// Reload so the session picks up the membership the
+															// user just joined (role, permissions, nav).
+															window.location.reload();
 														}
 													}}
 												>

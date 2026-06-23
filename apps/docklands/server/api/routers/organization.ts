@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, exists } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
@@ -13,151 +13,26 @@ import {
 } from "@/server/core/db/schema";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 
+// Docklands is single-tenant: every instance has exactly one organization,
+// created when the first user registers (see `server/core/lib/auth.ts`). There
+// is no way to create, switch, or delete organizations — the org is the
+// instance's identity and the container for its members, roles, and invitations.
+// This router only exposes reading the active org, editing its name/logo, and
+// managing its members and invitations.
 export const organizationRouter = createTRPCRouter({
-	create: protectedProcedure
+	update: withPermission("organization", "update")
 		.input(
 			z.object({
-				name: z.string(),
+				name: z.string().min(1, "Name is required"),
 				logo: z.string().optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Only the organization owner can create an organization",
-				});
-			}
-			const result = await db
-				.insert(organization)
-				.values({
-					...input,
-					slug: nanoid(),
-					createdAt: new Date(),
-					ownerId: ctx.user.id,
-				})
-				.returning()
-				.then((res) => res[0]);
-
-			if (!result) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message: "Failed to create organization",
-				});
-			}
-
-			// Check if this is the user's first organization
-			const existingMemberships = await db.query.member.findMany({
-				where: eq(member.userId, ctx.user.id),
-			});
-
-			await db.insert(member).values({
-				organizationId: result.id,
-				role: "owner",
-				createdAt: new Date(),
-				userId: ctx.user.id,
-			});
-			await audit(ctx, {
-				action: "create",
-				resourceType: "organization",
-				resourceId: result.id,
-				resourceName: result.name,
-			});
-			return result;
-		}),
-	all: protectedProcedure.query(async ({ ctx }) => {
-		const memberResult = await db.query.organization.findMany({
-			where: (organization) =>
-				exists(
-					db
-						.select()
-						.from(member)
-						.where(
-							and(
-								eq(member.organizationId, organization.id),
-								eq(member.userId, ctx.user.id),
-							),
-						),
-				),
-			with: {
-				members: {
-					where: eq(member.userId, ctx.user.id),
-				},
-			},
-		});
-		return memberResult;
-	}),
-	one: protectedProcedure
-		.input(
-			z.object({
-				organizationId: z.string(),
-			}),
-		)
-		.query(async ({ ctx, input }) => {
-			// Verify user is a member of this organization
-			const userMember = await db.query.member.findFirst({
-				where: and(
-					eq(member.organizationId, input.organizationId),
-					eq(member.userId, ctx.user.id),
-				),
-			});
-
-			if (!userMember) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "You are not a member of this organization",
-				});
-			}
-
-			return await db.query.organization.findFirst({
-				where: eq(organization.id, input.organizationId),
-			});
-		}),
-	update: protectedProcedure
-		.input(
-			z.object({
-				organizationId: z.string(),
-				name: z.string(),
-				logo: z.string().optional(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			// First, verify the organization exists
-			const org = await db.query.organization.findFirst({
-				where: eq(organization.id, input.organizationId),
-			});
-
-			if (!org) {
+			const organizationId = ctx.session.activeOrganizationId;
+			if (!organizationId) {
 				throw new TRPCError({
 					code: "NOT_FOUND",
-					message: "Organization not found",
-				});
-			}
-
-			// Verify user is a member of this organization
-			const userMember = await db.query.member.findFirst({
-				where: and(
-					eq(member.organizationId, input.organizationId),
-					eq(member.userId, ctx.user.id),
-				),
-			});
-
-			if (!userMember) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "You are not a member of this organization",
-				});
-			}
-
-			// Only owners can update the organization
-			// Verify the user is either the organization owner or has the owner role
-			const isOwner =
-				org.ownerId === ctx.user.id || userMember.role === "owner";
-
-			if (!isOwner) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Only the organization owner can update it",
+					message: "No active organization",
 				});
 			}
 
@@ -167,85 +42,16 @@ export const organizationRouter = createTRPCRouter({
 					name: input.name,
 					logo: input.logo,
 				})
-				.where(eq(organization.id, input.organizationId))
+				.where(eq(organization.id, organizationId))
 				.returning();
+
 			await audit(ctx, {
 				action: "update",
 				resourceType: "organization",
-				resourceId: input.organizationId,
+				resourceId: organizationId,
 				resourceName: input.name,
 			});
 			return result[0];
-		}),
-	delete: protectedProcedure
-		.input(
-			z.object({
-				organizationId: z.string(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			// First, verify the organization exists
-			const org = await db.query.organization.findFirst({
-				where: eq(organization.id, input.organizationId),
-			});
-
-			if (!org) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "Organization not found",
-				});
-			}
-
-			// Verify user is a member of this organization
-			const userMember = await db.query.member.findFirst({
-				where: and(
-					eq(member.organizationId, input.organizationId),
-					eq(member.userId, ctx.user.id),
-				),
-			});
-
-			if (!userMember) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "You are not a member of this organization",
-				});
-			}
-
-			// Only owners can delete the organization
-			// Verify the user is either the organization owner or has the owner role
-			const isOwner =
-				org.ownerId === ctx.user.id || userMember.role === "owner";
-
-			if (!isOwner) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Only the organization owner can delete it",
-				});
-			}
-
-			const ownerOrgs = await db.query.organization.findMany({
-				where: eq(organization.ownerId, ctx.user.id),
-			});
-
-			if (ownerOrgs.length <= 1) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message:
-						"You must maintain at least one organization where you are the owner",
-				});
-			}
-
-			const result = await db
-				.delete(organization)
-				.where(eq(organization.id, input.organizationId));
-
-			await audit(ctx, {
-				action: "delete",
-				resourceType: "organization",
-				resourceId: input.organizationId,
-				resourceName: org.name,
-			});
-			return result;
 		}),
 	inviteMember: withPermission("member", "create")
 		.input(
@@ -469,53 +275,6 @@ export const organizationRouter = createTRPCRouter({
 				metadata: { before: target.role, after: input.role },
 			});
 			return true;
-		}),
-	setDefault: protectedProcedure
-		.input(
-			z.object({
-				organizationId: z.string().min(1),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			// Verify user is a member of this organization
-			const userMember = await db.query.member.findFirst({
-				where: and(
-					eq(member.organizationId, input.organizationId),
-					eq(member.userId, ctx.user.id),
-				),
-			});
-
-			if (!userMember) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "You are not a member of this organization",
-				});
-			}
-
-			// First, unset all defaults for this user
-			await db
-				.update(member)
-				.set({ isDefault: false })
-				.where(eq(member.userId, ctx.user.id));
-
-			// Then set this organization as default
-			await db
-				.update(member)
-				.set({ isDefault: true })
-				.where(
-					and(
-						eq(member.organizationId, input.organizationId),
-						eq(member.userId, ctx.user.id),
-					),
-				);
-
-			await audit(ctx, {
-				action: "update",
-				resourceType: "organization",
-				resourceId: input.organizationId,
-				metadata: { type: "setDefault" },
-			});
-			return { success: true };
 		}),
 	active: protectedProcedure.query(async ({ ctx }) => {
 		if (!ctx.session.activeOrganizationId) {

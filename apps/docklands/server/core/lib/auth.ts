@@ -171,7 +171,9 @@ const { handler, api } = betterAuth({
 					});
 
 					// The first registrant becomes the single owner: record the
-					// server IP and create their default organization.
+					// server IP and create the one organization this instance has.
+					// Docklands is single-tenant — there is exactly one organization
+					// per instance and no way to create a second one.
 					if (!isAdminPresent) {
 						await updateWebServerSettings({
 							serverIp: await getPublicIpWithFallback(),
@@ -181,7 +183,7 @@ const { handler, api } = betterAuth({
 							const organization = await tx
 								.insert(schema.organization)
 								.values({
-									name: "My Organization",
+									name: "Docklands",
 									ownerId: user.id,
 									createdAt: new Date(),
 								})
@@ -193,7 +195,6 @@ const { handler, api } = betterAuth({
 								organizationId: organization?.id || "",
 								role: "owner",
 								createdAt: new Date(),
-								isDefault: true, // Mark first organization as default
 							});
 						});
 					}
@@ -203,14 +204,11 @@ const { handler, api } = betterAuth({
 		session: {
 			create: {
 				before: async (session) => {
-					// Find the default organization for this user
-					// Priority: 1) isDefault=true, 2) most recently created
+					// Resolve this user's organization. Single-tenant: a user has
+					// exactly one membership, so the most recent one is it.
 					const member = await db.query.member.findFirst({
 						where: eq(schema.member.userId, session.userId),
-						orderBy: [
-							desc(schema.member.isDefault),
-							desc(schema.member.createdAt),
-						],
+						orderBy: [desc(schema.member.createdAt)],
 						with: {
 							organization: true,
 						},
@@ -451,7 +449,7 @@ export const validateRequestHeaders = async (headers: Headers) => {
 						]
 					: []),
 			),
-			orderBy: [desc(schema.member.isDefault), desc(schema.member.createdAt)],
+			orderBy: [desc(schema.member.createdAt)],
 			with: {
 				organization: true,
 				user: true,

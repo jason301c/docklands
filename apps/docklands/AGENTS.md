@@ -61,13 +61,20 @@ Docklands is a single Node process that serves both the UI and the backend:
 - **Better Auth + custom RBAC.** Better Auth handles identity, sessions, orgs,
   2FA, and API keys; Docklands layers organization roles, custom roles, and
   per-resource access on top.
-- **Self-hosted only — single tenant.** This is software you install on your own
-  VM/Mac, not a hosted multi-tenant PaaS. There is no "cloud" mode: the upstream
-  `IS_CLOUD` flag and every cloud-only branch were removed. Signup is a
-  single-owner bootstrap (the first registrant becomes the owner; everyone else
-  is invite-only), the deployment queue and Swarm/Traefik bootstrap always run,
-  and host terminal/stats are always available. Do not reintroduce hosted/
-  multi-tenant code paths.
+- **Self-hosted only — single tenant, one organization per instance.** This is
+  software you install on your own VM/Mac, not a hosted multi-tenant PaaS. There
+  is no "cloud" mode: the upstream `IS_CLOUD` flag and every cloud-only branch
+  were removed. Signup is a single-owner bootstrap (the first registrant becomes
+  the owner; everyone else is invite-only), the deployment queue and Swarm/Traefik
+  bootstrap always run, and host terminal/stats are always available. There is
+  **exactly one organization per instance** — it is created with the first owner
+  and cannot be created, switched, or deleted (Better Auth's `/organization/*`
+  create/update/delete paths are disabled and there is no org-switcher UI). The
+  organization is the instance's identity (its name/logo show in the sidebar; the
+  owner edits them via `EditInstance`) and the container for members, roles, and
+  invitations — `activeOrganizationId` is therefore effectively constant.
+  `member.isDefault` was removed (no "default org" to track). Do not reintroduce
+  hosted/multi-tenant code paths or a second organization.
 
 ## Directory Map
 
@@ -300,8 +307,13 @@ previews, topology, and connection mapping.
 Authorization has three layers; preserve least privilege, auditability, and
 organization scoping in every change.
 
-1. **Identity (Better Auth)** — users, sessions, organizations, members, 2FA, and
-   API keys, via the Drizzle adapter (`server/core/lib/auth.ts`).
+1. **Identity (Better Auth)** — users, sessions, the single organization,
+   members, 2FA, and API keys, via the Drizzle adapter
+   (`server/core/lib/auth.ts`). There is one organization per instance (see the
+   single-tenant note above), so every member, role, invitation, and
+   `organizationId`-scoped resource belongs to that one org. The `organization`
+   router (`api.organization`) only reads the active org, edits its name/logo,
+   and manages members/invitations — it cannot create, switch, or delete orgs.
 2. **Roles** — static roles (`owner`, `admin`, `member`) plus **custom roles**
    stored in the `organization_role` table as JSON permissions, validated against
    the canonical `statements` (resource × action) in

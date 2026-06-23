@@ -1,9 +1,8 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { PenBoxIcon, Plus } from "lucide-react";
+import { PenBoxIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -18,37 +17,28 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 
-const organizationSchema = z.object({
+const instanceSchema = z.object({
 	name: z.string().min(1, {
-		message: "Organization name is required",
+		message: "Name is required",
 	}),
 	logo: z.string().optional(),
 });
 
-type OrganizationFormValues = z.infer<typeof organizationSchema>;
+type InstanceFormValues = z.infer<typeof instanceSchema>;
 
-interface Props {
-	organizationId?: string;
-	children?: React.ReactNode;
-}
-
-export function AddOrganization({ organizationId }: Props) {
+/**
+ * Edit the single organization's name and logo — i.e. the instance's display
+ * identity in the sidebar. Docklands is single-tenant, so there is no create /
+ * switch / delete: this only renames the one organization the instance has.
+ */
+export function EditInstance() {
 	const [open, setOpen] = useState(false);
 	const utils = api.useUtils();
-	const { data: organization } = api.organization.one.useQuery(
-		{
-			organizationId: organizationId ?? "",
-		},
-		{
-			enabled: !!organizationId,
-		},
-	);
-	const { mutateAsync, isPending } = organizationId
-		? api.organization.update.useMutation()
-		: api.organization.create.useMutation();
+	const { data: organization } = api.organization.active.useQuery();
+	const { mutateAsync, isPending } = api.organization.update.useMutation();
 
-	const form = useForm<OrganizationFormValues>({
-		resolver: zodResolver(organizationSchema),
+	const form = useForm<InstanceFormValues>({
+		resolver: zodResolver(instanceSchema),
 		defaultValues: {
 			name: "",
 			logo: "",
@@ -64,70 +54,42 @@ export function AddOrganization({ organizationId }: Props) {
 		}
 	}, [organization, form]);
 
-	const onSubmit = async (values: OrganizationFormValues) => {
+	const onSubmit = async (values: InstanceFormValues) => {
 		await mutateAsync({
 			name: values.name,
 			logo: values.logo,
-			organizationId: organizationId ?? "",
 		})
 			.then(() => {
-				form.reset();
-				toast.success(
-					`Organization ${organizationId ? "updated" : "created"} successfully`,
-				);
-				utils.organization.all.invalidate();
-				if (organizationId) {
-					utils.organization.one.invalidate({ organizationId });
-					utils.organization.active.invalidate();
-				}
+				toast.success("Instance settings updated");
+				utils.organization.active.invalidate();
 				setOpen(false);
 			})
 			.catch((error) => {
 				console.error(error);
-				toast.error(
-					`Failed to ${organizationId ? "update" : "create"} organization`,
-				);
+				toast.error(error?.message || "Failed to update instance settings");
 			});
 	};
 
 	return (
 		<Dialog.Root open={open} onOpenChange={setOpen}>
 			<Dialog.Trigger
-				nativeButton={false}
 				render={
-					organizationId ? (
-						<DropdownMenu.Item
-							className="group cursor-pointer hover:bg-kumo-brand/10"
-							onSelect={(e) => e.preventDefault()}
-						>
-							<PenBoxIcon className="size-3.5 text-kumo-brand group-hover:text-kumo-brand" />
-						</DropdownMenu.Item>
-					) : (
-						((
-							<DropdownMenu.Item
-								className="gap-2 p-2"
-								onSelect={(e) => e.preventDefault()}
-							>
-								<div className="flex size-6 items-center justify-center rounded-md border bg-kumo-canvas">
-									<Plus className="size-4" />
-								</div>
-								<div className="font-medium text-kumo-subtle">
-									Add organization
-								</div>
-							</DropdownMenu.Item>
-						) as never)
-					)
+					<Button
+						variant="ghost"
+						shape="square"
+						aria-label="Instance settings"
+						title="Instance settings"
+						className="group shrink-0 hover:bg-kumo-brand/10"
+					>
+						<PenBoxIcon className="size-4 text-kumo-subtle group-hover:text-kumo-brand" />
+					</Button>
 				}
 			/>
 			<Dialog className="sm:max-w-[425px]">
 				<div>
-					<Dialog.Title>
-						{organizationId ? "Update organization" : "Add organization"}
-					</Dialog.Title>
+					<Dialog.Title>Instance settings</Dialog.Title>
 					<Dialog.Description>
-						{organizationId
-							? "Update the organization name and logo"
-							: "Create a new organization to manage your workspaces."}
+						Update the name and logo shown for this Docklands instance.
 					</Dialog.Description>
 				</div>
 				<Form {...form}>
@@ -142,7 +104,7 @@ export function AddOrganization({ organizationId }: Props) {
 								<FormItem className="gap-4">
 									<FormLabel>Name</FormLabel>
 									<FormControl>
-										<Input placeholder="Organization name" {...field} />
+										<Input placeholder="Instance name" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -167,7 +129,7 @@ export function AddOrganization({ organizationId }: Props) {
 						/>
 						<div>
 							<Button type="submit" loading={isPending}>
-								{organizationId ? "Update organization" : "Create organization"}
+								Save changes
 							</Button>
 						</div>
 					</form>
