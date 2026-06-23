@@ -219,6 +219,16 @@ reason to move code out.
   audit-log, etc.). After schema edits run `bun run migration:generate` and
   commit the SQL plus `drizzle/meta` updates. `db/drizzle.config.ts` is the
   Drizzle Kit config.
+  - **`createdAt` convention.** Domain tables store `createdAt` (and similar
+    timestamps) as **`text` ISO-8601 strings** via
+    `$defaultFn(() => new Date().toISOString())`. ISO-8601 sorts
+    lexicographically in the same order as chronologically, so `orderBy
+    createdAt` and string range comparisons (e.g. the preview-expiry reaper)
+    work directly, and the values are trivially cross-runtime. The Better Auth
+    and audit-log tables use native `timestamp` instead because those schemas
+    are owned by their plugins/conventions. New **domain** tables should follow
+    the `text` ISO convention to stay consistent with the rest of the domain
+    schema; do not mix the two within a table.
 - `databases/` — the **database engine registry** (`registry.ts`) and detection
   (`detection.ts`): the single source of truth for the six managed engines
   (postgres/mysql/mariadb/mongo/redis/libsql). See "Managed databases" below.
