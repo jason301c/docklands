@@ -31,7 +31,6 @@ import {
 	workspaces,
 } from "@/server/core/db/schema";
 import { logger } from "@/server/core/lib/logger";
-import { cancelDeployment } from "@/server/core/runtime/deploy";
 import {
 	createApplication,
 	findApplicationById,
@@ -42,7 +41,6 @@ import {
 import {
 	clearOldDeployments,
 	removeDeployments,
-	updateDeploymentStatus,
 } from "@/server/core/services/deployment";
 import { getContainerLogs } from "@/server/core/services/docker";
 import { findEnvironmentById } from "@/server/core/services/environment";
@@ -651,21 +649,6 @@ export const applicationRouter = createTRPCRouter({
 			});
 			return true;
 		}),
-	markRunning: protectedProcedure
-		.input(apiFindOneApplication)
-		.mutation(async ({ input, ctx }) => {
-			await checkServicePermissionAndAccess(ctx, input.applicationId, {
-				deployment: ["create"],
-			});
-			await updateApplicationStatus(input.applicationId, "running");
-			const application = await findApplicationById(input.applicationId);
-			await audit(ctx, {
-				action: "deploy",
-				resourceType: "application",
-				resourceId: application.applicationId,
-				resourceName: application.appName,
-			});
-		}),
 	update: protectedProcedure
 		.input(apiUpdateApplication)
 		.mutation(async ({ input, ctx }) => {
@@ -951,50 +934,6 @@ export const applicationRouter = createTRPCRouter({
 				resourceName: updatedApplication.appName,
 			});
 			return updatedApplication;
-		}),
-
-	cancelDeployment: protectedProcedure
-		.input(apiFindOneApplication)
-		.mutation(async ({ input, ctx }) => {
-			await checkServicePermissionAndAccess(ctx, input.applicationId, {
-				deployment: ["cancel"],
-			});
-			const application = await findApplicationById(input.applicationId);
-
-			try {
-				await updateApplicationStatus(input.applicationId, "idle");
-
-				if (application.deployments[0]) {
-					await updateDeploymentStatus(
-						application.deployments[0].deploymentId,
-						"done",
-					);
-				}
-
-				await cancelDeployment({
-					applicationId: input.applicationId,
-					applicationType: "application",
-				});
-				await audit(ctx, {
-					action: "stop",
-					resourceType: "application",
-					resourceId: application.applicationId,
-					resourceName: application.appName,
-				});
-				return {
-					success: true,
-					message: "Deployment cancellation requested",
-				};
-			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message:
-						error instanceof Error
-							? error.message
-							: "Failed to cancel deployment",
-					cause: error,
-				});
-			}
 		}),
 
 	search: protectedProcedure

@@ -58,7 +58,7 @@ export const ShowDeployments = ({
 	runtimeWorkerId,
 }: Props) => {
 	const [activeLog, setActiveLog] = useState<
-		RouterOutputs["deployment"]["all"][number] | null
+		RouterOutputs["deployment"]["allByType"][number] | null
 	>(null);
 	const { data: deployments, isPending: isLoadingDeployments } =
 		api.deployment.allByType.useQuery(

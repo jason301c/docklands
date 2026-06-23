@@ -185,10 +185,6 @@ export const apiFindOneDatabase = z.object({
 	databaseId: z.string().min(1),
 });
 
-export const apiChangeDatabaseStatus = createSchema
-	.pick({ applicationStatus: true })
-	.extend({ databaseId: z.string().min(1) });
-
 export const apiSaveEnvironmentVariablesDatabase = z.object({
 	databaseId: z.string().min(1),
 	env: z.string().nullish(),

@@ -3,17 +3,8 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
 import { db } from "@/server/core/db";
+import { apiFindAllByType, deployments } from "@/server/core/db/schema";
 import {
-	apiFindAllByApplication,
-	apiFindAllByCompose,
-	apiFindAllByRuntimeWorker,
-	apiFindAllByType,
-	deployments,
-} from "@/server/core/db/schema";
-import {
-	findAllDeploymentsByApplicationId,
-	findAllDeploymentsByComposeId,
-	findAllDeploymentsByServerId,
 	findAllDeploymentsCentralized,
 	findDeploymentById,
 	removeDeployment,
@@ -33,39 +24,6 @@ import { myQueue } from "@/server/queues/queueSetup";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 
 export const deploymentRouter = createTRPCRouter({
-	all: protectedProcedure
-		.input(apiFindAllByApplication)
-		.query(async ({ input, ctx }) => {
-			await checkServicePermissionAndAccess(ctx, input.applicationId, {
-				deployment: ["read"],
-			});
-			return await findAllDeploymentsByApplicationId(input.applicationId);
-		}),
-
-	allByCompose: protectedProcedure
-		.input(apiFindAllByCompose)
-		.query(async ({ input, ctx }) => {
-			await checkServicePermissionAndAccess(ctx, input.composeId, {
-				deployment: ["read"],
-			});
-			return await findAllDeploymentsByComposeId(input.composeId);
-		}),
-	allByServer: withPermission("deployment", "read")
-		.input(apiFindAllByRuntimeWorker)
-		.query(async ({ input, ctx }) => {
-			const targetRuntimeWorker = await findRuntimeWorkerById(
-				input.runtimeWorkerId,
-			);
-			if (
-				targetRuntimeWorker.organizationId !== ctx.session.activeOrganizationId
-			) {
-				throw new TRPCError({
-					code: "UNAUTHORIZED",
-					message: "You don't have access to this runtime worker.",
-				});
-			}
-			return await findAllDeploymentsByServerId(input.runtimeWorkerId);
-		}),
 	allCentralized: withPermission("deployment", "read").query(
 		async ({ ctx }) => {
 			const orgId = ctx.session.activeOrganizationId;

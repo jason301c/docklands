@@ -896,14 +896,6 @@ export const findAllDeploymentsByApplicationId = async (
 	return deploymentsList;
 };
 
-export const findAllDeploymentsByComposeId = async (composeId: string) => {
-	const deploymentsList = await db.query.deployments.findMany({
-		where: eq(deployments.composeId, composeId),
-		orderBy: desc(deployments.createdAt),
-	});
-	return deploymentsList;
-};
-
 const centralizedDeploymentsWith = {
 	application: {
 		columns: { applicationId: true, name: true, appName: true },
@@ -1142,14 +1134,6 @@ export const removeDeploymentsByRuntimeWorkerId = async (
 		.delete(deployments)
 		.where(eq(deployments.runtimeWorkerId, runtimeWorker.runtimeWorkerId))
 		.returning();
-};
-
-export const findAllDeploymentsByServerId = async (runtimeWorkerId: string) => {
-	const deploymentsList = await db.query.deployments.findMany({
-		where: eq(deployments.runtimeWorkerId, runtimeWorkerId),
-		orderBy: desc(deployments.createdAt),
-	});
-	return deploymentsList;
 };
 
 export const clearOldDeployments = async (

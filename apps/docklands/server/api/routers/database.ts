@@ -9,7 +9,6 @@ import {
 } from "@/server/core/databases/registry";
 import { db } from "@/server/core/db";
 import {
-	apiChangeDatabaseStatus,
 	apiCreateDatabase,
 	apiDeployDatabase,
 	apiFindOneDatabase,
@@ -261,24 +260,6 @@ export const databaseRouter = createTRPCRouter({
 				}
 				if (signal?.aborted) return;
 			}
-		}),
-	changeStatus: protectedProcedure
-		.input(apiChangeDatabaseStatus)
-		.mutation(async ({ input, ctx }) => {
-			await checkServicePermissionAndAccess(ctx, input.databaseId, {
-				deployment: ["create"],
-			});
-			const service = await findDatabaseById(input.databaseId);
-			await updateDatabaseById(input.databaseId, {
-				applicationStatus: input.applicationStatus,
-			});
-			await audit(ctx, {
-				action: "update",
-				resourceType: "service",
-				resourceId: service.databaseId,
-				resourceName: service.appName,
-			});
-			return service;
 		}),
 	remove: protectedProcedure
 		.input(apiFindOneDatabase)

@@ -21,7 +21,6 @@ import {
 	workspaces,
 } from "@/server/core/db/schema";
 import { createLogger } from "@/server/core/lib/logger";
-import { cancelDeployment } from "@/server/core/runtime/deploy";
 import {
 	createCompose,
 	createComposeByTemplate,
@@ -35,7 +34,6 @@ import {
 import {
 	clearOldDeployments,
 	removeDeploymentsByComposeId,
-	updateDeploymentStatus,
 } from "@/server/core/services/deployment";
 import { getContainerLogs } from "@/server/core/services/docker";
 import {
@@ -966,53 +964,6 @@ export const composeRouter = createTRPCRouter({
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: `Error importing template: ${error instanceof Error ? error.message : error}`,
-					cause: error,
-				});
-			}
-		}),
-
-	cancelDeployment: protectedProcedure
-		.input(apiFindCompose)
-		.mutation(async ({ input, ctx }) => {
-			await checkServicePermissionAndAccess(ctx, input.composeId, {
-				deployment: ["cancel"],
-			});
-			const compose = await findComposeById(input.composeId);
-
-			try {
-				await updateCompose(input.composeId, {
-					composeStatus: "idle",
-				});
-
-				if (compose.deployments[0]) {
-					await updateDeploymentStatus(
-						compose.deployments[0].deploymentId,
-						"done",
-					);
-				}
-
-				await cancelDeployment({
-					composeId: input.composeId,
-					applicationType: "compose",
-				});
-
-				await audit(ctx, {
-					action: "stop",
-					resourceType: "compose",
-					resourceId: input.composeId,
-					resourceName: compose.name,
-				});
-				return {
-					success: true,
-					message: "Deployment cancellation requested",
-				};
-			} catch (error) {
-				throw new TRPCError({
-					code: "INTERNAL_SERVER_ERROR",
-					message:
-						error instanceof Error
-							? error.message
-							: "Failed to cancel deployment",
 					cause: error,
 				});
 			}

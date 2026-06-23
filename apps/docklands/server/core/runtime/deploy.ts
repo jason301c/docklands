@@ -1,11 +1,7 @@
 import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import type { DeploymentJob } from "@/server/queues/queue-types";
-import {
-	cleanQueuesByApplication,
-	cleanQueuesByCompose,
-	myQueue,
-} from "@/server/queues/queueSetup";
+import { myQueue } from "@/server/queues/queueSetup";
 
 const logger = createLogger("deploy-queue");
 
@@ -41,23 +37,6 @@ export const deploy = async (jobData: DeploymentJob) => {
 	);
 
 	return result;
-};
-
-type CancelDeploymentData =
-	| { applicationId: string; applicationType: "application" }
-	| { composeId: string; applicationType: "compose" };
-
-export const cancelDeployment = async (cancelData: CancelDeploymentData) => {
-	if (cancelData.applicationType === "application") {
-		await cleanQueuesByApplication(cancelData.applicationId);
-	} else {
-		await cleanQueuesByCompose(cancelData.composeId);
-	}
-
-	return {
-		success: true,
-		message: "Queued deployment cancellation requested",
-	};
 };
 
 export type QueueJobRow = {
