@@ -173,7 +173,7 @@ export const ShowUsers = () => {
 																		{canDelete && (
 																			<DialogAction
 																				title="Delete User"
-																				description="Are you sure you want to delete this user?"
+																				description="This permanently deletes the user account and everything tied to it — sessions, API keys, 2FA, credentials, and all organization memberships. It cannot be undone. Continue?"
 																				type="destructive"
 																				onClick={async () => {
 																					await mutateAsync({

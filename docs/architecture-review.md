@@ -507,6 +507,33 @@ means shipped and green (`typecheck` + `test:ci`).
   lost on restart; a cron that fired while down isn't backfilled) is narrow and
   is the right work for a dedicated effort against a live environment. Tracked,
   not silently dropped.
+- **P4 — RBAC hard boundary — ◑ partial (2026-06-23): 5 closed, 2 already
+  enforced, 4 deferred.** **Closed:** **O2** — the build-log WS now resolves the
+  deployment's owning service by `logPath` (`findDeploymentServiceByLogPath`) and
+  runs `checkServiceAccess` (was `user && session` only — anyone could stream any
+  build by guessing a path). **O3** — `readStatsLogs` (raw ingress logs: IPs,
+  paths, UAs) raised from `protectedProcedure` to `adminProcedure`, matching its
+  less-sensitive `readStats` sibling. **AC5** — the roles manager page now
+  `requireAdmin()` (matching its admin-only mutations) instead of `member:read`.
+  **AC6** — removed the no-op `assignPermissions` ownership check (it compared the
+  active org's ownerId to itself); documented that `member:update` + the
+  org-scoped `findMemberByUserId` are the real guards. **AC3** — the "Delete User"
+  dialog now states plainly it's a permanent full-account deletion. **Already
+  enforced (no change needed):** **C2(read)** — `service_database.connectionInfo`
+  already calls `checkServiceAccess(..., "read")`; **R5** — `getServerMetrics` is
+  already `monitoring:read`-gated (and P6 removes the surface entirely).
+  **Deferred (larger feature / needs live validation):** **AC1** — per-service
+  scoping of the docker logs/stats/terminal WS needs container→service resolution
+  (`docker inspect` label → appName → service); no reverse helper exists and it
+  can't be validated without live Docker. Owners/admins are unaffected; the gap
+  is a scoped member *with* `docker:read` (an unusual grant). **AC2** — per-API-key
+  permission scope is a schema+enforcement feature the prior RBAC audit itself
+  flagged "moot under single-org." **AC4** — org-wide "require 2FA" needs a setting
+  plus auth/redirect-flow enforcement that's lockout-sensitive to land blind.
+  **G2** — refresh-token webhook signing is provider-specific (GitLab token vs
+  Gitea HMAC vs Bitbucket none) and webhook changes are breakage-sensitive. All
+  tracked, none silently dropped. Green: `tsc` clean, 83 files / 671 tests pass,
+  Biome clean.
 
 ### Discovered during remediation
 
@@ -631,7 +658,7 @@ the cleanup. Phases are independently shippable and each ends green
 | **P1** ✅ | Secrets at rest | abstraction ① + apply to inventory + `DOCKLANDS_ENCRYPTION_KEY` + docs | G3, G4, N2, S2, S3, B2(store), D1(store), C2(store) |
 | **P2** ✅ | Shell-exec safety | `shellArg`/arg-array sweep + secrets off cmdline | A2, A10, D4, N3, G5, R4, B2(cmdline) |
 | **P3** ◑ | Durable jobs | R1 fixed; durable-queue rewrite (O6/B7) deferred — needs live env | **R1 ✅**; O6, B7 deferred |
-| **P4** | RBAC hard boundary | per-service authz everywhere + API-key scope + webhook signing | AC1, O2, O3, R5, AC2, AC4, AC5, AC6, G2, AC3, C2(read) |
+| **P4** ◑ | RBAC hard boundary | 5 closed (O2,O3,AC3,AC5,AC6) + 2 already-enforced (C2-read,R5); AC1/AC2/AC4/G2 deferred | O2,O3,AC3,AC5,AC6 ✅; AC1,AC2,AC4,G2 deferred |
 | **P5** | Connection-var binding | abstraction ③ | D1(expose), D2, W2, W5 |
 | **P6** | Keep / cut | finish or remove the 8 half-built features | O1, C1, O5, S5, AC9, B1, R2, W3 |
 | **P7** | Guardrails + consistency | guard safety-critical footguns; finish rename; canonical taxonomy | N1, N4, N5, N6, A3, A4, D3, D5, B3, B4, B5, B6, B8, B9, C4, C5, C6, C7, C8, C9, R3, R6, W1, W4, S4, A5/O7, N8, N9, A6, A7, A12, G6, G8, W6 |
@@ -734,7 +761,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | D7 | config jsonb validated at boundary | no action (positive) |
 | D8 | mysql/mariadb dumps as root | no action (note) |
 | C1 | bare-DB routing dead in catalog | **P6 finish (ship templates)** |
-| C2 | compose creds plaintext/served | **✅ P1 (store)** + P4 (read perm) |
+| C2 | compose creds plaintext/served | **✅ P1 (store)** + **✅ already checkServiceAccess-scoped (read)** |
 | C3 | extractDatabaseCredentials defaults | **✅ P0** (throws for auth-required engines; caller skips + warns) |
 | C4 | backup user/password engine quirk | **P7 fix** |
 | C5 | detection runs twice | **P7 (single call site)** |
@@ -752,25 +779,25 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | N8 | domain validation CDN gap | **P7 (doc)** |
 | N9 | redirects application-only | no action (note) |
 | G1 | GitLab `/api/v4/workspaces` | **✅ P0** (→ `/api/v4/projects`) |
-| G2 | refresh-token webhook no signature | **P4 (sign/verify)** |
+| G2 | refresh-token webhook no signature | **◑ deferred** — provider-specific signing; webhook changes are breakage-sensitive |
 | G3 | SSH keys plaintext + wrong comment | **✅ P1** (+ comment fixed) |
 | G4 | all provider creds plaintext | **✅ P1** |
 | G5 | SSH key echo interpolation + race | **✅ P2** (base64 + per-clone mktemp + cleanup) |
 | G6 | provider parity uneven | **P7 (document)** |
 | G7 | bitbucket isConfigured false | **✅ P0** (derives from apiToken + email) |
 | G8 | provider URLs from window.origin | **P7 (use configured URL)** |
-| AC1 | docker WS skip per-service access | **P4** |
-| AC2 | API keys full identity | **P4 (per-key scope)** |
-| AC3 | "Delete User" global delete | **P4 (scope/warn)** |
-| AC4 | 2FA not enforceable org-wide | **P4 (require-2FA)** |
-| AC5 | roles page under-gates | **P4 fix** |
-| AC6 | assignPermissions near-no-op check | **P4 fix** |
+| AC1 | docker WS skip per-service access | **◑ deferred** — needs container→service resolution validated on live Docker (owners/admins unaffected) |
+| AC2 | API keys full identity | **◑ deferred** — schema+enforcement feature; prior RBAC audit flagged "moot under single-org" |
+| AC3 | "Delete User" global delete | **✅ P4** (dialog now warns it's a permanent full-account delete) |
+| AC4 | 2FA not enforceable org-wide | **◑ deferred** — needs a setting + lockout-sensitive auth-flow enforcement |
+| AC5 | roles page under-gates | **✅ P4** (`requireAdmin`) |
+| AC6 | assignPermissions near-no-op check | **✅ P4** (removed no-op; documented real guards) |
 | AC7 | custom-role multi-row merge | no action (by design) |
 | AC8 | owner-role sealing consistent | no action (positive) |
 | AC9 | user.role + admin vestiges | **P6 cut** |
 | O1 | audit log no-op | **P6 finish** |
-| O2 | build-log WS no authz | **P4** |
-| O3 | request-analytics read gate | **P4** |
+| O2 | build-log WS no authz | **✅ P4** (resolve service by logPath + checkServiceAccess) |
+| O3 | request-analytics read gate | **✅ P4** (readStatsLogs → adminProcedure) |
 | O4 | metrics only while watched | **P7 (doc; opt. collector)** |
 | O5 | remote/paid metrics half-wired | **P6 cut** |
 | O6 | in-memory queue loses state | **◑ deferred** — in-flight reconciled by `initCancelDeployments`; full durable queue needs live env |
@@ -798,7 +825,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | R2 | no build worker for compose | **P6 defer** |
 | R3 | node removal force-rm | **P7 guard (drain-wait/quorum)** |
 | R4 | nodeId no regex guard | **✅ P2** (charset-validated) |
-| R5 | getServerMetrics SSRF | **P4 (+ removed by P6 cut)** |
+| R5 | getServerMetrics SSRF | **already monitoring:read-gated; removed by P6 cut** |
 | R6 | server→runtimeWorker rename | **P7 (finish rename)** |
 | R7 | build-workers route is concurrency | no action (documented) |
 | R8 | execAsyncRemote timeout + dead sleep | **✅ P0** (drop sleep; timeout 30s; rm dead var) |

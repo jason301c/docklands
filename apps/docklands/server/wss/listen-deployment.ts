@@ -4,6 +4,8 @@ import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
 import { validateRequest } from "@/server/core/lib/auth";
 import { readValidDirectory } from "@/server/core/runtime/host";
+import { findDeploymentServiceByLogPath } from "@/server/core/services/deployment";
+import { checkServiceAccess } from "@/server/core/services/permission";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { encodeBase64 } from "@/server/core/utils/docker/utils";
 import { getRuntimeWorkerIdParam } from "./utils";
@@ -50,6 +52,29 @@ export const setupDeploymentLogsWebSocketServer = (
 
 		if (!user || !session) {
 			ws.close();
+			return;
+		}
+
+		// Per-service authorization: the caller must be able to read the service
+		// that owns this deployment log. Without this, any authenticated org user
+		// who guesses a valid logPath could stream another service's build output.
+		try {
+			const owner = await findDeploymentServiceByLogPath(logPath);
+			const serviceId = owner?.applicationId ?? owner?.composeId ?? null;
+			if (!serviceId) {
+				ws.close(4003, "Forbidden");
+				return;
+			}
+			await checkServiceAccess(
+				{
+					user: { id: user.id },
+					session: { activeOrganizationId: session.activeOrganizationId },
+				},
+				serviceId,
+				"read",
+			);
+		} catch {
+			ws.close(4003, "Forbidden");
 			return;
 		}
 

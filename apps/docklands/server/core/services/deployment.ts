@@ -146,6 +146,33 @@ export const findDeploymentById = async (deploymentId: string) => {
 	return deployment;
 };
 
+/**
+ * Resolve the service a deployment log belongs to, by its `logPath`. Used by the
+ * build-log WebSocket to authorize per-service access (the socket runs outside
+ * tRPC). Returns the owning ids, or null if no deployment matches the path.
+ */
+export const findDeploymentServiceByLogPath = async (logPath: string) => {
+	const deployment = await db.query.deployments.findFirst({
+		where: eq(deployments.logPath, logPath),
+		columns: {
+			applicationId: true,
+			composeId: true,
+			previewDeploymentId: true,
+		},
+		with: {
+			previewDeployment: { columns: { applicationId: true } },
+		},
+	});
+	if (!deployment) return null;
+	return {
+		applicationId:
+			deployment.applicationId ??
+			deployment.previewDeployment?.applicationId ??
+			null,
+		composeId: deployment.composeId ?? null,
+	};
+};
+
 export const findDeploymentByApplicationId = async (applicationId: string) => {
 	const deployment = await db.query.deployments.findFirst({
 		where: eq(deployments.applicationId, applicationId),

@@ -712,7 +712,10 @@ export const settingsRouter = createTRPCRouter({
 			return ports.some((port) => port.targetPort === 8080);
 		}),
 
-	readStatsLogs: protectedProcedure
+	// Raw ingress access logs (hosts, paths, client IPs, UAs) for the whole
+	// deployment — at least as sensitive as the aggregated `readStats` below, so
+	// gate it the same way (owner/admin) instead of any signed-in user.
+	readStatsLogs: adminProcedure
 		.meta({
 			openapi: {
 				path: "/read-stats-logs",

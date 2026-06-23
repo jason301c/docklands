@@ -342,17 +342,12 @@ export const userRouter = createTRPCRouter({
 		.input(apiAssignPermissions)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				const organization = await findOrganizationById(
-					ctx.session?.activeOrganizationId || "",
-				);
-
-				if (organization?.ownerId !== ctx.user.ownerId) {
-					throw new TRPCError({
-						code: "UNAUTHORIZED",
-						message: "You are not allowed to assign permissions",
-					});
-				}
-
+				// Authorization is the `member:update` capability (above) plus the
+				// org-scoped `findMemberByUserId(id, organizationId)` below, which
+				// throws if the target isn't a member of the active org. (The old
+				// `organization.ownerId !== ctx.user.ownerId` check was a no-op —
+				// ctx.user.ownerId *is* the active org's ownerId for every member —
+				// so it never guarded anything; removed to avoid misleading readers.)
 				const organizationId = ctx.session?.activeOrganizationId || "";
 				const {
 					id,
