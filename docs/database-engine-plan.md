@@ -334,8 +334,10 @@ replacing any per-engine description.
 - **Phase 1 — DONE.** Engine registry (`server/core/databases/registry.ts`) + detection (`detection.ts`), 36 tests. Fixed latent `redis-server`/`libsql-server` image bugs.
 - **Phase 2 (collapse) — DONE.** One `database` table + generic service/router/builder replace the six per-engine schemas/routers/services/builders; the six per-engine UI trees collapse to `components/dashboard/database-service/` + one route client. All consumers (workspace-graph, environment, workspace, mount, backups/restore, volume-backups, runtime-worker, canvas) read the unified table. Migrations 0003 (add) + 0005 (drop the six tables + FK columns). Net ≈ −6.2k lines.
 - **Phase 3 (bridge) — DONE.** `service_database` table + registry-backed detection wired into `processComposeTemplate`; template instantiation auto-promotes detected databases. `test-database-detection.yaml` drives a real test.
-- **Phase 4 (generalize) — PARTIAL.** Backups/restore are registry-driven over the unified `database`. Making `service_database` (compose-embedded DBs) a first-class **backup + connection-variable source** is the remaining piece (needs container-env credential extraction, per Coolify's `ServiceDatabase`).
-- **Phase 5 (boundary/catalog) — TODO.** Route bare single-DB templates to the managed path; label the catalog.
+- **Phase 4 (generalize) — DONE.** Backups/restore are registry-driven over the unified `database`. `service_database` (compose-embedded DBs) is now a first-class backup + connection-info source: the registry extracts credentials from the compose service env at promotion, `runServiceDatabaseBackup` dumps the container resolved by service name inside the stack, and the compose detail surfaces each embedded database with connection variables + a backups panel. Migration 0006.
+- **Phase 5 (boundary/catalog) — DONE.** `analyzeTemplateDatabases` labels each catalog template with its detected engines; bare single-database templates are routed to the managed-database picker (preset to the engine) instead of an opaque compose deploy.
+
+All five phases are complete and green (typecheck 0, full Vitest suite, build).
 
 ## Locked decisions
 
