@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { ArrowRight, BookIcon, FolderInput, Rocket } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
-import { api } from "@/client/api/trpc";
+import { api, type RouterOutputs } from "@/client/api/trpc";
 import { HandleWorkspace } from "@/components/dashboard/workspace/manage/handle-workspace";
 import {
 	workspaceEnvironmentPath,
@@ -42,7 +42,10 @@ const statusDotClass: Record<string, string> = {
 	idle: "bg-kumo-subtle/40",
 };
 
-function getServiceInfo(d: any) {
+type CentralizedDeployment =
+	RouterOutputs["deployment"]["allCentralized"][number];
+
+function getServiceInfo(d: CentralizedDeployment) {
 	const app = d.application;
 	const comp = d.compose;
 	if (app?.environment?.workspace && app.environment) {

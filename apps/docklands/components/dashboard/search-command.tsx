@@ -4,7 +4,7 @@ import { CommandPalette } from "@cloudflare/kumo/components/command-palette";
 import { BookIcon, CircuitBoard, GlobeIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import React from "react";
-import { api } from "@/client/api/trpc";
+import { api, type RouterOutputs } from "@/client/api/trpc";
 import {
 	extractServices,
 	type Services,
@@ -44,11 +44,25 @@ type SearchGroup = {
 	items: SearchItem[];
 };
 
-const extractAllServicesFromProject = (workspace: any): SearchServices[] => {
+type WorkspaceFromAll = RouterOutputs["workspaces"]["all"][number];
+type EnvironmentFromAll = WorkspaceFromAll["environments"][number];
+
+const extractAllServicesFromProject = (
+	workspace: WorkspaceFromAll,
+): SearchServices[] => {
 	const allServices: SearchServices[] = [];
 
-	workspace.environments?.forEach((environment: any) => {
-		const environmentServices = extractServices(environment);
+	workspace.environments?.forEach((environment: EnvironmentFromAll) => {
+		// TODO(x-types-5): `extractServices` is typed against the richer
+		// `workspaces.allForPermissions` environment (it reads appName/createdAt/
+		// description/runtimeWorkerId), but `workspaces.all` selects a narrower set
+		// of columns. The fields it reads beyond what `all` provides are never used
+		// downstream here, so we cast rather than widen the column selection (a
+		// behavior/perf change) or fork the extractor. Reconcile the two shapes to
+		// drop this cast.
+		const environmentServices = extractServices(
+			environment as unknown as Parameters<typeof extractServices>[0],
+		);
 		const servicesWithEnvironmentId: SearchServices[] = environmentServices.map(
 			(service) => ({
 				...service,

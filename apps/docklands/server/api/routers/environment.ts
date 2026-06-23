@@ -31,20 +31,31 @@ import {
 	isOwnerOrAdmin,
 } from "@/server/core/services/permission";
 
-const filterEnvironmentServices = (
-	environment: any,
+// Minimal structural shape the service filter relies on: each environment-with-
+// relations object exposes `applications`/`compose`/`database` arrays keyed by
+// their respective service id. Both `findEnvironmentById` and
+// `findEnvironmentsByWorkspaceId` outputs satisfy this, so the helper stays
+// generic over the concrete Drizzle row type and preserves every other field.
+type EnvironmentWithServices = {
+	applications: { applicationId: string }[];
+	compose: { composeId: string }[];
+	database: { databaseId: string }[];
+};
+
+const filterEnvironmentServices = <E extends EnvironmentWithServices>(
+	environment: E,
 	accessedServices: string[],
-) => ({
+): E => ({
 	...environment,
-	applications: (environment.applications ?? []).filter((app: any) =>
+	applications: environment.applications.filter((app) =>
 		accessedServices.includes(app.applicationId),
 	),
-	compose: (environment.compose ?? []).filter((comp: any) =>
+	compose: environment.compose.filter((comp) =>
 		accessedServices.includes(comp.composeId),
 	),
 	// Unified managed-database model: a single engine-discriminated `database`
 	// array keyed by `databaseId` (the per-engine arrays were removed).
-	database: (environment.database ?? []).filter((db: any) =>
+	database: environment.database.filter((db) =>
 		accessedServices.includes(db.databaseId),
 	),
 });

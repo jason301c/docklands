@@ -205,11 +205,7 @@ export const AdvancedEnvironmentSelector = ({
 
 					{environments?.map((environment) => {
 						const servicesCount =
-							environment.mariadb.length +
-							environment.mongo.length +
-							environment.mysql.length +
-							environment.postgres.length +
-							environment.redis.length +
+							environment.database.length +
 							environment.applications.length +
 							environment.compose.length;
 						return (
