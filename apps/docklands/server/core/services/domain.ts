@@ -3,13 +3,13 @@ import { promisify } from "node:util";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
+import { detectCDNProvider } from "@/server/core/constants/cdn";
 import { db } from "@/server/core/db";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { generateRandomDomain } from "@/server/core/templates";
 import { manageDomain } from "@/server/core/utils/traefik/domain";
 import { type apiCreateDomain, domains } from "../db/schema";
 import { findApplicationById } from "./application";
-import { detectCDNProvider } from "./cdn";
 import { findRuntimeWorkerById } from "./runtime-worker";
 
 export type Domain = typeof domains.$inferSelect;
