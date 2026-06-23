@@ -49,7 +49,7 @@ export const VolumeBackupEmail = ({
 					theme: {
 						extend: {
 							colors: {
-								brand: "#007291",
+								brand: "#056DFF",
 							},
 						},
 					},
@@ -58,11 +58,11 @@ export const VolumeBackupEmail = ({
 				<Head />
 
 				<Body className="bg-white my-auto mx-auto font-sans px-2">
-					<Container className="border border-solid border-[#eaeaea] rounded-lg my-[40px] mx-auto p-[20px] max-w-[465px]">
+					<Container className="border border-solid border-[#e5e5e5] rounded-lg my-[40px] mx-auto p-[20px] max-w-[465px]">
 						<Section className="mt-[32px]">
 							<Img
 								src={
-									"https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/icon.svg"
+									"https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/docklands-logo-dark.svg"
 								}
 								width="72"
 								height="72"
@@ -83,7 +83,7 @@ export const VolumeBackupEmail = ({
 								: "failed. Please check the error message below. ❌"}
 							.
 						</Text>
-						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">
+						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#f5f5f5] rounded-lg p-2">
 							<Text className="!leading-3 font-bold">Details: </Text>
 							<Text className="!leading-3">
 								Workspace Name: <strong>{projectName}</strong>
@@ -107,7 +107,7 @@ export const VolumeBackupEmail = ({
 							</Text>
 						</Section>
 						{type === "error" && errorMessage ? (
-							<Section className="flex text-black text-[14px]  mt-4 leading-[24px] bg-[#F4F4F5] rounded-lg p-2">
+							<Section className="flex text-black text-[14px]  mt-4 leading-[24px] bg-[#f5f5f5] rounded-lg p-2">
 								<Text className="!leading-3 font-bold">Reason: </Text>
 								<Text className="text-[12px] leading-[24px]">
 									{errorMessage || "Error message not provided"}

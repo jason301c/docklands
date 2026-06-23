@@ -6,7 +6,7 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
 	title: "Docklands",
 	icons: {
-		icon: "/icon.svg",
+		icon: "/docklands-logo.svg",
 	},
 };
 

@@ -40,18 +40,18 @@ export const BuildSuccessEmail = ({
 					theme: {
 						extend: {
 							colors: {
-								brand: "#007291",
+								brand: "#056DFF",
 							},
 						},
 					},
 				}}
 			>
 				<Body className="bg-white my-auto mx-auto font-sans px-2">
-					<Container className="border border-solid border-[#eaeaea] rounded-lg my-[40px] mx-auto p-[20px] max-w-[465px]">
+					<Container className="border border-solid border-[#e5e5e5] rounded-lg my-[40px] mx-auto p-[20px] max-w-[465px]">
 						<Section className="mt-[32px]">
 							<Img
 								src={
-									"https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/icon.svg"
+									"https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/docklands-logo-dark.svg"
 								}
 								width="72"
 								height="72"
@@ -68,7 +68,7 @@ export const BuildSuccessEmail = ({
 						<Text className="text-black text-[14px] leading-[24px]">
 							Your build for <strong>{applicationName}</strong> was successful
 						</Text>
-						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">
+						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#f5f5f5] rounded-lg p-2">
 							<Text className="!leading-3 font-bold">Details: </Text>
 							<Text className="!leading-3">
 								Workspace Name: <strong>{projectName}</strong>
@@ -89,7 +89,7 @@ export const BuildSuccessEmail = ({
 						<Section className="text-center mt-[32px] mb-[32px]">
 							<Button
 								href={buildLink}
-								className="bg-[#000000] rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
+								className="bg-brand rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
 							>
 								View build
 							</Button>

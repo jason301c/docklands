@@ -28,6 +28,12 @@ export default defineConfig({
 			title: "Docklands",
 			description:
 				"Self-hosted, project-first deployment control plane you run on your own VM.",
+			// Brand logo (dark ink on the light theme, white on the dark theme) + favicon.
+			logo: {
+				light: "./src/assets/docklands-logo-dark.svg",
+				dark: "./src/assets/docklands-logo-light.svg",
+			},
+			favicon: "/favicon.svg",
 			// Shared "feel": Kumo tokens + Starlight variable mapping. No coupling
 			// to apps/docklands — both apps just import the Kumo package directly.
 			customCss: ["./src/styles/docs.css"],

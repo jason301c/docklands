@@ -27,7 +27,7 @@ export const DocklandsRestartEmail = ({
 					theme: {
 						extend: {
 							colors: {
-								brand: "#007291",
+								brand: "#056DFF",
 							},
 						},
 					},
@@ -36,11 +36,11 @@ export const DocklandsRestartEmail = ({
 				<Head />
 
 				<Body className="bg-white my-auto mx-auto font-sans px-2">
-					<Container className="border border-solid border-[#eaeaea] rounded-lg my-[40px] mx-auto p-[20px] max-w-[465px]">
+					<Container className="border border-solid border-[#e5e5e5] rounded-lg my-[40px] mx-auto p-[20px] max-w-[465px]">
 						<Section className="mt-[32px]">
 							<Img
 								src={
-									"https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/icon.svg"
+									"https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/docklands-logo-dark.svg"
 								}
 								width="72"
 								height="72"
@@ -58,7 +58,7 @@ export const DocklandsRestartEmail = ({
 							Your docklands runtimeWorker was restarted ✅
 						</Text>
 
-						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#F4F4F5] rounded-lg p-2">
+						<Section className="flex text-black text-[14px]  leading-[24px] bg-[#f5f5f5] rounded-lg p-2">
 							<Text className="!leading-3 font-bold">Details: </Text>
 							<Text className="!leading-3">
 								Date: <strong>{date}</strong>
