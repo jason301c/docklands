@@ -822,7 +822,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | C1 | bare-DB routing dead in catalog | **◑ deferred** — routing correct; needs catalog template data files |
 | C2 | compose creds plaintext/served | **✅ P1 (store)** + **✅ already checkServiceAccess-scoped (read)** |
 | C3 | extractDatabaseCredentials defaults | **✅ P0** (throws for auth-required engines; caller skips + warns) |
-| C4 | backup user/password engine quirk | **P7 fix** |
+| C4 | backup user/password engine quirk | **✅ P7** (mariadb dump auths as root, matching the passed root pw) |
 | C5 | detection runs twice | **P7 (single call site)** |
 | C6 | stack stop/start asymmetry | **P7 (add start path)** |
 | C7 | delete swallows cleanup errors | **✅ P7** (logged; app/compose/db parity) |
@@ -831,7 +831,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | N1 | "custom" cert provider ≠ upload | **P7 (UI clarity)** |
 | N2 | cert private keys plaintext | **✅ P1** |
 | N3 | remote traefik write interpolation | **✅ P2** (base64 `| base64 -d`) |
-| N4 | placeholder ACME email | **P7 guard (require email)** |
+| N4 | placeholder ACME email | **✅ P7** (block enabling LE until ingress email set) |
 | N5 | LE prod-only + rate-limit | **✅ P7** (documented) |
 | N6 | proxy-file editing can brick ingress | **P7 guard (validate)** |
 | N7 | port default contradiction | **✅ P0** (zod default → `host`, matches column + runtime) |
@@ -878,7 +878,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | B5 | restore destructive no snapshot | **P7 guard (pre-snapshot)** |
 | B6 | stop-mode volume backup downtime | **✅ P7** (already documented) |
 | B7 | scheduler no catch-up | **◑ deferred** — missed-cron backfill belongs in the durable-jobs abstraction (needs live env) |
-| B8 | destination test ignores worker | **P7 fix** |
+| B8 | destination test ignores worker | **✅ P7** (runs on the worker when set; creds via env) |
 | B9 | backups naming smells | **✅ P7** (documented the composeId reuse) |
 | R1 | deploy queue wrong partition | **✅ P3** (partition by build worker) |
 | R2 | no build worker for compose | **◑ deferred** (real feature, design separately) |

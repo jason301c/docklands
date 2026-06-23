@@ -12,11 +12,19 @@ import {
 } from "@/server/core/db/schema";
 import {
 	createDestination,
+	type Destination,
 	findDestinationById,
 	removeDestinationById,
 	updateDestinationById,
 } from "@/server/core/services/destination";
-import { execAsync } from "@/server/core/utils/process/execAsync";
+import {
+	getS3CredentialEnv,
+	getS3Credentials,
+} from "@/server/core/utils/backups/utils";
+import {
+	execAsync,
+	execAsyncRemote,
+} from "@/server/core/utils/process/execAsync";
 
 export const destinationRouter = createTRPCRouter({
 	create: withPermission("destination", "create")
@@ -45,38 +53,41 @@ export const destinationRouter = createTRPCRouter({
 	testConnection: withPermission("destination", "create")
 		.input(apiCreateDestination)
 		.mutation(async ({ input }) => {
-			const {
-				secretAccessKey,
-				bucket,
-				region,
-				endpoint,
-				accessKey,
-				provider,
-				additionalFlags,
-			} = input;
+			const { bucket, runtimeWorkerId } = input;
 			try {
+				// Build the rclone command exactly like the backup paths do: S3
+				// secrets go through the `getS3CredentialEnv` env prefix (so they
+				// never land in the worker's process listing), non-secret flags via
+				// `getS3Credentials`, plus short connectivity-test timeouts/retries.
+				const destination = {
+					accessKey: input.accessKey,
+					secretAccessKey: input.secretAccessKey,
+					region: input.region,
+					endpoint: input.endpoint,
+					provider: input.provider,
+					additionalFlags: input.additionalFlags,
+				} as Destination;
+
 				const rcloneFlags = [
-					`--s3-access-key-id="${accessKey}"`,
-					`--s3-secret-access-key="${secretAccessKey}"`,
-					`--s3-region="${region}"`,
-					`--s3-endpoint="${endpoint}"`,
-					"--s3-no-check-bucket",
-					"--s3-force-path-style",
+					...getS3Credentials(destination),
 					"--retries 1",
 					"--low-level-retries 1",
 					"--timeout 10s",
 					"--contimeout 5s",
 				];
-				if (provider) {
-					rcloneFlags.unshift(`--s3-provider="${provider}"`);
-				}
-				if (additionalFlags?.length) {
-					rcloneFlags.push(...additionalFlags);
-				}
+				const s3Env = getS3CredentialEnv(destination);
 				const rcloneDestination = `:s3:${bucket}`;
-				const rcloneCommand = `rclone ls ${rcloneFlags.join(" ")} "${rcloneDestination}"`;
+				const rcloneCommand = `${s3Env} rclone ls ${rcloneFlags.join(" ")} "${rcloneDestination}"`;
 
-				await execAsync(rcloneCommand);
+				// Run the test where backups will actually run: on the configured
+				// runtime worker if one is set, otherwise on the control-plane host.
+				// A test that only passes locally can hide a worker that can't reach
+				// the bucket.
+				if (runtimeWorkerId) {
+					await execAsyncRemote(runtimeWorkerId, rcloneCommand);
+				} else {
+					await execAsync(rcloneCommand);
+				}
 			} catch (error) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",

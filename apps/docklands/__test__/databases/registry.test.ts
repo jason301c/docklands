@@ -235,6 +235,30 @@ describe("database engine registry", () => {
 			).toContain("mongodump");
 		});
 
+		it("mysql/mariadb dumps authenticate as root, pairing with the root password callers pass", () => {
+			// Both builders (`buildDatabaseBackupCommand`,
+			// `buildServiceDatabaseBackupCommand`) hand the *root* password as
+			// `databasePassword`. The dump must therefore authenticate as `root`,
+			// not the configured app user, or the user/password pair is mismatched.
+			const mysql = getDatabaseEngine("mysql").backup?.dumpCommand({
+				database: "app",
+				databaseUser: "appuser",
+				databasePassword: "rootpw",
+			});
+			expect(mysql).toContain("-u 'root'");
+			expect(mysql).toContain("--password='rootpw'");
+			expect(mysql).not.toContain("appuser");
+
+			const mariadb = getDatabaseEngine("mariadb").backup?.dumpCommand({
+				database: "app",
+				databaseUser: "appuser",
+				databasePassword: "rootpw",
+			});
+			expect(mariadb).toContain("--user='root'");
+			expect(mariadb).toContain("--password='rootpw'");
+			expect(mariadb).not.toContain("appuser");
+		});
+
 		it("change-password uses the right client per engine; libsql has none", () => {
 			expect(
 				getDatabaseEngine("postgres").changePassword?.({

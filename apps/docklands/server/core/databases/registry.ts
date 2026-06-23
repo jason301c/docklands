@@ -376,6 +376,9 @@ const mysqlEngine: DatabaseEngine<"mysql"> = {
 		];
 	},
 	backup: {
+		// Dumps run as root: callers pass the root password as `databasePassword`,
+		// so the user (`root`) and password must stay paired. See the matching
+		// `root` user in the mariadb dump command.
 		dumpCommand: ({ database, databasePassword }) =>
 			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mysqldump --default-character-set=utf8mb4 -u 'root' --password='${databasePassword}' --single-transaction --no-tablespaces --quick '${database}' | gzip"`,
 	},
@@ -431,8 +434,11 @@ const mariadbEngine: DatabaseEngine<"mariadb"> = {
 		];
 	},
 	backup: {
-		dumpCommand: ({ database, databaseUser, databasePassword }) =>
-			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mariadb-dump --user='${databaseUser}' --password='${databasePassword}' --single-transaction --quick --databases ${database} | gzip"`,
+		// Dumps run as root for consistency with the mysql engine: callers pass the
+		// root password as `databasePassword`, so the dump must authenticate as
+		// `root` (not the configured app user) for the user/password pair to match.
+		dumpCommand: ({ database, databasePassword }) =>
+			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mariadb-dump --user='root' --password='${databasePassword}' --single-transaction --quick --databases ${database} | gzip"`,
 	},
 	changePassword: ({
 		databaseRootPassword,

@@ -30,11 +30,48 @@ import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { manageDomain, removeDomain } from "@/server/core/utils/traefik/domain";
 
+/**
+ * The ACME placeholder shipped in the default Traefik config. Until an admin sets
+ * a real Let's Encrypt email in ingress settings, the resolver still carries this
+ * bogus address — Let's Encrypt would reject (or send nothing to) it. Treat it as
+ * "unset" so we never enable LE on a domain with a placeholder contact email.
+ */
+const LETSENCRYPT_PLACEHOLDER_EMAIL = "test@localhost.com";
+
+/**
+ * Guard against enabling Let's Encrypt on a domain while the ingress LE contact
+ * email is still empty/unset/the placeholder. Only the `letsencrypt` cert
+ * resolver uses this email — uploaded certs (`none`) and custom resolvers
+ * (`custom`), and HTTP-only domains, are intentionally left alone.
+ */
+const assertLetsEncryptEmailConfigured = async (
+	https: boolean | null | undefined,
+	certificateType: string | null | undefined,
+) => {
+	if (!https || certificateType !== "letsencrypt") return;
+
+	const settings = await getWebServerSettings();
+	const email = settings?.letsEncryptEmail?.trim();
+	if (!email || email === LETSENCRYPT_PLACEHOLDER_EMAIL) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message:
+				"Set a Let's Encrypt email in ingress settings before enabling " +
+				"Let's Encrypt HTTPS on a domain. Certificate issuance will fail " +
+				"without a valid contact email.",
+		});
+	}
+};
+
 export const domainRouter = createTRPCRouter({
 	create: protectedProcedure
 		.input(apiCreateDomain)
 		.mutation(async ({ input, ctx }) => {
 			try {
+				await assertLetsEncryptEmailConfigured(
+					input.https,
+					input.certificateType,
+				);
 				if (input.domainType === "compose" && input.composeId) {
 					await checkServicePermissionAndAccess(ctx, input.composeId, {
 						domain: ["create"],
@@ -107,6 +144,14 @@ export const domainRouter = createTRPCRouter({
 		.input(apiUpdateDomain)
 		.mutation(async ({ input, ctx }) => {
 			const currentDomain = await findDomainById(input.domainId);
+
+			// Evaluate the *effective* post-update state: a partial update may omit
+			// `https`/`certificateType`, so fall back to the persisted values.
+			await assertLetsEncryptEmailConfigured(
+				input.https ?? currentDomain.https,
+				input.certificateType ?? currentDomain.certificateType,
+			);
+
 			const serviceId = currentDomain.applicationId || currentDomain.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
