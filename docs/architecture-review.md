@@ -587,12 +587,26 @@ means shipped and green (`typecheck` + `test:ci`).
   `compose`, and the patch router uses the owning service's type instead of
   `settings` (matters now that the audit log actually writes). **S4** — no action:
   a Docklands restart is a *global* event, so notifying every subscribed org is
-  correct (the apparent "missing org filter" is intended). The remaining P7 items
-  are smaller guards/docs tracked in the disposition map (e.g. B4 sort-by-mtime,
-  B5 pre-restore snapshot, N4 require-LE-email, N6 proxy-file validation, R3
-  node-drain/quorum, R6 finish the `server→runtimeWorker` rename, W1 canvas
-  debounce, and the documentation-only notes N5/N8/N9/B6/G6/W6/A7). Green so far:
-  `tsc` clean, 83 files / 675 tests pass, Biome clean.
+  correct (the apparent "missing org filter" is intended).
+  Subsequent batches landed: **B4** (retention sorts by rclone object mtime, not
+  filename), **C7** (compose/app/db delete-cleanup errors logged, not swallowed),
+  **A3** (warn on static build + publishDir without SPA), **A4** (warn on
+  drop+dockerfile), **D3** (clear best-effort external-port error), **B9**
+  (documented the compose-restore `databaseId` reuse), **C8** (robust catalog
+  header parsing), **C4** (mariadb backup auths as root, matching the root
+  password the callers pass), **B8** (destination test runs on the worker, creds
+  via env), **N4** (block enabling Let's Encrypt until the ingress LE email is
+  set). Documentation notes shipped to `apps/docs`: **N5, N8, N9, G6, W6, A7,
+  O4** (and **B6** was already documented). **Remaining backlog (tracked, not yet
+  actioned — the larger/UI/cluster-risky ones):** C5 (consolidate the double
+  detection pass), C6 (add a start path for removed Swarm stacks), C9 (strengthen
+  libsql embedded detection), D5 (drive the backup UI off the registry), N1
+  (cert-provider "custom" naming clarity in the UI), N6 (validate proxy-file
+  edits before they can brick ingress), R3 (drain-wait + quorum guard on node
+  removal), R6 (finish the `server→runtimeWorker` rename incl. the OpenAPI path),
+  W1 (debounce + optimistic-guard the canvas layout save), G8 (use the configured
+  URL instead of `window.origin` for provider callbacks). Green so far: `tsc`
+  clean, 83 files / 676 tests pass, Biome clean.
 
 ### Discovered during remediation
 
