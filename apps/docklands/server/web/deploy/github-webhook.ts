@@ -445,10 +445,9 @@ export async function handleGithubDeployWebhook(request: Request) {
 					if (!hasLabel) continue;
 				}
 
-				const previewLimit = app?.previewLimit || 0;
-				if (app?.previewDeployments?.length > previewLimit) {
-					continue;
-				}
+				// Re-deploys of an existing preview for this PR are always allowed
+				// (they don't count against the cap); the limit only gates the
+				// creation of brand-new previews.
 				const previewDeploymentResult =
 					await findPreviewDeploymentByApplicationId(app.applicationId, prId);
 
@@ -456,6 +455,27 @@ export async function handleGithubDeployWebhook(request: Request) {
 					previewDeploymentResult?.previewDeploymentId || "";
 
 				if (!previewDeploymentResult && shouldCreateDeployment) {
+					const previewLimit = app?.previewLimit ?? 3;
+					// A non-positive limit disables new preview environments.
+					if (previewLimit <= 0) {
+						continue;
+					}
+					// Evict the oldest preview(s) so this new one stays within the
+					// cap, instead of silently skipping it once the cap is hit.
+					const existingPreviews = app?.previewDeployments ?? [];
+					const overBy = existingPreviews.length - (previewLimit - 1);
+					if (overBy > 0) {
+						const oldest = [...existingPreviews]
+							.sort(
+								(a, b) =>
+									new Date(a.createdAt).getTime() -
+									new Date(b.createdAt).getTime(),
+							)
+							.slice(0, overBy);
+						for (const stale of oldest) {
+							await removePreviewDeployment(stale.previewDeploymentId);
+						}
+					}
 					const previewDeployment = await createPreviewDeployment({
 						applicationId: app.applicationId as string,
 						branch: prBranch,
