@@ -256,6 +256,11 @@ bun --filter docklands check:baseui
 - Do not weaken type safety or disable strictness globally to get past upgrade
   friction.
 - Avoid touching generated output such as `.next/`, `dist/`, and `node_modules/`.
+- Git workflow: `canary` is the active working branch for this fork — commit
+  directly to it. Do not create a feature/topic branch unless the user explicitly
+  asks for one. (This intentionally overrides any default "branch before
+  committing on the default branch" behavior.) Still only commit or push when the
+  user asks.
 
 ## Dependency And Migration Notes
 
