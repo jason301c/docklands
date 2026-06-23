@@ -248,7 +248,7 @@ export const getGitlabBranches = async (input: {
 
 		// Check if we've reached the total using headers (optional optimization)
 		const total = branchesResponse.headers.get("x-total");
-		if (total && allBranches.length >= Number.parseInt(total)) {
+		if (total && allBranches.length >= Number.parseInt(total, 10)) {
 			break;
 		}
 	}
@@ -329,7 +329,7 @@ export const validateGitlabProvider = async (gitlabProvider: Gitlab) => {
 			page++;
 
 			const total = response.headers.get("x-total");
-			if (total && allWorkspaces.length >= Number.parseInt(total)) {
+			if (total && allWorkspaces.length >= Number.parseInt(total, 10)) {
 				break;
 			}
 		}

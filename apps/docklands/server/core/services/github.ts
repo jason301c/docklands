@@ -185,7 +185,7 @@ export const createPreviewDeploymentComment = async ({
 	const issue = await octokit.rest.issues.createComment({
 		owner: owner || "",
 		repo: repository || "",
-		issue_number: Number.parseInt(issue_number),
+		issue_number: Number.parseInt(issue_number, 10),
 		body: `### Docklands Preview Deployment\n\n${runningComment}`,
 	});
 

@@ -174,7 +174,7 @@ export const mechanizeDockerContainer = async (
 		const inspect = await service.inspect();
 
 		await service.update({
-			version: Number.parseInt(inspect.Version.Index),
+			version: Number.parseInt(inspect.Version.Index, 10),
 			...settings,
 			TaskTemplate: {
 				...settings.TaskTemplate,

@@ -137,18 +137,15 @@ export const HandleRole = ({ role }: Props) => {
 										{(actions as readonly string[]).map((action) => {
 											const checked = (perms[resource] ?? []).includes(action);
 											return (
-												<label
+												<Checkbox
 													key={action}
-													className="flex items-center gap-2 text-sm text-kumo-subtle cursor-pointer"
-												>
-													<Checkbox
-														checked={checked}
-														onCheckedChange={(value) =>
-															toggle(resource, action, !!value)
-														}
-													/>
-													{action}
-												</label>
+													label={action}
+													checked={checked}
+													onCheckedChange={(value) =>
+														toggle(resource, action, !!value)
+													}
+													className="text-sm text-kumo-subtle"
+												/>
 											);
 										})}
 									</div>

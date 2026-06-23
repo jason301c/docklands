@@ -52,7 +52,7 @@ export const uploadImageRemoteCommand = async (
 		const deployment = await findAllDeploymentsByApplicationId(
 			application.applicationId,
 		);
-		if (!deployment || !deployment[0]) {
+		if (!deployment?.[0]) {
 			throw new Error("Deployment not found");
 		}
 		const deploymentId = deployment[0].deploymentId;

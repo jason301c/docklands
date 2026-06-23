@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+
 /**
  * Static scanner for Kumo / Base UI composition pitfalls that only surface as
  * runtime dev warnings when a component actually renders (e.g. when you open a
@@ -56,8 +57,7 @@ for (const file of files) {
 	// Base UI Trigger/Close/SubTrigger parts default to nativeButton=true.
 	const triggerRe =
 		/<([A-Za-z][\w.]*)\.(Trigger|Close|SubTrigger)\b([^>]*?)\brender=\{\s*(?:\(\s*)?(?:\{[^}]*\}\s*=>\s*)?\(?\s*<([A-Za-z][\w.]*)/g;
-	let m;
-	while ((m = triggerRe.exec(src))) {
+	for (const m of src.matchAll(triggerRe)) {
 		const [, owner, part, attrs, rendered] = m;
 		if (/\bnativeButton=\{?\s*false/.test(attrs)) continue;
 		if (BUTTON_LIKE.test(rendered)) continue;
@@ -75,7 +75,7 @@ for (const file of files) {
 			"g",
 		);
 		let depth = 0;
-		while ((m = tokenRe.exec(src))) {
+		for (const m of src.matchAll(tokenRe)) {
 			const tok = m[0];
 			if (tok.startsWith(`</${owner}.Group`)) {
 				depth = Math.max(0, depth - 1);

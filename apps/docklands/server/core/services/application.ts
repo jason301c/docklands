@@ -421,7 +421,10 @@ export const deployPreviewApplication = async ({
 				});
 			}
 
-			issueParams.comment_id = Number.parseInt(result?.pullRequestCommentId);
+			issueParams.comment_id = Number.parseInt(
+				result?.pullRequestCommentId,
+				10,
+			);
 		}
 		const buildingComment = getIssueComment(
 			application.name,
@@ -537,7 +540,10 @@ export const rebuildPreviewApplication = async ({
 				});
 			}
 
-			issueParams.comment_id = Number.parseInt(result?.pullRequestCommentId);
+			issueParams.comment_id = Number.parseInt(
+				result?.pullRequestCommentId,
+				10,
+			);
 		}
 
 		const buildingComment = getIssueComment(
@@ -633,7 +639,7 @@ export const getApplicationStats = async (appName: string) => {
 	});
 
 	const container = containers[0];
-	if (!container || container?.State !== "running") {
+	if (container?.State !== "running") {
 		return null;
 	}
 

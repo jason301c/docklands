@@ -90,7 +90,7 @@ export const setupDockerStatsMonitoringSocketServer = (
 				});
 
 				const container = containers[0];
-				if (!container || container?.State !== "running") {
+				if (container?.State !== "running") {
 					ws.close(4000, "Container not running");
 					return;
 				}

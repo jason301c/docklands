@@ -310,7 +310,7 @@ export const deleteMount = async (mountId: string) => {
 
 export const updateFileMount = async (mountId: string) => {
 	const mount = await findMountById(mountId);
-	if (!mount || !mount.filePath) return;
+	if (!mount?.filePath) return;
 	const basePath = await getBaseFilesPath(mountId);
 	const fullPath = path.join(basePath, mount.filePath);
 

@@ -20,11 +20,7 @@ type Workspace = {
 function selectAccessibleEnvironment(
 	workspace: Workspace | null | undefined,
 ): Environment | null {
-	if (
-		!workspace ||
-		!workspace.environments ||
-		workspace.environments.length === 0
-	) {
+	if (!workspace?.environments || workspace.environments.length === 0) {
 		return null;
 	}
 

@@ -119,7 +119,7 @@ export const buildPostgres = async (postgres: PostgresNested) => {
 		const service = docker.getService(appName);
 		const inspect = await service.inspect();
 		await service.update({
-			version: Number.parseInt(inspect.Version.Index),
+			version: Number.parseInt(inspect.Version.Index, 10),
 			...settings,
 			TaskTemplate: {
 				...settings.TaskTemplate,

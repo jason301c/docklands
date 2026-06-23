@@ -52,7 +52,7 @@ export const initializePostgres = async () => {
 		const service = docker.getService(containerName);
 		const inspect = await service.inspect();
 		await service.update({
-			version: Number.parseInt(inspect.Version.Index),
+			version: Number.parseInt(inspect.Version.Index, 10),
 			...settings,
 		});
 		console.log("Postgres Started ✅");

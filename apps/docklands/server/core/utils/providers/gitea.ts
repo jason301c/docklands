@@ -205,7 +205,7 @@ export const testGiteaConnection = async (input: { giteaId: string }) => {
 		await refreshGiteaToken(giteaId);
 
 		const provider = await findGiteaById(giteaId);
-		if (!provider || !provider.accessToken) {
+		if (!provider?.accessToken) {
 			throw new TRPCError({
 				code: "UNAUTHORIZED",
 				message: "No access token available. Please authorize with Gitea.",

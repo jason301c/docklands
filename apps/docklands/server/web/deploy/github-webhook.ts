@@ -424,7 +424,7 @@ export async function handleGithubDeployWebhook(request: Request) {
 				await createSecurityBlockedComment({
 					owner,
 					repository,
-					prNumber: Number.parseInt(prNumber),
+					prNumber: Number.parseInt(prNumber, 10),
 					prAuthor,
 					permission: userPermission,
 					githubId: githubResult.githubId,

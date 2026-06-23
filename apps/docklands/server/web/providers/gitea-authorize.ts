@@ -19,7 +19,7 @@ export async function handleGiteaAuthorize(request: Request) {
 		}
 
 		const gitea = await findGitea(giteaId);
-		if (!gitea || !gitea.clientId || !gitea.redirectUri) {
+		if (!gitea?.clientId || !gitea.redirectUri) {
 			return redirectWithError(request, "Incomplete OAuth configuration");
 		}
 
