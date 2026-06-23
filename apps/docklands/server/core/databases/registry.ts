@@ -565,8 +565,20 @@ const libsqlEngine: DatabaseEngine<"libsql"> = {
 	defaultImage: "ghcr.io/tursodatabase/libsql-server:v0.24.32",
 	containerPort: 8080,
 	imagePatterns: ["tursodatabase/libsql-server", "libsql-server"],
-	detectEnvKeys: ["SQLD_NODE", "SQLD_HTTP_AUTH"],
-	detectHealthcheck: [],
+	// All SQLD_* env keys are sqld-specific (no other engine uses this prefix),
+	// so each is a strong libsql signal: SQLD_NODE/SQLD_PRIMARY_URL drive the
+	// primary/replica topology, SQLD_HTTP_AUTH/SQLD_AUTH_JWT_KEY carry auth, and
+	// SQLD_USER is read by the credential extractor.
+	detectEnvKeys: [
+		"SQLD_NODE",
+		"SQLD_HTTP_AUTH",
+		"SQLD_PRIMARY_URL",
+		"SQLD_AUTH_JWT_KEY",
+		"SQLD_USER",
+	],
+	// sqld exposes an HTTP health endpoint on its listen port (default :8080),
+	// so libsql healthchecks curl/wget the /health path.
+	detectHealthcheck: ["sqld", "/health"],
 	configSchema: libsqlConfigSchema,
 	mountPath: () => "/var/lib/sqld",
 	buildDefaultEnv: (

@@ -856,6 +856,15 @@ export function processComposeTemplate(
 
 		// Detection bridge: flag compose services that are managed databases so
 		// they can be promoted to `service_database` (backups + connection vars).
+		//
+		// This is the AUTHORITATIVE detection pass. The same `detectDatabaseEngine`
+		// from `databases/detection` also runs earlier in `templates/analyze.ts`,
+		// but that earlier pass works on the RAW compose YAML purely to label the
+		// catalog (no side effects). Here it runs after magic-variable / env
+		// normalization, so it sees resolved values, and this is the pass that
+		// actually promotes a service to a managed database. The two passes can
+		// legitimately disagree because their inputs differ; this one wins. They are
+		// intentionally kept as separate call sites — do not merge them.
 		const detectedEngine =
 			typeof service.image === "string"
 				? detectDatabaseEngine(service.image, {

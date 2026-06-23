@@ -837,17 +837,17 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | C2 | compose creds plaintext/served | **✅ P1 (store)** + **✅ already checkServiceAccess-scoped (read)** |
 | C3 | extractDatabaseCredentials defaults | **✅ P0** (throws for auth-required engines; caller skips + warns) |
 | C4 | backup user/password engine quirk | **✅ P7** (mariadb dump auths as root, matching the passed root pw) |
-| C5 | detection runs twice | **P7 (single call site)** |
-| C6 | stack stop/start asymmetry | **P7 (add start path)** |
+| C5 | detection runs twice | **✅ P7** (same fn confirmed; intentional 2-pass documented) |
+| C6 | stack stop/start asymmetry | **✅ P7** (start re-deploys the stack) |
 | C7 | delete swallows cleanup errors | **✅ P7** (logged; app/compose/db parity) |
 | C8 | catalog header parsing fragile | **✅ P7** (robust header scan) |
-| C9 | libsql embedded detection weak | **P7 (note/strengthen)** |
+| C9 | libsql embedded detection weak | **✅ P7** (added SQLD_* env + healthcheck signals) |
 | N1 | "custom" cert provider ≠ upload | **P7 (UI clarity)** |
 | N2 | cert private keys plaintext | **✅ P1** |
 | N3 | remote traefik write interpolation | **✅ P2** (base64 `| base64 -d`) |
 | N4 | placeholder ACME email | **✅ P7** (block enabling LE until ingress email set) |
 | N5 | LE prod-only + rate-limit | **✅ P7** (documented) |
-| N6 | proxy-file editing can brick ingress | **P7 guard (validate)** |
+| N6 | proxy-file editing can brick ingress | **✅ P7** (YAML validated by default; explicit skip) |
 | N7 | port default contradiction | **✅ P0** (zod default → `host`, matches column + runtime) |
 | N8 | domain validation CDN gap | **✅ P7** (documented) |
 | N9 | redirects application-only | **✅ P7** (documented) |
@@ -896,7 +896,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | B9 | backups naming smells | **✅ P7** (documented the composeId reuse) |
 | R1 | deploy queue wrong partition | **✅ P3** (partition by build worker) |
 | R2 | no build worker for compose | **◑ deferred** (real feature, design separately) |
-| R3 | node removal force-rm | **P7 guard (drain-wait/quorum)** |
+| R3 | node removal force-rm | **✅ P7** (refuses to force-remove a manager — quorum guard) |
 | R4 | nodeId no regex guard | **✅ P2** (charset-validated) |
 | R5 | getServerMetrics SSRF | **✅ P6** (procedure deleted in the paid-metrics cut) |
 | R6 | server→runtimeWorker rename | **P7 (finish rename)** |

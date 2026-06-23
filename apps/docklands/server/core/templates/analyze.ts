@@ -48,6 +48,16 @@ export const analyzeTemplateDatabases = (
 			healthcheck?: unknown;
 		};
 		if (typeof service.image !== "string") continue;
+		// Detection intentionally runs at TWO points in a template's lifecycle, both
+		// through the same `detectDatabaseEngine` from `databases/detection`:
+		//   1) HERE, at catalog-label time, against the RAW compose YAML (before any
+		//      magic-variable / env normalization) — purely to label the catalog and
+		//      route bare single-database templates. No side effects.
+		//   2) At deploy time in `templates/processors.ts`, against the env that has
+		//      been normalized (magic vars resolved). That pass is AUTHORITATIVE —
+		//      it's the one that actually promotes a service to a managed database.
+		// The two passes can legitimately disagree because their inputs differ; the
+		// deploy-time pass wins. Do not collapse them into one call site.
 		const engine = detectDatabaseEngine(service.image, {
 			image: service.image,
 			ports: service.ports,

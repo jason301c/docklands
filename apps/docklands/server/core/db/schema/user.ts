@@ -132,6 +132,9 @@ export const apiModifyTraefikConfig = z.object({
 	path: z.string().min(1),
 	traefikConfig: z.string().min(1),
 	runtimeWorkerId: z.string().optional(),
+	// YAML validation runs by default; a bad Traefik file can take down all
+	// ingress. Power users can opt out with `skipValidation: true`.
+	skipValidation: z.boolean().optional(),
 });
 export const apiReadTraefikConfig = z.object({
 	path: z

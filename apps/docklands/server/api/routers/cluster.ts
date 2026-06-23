@@ -55,6 +55,27 @@ export const clusterRouter = createTRPCRouter({
 					});
 				}
 			}
+			// Quorum guard: force-removing a manager can break Raft quorum and take
+			// the whole swarm offline. Inspect the node first (reusing the same
+			// listNodes access getNodes uses) and refuse to remove a manager via
+			// this path — managers must be demoted to workers first. `nodeId` may be
+			// a node ID or a hostname, so match on either.
+			const docker = await getRemoteDocker(input.runtimeWorkerId);
+			const nodes: DockerNode[] = await docker.listNodes();
+			const targetNode = nodes.find(
+				(node) =>
+					node.ID === input.nodeId ||
+					node.Description?.Hostname === input.nodeId,
+			);
+			if (targetNode && targetNode.Spec.Role === "manager") {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message:
+						"This node is a swarm manager. Removing a manager can break Raft " +
+						"quorum and take the cluster offline. Demote it to a worker first, " +
+						"then remove it.",
+				});
+			}
 			try {
 				const drainCommand = `docker node update --availability drain ${input.nodeId}`;
 				const removeCommand = `docker node rm ${input.nodeId} --force`;

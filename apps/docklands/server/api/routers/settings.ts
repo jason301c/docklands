@@ -534,6 +534,21 @@ export const settingsRouter = createTRPCRouter({
 		.input(apiModifyTraefikConfig)
 		.mutation(async ({ input, ctx }) => {
 			await checkPermission(ctx, { traefikFiles: ["write"] });
+			// Validate the YAML before writing — a malformed Traefik file can take
+			// down all ingress. Validation is the default; power users can bypass it
+			// explicitly with `skipValidation: true`.
+			if (!input.skipValidation) {
+				try {
+					parse(input.traefikConfig);
+				} catch (error) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: `Traefik configuration is not valid YAML: ${
+							error instanceof Error ? error.message : String(error)
+						}. Fix the file, or pass skipValidation to save it anyway.`,
+					});
+				}
+			}
 			await writeTraefikConfigInPath(
 				input.path,
 				input.traefikConfig,

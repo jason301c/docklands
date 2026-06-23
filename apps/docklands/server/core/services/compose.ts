@@ -531,6 +531,20 @@ export const startCompose = async (composeId: string) => {
 					cwd: projectPath,
 				});
 			}
+		} else if (compose.composeType === "stack") {
+			// A stack is stopped with `docker stack rm` (see stopCompose), which
+			// fully removes the stack — there is nothing to "up" again. Starting it
+			// therefore means re-deploying it, which is exactly what the normal
+			// deploy path does for a stack. Reuse that same build/deploy command
+			// (env file + domains + `docker stack deploy`) against the already-cloned
+			// code, mirroring how the docker-compose branch reuses `up -d` without
+			// re-cloning the source.
+			const buildCommand = await getBuildComposeCommand(compose);
+			if (compose.runtimeWorkerId) {
+				await execAsyncRemote(compose.runtimeWorkerId, buildCommand);
+			} else {
+				await execAsync(buildCommand);
+			}
 		}
 
 		await updateCompose(composeId, {
