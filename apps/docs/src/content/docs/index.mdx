@@ -5,17 +5,21 @@ template: splash
 hero:
   tagline: A cleaner, project-first deployment control plane for self-hosted VM operators.
   actions:
-    - text: Getting Started
+    - text: Get started
       link: /getting-started/
       icon: right-arrow
       variant: primary
+    - text: What is Docklands?
+      link: /concepts/what-is-docklands/
+      icon: open-book
+      variant: minimal
     - text: View on GitHub
       link: https://github.com/dokploy/dokploy
       icon: external
       variant: minimal
 ---
 
-import { Card, CardGrid } from "@astrojs/starlight/components";
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
 
 <CardGrid stagger>
 	<Card title="Deploy anything" icon="rocket">
@@ -35,3 +39,22 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 		hardware you control.
 	</Card>
 </CardGrid>
+
+## Explore the docs
+
+<CardGrid>
+	<LinkCard title="What is Docklands?" href="/concepts/what-is-docklands/" description="The model: organizations, projects, environments, and services." />
+	<LinkCard title="Architecture" href="/concepts/architecture/" description="How the control plane runs — runtime, Docker, Swarm, and Traefik." />
+	<LinkCard title="Applications" href="/applications/overview/" description="Deploy from Git, an image, or an archive, with builds and previews." />
+	<LinkCard title="Managed databases" href="/databases/overview/" description="PostgreSQL, MySQL, MariaDB, MongoDB, Redis, and libSQL." />
+	<LinkCard title="Compose & templates" href="/compose/overview/" description="Deploy Compose stacks or pre-built templates from the catalog." />
+	<LinkCard title="The workspace canvas" href="/workspace/overview/" description="Place services, connect them, and wire them with variables." />
+	<LinkCard title="Networking" href="/networking/domains/" description="Domains, TLS, and the Traefik ingress runtime." />
+	<LinkCard title="Backups" href="/backups/overview/" description="Back up databases and volumes to S3-compatible storage." />
+	<LinkCard title="Access control" href="/access/organizations/" description="Organizations, members, roles, and account security." />
+</CardGrid>
+
+:::caution[Pre-release]
+Docklands is an early, community fork-in-progress. Expect rough edges and no
+upgrade guarantees yet — run it somewhere you're comfortable rebuilding.
+:::

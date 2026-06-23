@@ -48,7 +48,131 @@ export default defineConfig({
 			sidebar: [
 				{
 					label: "Start Here",
-					items: [{ label: "Getting Started", slug: "getting-started" }],
+					items: [
+						{ slug: "concepts/what-is-docklands" },
+						{ slug: "getting-started" },
+						{ slug: "concepts/architecture" },
+						{ slug: "concepts/glossary" },
+					],
+				},
+				{
+					label: "Install & Operate",
+					items: [
+						{ slug: "install/requirements" },
+						{ slug: "install/production" },
+						{ slug: "install/configuration" },
+						{ slug: "install/operations" },
+					],
+				},
+				{
+					label: "Workspace",
+					items: [
+						{ slug: "workspace/overview" },
+						{ slug: "workspace/environments" },
+						{ slug: "workspace/services-and-connections" },
+						{ slug: "workspace/topology" },
+						{ slug: "workspace/navigation" },
+					],
+				},
+				{
+					label: "Applications",
+					items: [
+						{ slug: "applications/overview" },
+						{ slug: "applications/sources" },
+						{ slug: "applications/builds" },
+						{ slug: "applications/environment-variables" },
+						{ slug: "applications/ports" },
+						{ slug: "applications/domains" },
+						{ slug: "applications/advanced" },
+						{ slug: "applications/security" },
+						{ slug: "applications/preview-deployments" },
+						{ slug: "applications/rollbacks" },
+					],
+				},
+				{
+					label: "Databases",
+					items: [
+						{ slug: "databases/overview" },
+						{ slug: "databases/creating-a-database" },
+						{ slug: "databases/connection-variables" },
+						{ slug: "databases/external-access" },
+						{ slug: "databases/backups" },
+						{ slug: "databases/managing" },
+					],
+				},
+				{
+					label: "Compose & Templates",
+					items: [
+						{ slug: "compose/overview" },
+						{ slug: "compose/templates" },
+						{ slug: "compose/embedded-databases" },
+					],
+				},
+				{
+					label: "Networking",
+					items: [
+						{ slug: "networking/domains" },
+						{ slug: "networking/tls-certificates" },
+						{ slug: "networking/ingress" },
+						{ slug: "networking/redirects" },
+					],
+				},
+				{
+					label: "Git & Source",
+					items: [
+						{ slug: "git/overview" },
+						{ slug: "git/github" },
+						{ slug: "git/gitlab" },
+						{ slug: "git/bitbucket" },
+						{ slug: "git/gitea" },
+						{ slug: "git/ssh-keys" },
+					],
+				},
+				{
+					label: "Runtime & Cluster",
+					items: [
+						{ slug: "runtime/overview" },
+						{ slug: "runtime/runtime-workers" },
+						{ slug: "runtime/cluster" },
+						{ slug: "runtime/docker-resources" },
+					],
+				},
+				{
+					label: "Backups & Storage",
+					items: [
+						{ slug: "backups/overview" },
+						{ slug: "backups/destinations" },
+						{ slug: "backups/database-backups" },
+						{ slug: "backups/volume-backups" },
+						{ slug: "backups/schedules" },
+					],
+				},
+				{
+					label: "Observability",
+					items: [
+						{ slug: "observability/deployments-and-logs" },
+						{ slug: "observability/metrics" },
+						{ slug: "observability/requests" },
+						{ slug: "observability/audit-log" },
+					],
+				},
+				{
+					label: "Access Control",
+					items: [
+						{ slug: "access/organizations" },
+						{ slug: "access/users-and-members" },
+						{ slug: "access/roles-and-permissions" },
+						{ slug: "access/profile-and-security" },
+					],
+				},
+				{
+					label: "Settings & Integrations",
+					items: [
+						{ slug: "settings/image-registries" },
+						{ slug: "settings/notifications" },
+						{ slug: "settings/tags" },
+						{ slug: "settings/server-settings" },
+					],
 				},
 			],
 		}),
