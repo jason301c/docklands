@@ -3,6 +3,12 @@
  * for Docker builds.
  */
 
+import { fileURLToPath } from "node:url";
+
+// Workspace root (two levels up from apps/docklands). Bun hoists dependencies
+// such as `next` here, so Turbopack must use this as its root to resolve them.
+const workspaceRoot = fileURLToPath(new URL("../../", import.meta.url));
+
 const configuredBuildCpus = Number.parseInt(
 	process.env.NEXT_BUILD_CPUS ?? "4",
 	10,
@@ -13,7 +19,13 @@ const buildCpus = configuredBuildCpus > 0 ? configuredBuildCpus : 4;
 const nextConfig = {
 	reactStrictMode: true,
 	allowedDevOrigins: ["0.0.0.0", "127.0.0.1"],
-	turbopack: {},
+	// Pin the Turbopack workspace root. Without this, Next infers the root from
+	// the nearest lockfile and can wrongly pick a parent/home directory (e.g. a
+	// stray ~/pnpm-lock.yaml), causing it to scan the entire tree and never
+	// finish compiling. Must be the Bun workspace root so hoisted deps resolve.
+	turbopack: {
+		root: workspaceRoot,
+	},
 	experimental: {
 		cpus: buildCpus,
 	},

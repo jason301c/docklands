@@ -32,7 +32,7 @@ This is Docklands: a fork focused on self-hosted deployment management. Treat th
 - `biome.json` is workspace-level so root and app commands share one formatter/linter configuration.
 - `apps/docklands/drizzle/` contains generated SQL migrations and snapshots. Do not hand-edit snapshots unless you are deliberately repairing a generated migration.
 - `apps/docklands/__test__/` contains Vitest coverage for backend behavior, security fixes, templates, deployments, WebSockets, permissions, and utilities.
-- `apps/docklands/styles/globals.css` is the Tailwind v4 entrypoint and explicitly loads `tailwind.config.ts` with `@config`.
+- `apps/docklands/app/globals.css` is the Tailwind v4 entrypoint and explicitly loads `tailwind.config.ts` with `@config`.
 - `.docker/` is generated local runtime state.
 
 ## Current Stack
@@ -149,7 +149,7 @@ bun run docker:build
 
 - Next 16 uses Turbopack by default, and Docklands makes that explicit with `next build --turbopack` plus `turbopack: true` in the custom Next server. Do not add custom Webpack config, Webpack opt-out env vars, `--webpack`, or legacy `--turbo` flags. `bun --filter docklands build` and root `bun run test:ci` run `check:bundler`; run `bun run check:bundler` directly after bundler/tooling changes.
 - Tailwind 4 uses `apps/docklands/postcss.config.cjs` with `@tailwindcss/postcss`; do not switch it back to `tailwindcss` as a PostCSS plugin.
-- `apps/docklands/styles/globals.css` uses `@import "tailwindcss";` and `@config "../tailwind.config.ts";`.
+- `apps/docklands/app/globals.css` uses `@import "tailwindcss";` and `@config "../tailwind.config.ts";`.
 - React Email now uses `render`, not `renderAsync`.
 - xterm uses `@xterm/addon-fit`, not the old `xterm-addon-fit`.
 - Node provides `File`; only a minimal server-side `FileList` shim lives in `apps/docklands/shared/validation/schema.ts`.
