@@ -3,11 +3,11 @@ import copy from "copy-to-clipboard";
 import { CopyIcon, ServerIcon } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { toast } from "@/components/shared/toast";
-import { RuntimeUpdateDialog } from "./ingress-runtime/runtime-update-dialog";
-import { ShowDocklandsActions } from "./runtime/actions/show-docklands-actions";
-import { ShowIngressActions } from "./runtime/actions/show-ingress-actions";
-import { ShowStorageActions } from "./runtime/actions/show-storage-actions";
-import { ToggleDockerCleanup } from "./runtime/actions/toggle-docker-cleanup";
+import { ShowDocklandsActions } from "../runtime/actions/show-docklands-actions";
+import { ShowIngressActions } from "../runtime/actions/show-ingress-actions";
+import { ShowStorageActions } from "../runtime/actions/show-storage-actions";
+import { ToggleDockerCleanup } from "../runtime/actions/toggle-docker-cleanup";
+import { RuntimeUpdateDialog } from "./runtime-update-dialog";
 
 export const IngressRuntime = () => {
 	const { data: ingressSettings } =
