@@ -1,13 +1,13 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { getAllContainerStats } from "@/server/core/services/docker";
+import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
-	getAllContainerStats,
 	getApplicationInfo,
 	getNodeApplications,
 	getNodeInfo,
 	getSwarmNodes,
-} from "@/server/core/services/docker";
-import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
+} from "@/server/core/services/swarm";
 import { createTRPCRouter, withPermission } from "../trpc";
 import { containerIdRegex } from "./docker";
 

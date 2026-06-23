@@ -13,9 +13,9 @@ import {
 	getContainersByAppNameMatch,
 	getServiceContainersByAppName,
 	getStackContainersByAppName,
-	uploadFileToContainer,
 } from "@/server/core/services/docker";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
+import { uploadFileToContainer } from "@/server/core/utils/docker/file-upload";
 import { uploadFileToContainerSchema } from "@/shared/validation/schema";
 import { createTRPCRouter, withPermission } from "../trpc";
 
