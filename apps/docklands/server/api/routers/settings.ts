@@ -570,7 +570,7 @@ export const settingsRouter = createTRPCRouter({
 				path: "/read-stats-logs",
 				method: "POST",
 				override: true,
-				enabled: false,
+				enabled: true,
 			},
 		})
 		.input(apiReadStatsLogs)
@@ -596,7 +596,7 @@ export const settingsRouter = createTRPCRouter({
 				path: "/read-stats",
 				method: "POST",
 				override: true,
-				enabled: false,
+				enabled: true,
 			},
 		})
 		.input(

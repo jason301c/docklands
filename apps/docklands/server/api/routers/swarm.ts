@@ -38,14 +38,6 @@ export const swarmRouter = createTRPCRouter({
 			return getNodeApplications(input.runtimeWorkerId);
 		}),
 	getAppInfos: withPermission("runtimeWorker", "read")
-		.meta({
-			openapi: {
-				path: "/drop-deployment",
-				method: "POST",
-				override: true,
-				enabled: false,
-			},
-		})
 		.input(
 			z.object({
 				appName: z
