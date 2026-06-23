@@ -195,6 +195,128 @@ export const findDeploymentByApplicationId = async (applicationId: string) => {
 	return deployment;
 };
 
+/**
+ * The shared skeleton behind every `createDeployment*` adapter below: pick the
+ * base log dir from whether a runtime worker is involved, build the timestamped
+ * log path, initialize the log (remote `execAsyncRemote` vs. local
+ * mkdir+writeFile), then insert a `running` deployment row — or, on failure,
+ * insert an `error` row, optionally update the owning entity's status, and
+ * rethrow a `BAD_REQUEST`.
+ *
+ * Only the parts that genuinely differ per kind are injected as callers' values:
+ * the resolved `runtimeWorkerId`, the base path, the `appName`, the FK fields,
+ * the per-kind init strings, and the divergent error-branch ordering (some kinds
+ * log before the insert, some update entity status + log after, backup does
+ * neither). This keeps each original's exact behavior — same log path, same
+ * insert columns, same error handling, same return value.
+ */
+type DeploymentInsert = typeof deployments.$inferInsert;
+type DeploymentRecordValues = Partial<DeploymentInsert>;
+
+const createDeploymentRecord = async (params: {
+	/** Runtime worker that owns the build/log, or null/undefined for local. */
+	runtimeWorkerId: string | null | undefined;
+	/** Base directory for the log file (LOGS_PATH / SCHEDULES_PATH / …). */
+	basePath: string;
+	/** Service/app name used for the per-service log subdirectory. */
+	appName: string;
+	/** Exact remote init command, built from the resolved log path. */
+	buildRemoteCommand: (ctx: {
+		basePath: string;
+		appName: string;
+		logFilePath: string;
+	}) => string;
+	/** Exact content written when initializing the log locally. */
+	localInitContent: string;
+	/** Resolved `title` column (already defaulted by the caller). */
+	title: string;
+	/** Resolved `description` column (already defaulted by the caller). */
+	description: string;
+	/** FK + extra columns for the success (`running`) insert. */
+	successValues: DeploymentRecordValues;
+	/** FK columns for the error insert (errorMessage is added by the helper). */
+	errorValues: DeploymentRecordValues;
+	/** Message thrown via TRPCError BAD_REQUEST on any failure. */
+	errorMessage: string;
+	/** Optional log emitted *before* the error insert (schedule/volume-backup). */
+	logErrorBeforeInsert?: (error: unknown) => void;
+	/** Optional entity-status update run *after* the error insert. */
+	onError?: () => Promise<void>;
+	/** Optional log emitted *after* onError (application/preview/compose). */
+	logErrorAfterOnError?: (error: unknown) => void;
+}) => {
+	const {
+		runtimeWorkerId,
+		basePath,
+		appName,
+		buildRemoteCommand,
+		localInitContent,
+		title,
+		description,
+		successValues,
+		errorValues,
+		errorMessage,
+		logErrorBeforeInsert,
+		onError,
+		logErrorAfterOnError,
+	} = params;
+	try {
+		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
+		const fileName = `${appName}-${formattedDateTime}.log`;
+		const logFilePath = path.join(basePath, appName, fileName);
+
+		if (runtimeWorkerId) {
+			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
+			const command = buildRemoteCommand({ basePath, appName, logFilePath });
+			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
+		} else {
+			await fsPromises.mkdir(path.join(basePath, appName), {
+				recursive: true,
+			});
+			await fsPromises.writeFile(logFilePath, localInitContent);
+		}
+
+		const successInsert: DeploymentInsert = {
+			title,
+			description,
+			status: "running",
+			logPath: logFilePath,
+			startedAt: new Date().toISOString(),
+			...successValues,
+		};
+		const deploymentCreate = await db
+			.insert(deployments)
+			.values(successInsert)
+			.returning();
+		if (deploymentCreate.length === 0 || !deploymentCreate[0]) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: errorMessage,
+			});
+		}
+		return deploymentCreate[0];
+	} catch (error) {
+		logErrorBeforeInsert?.(error);
+		const errorInsert: DeploymentInsert = {
+			title,
+			description,
+			status: "error",
+			logPath: "",
+			errorMessage: `An error have occurred: ${error instanceof Error ? error.message : error}`,
+			startedAt: new Date().toISOString(),
+			finishedAt: new Date().toISOString(),
+			...errorValues,
+		};
+		await db.insert(deployments).values(errorInsert).returning();
+		if (onError) await onError();
+		logErrorAfterOnError?.(error);
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: errorMessage,
+		});
+	}
+};
+
 export const createDeployment = async (
 	deployment: Omit<
 		z.infer<typeof apiCreateDeployment>,
@@ -207,77 +329,42 @@ export const createDeployment = async (
 		"application",
 		application.runtimeWorkerId,
 	);
-	try {
-		const runtimeWorkerId =
-			application.buildRuntimeWorkerId || application.runtimeWorkerId;
-
-		const { LOGS_PATH } = paths(!!runtimeWorkerId);
-		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
-		const fileName = `${application.appName}-${formattedDateTime}.log`;
-		const logFilePath = path.join(LOGS_PATH, application.appName, fileName);
-
-		if (runtimeWorkerId) {
-			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
-
-			const command = `
-				mkdir -p ${LOGS_PATH}/${application.appName};
+	const runtimeWorkerId =
+		application.buildRuntimeWorkerId || application.runtimeWorkerId;
+	const { LOGS_PATH } = paths(!!runtimeWorkerId);
+	const title = deployment.title || "Deployment";
+	const description = deployment.description || "";
+	return createDeploymentRecord({
+		runtimeWorkerId,
+		basePath: LOGS_PATH,
+		appName: application.appName,
+		buildRemoteCommand: ({ basePath, appName, logFilePath }) => `
+				mkdir -p ${basePath}/${appName};
             	echo "Initializing deployment" >> ${logFilePath};
 			    echo "Building on ${runtimeWorkerId ? "Build Server" : "Docklands Server"}" >> ${logFilePath};
-			`;
-
-			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
-		} else {
-			await fsPromises.mkdir(path.join(LOGS_PATH, application.appName), {
-				recursive: true,
-			});
-			await fsPromises.writeFile(logFilePath, "Initializing deployment\n");
-		}
-
-		const deploymentCreate = await db
-			.insert(deployments)
-			.values({
-				applicationId: deployment.applicationId,
-				title: deployment.title || "Deployment",
-				status: "running",
-				logPath: logFilePath,
-				description: deployment.description || "",
-				startedAt: new Date().toISOString(),
-				...(application.buildRuntimeWorkerId && {
-					buildRuntimeWorkerId: application.buildRuntimeWorkerId,
-				}),
-			})
-			.returning();
-		if (deploymentCreate.length === 0 || !deploymentCreate[0]) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Error creating the deployment",
-			});
-		}
-		return deploymentCreate[0];
-	} catch (error) {
-		await db
-			.insert(deployments)
-			.values({
-				applicationId: deployment.applicationId,
-				title: deployment.title || "Deployment",
-				status: "error",
-				logPath: "",
-				description: deployment.description || "",
-				errorMessage: `An error have occurred: ${error instanceof Error ? error.message : error}`,
-				startedAt: new Date().toISOString(),
-				finishedAt: new Date().toISOString(),
-			})
-			.returning();
-		await updateApplicationStatus(application.applicationId, "error");
-		logger.error(
-			{ err: error, applicationId: deployment.applicationId },
-			"Failed to create deployment",
-		);
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Error creating the deployment",
-		});
-	}
+			`,
+		localInitContent: "Initializing deployment\n",
+		title,
+		description,
+		successValues: {
+			applicationId: deployment.applicationId,
+			...(application.buildRuntimeWorkerId && {
+				buildRuntimeWorkerId: application.buildRuntimeWorkerId,
+			}),
+		},
+		errorValues: {
+			applicationId: deployment.applicationId,
+		},
+		errorMessage: "Error creating the deployment",
+		onError: async () => {
+			await updateApplicationStatus(application.applicationId, "error");
+		},
+		logErrorAfterOnError: (error) =>
+			logger.error(
+				{ err: error, applicationId: deployment.applicationId },
+				"Failed to create deployment",
+			),
+	});
 };
 
 export const createDeploymentPreview = async (
@@ -294,77 +381,39 @@ export const createDeploymentPreview = async (
 		"previewDeployment",
 		previewDeployment?.application?.runtimeWorkerId,
 	);
-	try {
-		const appName = `${previewDeployment.appName}`;
-		const { LOGS_PATH } = paths(
-			!!previewDeployment?.application?.runtimeWorkerId,
-		);
-		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
-		const fileName = `${appName}-${formattedDateTime}.log`;
-		const logFilePath = path.join(LOGS_PATH, appName, fileName);
-
-		if (previewDeployment?.application?.runtimeWorkerId) {
-			const runtimeWorker = await findRuntimeWorkerById(
-				previewDeployment?.application?.runtimeWorkerId,
-			);
-
-			const command = `
-				mkdir -p ${LOGS_PATH}/${appName};
+	const runtimeWorkerId = previewDeployment?.application?.runtimeWorkerId;
+	const { LOGS_PATH } = paths(!!runtimeWorkerId);
+	const title = deployment.title || "Deployment";
+	const description = deployment.description || "";
+	return createDeploymentRecord({
+		runtimeWorkerId,
+		basePath: LOGS_PATH,
+		appName: `${previewDeployment.appName}`,
+		buildRemoteCommand: ({ basePath, appName, logFilePath }) => `
+				mkdir -p ${basePath}/${appName};
             	echo "Initializing deployment" >> ${logFilePath};
-			`;
-
-			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
-		} else {
-			await fsPromises.mkdir(path.join(LOGS_PATH, appName), {
-				recursive: true,
+			`,
+		localInitContent: "Initializing deployment",
+		title,
+		description,
+		successValues: {
+			previewDeploymentId: deployment.previewDeploymentId,
+		},
+		errorValues: {
+			previewDeploymentId: deployment.previewDeploymentId,
+		},
+		errorMessage: "Error creating the deployment",
+		onError: async () => {
+			await updatePreviewDeployment(deployment.previewDeploymentId, {
+				previewStatus: "error",
 			});
-			await fsPromises.writeFile(logFilePath, "Initializing deployment");
-		}
-
-		const deploymentCreate = await db
-			.insert(deployments)
-			.values({
-				title: deployment.title || "Deployment",
-				status: "running",
-				logPath: logFilePath,
-				description: deployment.description || "",
-				previewDeploymentId: deployment.previewDeploymentId,
-				startedAt: new Date().toISOString(),
-			})
-			.returning();
-		if (deploymentCreate.length === 0 || !deploymentCreate[0]) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Error creating the deployment",
-			});
-		}
-		return deploymentCreate[0];
-	} catch (error) {
-		await db
-			.insert(deployments)
-			.values({
-				previewDeploymentId: deployment.previewDeploymentId,
-				title: deployment.title || "Deployment",
-				status: "error",
-				logPath: "",
-				description: deployment.description || "",
-				errorMessage: `An error have occurred: ${error instanceof Error ? error.message : error}`,
-				startedAt: new Date().toISOString(),
-				finishedAt: new Date().toISOString(),
-			})
-			.returning();
-		await updatePreviewDeployment(deployment.previewDeploymentId, {
-			previewStatus: "error",
-		});
-		logger.error(
-			{ err: error, previewDeploymentId: deployment.previewDeploymentId },
-			"Failed to create preview deployment",
-		);
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Error creating the deployment",
-		});
-	}
+		},
+		logErrorAfterOnError: (error) =>
+			logger.error(
+				{ err: error, previewDeploymentId: deployment.previewDeploymentId },
+				"Failed to create preview deployment",
+			),
+	});
 };
 
 export const createDeploymentCompose = async (
@@ -379,74 +428,38 @@ export const createDeploymentCompose = async (
 		"compose",
 		compose.runtimeWorkerId,
 	);
-	try {
-		const { LOGS_PATH } = paths(!!compose.runtimeWorkerId);
-		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
-		const fileName = `${compose.appName}-${formattedDateTime}.log`;
-		const logFilePath = path.join(LOGS_PATH, compose.appName, fileName);
-
-		if (compose.runtimeWorkerId) {
-			const runtimeWorker = await findRuntimeWorkerById(
-				compose.runtimeWorkerId,
-			);
-
-			const command = `
-mkdir -p ${LOGS_PATH}/${compose.appName};
+	const { LOGS_PATH } = paths(!!compose.runtimeWorkerId);
+	const title = deployment.title || "Deployment";
+	const description = deployment.description || "";
+	return createDeploymentRecord({
+		runtimeWorkerId: compose.runtimeWorkerId,
+		basePath: LOGS_PATH,
+		appName: compose.appName,
+		buildRemoteCommand: ({ basePath, appName, logFilePath }) => `
+mkdir -p ${basePath}/${appName};
 echo "Initializing deployment\n" >> ${logFilePath};
-`;
-
-			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
-		} else {
-			await fsPromises.mkdir(path.join(LOGS_PATH, compose.appName), {
-				recursive: true,
+`,
+		localInitContent: "Initializing deployment\n",
+		title,
+		description,
+		successValues: {
+			composeId: deployment.composeId,
+		},
+		errorValues: {
+			composeId: deployment.composeId,
+		},
+		errorMessage: "Error creating the deployment",
+		onError: async () => {
+			await updateCompose(compose.composeId, {
+				composeStatus: "error",
 			});
-			await fsPromises.writeFile(logFilePath, "Initializing deployment\n");
-		}
-
-		const deploymentCreate = await db
-			.insert(deployments)
-			.values({
-				composeId: deployment.composeId,
-				title: deployment.title || "Deployment",
-				description: deployment.description || "",
-				status: "running",
-				logPath: logFilePath,
-				startedAt: new Date().toISOString(),
-			})
-			.returning();
-		if (deploymentCreate.length === 0 || !deploymentCreate[0]) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Error creating the deployment",
-			});
-		}
-		return deploymentCreate[0];
-	} catch (error) {
-		await db
-			.insert(deployments)
-			.values({
-				composeId: deployment.composeId,
-				title: deployment.title || "Deployment",
-				status: "error",
-				logPath: "",
-				description: deployment.description || "",
-				errorMessage: `An error have occurred: ${error instanceof Error ? error.message : error}`,
-				startedAt: new Date().toISOString(),
-				finishedAt: new Date().toISOString(),
-			})
-			.returning();
-		await updateCompose(compose.composeId, {
-			composeStatus: "error",
-		});
-		logger.error(
-			{ err: error, composeId: deployment.composeId },
-			"Failed to create compose deployment",
-		);
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Error creating the deployment",
-		});
-	}
+		},
+		logErrorAfterOnError: (error) =>
+			logger.error(
+				{ err: error, composeId: deployment.composeId },
+				"Failed to create compose deployment",
+			),
+	});
 };
 
 export const createDeploymentBackup = async (
@@ -468,65 +481,28 @@ export const createDeploymentBackup = async (
 		"backup",
 		runtimeWorkerId,
 	);
-	try {
-		const { LOGS_PATH } = paths(!!runtimeWorkerId);
-		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
-		const fileName = `${backup.appName}-${formattedDateTime}.log`;
-		const logFilePath = path.join(LOGS_PATH, backup.appName, fileName);
-
-		if (runtimeWorkerId) {
-			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
-
-			const command = `
-mkdir -p ${LOGS_PATH}/${backup.appName};
+	const { LOGS_PATH } = paths(!!runtimeWorkerId);
+	const title = deployment.title || "Backup";
+	const description = deployment.description || "";
+	return createDeploymentRecord({
+		runtimeWorkerId,
+		basePath: LOGS_PATH,
+		appName: backup.appName,
+		buildRemoteCommand: ({ basePath, appName, logFilePath }) => `
+mkdir -p ${basePath}/${appName};
 echo "Initializing backup\n" >> ${logFilePath};
-`;
-
-			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
-		} else {
-			await fsPromises.mkdir(path.join(LOGS_PATH, backup.appName), {
-				recursive: true,
-			});
-			await fsPromises.writeFile(logFilePath, "Initializing backup\n");
-		}
-
-		const deploymentCreate = await db
-			.insert(deployments)
-			.values({
-				backupId: deployment.backupId,
-				title: deployment.title || "Backup",
-				description: deployment.description || "",
-				status: "running",
-				logPath: logFilePath,
-				startedAt: new Date().toISOString(),
-			})
-			.returning();
-		if (deploymentCreate.length === 0 || !deploymentCreate[0]) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Error creating the backup",
-			});
-		}
-		return deploymentCreate[0];
-	} catch (error) {
-		await db
-			.insert(deployments)
-			.values({
-				backupId: deployment.backupId,
-				title: deployment.title || "Backup",
-				status: "error",
-				logPath: "",
-				description: deployment.description || "",
-				errorMessage: `An error have occurred: ${error instanceof Error ? error.message : error}`,
-				startedAt: new Date().toISOString(),
-				finishedAt: new Date().toISOString(),
-			})
-			.returning();
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Error creating the backup",
-		});
-	}
+`,
+		localInitContent: "Initializing backup\n",
+		title,
+		description,
+		successValues: {
+			backupId: deployment.backupId,
+		},
+		errorValues: {
+			backupId: deployment.backupId,
+		},
+		errorMessage: "Error creating the backup",
+	});
 };
 
 export const createDeploymentSchedule = async (
@@ -546,70 +522,33 @@ export const createDeploymentSchedule = async (
 		"schedule",
 		runtimeWorkerId,
 	);
-	try {
-		const { SCHEDULES_PATH } = paths(!!runtimeWorkerId);
-		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
-		const fileName = `${schedule.appName}-${formattedDateTime}.log`;
-		const logFilePath = path.join(SCHEDULES_PATH, schedule.appName, fileName);
-
-		if (runtimeWorkerId) {
-			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
-
-			const command = `
-				mkdir -p ${SCHEDULES_PATH}/${schedule.appName};
+	const { SCHEDULES_PATH } = paths(!!runtimeWorkerId);
+	const title = deployment.title || "Deployment";
+	const description = deployment.description || "";
+	return createDeploymentRecord({
+		runtimeWorkerId,
+		basePath: SCHEDULES_PATH,
+		appName: schedule.appName,
+		buildRemoteCommand: ({ basePath, appName, logFilePath }) => `
+				mkdir -p ${basePath}/${appName};
             	echo "Initializing schedule" >> ${logFilePath};
-			`;
-
-			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
-		} else {
-			await fsPromises.mkdir(path.join(SCHEDULES_PATH, schedule.appName), {
-				recursive: true,
-			});
-			await fsPromises.writeFile(logFilePath, "Initializing schedule\n");
-		}
-
-		const deploymentCreate = await db
-			.insert(deployments)
-			.values({
-				scheduleId: deployment.scheduleId,
-				title: deployment.title || "Deployment",
-				status: "running",
-				logPath: logFilePath,
-				description: deployment.description || "",
-				startedAt: new Date().toISOString(),
-			})
-			.returning();
-		if (deploymentCreate.length === 0 || !deploymentCreate[0]) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Error creating the deployment",
-			});
-		}
-		return deploymentCreate[0];
-	} catch (error) {
-		logger.error(
-			{ err: error, scheduleId: deployment.scheduleId },
-			"Failed to create schedule deployment",
-		);
-		await db
-			.insert(deployments)
-			.values({
-				scheduleId: deployment.scheduleId,
-				title: deployment.title || "Deployment",
-				status: "error",
-				logPath: "",
-				description: deployment.description || "",
-				errorMessage: `An error have occurred: ${error instanceof Error ? error.message : error}`,
-				startedAt: new Date().toISOString(),
-				finishedAt: new Date().toISOString(),
-			})
-			.returning();
-
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Error creating the deployment",
-		});
-	}
+			`,
+		localInitContent: "Initializing schedule\n",
+		title,
+		description,
+		successValues: {
+			scheduleId: deployment.scheduleId,
+		},
+		errorValues: {
+			scheduleId: deployment.scheduleId,
+		},
+		errorMessage: "Error creating the deployment",
+		logErrorBeforeInsert: (error) =>
+			logger.error(
+				{ err: error, scheduleId: deployment.scheduleId },
+				"Failed to create schedule deployment",
+			),
+	});
 };
 
 export const createDeploymentVolumeBackup = async (
@@ -628,77 +567,33 @@ export const createDeploymentVolumeBackup = async (
 		"volumeBackup",
 		runtimeWorkerId,
 	);
-	try {
-		const { VOLUME_BACKUPS_PATH } = paths(!!runtimeWorkerId);
-		const formattedDateTime = format(new Date(), "yyyy-MM-dd:HH:mm:ss");
-		const fileName = `${volumeBackup.appName}-${formattedDateTime}.log`;
-		const logFilePath = path.join(
-			VOLUME_BACKUPS_PATH,
-			volumeBackup.appName,
-			fileName,
-		);
-
-		if (runtimeWorkerId) {
-			const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
-
-			const command = `
-				mkdir -p ${VOLUME_BACKUPS_PATH}/${volumeBackup.appName};
+	const { VOLUME_BACKUPS_PATH } = paths(!!runtimeWorkerId);
+	const title = deployment.title || "Deployment";
+	const description = deployment.description || "";
+	return createDeploymentRecord({
+		runtimeWorkerId,
+		basePath: VOLUME_BACKUPS_PATH,
+		appName: volumeBackup.appName,
+		buildRemoteCommand: ({ basePath, appName, logFilePath }) => `
+				mkdir -p ${basePath}/${appName};
             	echo "Initializing volume backup" >> ${logFilePath};
-			`;
-
-			await execAsyncRemote(runtimeWorker.runtimeWorkerId, command);
-		} else {
-			await fsPromises.mkdir(
-				path.join(VOLUME_BACKUPS_PATH, volumeBackup.appName),
-				{
-					recursive: true,
-				},
-			);
-			await fsPromises.writeFile(logFilePath, "Initializing volume backup\n");
-		}
-
-		const deploymentCreate = await db
-			.insert(deployments)
-			.values({
-				volumeBackupId: deployment.volumeBackupId,
-				title: deployment.title || "Deployment",
-				status: "running",
-				logPath: logFilePath,
-				description: deployment.description || "",
-				startedAt: new Date().toISOString(),
-			})
-			.returning();
-		if (deploymentCreate.length === 0 || !deploymentCreate[0]) {
-			throw new TRPCError({
-				code: "BAD_REQUEST",
-				message: "Error creating the deployment",
-			});
-		}
-		return deploymentCreate[0];
-	} catch (error) {
-		logger.error(
-			{ err: error, volumeBackupId: deployment.volumeBackupId },
-			"Failed to create volume-backup deployment",
-		);
-		await db
-			.insert(deployments)
-			.values({
-				volumeBackupId: deployment.volumeBackupId,
-				title: deployment.title || "Deployment",
-				status: "error",
-				logPath: "",
-				description: deployment.description || "",
-				errorMessage: `An error have occurred: ${error instanceof Error ? error.message : error}`,
-				startedAt: new Date().toISOString(),
-				finishedAt: new Date().toISOString(),
-			})
-			.returning();
-
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Error creating the deployment",
-		});
-	}
+			`,
+		localInitContent: "Initializing volume backup\n",
+		title,
+		description,
+		successValues: {
+			volumeBackupId: deployment.volumeBackupId,
+		},
+		errorValues: {
+			volumeBackupId: deployment.volumeBackupId,
+		},
+		errorMessage: "Error creating the deployment",
+		logErrorBeforeInsert: (error) =>
+			logger.error(
+				{ err: error, volumeBackupId: deployment.volumeBackupId },
+				"Failed to create volume-backup deployment",
+			),
+	});
 };
 
 export const removeDeployment = async (deploymentId: string) => {
