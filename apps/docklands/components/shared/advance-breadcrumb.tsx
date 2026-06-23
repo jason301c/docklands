@@ -74,16 +74,12 @@ const SERVICE_COLLECTION_KEYS = [
 	"database",
 ] as const satisfies ReadonlyArray<keyof ServiceCollections>;
 
+// Canonical workspace-first route params. The six managed engines all resolve
+// to `databaseId`; the legacy per-engine *Id params were removed.
 const SERVICE_QUERY_KEYS = [
 	"applicationId",
 	"composeId",
 	"databaseId",
-	"postgresId",
-	"mysqlId",
-	"mariadbId",
-	"redisId",
-	"mongoId",
-	"libsqlId",
 ] as const;
 
 const SERVICE_ICONS: Record<

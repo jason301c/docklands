@@ -1956,6 +1956,28 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 										</FormItem>
 									)}
 								/>
+
+								<FormField
+									control={form.control}
+									name="serverThreshold"
+									render={({ field }) => (
+										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
+											<div className="space-y-0.5">
+												<FormLabel>Server Threshold</FormLabel>
+												<FormDescription>
+													Trigger the action when host CPU or memory usage
+													crosses the configured threshold.
+												</FormDescription>
+											</div>
+											<FormControl>
+												<Switch
+													checked={field.value}
+													onCheckedChange={field.onChange}
+												/>
+											</FormControl>
+										</FormItem>
+									)}
+								/>
 							</div>
 						</div>
 					</form>

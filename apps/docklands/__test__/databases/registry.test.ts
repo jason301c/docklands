@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
 	DATABASE_ENGINE_KEYS,
+	DatabaseCredentialExtractionError,
 	databaseEngines,
+	extractDatabaseCredentials,
 	getDatabaseEngine,
 	parseDatabaseConfig,
 } from "@/server/core/databases/registry";
@@ -276,6 +278,60 @@ describe("database engine registry", () => {
 					databasePassword: "b",
 				}).sqldNode,
 			).toBe("primary");
+		});
+	});
+
+	describe("extractDatabaseCredentials (template bridge)", () => {
+		it("extracts postgres credentials from standard env", () => {
+			const config = extractDatabaseCredentials("postgres", {
+				POSTGRES_DB: "app",
+				POSTGRES_USER: "admin",
+				POSTGRES_PASSWORD: "secret",
+			});
+			expect(config).toEqual({
+				databaseName: "app",
+				databaseUser: "admin",
+				databasePassword: "secret",
+			});
+		});
+
+		it("keeps conventional name/user defaults when only the password is set", () => {
+			const config = extractDatabaseCredentials("postgres", {
+				POSTGRES_PASSWORD: "secret",
+			});
+			expect(config.databaseName).toBe("postgres");
+			expect(config.databaseUser).toBe("postgres");
+		});
+
+		it("throws (does not silently default) when an auth-required password is missing", () => {
+			expect(() => extractDatabaseCredentials("postgres", {})).toThrow(
+				DatabaseCredentialExtractionError,
+			);
+			expect(() => extractDatabaseCredentials("mysql", {})).toThrow(
+				DatabaseCredentialExtractionError,
+			);
+			expect(() => extractDatabaseCredentials("mariadb", {})).toThrow(
+				DatabaseCredentialExtractionError,
+			);
+		});
+
+		it("accepts the root password as the mysql/mariadb credential", () => {
+			expect(
+				extractDatabaseCredentials("mysql", { MYSQL_ROOT_PASSWORD: "rootpw" })
+					.databasePassword,
+			).toBe("rootpw");
+			expect(
+				extractDatabaseCredentials("mariadb", {
+					MARIADB_ROOT_PASSWORD: "rootpw",
+				}).databasePassword,
+			).toBe("rootpw");
+		});
+
+		it("allows an empty password for no-auth engines (redis/mongo/libsql)", () => {
+			expect(() => extractDatabaseCredentials("redis", {})).not.toThrow();
+			expect(() => extractDatabaseCredentials("mongo", {})).not.toThrow();
+			expect(() => extractDatabaseCredentials("libsql", {})).not.toThrow();
+			expect(extractDatabaseCredentials("redis", {}).databasePassword).toBe("");
 		});
 	});
 });

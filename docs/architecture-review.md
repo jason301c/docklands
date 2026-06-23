@@ -449,6 +449,28 @@ Traefik config: dynamic per-service files + `middlewares.yml` under `server/core
 > decisions imply, sequences the work into phases, and maps **every** Part I
 > finding to a disposition so nothing is silently dropped.
 
+## Progress log
+
+Tracks execution of the phases below. A ✅ in the phase table / disposition map
+means shipped and green (`typecheck` + `test:ci`).
+
+- **P0 — Pure bugs — ✅ done (2026-06-23).** Fixed A1, G1, S1, C3, N7, R8, A8,
+  G7. Also fixed three **discovered** per-engine leftovers from the
+  unified-database refactor (see *Discovered during remediation* below). All
+  green: `tsc` clean, 82 test files / 656 tests pass, Biome clean.
+
+### Discovered during remediation
+
+Issues not in the Part I survey, found while executing the plan. Tracked here so
+they're not lost; each is dispositioned like a first-class finding.
+
+| ID | Finding | Disposition |
+|---|---|---|
+| X1 | `environmentRouter` `filterEnvironmentServices` referenced removed per-engine arrays (`environment.libsql`/`.mariadb`/…) → **runtime crash** (`undefined.filter`) when a scoped (non-owner) member lists environments. | **✅ P0** — filter the unified `environment.database` array by `databaseId`. |
+| X2 | `services/mount.ts` `createMount` set removed per-engine columns (`postgresId`/…) via object spread (bypassed tsc) → database mounts created via `mount.create` were **orphaned** (no FK set). | **✅ P0** — map all six managed engines to the unified `databaseId`. |
+| X3 | Volume-backup create UI (`handle-volume-backups.tsx`) sent removed per-engine IDs + a stray `runtimeWorkerId: id`; the router resolves `serviceId` from `databaseId`, so **database volume backups were orphaned**. | **✅ P0** — send `databaseId` for all managed engines; drop the stray field. |
+| X4 | `advance-breadcrumb.tsx` `SERVICE_QUERY_KEYS` listed dead per-engine route params. | **✅ P0** — trim to `applicationId`/`composeId`/`databaseId` (cosmetic). |
+
 ## Decisions locked
 
 These four (plus the encryption-key choice) were decided deliberately and gate
@@ -556,7 +578,7 @@ the cleanup. Phases are independently shippable and each ends green
 
 | Phase | Theme | Builds / changes | Closes (Part I IDs) |
 |---|---|---|---|
-| **P0** | Pure bugs | spot fixes, no new abstraction | A1, G1, S1, C3, N7, R8, A8, G7 |
+| **P0** ✅ | Pure bugs | spot fixes, no new abstraction | A1, G1, S1, C3, N7, R8, A8, G7 (+ X1–X4) |
 | **P1** | Secrets at rest | abstraction ① + apply to inventory + `DOCKLANDS_ENCRYPTION_KEY` + docs | G3, G4, N2, S2, S3, B2(store), D1(store), C2(store) |
 | **P2** | Shell-exec safety | `shellArg`/arg-array sweep + secrets off cmdline | A2, A10, D4, N3, G5, R4, B2(cmdline) |
 | **P3** | Durable jobs | abstraction ② (queue + scheduler + backups) | O6, B7, R1 |
@@ -642,14 +664,14 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 
 | ID | Finding (short) | Disposition |
 |---|---|---|
-| A1 | nginx `runtimeWorker {` token | **P0 fix** |
+| A1 | nginx `runtimeWorker {` token | **✅ P0** |
 | A2 | build secrets exported as plain env | **P2** |
 | A3 | publishDir + SPA no coupling | **P7 guard** |
 | A4 | drop + buildType unvalidated | **P7 guard** |
 | A5 | audit resourceType inconsistent | **P7 (canonical taxonomy)** |
 | A6 | rollbacks inert; image-less row leak | **P7 fix** |
 | A7 | paketo/railpack version pinning | **P7 (railpack: configurable)** |
-| A8 | disconnect resets to github | **P0 fix** |
+| A8 | disconnect resets to github | **✅ P0** (→ neutral `git`, app + compose) |
 | A9 | env reference resolution order | no action (documented) |
 | A10 | patch filePath shell interpolation | **P2** |
 | A11 | patches re-apply conflicts | no action (documented) |
@@ -664,7 +686,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | D8 | mysql/mariadb dumps as root | no action (note) |
 | C1 | bare-DB routing dead in catalog | **P6 finish (ship templates)** |
 | C2 | compose creds plaintext/served | **P1 (store) + P4 (read perm)** |
-| C3 | extractDatabaseCredentials defaults | **P0 fix (fail loud)** |
+| C3 | extractDatabaseCredentials defaults | **✅ P0** (throws for auth-required engines; caller skips + warns) |
 | C4 | backup user/password engine quirk | **P7 fix** |
 | C5 | detection runs twice | **P7 (single call site)** |
 | C6 | stack stop/start asymmetry | **P7 (add start path)** |
@@ -677,16 +699,16 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | N4 | placeholder ACME email | **P7 guard (require email)** |
 | N5 | LE prod-only + rate-limit | **P7 (doc + dev resolver)** |
 | N6 | proxy-file editing can brick ingress | **P7 guard (validate)** |
-| N7 | port default contradiction | **P0 fix** |
+| N7 | port default contradiction | **✅ P0** (zod default → `host`, matches column + runtime) |
 | N8 | domain validation CDN gap | **P7 (doc)** |
 | N9 | redirects application-only | no action (note) |
-| G1 | GitLab `/api/v4/workspaces` | **P0 fix** |
+| G1 | GitLab `/api/v4/workspaces` | **✅ P0** (→ `/api/v4/projects`) |
 | G2 | refresh-token webhook no signature | **P4 (sign/verify)** |
 | G3 | SSH keys plaintext + wrong comment | **P1** |
 | G4 | all provider creds plaintext | **P1** |
 | G5 | SSH key echo interpolation + race | **P2** |
 | G6 | provider parity uneven | **P7 (document)** |
-| G7 | bitbucket isConfigured false | **P0 fix** |
+| G7 | bitbucket isConfigured false | **✅ P0** (derives from apiToken + email) |
 | G8 | provider URLs from window.origin | **P7 (use configured URL)** |
 | AC1 | docker WS skip per-service access | **P4** |
 | AC2 | API keys full identity | **P4 (per-key scope)** |
@@ -706,7 +728,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | O7 | audit resourceType inconsistency | **P7 (= A5)** |
 | O8 | request analytics 1000-line window | no action (note) |
 | O9 | host metrics Linux-only | no action (note) |
-| S1 | serverThreshold no UI toggle | **P0 fix** |
+| S1 | serverThreshold no UI toggle | **✅ P0** (render the toggle) |
 | S2 | registry passwords plaintext | **P1** |
 | S3 | notification secrets plaintext | **P1** |
 | S4 | restart notif not org-scoped | **P7 fix** |
@@ -730,7 +752,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | R5 | getServerMetrics SSRF | **P4 (+ removed by P6 cut)** |
 | R6 | server→runtimeWorker rename | **P7 (finish rename)** |
 | R7 | build-workers route is concurrency | no action (documented) |
-| R8 | execAsyncRemote timeout + dead sleep | **P0 fix** |
+| R8 | execAsyncRemote timeout + dead sleep | **✅ P0** (drop sleep; timeout 30s; rm dead var) |
 | W1 | canvas layout race | **P7 (debounce + guard)** |
 | W2 | conn vars snapshot not binding | **P5 (= D2)** |
 | W3 | environment promotion absent | **P6 defer** |

@@ -223,7 +223,7 @@ export const getGitlabBranches = async (input: {
 
 	while (true) {
 		const branchesResponse = await fetch(
-			`${baseUrl}/api/v4/workspaces/${input.id}/repository/branches?page=${page}&per_page=${perPage}`,
+			`${baseUrl}/api/v4/projects/${input.id}/repository/branches?page=${page}&per_page=${perPage}`,
 			{
 				headers: {
 					Authorization: `Bearer ${gitlabProvider.accessToken}`,
@@ -304,7 +304,7 @@ export const validateGitlabProvider = async (gitlabProvider: Gitlab) => {
 
 		while (true) {
 			const response = await fetch(
-				`${baseUrl}/api/v4/workspaces?membership=true&page=${page}&per_page=${perPage}`,
+				`${baseUrl}/api/v4/projects?membership=true&page=${page}&per_page=${perPage}`,
 				{
 					headers: {
 						Authorization: `Bearer ${gitlabProvider.accessToken}`,

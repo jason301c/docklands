@@ -35,29 +35,16 @@ const filterEnvironmentServices = (
 	accessedServices: string[],
 ) => ({
 	...environment,
-	applications: environment.applications.filter((app: any) =>
+	applications: (environment.applications ?? []).filter((app: any) =>
 		accessedServices.includes(app.applicationId),
 	),
-	compose: environment.compose.filter((comp: any) =>
+	compose: (environment.compose ?? []).filter((comp: any) =>
 		accessedServices.includes(comp.composeId),
 	),
-	libsql: environment.libsql.filter((db: any) =>
-		accessedServices.includes(db.libsqlId),
-	),
-	mariadb: environment.mariadb.filter((db: any) =>
-		accessedServices.includes(db.mariadbId),
-	),
-	mongo: environment.mongo.filter((db: any) =>
-		accessedServices.includes(db.mongoId),
-	),
-	mysql: environment.mysql.filter((db: any) =>
-		accessedServices.includes(db.mysqlId),
-	),
-	postgres: environment.postgres.filter((db: any) =>
-		accessedServices.includes(db.postgresId),
-	),
-	redis: environment.redis.filter((db: any) =>
-		accessedServices.includes(db.redisId),
+	// Unified managed-database model: a single engine-discriminated `database`
+	// array keyed by `databaseId` (the per-engine arrays were removed).
+	database: (environment.database ?? []).filter((db: any) =>
+		accessedServices.includes(db.databaseId),
 	),
 });
 

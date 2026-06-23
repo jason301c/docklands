@@ -740,7 +740,9 @@ export const composeRouter = createTRPCRouter({
 				customGitUrl: null,
 				customGitSSHKeyId: null,
 
-				sourceType: "github", // Reset to default
+				// Reset to a provider-neutral source rather than implying a GitHub
+				// connection. All provider + customGit fields above are nulled.
+				sourceType: "git",
 				composeStatus: "idle",
 				watchPaths: null,
 				enableSubmodules: false,

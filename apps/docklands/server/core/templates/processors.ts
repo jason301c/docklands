@@ -3,9 +3,11 @@ import path from "node:path";
 import { parse, stringify } from "yaml";
 import { detectDatabaseEngine } from "@/server/core/databases/detection";
 import {
+	DatabaseCredentialExtractionError,
 	type DatabaseEngineKey,
 	extractDatabaseCredentials,
 } from "@/server/core/databases/registry";
+import { logger } from "@/server/core/lib/logger";
 import type { ComposeSpecification } from "@/server/core/utils/docker/types";
 import {
 	generateBase64,
@@ -864,15 +866,29 @@ export function processComposeTemplate(
 					})
 				: null;
 		if (detectedEngine) {
-			databases.push({
-				serviceName,
-				engine: detectedEngine,
-				image: service.image,
-				config: extractDatabaseCredentials(
-					detectedEngine,
-					composeEnvToRecord(service.environment),
-				),
-			});
+			try {
+				databases.push({
+					serviceName,
+					engine: detectedEngine,
+					image: service.image,
+					config: extractDatabaseCredentials(
+						detectedEngine,
+						composeEnvToRecord(service.environment),
+					),
+				});
+			} catch (error) {
+				// Don't store wrong-but-plausible credentials, and don't abort the
+				// whole template deploy over one un-promotable database: skip
+				// promotion for this service and warn loudly instead.
+				if (error instanceof DatabaseCredentialExtractionError) {
+					logger.warn(
+						{ serviceName, engine: detectedEngine },
+						`Skipping managed-database promotion for compose service "${serviceName}": ${error.message}`,
+					);
+				} else {
+					throw error;
+				}
+			}
 		}
 		setEnv(
 			envs,

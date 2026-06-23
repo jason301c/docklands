@@ -22,6 +22,18 @@ import {
 
 export type Mount = typeof mounts.$inferSelect;
 
+const MANAGED_DATABASE_SERVICE_TYPES = new Set<ServiceType>([
+	"postgres",
+	"mysql",
+	"mariadb",
+	"mongo",
+	"redis",
+	"libsql",
+]);
+
+const isManagedDatabaseServiceType = (serviceType: ServiceType) =>
+	MANAGED_DATABASE_SERVICE_TYPES.has(serviceType);
+
 export const createMount = async (input: z.infer<typeof apiCreateMount>) => {
 	try {
 		const { serviceId, ...rest } = input;
@@ -35,23 +47,10 @@ export const createMount = async (input: z.infer<typeof apiCreateMount>) => {
 				...(input.serviceType === "compose" && {
 					composeId: serviceId,
 				}),
-				...(input.serviceType === "libsql" && {
-					libsqlId: serviceId,
-				}),
-				...(input.serviceType === "mariadb" && {
-					mariadbId: serviceId,
-				}),
-				...(input.serviceType === "mongo" && {
-					mongoId: serviceId,
-				}),
-				...(input.serviceType === "mysql" && {
-					mysqlId: serviceId,
-				}),
-				...(input.serviceType === "postgres" && {
-					postgresId: serviceId,
-				}),
-				...(input.serviceType === "redis" && {
-					redisId: serviceId,
+				// All six managed engines live in the unified `database` table and
+				// link via `databaseId` (the per-engine *Id columns were removed).
+				...(isManagedDatabaseServiceType(input.serviceType) && {
+					databaseId: serviceId,
 				}),
 			})
 			.returning()

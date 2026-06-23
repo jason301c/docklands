@@ -691,11 +691,39 @@ export const databaseChangePasswordCommand = <K extends DatabaseEngineKey>(
 ): string | null => databaseEngines[key].changePassword?.(args) ?? null;
 
 /**
- * Best-effort extraction of an engine's credentials from a compose service's
- * resolved `environment` map (magic variables already expanded). Used by the
- * template bridge to give a `service_database` its credentials so it can be
- * backed up and surface connection info, without typed columns. Missing values
- * fall back to sensible defaults so the result still validates.
+ * Thrown when a managed-database engine is detected inside a compose stack but
+ * its credentials cannot be determined from the resolved environment. Callers
+ * should treat this as "do not promote this service" rather than silently
+ * storing a wrong-but-plausible config (which would fail backups and surface
+ * incorrect connection info).
+ */
+export class DatabaseCredentialExtractionError extends Error {
+	constructor(
+		readonly engine: DatabaseEngineKey,
+		readonly missing: string,
+	) {
+		super(
+			`Detected a ${engine} database but could not determine its password ` +
+				`from the compose environment (expected ${missing}). The service was ` +
+				"not promoted to a managed database — backups and connection variables " +
+				"would otherwise use incorrect credentials.",
+		);
+		this.name = "DatabaseCredentialExtractionError";
+	}
+}
+
+/**
+ * Extract an engine's credentials from a compose service's resolved
+ * `environment` map (magic variables already expanded). Used by the template
+ * bridge to give a `service_database` its credentials so it can be backed up
+ * and surface connection info, without typed columns.
+ *
+ * Conventional name/user defaults (e.g. user `postgres`, `root`) match the
+ * official images and are kept. But for engines that require authentication
+ * (postgres/mysql/mariadb) a *missing password* is never a safe default — it
+ * produces a config that looks valid but cannot authenticate — so this throws
+ * {@link DatabaseCredentialExtractionError}. Engines where an empty password is
+ * a legitimate no-auth configuration (redis/mongo/libsql) keep the empty value.
  */
 export const extractDatabaseCredentials = <K extends DatabaseEngineKey>(
 	key: K,
@@ -718,31 +746,57 @@ export const extractDatabaseCredentials = <K extends DatabaseEngineKey>(
 	};
 
 	switch (key) {
-		case "postgres":
+		case "postgres": {
+			const databasePassword = env.POSTGRES_PASSWORD ?? "";
+			if (!databasePassword) {
+				throw new DatabaseCredentialExtractionError(
+					"postgres",
+					"POSTGRES_PASSWORD",
+				);
+			}
 			return {
 				databaseName: env.POSTGRES_DB ?? "postgres",
 				databaseUser: env.POSTGRES_USER ?? "postgres",
-				databasePassword: env.POSTGRES_PASSWORD ?? "",
+				databasePassword,
 			} as DatabaseConfigByKey[K];
-		case "mysql":
+		}
+		case "mysql": {
+			const databasePassword =
+				env.MYSQL_PASSWORD ?? env.MYSQL_ROOT_PASSWORD ?? "";
+			if (!databasePassword) {
+				throw new DatabaseCredentialExtractionError(
+					"mysql",
+					"MYSQL_PASSWORD or MYSQL_ROOT_PASSWORD",
+				);
+			}
 			return {
 				databaseName: env.MYSQL_DATABASE ?? "mysql",
 				databaseUser: env.MYSQL_USER ?? "root",
-				databasePassword: env.MYSQL_PASSWORD ?? env.MYSQL_ROOT_PASSWORD ?? "",
+				databasePassword,
 				databaseRootPassword: env.MYSQL_ROOT_PASSWORD ?? "",
 			} as DatabaseConfigByKey[K];
-		case "mariadb":
+		}
+		case "mariadb": {
+			const databasePassword =
+				env.MARIADB_PASSWORD ??
+				env.MYSQL_PASSWORD ??
+				env.MARIADB_ROOT_PASSWORD ??
+				env.MYSQL_ROOT_PASSWORD ??
+				"";
+			if (!databasePassword) {
+				throw new DatabaseCredentialExtractionError(
+					"mariadb",
+					"MARIADB_PASSWORD or MARIADB_ROOT_PASSWORD",
+				);
+			}
 			return {
 				databaseName: env.MARIADB_DATABASE ?? env.MYSQL_DATABASE ?? "mariadb",
 				databaseUser: env.MARIADB_USER ?? env.MYSQL_USER ?? "root",
-				databasePassword:
-					env.MARIADB_PASSWORD ??
-					env.MYSQL_PASSWORD ??
-					env.MARIADB_ROOT_PASSWORD ??
-					"",
+				databasePassword,
 				databaseRootPassword:
 					env.MARIADB_ROOT_PASSWORD ?? env.MYSQL_ROOT_PASSWORD ?? "",
 			} as DatabaseConfigByKey[K];
+		}
 		case "mongo":
 			return {
 				databaseUser: env.MONGO_INITDB_ROOT_USERNAME ?? "mongo",

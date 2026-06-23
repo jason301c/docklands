@@ -200,24 +200,12 @@ export const HandleVolumeBackups = ({
 			...(volumeBackupType === "compose" && {
 				composeId: id || "",
 			}),
-			...(volumeBackupType === "postgres" && {
-				runtimeWorkerId: id || "",
-			}),
-			...(volumeBackupType === "postgres" && {
-				postgresId: id || "",
-			}),
-			...(volumeBackupType === "mariadb" && {
-				mariadbId: id || "",
-			}),
-			...(volumeBackupType === "mongo" && {
-				mongoId: id || "",
-			}),
-			...(volumeBackupType === "mysql" && {
-				mysqlId: id || "",
-			}),
-			...(volumeBackupType === "redis" && {
-				redisId: id || "",
-			}),
+			// All managed-database engines link via the unified `databaseId`.
+			...(volumeBackupType &&
+				volumeBackupType !== "application" &&
+				volumeBackupType !== "compose" && {
+					databaseId: id || "",
+				}),
 		})
 			.then(() => {
 				toast.success(

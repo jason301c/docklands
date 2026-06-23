@@ -154,7 +154,6 @@ export const execAsyncRemote = async (
 	return new Promise((resolve, reject) => {
 		const conn = new Client();
 
-		sleep(1000);
 		conn
 			.once("ready", () => {
 				conn.exec(command, (err, stream) => {
@@ -216,7 +215,6 @@ export const execAsyncRemote = async (
 						"  • Try generating a new SSH key in Docklands and add only the public key to the runtimeWorker, then try again.",
 						"  • Make sure to follow the instructions on the Setup Server Button on the SSH Keys tab and then click on deployments tab and check the logs for more details.",
 					].join("\n");
-					const errorMsg = `Authentication failed: Invalid SSH private key. ❌ Error: ${err.message} ${err.level}`;
 					onData?.(friendlyMessage);
 					reject(
 						new ExecError(
@@ -245,7 +243,9 @@ export const execAsyncRemote = async (
 				port: runtimeWorker.port,
 				username: runtimeWorker.username,
 				privateKey: runtimeWorker.sshKey?.privateKey,
-				timeout: 99999,
+				// SSH handshake timeout (ms). Generous enough for slow remote
+				// workers, but not the old effectively-infinite ~100s.
+				timeout: 30000,
 			});
 	});
 };

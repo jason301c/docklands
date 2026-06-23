@@ -34,7 +34,8 @@ const createSchema = createInsertSchema(ports, {
 	portId: z.string().min(1),
 	applicationId: z.string().min(1),
 	publishedPort: z.number(),
-	publishMode: z.enum(["ingress", "host"]).default("ingress"),
+	// Matches the column default and the deploy-time `port.n || "host"` fallback.
+	publishMode: z.enum(["ingress", "host"]).default("host"),
 	targetPort: z.number(),
 	protocol: z.enum(["tcp", "udp"]).default("tcp"),
 });
