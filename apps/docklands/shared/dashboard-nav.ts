@@ -18,6 +18,7 @@ import {
 	Package,
 	PieChart,
 	Rocket,
+	ScrollText,
 	Server,
 	ShieldCheck,
 	Tags,
@@ -125,6 +126,13 @@ export const DASHBOARD_MENU: Menu = {
 			icon: ShieldCheck,
 			url: "/dashboard/settings/roles",
 			isEnabled: ({ permissions }) => !!permissions?.member.read,
+		},
+		{
+			isSingle: true,
+			title: "Audit Log",
+			icon: ScrollText,
+			url: "/dashboard/settings/audit-log",
+			isEnabled: ({ permissions }) => !!permissions?.auditLog.read,
 		},
 		{
 			isSingle: true,
