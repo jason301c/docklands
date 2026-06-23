@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import {
@@ -31,6 +30,13 @@ import { DrawerLogs } from "@/components/shared/drawer-logs";
 const logger = createClientLogger("database-backup");
 
 import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+} from "@/components/shared/command";
+import {
 	Form,
 	FormControl,
 	FormField,
@@ -43,13 +49,6 @@ import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
 import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
-
-const Command = Combobox;
-const CommandInput = Combobox.TriggerInput;
-const CommandList = Combobox.List;
-const CommandGroup = Combobox.Group;
-const CommandItem = Combobox.Item;
-const CommandEmpty = Combobox.Empty;
 
 type DatabaseType =
 	| Exclude<ServiceType, "application" | "redis">

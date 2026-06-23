@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import {
@@ -55,12 +54,13 @@ const BACKUP_DATABASE_ENGINES = DATABASE_ENGINE_KEYS.filter((key) =>
 	databaseEngineSupportsBackup(key),
 );
 
-const Command = Combobox;
-const CommandInput = Combobox.TriggerInput;
-const CommandList = Combobox.List;
-const CommandGroup = Combobox.Group;
-const CommandItem = Combobox.Item;
-const CommandEmpty = Combobox.Empty;
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+} from "@/components/shared/command";
 
 type CacheType = "cache" | "fetch";
 

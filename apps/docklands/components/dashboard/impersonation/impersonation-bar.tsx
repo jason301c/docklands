@@ -2,7 +2,6 @@
 
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import {
 	Popover,
 	PopoverContent,
@@ -37,16 +36,17 @@ import {
 	AvatarFallback,
 	AvatarImage,
 } from "@/components/shared/avatar";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/shared/command";
 import { Logo } from "@/components/shared/logo";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
-
-const Command = Combobox;
-const CommandInput = Combobox.TriggerInput;
-const CommandList = Combobox.List;
-const CommandGroup = Combobox.Group;
-const CommandItem = Combobox.Item;
-const CommandEmpty = Combobox.Empty;
 
 type User = typeof authClient.$Infer.Session.user;
 

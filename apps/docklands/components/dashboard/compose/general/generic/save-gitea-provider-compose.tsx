@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
@@ -36,12 +35,13 @@ import { cn } from "@/shared/utils";
 
 const logger = createClientLogger("compose");
 
-const Command = Combobox;
-const CommandInput = Combobox.TriggerInput;
-const CommandList = Combobox.List;
-const CommandGroup = Combobox.Group;
-const CommandItem = Combobox.Item;
-const CommandEmpty = Combobox.Empty;
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+} from "@/components/shared/command";
 
 const GiteaProviderSchema = z.object({
 	composePath: z.string().min(1),

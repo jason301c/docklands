@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input } from "@cloudflare/kumo/components/input";
@@ -26,18 +25,18 @@ import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+} from "@/components/shared/command";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import { AddDatabase } from "./add-database";
 import { PlacementSelect } from "./placement-select";
-
-const Command = Combobox;
-const CommandInput = Combobox.TriggerInput;
-const CommandList = Combobox.List;
-const CommandGroup = Combobox.Group;
-const CommandItem = Combobox.Item;
-const CommandEmpty = Combobox.Empty;
 
 interface Props {
 	environmentId: string;

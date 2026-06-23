@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Combobox } from "@cloudflare/kumo/components/combobox";
 import {
 	Popover,
 	PopoverContent,
@@ -26,6 +25,14 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/shared/command";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { Separator } from "@/components/shared/separator";
 import type { ServiceType } from "@/server/core/db/schema";
@@ -33,13 +40,6 @@ import {
 	workspaceEnvironmentPath,
 	workspaceServicePath,
 } from "@/shared/routes";
-
-const Command = Combobox;
-const CommandInput = Combobox.TriggerInput;
-const CommandList = Combobox.List;
-const CommandGroup = Combobox.Group;
-const CommandItem = Combobox.Item;
-const CommandEmpty = Combobox.Empty;
 
 type WorkspaceItem = RouterOutputs["workspaces"]["all"][number];
 type WorkspaceEnvironment = WorkspaceItem["environments"][number];
