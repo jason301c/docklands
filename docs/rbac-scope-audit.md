@@ -112,7 +112,7 @@ proves the caller is owner/admin of **their active org**. There is no instance
 operator concept. Affected (non-exhaustive): `updateServerIp`, `assignDomainServer`,
 `saveSSHPrivateKey`/`cleanSSHPrivateKey`, `updateTraefikConfig` /
 `updateWebServerTraefikConfig` / `updateMiddlewareTraefikConfig`, `writeTraefikEnv`,
-`updateTraefikPorts`, `toggleDashboard`, `cleanUnusedImages|Volumes|StoppedContainers|DockerBuilder|DockerPrune|All`, `reloadServer`, `reloadRedis`, `cleanRedis`,
+`updateTraefikPorts`, `toggleDashboard`, `cleanUnusedImages|Volumes|StoppedContainers|DockerBuilder|DockerPrune|All`, `reloadServer`,
 `reloadTraefik`, `cleanAllDeploymentQueue`, `updateServer` (self-update),
 `updateRemoteServersOnly`, `updateBuildsConcurrency`, `setupGPU`.
 
@@ -241,8 +241,8 @@ to bare `protectedProcedure`. In `server/api/routers/settings.ts`:
 updateTraefikConfig, updateWebServerTraefikConfig, updateMiddlewareTraefikConfig,
 writeTraefikEnv, updateTraefikPorts, toggleDashboard, cleanUnusedImages,
 cleanUnusedVolumes, cleanStoppedContainers, cleanDockerBuilder, cleanDockerPrune,
-cleanAll, updateDockerCleanup(instance-wide branch), reloadServer, reloadRedis,
-cleanRedis, reloadTraefik, cleanAllDeploymentQueue, updateServer,
+cleanAll, updateDockerCleanup(instance-wide branch), reloadServer,
+reloadTraefik, cleanAllDeploymentQueue, updateServer,
 updateRemoteServersOnly, updateBuildsConcurrency, setupGPU, checkGPUStatus,
 checkInfrastructureHealth, getDocklandsCloudIps`.
 

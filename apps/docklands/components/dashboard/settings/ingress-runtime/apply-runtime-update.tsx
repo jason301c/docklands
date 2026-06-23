@@ -19,7 +19,6 @@ type ServiceStatus = {
 
 type HealthResult = {
 	postgres: ServiceStatus;
-	redis: ServiceStatus;
 	traefik: ServiceStatus;
 };
 
@@ -74,7 +73,6 @@ export const ApplyRuntimeUpdate = () => {
 	const allHealthy =
 		healthResult &&
 		healthResult.postgres.status === "healthy" &&
-		healthResult.redis.status === "healthy" &&
 		healthResult.traefik.status === "healthy";
 
 	const checkIsUpdateFinished = async () => {
@@ -166,7 +164,7 @@ export const ApplyRuntimeUpdate = () => {
 							{modalState === "checking" && (
 								<span className="flex items-center gap-2">
 									<Loader2 className="animate-spin h-4 w-4" />
-									Checking PostgreSQL, Redis and ingress...
+									Checking PostgreSQL and ingress...
 								</span>
 							)}
 
@@ -176,10 +174,6 @@ export const ApplyRuntimeUpdate = () => {
 										<ServiceStatusItem
 											name="PostgreSQL"
 											service={healthResult.postgres}
-										/>
-										<ServiceStatusItem
-											name="Redis"
-											service={healthResult.redis}
 										/>
 										<ServiceStatusItem
 											name="Ingress"

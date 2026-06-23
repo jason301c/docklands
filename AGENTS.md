@@ -69,7 +69,7 @@ Docklands is a deployment control plane, so full local development is closer to 
 - For UI or light backend work, use a normal Node environment plus a reachable Postgres, then run `bun install`, copy `apps/docklands/.env.example` to `apps/docklands/.env`, run `bun run migration:run`, and start `bun run dev`. Docker-heavy deployment flows will not be representative in this mode.
 - For full local behavior, use a Docker Engine you are comfortable mutating. The setup path initializes Swarm, `docklands-network`, Traefik, Redis, Postgres, local runtime directories, and migrations. Use `NODE_ENV=development bun run setup` when you need Postgres and Redis published on local ports, then run `bun run dev`.
 - The best practical full-dev target is a disposable Linux VM/devbox with Docker Engine, Node 24, and Bun. Avoid running full setup against a laptop Docker daemon that has important containers, networks, or port bindings.
-- Development runtime files use `.docker/`; production/server-mode paths use `/etc/docklands` and Docker resources now use Docklands names such as `docklands-network`, `docklands-postgres`, `docklands-redis`, and `docklands-traefik`.
+- Development runtime files use `.docker/`; production/server-mode paths use `/etc/docklands` and Docker resources now use Docklands names such as `docklands-network`, `docklands-postgres`, and `docklands-traefik`.
 - Expect possible conflicts on ports `80`, `443`, `5432`, `6379`, `3000`, and any app ports created by deployment tests or manual experiments.
 
 ## Local Documentation

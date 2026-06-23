@@ -55,7 +55,6 @@ import {
 } from "@/server/core/utils/access-log/utils";
 import {
 	checkPostgresHealth,
-	checkRedisHealth,
 	checkTraefikHealth,
 	cleanupAll,
 	cleanupAllBackground,
@@ -70,7 +69,6 @@ import {
 import { recreateDirectory } from "@/server/core/utils/filesystem/directory";
 import { checkGPUStatus, setupGPUSupport } from "@/server/core/utils/gpu-setup";
 import { sendDockerCleanupNotifications } from "@/server/core/utils/notifications/docker-cleanup";
-import { execAsync } from "@/server/core/utils/process/execAsync";
 import { spawnAsync } from "@/server/core/utils/process/spawnAsync";
 import {
 	readConfig,
@@ -120,41 +118,6 @@ export const settingsRouter = createTRPCRouter({
 			action: "reload",
 			resourceType: "settings",
 			resourceName: "docklands",
-		});
-		return true;
-	}),
-	cleanRedis: adminProcedure.mutation(async ({ ctx }) => {
-		if (IS_CLOUD) {
-			return true;
-		}
-
-		const { stdout: containerId } = await execAsync(
-			`docker ps --filter "name=docklands-redis" --filter "status=running" -q | head -n 1`,
-		);
-
-		if (!containerId) {
-			throw new Error("Redis container not found");
-		}
-
-		const redisContainerId = containerId.trim();
-
-		await execAsync(`docker exec -i ${redisContainerId} redis-cli flushall`);
-		await audit(ctx, {
-			action: "update",
-			resourceType: "settings",
-			resourceName: "clean-redis",
-		});
-		return true;
-	}),
-	reloadRedis: adminProcedure.mutation(async ({ ctx }) => {
-		if (IS_CLOUD) {
-			return true;
-		}
-		await reloadDockerResource("docklands-redis");
-		await audit(ctx, {
-			action: "reload",
-			resourceType: "settings",
-			resourceName: "docklands-redis",
 		});
 		return true;
 	}),
@@ -987,18 +950,16 @@ export const settingsRouter = createTRPCRouter({
 		if (IS_CLOUD) {
 			return {
 				postgres: { status: "healthy" as const },
-				redis: { status: "healthy" as const },
 				traefik: { status: "healthy" as const },
 			};
 		}
 
-		const [postgres, redis, traefik] = await Promise.all([
+		const [postgres, traefik] = await Promise.all([
 			checkPostgresHealth(),
-			checkRedisHealth(),
 			checkTraefikHealth(),
 		]);
 
-		return { postgres, redis, traefik };
+		return { postgres, traefik };
 	}),
 	setupGPU: adminProcedure
 		.input(
