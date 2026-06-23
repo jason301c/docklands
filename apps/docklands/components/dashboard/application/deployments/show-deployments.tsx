@@ -74,8 +74,11 @@ export const ShowDeployments = ({
 			},
 		);
 
+	const utils = api.useUtils();
 	const { mutateAsync: rollback, isPending: isRollingBack } =
 		api.rollback.rollback.useMutation();
+	const { mutateAsync: deleteRollback, isPending: isDeletingRollback } =
+		api.rollback.delete.useMutation();
 	const { mutateAsync: killProcess, isPending: isKillingProcess } =
 		api.deployment.killProcess.useMutation();
 	const { mutateAsync: removeDeployment, isPending: isRemovingDeployment } =
@@ -383,6 +386,45 @@ export const ShowDeployments = ({
 														>
 															<RefreshCcw className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
 															Rollback
+														</Button>
+													</DialogAction>
+												)}
+
+											{deployment?.rollback &&
+												deployment.status === "done" &&
+												type === "application" && (
+													<DialogAction
+														title="Delete rollback"
+														description="Are you sure you want to delete this rollback? This removes the stored snapshot and its container image and cannot be undone."
+														type="default"
+														onClick={async () => {
+															await deleteRollback({
+																rollbackId: deployment.rollback.rollbackId,
+															})
+																.then(async () => {
+																	toast.success("Rollback deleted");
+																	await utils.deployment.allByType.invalidate({
+																		id,
+																		type,
+																	});
+																})
+																.catch((err) => {
+																	logger.error(
+																		"Failed to delete rollback",
+																		err,
+																	);
+																	toast.error("Error deleting rollback");
+																});
+														}}
+													>
+														<Button
+															variant="destructive"
+															size="sm"
+															loading={isDeletingRollback}
+															className="w-full sm:w-auto"
+														>
+															Delete rollback
+															<Trash2 className="size-4" />
 														</Button>
 													</DialogAction>
 												)}
