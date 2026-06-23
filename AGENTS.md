@@ -2,13 +2,50 @@
 
 @README.md
 
-This is Docklands: a fork focused on self-hosted deployment management. Treat the repository as a Bun workspace with separate deployable surfaces. Today only `apps/docklands` exists; later `apps/site` and `apps/docs` can be added as independent Astro deployables.
+Docklands is a community fork of the upstream self-hosted deployment platform
+([dokploy/dokploy](https://github.com/dokploy/dokploy)), focused on a cleaner,
+project-first deployment control plane that users run on their own VM. Treat the
+repository as a Bun workspace with separate deployable surfaces. Today only
+`apps/docklands` exists; later `apps/site` and `apps/docs` can be added as
+independent Astro deployables.
 
-## AGENTS.md Scope
+This root file owns repo-wide concerns: the workspace layout, the runtime split,
+the toolchain, development modes, repo-wide rules, dependency notes, and
+branding. Everything specific to the control-plane app — its architecture,
+directory layout, product conventions, backend domain, and security boundaries —
+lives in `apps/docklands/AGENTS.md`. Read both when working inside the app.
 
-- This root file owns repo-wide architecture, workspace commands, development modes, dependency notes, and branding.
-- Nested `AGENTS.md` files are intentionally disjoint. They should add only subtree-specific boundaries and should not copy root-level rules.
-- If guidance applies everywhere, keep it here. If guidance applies only to one subtree, keep it in the nearest nested `AGENTS.md`.
+## AGENTS.md Policy
+
+Docklands keeps exactly **two** `AGENTS.md` files:
+
+- `AGENTS.md` (this file) — repo-wide architecture, workspace, toolchain, and rules.
+- `apps/docklands/AGENTS.md` — everything about the control-plane app.
+
+Do not reintroduce per-subtree `AGENTS.md` files (there used to be ~16 of them;
+they were intentionally consolidated). If guidance is genuinely repo-wide, put it
+here. If it is about the app or any subtree inside it, put it in
+`apps/docklands/AGENTS.md`. A `CLAUDE.md` symlink points at each `AGENTS.md` so
+both files are discovered by every agent tool; keep the symlinks alongside their
+targets.
+
+**Keep these files current.** They are the contract every agent reads first, so
+update them in the same change that makes them stale. Refresh the relevant
+`AGENTS.md` whenever you:
+
+- add, remove, rename, or repurpose a top-level directory or workspace package;
+- change the toolchain, runtime versions, build/test/migration commands, or the
+  Bun/Node split;
+- introduce or retire an architectural pattern (a new router layer, queue,
+  auth/permission model, UI library, data store, etc.);
+- change a product-naming or routing convention, or a hard rule below;
+- discover that something documented here is now wrong.
+
+Prefer correcting these files over leaving a stale note. Match the existing
+voice: durable rules and rationale, not changelog entries. Do not paste
+transient task state, dated TODOs, or PR-specific detail. When you finish a
+change that touches structure or conventions, re-read the affected `AGENTS.md`
+and reconcile it before wrapping up.
 
 ## Product Shape
 
@@ -16,148 +53,178 @@ This is Docklands: a fork focused on self-hosted deployment management. Treat th
 - Future `apps/site/` should be the public landing/marketing site, likely Astro.
 - Future `apps/docs/` should be the public documentation site, likely Astro/Starlight.
 - The hosted surfaces explain and document Docklands. They must not assume Docklands itself is hosted for users.
-- The Docklands app should keep assuming customer-owned infrastructure: Docker Engine, VM filesystem, ports, secrets, domains, and app data live on the user's machine or server.
+- The Docklands app assumes customer-owned infrastructure: Docker Engine, the VM
+  filesystem, ports, secrets, domains, and app data all live on the user's
+  machine or server. Never add hosted-SaaS assumptions to the self-hosted path.
 
-## Project Shape
+## Repository Layout
 
-- `apps/docklands/app/` contains the Next.js App Router UI and API route handlers.
-- `apps/docklands/components/` contains dashboard, shared, layout, and primitive UI components.
-- `apps/docklands/client/` contains browser-only app glue: tRPC client, providers, auth client, client hooks, and OAuth UI helpers.
-- `apps/docklands/shared/` contains cross-runtime validation and utility helpers. Keep it free of Node-only APIs unless the file is explicitly server-only.
-- `apps/docklands/server/` contains the custom server entrypoint, tRPC API wiring, queues, WebSocket glue, ops scripts, and backend runtime helpers.
-- `apps/docklands/server/core/` contains backend/domain code: database schema, Drizzle config, services, auth, Docker/Traefik/deployment/backup utilities, monitoring, templates, and verification.
-- `apps/docklands/server/ops/` contains runtime/admin entrypoints bundled into `dist`: DB migration, setup, wait-for-postgres, reset-password, reset-2fa, and auth-secret migration.
-- `apps/docklands/tools/` contains app-coupled development scripts such as OpenAPI generation.
-- `tools/` contains repository-level tooling such as Docker image build/push scripts.
-- `biome.json` is workspace-level so root and app commands share one formatter/linter configuration.
-- `apps/docklands/drizzle/` contains generated SQL migrations and snapshots. Do not hand-edit snapshots unless you are deliberately repairing a generated migration.
-- `apps/docklands/__test__/` contains Vitest coverage for backend behavior, security fixes, templates, deployments, WebSockets, permissions, and utilities.
-- `apps/docklands/app/globals.css` is the Tailwind v4 entrypoint and explicitly loads `tailwind.config.ts` with `@config`.
-- `.docker/` is generated local runtime state.
+- `apps/` — independently deployable, user-facing surfaces. Keep each app
+  deployable on its own; one app must never import another app's source.
+  - `apps/docklands/` — the only app today: the self-hosted control plane.
+- `tools/` — repository-level development and release scripts (e.g.
+  `tools/docker/` image build/push helpers, `tools/check-bundler.mjs`). Tools may
+  coordinate app packages or release artifacts but must not be required at
+  production runtime. App-coupled scripts that import app internals belong in
+  `apps/docklands/tools/`; production startup/migration/recovery entrypoints
+  belong in `apps/docklands/server/ops/`.
+- `biome.json` — workspace-level so root and app share one formatter/linter config.
+- `bun.lock`, `bunfig.toml`, `package.json` — the Bun workspace root.
+- `docs/` — repo-level documentation/output.
+- `.docker/` — generated local runtime state (development).
+- `dist/`, `.next/`, `node_modules/` — generated; do not hand-edit.
+
+`tools/docker/` scripts resolve the repo root from their own path so they work
+from any cwd, build with the workspace root as context against
+`apps/docklands/Dockerfile`, and read the image version from
+`apps/docklands/package.json`. Keep production runtime logic out of `tools/`.
 
 ## Current Stack
 
-Use Bun. The repo currently targets Node `>=24.4.0 <26` and Bun `>=1.3.14`.
+Use Bun as the package manager and task runner. The repo targets Node
+`>=24.4.0 <26` and Bun `>=1.3.14`.
 
-Key Docklands app versions after the dependency refresh:
+Key versions in `apps/docklands` after the dependency refresh:
 
-- Next.js 16
+- Next.js 16 (App Router, Turbopack)
 - React 19
 - TypeScript 6
 - Tailwind CSS 4 with `@tailwindcss/postcss`
 - Biome 2
 - tRPC 11
-- Drizzle ORM plus Drizzle Zod
-- Better Auth
+- Drizzle ORM + Drizzle Zod, on PostgreSQL (`postgres.js`)
+- Better Auth (organization, admin, two-factor, API-key plugins)
+- Cloudflare Kumo (`@cloudflare/kumo`) as the UI component library
 - Vitest 4
+- Zod 4
 
 ## Runtime And Tooling Split
 
 Bun and Node have distinct, non-overlapping roles. Keep them separated:
 
-- **Bun is the package manager and task runner.** Use Bun for `bun install`, `bun.lock`, and every `bun run <script>` / `bun --filter docklands <script>` entrypoint.
-- **Node 24 is the application runtime, in both development and production.** The dev server (`bun dev` runs `tsx server/server.ts` on Node), the build (`esbuild` targets `node24`, plus `next build`), and production (`node ... dist/*.mjs`, Docker base `node:24.4.0-slim`) all execute app code on Node, never on Bun's runtime. Bun is only ever the launcher.
+- **Bun is the package manager and task runner.** Use Bun for `bun install`,
+  `bun.lock`, and every `bun run <script>` / `bun --filter docklands <script>`
+  entrypoint.
+- **Node 24 is the application runtime, in both development and production.** The
+  dev server (`bun dev` runs `tsx server/server.ts` on Node), the build (esbuild
+  targets `node24`, plus `next build`), and production (`node ... dist/*.mjs`,
+  Docker base `node:24.4.0-slim`) all execute app code on Node, never on Bun's
+  runtime. Bun is only ever the launcher.
 
-This split is deliberate. Docklands depends on native addons (`node-pty`, `ssh2`, `dockerode`, `bcrypt`) and ships on Node, so development must exercise the same runtime it deploys on. Do not switch the app runtime to Bun: no `bun --bun` for app processes and no `bun server/server.ts`. `bun --bun` is acceptable only as a temporary local escape hatch for the toolchain (typecheck/build) when a usable Node is unavailable; it is not how the app is meant to run.
+This split is deliberate. Docklands depends on native addons (`node-pty`,
+`ssh2`, `dockerode`, `bcrypt`) and ships on Node, so development must exercise the
+same runtime it deploys on. Do not switch the app runtime to Bun: no `bun --bun`
+for app processes and no `bun server/server.ts`. `bun --bun` is acceptable only
+as a temporary local escape hatch for the toolchain (typecheck/build) when a
+usable Node is unavailable; it is not how the app is meant to run.
 
-Pin Node with the repo `.nvmrc` (`24.4.0`). Use a version manager such as fnm (`eval "$(fnm env --use-on-cd --shell zsh)"`) so entering the repo selects Node 24 automatically. Avoid Homebrew's rolling `node`, which tracks the latest major and will drift past the supported `<26` range and break native module linkage.
+Pin Node with the repo `.nvmrc` (`24.4.0`). Use a version manager such as fnm
+(`eval "$(fnm env --use-on-cd --shell zsh)"`) so entering the repo selects Node
+24 automatically. Avoid Homebrew's rolling `node`, which tracks the latest major
+and will drift past the supported `<26` range and break native module linkage.
 
 ## Development Model
 
-Docklands is a deployment control plane, so full local development is closer to a disposable Linux VM/devbox than a normal Next-only app. It can initialize Docker Swarm, create Docker networks/services/containers/volumes, bind common ports, and mount the Docker socket.
+Docklands is a deployment control plane, so full local development is closer to a
+disposable Linux VM/devbox than a normal Next-only app. It can initialize Docker
+Swarm, create Docker networks/services/containers/volumes, bind common ports, and
+mount the Docker socket.
 
-- For UI or light backend work, use a normal Node environment plus a reachable Postgres, then run `bun install`, copy `apps/docklands/.env.example` to `apps/docklands/.env`, run `bun run migration:run`, and start `bun run dev`. Docker-heavy deployment flows will not be representative in this mode.
-- For full local behavior, use a Docker Engine you are comfortable mutating. The setup path initializes Swarm, `docklands-network`, Traefik, Redis, Postgres, local runtime directories, and migrations. Use `NODE_ENV=development bun run setup` when you need Postgres and Redis published on local ports, then run `bun run dev`.
-- The best practical full-dev target is a disposable Linux VM/devbox with Docker Engine, Node 24, and Bun. Avoid running full setup against a laptop Docker daemon that has important containers, networks, or port bindings.
-- Development runtime files use `.docker/`; production/server-mode paths use `/etc/docklands` and Docker resources now use Docklands names such as `docklands-network`, `docklands-postgres`, and `docklands-traefik`.
-- Expect possible conflicts on ports `80`, `443`, `5432`, `6379`, `3000`, and any app ports created by deployment tests or manual experiments.
+- **Light mode (UI / light backend):** a normal Node environment plus a reachable
+  Postgres. Run `bun install`, copy `apps/docklands/.env.example` to
+  `apps/docklands/.env`, run `bun run migration:run`, and start `bun run dev`.
+  Docker-heavy deployment flows will not be representative in this mode.
+- **Full mode:** a Docker Engine you are comfortable mutating. The setup path
+  initializes Swarm, `docklands-network`, Traefik, Postgres, local runtime
+  directories, and migrations. Use `NODE_ENV=development bun run setup` to publish
+  Postgres on a local port, then `bun run dev`.
+- The best practical full-dev target is a disposable Linux VM/devbox with Docker
+  Engine, Node 24, and Bun. Avoid running full setup against a laptop Docker
+  daemon that holds important containers, networks, or port bindings.
+- Development runtime files use `.docker/`; production/server-mode paths use
+  `/etc/docklands`. Docker resources use Docklands names such as
+  `docklands-network`, `docklands-postgres`, and `docklands-traefik`.
+- Expect possible conflicts on ports `80`, `443`, `5432`, `3000`, and any app
+  ports created by deployment tests or manual experiments.
+- Do not start the dev server for unattended verification unless the user asks.
+  Use typecheck, Vitest, build, and static inspection instead.
+
+## Workspace Commands
+
+Root scripts proxy into the app via `bun --filter docklands`. You can run them
+from the repo root or use the app-local scripts from `apps/docklands/`.
+
+```sh
+bun install --frozen-lockfile     # install workspace deps
+bun run dev                       # Node dev server (tsx server/server.ts)
+bun run format-and-lint:fix       # Biome format + lint (autofix)
+bun run typecheck                 # next typegen + tsc --noEmit
+bun run test:ci                   # check:bundler + Vitest (excludes real deploy test)
+bun run build                     # check:bundler + esbuild server bundle + next build
+bun run migration:generate        # Drizzle: generate SQL from schema changes
+bun run migration:run             # apply migrations
+bun run setup                     # full local bootstrap (Swarm/Traefik/Postgres/migrations)
+bun run docker:build              # build the app Docker image
+bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in
+```
 
 ## Local Documentation
 
-- The installed Next.js package includes bundled docs under the app package's installed dependency tree, usually `apps/docklands/node_modules/next/dist/docs`.
-- This repo currently has Next `16.2.9`; check those local docs before relying on memory or web search for Next behavior.
-- Search them with `rg`, for example:
+The installed Next.js package ships bundled docs under
+`apps/docklands/node_modules/next/dist/docs`. This repo currently has
+Next `16.2.9`; check those local docs before relying on memory or web search for
+Next behavior.
 
 ```sh
 rg -n "Route Handlers|App Router|Server Actions" apps/docklands/node_modules/next/dist/docs
 ```
 
-## Hard Rules
+## Repo-Wide Hard Rules
 
-- Do not reintroduce AI features or AI dependencies. The AI router, schema, service, provider utilities, settings page, project assistant, and log analyzer were intentionally removed.
-- Do not reintroduce proprietary, commercial-license, or hosted-only code paths unless the user explicitly asks and the licensing implications are reviewed.
-- Preserve the workspace split. `apps/docklands` is the self-hosted product; future public site/docs apps should be separate deployables.
-- Do not add `packages/` until there is real shared code that is needed by at least two apps and cannot live cleanly in one app.
-- Keep `apps/docklands/server/core/` as the backend/domain library unless there is a real architectural reason to move code.
-- Treat security-sensitive changes as test-worthy. Local `AGENTS.md` files call out the riskiest boundaries for each subtree.
-- Do not weaken type safety or disable strictness globally to get past upgrade friction.
-- Avoid touching generated build output such as `.next/`, `dist/`, and `node_modules/`.
-
-## Common Commands
-
-Install dependencies:
-
-```sh
-bun install --frozen-lockfile
-```
-
-Format and lint:
-
-```sh
-bun run format-and-lint:fix
-```
-
-Typecheck:
-
-```sh
-bun run typecheck
-```
-
-Run the usual non-real test suite:
-
-```sh
-bun run test:ci
-```
-
-Build:
-
-```sh
-bun run build
-```
-
-Generate a migration after schema changes:
-
-```sh
-bun run migration:generate
-```
-
-Build a Docker image:
-
-```sh
-bun run docker:build
-```
-
-## Verification Notes
-
-- `bun run build` may need permissions to create a local `tsx` IPC pipe.
-- `bun --filter docklands build-next` uses Turbopack and may need permissions to spawn local Turbopack/CSS worker processes.
-- Build output can be noisy if local Postgres/Docker secrets are not configured. The important part is whether the build exits successfully.
-- The full real deployment tests may need Docker socket access, nixpacks/build tooling, and a more complete local runtime. Prefer the non-real Vitest command above for routine changes.
-- `bun run format-and-lint:fix` currently passes but may report Biome warnings such as optional-chain suggestions, radix suggestions, and unused suppressions.
+- Do not reintroduce AI features or AI dependencies. The AI router, schema,
+  service, provider utilities, settings page, project assistant, and log analyzer
+  were intentionally removed.
+- Do not reintroduce proprietary, commercial-license, or hosted-only code paths
+  unless the user explicitly asks and the licensing implications are reviewed.
+  Docklands is intended to carry only Apache-2.0-compatible code.
+- Preserve the workspace split. `apps/docklands` is the self-hosted product;
+  future public site/docs apps should be separate deployables.
+- Do not add `packages/` until there is real shared code needed by at least two
+  apps that cannot live cleanly in one app.
+- Treat security-sensitive changes (auth, secrets, Docker/runtime execution,
+  deployment commands, backups, domains, TLS, webhooks, providers, dependency or
+  toolchain behavior) as test-worthy.
+- Do not weaken type safety or disable strictness globally to get past upgrade
+  friction.
+- Avoid touching generated output such as `.next/`, `dist/`, and `node_modules/`.
 
 ## Dependency And Migration Notes
 
-- Next 16 uses Turbopack by default, and Docklands makes that explicit with `next build --turbopack` plus `turbopack: true` in the custom Next server. Do not add custom Webpack config, Webpack opt-out env vars, `--webpack`, or legacy `--turbo` flags. `bun --filter docklands build` and root `bun run test:ci` run `check:bundler`; run `bun run check:bundler` directly after bundler/tooling changes.
-- Tailwind 4 uses `apps/docklands/postcss.config.cjs` with `@tailwindcss/postcss`; do not switch it back to `tailwindcss` as a PostCSS plugin.
-- `apps/docklands/app/globals.css` uses `@import "tailwindcss";` and `@config "../tailwind.config.ts";`.
-- React Email now uses `render`, not `renderAsync`.
+- **Turbopack only.** Next 16 uses Turbopack by default, and Docklands makes it
+  explicit: `next build --turbopack`, `turbopack: true` in the custom server, and
+  a pinned Turbopack root in `next.config.mjs`. Do not add custom Webpack config,
+  Webpack opt-out env vars, `--webpack`, or legacy `--turbo` flags.
+  `bun run build` and `bun run test:ci` run `check:bundler`; run
+  `bun run check:bundler` directly after bundler/tooling changes.
+- **Tailwind 4** uses `apps/docklands/postcss.config.cjs` with
+  `@tailwindcss/postcss`; do not switch back to `tailwindcss` as a PostCSS plugin.
+  `apps/docklands/app/globals.css` uses `@import "tailwindcss";` and
+  `@config "../tailwind.config.ts";`.
+- React Email uses `render`, not `renderAsync`.
 - xterm uses `@xterm/addon-fit`, not the old `xterm-addon-fit`.
-- Node provides `File`; only a minimal server-side `FileList` shim lives in `apps/docklands/shared/validation/schema.ts`.
-- If you remove a database table or field, generate a Drizzle migration and commit both the SQL and matching `apps/docklands/drizzle/meta` snapshot/journal updates.
+- Node provides `File`; only a minimal server-side `FileList` shim lives in
+  `apps/docklands/shared/validation/schema.ts`.
+- If you remove or change a database table or field, generate a Drizzle migration
+  and commit both the SQL and the matching `apps/docklands/drizzle/meta`
+  snapshot/journal updates. Do not hand-edit generated snapshots unless you are
+  deliberately repairing a generated migration.
 
 ## Branding
 
-The product name is Docklands. Active code, user-facing copy, package names, Docker resources, and runtime paths should use Docklands naming. README, NOTICE, and other historical/legal docs may still mention the upstream project where attribution requires it.
+The product name is Docklands. Active code, user-facing copy, package names,
+Docker resources, and runtime paths should use Docklands naming. `README`,
+`NOTICE`, `LICENSE.MD`, and other historical/legal docs may still mention the
+upstream project where attribution requires it.
 
 ## Before Finishing
 
@@ -170,4 +237,8 @@ bun run test:ci
 bun run build
 ```
 
-For docs-only changes, at minimum run `git diff --check`.
+For docs-only changes, at minimum run `git diff --check`. `bun run build` may need
+permission to create a local `tsx` IPC pipe and to spawn Turbopack/CSS workers;
+build output is noisy without local Postgres/Docker secrets — what matters is
+that it exits successfully. Prefer the non-real Vitest command above for routine
+changes; the real deployment test needs Docker socket access and build tooling.
