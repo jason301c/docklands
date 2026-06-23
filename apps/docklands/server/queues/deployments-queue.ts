@@ -92,5 +92,8 @@ export const processDeploymentJob = async (job: InMemoryJob) => {
 			},
 			"deployment job failed",
 		);
+		// Rethrow so the queue's runJob records failedReason and frees the slot;
+		// runJob does not retry, so this only surfaces the failure to tracking.
+		throw error;
 	}
 };
