@@ -292,11 +292,12 @@ export const backupRouter = createTRPCRouter({
 					});
 				}
 				if (input.runtimeWorkerId) {
-					const targetServer = await findRuntimeWorkerById(
+					const targetRuntimeWorker = await findRuntimeWorkerById(
 						input.runtimeWorkerId,
 					);
 					if (
-						targetServer.organizationId !== ctx.session.activeOrganizationId
+						targetRuntimeWorker.organizationId !==
+						ctx.session.activeOrganizationId
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",

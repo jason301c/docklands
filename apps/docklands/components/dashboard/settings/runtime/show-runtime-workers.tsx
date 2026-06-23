@@ -81,7 +81,7 @@ export const ShowRuntimeWorkers = () => {
 													const canDelete = runtimeWorker.totalSum === 0;
 													const isActive =
 														runtimeWorker.runtimeWorkerStatus === "active";
-													const isBuildServer =
+													const isBuildRuntimeWorker =
 														runtimeWorker.runtimeWorkerType === "build";
 													return (
 														<LayerCard
@@ -101,7 +101,7 @@ export const ShowRuntimeWorkers = () => {
 																	<div className="flex gap-2 mt-2 flex-wrap">
 																		<Badge
 																			variant={
-																				isBuildServer
+																				isBuildRuntimeWorker
 																					? "secondary"
 																					: "secondary"
 																			}
@@ -235,7 +235,7 @@ export const ShowRuntimeWorkers = () => {
 																			</Tooltip>
 
 																			{runtimeWorker.sshKeyId &&
-																				!isBuildServer && (
+																				!isBuildRuntimeWorker && (
 																					<Tooltip
 																						content={
 																							<>

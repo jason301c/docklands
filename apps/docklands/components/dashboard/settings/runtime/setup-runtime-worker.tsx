@@ -40,7 +40,7 @@ export const SetupRuntimeWorker = ({
 	);
 
 	const [activeLog, setActiveLog] = useState<string | null>(null);
-	const isBuildServer = runtimeWorker?.runtimeWorkerType === "build";
+	const isBuildRuntimeWorker = runtimeWorker?.runtimeWorkerType === "build";
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 	const [filteredLogs, setFilteredLogs] = useState<LogLine[]>([]);
 	const [isDeploying, setIsDeploying] = useState(false);
@@ -130,7 +130,7 @@ export const SetupRuntimeWorker = ({
 								{ value: "ssh-keys", label: "SSH Keys" },
 								{ value: "deployments", label: "Deployments" },
 								{ value: "validate", label: "Validate" },
-								...(!isBuildServer
+								...(!isBuildRuntimeWorker
 									? [
 											{ value: "audit", label: "Security" },
 											{ value: "gpu-setup", label: "GPU Setup" },
@@ -328,7 +328,7 @@ export const SetupRuntimeWorker = ({
 								</div>
 							</div>
 						)}
-						{!isBuildServer && (
+						{!isBuildRuntimeWorker && (
 							<>
 								{setupTab === "audit" && (
 									<div className="outline-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0">

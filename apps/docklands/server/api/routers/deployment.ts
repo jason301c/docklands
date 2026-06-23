@@ -53,8 +53,12 @@ export const deploymentRouter = createTRPCRouter({
 	allByServer: withPermission("deployment", "read")
 		.input(apiFindAllByRuntimeWorker)
 		.query(async ({ input, ctx }) => {
-			const targetServer = await findRuntimeWorkerById(input.runtimeWorkerId);
-			if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
+			const targetRuntimeWorker = await findRuntimeWorkerById(
+				input.runtimeWorkerId,
+			);
+			if (
+				targetRuntimeWorker.organizationId !== ctx.session.activeOrganizationId
+			) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
 					message: "You don't have access to this runtime worker.",
@@ -136,10 +140,13 @@ export const deploymentRouter = createTRPCRouter({
 					deployment: ["cancel"],
 				});
 			} else if (deployment.schedule?.runtimeWorkerId) {
-				const targetServer = await findRuntimeWorkerById(
+				const targetRuntimeWorker = await findRuntimeWorkerById(
 					deployment.schedule.runtimeWorkerId,
 				);
-				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
+				if (
+					targetRuntimeWorker.organizationId !==
+					ctx.session.activeOrganizationId
+				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You don't have access to this deployment.",
@@ -183,10 +190,13 @@ export const deploymentRouter = createTRPCRouter({
 					deployment: ["cancel"],
 				});
 			} else if (deployment.schedule?.runtimeWorkerId) {
-				const targetServer = await findRuntimeWorkerById(
+				const targetRuntimeWorker = await findRuntimeWorkerById(
 					deployment.schedule.runtimeWorkerId,
 				);
-				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
+				if (
+					targetRuntimeWorker.organizationId !==
+					ctx.session.activeOrganizationId
+				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You don't have access to this deployment.",
@@ -217,10 +227,13 @@ export const deploymentRouter = createTRPCRouter({
 					deployment: ["read"],
 				});
 			} else if (deployment.schedule?.runtimeWorkerId) {
-				const targetServer = await findRuntimeWorkerById(
+				const targetRuntimeWorker = await findRuntimeWorkerById(
 					deployment.schedule.runtimeWorkerId,
 				);
-				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
+				if (
+					targetRuntimeWorker.organizationId !==
+					ctx.session.activeOrganizationId
+				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You don't have access to this deployment.",

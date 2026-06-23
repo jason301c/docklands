@@ -899,7 +899,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | R3 | node removal force-rm | **✅ P7** (refuses to force-remove a manager — quorum guard) |
 | R4 | nodeId no regex guard | **✅ P2** (charset-validated) |
 | R5 | getServerMetrics SSRF | **✅ P6** (procedure deleted in the paid-metrics cut) |
-| R6 | server→runtimeWorker rename | **P7 (finish rename)** |
+| R6 | server→runtimeWorker rename | **✅ P7** (internal ids + OpenAPI path; DB/compat names kept per AGENTS.md) |
 | R7 | build-workers route is concurrency | no action (documented) |
 | R8 | execAsyncRemote timeout + dead sleep | **✅ P0** (drop sleep; timeout 30s; rm dead var) |
 | W1 | canvas layout race | **✅ P7** (pending-node guard preserves in-flight drags) |

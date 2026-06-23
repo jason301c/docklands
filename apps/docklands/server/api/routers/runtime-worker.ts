@@ -94,8 +94,8 @@ export const runtimeWorkerRouter = createTRPCRouter({
 		.input(apiFindOneRuntimeWorker)
 		.query(async ({ input }) => {
 			const runtimeWorker = await findRuntimeWorkerById(input.runtimeWorkerId);
-			const isBuildServer = runtimeWorker.runtimeWorkerType === "build";
-			return defaultCommand(isBuildServer);
+			const isBuildRuntimeWorker = runtimeWorker.runtimeWorkerType === "build";
+			return defaultCommand(isBuildRuntimeWorker);
 		}),
 	all: withPermission("runtimeWorker", "read").query(async ({ ctx }) => {
 		const accessibleIds = await getAccessibleRuntimeWorkerIds(ctx.session);
@@ -211,7 +211,7 @@ export const runtimeWorkerRouter = createTRPCRouter({
 	setupWithLogs: withPermission("runtimeWorker", "create")
 		.meta({
 			openapi: {
-				path: "/deploy/server-with-logs",
+				path: "/deploy/runtime-worker-with-logs",
 				method: "POST",
 				override: true,
 				enabled: false,

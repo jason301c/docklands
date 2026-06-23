@@ -25,7 +25,7 @@ export const ValidateRuntimeWorker = ({ runtimeWorkerId }: Props) => {
 			enabled: !!runtimeWorkerId,
 		},
 	);
-	const isBuildServer = runtimeWorker?.runtimeWorkerType === "build";
+	const isBuildRuntimeWorker = runtimeWorker?.runtimeWorkerType === "build";
 	const _utils = api.useUtils();
 	return (
 		<div className="p-0">
@@ -72,7 +72,7 @@ export const ValidateRuntimeWorker = ({ runtimeWorkerId }: Props) => {
 								<div className="border rounded-lg p-4">
 									<h3 className="text-lg font-semibold mb-1">Status</h3>
 									<p className="text-sm text-kumo-subtle mb-4">
-										{isBuildServer
+										{isBuildRuntimeWorker
 											? "Shows the build worker configuration status"
 											: "Shows the runtime worker configuration status"}
 									</p>
@@ -86,7 +86,7 @@ export const ValidateRuntimeWorker = ({ runtimeWorkerId }: Props) => {
 													: undefined
 											}
 										/>
-										{!isBuildServer && (
+										{!isBuildRuntimeWorker && (
 											<StatusRow
 												label="RClone Installed"
 												isEnabled={data?.rclone?.enabled}
@@ -124,7 +124,7 @@ export const ValidateRuntimeWorker = ({ runtimeWorkerId }: Props) => {
 													: undefined
 											}
 										/>
-										{!isBuildServer && (
+										{!isBuildRuntimeWorker && (
 											<>
 												<StatusRow
 													label="Orchestration Initialized"

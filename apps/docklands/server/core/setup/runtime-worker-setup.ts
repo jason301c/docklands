@@ -37,8 +37,8 @@ export const runtimeWorkerSetup = async (
 ) => {
 	const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
 	const { LOGS_PATH } = paths();
-	const isBuildServer = runtimeWorker.runtimeWorkerType === "build";
-	const workerKind = isBuildServer ? "Build Worker" : "Runtime Worker";
+	const isBuildRuntimeWorker = runtimeWorker.runtimeWorkerType === "build";
+	const workerKind = isBuildRuntimeWorker ? "Build Worker" : "Runtime Worker";
 
 	const slugifyName = slugify(`${workerKind} ${runtimeWorker.name}`);
 
@@ -67,7 +67,7 @@ export const runtimeWorkerSetup = async (
 	}
 };
 
-export const defaultCommand = (isBuildServer = false) => {
+export const defaultCommand = (isBuildRuntimeWorker = false) => {
 	const bashCommand = `
 set -e;
 DOCKER_VERSION=28.5.0
@@ -150,7 +150,7 @@ echo -e "---------------------------------------------"
 echo "| CPU Architecture  | $SYS_ARCH"
 echo "| Operating System  | $OS_TYPE $OS_VERSION"
 echo "| Docker            | $DOCKER_VERSION"
-${isBuildServer ? 'echo "| Worker Role       | Build Worker"' : ""}
+${isBuildRuntimeWorker ? 'echo "| Worker Role       | Build Worker"' : ""}
 echo -e "---------------------------------------------\n"
 echo -e "1. Installing required packages (curl, wget, git, jq, openssl). "
 
@@ -161,7 +161,7 @@ command_exists() {
 ${installUtilities()}
 
 ${
-	!isBuildServer
+	!isBuildRuntimeWorker
 		? `
 echo -e "2. Validating ports. "
 ${validatePorts()}
@@ -242,12 +242,13 @@ const installRequirements = async (
 		throw new Error("No SSH Key found");
 	}
 
-	const isBuildServer = runtimeWorker.runtimeWorkerType === "build";
+	const isBuildRuntimeWorker = runtimeWorker.runtimeWorkerType === "build";
 
 	return new Promise<void>((resolve, reject) => {
 		client
 			.once("ready", () => {
-				const command = runtimeWorker.command || defaultCommand(isBuildServer);
+				const command =
+					runtimeWorker.command || defaultCommand(isBuildRuntimeWorker);
 				client.exec(command, (err, stream) => {
 					if (err) {
 						onData?.(err.message);

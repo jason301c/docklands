@@ -25,8 +25,13 @@ export const clusterRouter = createTRPCRouter({
 		)
 		.query(async ({ input, ctx }) => {
 			if (input.runtimeWorkerId) {
-				const targetServer = await findRuntimeWorkerById(input.runtimeWorkerId);
-				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
+				const targetRuntimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					targetRuntimeWorker.organizationId !==
+					ctx.session.activeOrganizationId
+				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You don't have access to this runtime worker.",
@@ -47,8 +52,13 @@ export const clusterRouter = createTRPCRouter({
 		)
 		.mutation(async ({ input, ctx }) => {
 			if (input.runtimeWorkerId) {
-				const targetServer = await findRuntimeWorkerById(input.runtimeWorkerId);
-				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
+				const targetRuntimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					targetRuntimeWorker.organizationId !==
+					ctx.session.activeOrganizationId
+				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You don't have access to this runtime worker.",
@@ -111,8 +121,13 @@ export const clusterRouter = createTRPCRouter({
 		)
 		.query(async ({ input, ctx }) => {
 			if (input.runtimeWorkerId) {
-				const targetServer = await findRuntimeWorkerById(input.runtimeWorkerId);
-				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
+				const targetRuntimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					targetRuntimeWorker.organizationId !==
+					ctx.session.activeOrganizationId
+				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You don't have access to this runtime worker.",
@@ -147,8 +162,13 @@ export const clusterRouter = createTRPCRouter({
 		)
 		.query(async ({ input, ctx }) => {
 			if (input.runtimeWorkerId) {
-				const targetServer = await findRuntimeWorkerById(input.runtimeWorkerId);
-				if (targetServer.organizationId !== ctx.session.activeOrganizationId) {
+				const targetRuntimeWorker = await findRuntimeWorkerById(
+					input.runtimeWorkerId,
+				);
+				if (
+					targetRuntimeWorker.organizationId !==
+					ctx.session.activeOrganizationId
+				) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You don't have access to this runtime worker.",

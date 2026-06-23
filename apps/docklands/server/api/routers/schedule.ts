@@ -58,11 +58,12 @@ export const scheduleRouter = createTRPCRouter({
 				}
 
 				if (input.scheduleType === "runtimeWorker" && input.runtimeWorkerId) {
-					const targetServer = await findRuntimeWorkerById(
+					const targetRuntimeWorker = await findRuntimeWorkerById(
 						input.runtimeWorkerId,
 					);
 					if (
-						targetServer.organizationId !== ctx.session.activeOrganizationId
+						targetRuntimeWorker.organizationId !==
+						ctx.session.activeOrganizationId
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
@@ -125,11 +126,12 @@ export const scheduleRouter = createTRPCRouter({
 					existingSchedule.scheduleType === "runtimeWorker" &&
 					existingSchedule.runtimeWorkerId
 				) {
-					const targetServer = await findRuntimeWorkerById(
+					const targetRuntimeWorker = await findRuntimeWorkerById(
 						existingSchedule.runtimeWorkerId,
 					);
 					if (
-						targetServer.organizationId !== ctx.session.activeOrganizationId
+						targetRuntimeWorker.organizationId !==
+						ctx.session.activeOrganizationId
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
@@ -188,11 +190,12 @@ export const scheduleRouter = createTRPCRouter({
 					scheduleItem.scheduleType === "runtimeWorker" &&
 					scheduleItem.runtimeWorkerId
 				) {
-					const targetServer = await findRuntimeWorkerById(
+					const targetRuntimeWorker = await findRuntimeWorkerById(
 						scheduleItem.runtimeWorkerId,
 					);
 					if (
-						targetServer.organizationId !== ctx.session.activeOrganizationId
+						targetRuntimeWorker.organizationId !==
+						ctx.session.activeOrganizationId
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
@@ -237,9 +240,10 @@ export const scheduleRouter = createTRPCRouter({
 				await checkPermission(ctx, { schedule: ["read"] });
 
 				if (input.scheduleType === "runtimeWorker") {
-					const targetServer = await findRuntimeWorkerById(input.id);
+					const targetRuntimeWorker = await findRuntimeWorkerById(input.id);
 					if (
-						targetServer.organizationId !== ctx.session.activeOrganizationId
+						targetRuntimeWorker.organizationId !==
+						ctx.session.activeOrganizationId
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
@@ -300,11 +304,12 @@ export const scheduleRouter = createTRPCRouter({
 					schedule.scheduleType === "runtimeWorker" &&
 					schedule.runtimeWorkerId
 				) {
-					const targetServer = await findRuntimeWorkerById(
+					const targetRuntimeWorker = await findRuntimeWorkerById(
 						schedule.runtimeWorkerId,
 					);
 					if (
-						targetServer.organizationId !== ctx.session.activeOrganizationId
+						targetRuntimeWorker.organizationId !==
+						ctx.session.activeOrganizationId
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
@@ -349,11 +354,12 @@ export const scheduleRouter = createTRPCRouter({
 					scheduleItem.scheduleType === "runtimeWorker" &&
 					scheduleItem.runtimeWorkerId
 				) {
-					const targetServer = await findRuntimeWorkerById(
+					const targetRuntimeWorker = await findRuntimeWorkerById(
 						scheduleItem.runtimeWorkerId,
 					);
 					if (
-						targetServer.organizationId !== ctx.session.activeOrganizationId
+						targetRuntimeWorker.organizationId !==
+						ctx.session.activeOrganizationId
 					) {
 						throw new TRPCError({
 							code: "UNAUTHORIZED",
