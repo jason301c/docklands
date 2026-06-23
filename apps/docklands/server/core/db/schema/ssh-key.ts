@@ -3,6 +3,7 @@ import { pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { encryptedText } from "../encrypted";
 import { sshKeyCreate, sshKeyType } from "../validations";
 import { organization } from "./account";
 import { applications } from "./application";
@@ -14,7 +15,8 @@ export const sshKeys = pgTable("ssh-key", {
 		.notNull()
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
-	privateKey: text("privateKey").notNull().default(""),
+	// Stored encrypted at rest (DOCKLANDS_ENCRYPTION_KEY); used at clone time.
+	privateKey: encryptedText("privateKey").notNull().default(""),
 	publicKey: text("publicKey").notNull(),
 	name: text("name").notNull(),
 	description: text("description"),
@@ -39,7 +41,7 @@ export const sshKeysRelations = relations(sshKeys, ({ many, one }) => ({
 
 const createSchema = createInsertSchema(
 	sshKeys,
-	/* Private key is not stored in the DB */
+	/* Private key is stored encrypted at rest (see `encryptedText` above). */
 	sshKeyCreate.omit({ privateKey: true }).shape,
 );
 

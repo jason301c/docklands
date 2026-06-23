@@ -3,6 +3,7 @@ import { boolean, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { encryptedText } from "../encrypted";
 import { organization } from "./account";
 import { runtimeWorkers } from "./runtime-worker";
 import { generateAppName } from "./utils";
@@ -13,8 +14,10 @@ export const certificates = pgTable("certificate", {
 		.primaryKey()
 		.$defaultFn(() => nanoid()),
 	name: text("name").notNull(),
-	certificateData: text("certificateData").notNull(),
-	privateKey: text("privateKey").notNull(),
+	// Certificate body + private key encrypted at rest; written to disk as files
+	// for Traefik at deploy time (see services/certificate.ts).
+	certificateData: encryptedText("certificateData").notNull(),
+	privateKey: encryptedText("privateKey").notNull(),
 	certificatePath: text("certificatePath")
 		.notNull()
 		.$defaultFn(() => generateAppName("certificate"))

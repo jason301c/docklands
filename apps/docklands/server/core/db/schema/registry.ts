@@ -3,6 +3,7 @@ import { pgEnum, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { encryptedText } from "../encrypted";
 import { organization } from "./account";
 import { applications } from "./application";
 
@@ -22,7 +23,8 @@ export const registry = pgTable("registry", {
 	registryName: text("registryName").notNull(),
 	imagePrefix: text("imagePrefix"),
 	username: text("username").notNull(),
-	password: text("password").notNull(),
+	// Registry password encrypted at rest; replayed to `docker login`.
+	password: encryptedText("password").notNull(),
 	registryUrl: text("registryUrl").notNull().default(""),
 	createdAt: text("createdAt")
 		.notNull()

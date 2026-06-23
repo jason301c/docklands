@@ -12,6 +12,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { VALID_BRANCH_REGEX } from "@/server/core/utils/git-branch-validation";
+import { encryptedText } from "../encrypted";
 import { bitbucket } from "./bitbucket";
 import { deployments } from "./deployment";
 import { domains } from "./domain";
@@ -83,11 +84,13 @@ export const applications = pgTable("application", {
 		.$defaultFn(() => generateAppName("app"))
 		.unique(),
 	description: text("description"),
-	env: text("env"),
-	previewEnv: text("previewEnv"),
+	// Env, build args, and build secrets encrypted at rest (they routinely carry
+	// credentials). Transparent: read/write as plain text via Drizzle.
+	env: encryptedText("env"),
+	previewEnv: encryptedText("previewEnv"),
 	watchPaths: text("watchPaths").array(),
-	previewBuildArgs: text("previewBuildArgs"),
-	previewBuildSecrets: text("previewBuildSecrets"),
+	previewBuildArgs: encryptedText("previewBuildArgs"),
+	previewBuildSecrets: encryptedText("previewBuildSecrets"),
 	previewLabels: text("previewLabels").array(),
 	previewWildcard: text("previewWildcard"),
 	previewPort: integer("previewPort").default(3000),
@@ -106,8 +109,8 @@ export const applications = pgTable("application", {
 		"previewRequireCollaboratorPermissions",
 	).default(true),
 	rollbackActive: boolean("rollbackActive").default(false),
-	buildArgs: text("buildArgs"),
-	buildSecrets: text("buildSecrets"),
+	buildArgs: encryptedText("buildArgs"),
+	buildSecrets: encryptedText("buildSecrets"),
 	memoryReservation: text("memoryReservation"),
 	memoryLimit: text("memoryLimit"),
 	cpuReservation: text("cpuReservation"),

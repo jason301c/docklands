@@ -15,6 +15,8 @@ to the container. This page lists the variables the control plane actually reads
 | `POSTGRES_PASSWORD_FILE` | — | Alternative to embedding the password in `DATABASE_URL`; reads the password from a secret file. |
 | `BETTER_AUTH_SECRET` | — | Signing secret for auth/sessions. **Set in production.** `bun run setup` generates one for local installs. |
 | `BETTER_AUTH_SECRET_FILE` | — | Read `BETTER_AUTH_SECRET` from a file (secret mounts). |
+| `DOCKLANDS_ENCRYPTION_KEY` | — | Key for [secrets at rest](#secrets-at-rest). Base64-encoded 32 bytes, **separate** from `BETTER_AUTH_SECRET`. **Set in production.** `bun run setup` generates one for local installs. |
+| `DOCKLANDS_ENCRYPTION_KEY_FILE` | — | Read `DOCKLANDS_ENCRYPTION_KEY` from a file (secret mounts). |
 | `BETTER_AUTH_URL` | derived | Stable external URL of this instance (e.g. `https://docklands.example.com`), used for absolute auth callback/verification links. Leave unset to derive the origin from each request. Defaults to `http://localhost:${PORT}` in dev. |
 | `PORT` | `3000` | Port the dashboard/API listens on. |
 | `HOST` | — | Bind host for the server. |
@@ -67,9 +69,38 @@ are configured separately per provider — see
 | `POSTGRES_WAIT_RETRY` | Retry interval while waiting for Postgres. |
 | `RELEASE_TAG`, `DOCKLANDS_IMAGE`, `DOCKLANDS_DOCKER_HUB_TAGS_URL` | Version/update metadata shown in the dashboard. |
 
+## Secrets at rest
+
+Docklands encrypts secret material in the database with AES-256-GCM before it is
+stored: SSH private keys, Git provider tokens and OAuth secrets, registry and
+SMTP passwords, notification webhook URLs/tokens, S3 backup credentials, TLS
+private keys, managed-database credentials, and service environment variables.
+This means a database dump or a copy of `/etc/docklands` does not expose those
+secrets in the clear.
+
+The key comes from `DOCKLANDS_ENCRYPTION_KEY` (or `DOCKLANDS_ENCRYPTION_KEY_FILE`)
+and is **deliberately separate** from `BETTER_AUTH_SECRET`, so rotating the
+auth-signing secret does not force a re-encrypt of your data.
+
+- **Local installs:** `bun run setup` generates the key into `.env`.
+- **Production:** set `DOCKLANDS_ENCRYPTION_KEY` (or point
+  `DOCKLANDS_ENCRYPTION_KEY_FILE` at a mounted secret). Generate one with:
+
+  ```bash
+  openssl rand -base64 32
+  ```
+
+:::danger[Back up the key]
+The encryption key is required to read every encrypted secret. **If you lose it,
+those values are unrecoverable** and must be re-entered. Keep it backed up
+alongside (but not inside) your database backups, and treat it as a top-level
+secret.
+:::
+
 :::tip
-`bun run setup` generates `BETTER_AUTH_SECRET` for you on local installs and
-waits for `DATABASE_URL` to accept a real connection before running migrations.
-If it reports that the `docklands` role/database doesn't exist, another Postgres
-is probably already on port `5432` — stop it or change `DATABASE_URL`.
+`bun run setup` generates `BETTER_AUTH_SECRET` and `DOCKLANDS_ENCRYPTION_KEY` for
+you on local installs and waits for `DATABASE_URL` to accept a real connection
+before running migrations. If it reports that the `docklands` role/database
+doesn't exist, another Postgres is probably already on port `5432` — stop it or
+change `DATABASE_URL`.
 :::

@@ -3,6 +3,7 @@ import { boolean, integer, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { encryptedText } from "../encrypted";
 import { backups } from "./backups";
 import { bitbucket } from "./bitbucket";
 import { deployments } from "./deployment";
@@ -41,7 +42,10 @@ export const compose = pgTable("compose", {
 		.notNull()
 		.$defaultFn(() => generateAppName("compose")),
 	description: text("description"),
-	env: text("env"),
+	// Env encrypted at rest (carries credentials). `composeFile` stays plaintext
+	// (user-authored config); `refreshToken` below must stay plaintext because
+	// the deploy webhook looks a compose row up *by* that token.
+	env: encryptedText("env"),
 	composeFile: text("composeFile").notNull().default(""),
 	refreshToken: text("refreshToken").$defaultFn(() => nanoid()),
 	sourceType: sourceTypeCompose("sourceType").notNull().default("github"),

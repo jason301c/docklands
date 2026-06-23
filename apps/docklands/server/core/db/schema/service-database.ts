@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { json, pgTable, text } from "drizzle-orm/pg-core";
+import { pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
@@ -8,6 +8,7 @@ import {
 	type DatabaseConfigByKey,
 	type DatabaseEngineKey,
 } from "@/server/core/databases/registry";
+import { encryptedJson } from "../encrypted";
 import { compose } from "./compose";
 import { databaseEngine } from "./database";
 
@@ -31,10 +32,12 @@ export const serviceDatabase = pgTable("service_database", {
 	/** detected engine (may be overridden manually) */
 	engine: databaseEngine("engine").notNull(),
 	image: text("image").notNull(),
-	/** credentials extracted from the compose service env (registry-validated) */
-	config: json("config")
-		.$type<DatabaseConfigByKey[DatabaseEngineKey]>()
-		.notNull(),
+	/**
+	 * Credentials extracted from the compose service env (registry-validated).
+	 * Encrypted at rest (stored as text); transparent to call sites.
+	 */
+	config:
+		encryptedJson<DatabaseConfigByKey[DatabaseEngineKey]>("config").notNull(),
 	/** whether this detected DB is managed (backups / connection variables) */
 	managed: text("managed").notNull().default("true"),
 	createdAt: text("createdAt")

@@ -3,6 +3,7 @@ import { integer, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { encryptedText } from "../encrypted";
 import { gitProvider } from "./git-provider";
 
 export const gitea = pgTable("gitea", {
@@ -14,12 +15,13 @@ export const gitea = pgTable("gitea", {
 	giteaInternalUrl: text("giteaInternalUrl"),
 	redirectUri: text("redirect_uri"),
 	clientId: text("client_id"),
-	clientSecret: text("client_secret"),
+	// OAuth client secret + tokens encrypted at rest.
+	clientSecret: encryptedText("client_secret"),
 	gitProviderId: text("gitProviderId")
 		.notNull()
 		.references(() => gitProvider.gitProviderId, { onDelete: "cascade" }),
-	accessToken: text("access_token"),
-	refreshToken: text("refresh_token"),
+	accessToken: encryptedText("access_token"),
+	refreshToken: encryptedText("refresh_token"),
 	expiresAt: integer("expires_at"),
 	scopes: text("scopes").default("repo,repo:status,read:user,read:org"),
 	lastAuthenticatedAt: integer("last_authenticated_at"),

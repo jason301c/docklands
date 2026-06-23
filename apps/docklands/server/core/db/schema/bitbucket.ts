@@ -3,6 +3,7 @@ import { pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { encryptedText } from "../encrypted";
 import { gitProvider } from "./git-provider";
 
 export const bitbucket = pgTable("bitbucket", {
@@ -12,7 +13,8 @@ export const bitbucket = pgTable("bitbucket", {
 		.$defaultFn(() => nanoid()),
 	bitbucketUsername: text("bitbucketUsername"),
 	bitbucketEmail: text("bitbucketEmail"),
-	apiToken: text("apiToken"),
+	// API token encrypted at rest.
+	apiToken: encryptedText("apiToken"),
 	bitbucketWorkspaceName: text("bitbucketWorkspaceName"),
 	gitProviderId: text("gitProviderId")
 		.notNull()

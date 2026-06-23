@@ -15,6 +15,7 @@ import {
 	type DatabaseConfigByKey,
 	type DatabaseEngineKey,
 } from "@/server/core/databases/registry";
+import { encryptedJson, encryptedText } from "../encrypted";
 import { backups } from "./backups";
 import { environments } from "./environment";
 import { mounts } from "./mount";
@@ -65,14 +66,17 @@ export const database = pgTable("database", {
 		.$defaultFn(() => generateAppName("database"))
 		.unique(),
 	description: text("description"),
-	/** engine-specific credentials + settings, validated by the registry */
-	config: json("config")
-		.$type<DatabaseConfigByKey[DatabaseEngineKey]>()
-		.notNull(),
+	/**
+	 * Engine-specific credentials + settings, validated by the registry.
+	 * Encrypted at rest (stored as text) since it holds the database password;
+	 * transparent to call sites, which still read/write a typed object.
+	 */
+	config:
+		encryptedJson<DatabaseConfigByKey[DatabaseEngineKey]>("config").notNull(),
 	dockerImage: text("dockerImage").notNull(),
 	command: text("command"),
 	args: text("args").array(),
-	env: text("env"),
+	env: encryptedText("env"),
 	memoryReservation: text("memoryReservation"),
 	externalPort: integer("externalPort"),
 	memoryLimit: text("memoryLimit"),

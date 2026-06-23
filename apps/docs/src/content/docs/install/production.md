@@ -37,6 +37,13 @@ Docklands needs:
 - **`BETTER_AUTH_SECRET`** (or `BETTER_AUTH_SECRET_FILE`) — the auth signing
   secret. **Set this explicitly in production.** For local installs `bun run
   setup` generates one; production should manage it as a secret.
+- **`DOCKLANDS_ENCRYPTION_KEY`** (or `DOCKLANDS_ENCRYPTION_KEY_FILE`) — the key
+  that encrypts [secrets at rest](/install/configuration/#secrets-at-rest)
+  (provider tokens, registry/SMTP passwords, S3 credentials, database config,
+  env values). A base64-encoded 32-byte key, **separate** from
+  `BETTER_AUTH_SECRET`. **Set this explicitly in production** and back it up —
+  losing it makes encrypted values unrecoverable. Generate with `openssl rand
+  -base64 32`.
 
 See [Configuration](/install/configuration/) for the full variable reference.
 
@@ -53,6 +60,7 @@ docker run -d --name docklands \
   -v /etc/docklands:/etc/docklands \
   -e DATABASE_URL="postgres://user:pass@host:5432/docklands" \
   -e BETTER_AUTH_SECRET="<a long random secret>" \
+  -e DOCKLANDS_ENCRYPTION_KEY="<openssl rand -base64 32>" \
   docklands
 ```
 

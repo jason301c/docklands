@@ -9,7 +9,7 @@
 		"start": "node -r dotenv/config dist/migrate-db.mjs && node -r dotenv/config dist/server.mjs",
 		"build-server": "tsx esbuild.config.ts",
 		"build-next": "DATABASE_URL=${DATABASE_URL:-postgres://docklands_build:docklands_build@127.0.0.1:5432/docklands_build} BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-docklands-build-secret-000000000000000000} next build --turbopack",
-		"setup": "tsx -r dotenv/config server/ops/ensure-auth-secret.ts && tsx -r dotenv/config server/ops/setup-instance.ts && bun run wait-for-postgres-dev && bun run migration:run",
+		"setup": "tsx -r dotenv/config server/ops/ensure-auth-secret.ts && tsx -r dotenv/config server/ops/ensure-encryption-key.ts && tsx -r dotenv/config server/ops/setup-instance.ts && bun run wait-for-postgres-dev && bun run migration:run",
 		"wait-for-postgres": "node -r dotenv/config dist/wait-for-postgres.mjs",
 		"wait-for-postgres-dev": "tsx -r dotenv/config server/ops/wait-for-postgres.ts",
 		"reset-password": "node -r dotenv/config dist/reset-password.mjs",

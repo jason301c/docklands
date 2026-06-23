@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { integer, pgTable, text } from "drizzle-orm/pg-core";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { encryptedText } from "../encrypted";
 import { gitProvider } from "./git-provider";
 
 export const github = pgTable("github", {
@@ -12,10 +13,11 @@ export const github = pgTable("github", {
 	githubAppName: text("githubAppName"),
 	githubAppId: integer("githubAppId"),
 	githubClientId: text("githubClientId"),
-	githubClientSecret: text("githubClientSecret"),
+	// Secrets encrypted at rest (DOCKLANDS_ENCRYPTION_KEY).
+	githubClientSecret: encryptedText("githubClientSecret"),
 	githubInstallationId: text("githubInstallationId"),
-	githubPrivateKey: text("githubPrivateKey"),
-	githubWebhookSecret: text("githubWebhookSecret"),
+	githubPrivateKey: encryptedText("githubPrivateKey"),
+	githubWebhookSecret: encryptedText("githubWebhookSecret"),
 	gitProviderId: text("gitProviderId")
 		.notNull()
 		.references(() => gitProvider.gitProviderId, { onDelete: "cascade" }),

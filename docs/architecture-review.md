@@ -458,6 +458,20 @@ means shipped and green (`typecheck` + `test:ci`).
   G7. Also fixed three **discovered** per-engine leftovers from the
   unified-database refactor (see *Discovered during remediation* below). All
   green: `tsc` clean, 82 test files / 656 tests pass, Biome clean.
+- **P1 — Secrets at rest — ✅ done (2026-06-23).** Built abstraction ①:
+  `crypto/secret-box.ts` (AES-256-GCM, versioned `v1:` envelope, lazy key,
+  passthrough-on-plaintext) + `db/encrypted.ts` (`encryptedText`/`encryptedJson`
+  Drizzle customTypes). Applied across the full **Secret-columns inventory**
+  (G3, G4, N2, S2, S3, B2-store, D1-store, C2-store) — incl. fixing the lying
+  `ssh-key` comment. Added a dedicated `DOCKLANDS_ENCRYPTION_KEY` /
+  `_FILE` (resolver, `ensure-encryption-key` op wired into `setup`,
+  `.env.example`, and the Configuration + Production docs incl. a "back up the
+  key" warning). Migration `0007_calm_firedrake.sql` flips the two `config`
+  columns json→text (the text→text swaps are no-ops, as designed). All green:
+  `tsc` clean, 83 files / 666 tests pass (11 new crypto tests), Biome clean,
+  `build` exits 0. **Deliberately left plaintext:** Better Auth tables (managed
+  by its adapter / its own 2FA crypto), and `*.refreshToken` webhook tokens
+  (looked up *by value*, so GCM's non-determinism would break the `WHERE`).
 
 ### Discovered during remediation
 
@@ -579,7 +593,7 @@ the cleanup. Phases are independently shippable and each ends green
 | Phase | Theme | Builds / changes | Closes (Part I IDs) |
 |---|---|---|---|
 | **P0** ✅ | Pure bugs | spot fixes, no new abstraction | A1, G1, S1, C3, N7, R8, A8, G7 (+ X1–X4) |
-| **P1** | Secrets at rest | abstraction ① + apply to inventory + `DOCKLANDS_ENCRYPTION_KEY` + docs | G3, G4, N2, S2, S3, B2(store), D1(store), C2(store) |
+| **P1** ✅ | Secrets at rest | abstraction ① + apply to inventory + `DOCKLANDS_ENCRYPTION_KEY` + docs | G3, G4, N2, S2, S3, B2(store), D1(store), C2(store) |
 | **P2** | Shell-exec safety | `shellArg`/arg-array sweep + secrets off cmdline | A2, A10, D4, N3, G5, R4, B2(cmdline) |
 | **P3** | Durable jobs | abstraction ② (queue + scheduler + backups) | O6, B7, R1 |
 | **P4** | RBAC hard boundary | per-service authz everywhere + API-key scope + webhook signing | AC1, O2, O3, R5, AC2, AC4, AC5, AC6, G2, AC3, C2(read) |
@@ -641,9 +655,9 @@ single detection call site; robust catalog header parsing; finish the
 canvas layout save; clean orphaned layout rows; org-scope the restart
 notification; document provider parity + CDN-validation + stop-mode downtime.
 
-## Secret-columns inventory (P1 target)
+## Secret-columns inventory (P1 target) — ✅ applied
 
-Apply `encryptedText` / `encryptedJson` to these (mirrors Coolify's set):
+`encryptedText` / `encryptedJson` applied to these (mirrors Coolify's set):
 
 | Table.column | Source finding |
 |---|---|
@@ -676,7 +690,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | A10 | patch filePath shell interpolation | **P2** |
 | A11 | patches re-apply conflicts | no action (documented) |
 | A12 | patch audit resourceType:settings | **P7 (taxonomy)** |
-| D1 | conn vars embed plaintext password | **P1 (store) + P5 (expose)** |
+| D1 | conn vars embed plaintext password | **✅ P1 (store)** + P5 (expose) |
 | D2 | password change no propagation | **P5** |
 | D3 | external-port TOCTOU | **P7 (best-effort + clear error)** |
 | D4 | changePassword shell interpolation | **P2** |
@@ -685,7 +699,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | D7 | config jsonb validated at boundary | no action (positive) |
 | D8 | mysql/mariadb dumps as root | no action (note) |
 | C1 | bare-DB routing dead in catalog | **P6 finish (ship templates)** |
-| C2 | compose creds plaintext/served | **P1 (store) + P4 (read perm)** |
+| C2 | compose creds plaintext/served | **✅ P1 (store)** + P4 (read perm) |
 | C3 | extractDatabaseCredentials defaults | **✅ P0** (throws for auth-required engines; caller skips + warns) |
 | C4 | backup user/password engine quirk | **P7 fix** |
 | C5 | detection runs twice | **P7 (single call site)** |
@@ -694,7 +708,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | C8 | catalog header parsing fragile | **P7 (robust parse)** |
 | C9 | libsql embedded detection weak | **P7 (note/strengthen)** |
 | N1 | "custom" cert provider ≠ upload | **P7 (UI clarity)** |
-| N2 | cert private keys plaintext | **P1** |
+| N2 | cert private keys plaintext | **✅ P1** |
 | N3 | remote traefik write interpolation | **P2** |
 | N4 | placeholder ACME email | **P7 guard (require email)** |
 | N5 | LE prod-only + rate-limit | **P7 (doc + dev resolver)** |
@@ -704,8 +718,8 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | N9 | redirects application-only | no action (note) |
 | G1 | GitLab `/api/v4/workspaces` | **✅ P0** (→ `/api/v4/projects`) |
 | G2 | refresh-token webhook no signature | **P4 (sign/verify)** |
-| G3 | SSH keys plaintext + wrong comment | **P1** |
-| G4 | all provider creds plaintext | **P1** |
+| G3 | SSH keys plaintext + wrong comment | **✅ P1** (+ comment fixed) |
+| G4 | all provider creds plaintext | **✅ P1** |
 | G5 | SSH key echo interpolation + race | **P2** |
 | G6 | provider parity uneven | **P7 (document)** |
 | G7 | bitbucket isConfigured false | **✅ P0** (derives from apiToken + email) |
@@ -729,15 +743,15 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | O8 | request analytics 1000-line window | no action (note) |
 | O9 | host metrics Linux-only | no action (note) |
 | S1 | serverThreshold no UI toggle | **✅ P0** (render the toggle) |
-| S2 | registry passwords plaintext | **P1** |
-| S3 | notification secrets plaintext | **P1** |
+| S2 | registry passwords plaintext | **✅ P1** |
+| S3 | notification secrets plaintext | **✅ P1** |
 | S4 | restart notif not org-scoped | **P7 fix** |
 | S5 | registry cloud/selfHosted vestiges | **P6 cut** |
 | S6 | registry delete nulls refs | no action (note) |
 | S7 | tags workspace-only / bulkAssign | no action (note) |
 | S8 | per-app security is basic-auth | no action (note) |
 | B1 | libSQL DB backup broken | **P6 cut (volume-only)** |
-| B2 | S3 creds plaintext + cmdline | **P1 (store) + P2 (cmdline)** |
+| B2 | S3 creds plaintext + cmdline | **✅ P1 (store)** + P2 (cmdline) |
 | B3 | retention errors swallowed | **P7 (surface)** |
 | B4 | retention sorts by filename | **P7 (sort by mtime)** |
 | B5 | restore destructive no snapshot | **P7 guard (pre-snapshot)** |

@@ -50,6 +50,13 @@
       "when": 1782194464175,
       "tag": "0006_sturdy_spencer_smythe",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782203228180,
+      "tag": "0007_calm_firedrake",
+      "breakpoints": true
     }
   ]
 }

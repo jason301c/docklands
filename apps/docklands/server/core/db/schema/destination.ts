@@ -3,6 +3,7 @@ import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { encryptedText } from "../encrypted";
 import {
 	ADDITIONAL_FLAG_ERROR,
 	ADDITIONAL_FLAG_REGEX,
@@ -17,8 +18,9 @@ export const destinations = pgTable("destination", {
 		.$defaultFn(() => nanoid()),
 	name: text("name").notNull(),
 	provider: text("provider"),
-	accessKey: text("accessKey").notNull(),
-	secretAccessKey: text("secretAccessKey").notNull(),
+	// S3 credentials encrypted at rest; passed to rclone at backup time.
+	accessKey: encryptedText("accessKey").notNull(),
+	secretAccessKey: encryptedText("secretAccessKey").notNull(),
 	bucket: text("bucket").notNull(),
 	region: text("region").notNull(),
 	endpoint: text("endpoint").notNull(),
