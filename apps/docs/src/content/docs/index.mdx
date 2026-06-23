@@ -1,0 +1,37 @@
+---
+title: Docklands
+description: Self-hosted, project-first deployment control plane you run on your own VM.
+template: splash
+hero:
+  tagline: A cleaner, project-first deployment control plane for self-hosted VM operators.
+  actions:
+    - text: Getting Started
+      link: /getting-started/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/dokploy/dokploy
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid stagger>
+	<Card title="Deploy anything" icon="rocket">
+		Ship applications from Git, Docker images, and Docker Compose onto your own
+		infrastructure.
+	</Card>
+	<Card title="Project-first workspace" icon="puzzle">
+		Arrange services on a canvas, model private service-to-service connections,
+		and apply generated connection variables.
+	</Card>
+	<Card title="Batteries included" icon="setting">
+		Managed databases, backups, ingress via Traefik, metrics, logs, and
+		deployment notifications.
+	</Card>
+	<Card title="Runs on your VM" icon="laptop">
+		Docker Engine, the filesystem, ports, secrets, and domains all stay on
+		hardware you control.
+	</Card>
+</CardGrid>

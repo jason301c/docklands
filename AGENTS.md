@@ -5,9 +5,10 @@
 Docklands is a community fork of the upstream self-hosted deployment platform
 ([dokploy/dokploy](https://github.com/dokploy/dokploy)), focused on a cleaner,
 project-first deployment control plane that users run on their own VM. Treat the
-repository as a Bun workspace with separate deployable surfaces. Today only
-`apps/docklands` exists; later `apps/site` and `apps/docs` can be added as
-independent Astro deployables.
+repository as a Bun workspace with separate deployable surfaces. Today
+`apps/docklands` (the control plane) and `apps/docs` (an Astro/Starlight
+documentation site) exist; `apps/site` can later be added as another independent
+Astro deployable.
 
 This root file owns repo-wide concerns: the workspace layout, the runtime split,
 the toolchain, development modes, repo-wide rules, dependency notes, and
@@ -72,8 +73,8 @@ and reconcile it before wrapping up.
 ## Product Shape
 
 - `apps/docklands/` is the installable Next.js control plane users run on their own VM.
+- `apps/docs/` is the public documentation site, built on Astro + Starlight.
 - Future `apps/site/` should be the public landing/marketing site, likely Astro.
-- Future `apps/docs/` should be the public documentation site, likely Astro/Starlight.
 - The hosted surfaces explain and document Docklands. They must not assume Docklands itself is hosted for users.
 - The Docklands app assumes customer-owned infrastructure: Docker Engine, the VM
   filesystem, ports, secrets, domains, and app data all live on the user's
@@ -83,7 +84,14 @@ and reconcile it before wrapping up.
 
 - `apps/` — independently deployable, user-facing surfaces. Keep each app
   deployable on its own; one app must never import another app's source.
-  - `apps/docklands/` — the only app today: the self-hosted control plane.
+  - `apps/docklands/` — the self-hosted control plane (Next.js).
+  - `apps/docs/` — the documentation site (Astro + Starlight). It is fully
+    decoupled from `apps/docklands`: to share the product *look*, it imports the
+    Kumo design tokens directly from `@cloudflare/kumo` (the same third-party
+    package, pinned to the app's version) and maps Starlight's `--sl-color-*`
+    variables onto them in `apps/docs/src/styles/docs.css` — no cross-app import.
+    It exposes `llms.txt`/`llms-full.txt` via `starlight-llms-txt`. Astro is a
+    static build, so it sits outside the Node-24 app-runtime rule below.
 - `tools/` — repository-level development and release scripts (e.g.
   `tools/docker/` image build/push helpers, `tools/check-bundler.mjs`). Tools may
   coordinate app packages or release artifacts but must not be required at

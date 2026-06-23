@@ -1,0 +1,61 @@
+/*
+ * Shared "feel", not shared code.
+ *
+ * The docs site is a standalone Astro/Starlight app and is intentionally NOT
+ * coupled to apps/docklands. To make it *feel* like the control plane, we pull
+ * in the Kumo design tokens directly from the same third-party package the app
+ * uses (@cloudflare/kumo, pinned to the app's version), then map Starlight's own
+ * `--sl-color-*` variables onto those Kumo tokens.
+ *
+ * Only the *tokens* are imported here (theme-kumo.css), not Kumo's component
+ * CSS or React runtime — a docs site needs the palette, not the widgets.
+ *
+ * Light/dark switching: Starlight toggles `data-theme` on <html>; Kumo tokens
+ * key off `data-mode`. astro.config.mjs injects a small head script that mirrors
+ * one onto the other, so the variables below resolve to the right shade in both
+ * themes without per-theme overrides.
+ */
+
+@import "@cloudflare/kumo/styles/theme-kumo";
+@import "@fontsource-variable/inter";
+
+/*
+ * Map Starlight semantics -> Kumo tokens. Applied at `:root` (Starlight's dark
+ * default) and at `:root[data-theme="light"]` (Starlight's light override) so
+ * our mapping wins in both modes; the Kumo tokens themselves carry the actual
+ * light/dark values via the data-mode bridge.
+ */
+:root,
+:root[data-theme="light"] {
+	--sl-font: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+	/* Surfaces */
+	--sl-color-bg: var(--color-kumo-canvas);
+	--sl-color-bg-nav: var(--color-kumo-base);
+	--sl-color-bg-sidebar: var(--color-kumo-base);
+	--sl-color-bg-inline-code: var(--color-kumo-elevated);
+
+	/* Text */
+	--sl-color-white: var(--text-color-kumo-strong);
+	--sl-color-text: var(--text-color-kumo-default);
+	--sl-color-text-accent: var(--text-color-kumo-brand);
+
+	/* Brand accent */
+	--sl-color-accent: var(--color-kumo-brand);
+	--sl-color-accent-low: var(--color-kumo-tint);
+	--sl-color-accent-high: var(--color-kumo-brand-hover);
+
+	/* Hairlines / borders */
+	--sl-color-hairline: var(--color-kumo-hairline);
+	--sl-color-hairline-light: var(--color-kumo-hairline);
+	--sl-color-hairline-shade: var(--color-kumo-hairline);
+
+	/* Gray ramp — Starlight derives muted text, borders and panels from these */
+	--sl-color-gray-1: var(--text-color-kumo-strong);
+	--sl-color-gray-2: var(--text-color-kumo-subtle);
+	--sl-color-gray-3: var(--text-color-kumo-subtle);
+	--sl-color-gray-4: var(--text-color-kumo-inactive);
+	--sl-color-gray-5: var(--color-kumo-hairline);
+	--sl-color-gray-6: var(--color-kumo-elevated);
+	--sl-color-gray-7: var(--color-kumo-recessed);
+}

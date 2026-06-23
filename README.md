@@ -50,9 +50,10 @@ Preferred route names in docs, navigation, and new links:
 
 ## Development
 
-Docklands is now organized as a small Bun workspace. The only app today is the
-self-hosted Docklands control plane in `apps/docklands`; future public landing
-and docs sites can be added as separate deployables under `apps/`.
+Docklands is now organized as a small Bun workspace: the self-hosted Docklands
+control plane in `apps/docklands` and an Astro + Starlight documentation site in
+`apps/docs`. A future public landing site can be added as another separate
+deployable under `apps/`.
 
 Bun and Node have separate jobs here: **Bun is the package manager and task
 runner**, while **Node 24 is the runtime that actually runs the app** in both
@@ -86,6 +87,9 @@ Docklands targets Node `>=24.4.0 <26` and Bun `>=1.3.14`.
 ### Layout
 
 - `apps/docklands/` contains the installable Next.js app users run on their own VM.
+- `apps/docs/` contains the Astro + Starlight documentation site (decoupled from
+  the app; it borrows the Kumo design tokens for a shared look and exposes
+  `llms.txt`).
 - `apps/docklands/app/` contains the Next.js App Router UI and route handlers.
 - `apps/docklands/components/` contains dashboard, shared, layout, auth, and primitive UI components.
 - `apps/docklands/client/` contains browser-only app glue such as tRPC, auth client helpers, and hooks.
