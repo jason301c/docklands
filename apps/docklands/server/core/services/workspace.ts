@@ -6,9 +6,9 @@ import {
 	type apiCreateWorkspace,
 	applications,
 	database,
+	environments,
 	workspaces,
 } from "@/server/core/db/schema";
-import { createProductionEnvironment } from "./environment";
 
 export type Workspace = typeof workspaces.$inferSelect;
 
@@ -16,30 +16,46 @@ export const createWorkspace = async (
 	input: z.infer<typeof apiCreateWorkspace>,
 	organizationId: string,
 ) => {
-	const workspace = await db
-		.insert(workspaces)
-		.values({
-			...input,
-			organizationId: organizationId,
-		})
-		.returning()
-		.then((value) => value[0]);
+	// Workspace + its production environment are created atomically so a failed
+	// environment insert can't leave an orphaned, environment-less workspace.
+	return db.transaction(async (tx) => {
+		const workspace = await tx
+			.insert(workspaces)
+			.values({
+				...input,
+				organizationId: organizationId,
+			})
+			.returning()
+			.then((value) => value[0]);
 
-	if (!workspace) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Error creating the workspace",
-		});
-	}
+		if (!workspace) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Error creating the workspace",
+			});
+		}
 
-	// Automatically create a production environment
-	const newEnvironment = await createProductionEnvironment(
-		workspace.workspaceId,
-	);
-	return {
-		workspace,
-		environment: newEnvironment,
-	};
+		// Automatically create a production environment.
+		const environment = await tx
+			.insert(environments)
+			.values({
+				name: "production",
+				description: "Production environment",
+				workspaceId: workspace.workspaceId,
+				isDefault: true,
+			})
+			.returning()
+			.then((value) => value[0]);
+
+		if (!environment) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: "Error creating the production environment",
+			});
+		}
+
+		return { workspace, environment };
+	});
 };
 
 export const findWorkspaceById = async (workspaceId: string) => {

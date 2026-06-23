@@ -207,25 +207,3 @@ export const duplicateEnvironment = async (
 
 	return newEnvironment;
 };
-
-export const createProductionEnvironment = async (workspaceId: string) => {
-	const newEnvironment = await db
-		.insert(environments)
-		.values({
-			name: "production",
-			description: "Production environment",
-			workspaceId,
-			isDefault: true,
-		})
-		.returning()
-		.then((value) => value[0]);
-
-	if (!newEnvironment) {
-		throw new TRPCError({
-			code: "BAD_REQUEST",
-			message: "Error creating the production environment",
-		});
-	}
-
-	return newEnvironment;
-};
