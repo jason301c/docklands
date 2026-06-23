@@ -102,7 +102,11 @@ const Service = (props: {
 		permissions?.deployment.read
 			? { value: "deployments", label: "Deployments" }
 			: null,
-		permissions?.deployment.read
+		// Preview environments are driven by the GitHub App (PR webhooks + PR
+		// status comments via Octokit), so the feature only applies to
+		// GitHub-sourced apps. Hide the tab for other providers rather than
+		// offering a tab that can't work.
+		permissions?.deployment.read && data?.sourceType === "github"
 			? { value: "preview-deployments", label: "Previews" }
 			: null,
 		permissions?.schedule.read
