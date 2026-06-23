@@ -151,6 +151,10 @@ export const keepLatestNBackups = async (
 			await execAsync(rcloneCommand);
 		}
 	} catch (error) {
-		console.error(redactRcloneCredentials(String(error)));
+		// A retention failure must not fail the backup, but it must not be
+		// swallowed silently either — stale files would accumulate unnoticed.
+		console.error(
+			`[Backup] Retention pruning failed for ${getServiceAppName(backup)}; backup succeeded but old backups may not have been deleted: ${redactRcloneCredentials(String(error))}`,
+		);
 	}
 };

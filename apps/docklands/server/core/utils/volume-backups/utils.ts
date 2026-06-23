@@ -93,7 +93,12 @@ const cleanupOldVolumeBackups = async (
 			await execAsync(fullCommand);
 		}
 	} catch (error) {
-		console.error("Volume backup retention error", error);
+		// A retention failure must not fail the backup, but it must not be
+		// swallowed silently either — stale files would accumulate unnoticed.
+		console.error(
+			`[VolumeBackup] Retention pruning failed for ${volumeName}; backup succeeded but old backups may not have been deleted:`,
+			error,
+		);
 	}
 };
 

@@ -148,6 +148,9 @@ export const removeRollbackById = async (rollbackId: string) => {
 		throw new Error("Rollback not found");
 	}
 
+	// Best-effort image cleanup runs only when an image was recorded, but it must
+	// never block deletion of the rollback row — otherwise an image-less (or a
+	// failed-cleanup) rollback row would leak forever (A6).
 	if (rollback?.image) {
 		try {
 			const deployment = await findDeploymentById(rollback.deploymentId);
@@ -158,16 +161,18 @@ export const removeRollbackById = async (rollbackId: string) => {
 
 			const application = await findApplicationById(deployment.applicationId);
 			await deleteRollbackImage(rollback.image, application.runtimeWorkerId);
-
-			await db
-				.delete(rollbacks)
-				.where(eq(rollbacks.rollbackId, rollbackId))
-				.returning()
-				.then((res) => res[0]);
 		} catch (error) {
 			console.error(error);
 		}
 	}
+
+	// Always delete the row, regardless of whether an image existed or its
+	// removal succeeded.
+	await db
+		.delete(rollbacks)
+		.where(eq(rollbacks.rollbackId, rollbackId))
+		.returning()
+		.then((res) => res[0]);
 
 	return rollback;
 };

@@ -574,6 +574,25 @@ means shipped and green (`typecheck` + `test:ci`).
   **R2** (compose build worker) and **W3** (environment promotion) are real
   features to design separately, not bugs. Green: `tsc` clean, 83 files / 675
   tests pass, Biome clean, OpenAPI regenerated (411 endpoints).
+- **P7 — Guardrails + consistency — ◑ in progress (2026-06-23).** First batch
+  landed: **B3** — backup-retention pruning failures (`keepLatestNBackups`,
+  `cleanupOldVolumeBackups`) are now logged with context instead of swallowed
+  silently (still non-throwing — a retention failure must not fail the backup).
+  **A6** — `removeRollbackById` now always deletes the rollback row (image
+  cleanup stays guarded on `rollback.image`), fixing the image-less row leak.
+  **W4** — `getEnvironmentWorkspace` now invokes the previously-uncalled
+  `deleteWorkspaceNodesForMissingServices`, so orphaned `workspace_service_layout`
+  rows are pruned on canvas load (best-effort). **A5/O7/A12** — canonical audit
+  `resourceType`: application-router events use `application`, compose use
+  `compose`, and the patch router uses the owning service's type instead of
+  `settings` (matters now that the audit log actually writes). **S4** — no action:
+  a Docklands restart is a *global* event, so notifying every subscribed org is
+  correct (the apparent "missing org filter" is intended). The remaining P7 items
+  are smaller guards/docs tracked in the disposition map (e.g. B4 sort-by-mtime,
+  B5 pre-restore snapshot, N4 require-LE-email, N6 proxy-file validation, R3
+  node-drain/quorum, R6 finish the `server→runtimeWorker` rename, W1 canvas
+  debounce, and the documentation-only notes N5/N8/N9/B6/G6/W6/A7). Green so far:
+  `tsc` clean, 83 files / 675 tests pass, Biome clean.
 
 ### Discovered during remediation
 
@@ -701,7 +720,7 @@ the cleanup. Phases are independently shippable and each ends green
 | **P4** ◑ | RBAC hard boundary | 5 closed (O2,O3,AC3,AC5,AC6) + 2 already-enforced (C2-read,R5); AC1/AC2/AC4/G2 deferred | O2,O3,AC3,AC5,AC6 ✅; AC1,AC2,AC4,G2 deferred |
 | **P5** ✅ | Connection-var binding | abstraction ③ | D1(expose), D2, W2, W5 |
 | **P6** ◑ | Keep / cut | O1/O5/B1 done, S5 partial; AC9/C1/R2/W3 deferred | O1,O5,B1 ✅; S5 ◑; AC9,C1,R2,W3 deferred |
-| **P7** | Guardrails + consistency | guard safety-critical footguns; finish rename; canonical taxonomy | N1, N4, N5, N6, A3, A4, D3, D5, B3, B4, B5, B6, B8, B9, C4, C5, C6, C7, C8, C9, R3, R6, W1, W4, S4, A5/O7, N8, N9, A6, A7, A12, G6, G8, W6 |
+| **P7** ◑ | Guardrails + consistency | batch 1 done (B3,A6,W4,A5/O7/A12); S4 no-action; rest tracked | B3,A6,W4,A5/O7/A12 ✅; S4 n/a; rest open |
 
 ### Phase detail
 
@@ -784,14 +803,14 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | A2 | build secrets exported as plain env | **✅ P2** (base64 → exported env, not cmdline) |
 | A3 | publishDir + SPA no coupling | **P7 guard** |
 | A4 | drop + buildType unvalidated | **P7 guard** |
-| A5 | audit resourceType inconsistent | **P7 (canonical taxonomy)** |
-| A6 | rollbacks inert; image-less row leak | **P7 fix** |
+| A5 | audit resourceType inconsistent | **✅ P7** (canonical: application/compose/owning-type) |
+| A6 | rollbacks inert; image-less row leak | **✅ P7** (row always deleted) |
 | A7 | paketo/railpack version pinning | **P7 (railpack: configurable)** |
 | A8 | disconnect resets to github | **✅ P0** (→ neutral `git`, app + compose) |
 | A9 | env reference resolution order | no action (documented) |
 | A10 | patch filePath shell interpolation | **✅ P2** (base64 + path-containment check) |
 | A11 | patches re-apply conflicts | no action (documented) |
-| A12 | patch audit resourceType:settings | **P7 (taxonomy)** |
+| A12 | patch audit resourceType:settings | **✅ P7** (uses owning service type) |
 | D1 | conn vars embed plaintext password | **✅ P1 (store)** + **✅ P5 (binding; env encrypted at rest)** |
 | D2 | password change no propagation | **✅ P5** (re-resolve at deploy) |
 | D3 | external-port TOCTOU | **P7 (best-effort + clear error)** |
@@ -841,20 +860,20 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | O4 | metrics only while watched | **P7 (doc; opt. collector)** |
 | O5 | remote/paid metrics half-wired | **✅ P6** (cut paid path + SSRF) |
 | O6 | in-memory queue loses state | **◑ deferred** — in-flight reconciled by `initCancelDeployments`; full durable queue needs live env |
-| O7 | audit resourceType inconsistency | **P7 (= A5)** |
+| O7 | audit resourceType inconsistency | **✅ P7** (= A5) |
 | O8 | request analytics 1000-line window | no action (note) |
 | O9 | host metrics Linux-only | no action (note) |
 | S1 | serverThreshold no UI toggle | **✅ P0** (render the toggle) |
 | S2 | registry passwords plaintext | **✅ P1** |
 | S3 | notification secrets plaintext | **✅ P1** |
-| S4 | restart notif not org-scoped | **P7 fix** |
+| S4 | restart notif not org-scoped | **no action** — a restart is a global event; notifying all subscribed orgs is correct |
 | S5 | registry cloud/selfHosted vestiges | **◑ P6** (dead export removed; enum vestige = minor migration) |
 | S6 | registry delete nulls refs | no action (note) |
 | S7 | tags workspace-only / bulkAssign | no action (note) |
 | S8 | per-app security is basic-auth | no action (note) |
 | B1 | libSQL DB backup broken | **✅ P6** (registry-driven reject redis+libsql; dead code removed) |
 | B2 | S3 creds plaintext + cmdline | **✅ P1 (store)** + **✅ P2 (cmdline → RCLONE_S3_* env)** |
-| B3 | retention errors swallowed | **P7 (surface)** |
+| B3 | retention errors swallowed | **✅ P7** (logged with context, still non-throwing) |
 | B4 | retention sorts by filename | **P7 (sort by mtime)** |
 | B5 | restore destructive no snapshot | **P7 guard (pre-snapshot)** |
 | B6 | stop-mode volume backup downtime | no action (documented) |
@@ -872,7 +891,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | W1 | canvas layout race | **P7 (debounce + guard)** |
 | W2 | conn vars snapshot not binding | **✅ P5** (re-resolve at deploy + retract on disconnect) |
 | W3 | environment promotion absent | **◑ deferred** (real feature, design separately) |
-| W4 | orphaned layout rows | **P7 (call cleanup)** |
+| W4 | orphaned layout rows | **✅ P7** (cleanup invoked on canvas load) |
 | W5 | apply/sync doesn't redeploy | **✅ P5** (binding re-resolves on next deploy) |
 | W6 | connection orientation auto-flip | **P7 (doc/UI hint)** |
 | W7 | permission gating correct | no action (positive) |

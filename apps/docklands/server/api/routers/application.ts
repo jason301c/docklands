@@ -126,7 +126,7 @@ export const applicationRouter = createTRPCRouter({
 				await addNewService(ctx, newApplication.applicationId);
 				await audit(ctx, {
 					action: "create",
-					resourceType: "service",
+					resourceType: "application",
 					resourceId: newApplication.applicationId,
 					resourceName: newApplication.appName,
 				});
@@ -281,7 +281,7 @@ export const applicationRouter = createTRPCRouter({
 
 			await audit(ctx, {
 				action: "delete",
-				resourceType: "service",
+				resourceType: "application",
 				resourceId: application.applicationId,
 				resourceName: application.appName,
 			});

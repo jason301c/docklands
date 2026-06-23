@@ -67,7 +67,7 @@ export const patchRouter = createTRPCRouter({
 			const result = await createPatch(input);
 			await audit(ctx, {
 				action: "create",
-				resourceType: "settings",
+				resourceType: input.composeId ? "compose" : "application",
 				resourceId: result.patchId,
 				resourceName: result.filePath,
 				metadata: { type: "patch" },
@@ -107,7 +107,7 @@ export const patchRouter = createTRPCRouter({
 			const result = await updatePatch(patchId, data);
 			await audit(ctx, {
 				action: "update",
-				resourceType: "settings",
+				resourceType: patch.composeId ? "compose" : "application",
 				resourceId: patchId,
 				resourceName: patch.filePath,
 				metadata: { type: "patch" },
@@ -126,7 +126,7 @@ export const patchRouter = createTRPCRouter({
 			const result = await deletePatch(input.patchId);
 			await audit(ctx, {
 				action: "delete",
-				resourceType: "settings",
+				resourceType: patch.composeId ? "compose" : "application",
 				resourceId: input.patchId,
 				resourceName: patch.filePath,
 				metadata: { type: "patch" },
@@ -147,7 +147,7 @@ export const patchRouter = createTRPCRouter({
 			});
 			await audit(ctx, {
 				action: "update",
-				resourceType: "settings",
+				resourceType: patch.composeId ? "compose" : "application",
 				resourceId: input.patchId,
 				resourceName: patch.filePath,
 				metadata: { type: "patch", enabled: input.enabled },
@@ -173,7 +173,7 @@ export const patchRouter = createTRPCRouter({
 			});
 			await audit(ctx, {
 				action: "create",
-				resourceType: "settings",
+				resourceType: input.type,
 				resourceId: input.id,
 				metadata: { type: "ensurePatchRepo", serviceType: input.type },
 			});
@@ -271,7 +271,7 @@ export const patchRouter = createTRPCRouter({
 				});
 				await audit(ctx, {
 					action: "create",
-					resourceType: "settings",
+					resourceType: input.type,
 					resourceId: result.patchId,
 					resourceName: input.filePath,
 					metadata: { type: "saveFileAsPatch" },
@@ -284,7 +284,7 @@ export const patchRouter = createTRPCRouter({
 			});
 			await audit(ctx, {
 				action: "update",
-				resourceType: "settings",
+				resourceType: input.type,
 				resourceId: existingPatch.patchId,
 				resourceName: input.filePath,
 				metadata: { type: "saveFileAsPatch" },
@@ -311,7 +311,7 @@ export const patchRouter = createTRPCRouter({
 			);
 			await audit(ctx, {
 				action: "delete",
-				resourceType: "settings",
+				resourceType: input.type,
 				resourceId: input.id,
 				resourceName: input.filePath,
 				metadata: { type: "markFileForDeletion" },
@@ -325,7 +325,9 @@ export const patchRouter = createTRPCRouter({
 			await cleanPatchRepos(input.runtimeWorkerId);
 			await audit(ctx, {
 				action: "delete",
-				resourceType: "settings",
+				// Patches are primarily an application feature; this repo-cleanup is
+				// worker-scoped and not tied to one service, so default to application.
+				resourceType: "application",
 				resourceId: input.runtimeWorkerId || "local",
 				metadata: { type: "cleanPatchRepos" },
 			});

@@ -198,7 +198,7 @@ export const composeRouter = createTRPCRouter({
 
 				await audit(ctx, {
 					action: "create",
-					resourceType: "service",
+					resourceType: "compose",
 					resourceId: newService.composeId,
 					resourceName: newService.appName,
 				});
@@ -339,7 +339,7 @@ export const composeRouter = createTRPCRouter({
 
 			await audit(ctx, {
 				action: "delete",
-				resourceType: "service",
+				resourceType: "compose",
 				resourceId: composeResult.composeId,
 				resourceName: composeResult.appName,
 			});

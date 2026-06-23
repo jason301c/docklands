@@ -58,6 +58,18 @@ export const getEnvironmentWorkspace = async (environment: Environment) => {
 		services.map((service) => getWorkspaceServiceKey(service.type, service.id)),
 	);
 
+	// Prune layout rows for services that no longer exist before reading the
+	// canvas, so orphaned `workspace_service_layout` rows get cleaned on load
+	// (W4). Best-effort: a cleanup failure must never break the canvas load.
+	try {
+		await deleteWorkspaceNodesForMissingServices(environment);
+	} catch (error) {
+		logger.warn(
+			{ environmentId: environment.environmentId, error },
+			"Failed to prune orphaned workspace layout rows on canvas load",
+		);
+	}
+
 	const [layouts, rawConnections] = await Promise.all([
 		db.query.workspaceServiceLayouts.findMany({
 			where: eq(
