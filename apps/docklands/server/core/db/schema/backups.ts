@@ -16,11 +16,6 @@ import { compose } from "./compose";
 import { database } from "./database";
 import { deployments } from "./deployment";
 import { destinations } from "./destination";
-import { libsql } from "./libsql";
-import { mariadb } from "./mariadb";
-import { mongo } from "./mongo";
-import { mysql } from "./mysql";
-import { postgres } from "./postgres";
 import { user } from "./user";
 
 export const databaseType = pgEnum("databaseType", [
@@ -60,27 +55,6 @@ export const backups = pgTable("backup", {
 			onDelete: "cascade",
 		},
 	),
-	postgresId: text("postgresId").references(
-		(): AnyPgColumn => postgres.postgresId,
-		{
-			onDelete: "cascade",
-		},
-	),
-	mariadbId: text("mariadbId").references(
-		(): AnyPgColumn => mariadb.mariadbId,
-		{
-			onDelete: "cascade",
-		},
-	),
-	mysqlId: text("mysqlId").references((): AnyPgColumn => mysql.mysqlId, {
-		onDelete: "cascade",
-	}),
-	mongoId: text("mongoId").references((): AnyPgColumn => mongo.mongoId, {
-		onDelete: "cascade",
-	}),
-	libsqlId: text("libsqlId").references((): AnyPgColumn => libsql.libsqlId, {
-		onDelete: "cascade",
-	}),
 	databaseId: text("databaseId").references(
 		(): AnyPgColumn => database.databaseId,
 		{ onDelete: "cascade" },
@@ -113,26 +87,6 @@ export const backupsRelations = relations(backups, ({ one, many }) => ({
 		fields: [backups.destinationId],
 		references: [destinations.destinationId],
 	}),
-	postgres: one(postgres, {
-		fields: [backups.postgresId],
-		references: [postgres.postgresId],
-	}),
-	mariadb: one(mariadb, {
-		fields: [backups.mariadbId],
-		references: [mariadb.mariadbId],
-	}),
-	mysql: one(mysql, {
-		fields: [backups.mysqlId],
-		references: [mysql.mysqlId],
-	}),
-	mongo: one(mongo, {
-		fields: [backups.mongoId],
-		references: [mongo.mongoId],
-	}),
-	libsql: one(libsql, {
-		fields: [backups.libsqlId],
-		references: [libsql.libsqlId],
-	}),
 	database: one(database, {
 		fields: [backups.databaseId],
 		references: [database.databaseId],
@@ -164,11 +118,7 @@ const createSchema = createInsertSchema(backups, {
 		"web-server",
 		"libsql",
 	]),
-	postgresId: z.string().nullish(),
-	mariadbId: z.string().nullish(),
-	mysqlId: z.string().nullish(),
-	mongoId: z.string().nullish(),
-	libsqlId: z.string().nullish(),
+	databaseId: z.string().nullish(),
 	composeId: z.string().nullish(),
 	serviceName: z.string().nullish(),
 	userId: z.string().nullish(),
@@ -182,11 +132,7 @@ export const apiCreateBackup = createSchema.pick({
 	destinationId: true,
 	keepLatestCount: true,
 	database: true,
-	mariadbId: true,
-	mysqlId: true,
-	postgresId: true,
-	mongoId: true,
-	libsqlId: true,
+	databaseId: true,
 	databaseType: true,
 	userId: true,
 	backupType: true,

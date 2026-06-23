@@ -1,15 +1,14 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
+import {
+	databaseConnectionVars,
+	parseDatabaseConfig,
+} from "@/server/core/databases/registry";
 import { db } from "@/server/core/db";
 import {
 	applications,
 	compose,
-	libsql,
-	mariadb,
-	mongo,
-	mysql,
-	postgres,
-	redis,
+	database,
 	workspaceServiceConnections,
 	workspaceServiceLayouts,
 } from "@/server/core/db/schema";
@@ -239,151 +238,28 @@ export const removeWorkspaceConnection = async (connectionId: string) =>
 		.returning()
 		.then((rows) => rows[0]);
 
-const encodeUrlPart = (value: string) => encodeURIComponent(value);
-
 const getConnectionVariableEntriesFromSource = async (
 	connection: WorkspaceConnection,
 ): Promise<EnvEntry[]> => {
-	switch (connection.sourceServiceType) {
-		case "postgres": {
-			const source = await db.query.postgres.findFirst({
-				where: eq(postgres.postgresId, connection.sourceServiceId),
-				columns: {
-					appName: true,
-					databaseName: true,
-					databaseUser: true,
-					databasePassword: true,
-				},
-			});
-			if (!source) return [];
-
-			const user = encodeUrlPart(source.databaseUser);
-			const password = encodeUrlPart(source.databasePassword);
-			const database = encodeUrlPart(source.databaseName);
-			return [
-				{
-					key: "DATABASE_URL",
-					value: `postgresql://${user}:${password}@${source.appName}:5432/${database}`,
-				},
-				{ key: "POSTGRES_HOST", value: source.appName },
-				{ key: "POSTGRES_DB", value: source.databaseName },
-				{ key: "POSTGRES_USER", value: source.databaseUser },
-				{ key: "POSTGRES_PASSWORD", value: source.databasePassword },
-			];
-		}
-		case "mysql": {
-			const source = await db.query.mysql.findFirst({
-				where: eq(mysql.mysqlId, connection.sourceServiceId),
-				columns: {
-					appName: true,
-					databaseName: true,
-					databaseUser: true,
-					databasePassword: true,
-				},
-			});
-			if (!source) return [];
-
-			const user = encodeUrlPart(source.databaseUser);
-			const password = encodeUrlPart(source.databasePassword);
-			const database = encodeUrlPart(source.databaseName);
-			return [
-				{
-					key: "DATABASE_URL",
-					value: `mysql://${user}:${password}@${source.appName}:3306/${database}`,
-				},
-				{ key: "MYSQL_HOST", value: source.appName },
-				{ key: "MYSQL_DATABASE", value: source.databaseName },
-				{ key: "MYSQL_USER", value: source.databaseUser },
-				{ key: "MYSQL_PASSWORD", value: source.databasePassword },
-			];
-		}
-		case "mariadb": {
-			const source = await db.query.mariadb.findFirst({
-				where: eq(mariadb.mariadbId, connection.sourceServiceId),
-				columns: {
-					appName: true,
-					databaseName: true,
-					databaseUser: true,
-					databasePassword: true,
-				},
-			});
-			if (!source) return [];
-
-			const user = encodeUrlPart(source.databaseUser);
-			const password = encodeUrlPart(source.databasePassword);
-			const database = encodeUrlPart(source.databaseName);
-			return [
-				{
-					key: "DATABASE_URL",
-					value: `mariadb://${user}:${password}@${source.appName}:3306/${database}`,
-				},
-				{ key: "MARIADB_HOST", value: source.appName },
-				{ key: "MARIADB_DATABASE", value: source.databaseName },
-				{ key: "MARIADB_USER", value: source.databaseUser },
-				{ key: "MARIADB_PASSWORD", value: source.databasePassword },
-			];
-		}
-		case "mongo": {
-			const source = await db.query.mongo.findFirst({
-				where: eq(mongo.mongoId, connection.sourceServiceId),
-				columns: {
-					appName: true,
-					databaseUser: true,
-					databasePassword: true,
-				},
-			});
-			if (!source) return [];
-
-			const user = encodeUrlPart(source.databaseUser);
-			const password = encodeUrlPart(source.databasePassword);
-			return [
-				{
-					key: "MONGO_URL",
-					value: `mongodb://${user}:${password}@${source.appName}:27017/?authSource=admin`,
-				},
-				{ key: "MONGO_HOST", value: source.appName },
-				{ key: "MONGO_USER", value: source.databaseUser },
-				{ key: "MONGO_PASSWORD", value: source.databasePassword },
-			];
-		}
-		case "redis": {
-			const source = await db.query.redis.findFirst({
-				where: eq(redis.redisId, connection.sourceServiceId),
-				columns: {
-					appName: true,
-					databasePassword: true,
-				},
-			});
-			if (!source) return [];
-
-			const password = encodeUrlPart(source.databasePassword);
-			return [
-				{
-					key: "REDIS_URL",
-					value: `redis://:${password}@${source.appName}:6379`,
-				},
-				{ key: "REDIS_HOST", value: source.appName },
-				{ key: "REDIS_PASSWORD", value: source.databasePassword },
-			];
-		}
-		case "libsql": {
-			const source = await db.query.libsql.findFirst({
-				where: eq(libsql.libsqlId, connection.sourceServiceId),
-				columns: {
-					appName: true,
-					databasePassword: true,
-				},
-			});
-			if (!source) return [];
-
-			return [
-				{ key: "LIBSQL_URL", value: `http://${source.appName}:8080` },
-				{ key: "LIBSQL_AUTH_TOKEN", value: source.databasePassword },
-			];
-		}
-		default:
-			return [];
+	// Only managed-database engines expose generated connection variables.
+	// Application/compose sources have nothing to project.
+	if (
+		connection.sourceServiceType === "application" ||
+		connection.sourceServiceType === "compose"
+	) {
+		return [];
 	}
+
+	const source = await db.query.database.findFirst({
+		where: eq(database.databaseId, connection.sourceServiceId),
+		columns: { appName: true, engine: true, config: true },
+	});
+	if (!source) return [];
+
+	return databaseConnectionVars(source.engine, {
+		appName: source.appName,
+		config: parseDatabaseConfig(source.engine, source.config),
+	});
 };
 
 const readTargetEnv = async (connection: WorkspaceConnection) => {
@@ -419,34 +295,10 @@ export const readWorkspaceServiceEnv = async (input: {
 				where: eq(compose.composeId, input.serviceId),
 				columns: { env: true },
 			});
-		case "postgres":
-			return db.query.postgres.findFirst({
-				where: eq(postgres.postgresId, input.serviceId),
-				columns: { env: true },
-			});
-		case "mysql":
-			return db.query.mysql.findFirst({
-				where: eq(mysql.mysqlId, input.serviceId),
-				columns: { env: true },
-			});
-		case "mariadb":
-			return db.query.mariadb.findFirst({
-				where: eq(mariadb.mariadbId, input.serviceId),
-				columns: { env: true },
-			});
-		case "mongo":
-			return db.query.mongo.findFirst({
-				where: eq(mongo.mongoId, input.serviceId),
-				columns: { env: true },
-			});
-		case "redis":
-			return db.query.redis.findFirst({
-				where: eq(redis.redisId, input.serviceId),
-				columns: { env: true },
-			});
-		case "libsql":
-			return db.query.libsql.findFirst({
-				where: eq(libsql.libsqlId, input.serviceId),
+		// Every managed-database engine resolves to the unified `database` table.
+		default:
+			return db.query.database.findFirst({
+				where: eq(database.databaseId, input.serviceId),
 				columns: { env: true },
 			});
 	}
@@ -470,41 +322,12 @@ export const updateWorkspaceServiceEnv = async (input: {
 				.set({ env: input.env })
 				.where(eq(compose.composeId, input.serviceId))
 				.returning();
-		case "postgres":
+		// Every managed-database engine resolves to the unified `database` table.
+		default:
 			return db
-				.update(postgres)
+				.update(database)
 				.set({ env: input.env })
-				.where(eq(postgres.postgresId, input.serviceId))
-				.returning();
-		case "mysql":
-			return db
-				.update(mysql)
-				.set({ env: input.env })
-				.where(eq(mysql.mysqlId, input.serviceId))
-				.returning();
-		case "mariadb":
-			return db
-				.update(mariadb)
-				.set({ env: input.env })
-				.where(eq(mariadb.mariadbId, input.serviceId))
-				.returning();
-		case "mongo":
-			return db
-				.update(mongo)
-				.set({ env: input.env })
-				.where(eq(mongo.mongoId, input.serviceId))
-				.returning();
-		case "redis":
-			return db
-				.update(redis)
-				.set({ env: input.env })
-				.where(eq(redis.redisId, input.serviceId))
-				.returning();
-		case "libsql":
-			return db
-				.update(libsql)
-				.set({ env: input.env })
-				.where(eq(libsql.libsqlId, input.serviceId))
+				.where(eq(database.databaseId, input.serviceId))
 				.returning();
 	}
 };

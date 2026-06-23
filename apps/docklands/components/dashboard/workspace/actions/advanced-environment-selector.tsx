@@ -53,11 +53,7 @@ export const AdvancedEnvironmentSelector = ({
 
 	const haveServices =
 		selectedEnvironment &&
-		((selectedEnvironment?.mariadb?.length || 0) > 0 ||
-			(selectedEnvironment?.mongo?.length || 0) > 0 ||
-			(selectedEnvironment?.mysql?.length || 0) > 0 ||
-			(selectedEnvironment?.postgres?.length || 0) > 0 ||
-			(selectedEnvironment?.redis?.length || 0) > 0 ||
+		((selectedEnvironment?.database?.length || 0) > 0 ||
 			(selectedEnvironment?.applications?.length || 0) > 0 ||
 			(selectedEnvironment?.compose?.length || 0) > 0);
 	const createEnvironment = api.environment.create.useMutation();

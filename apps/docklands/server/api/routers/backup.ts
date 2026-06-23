@@ -19,38 +19,17 @@ import {
 	removeBackupById,
 	updateBackupById,
 } from "@/server/core/services/backup";
-import { findComposeById } from "@/server/core/services/compose";
-import { findDestinationById } from "@/server/core/services/destination";
-import {
-	findLibsqlByBackupId,
-	findLibsqlById,
-} from "@/server/core/services/libsql";
-import {
-	findMariadbByBackupId,
-	findMariadbById,
-} from "@/server/core/services/mariadb";
 import {
 	findComposeByBackupId,
-	findMongoByBackupId,
-	findMongoById,
-} from "@/server/core/services/mongo";
-import {
-	findMySqlByBackupId,
-	findMySqlById,
-} from "@/server/core/services/mysql";
+	findComposeById,
+} from "@/server/core/services/compose";
+import { findDatabaseById } from "@/server/core/services/database";
+import { findDestinationById } from "@/server/core/services/destination";
 import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
-import {
-	findPostgresByBackupId,
-	findPostgresById,
-} from "@/server/core/services/postgres";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { runComposeBackup } from "@/server/core/utils/backups/compose";
+import { runDatabaseBackup } from "@/server/core/utils/backups/database";
 import { keepLatestNBackups } from "@/server/core/utils/backups/index";
-import { runLibsqlBackup } from "@/server/core/utils/backups/libsql";
-import { runMariadbBackup } from "@/server/core/utils/backups/mariadb";
-import { runMongoBackup } from "@/server/core/utils/backups/mongo";
-import { runMySqlBackup } from "@/server/core/utils/backups/mysql";
-import { runPostgresBackup } from "@/server/core/utils/backups/postgres";
 import {
 	getS3Credentials,
 	normalizeS3Path,
@@ -64,11 +43,7 @@ import {
 } from "@/server/core/utils/process/execAsync";
 import {
 	restoreComposeBackup,
-	restoreLibsqlBackup,
-	restoreMariadbBackup,
-	restoreMongoBackup,
-	restoreMySqlBackup,
-	restorePostgresBackup,
+	restoreDatabaseBackup,
 	restoreWebServerBackup,
 } from "@/server/core/utils/restore";
 
@@ -89,20 +64,28 @@ export const backupRouter = createTRPCRouter({
 		.input(apiCreateBackup)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				const serviceId =
-					input.postgresId ||
-					input.mysqlId ||
-					input.mariadbId ||
-					input.mongoId ||
-					input.libsqlId ||
-					input.composeId;
+				const serviceId = input.databaseId || input.composeId;
 				if (serviceId) {
 					await checkServicePermissionAndAccess(ctx, serviceId, {
 						backup: ["create"],
 					});
 				}
 
-				const newBackup = await createBackup(input);
+				// For managed-database backups, derive the databaseType from the
+				// database's engine so the stored type always matches the engine.
+				let createInput = input;
+				if (input.backupType === "database" && input.databaseId) {
+					const database = await findDatabaseById(input.databaseId);
+					if (database.engine === "redis") {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: "Redis databases do not support backups",
+						});
+					}
+					createInput = { ...input, databaseType: database.engine };
+				}
+
+				const newBackup = await createBackup(createInput);
 				const backup = await findBackupById(newBackup.backupId);
 
 				if (backup.enabled) {
@@ -130,13 +113,7 @@ export const backupRouter = createTRPCRouter({
 		.query(async ({ input, ctx }) => {
 			const backup = await findBackupById(input.backupId);
 
-			const serviceId =
-				backup.postgresId ||
-				backup.mysqlId ||
-				backup.mariadbId ||
-				backup.mongoId ||
-				backup.libsqlId ||
-				backup.composeId;
+			const serviceId = backup.databaseId || backup.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					backup: ["read"],
@@ -150,13 +127,7 @@ export const backupRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const existing = await findBackupById(input.backupId);
-				const serviceId =
-					existing.postgresId ||
-					existing.mysqlId ||
-					existing.mariadbId ||
-					existing.mongoId ||
-					existing.libsqlId ||
-					existing.composeId;
+				const serviceId = existing.databaseId || existing.composeId;
 				if (serviceId) {
 					await checkServicePermissionAndAccess(ctx, serviceId, {
 						backup: ["update"],
@@ -191,13 +162,7 @@ export const backupRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const backup = await findBackupById(input.backupId);
-				const serviceId =
-					backup.postgresId ||
-					backup.mysqlId ||
-					backup.mariadbId ||
-					backup.mongoId ||
-					backup.libsqlId ||
-					backup.composeId;
+				const serviceId = backup.databaseId || backup.composeId;
 				if (serviceId) {
 					await checkServicePermissionAndAccess(ctx, serviceId, {
 						backup: ["delete"],
@@ -221,19 +186,23 @@ export const backupRouter = createTRPCRouter({
 				});
 			}
 		}),
-	manualBackupPostgres: protectedProcedure
+	manualBackupDatabase: protectedProcedure
 		.input(apiFindOneBackup)
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const backup = await findBackupById(input.backupId);
-				if (backup.postgresId) {
-					await checkServicePermissionAndAccess(ctx, backup.postgresId, {
-						backup: ["create"],
+				if (!backup.databaseId) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "Backup is not associated with a database",
 					});
 				}
-				const postgres = await findPostgresByBackupId(backup.backupId);
-				await runPostgresBackup(postgres, backup);
-				await keepLatestNBackups(backup, postgres?.runtimeWorkerId);
+				await checkServicePermissionAndAccess(ctx, backup.databaseId, {
+					backup: ["create"],
+				});
+				const database = await findDatabaseById(backup.databaseId);
+				await runDatabaseBackup(database, backup);
+				await keepLatestNBackups(backup, database.runtimeWorkerId);
 				await audit(ctx, {
 					action: "run",
 					resourceType: "backup",
@@ -244,64 +213,10 @@ export const backupRouter = createTRPCRouter({
 				const message =
 					error instanceof Error
 						? error.message
-						: "Error running manual Postgres backup ";
+						: "Error running manual database backup ";
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message,
-				});
-			}
-		}),
-
-	manualBackupMySql: protectedProcedure
-		.input(apiFindOneBackup)
-		.mutation(async ({ input, ctx }) => {
-			try {
-				const backup = await findBackupById(input.backupId);
-				if (backup.mysqlId) {
-					await checkServicePermissionAndAccess(ctx, backup.mysqlId, {
-						backup: ["create"],
-					});
-				}
-				const mysql = await findMySqlByBackupId(backup.backupId);
-				await runMySqlBackup(mysql, backup);
-				await keepLatestNBackups(backup, mysql?.runtimeWorkerId);
-				await audit(ctx, {
-					action: "run",
-					resourceType: "backup",
-					resourceId: backup.backupId,
-				});
-				return true;
-			} catch (error) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Error running manual MySQL backup ",
-					cause: error,
-				});
-			}
-		}),
-	manualBackupMariadb: protectedProcedure
-		.input(apiFindOneBackup)
-		.mutation(async ({ input, ctx }) => {
-			try {
-				const backup = await findBackupById(input.backupId);
-				if (backup.mariadbId) {
-					await checkServicePermissionAndAccess(ctx, backup.mariadbId, {
-						backup: ["create"],
-					});
-				}
-				const mariadb = await findMariadbByBackupId(backup.backupId);
-				await runMariadbBackup(mariadb, backup);
-				await keepLatestNBackups(backup, mariadb?.runtimeWorkerId);
-				await audit(ctx, {
-					action: "run",
-					resourceType: "backup",
-					resourceId: backup.backupId,
-				});
-				return true;
-			} catch (error) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Error running manual Mariadb backup ",
 					cause: error,
 				});
 			}
@@ -329,60 +244,6 @@ export const backupRouter = createTRPCRouter({
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message: "Error running manual Compose backup ",
-					cause: error,
-				});
-			}
-		}),
-	manualBackupMongo: protectedProcedure
-		.input(apiFindOneBackup)
-		.mutation(async ({ input, ctx }) => {
-			try {
-				const backup = await findBackupById(input.backupId);
-				if (backup.mongoId) {
-					await checkServicePermissionAndAccess(ctx, backup.mongoId, {
-						backup: ["create"],
-					});
-				}
-				const mongo = await findMongoByBackupId(backup.backupId);
-				await runMongoBackup(mongo, backup);
-				await keepLatestNBackups(backup, mongo?.runtimeWorkerId);
-				await audit(ctx, {
-					action: "run",
-					resourceType: "backup",
-					resourceId: backup.backupId,
-				});
-				return true;
-			} catch (error) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Error running manual Mongo backup ",
-					cause: error,
-				});
-			}
-		}),
-	manualBackupLibsql: protectedProcedure
-		.input(apiFindOneBackup)
-		.mutation(async ({ input, ctx }) => {
-			try {
-				const backup = await findBackupById(input.backupId);
-				if (backup.libsqlId) {
-					await checkServicePermissionAndAccess(ctx, backup.libsqlId, {
-						backup: ["create"],
-					});
-				}
-				const libsql = await findLibsqlByBackupId(backup.backupId);
-				await runLibsqlBackup(libsql, backup);
-				await keepLatestNBackups(backup, libsql?.runtimeWorkerId);
-				await audit(ctx, {
-					action: "run",
-					resourceType: "backup",
-					resourceId: backup.backupId,
-				});
-				return true;
-			} catch (error) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Error running manual Libsql backup ",
 					cause: error,
 				});
 			}
@@ -521,23 +382,11 @@ export const backupRouter = createTRPCRouter({
 			const onLog = (log: string) => queue.push(log);
 			const runRestore = async () => {
 				if (input.backupType === "database") {
-					if (input.databaseType === "postgres") {
-						const postgres = await findPostgresById(input.databaseId);
-						await restorePostgresBackup(postgres, destination, input, onLog);
-					} else if (input.databaseType === "mysql") {
-						const mysql = await findMySqlById(input.databaseId);
-						await restoreMySqlBackup(mysql, destination, input, onLog);
-					} else if (input.databaseType === "mariadb") {
-						const mariadb = await findMariadbById(input.databaseId);
-						await restoreMariadbBackup(mariadb, destination, input, onLog);
-					} else if (input.databaseType === "mongo") {
-						const mongo = await findMongoById(input.databaseId);
-						await restoreMongoBackup(mongo, destination, input, onLog);
-					} else if (input.databaseType === "libsql") {
-						const libsql = await findLibsqlById(input.databaseId);
-						await restoreLibsqlBackup(libsql, destination, input, onLog);
-					} else if (input.databaseType === "web-server") {
+					if (input.databaseType === "web-server") {
 						await restoreWebServerBackup(destination, input.backupFile, onLog);
+					} else {
+						const database = await findDatabaseById(input.databaseId);
+						await restoreDatabaseBackup(database, destination, input, onLog);
 					}
 				} else if (input.backupType === "compose") {
 					const compose = await findComposeById(input.databaseId);

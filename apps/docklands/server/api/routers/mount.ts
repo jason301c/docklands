@@ -11,9 +11,7 @@ import {
 import type { ServiceType } from "@/server/core/db/schema/mount";
 import { findApplicationById } from "@/server/core/services/application";
 import { findComposeById } from "@/server/core/services/compose";
-import { findLibsqlById } from "@/server/core/services/libsql";
-import { findMariadbById } from "@/server/core/services/mariadb";
-import { findMongoById } from "@/server/core/services/mongo";
+import { findDatabaseById } from "@/server/core/services/database";
 import {
 	createMount,
 	deleteMount,
@@ -21,13 +19,10 @@ import {
 	findMountsByApplicationId,
 	updateMount,
 } from "@/server/core/services/mount";
-import { findMySqlById } from "@/server/core/services/mysql";
 import {
 	checkServiceAccess,
 	checkServicePermissionAndAccess,
 } from "@/server/core/services/permission";
-import { findPostgresById } from "@/server/core/services/postgres";
-import { findRedisById } from "@/server/core/services/redis";
 import { getServiceContainer } from "@/server/core/utils/docker/utils";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -40,36 +35,15 @@ async function getServiceOrganizationId(
 			const app = await findApplicationById(serviceId);
 			return app?.environment?.workspace?.organizationId ?? null;
 		}
-		case "postgres": {
-			const postgres = await findPostgresById(serviceId);
-			return postgres?.environment?.workspace?.organizationId ?? null;
-		}
-		case "mariadb": {
-			const mariadb = await findMariadbById(serviceId);
-			return mariadb?.environment?.workspace?.organizationId ?? null;
-		}
-		case "mongo": {
-			const mongo = await findMongoById(serviceId);
-			return mongo?.environment?.workspace?.organizationId ?? null;
-		}
-		case "mysql": {
-			const mysql = await findMySqlById(serviceId);
-			return mysql?.environment?.workspace?.organizationId ?? null;
-		}
-		case "redis": {
-			const redis = await findRedisById(serviceId);
-			return redis?.environment?.workspace?.organizationId ?? null;
-		}
 		case "compose": {
 			const compose = await findComposeById(serviceId);
 			return compose?.environment?.workspace?.organizationId ?? null;
 		}
-		case "libsql": {
-			const libsql = await findLibsqlById(serviceId);
-			return libsql?.environment?.workspace?.organizationId ?? null;
+		default: {
+			// all managed database engines resolve to the unified database table
+			const database = await findDatabaseById(serviceId);
+			return database?.environment?.workspace?.organizationId ?? null;
 		}
-		default:
-			return null;
 	}
 }
 
@@ -94,14 +68,7 @@ export const mountRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			const mount = await findMountById(input.mountId);
 			const serviceId =
-				mount.applicationId ||
-				mount.postgresId ||
-				mount.mariadbId ||
-				mount.mongoId ||
-				mount.mysqlId ||
-				mount.redisId ||
-				mount.libsqlId ||
-				mount.composeId;
+				mount.applicationId || mount.databaseId || mount.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					volume: ["delete"],
@@ -120,14 +87,7 @@ export const mountRouter = createTRPCRouter({
 		.query(async ({ input, ctx }) => {
 			const mount = await findMountById(input.mountId);
 			const serviceId =
-				mount.applicationId ||
-				mount.postgresId ||
-				mount.mariadbId ||
-				mount.mongoId ||
-				mount.mysqlId ||
-				mount.redisId ||
-				mount.libsqlId ||
-				mount.composeId;
+				mount.applicationId || mount.databaseId || mount.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					volume: ["read"],
@@ -140,14 +100,7 @@ export const mountRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			const mount = await findMountById(input.mountId);
 			const serviceId =
-				mount.applicationId ||
-				mount.postgresId ||
-				mount.mariadbId ||
-				mount.mongoId ||
-				mount.mysqlId ||
-				mount.redisId ||
-				mount.libsqlId ||
-				mount.composeId;
+				mount.applicationId || mount.databaseId || mount.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					volume: ["create"],

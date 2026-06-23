@@ -22,12 +22,7 @@ const getProjectName = (
 	const services = [
 		volumeBackup.application,
 		volumeBackup.compose,
-		volumeBackup.postgres,
-		volumeBackup.mysql,
-		volumeBackup.mariadb,
-		volumeBackup.mongo,
-		volumeBackup.redis,
-		volumeBackup.libsql,
+		volumeBackup.database,
 	];
 
 	for (const service of services) {
@@ -45,12 +40,7 @@ const getOrganizationId = (
 	const services = [
 		volumeBackup.application,
 		volumeBackup.compose,
-		volumeBackup.postgres,
-		volumeBackup.mysql,
-		volumeBackup.mariadb,
-		volumeBackup.mongo,
-		volumeBackup.redis,
-		volumeBackup.libsql,
+		volumeBackup.database,
 	];
 
 	for (const service of services) {

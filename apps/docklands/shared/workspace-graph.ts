@@ -83,7 +83,12 @@ export const WORKSPACE_COLUMN_GAP = 120;
 export const WORKSPACE_ROW_GAP = 96;
 export const WORKSPACE_CANVAS_PADDING = 80;
 
-const serviceDescriptors = {
+/**
+ * The six managed-database engines now live in a single `database` collection
+ * on the environment, discriminated by an `engine` column. Application and
+ * compose keep their own per-collection relations.
+ */
+const NON_DATABASE_SERVICE_DESCRIPTORS = {
 	application: {
 		collectionKey: "applications",
 		idKey: "applicationId",
@@ -94,40 +99,19 @@ const serviceDescriptors = {
 		idKey: "composeId",
 		statusKey: "composeStatus",
 	},
-	libsql: {
-		collectionKey: "libsql",
-		idKey: "libsqlId",
-		statusKey: "applicationStatus",
-	},
-	mariadb: {
-		collectionKey: "mariadb",
-		idKey: "mariadbId",
-		statusKey: "applicationStatus",
-	},
-	mongo: {
-		collectionKey: "mongo",
-		idKey: "mongoId",
-		statusKey: "applicationStatus",
-	},
-	mysql: {
-		collectionKey: "mysql",
-		idKey: "mysqlId",
-		statusKey: "applicationStatus",
-	},
-	postgres: {
-		collectionKey: "postgres",
-		idKey: "postgresId",
-		statusKey: "applicationStatus",
-	},
-	redis: {
-		collectionKey: "redis",
-		idKey: "redisId",
-		statusKey: "applicationStatus",
-	},
-} satisfies Record<
-	WorkspaceServiceType,
-	{ collectionKey: string; idKey: string; statusKey: string }
+} satisfies Partial<
+	Record<
+		WorkspaceServiceType,
+		{ collectionKey: string; idKey: string; statusKey: string }
+	>
 >;
+
+/** The unified managed-database collection on the environment. */
+const DATABASE_COLLECTION_KEY = "database";
+/** The unified managed-database primary-key column. */
+const DATABASE_ID_KEY = "databaseId";
+/** The unified managed-database deploy-status column. */
+const DATABASE_STATUS_KEY = "applicationStatus";
 
 type EnvironmentLike = Record<string, unknown>;
 type ServiceLike = Record<string, unknown>;
@@ -199,6 +183,36 @@ const getLatestDeploymentDate = (record: ServiceLike) => {
 	return latest;
 };
 
+const toWorkspaceService = (
+	record: ServiceLike,
+	type: WorkspaceServiceType,
+	idKey: string,
+	statusKey: string,
+): WorkspaceService | null => {
+	const id = asString(record[idKey]);
+	const name = asString(record.name);
+
+	if (!id || !name) return null;
+
+	return {
+		id,
+		type,
+		name,
+		appName: asString(record.appName),
+		description: asString(record.description),
+		status: asString(record[statusKey]) as WorkspaceServiceStatus | null,
+		createdAt: asString(record.createdAt),
+		lastDeployAt: getLatestDeploymentDate(record),
+		runtimeWorkerId: asString(record.runtimeWorkerId),
+		refreshToken: asString(record.refreshToken),
+		composeType:
+			record.composeType === "docker-compose" || record.composeType === "stack"
+				? record.composeType
+				: null,
+		icon: asString(record.icon),
+	};
+};
+
 export const extractWorkspaceServicesFromEnvironment = (
 	environment: EnvironmentLike | null | undefined,
 ): WorkspaceService[] => {
@@ -206,39 +220,43 @@ export const extractWorkspaceServicesFromEnvironment = (
 
 	const services: WorkspaceService[] = [];
 
-	for (const type of WORKSPACE_SERVICE_TYPES) {
-		const descriptor = serviceDescriptors[type];
+	// Application and compose keep their own per-collection relations.
+	for (const [type, descriptor] of Object.entries(
+		NON_DATABASE_SERVICE_DESCRIPTORS,
+	) as [
+		WorkspaceServiceType,
+		(typeof NON_DATABASE_SERVICE_DESCRIPTORS)[keyof typeof NON_DATABASE_SERVICE_DESCRIPTORS],
+	][]) {
 		const items = environment[descriptor.collectionKey];
-
 		if (!Array.isArray(items)) continue;
 
 		for (const item of items) {
-			const record = item as ServiceLike;
-			const id = asString(record[descriptor.idKey]);
-			const name = asString(record.name);
-
-			if (!id || !name) continue;
-
-			services.push({
-				id,
+			const service = toWorkspaceService(
+				item as ServiceLike,
 				type,
-				name,
-				appName: asString(record.appName),
-				description: asString(record.description),
-				status: asString(
-					record[descriptor.statusKey],
-				) as WorkspaceServiceStatus | null,
-				createdAt: asString(record.createdAt),
-				lastDeployAt: getLatestDeploymentDate(record),
-				runtimeWorkerId: asString(record.runtimeWorkerId),
-				refreshToken: asString(record.refreshToken),
-				composeType:
-					record.composeType === "docker-compose" ||
-					record.composeType === "stack"
-						? record.composeType
-						: null,
-				icon: asString(record.icon),
-			});
+				descriptor.idKey,
+				descriptor.statusKey,
+			);
+			if (service) services.push(service);
+		}
+	}
+
+	// The six managed-database engines now live in one `database` collection,
+	// discriminated by the row's `engine`, which maps to the node type.
+	const databaseItems = environment[DATABASE_COLLECTION_KEY];
+	if (Array.isArray(databaseItems)) {
+		for (const item of databaseItems) {
+			const record = item as ServiceLike;
+			const engine = asString(record.engine);
+			if (!engine || !isWorkspaceServiceType(engine)) continue;
+
+			const service = toWorkspaceService(
+				record,
+				engine,
+				DATABASE_ID_KEY,
+				DATABASE_STATUS_KEY,
+			);
+			if (service) services.push(service);
 		}
 	}
 

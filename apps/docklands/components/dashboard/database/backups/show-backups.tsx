@@ -65,14 +65,15 @@ export const ShowBackups = ({
 		? query()
 		: api.database.one.useQuery({ databaseId: id }, { enabled: !!id });
 
+	const manualBackupDatabase = api.backup.manualBackupDatabase.useMutation();
 	const mutationMap =
 		backupType === "database"
 			? {
-					mariadb: api.backup.manualBackupMariadb.useMutation(),
-					mongo: api.backup.manualBackupMongo.useMutation(),
-					mysql: api.backup.manualBackupMySql.useMutation(),
-					postgres: api.backup.manualBackupPostgres.useMutation(),
-					libsql: api.backup.manualBackupLibsql.useMutation(),
+					mariadb: manualBackupDatabase,
+					mongo: manualBackupDatabase,
+					mysql: manualBackupDatabase,
+					postgres: manualBackupDatabase,
+					libsql: manualBackupDatabase,
 					"web-server": api.backup.manualBackupWebServer.useMutation(),
 				}
 			: {
@@ -83,7 +84,7 @@ export const ShowBackups = ({
 
 	const { mutateAsync: manualBackup, isPending: isManualBackup } = mutation
 		? mutation
-		: api.backup.manualBackupMongo.useMutation();
+		: manualBackupDatabase;
 
 	const { mutateAsync: deleteBackup, isPending: isRemoving } =
 		api.backup.remove.useMutation();

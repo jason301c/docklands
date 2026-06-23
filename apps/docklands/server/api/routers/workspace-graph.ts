@@ -77,23 +77,8 @@ const getAuthorizedEnvironment = async (
 			compose: environment.compose.filter((service) =>
 				accessedServices.includes(service.composeId),
 			),
-			libsql: environment.libsql.filter((service) =>
-				accessedServices.includes(service.libsqlId),
-			),
-			mariadb: environment.mariadb.filter((service) =>
-				accessedServices.includes(service.mariadbId),
-			),
-			mongo: environment.mongo.filter((service) =>
-				accessedServices.includes(service.mongoId),
-			),
-			mysql: environment.mysql.filter((service) =>
-				accessedServices.includes(service.mysqlId),
-			),
-			postgres: environment.postgres.filter((service) =>
-				accessedServices.includes(service.postgresId),
-			),
-			redis: environment.redis.filter((service) =>
-				accessedServices.includes(service.redisId),
+			database: environment.database.filter((service) =>
+				accessedServices.includes(service.databaseId),
 			),
 		};
 	}

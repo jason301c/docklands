@@ -51,17 +51,18 @@ export const volumeBackupsRouter = createTRPCRouter({
 			await checkServicePermissionAndAccess(ctx, input.id, {
 				volumeBackup: ["read"],
 			});
+			const whereColumn =
+				input.volumeBackupType === "application"
+					? volumeBackups.applicationId
+					: input.volumeBackupType === "compose"
+						? volumeBackups.composeId
+						: volumeBackups.databaseId;
 			return await db.query.volumeBackups.findMany({
-				where: eq(volumeBackups[`${input.volumeBackupType}Id`], input.id),
+				where: eq(whereColumn, input.id),
 				with: {
 					application: true,
-					postgres: true,
-					mysql: true,
-					mariadb: true,
-					mongo: true,
-					redis: true,
+					database: true,
 					compose: true,
-					libsql: true,
 				},
 				orderBy: [desc(volumeBackups.createdAt)],
 			});
@@ -70,14 +71,7 @@ export const volumeBackupsRouter = createTRPCRouter({
 		.input(createVolumeBackupSchema)
 		.mutation(async ({ input, ctx }) => {
 			const serviceId =
-				input.applicationId ||
-				input.postgresId ||
-				input.mysqlId ||
-				input.mariadbId ||
-				input.mongoId ||
-				input.redisId ||
-				input.libsqlId ||
-				input.composeId;
+				input.applicationId || input.databaseId || input.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					volumeBackup: ["create"],
@@ -103,15 +97,7 @@ export const volumeBackupsRouter = createTRPCRouter({
 		)
 		.query(async ({ input, ctx }) => {
 			const vb = await findVolumeBackupById(input.volumeBackupId);
-			const serviceId =
-				vb.applicationId ||
-				vb.postgresId ||
-				vb.mysqlId ||
-				vb.mariadbId ||
-				vb.mongoId ||
-				vb.redisId ||
-				vb.libsqlId ||
-				vb.composeId;
+			const serviceId = vb.applicationId || vb.databaseId || vb.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					volumeBackup: ["read"],
@@ -127,15 +113,7 @@ export const volumeBackupsRouter = createTRPCRouter({
 		)
 		.mutation(async ({ input, ctx }) => {
 			const vb = await findVolumeBackupById(input.volumeBackupId);
-			const serviceId =
-				vb.applicationId ||
-				vb.postgresId ||
-				vb.mysqlId ||
-				vb.mariadbId ||
-				vb.mongoId ||
-				vb.redisId ||
-				vb.libsqlId ||
-				vb.composeId;
+			const serviceId = vb.applicationId || vb.databaseId || vb.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					volumeBackup: ["delete"],
@@ -155,12 +133,7 @@ export const volumeBackupsRouter = createTRPCRouter({
 			const existingVb = await findVolumeBackupById(input.volumeBackupId);
 			const serviceId =
 				existingVb.applicationId ||
-				existingVb.postgresId ||
-				existingVb.mysqlId ||
-				existingVb.mariadbId ||
-				existingVb.mongoId ||
-				existingVb.redisId ||
-				existingVb.libsqlId ||
+				existingVb.databaseId ||
 				existingVb.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
@@ -197,15 +170,7 @@ export const volumeBackupsRouter = createTRPCRouter({
 		.input(z.object({ volumeBackupId: z.string().min(1) }))
 		.mutation(async ({ input, ctx }) => {
 			const vb = await findVolumeBackupById(input.volumeBackupId);
-			const serviceId =
-				vb.applicationId ||
-				vb.postgresId ||
-				vb.mysqlId ||
-				vb.mariadbId ||
-				vb.mongoId ||
-				vb.redisId ||
-				vb.libsqlId ||
-				vb.composeId;
+			const serviceId = vb.applicationId || vb.databaseId || vb.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					volumeBackup: ["create"],

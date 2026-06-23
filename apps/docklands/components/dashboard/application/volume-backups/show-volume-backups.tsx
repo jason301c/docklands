@@ -107,11 +107,7 @@ export const ShowVolumeBackups = ({
 						{volumeBackups.map((volumeBackup) => {
 							const runtimeWorkerId =
 								volumeBackup.application?.runtimeWorkerId ||
-								volumeBackup.postgres?.runtimeWorkerId ||
-								volumeBackup.mysql?.runtimeWorkerId ||
-								volumeBackup.mariadb?.runtimeWorkerId ||
-								volumeBackup.mongo?.runtimeWorkerId ||
-								volumeBackup.redis?.runtimeWorkerId ||
+								volumeBackup.database?.runtimeWorkerId ||
 								volumeBackup.compose?.runtimeWorkerId;
 							return (
 								<div

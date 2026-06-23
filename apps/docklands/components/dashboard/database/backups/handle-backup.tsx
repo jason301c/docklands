@@ -260,31 +260,13 @@ export const HandleBackup = ({
 				? {
 						composeId: id,
 					}
-				: databaseType === "postgres"
+				: databaseType === "web-server"
 					? {
-							postgresId: id,
+							userId: id,
 						}
-					: databaseType === "mariadb"
-						? {
-								mariadbId: id,
-							}
-						: databaseType === "mysql"
-							? {
-									mysqlId: id,
-								}
-							: databaseType === "mongo"
-								? {
-										mongoId: id,
-									}
-								: databaseType === "libsql"
-									? {
-											libsqlId: id,
-										}
-									: databaseType === "web-server"
-										? {
-												userId: id,
-											}
-										: undefined;
+					: {
+							databaseId: id,
+						};
 
 		await createBackup({
 			destinationId: data.destinationId,

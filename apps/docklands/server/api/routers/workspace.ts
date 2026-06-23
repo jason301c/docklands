@@ -16,13 +16,8 @@ import {
 	apiUpdateWorkspace,
 	applications,
 	compose,
+	database,
 	environments,
-	libsql,
-	mariadb,
-	mongo,
-	mysql,
-	postgres,
-	redis,
 	workspaces,
 } from "@/server/core/db/schema";
 import {
@@ -31,13 +26,13 @@ import {
 } from "@/server/core/services/application";
 import { createBackup } from "@/server/core/services/backup";
 import { createCompose, findComposeById } from "@/server/core/services/compose";
+import {
+	createDatabase,
+	findDatabaseById,
+} from "@/server/core/services/database";
 import { createDomain } from "@/server/core/services/domain";
 import { findEnvironmentById } from "@/server/core/services/environment";
-import { createLibsql, findLibsqlById } from "@/server/core/services/libsql";
-import { createMariadb, findMariadbById } from "@/server/core/services/mariadb";
-import { createMongo, findMongoById } from "@/server/core/services/mongo";
-import { createMount } from "@/server/core/services/mount";
-import { createMysql, findMySqlById } from "@/server/core/services/mysql";
+import { createDatabaseMount, createMount } from "@/server/core/services/mount";
 import {
 	addNewEnvironment,
 	addNewWorkspace,
@@ -46,13 +41,8 @@ import {
 	findMemberByUserId,
 } from "@/server/core/services/permission";
 import { createPort } from "@/server/core/services/port";
-import {
-	createPostgres,
-	findPostgresById,
-} from "@/server/core/services/postgres";
 import { createPreviewDeployment } from "@/server/core/services/preview-deployment";
 import { createRedirect } from "@/server/core/services/redirect";
-import { createRedis, findRedisById } from "@/server/core/services/redis";
 import { createSecurity } from "@/server/core/services/security";
 import {
 	createWorkspace,
@@ -132,29 +122,11 @@ export const workspaceRouter = createTRPCRouter({
 										accessedServices,
 									),
 								},
-								libsql: {
-									where: buildServiceFilter(libsql.libsqlId, accessedServices),
-								},
-								mariadb: {
+								database: {
 									where: buildServiceFilter(
-										mariadb.mariadbId,
+										database.databaseId,
 										accessedServices,
 									),
-								},
-								mongo: {
-									where: buildServiceFilter(mongo.mongoId, accessedServices),
-								},
-								mysql: {
-									where: buildServiceFilter(mysql.mysqlId, accessedServices),
-								},
-								postgres: {
-									where: buildServiceFilter(
-										postgres.postgresId,
-										accessedServices,
-									),
-								},
-								redis: {
-									where: buildServiceFilter(redis.redisId, accessedServices),
 								},
 							},
 						},
@@ -224,53 +196,14 @@ export const workspaceRouter = createTRPCRouter({
 									applicationStatus: true,
 								},
 							},
-							libsql: {
-								where: buildServiceFilter(libsql.libsqlId, accessedServices),
-								columns: {
-									libsqlId: true,
-									name: true,
-									applicationStatus: true,
-								},
-							},
-							mariadb: {
-								where: buildServiceFilter(mariadb.mariadbId, accessedServices),
-								columns: {
-									mariadbId: true,
-									name: true,
-									applicationStatus: true,
-								},
-							},
-							mongo: {
-								where: buildServiceFilter(mongo.mongoId, accessedServices),
-								columns: {
-									mongoId: true,
-									name: true,
-									applicationStatus: true,
-								},
-							},
-							mysql: {
-								where: buildServiceFilter(mysql.mysqlId, accessedServices),
-								columns: {
-									mysqlId: true,
-									name: true,
-									applicationStatus: true,
-								},
-							},
-							postgres: {
+							database: {
 								where: buildServiceFilter(
-									postgres.postgresId,
+									database.databaseId,
 									accessedServices,
 								),
 								columns: {
-									postgresId: true,
-									name: true,
-									applicationStatus: true,
-								},
-							},
-							redis: {
-								where: buildServiceFilter(redis.redisId, accessedServices),
-								columns: {
-									redisId: true,
+									databaseId: true,
+									engine: true,
 									name: true,
 									applicationStatus: true,
 								},
@@ -311,29 +244,12 @@ export const workspaceRouter = createTRPCRouter({
 								applicationStatus: true,
 							},
 						},
-						mariadb: {
+						database: {
 							columns: {
-								mariadbId: true,
-							},
-						},
-						mongo: {
-							columns: {
-								mongoId: true,
-							},
-						},
-						mysql: {
-							columns: {
-								mysqlId: true,
-							},
-						},
-						postgres: {
-							columns: {
-								postgresId: true,
-							},
-						},
-						redis: {
-							columns: {
-								redisId: true,
+								databaseId: true,
+								engine: true,
+								name: true,
+								applicationStatus: true,
 							},
 						},
 						compose: {
@@ -341,11 +257,6 @@ export const workspaceRouter = createTRPCRouter({
 								composeId: true,
 								name: true,
 								composeStatus: true,
-							},
-						},
-						libsql: {
-							columns: {
-								libsqlId: true,
 							},
 						},
 					},
@@ -394,53 +305,10 @@ export const workspaceRouter = createTRPCRouter({
 									runtimeWorkerId: true,
 								},
 							},
-							mariadb: {
+							database: {
 								columns: {
-									mariadbId: true,
-									appName: true,
-									name: true,
-									createdAt: true,
-									applicationStatus: true,
-									description: true,
-									runtimeWorkerId: true,
-								},
-							},
-							postgres: {
-								columns: {
-									postgresId: true,
-									appName: true,
-									name: true,
-									createdAt: true,
-									applicationStatus: true,
-									description: true,
-									runtimeWorkerId: true,
-								},
-							},
-							mysql: {
-								columns: {
-									mysqlId: true,
-									appName: true,
-									name: true,
-									createdAt: true,
-									applicationStatus: true,
-									description: true,
-									runtimeWorkerId: true,
-								},
-							},
-							mongo: {
-								columns: {
-									mongoId: true,
-									appName: true,
-									name: true,
-									createdAt: true,
-									applicationStatus: true,
-									description: true,
-									runtimeWorkerId: true,
-								},
-							},
-							redis: {
-								columns: {
-									redisId: true,
+									databaseId: true,
+									engine: true,
 									appName: true,
 									name: true,
 									createdAt: true,
@@ -456,17 +324,6 @@ export const workspaceRouter = createTRPCRouter({
 									name: true,
 									createdAt: true,
 									composeStatus: true,
-									description: true,
-									runtimeWorkerId: true,
-								},
-							},
-							libsql: {
-								columns: {
-									libsqlId: true,
-									appName: true,
-									name: true,
-									createdAt: true,
-									applicationStatus: true,
 									description: true,
 									runtimeWorkerId: true,
 								},
@@ -545,28 +402,8 @@ export const workspaceRouter = createTRPCRouter({
 							where: applyFilter(compose.composeId),
 							columns: { composeStatus: true },
 						},
-						libsql: {
-							where: applyFilter(libsql.libsqlId),
-							columns: { applicationStatus: true },
-						},
-						mariadb: {
-							where: applyFilter(mariadb.mariadbId),
-							columns: { applicationStatus: true },
-						},
-						mongo: {
-							where: applyFilter(mongo.mongoId),
-							columns: { applicationStatus: true },
-						},
-						mysql: {
-							where: applyFilter(mysql.mysqlId),
-							columns: { applicationStatus: true },
-						},
-						postgres: {
-							where: applyFilter(postgres.postgresId),
-							columns: { applicationStatus: true },
-						},
-						redis: {
-							where: applyFilter(redis.redisId),
+						database: {
+							where: applyFilter(database.databaseId),
 							columns: { applicationStatus: true },
 						},
 					},
@@ -590,22 +427,11 @@ export const workspaceRouter = createTRPCRouter({
 				environmentsCount++;
 				applicationsCount += env.applications.length;
 				composeCount += env.compose.length;
-				databasesCount +=
-					env.libsql.length +
-					env.mariadb.length +
-					env.mongo.length +
-					env.mysql.length +
-					env.postgres.length +
-					env.redis.length;
+				databasesCount += env.database.length;
 
 				for (const a of env.applications) bump(a.applicationStatus);
 				for (const c of env.compose) bump(c.composeStatus);
-				for (const s of env.libsql) bump(s.applicationStatus);
-				for (const s of env.mariadb) bump(s.applicationStatus);
-				for (const s of env.mongo) bump(s.applicationStatus);
-				for (const s of env.mysql) bump(s.applicationStatus);
-				for (const s of env.postgres) bump(s.applicationStatus);
-				for (const s of env.redis) bump(s.applicationStatus);
+				for (const s of env.database) bump(s.applicationStatus);
 			}
 		}
 
@@ -981,59 +807,41 @@ export const workspaceRouter = createTRPCRouter({
 
 								break;
 							}
-							case "libsql": {
-								const { libsqlId, mounts, appName, ...libsql } =
-									await findLibsqlById(id);
+							default: {
+								// all managed database engines clone through the unified database table
+								const {
+									databaseId: _databaseId,
+									mounts,
+									backups,
+									appName,
+									environment: _environment,
+									runtimeWorker: _runtimeWorker,
+									...database
+								} = await findDatabaseById(id);
 
 								const newAppName = appName.substring(
 									0,
 									appName.lastIndexOf("-"),
 								);
 
-								const newLibsql = await createLibsql({
-									...libsql,
+								const newDatabase = await createDatabase({
+									...database,
+									config: database.config as Record<string, unknown>,
 									appName: newAppName,
 									name: input.duplicateInSameProject
-										? `${libsql.name} (copy)`
-										: libsql.name,
+										? `${database.name} (copy)`
+										: database.name,
 									environmentId: targetProject?.environmentId || "",
 								});
 
 								for (const mount of mounts) {
-									const { mountId, ...rest } = mount;
-									await createMount({
-										...rest,
-										serviceId: newLibsql.libsqlId,
-										serviceType: "libsql",
-									});
-								}
-
-								break;
-							}
-							case "mariadb": {
-								const { mariadbId, mounts, backups, appName, ...mariadb } =
-									await findMariadbById(id);
-
-								const newAppName = appName.substring(
-									0,
-									appName.lastIndexOf("-"),
-								);
-
-								const newMariadb = await createMariadb({
-									...mariadb,
-									appName: newAppName,
-									name: input.duplicateInSameProject
-										? `${mariadb.name} (copy)`
-										: mariadb.name,
-									environmentId: targetProject?.environmentId || "",
-								});
-
-								for (const mount of mounts) {
-									const { mountId, ...rest } = mount;
-									await createMount({
-										...rest,
-										serviceId: newMariadb.mariadbId,
-										serviceType: "mariadb",
+									await createDatabaseMount(newDatabase.databaseId, {
+										type: mount.type,
+										mountPath: mount.mountPath,
+										volumeName: mount.volumeName,
+										hostPath: mount.hostPath,
+										filePath: mount.filePath,
+										content: mount.content,
 									});
 								}
 
@@ -1041,146 +849,16 @@ export const workspaceRouter = createTRPCRouter({
 									const { backupId, appName: _appName, ...rest } = backup;
 									await createBackup({
 										...rest,
-										mariadbId: newMariadb.mariadbId,
+										databaseId: newDatabase.databaseId,
+										// redis has no backups, so the loop never runs for it
+										databaseType: newDatabase.engine as
+											| "postgres"
+											| "mysql"
+											| "mariadb"
+											| "mongo"
+											| "libsql",
 									});
 								}
-								break;
-							}
-							case "mongo": {
-								const { mongoId, mounts, backups, appName, ...mongo } =
-									await findMongoById(id);
-
-								const newAppName = appName.substring(
-									0,
-									appName.lastIndexOf("-"),
-								);
-
-								const newMongo = await createMongo({
-									...mongo,
-									appName: newAppName,
-									name: input.duplicateInSameProject
-										? `${mongo.name} (copy)`
-										: mongo.name,
-									environmentId: targetProject?.environmentId || "",
-								});
-
-								for (const mount of mounts) {
-									const { mountId, ...rest } = mount;
-									await createMount({
-										...rest,
-										serviceId: newMongo.mongoId,
-										serviceType: "mongo",
-									});
-								}
-
-								for (const backup of backups) {
-									const { backupId, appName: _appName, ...rest } = backup;
-									await createBackup({
-										...rest,
-										mongoId: newMongo.mongoId,
-									});
-								}
-								break;
-							}
-							case "mysql": {
-								const { mysqlId, mounts, backups, appName, ...mysql } =
-									await findMySqlById(id);
-
-								const newAppName = appName.substring(
-									0,
-									appName.lastIndexOf("-"),
-								);
-
-								const newMysql = await createMysql({
-									...mysql,
-									appName: newAppName,
-									name: input.duplicateInSameProject
-										? `${mysql.name} (copy)`
-										: mysql.name,
-									environmentId: targetProject?.environmentId || "",
-								});
-
-								for (const mount of mounts) {
-									const { mountId, ...rest } = mount;
-									await createMount({
-										...rest,
-										serviceId: newMysql.mysqlId,
-										serviceType: "mysql",
-									});
-								}
-
-								for (const backup of backups) {
-									const { backupId, appName: _appName, ...rest } = backup;
-									await createBackup({
-										...rest,
-										mysqlId: newMysql.mysqlId,
-									});
-								}
-								break;
-							}
-							case "postgres": {
-								const { postgresId, mounts, backups, appName, ...postgres } =
-									await findPostgresById(id);
-
-								const newAppName = appName.substring(
-									0,
-									appName.lastIndexOf("-"),
-								);
-
-								const newPostgres = await createPostgres({
-									...postgres,
-									appName: newAppName,
-									name: input.duplicateInSameProject
-										? `${postgres.name} (copy)`
-										: postgres.name,
-									environmentId: targetProject?.environmentId || "",
-								});
-
-								for (const mount of mounts) {
-									const { mountId, ...rest } = mount;
-									await createMount({
-										...rest,
-										serviceId: newPostgres.postgresId,
-										serviceType: "postgres",
-									});
-								}
-
-								for (const backup of backups) {
-									const { backupId, ...rest } = backup;
-									await createBackup({
-										...rest,
-										postgresId: newPostgres.postgresId,
-									});
-								}
-								break;
-							}
-							case "redis": {
-								const { redisId, mounts, appName, ...redis } =
-									await findRedisById(id);
-
-								const newAppName = appName.substring(
-									0,
-									appName.lastIndexOf("-"),
-								);
-
-								const newRedis = await createRedis({
-									...redis,
-									appName: newAppName,
-									name: input.duplicateInSameProject
-										? `${redis.name} (copy)`
-										: redis.name,
-									environmentId: targetProject?.environmentId || "",
-								});
-
-								for (const mount of mounts) {
-									const { mountId, ...rest } = mount;
-									await createMount({
-										...rest,
-										serviceId: newRedis.redisId,
-										serviceType: "redis",
-									});
-								}
-
 								break;
 							}
 						}

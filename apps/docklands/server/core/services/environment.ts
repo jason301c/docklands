@@ -66,49 +66,10 @@ export const findEnvironmentById = async (environmentId: string) => {
 					icon: true,
 				},
 			},
-			mariadb: {
+			database: {
 				columns: {
-					mariadbId: true,
-					name: true,
-					createdAt: true,
-					applicationStatus: true,
-					description: true,
-					runtimeWorkerId: true,
-				},
-			},
-			mongo: {
-				columns: {
-					mongoId: true,
-					name: true,
-					createdAt: true,
-					applicationStatus: true,
-					description: true,
-					runtimeWorkerId: true,
-				},
-			},
-			mysql: {
-				columns: {
-					mysqlId: true,
-					name: true,
-					createdAt: true,
-					applicationStatus: true,
-					description: true,
-					runtimeWorkerId: true,
-				},
-			},
-			postgres: {
-				columns: {
-					postgresId: true,
-					name: true,
-					description: true,
-					createdAt: true,
-					applicationStatus: true,
-					runtimeWorkerId: true,
-				},
-			},
-			redis: {
-				columns: {
-					redisId: true,
+					databaseId: true,
+					engine: true,
 					name: true,
 					createdAt: true,
 					applicationStatus: true,
@@ -137,16 +98,6 @@ export const findEnvironmentById = async (environmentId: string) => {
 					runtimeWorkerId: true,
 				},
 			},
-			libsql: {
-				columns: {
-					libsqlId: true,
-					name: true,
-					createdAt: true,
-					applicationStatus: true,
-					description: true,
-					runtimeWorkerId: true,
-				},
-			},
 			workspace: true,
 		},
 	});
@@ -165,13 +116,8 @@ export const findEnvironmentsByWorkspaceId = async (workspaceId: string) => {
 		orderBy: asc(environments.createdAt),
 		with: {
 			applications: true,
-			mariadb: true,
-			mongo: true,
-			mysql: true,
-			postgres: true,
-			redis: true,
+			database: true,
 			compose: true,
-			libsql: true,
 			workspace: true,
 		},
 		columns: {
@@ -190,12 +136,7 @@ const environmentHasServices = (
 	return (
 		(env.applications?.length ?? 0) > 0 ||
 		(env.compose?.length ?? 0) > 0 ||
-		(env.libsql?.length ?? 0) > 0 ||
-		(env.mariadb?.length ?? 0) > 0 ||
-		(env.mongo?.length ?? 0) > 0 ||
-		(env.mysql?.length ?? 0) > 0 ||
-		(env.postgres?.length ?? 0) > 0 ||
-		(env.redis?.length ?? 0) > 0
+		(env.database?.length ?? 0) > 0
 	);
 };
 

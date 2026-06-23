@@ -5,12 +5,7 @@ import { db } from "@/server/core/db";
 import {
 	type apiCreateWorkspace,
 	applications,
-	libsql,
-	mariadb,
-	mongo,
-	mysql,
-	postgres,
-	redis,
+	database,
 	workspaces,
 } from "@/server/core/db/schema";
 import { createProductionEnvironment } from "./environment";
@@ -55,12 +50,7 @@ export const findWorkspaceById = async (workspaceId: string) => {
 				with: {
 					applications: true,
 					compose: true,
-					libsql: true,
-					mariadb: true,
-					mongo: true,
-					mysql: true,
-					postgres: true,
-					redis: true,
+					database: true,
 				},
 			},
 			workspaceTags: {
@@ -111,23 +101,8 @@ export const validUniqueServerAppName = async (appName: string) => {
 			applications: {
 				where: eq(applications.appName, appName),
 			},
-			libsql: {
-				where: eq(libsql.appName, appName),
-			},
-			mariadb: {
-				where: eq(mariadb.appName, appName),
-			},
-			mongo: {
-				where: eq(mongo.appName, appName),
-			},
-			mysql: {
-				where: eq(mysql.appName, appName),
-			},
-			postgres: {
-				where: eq(postgres.appName, appName),
-			},
-			redis: {
-				where: eq(redis.appName, appName),
+			database: {
+				where: eq(database.appName, appName),
 			},
 		},
 	});
@@ -135,13 +110,7 @@ export const validUniqueServerAppName = async (appName: string) => {
 	// Filter out items with non-empty fields
 	const nonEmptyProjects = query.filter(
 		(workspace) =>
-			workspace.applications.length > 0 ||
-			workspace.libsql.length > 0 ||
-			workspace.mariadb.length > 0 ||
-			workspace.mongo.length > 0 ||
-			workspace.mysql.length > 0 ||
-			workspace.postgres.length > 0 ||
-			workspace.redis.length > 0,
+			workspace.applications.length > 0 || workspace.database.length > 0,
 	);
 
 	return nonEmptyProjects.length === 0;

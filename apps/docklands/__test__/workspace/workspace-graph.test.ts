@@ -35,9 +35,10 @@ describe("workspace graph helpers", () => {
 					],
 				},
 			],
-			postgres: [
+			database: [
 				{
-					postgresId: "pg_1",
+					databaseId: "pg_1",
+					engine: "postgres",
 					name: "database",
 					applicationStatus: "done",
 					createdAt: "2026-06-21T00:00:00.000Z",

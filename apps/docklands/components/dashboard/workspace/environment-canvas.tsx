@@ -70,20 +70,10 @@ import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show"
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
 import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
-import { ShowExternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-external-libsql-credentials";
-import { ShowInternalLibsqlCredentials } from "@/components/dashboard/libsql/general/show-internal-libsql-credentials";
-import { ShowExternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-external-mariadb-credentials";
-import { ShowInternalMariadbCredentials } from "@/components/dashboard/mariadb/general/show-internal-mariadb-credentials";
+import { ShowExternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-external-database-credentials";
+import { ShowInternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-internal-database-credentials";
 import { ComposeFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-compose-monitoring";
 import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
-import { ShowExternalMongoCredentials } from "@/components/dashboard/mongo/general/show-external-mongo-credentials";
-import { ShowInternalMongoCredentials } from "@/components/dashboard/mongo/general/show-internal-mongo-credentials";
-import { ShowExternalMysqlCredentials } from "@/components/dashboard/mysql/general/show-external-mysql-credentials";
-import { ShowInternalMysqlCredentials } from "@/components/dashboard/mysql/general/show-internal-mysql-credentials";
-import { ShowExternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-external-postgres-credentials";
-import { ShowInternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-internal-postgres-credentials";
-import { ShowExternalRedisCredentials } from "@/components/dashboard/redis/general/show-external-redis-credentials";
-import { ShowInternalRedisCredentials } from "@/components/dashboard/redis/general/show-internal-redis-credentials";
 import { AddApplication } from "@/components/dashboard/workspace/actions/add-application";
 import { AddCompose } from "@/components/dashboard/workspace/actions/add-compose";
 import { AddDatabase } from "@/components/dashboard/workspace/actions/add-database";
@@ -540,61 +530,13 @@ const hasDatabaseCredentials = (service: WorkspaceService) =>
 	databaseCredentialServiceTypes.has(service.type);
 
 const DatabaseCredentials = ({ service }: { service: WorkspaceService }) => {
-	if (service.type === "postgres") {
-		return (
-			<div className="space-y-4">
-				<ShowInternalPostgresCredentials postgresId={service.id} />
-				<ShowExternalPostgresCredentials postgresId={service.id} />
-			</div>
-		);
-	}
-
-	if (service.type === "mysql") {
-		return (
-			<div className="space-y-4">
-				<ShowInternalMysqlCredentials mysqlId={service.id} />
-				<ShowExternalMysqlCredentials mysqlId={service.id} />
-			</div>
-		);
-	}
-
-	if (service.type === "mariadb") {
-		return (
-			<div className="space-y-4">
-				<ShowInternalMariadbCredentials mariadbId={service.id} />
-				<ShowExternalMariadbCredentials mariadbId={service.id} />
-			</div>
-		);
-	}
-
-	if (service.type === "mongo") {
-		return (
-			<div className="space-y-4">
-				<ShowInternalMongoCredentials mongoId={service.id} />
-				<ShowExternalMongoCredentials mongoId={service.id} />
-			</div>
-		);
-	}
-
-	if (service.type === "redis") {
-		return (
-			<div className="space-y-4">
-				<ShowInternalRedisCredentials redisId={service.id} />
-				<ShowExternalRedisCredentials redisId={service.id} />
-			</div>
-		);
-	}
-
-	if (service.type === "libsql") {
-		return (
-			<div className="space-y-4">
-				<ShowInternalLibsqlCredentials libsqlId={service.id} />
-				<ShowExternalLibsqlCredentials libsqlId={service.id} />
-			</div>
-		);
-	}
-
-	return null;
+	if (!databaseCredentialServiceTypes.has(service.type)) return null;
+	return (
+		<div className="space-y-4">
+			<ShowInternalDatabaseCredentials databaseId={service.id} />
+			<ShowExternalDatabaseCredentials databaseId={service.id} />
+		</div>
+	);
 };
 
 const ServiceTerminalButton = ({

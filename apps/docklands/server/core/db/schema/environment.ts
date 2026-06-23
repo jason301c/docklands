@@ -4,12 +4,7 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { applications } from "./application";
 import { compose } from "./compose";
-import { libsql } from "./libsql";
-import { mariadb } from "./mariadb";
-import { mongo } from "./mongo";
-import { mysql } from "./mysql";
-import { postgres } from "./postgres";
-import { redis } from "./redis";
+import { database } from "./database";
 import { workspaces } from "./workspace";
 import {
 	workspaceServiceConnections,
@@ -42,12 +37,7 @@ export const environmentRelations = relations(
 		}),
 		applications: many(applications),
 		compose: many(compose),
-		libsql: many(libsql),
-		mariadb: many(mariadb),
-		mongo: many(mongo),
-		mysql: many(mysql),
-		postgres: many(postgres),
-		redis: many(redis),
+		database: many(database),
 		workspaceServiceLayouts: many(workspaceServiceLayouts),
 		workspaceServiceConnections: many(workspaceServiceConnections),
 	}),

@@ -14,13 +14,8 @@ import { organization } from "./account";
 import { applications } from "./application";
 import { certificates } from "./certificate";
 import { compose } from "./compose";
+import { database } from "./database";
 import { deployments } from "./deployment";
-import { libsql } from "./libsql";
-import { mariadb } from "./mariadb";
-import { mongo } from "./mongo";
-import { mysql } from "./mysql";
-import { postgres } from "./postgres";
-import { redis } from "./redis";
 import { schedules } from "./schedule";
 import { sshKeys } from "./ssh-key";
 import { generateAppName } from "./utils";
@@ -131,12 +126,7 @@ export const runtimeWorkerRelations = relations(
 			relationName: "applicationBuildRuntimeWorker",
 		}),
 		compose: many(compose),
-		libsql: many(libsql),
-		redis: many(redis),
-		mariadb: many(mariadb),
-		mongo: many(mongo),
-		mysql: many(mysql),
-		postgres: many(postgres),
+		database: many(database),
 		certificates: many(certificates),
 		organization: one(organization, {
 			fields: [runtimeWorkers.organizationId],

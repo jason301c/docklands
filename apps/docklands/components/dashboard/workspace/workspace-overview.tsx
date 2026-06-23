@@ -13,16 +13,8 @@ import {
 
 type DeploymentStatus = "idle" | "running" | "done" | "error";
 
-const serviceCollections = [
-	"applications",
-	"compose",
-	"libsql",
-	"mariadb",
-	"mongo",
-	"mysql",
-	"postgres",
-	"redis",
-] as const;
+// The six managed-database engines now share one `database` collection.
+const serviceCollections = ["applications", "compose", "database"] as const;
 
 type EnvironmentWithServices = Record<
 	(typeof serviceCollections)[number],

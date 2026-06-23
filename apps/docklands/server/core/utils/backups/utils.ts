@@ -1,49 +1,25 @@
 import { scheduledJobs, scheduleJob } from "node-schedule";
 import { logger } from "@/server/core/lib/logger";
 import type { BackupSchedule } from "@/server/core/services/backup";
+import { findDatabaseById } from "@/server/core/services/database";
 import type { Destination } from "@/server/core/services/destination";
 import { keepLatestNBackups } from ".";
 import { runComposeBackup } from "./compose";
-import { runLibsqlBackup } from "./libsql";
-import { runMariadbBackup } from "./mariadb";
-import { runMongoBackup } from "./mongo";
-import { runMySqlBackup } from "./mysql";
-import { runPostgresBackup } from "./postgres";
+import { runDatabaseBackup } from "./database";
 import { redactRcloneCredentials } from "./redact";
 import { runWebServerBackup } from "./web-server";
 
 export const scheduleBackup = (backup: BackupSchedule) => {
-	const {
-		schedule,
-		backupId,
-		databaseType,
-		postgres,
-		mysql,
-		mongo,
-		mariadb,
-		libsql,
-		compose,
-	} = backup;
+	const { schedule, backupId, databaseType, compose } = backup;
 	scheduleJob(backupId, schedule, async () => {
 		if (backup.backupType === "database") {
-			if (databaseType === "postgres" && postgres) {
-				await runPostgresBackup(postgres, backup);
-				await keepLatestNBackups(backup, postgres.runtimeWorkerId);
-			} else if (databaseType === "mysql" && mysql) {
-				await runMySqlBackup(mysql, backup);
-				await keepLatestNBackups(backup, mysql.runtimeWorkerId);
-			} else if (databaseType === "mongo" && mongo) {
-				await runMongoBackup(mongo, backup);
-				await keepLatestNBackups(backup, mongo.runtimeWorkerId);
-			} else if (databaseType === "mariadb" && mariadb) {
-				await runMariadbBackup(mariadb, backup);
-				await keepLatestNBackups(backup, mariadb.runtimeWorkerId);
-			} else if (databaseType === "libsql" && libsql) {
-				await runLibsqlBackup(libsql, backup);
-				await keepLatestNBackups(backup, libsql.runtimeWorkerId);
-			} else if (databaseType === "web-server") {
+			if (databaseType === "web-server") {
 				await runWebServerBackup(backup);
 				await keepLatestNBackups(backup);
+			} else if (backup.databaseId) {
+				const database = await findDatabaseById(backup.databaseId);
+				await runDatabaseBackup(database, backup);
+				await keepLatestNBackups(backup, database.runtimeWorkerId);
 			}
 		} else if (backup.backupType === "compose" && compose) {
 			await runComposeBackup(compose, backup);
@@ -139,46 +115,24 @@ export const getComposeContainerCommand = (
 	return `docker ps -q --filter "status=running" --filter "label=com.docker.compose.workspace=${appName}" --filter "label=com.docker.compose.service=${serviceName}" | head -n 1`;
 };
 
+// Container search + dump command builders for COMPOSE backups. Managed
+// (unified `database` table) backups build their own command in
+// `./database.ts` from the engine + parsed config.
 const getContainerSearchCommand = (backup: BackupSchedule) => {
-	const {
-		backupType,
-		postgres,
-		mysql,
-		mariadb,
-		mongo,
-		libsql,
-		compose,
-		serviceName,
-	} = backup;
-
-	if (backupType === "database") {
-		const appName =
-			postgres?.appName ||
-			mysql?.appName ||
-			mariadb?.appName ||
-			mongo?.appName ||
-			libsql?.appName;
-		return getServiceContainerCommand(appName || "");
-	}
-	if (backupType === "compose") {
-		const { appName, composeType } = compose || {};
-		return getComposeContainerCommand(
-			appName || "",
-			serviceName || "",
-			composeType,
-		);
-	}
+	const { compose, serviceName } = backup;
+	const { appName, composeType } = compose || {};
+	return getComposeContainerCommand(
+		appName || "",
+		serviceName || "",
+		composeType,
+	);
 };
 
 export const generateBackupCommand = (backup: BackupSchedule) => {
-	const { backupType, databaseType } = backup;
+	const { databaseType } = backup;
 	switch (databaseType) {
 		case "postgres": {
-			const postgres = backup.postgres;
-			if (backupType === "database" && postgres) {
-				return getPostgresBackupCommand(backup.database, postgres.databaseUser);
-			}
-			if (backupType === "compose" && backup.metadata?.postgres) {
+			if (backup.metadata?.postgres) {
 				return getPostgresBackupCommand(
 					backup.database,
 					backup.metadata.postgres.databaseUser,
@@ -187,14 +141,7 @@ export const generateBackupCommand = (backup: BackupSchedule) => {
 			break;
 		}
 		case "mysql": {
-			const mysql = backup.mysql;
-			if (backupType === "database" && mysql) {
-				return getMysqlBackupCommand(
-					backup.database,
-					mysql.databaseRootPassword,
-				);
-			}
-			if (backupType === "compose" && backup.metadata?.mysql) {
+			if (backup.metadata?.mysql) {
 				return getMysqlBackupCommand(
 					backup.database,
 					backup.metadata?.mysql?.databaseRootPassword || "",
@@ -203,15 +150,7 @@ export const generateBackupCommand = (backup: BackupSchedule) => {
 			break;
 		}
 		case "mariadb": {
-			const mariadb = backup.mariadb;
-			if (backupType === "database" && mariadb) {
-				return getMariadbBackupCommand(
-					backup.database,
-					mariadb.databaseUser,
-					mariadb.databasePassword,
-				);
-			}
-			if (backupType === "compose" && backup.metadata?.mariadb) {
+			if (backup.metadata?.mariadb) {
 				return getMariadbBackupCommand(
 					backup.database,
 					backup.metadata.mariadb.databaseUser,
@@ -221,26 +160,12 @@ export const generateBackupCommand = (backup: BackupSchedule) => {
 			break;
 		}
 		case "mongo": {
-			const mongo = backup.mongo;
-			if (backupType === "database" && mongo) {
-				return getMongoBackupCommand(
-					backup.database,
-					mongo.databaseUser,
-					mongo.databasePassword,
-				);
-			}
-			if (backupType === "compose" && backup.metadata?.mongo) {
+			if (backup.metadata?.mongo) {
 				return getMongoBackupCommand(
 					backup.database,
 					backup.metadata.mongo.databaseUser,
 					backup.metadata.mongo.databasePassword,
 				);
-			}
-			break;
-		}
-		case "libsql": {
-			if (backupType === "database") {
-				return getLibsqlBackupCommand(backup.database);
 			}
 			break;
 		}
@@ -251,24 +176,18 @@ export const generateBackupCommand = (backup: BackupSchedule) => {
 	return null;
 };
 
-export const getBackupCommand = (
-	backup: BackupSchedule,
+/**
+ * Wrap an inner dump command + container search into the streaming-to-S3 shell
+ * script. Single source of truth for the backup shell wrapper, shared by the
+ * compose runner (`getBackupCommand`) and the unified database runner
+ * (`./database.ts`).
+ */
+export const buildBackupShellCommand = (
+	containerSearch: string,
+	backupCommand: string,
 	rcloneCommand: string,
 	logPath: string,
 ) => {
-	const containerSearch = getContainerSearchCommand(backup);
-	const backupCommand = generateBackupCommand(backup);
-
-	logger.info(
-		{
-			containerSearch,
-			backupCommand,
-			rcloneCommand: redactRcloneCredentials(rcloneCommand),
-			logPath,
-		},
-		`Executing backup command: ${backup.databaseType} ${backup.backupType}`,
-	);
-
 	return `
 	set -eo pipefail;
 	echo "[$(date)] Starting backup process..." >> ${logPath};
@@ -296,4 +215,30 @@ export const getBackupCommand = (
 	echo "[$(date)] ✅ Upload to S3 completed successfully" >> ${logPath};
 	echo "Backup done ✅" >> ${logPath};
 	`;
+};
+
+export const getBackupCommand = (
+	backup: BackupSchedule,
+	rcloneCommand: string,
+	logPath: string,
+) => {
+	const containerSearch = getContainerSearchCommand(backup);
+	const backupCommand = generateBackupCommand(backup);
+
+	logger.info(
+		{
+			containerSearch,
+			backupCommand,
+			rcloneCommand: redactRcloneCredentials(rcloneCommand),
+			logPath,
+		},
+		`Executing backup command: ${backup.databaseType} ${backup.backupType}`,
+	);
+
+	return buildBackupShellCommand(
+		containerSearch || "",
+		backupCommand || "",
+		rcloneCommand,
+		logPath,
+	);
 };

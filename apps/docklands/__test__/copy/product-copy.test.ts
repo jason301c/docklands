@@ -40,12 +40,7 @@ describe("Docklands product copy", () => {
 		const routers = [
 			"server/api/routers/application.ts",
 			"server/api/routers/compose.ts",
-			"server/api/routers/redis.ts",
-			"server/api/routers/mongo.ts",
-			"server/api/routers/libsql.ts",
-			"server/api/routers/mysql.ts",
-			"server/api/routers/mariadb.ts",
-			"server/api/routers/postgres.ts",
+			"server/api/routers/database.ts",
 			"server/api/routers/runtime-worker.ts",
 			"server/api/routers/backup.ts",
 			"server/api/routers/settings.ts",

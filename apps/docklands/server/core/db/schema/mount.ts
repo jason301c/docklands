@@ -6,12 +6,6 @@ import { z } from "zod";
 import { applications } from "./application";
 import { compose } from "./compose";
 import { database } from "./database";
-import { libsql } from "./libsql";
-import { mariadb } from "./mariadb";
-import { mongo } from "./mongo";
-import { mysql } from "./mysql";
-import { postgres } from "./postgres";
-import { redis } from "./redis";
 
 export const serviceType = pgEnum("serviceType", [
 	"application",
@@ -47,24 +41,6 @@ export const mounts = pgTable("mount", {
 	composeId: text("composeId").references(() => compose.composeId, {
 		onDelete: "cascade",
 	}),
-	libsqlId: text("libsqlId").references(() => libsql.libsqlId, {
-		onDelete: "cascade",
-	}),
-	mariadbId: text("mariadbId").references(() => mariadb.mariadbId, {
-		onDelete: "cascade",
-	}),
-	mongoId: text("mongoId").references(() => mongo.mongoId, {
-		onDelete: "cascade",
-	}),
-	mysqlId: text("mysqlId").references(() => mysql.mysqlId, {
-		onDelete: "cascade",
-	}),
-	postgresId: text("postgresId").references(() => postgres.postgresId, {
-		onDelete: "cascade",
-	}),
-	redisId: text("redisId").references(() => redis.redisId, {
-		onDelete: "cascade",
-	}),
 	databaseId: text("databaseId").references(
 		(): AnyPgColumn => database.databaseId,
 		{ onDelete: "cascade" },
@@ -79,30 +55,6 @@ export const MountssRelations = relations(mounts, ({ one }) => ({
 	compose: one(compose, {
 		fields: [mounts.composeId],
 		references: [compose.composeId],
-	}),
-	libsql: one(libsql, {
-		fields: [mounts.libsqlId],
-		references: [libsql.libsqlId],
-	}),
-	mariadb: one(mariadb, {
-		fields: [mounts.mariadbId],
-		references: [mariadb.mariadbId],
-	}),
-	mongo: one(mongo, {
-		fields: [mounts.mongoId],
-		references: [mongo.mongoId],
-	}),
-	mysql: one(mysql, {
-		fields: [mounts.mysqlId],
-		references: [mysql.mysqlId],
-	}),
-	postgres: one(postgres, {
-		fields: [mounts.postgresId],
-		references: [postgres.postgresId],
-	}),
-	redis: one(redis, {
-		fields: [mounts.redisId],
-		references: [redis.redisId],
 	}),
 	database: one(database, {
 		fields: [mounts.databaseId],

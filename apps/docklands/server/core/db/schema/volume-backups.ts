@@ -1,19 +1,20 @@
 import { relations } from "drizzle-orm";
-import { boolean, integer, pgTable, text } from "drizzle-orm/pg-core";
+import {
+	type AnyPgColumn,
+	boolean,
+	integer,
+	pgTable,
+	text,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { applications } from "./application";
 import { compose } from "./compose";
+import { database } from "./database";
 import { deployments } from "./deployment";
 import { destinations } from "./destination";
-import { libsql } from "./libsql";
-import { mariadb } from "./mariadb";
-import { mongo } from "./mongo";
 import { serviceType } from "./mount";
-import { mysql } from "./mysql";
-import { postgres } from "./postgres";
-import { redis } from "./redis";
 import { generateAppName } from "./utils";
 
 export const volumeBackups = pgTable("volume_backup", {
@@ -39,24 +40,10 @@ export const volumeBackups = pgTable("volume_backup", {
 			onDelete: "cascade",
 		},
 	),
-	postgresId: text("postgresId").references(() => postgres.postgresId, {
-		onDelete: "cascade",
-	}),
-	mariadbId: text("mariadbId").references(() => mariadb.mariadbId, {
-		onDelete: "cascade",
-	}),
-	mongoId: text("mongoId").references(() => mongo.mongoId, {
-		onDelete: "cascade",
-	}),
-	mysqlId: text("mysqlId").references(() => mysql.mysqlId, {
-		onDelete: "cascade",
-	}),
-	redisId: text("redisId").references(() => redis.redisId, {
-		onDelete: "cascade",
-	}),
-	libsqlId: text("libsqlId").references(() => libsql.libsqlId, {
-		onDelete: "cascade",
-	}),
+	databaseId: text("databaseId").references(
+		(): AnyPgColumn => database.databaseId,
+		{ onDelete: "cascade" },
+	),
 	composeId: text("composeId").references(() => compose.composeId, {
 		onDelete: "cascade",
 	}),
@@ -77,29 +64,9 @@ export const volumeBackupsRelations = relations(
 			fields: [volumeBackups.applicationId],
 			references: [applications.applicationId],
 		}),
-		postgres: one(postgres, {
-			fields: [volumeBackups.postgresId],
-			references: [postgres.postgresId],
-		}),
-		mariadb: one(mariadb, {
-			fields: [volumeBackups.mariadbId],
-			references: [mariadb.mariadbId],
-		}),
-		mongo: one(mongo, {
-			fields: [volumeBackups.mongoId],
-			references: [mongo.mongoId],
-		}),
-		mysql: one(mysql, {
-			fields: [volumeBackups.mysqlId],
-			references: [mysql.mysqlId],
-		}),
-		redis: one(redis, {
-			fields: [volumeBackups.redisId],
-			references: [redis.redisId],
-		}),
-		libsql: one(libsql, {
-			fields: [volumeBackups.libsqlId],
-			references: [libsql.libsqlId],
+		database: one(database, {
+			fields: [volumeBackups.databaseId],
+			references: [database.databaseId],
 		}),
 		compose: one(compose, {
 			fields: [volumeBackups.composeId],

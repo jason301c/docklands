@@ -18,13 +18,7 @@ export const getVolumeServiceAppName = (
 			: volumeBackup.compose.appName;
 	}
 	const serviceAppName =
-		volumeBackup.application?.appName ||
-		volumeBackup.postgres?.appName ||
-		volumeBackup.mysql?.appName ||
-		volumeBackup.mariadb?.appName ||
-		volumeBackup.mongo?.appName ||
-		volumeBackup.redis?.appName ||
-		volumeBackup.libsql?.appName;
+		volumeBackup.application?.appName || volumeBackup.database?.appName;
 	return serviceAppName || volumeBackup.appName;
 };
 

@@ -81,12 +81,7 @@ export const haveActiveServices = async (runtimeWorkerId: string) => {
 		with: {
 			applications: true,
 			compose: true,
-			libsql: true,
-			mariadb: true,
-			mongo: true,
-			mysql: true,
-			postgres: true,
-			redis: true,
+			database: true,
 		},
 	});
 
@@ -97,12 +92,7 @@ export const haveActiveServices = async (runtimeWorkerId: string) => {
 	const total =
 		runtimeWorker?.applications?.length +
 		runtimeWorker?.compose?.length +
-		runtimeWorker?.libsql?.length +
-		runtimeWorker?.mariadb?.length +
-		runtimeWorker?.mongo?.length +
-		runtimeWorker?.mysql?.length +
-		runtimeWorker?.postgres?.length +
-		runtimeWorker?.redis?.length;
+		runtimeWorker?.database?.length;
 
 	if (total === 0) {
 		return false;

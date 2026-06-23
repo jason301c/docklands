@@ -58,40 +58,26 @@ type NamedService = {
 type EnvironmentServiceCollections = {
 	applications: (NamedService & { applicationId: string })[];
 	compose: (NamedService & { composeId: string })[];
-	postgres: (NamedService & { postgresId: string })[];
-	mysql: (NamedService & { mysqlId: string })[];
-	mariadb: (NamedService & { mariadbId: string })[];
-	redis: (NamedService & { redisId: string })[];
-	mongo: (NamedService & { mongoId: string })[];
-	libsql: (NamedService & { libsqlId: string })[];
+	// The six managed-database engines live in one `database` collection,
+	// discriminated by `engine`.
+	database: (NamedService & { databaseId: string; engine: ServiceType })[];
 };
 
 type ServiceCollections = Pick<
 	WorkspaceEnvironment,
-	| "applications"
-	| "compose"
-	| "postgres"
-	| "mysql"
-	| "mariadb"
-	| "redis"
-	| "mongo"
-	| "libsql"
+	"applications" | "compose" | "database"
 >;
 
 const SERVICE_COLLECTION_KEYS = [
 	"applications",
 	"compose",
-	"postgres",
-	"mysql",
-	"mariadb",
-	"redis",
-	"mongo",
-	"libsql",
+	"database",
 ] as const satisfies ReadonlyArray<keyof ServiceCollections>;
 
 const SERVICE_QUERY_KEYS = [
 	"applicationId",
 	"composeId",
+	"databaseId",
 	"postgresId",
 	"mysqlId",
 	"mariadbId",
@@ -157,16 +143,14 @@ const extractServicesFromEnvironment = (
 			"application",
 		),
 		...mapServices(servicesByType.compose, (item) => item.composeId, "compose"),
-		...mapServices(
-			servicesByType.postgres,
-			(item) => item.postgresId,
-			"postgres",
+		// Each database row carries its own engine, which is the service type.
+		...servicesByType.database.map(
+			(item): ServiceItem => ({
+				id: item.databaseId,
+				name: item.name,
+				type: item.engine,
+			}),
 		),
-		...mapServices(servicesByType.mysql, (item) => item.mysqlId, "mysql"),
-		...mapServices(servicesByType.mariadb, (item) => item.mariadbId, "mariadb"),
-		...mapServices(servicesByType.redis, (item) => item.redisId, "redis"),
-		...mapServices(servicesByType.mongo, (item) => item.mongoId, "mongo"),
-		...mapServices(servicesByType.libsql, (item) => item.libsqlId, "libsql"),
 	];
 };
 

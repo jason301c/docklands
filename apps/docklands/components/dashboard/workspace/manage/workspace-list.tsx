@@ -35,16 +35,8 @@ import {
 import { HandleWorkspace } from "./handle-workspace";
 import { WorkspaceVariables } from "./workspace-variables";
 
-const serviceCollections = [
-	"applications",
-	"compose",
-	"libsql",
-	"mariadb",
-	"mongo",
-	"mysql",
-	"postgres",
-	"redis",
-] as const;
+// The six managed-database engines now share one `database` collection.
+const serviceCollections = ["applications", "compose", "database"] as const;
 
 type EnvironmentWithServices = Record<
 	(typeof serviceCollections)[number],
@@ -72,14 +64,7 @@ const countProjectServiceTypes = (workspace: {
 		(total, environment) => ({
 			applications: total.applications + environment.applications.length,
 			compose: total.compose + environment.compose.length,
-			databases:
-				total.databases +
-				environment.libsql.length +
-				environment.mariadb.length +
-				environment.mongo.length +
-				environment.mysql.length +
-				environment.postgres.length +
-				environment.redis.length,
+			databases: total.databases + environment.database.length,
 		}),
 		{ applications: 0, compose: 0, databases: 0 },
 	);

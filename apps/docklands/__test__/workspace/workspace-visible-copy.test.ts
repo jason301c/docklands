@@ -50,12 +50,7 @@ describe("workspace visible product copy", () => {
 		const serviceForms = [
 			"components/dashboard/application/update-application.tsx",
 			"components/dashboard/compose/update-compose.tsx",
-			"components/dashboard/postgres/update-postgres.tsx",
-			"components/dashboard/mariadb/update-mariadb.tsx",
-			"components/dashboard/mongo/update-mongo.tsx",
-			"components/dashboard/libsql/update-libsql.tsx",
-			"components/dashboard/redis/update-redis.tsx",
-			"components/dashboard/mysql/update-mysql.tsx",
+			"components/dashboard/database-service/update-database.tsx",
 		].map(workspaceSource);
 		const tags = workspaceSource(
 			"components/dashboard/settings/tags/tag-manager.tsx",

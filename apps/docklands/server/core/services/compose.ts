@@ -1,11 +1,12 @@
 import { join } from "node:path";
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { eq, getTableColumns } from "drizzle-orm";
 import type { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import { db } from "@/server/core/db";
 import {
 	type apiCreateCompose,
+	backups,
 	buildAppName,
 	cleanAppName,
 	compose,
@@ -151,6 +152,25 @@ export const findComposeById = async (composeId: string) => {
 		});
 	}
 	return result;
+};
+
+export const findComposeByBackupId = async (backupId: string) => {
+	const result = await db
+		.select({
+			...getTableColumns(compose),
+		})
+		.from(compose)
+		.innerJoin(backups, eq(compose.composeId, backups.composeId))
+		.where(eq(backups.backupId, backupId))
+		.limit(1);
+
+	if (!result?.[0]) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Compose not found",
+		});
+	}
+	return result[0];
 };
 
 export const loadServices = async (

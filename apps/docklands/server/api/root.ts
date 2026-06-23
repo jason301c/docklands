@@ -17,19 +17,13 @@ import { gitProviderRouter } from "./routers/git-provider";
 import { giteaRouter } from "./routers/gitea";
 import { githubRouter } from "./routers/github";
 import { gitlabRouter } from "./routers/gitlab";
-import { libsqlRouter } from "./routers/libsql";
-import { mariadbRouter } from "./routers/mariadb";
-import { mongoRouter } from "./routers/mongo";
 import { mountRouter } from "./routers/mount";
-import { mysqlRouter } from "./routers/mysql";
 import { notificationRouter } from "./routers/notification";
 import { organizationRouter } from "./routers/organization";
 import { patchRouter } from "./routers/patch";
 import { portRouter } from "./routers/port";
-import { postgresRouter } from "./routers/postgres";
 import { previewDeploymentRouter } from "./routers/preview-deployment";
 import { redirectsRouter } from "./routers/redirects";
-import { redisRouter } from "./routers/redis";
 import { registryRouter } from "./routers/registry";
 import { rollbackRouter } from "./routers/rollbacks";
 import { runtimeWorkerRouter } from "./routers/runtime-worker";
@@ -66,17 +60,11 @@ export const appRouter = createTRPCRouter({
 	gitProvider: gitProviderRouter,
 	github: githubRouter,
 	gitlab: gitlabRouter,
-	libsql: libsqlRouter,
-	mariadb: mariadbRouter,
-	mongo: mongoRouter,
 	mounts: mountRouter,
-	mysql: mysqlRouter,
 	notification: notificationRouter,
 	port: portRouter,
-	postgres: postgresRouter,
 	previewDeployment: previewDeploymentRouter,
 	redirects: redirectsRouter,
-	redis: redisRouter,
 	registry: registryRouter,
 	security: securityRouter,
 	settings: settingsRouter,

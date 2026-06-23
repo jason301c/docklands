@@ -57,60 +57,14 @@ export const extractServices = (data: Environment | undefined) => {
 		runtimeWorkerId: item.runtimeWorkerId,
 	})) ?? []) as Services[];
 
-	const mariadb: Services[] =
-		data?.mariadb.map((item) => ({
+	// The six managed-database engines now share one `database` collection,
+	// discriminated by the row's `engine` (which is the service type).
+	const databases: Services[] =
+		data?.database.map((item) => ({
 			appName: item.appName,
 			name: item.name,
-			type: "mariadb",
-			id: item.mariadbId,
-			createdAt: item.createdAt,
-			status: item.applicationStatus,
-			description: item.description,
-			runtimeWorkerId: item.runtimeWorkerId,
-		})) || [];
-
-	const postgres: Services[] =
-		data?.postgres.map((item) => ({
-			appName: item.appName,
-			name: item.name,
-			type: "postgres",
-			id: item.postgresId,
-			createdAt: item.createdAt,
-			status: item.applicationStatus,
-			description: item.description,
-			runtimeWorkerId: item.runtimeWorkerId,
-		})) || [];
-
-	const mongo: Services[] =
-		data?.mongo.map((item) => ({
-			appName: item.appName,
-			name: item.name,
-			type: "mongo",
-			id: item.mongoId,
-			createdAt: item.createdAt,
-			status: item.applicationStatus,
-			description: item.description,
-			runtimeWorkerId: item.runtimeWorkerId,
-		})) || [];
-
-	const redis: Services[] =
-		data?.redis.map((item) => ({
-			appName: item.appName,
-			name: item.name,
-			type: "redis",
-			id: item.redisId,
-			createdAt: item.createdAt,
-			status: item.applicationStatus,
-			description: item.description,
-			runtimeWorkerId: item.runtimeWorkerId,
-		})) || [];
-
-	const mysql: Services[] =
-		data?.mysql.map((item) => ({
-			appName: item.appName,
-			name: item.name,
-			type: "mysql",
-			id: item.mysqlId,
+			type: item.engine,
+			id: item.databaseId,
 			createdAt: item.createdAt,
 			status: item.applicationStatus,
 			description: item.description,
@@ -128,27 +82,7 @@ export const extractServices = (data: Environment | undefined) => {
 		runtimeWorkerId: item.runtimeWorkerId,
 	})) ?? []) as Services[];
 
-	const libsql: Services[] =
-		data?.libsql?.map((item) => ({
-			appName: item.appName,
-			name: item.name,
-			type: "libsql" as const,
-			id: item.libsqlId,
-			createdAt: item.createdAt,
-			status: item.applicationStatus,
-			description: item.description,
-			runtimeWorkerId: item.runtimeWorkerId,
-		})) || [];
-
-	applications.push(
-		...mysql,
-		...redis,
-		...mongo,
-		...postgres,
-		...mariadb,
-		...compose,
-		...libsql,
-	);
+	applications.push(...databases, ...compose);
 
 	applications.sort((a, b) => {
 		return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();

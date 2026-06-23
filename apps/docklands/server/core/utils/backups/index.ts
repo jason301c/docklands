@@ -73,11 +73,7 @@ export const initCronJobs = async () => {
 	const backups = await db.query.backups.findMany({
 		with: {
 			destination: true,
-			postgres: true,
-			mariadb: true,
-			mysql: true,
-			mongo: true,
-			libsql: true,
+			database: true,
 			user: true,
 			compose: true,
 		},
@@ -115,13 +111,8 @@ const getServiceAppName = (backup: BackupSchedule): string => {
 			? `${backup.compose.appName}_${backup.serviceName}`
 			: backup.compose.appName;
 	}
-	const serviceAppName =
-		backup.postgres?.appName ||
-		backup.mysql?.appName ||
-		backup.mariadb?.appName ||
-		backup.mongo?.appName ||
-		backup.libsql?.appName;
-	return serviceAppName || backup.appName;
+	// For managed-database backups the S3 prefix uses the database's appName.
+	return backup.database?.appName || backup.appName;
 };
 
 export const keepLatestNBackups = async (

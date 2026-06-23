@@ -17,12 +17,8 @@ import {
 	apiUpdateRuntimeWorkerBuildsConcurrency,
 	applications,
 	compose,
-	mariadb,
-	mongo,
-	mysql,
+	database,
 	organization,
-	postgres,
-	redis,
 	runtimeWorkers,
 } from "@/server/core/db/schema";
 import { applyDockerCleanupSchedule } from "@/server/core/runtime/docker-cleanup";
@@ -108,7 +104,7 @@ export const runtimeWorkerRouter = createTRPCRouter({
 		const result = await db
 			.select({
 				...getTableColumns(runtimeWorkers),
-				totalSum: sql<number>`cast(count(${applications.applicationId}) + count(${compose.composeId}) + count(${redis.redisId}) + count(${mariadb.mariadbId}) + count(${mongo.mongoId}) + count(${mysql.mysqlId}) + count(${postgres.postgresId}) as integer)`,
+				totalSum: sql<number>`cast(count(${applications.applicationId}) + count(${compose.composeId}) + count(${database.databaseId}) as integer)`,
 			})
 			.from(runtimeWorkers)
 			.leftJoin(
@@ -120,24 +116,8 @@ export const runtimeWorkerRouter = createTRPCRouter({
 				eq(compose.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
 			)
 			.leftJoin(
-				redis,
-				eq(redis.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
-			)
-			.leftJoin(
-				mariadb,
-				eq(mariadb.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
-			)
-			.leftJoin(
-				mongo,
-				eq(mongo.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
-			)
-			.leftJoin(
-				mysql,
-				eq(mysql.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
-			)
-			.leftJoin(
-				postgres,
-				eq(postgres.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
+				database,
+				eq(database.runtimeWorkerId, runtimeWorkers.runtimeWorkerId),
 			)
 			.where(
 				eq(runtimeWorkers.organizationId, ctx.session.activeOrganizationId),

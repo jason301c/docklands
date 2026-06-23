@@ -29,11 +29,7 @@ export const findBackupById = async (backupId: string) => {
 	const backup = await db.query.backups.findFirst({
 		where: eq(backups.backupId, backupId),
 		with: {
-			postgres: true,
-			mysql: true,
-			mariadb: true,
-			mongo: true,
-			libsql: true,
+			database: true,
 			destination: {
 				columns: {
 					accessKey: false,
@@ -76,18 +72,11 @@ export const removeBackupById = async (backupId: string) => {
 	return result[0];
 };
 
-export const findBackupsByDbId = async (
-	id: string,
-	type: "postgres" | "mysql" | "mariadb" | "mongo" | "libsql",
-) => {
+export const findBackupsByDbId = async (databaseId: string) => {
 	const result = await db.query.backups.findMany({
-		where: eq(backups[`${type}Id`], id),
+		where: eq(backups.databaseId, databaseId),
 		with: {
-			postgres: true,
-			mysql: true,
-			mariadb: true,
-			mongo: true,
-			libsql: true,
+			database: true,
 			destination: {
 				columns: {
 					accessKey: false,

@@ -415,11 +415,7 @@ export const createDeploymentBackup = async (
 
 	let runtimeWorkerId: string | null | undefined;
 	if (backup.backupType === "database") {
-		runtimeWorkerId =
-			backup.postgres?.runtimeWorkerId ||
-			backup.mariadb?.runtimeWorkerId ||
-			backup.mysql?.runtimeWorkerId ||
-			backup.mongo?.runtimeWorkerId;
+		runtimeWorkerId = backup.database?.runtimeWorkerId;
 	} else if (backup.backupType === "compose") {
 		runtimeWorkerId = backup.compose?.runtimeWorkerId;
 	}

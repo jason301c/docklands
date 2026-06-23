@@ -9,12 +9,6 @@ import { paths } from "@/server/core/constants/paths";
 import type { Compose } from "@/server/core/services/compose";
 import type { ApplicationNested } from "../builders";
 import type { DatabaseNested } from "../databases/build";
-import type { LibsqlNested } from "../databases/libsql";
-import type { MariadbNested } from "../databases/mariadb";
-import type { MongoNested } from "../databases/mongo";
-import type { MysqlNested } from "../databases/mysql";
-import type { PostgresNested } from "../databases/postgres";
-import type { RedisNested } from "../databases/redis";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import { spawnAsync } from "../process/spawnAsync";
 import { getRemoteDocker } from "../servers/remote-docker";
@@ -676,15 +670,7 @@ export const generateBindMounts = (mounts: ApplicationNested["mounts"]) => {
 
 export const generateFileMounts = (
 	appName: string,
-	service:
-		| ApplicationNested
-		| DatabaseNested
-		| LibsqlNested
-		| MongoNested
-		| MariadbNested
-		| MysqlNested
-		| PostgresNested
-		| RedisNested,
+	service: ApplicationNested | DatabaseNested,
 ) => {
 	const { mounts } = service;
 	const { APPLICATIONS_PATH } = paths(!!service.runtimeWorkerId);

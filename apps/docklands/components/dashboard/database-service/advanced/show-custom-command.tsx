@@ -16,7 +16,6 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
-import type { ServiceType } from "../../application/advanced/show-resources";
 
 const addDockerImage = z.object({
 	dockerImage: z.string().min(1, "Docker image is required"),
@@ -32,40 +31,16 @@ const addDockerImage = z.object({
 
 interface Props {
 	id: string;
-	type: Exclude<ServiceType, "application">;
+	type: "postgres" | "mysql" | "mariadb" | "mongo" | "redis" | "libsql";
 }
 
 type AddDockerImage = z.infer<typeof addDockerImage>;
 export const ShowCustomCommand = ({ id, type }: Props) => {
-	const queryMap = {
-		postgres: () =>
-			api.postgres.one.useQuery({ postgresId: id }, { enabled: !!id }),
-		redis: () => api.redis.one.useQuery({ redisId: id }, { enabled: !!id }),
-		mysql: () => api.mysql.one.useQuery({ mysqlId: id }, { enabled: !!id }),
-		libsql: () => api.libsql.one.useQuery({ libsqlId: id }, { enabled: !!id }),
-		mariadb: () =>
-			api.mariadb.one.useQuery({ mariadbId: id }, { enabled: !!id }),
-		application: () =>
-			api.application.one.useQuery({ applicationId: id }, { enabled: !!id }),
-		mongo: () => api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id }),
-	};
-	const { data, refetch } = queryMap[type]
-		? queryMap[type]()
-		: api.mongo.one.useQuery({ mongoId: id }, { enabled: !!id });
-
-	const mutationMap = {
-		postgres: () => api.postgres.update.useMutation(),
-		redis: () => api.redis.update.useMutation(),
-		mysql: () => api.mysql.update.useMutation(),
-		libsql: () => api.libsql.update.useMutation(),
-		mariadb: () => api.mariadb.update.useMutation(),
-		application: () => api.application.update.useMutation(),
-		mongo: () => api.mongo.update.useMutation(),
-	};
-
-	const { mutateAsync } = mutationMap[type]
-		? mutationMap[type]()
-		: api.mongo.update.useMutation();
+	const { data, refetch } = api.database.one.useQuery(
+		{ databaseId: id },
+		{ enabled: !!id },
+	);
+	const { mutateAsync } = api.database.update.useMutation();
 
 	const form = useForm<AddDockerImage>({
 		defaultValues: {
@@ -86,19 +61,14 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 			form.reset({
 				dockerImage: data.dockerImage,
 				command: data.command || "",
-				args: (data as any).args?.map((arg: string) => ({ value: arg })) || [],
+				args: data.args?.map((arg: string) => ({ value: arg })) || [],
 			});
 		}
 	}, [data, form]);
 
 	const onSubmit = async (formData: AddDockerImage) => {
 		await mutateAsync({
-			mongoId: id || "",
-			postgresId: id || "",
-			redisId: id || "",
-			mysqlId: id || "",
-			libsqlId: id || "",
-			mariadbId: id || "",
+			databaseId: id,
 			dockerImage: formData?.dockerImage,
 			command: formData?.command,
 			args: formData?.args?.map((arg) => arg.value).filter(Boolean),
@@ -195,7 +165,7 @@ export const ShowCustomCommand = ({ id, type }: Props) => {
 																placeholder={
 																	index === 0
 																		? "-c"
-																		: "redis-runtimeWorker --port 6379"
+																		: "redis-server --port 6379"
 																}
 																{...field}
 															/>

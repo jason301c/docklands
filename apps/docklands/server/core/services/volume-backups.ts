@@ -21,43 +21,7 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 					},
 				},
 			},
-			postgres: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			mysql: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			mariadb: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			mongo: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			redis: {
+			database: {
 				with: {
 					environment: {
 						with: {
@@ -67,15 +31,6 @@ export const findVolumeBackupById = async (volumeBackupId: string) => {
 				},
 			},
 			compose: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			libsql: {
 				with: {
 					environment: {
 						with: {

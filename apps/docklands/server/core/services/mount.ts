@@ -164,52 +164,7 @@ export const findMountById = async (mountId: string) => {
 					},
 				},
 			},
-			libsql: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			mariadb: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			mongo: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			mysql: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			postgres: {
-				with: {
-					environment: {
-						with: {
-							workspace: true,
-						},
-					},
-				},
-			},
-			redis: {
+			database: {
 				with: {
 					environment: {
 						with: {
@@ -238,23 +193,8 @@ export const findMountOrganizationId = async (mountId: string) => {
 	if (mount.compose) {
 		return mount.compose.environment.workspace.organizationId;
 	}
-	if (mount.libsql) {
-		return mount.libsql.environment.workspace.organizationId;
-	}
-	if (mount.mariadb) {
-		return mount.mariadb.environment.workspace.organizationId;
-	}
-	if (mount.mongo) {
-		return mount.mongo.environment.workspace.organizationId;
-	}
-	if (mount.mysql) {
-		return mount.mysql.environment.workspace.organizationId;
-	}
-	if (mount.postgres) {
-		return mount.postgres.environment.workspace.organizationId;
-	}
-	if (mount.redis) {
-		return mount.redis.environment.workspace.organizationId;
+	if (mount.database) {
+		return mount.database.environment.workspace.organizationId;
 	}
 
 	return null;
@@ -300,29 +240,13 @@ export const findMountsByApplicationId = async (
 		case "application":
 			sqlChunks.push(eq(mounts.applicationId, serviceId));
 			break;
-		case "libsql":
-			sqlChunks.push(eq(mounts.libsqlId, serviceId));
-			break;
-		case "mariadb":
-			sqlChunks.push(eq(mounts.mariadbId, serviceId));
-			break;
-		case "mongo":
-			sqlChunks.push(eq(mounts.mongoId, serviceId));
-			break;
-		case "mysql":
-			sqlChunks.push(eq(mounts.mysqlId, serviceId));
-			break;
-		case "postgres":
-			sqlChunks.push(eq(mounts.postgresId, serviceId));
-			break;
-		case "redis":
-			sqlChunks.push(eq(mounts.redisId, serviceId));
-			break;
 		case "compose":
 			sqlChunks.push(eq(mounts.composeId, serviceId));
 			break;
 		default:
-			throw new Error(`Unknown service type: ${serviceType}`);
+			// all managed database engines link via the unified databaseId
+			sqlChunks.push(eq(mounts.databaseId, serviceId));
+			break;
 	}
 	const mount = await db.query.mounts.findMany({
 		where: sql.join(sqlChunks, sql.raw(" ")),
@@ -393,34 +317,15 @@ export const getBaseFilesPath = async (mountId: string) => {
 		const { APPLICATIONS_PATH } = paths(!!mount.application.runtimeWorkerId);
 		absoluteBasePath = path.resolve(APPLICATIONS_PATH);
 		appName = mount.application.appName;
-	} else if (mount.serviceType === "postgres" && mount.postgres) {
-		const { APPLICATIONS_PATH } = paths(!!mount.postgres.runtimeWorkerId);
-		absoluteBasePath = path.resolve(APPLICATIONS_PATH);
-		appName = mount.postgres.appName;
-	} else if (mount.serviceType === "mariadb" && mount.mariadb) {
-		const { APPLICATIONS_PATH } = paths(!!mount.mariadb.runtimeWorkerId);
-		absoluteBasePath = path.resolve(APPLICATIONS_PATH);
-		appName = mount.mariadb.appName;
-	} else if (mount.serviceType === "mongo" && mount.mongo) {
-		const { APPLICATIONS_PATH } = paths(!!mount.mongo.runtimeWorkerId);
-		absoluteBasePath = path.resolve(APPLICATIONS_PATH);
-		appName = mount.mongo.appName;
-	} else if (mount.serviceType === "mysql" && mount.mysql) {
-		const { APPLICATIONS_PATH } = paths(!!mount.mysql.runtimeWorkerId);
-		absoluteBasePath = path.resolve(APPLICATIONS_PATH);
-		appName = mount.mysql.appName;
-	} else if (mount.serviceType === "redis" && mount.redis) {
-		const { APPLICATIONS_PATH } = paths(!!mount.redis.runtimeWorkerId);
-		absoluteBasePath = path.resolve(APPLICATIONS_PATH);
-		appName = mount.redis.appName;
 	} else if (mount.serviceType === "compose" && mount.compose) {
 		const { COMPOSE_PATH } = paths(!!mount.compose.runtimeWorkerId);
 		appName = mount.compose.appName;
 		absoluteBasePath = path.resolve(COMPOSE_PATH);
-	} else if (mount.serviceType === "libsql" && mount.libsql) {
-		const { APPLICATIONS_PATH } = paths(!!mount.libsql.runtimeWorkerId);
+	} else if (mount.database) {
+		// all managed database engines
+		const { APPLICATIONS_PATH } = paths(!!mount.database.runtimeWorkerId);
 		absoluteBasePath = path.resolve(APPLICATIONS_PATH);
-		appName = mount.libsql.appName;
+		appName = mount.database.appName;
 	}
 	directoryPath = path.join(absoluteBasePath, appName, "files");
 
@@ -435,26 +340,11 @@ export const getServerId = async (mount: MountNested) => {
 	) {
 		return mount.application.runtimeWorkerId;
 	}
-	if (mount.serviceType === "postgres" && mount?.postgres?.runtimeWorkerId) {
-		return mount.postgres.runtimeWorkerId;
-	}
-	if (mount.serviceType === "mariadb" && mount?.mariadb?.runtimeWorkerId) {
-		return mount.mariadb.runtimeWorkerId;
-	}
-	if (mount.serviceType === "mongo" && mount?.mongo?.runtimeWorkerId) {
-		return mount.mongo.runtimeWorkerId;
-	}
-	if (mount.serviceType === "mysql" && mount?.mysql?.runtimeWorkerId) {
-		return mount.mysql.runtimeWorkerId;
-	}
-	if (mount.serviceType === "redis" && mount?.redis?.runtimeWorkerId) {
-		return mount.redis.runtimeWorkerId;
-	}
 	if (mount.serviceType === "compose" && mount?.compose?.runtimeWorkerId) {
 		return mount.compose.runtimeWorkerId;
 	}
-	if (mount.serviceType === "libsql" && mount?.libsql?.runtimeWorkerId) {
-		return mount.libsql.runtimeWorkerId;
+	if (mount?.database?.runtimeWorkerId) {
+		return mount.database.runtimeWorkerId;
 	}
 
 	return null;

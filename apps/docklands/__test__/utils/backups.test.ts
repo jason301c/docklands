@@ -1,8 +1,6 @@
 import { describe, expect, test } from "vitest";
-import type { BackupSchedule } from "@/server/core/services/backup";
 import {
-	generateBackupCommand,
-	getBackupCommand,
+	buildBackupShellCommand,
 	normalizeS3Path,
 } from "@/server/core/utils/backups/utils";
 
@@ -65,18 +63,11 @@ describe("normalizeS3Path", () => {
 	});
 });
 
-describe("getBackupCommand", () => {
-	const backup = {
-		backupType: "database",
-		databaseType: "postgres",
-		database: "mydb",
-		postgres: {
-			appName: "my-app",
-			databaseUser: "postgres",
-			runtimeWorkerId: null,
-		},
-	} as unknown as BackupSchedule;
-
+describe("buildBackupShellCommand", () => {
+	const containerSearch =
+		'docker ps -q --filter "status=running" --filter "label=com.docker.swarm.service.name=my-app" | head -n 1';
+	const dumpCommand =
+		"docker exec -i $CONTAINER_ID bash -c \"set -o pipefail; pg_dump -Fc --no-acl --no-owner -h localhost -U postgres --no-password 'mydb' | gzip\"";
 	const rcloneCommand =
 		'rclone rcat --s3-provider="AWS" ":s3:bucket/key.sql.gz"';
 	const logPath = "/tmp/backup.log";
@@ -85,18 +76,24 @@ describe("getBackupCommand", () => {
 	// discarded to /dev/null, then again piped to rclone — doubling load and
 	// risking inconsistent backups on busy databases.
 	test("runs the database dump exactly once", () => {
-		const dumpCommand = generateBackupCommand(backup);
-		expect(dumpCommand).not.toBeNull();
+		const script = buildBackupShellCommand(
+			containerSearch,
+			dumpCommand,
+			rcloneCommand,
+			logPath,
+		);
 
-		const script = getBackupCommand(backup, rcloneCommand, logPath);
-
-		const occurrences = script.split(dumpCommand as string).length - 1;
+		const occurrences = script.split(dumpCommand).length - 1;
 		expect(occurrences).toBe(1);
 	});
 
 	test("pipes the single dump straight into the rclone upload", () => {
-		const dumpCommand = generateBackupCommand(backup) as string;
-		const script = getBackupCommand(backup, rcloneCommand, logPath);
+		const script = buildBackupShellCommand(
+			containerSearch,
+			dumpCommand,
+			rcloneCommand,
+			logPath,
+		);
 
 		expect(script).toContain(`${dumpCommand} | ${rcloneCommand}`);
 	});
