@@ -15,6 +15,59 @@
 @source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
 @config "../tailwind.config.ts";
 
+/*
+ * Docklands "warm clay" theme.
+ *
+ * Kumo ships a cool blue-on-white identity; the marketing site reskins it warm
+ * by overriding Kumo's color *variables* — every `bg-kumo-*` / `text-kumo-*`
+ * utility reads these vars, so this single block reskins the whole site with no
+ * component changes. The site is light-only (see app/layout.tsx), so we replace
+ * Kumo's `light-dark()` token values with flat warm colors. Scoped to
+ * `[data-theme="kumo"]` (an attribute selector) so it outranks Kumo's `:root`
+ * `@theme` defaults regardless of layer order.
+ *
+ * The move that actually kills the "generic SaaS" feel isn't the terracotta
+ * accent — it's biasing every neutral warm (canvas/surfaces/borders/text).
+ */
+[data-theme="kumo"] {
+	/* Surfaces, lightest → deepest */
+	--color-kumo-canvas: #faf9f7; /* page background (warm off-white) */
+	--color-kumo-base: #ffffff; /* cards/popovers lift above the canvas */
+	--color-kumo-elevated: #ffffff;
+	--color-kumo-control: #ffffff; /* inputs */
+	--color-kumo-recessed: #f2f0ec; /* inset wells (surface-1) */
+	--color-kumo-overlay: #f2f0ec;
+	--color-kumo-tint: #f2f0ec;
+	--color-kumo-contrast: #1a1a18; /* dark backing for inverse text */
+
+	/* Filled chips / hovers / interactive neutrals */
+	--color-kumo-fill: #efece7;
+	--color-kumo-fill-hover: #e8e5e0; /* surface-2 */
+	--color-kumo-interact: #d8d4cc;
+
+	/* Lines */
+	--color-kumo-hairline: #d8d4cc; /* warm border, not cool gray */
+	--color-kumo-line: #cfc9bf;
+
+	/* Brand (warehouse brick / oxblood) + focus */
+	--color-kumo-brand: #9e3b32;
+	--color-kumo-brand-hover: #852f28;
+	--color-kumo-focus: #9e3b32;
+
+	/* A secondary warm accent (sand) for incidental highlights */
+	--color-accent-warm: #d4a574;
+
+	/* Text — warm near-blacks and a clay link/brand */
+	--text-color-kumo-default: #2a2a26;
+	--text-color-kumo-strong: #1a1a18;
+	--text-color-kumo-subtle: #6b6b63;
+	--text-color-kumo-inactive: #b8b4ac;
+	--text-color-kumo-placeholder: #9a9890;
+	--text-color-kumo-inverse: #faf9f7;
+	--text-color-kumo-link: #9e3b32;
+	--text-color-kumo-brand: #9e3b32;
+}
+
 @layer base {
 	:root {
 		--font-inter: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
