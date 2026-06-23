@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
 
@@ -19,9 +19,20 @@ export interface UseHealthCheckAfterMutationOptions {
 	 */
 	pollInterval?: number;
 	/**
+	 * Maximum number of health-check polls before giving up. With the default
+	 * 2s interval this is a ~2 minute ceiling so a service that never comes back
+	 * cannot poll forever.
+	 * @default 60
+	 */
+	maxAttempts?: number;
+	/**
 	 * Message shown in toast when the operation completes successfully.
 	 */
 	successMessage: string;
+	/**
+	 * Message shown when the service never returns healthy within maxAttempts.
+	 */
+	timeoutMessage?: string;
 	/**
 	 * Callback when health check passes. Use for refetching data.
 	 */
@@ -36,11 +47,22 @@ export interface UseHealthCheckAfterMutationOptions {
 export const useHealthCheckAfterMutation = ({
 	initialDelay = 5000,
 	pollInterval = 2000,
+	maxAttempts = 60,
 	successMessage,
+	timeoutMessage = "The service did not come back online in time. Please refresh the page.",
 	onSuccess,
 	reloadOnSuccess = false,
 }: UseHealthCheckAfterMutationOptions) => {
 	const [isExecuting, setIsExecuting] = useState(false);
+	// Guards async callbacks/setState/reload from running after unmount.
+	const mountedRef = useRef(true);
+
+	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+		};
+	}, []);
 
 	const checkHealth = useCallback(async (): Promise<boolean> => {
 		try {
@@ -53,24 +75,42 @@ export const useHealthCheckAfterMutation = ({
 	}, []);
 
 	const pollUntilHealthy = useCallback(async (): Promise<void> => {
-		const isHealthy = await checkHealth();
+		for (let attempt = 0; attempt < maxAttempts; attempt++) {
+			if (!mountedRef.current) return;
 
-		if (isHealthy) {
-			toast.success(successMessage);
+			if (await checkHealth()) {
+				if (!mountedRef.current) return;
+				toast.success(successMessage);
 
-			if (reloadOnSuccess) {
-				setTimeout(() => {
-					window.location.reload();
-				}, 2000);
-			} else {
-				await onSuccess?.();
+				if (reloadOnSuccess) {
+					setTimeout(() => {
+						window.location.reload();
+					}, 2000);
+				} else {
+					await onSuccess?.();
+				}
+				return;
 			}
-			return;
+
+			await new Promise((resolve) => setTimeout(resolve, pollInterval));
 		}
 
-		await new Promise((resolve) => setTimeout(resolve, pollInterval));
-		await pollUntilHealthy();
-	}, [checkHealth, successMessage, reloadOnSuccess, onSuccess, pollInterval]);
+		// Exhausted every attempt without the service coming back healthy.
+		if (!mountedRef.current) return;
+		logger.error(
+			{ maxAttempts, pollInterval },
+			"service did not become healthy in time",
+		);
+		toast.error(timeoutMessage);
+	}, [
+		checkHealth,
+		successMessage,
+		timeoutMessage,
+		reloadOnSuccess,
+		onSuccess,
+		pollInterval,
+		maxAttempts,
+	]);
 
 	const execute = useCallback(
 		async <T>(mutationFn: () => Promise<T>): Promise<T> => {
@@ -86,7 +126,7 @@ export const useHealthCheckAfterMutation = ({
 
 				return result;
 			} finally {
-				setIsExecuting(false);
+				if (mountedRef.current) setIsExecuting(false);
 			}
 		},
 		[initialDelay, pollUntilHealthy],
