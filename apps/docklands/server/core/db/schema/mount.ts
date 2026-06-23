@@ -1,10 +1,11 @@
 import { relations } from "drizzle-orm";
-import { pgEnum, pgTable, text } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, pgEnum, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { applications } from "./application";
 import { compose } from "./compose";
+import { database } from "./database";
 import { libsql } from "./libsql";
 import { mariadb } from "./mariadb";
 import { mongo } from "./mongo";
@@ -64,6 +65,10 @@ export const mounts = pgTable("mount", {
 	redisId: text("redisId").references(() => redis.redisId, {
 		onDelete: "cascade",
 	}),
+	databaseId: text("databaseId").references(
+		(): AnyPgColumn => database.databaseId,
+		{ onDelete: "cascade" },
+	),
 });
 
 export const MountssRelations = relations(mounts, ({ one }) => ({
@@ -98,6 +103,10 @@ export const MountssRelations = relations(mounts, ({ one }) => ({
 	redis: one(redis, {
 		fields: [mounts.redisId],
 		references: [redis.redisId],
+	}),
+	database: one(database, {
+		fields: [mounts.databaseId],
+		references: [database.databaseId],
 	}),
 }));
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-	databaseEngines,
 	DATABASE_ENGINE_KEYS,
+	databaseEngines,
 	getDatabaseEngine,
 	parseDatabaseConfig,
 } from "@/server/core/databases/registry";
@@ -16,7 +16,11 @@ describe("database engine registry", () => {
 	describe("buildDefaultEnv reproduces the legacy builder output", () => {
 		it("postgres", () => {
 			const env = getDatabaseEngine("postgres").buildDefaultEnv(
-				{ databaseName: "app", databaseUser: "admin", databasePassword: "secret" },
+				{
+					databaseName: "app",
+					databaseUser: "admin",
+					databasePassword: "secret",
+				},
 				"FOO=bar",
 			);
 			expect(env).toBe(
@@ -69,7 +73,11 @@ describe("database engine registry", () => {
 
 		it("mongo with replica sets adds MONGO_INITDB_DATABASE", () => {
 			const env = getDatabaseEngine("mongo").buildDefaultEnv(
-				{ databaseUser: "admin", databasePassword: "secret", replicaSets: true },
+				{
+					databaseUser: "admin",
+					databasePassword: "secret",
+					replicaSets: true,
+				},
 				null,
 			);
 			expect(env).toBe(
@@ -119,7 +127,11 @@ describe("database engine registry", () => {
 		it("postgres", () => {
 			const vars = getDatabaseEngine("postgres").connectionVars({
 				appName: "pg-app",
-				config: { databaseName: "app", databaseUser: "ad min", databasePassword: "p@ss" },
+				config: {
+					databaseName: "app",
+					databaseUser: "ad min",
+					databasePassword: "p@ss",
+				},
 			});
 			expect(vars[0]).toEqual({
 				key: "DATABASE_URL",
@@ -168,7 +180,9 @@ describe("database engine registry", () => {
 			);
 		});
 		it("non-postgres engines use fixed mount paths", () => {
-			expect(getDatabaseEngine("mysql").mountPath("mysql:8")).toBe("/var/lib/mysql");
+			expect(getDatabaseEngine("mysql").mountPath("mysql:8")).toBe(
+				"/var/lib/mysql",
+			);
 			expect(getDatabaseEngine("mongo").mountPath("mongo:8")).toBe("/data/db");
 			expect(getDatabaseEngine("redis").mountPath("redis:7")).toBe("/data");
 			expect(getDatabaseEngine("libsql").mountPath("x")).toBe("/var/lib/sqld");
@@ -245,7 +259,9 @@ describe("database engine registry", () => {
 			expect(config.databaseName).toBe("app");
 		});
 		it("throws on an invalid config", () => {
-			expect(() => parseDatabaseConfig("postgres", { databaseName: "app" })).toThrow();
+			expect(() =>
+				parseDatabaseConfig("postgres", { databaseName: "app" }),
+			).toThrow();
 		});
 		it("applies defaults (mongo replicaSets, libsql sqldNode)", () => {
 			expect(

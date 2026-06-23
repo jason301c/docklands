@@ -141,15 +141,26 @@ export interface ChangePasswordArgs {
 	newPassword: string;
 }
 
-export interface ExtraPort {
-	/** stable key, e.g. "grpc" | "admin" */
-	key: string;
+export interface PublishedPort {
 	targetPort: number;
-	/** the config field holding the published external port, if any */
-	externalPort?: number;
+	publishedPort: number;
 }
 
-export interface DatabaseEngine<K extends DatabaseEngineKey = DatabaseEngineKey> {
+export interface ContainerCommand {
+	Command?: string[];
+	Args?: string[];
+}
+
+export interface ContainerCommandArgs<C> {
+	appName: string;
+	config: C;
+	command?: string | null;
+	args?: string[] | null;
+}
+
+export interface DatabaseEngine<
+	K extends DatabaseEngineKey = DatabaseEngineKey,
+> {
 	key: K;
 	label: string;
 	/** icon/logo key, matching public/templates or component icon maps */
@@ -182,11 +193,27 @@ export interface DatabaseEngine<K extends DatabaseEngineKey = DatabaseEngineKey>
 		config: DatabaseConfigByKey[K],
 		customEnv?: string | null,
 	) => string;
-	/** extra published ports beyond the primary external port (e.g. libSQL) */
-	extraPorts?: (config: DatabaseConfigByKey[K]) => ExtraPort[];
+	/**
+	 * Container Command/Args. Defaults (when omitted) to the user's command/args
+	 * verbatim; engines override for baked-in launch behavior (redis requirepass,
+	 * mongo replica-set init, libSQL sqld wrapper).
+	 */
+	buildContainerCommand?: (
+		args: ContainerCommandArgs<DatabaseConfigByKey[K]>,
+	) => ContainerCommand;
+	/**
+	 * Published (host) ports. Defaults (when omitted) to a single port mapping
+	 * `externalPort -> containerPort`; libSQL publishes HTTP/gRPC/admin.
+	 */
+	publishedPorts?: (args: {
+		config: DatabaseConfigByKey[K];
+		externalPort?: number | null;
+	}) => PublishedPort[];
 
 	// --- capabilities ---
-	connectionVars: (args: ConnectionVarsArgs<DatabaseConfigByKey[K]>) => EnvEntry[];
+	connectionVars: (
+		args: ConnectionVarsArgs<DatabaseConfigByKey[K]>,
+	) => EnvEntry[];
 	backup?: {
 		/** inner command (without container resolution) for a logical backup */
 		dumpCommand: (args: BackupCommandArgs) => string;
@@ -195,6 +222,56 @@ export interface DatabaseEngine<K extends DatabaseEngineKey = DatabaseEngineKey>
 }
 
 const encodeUrlPart = (value: string) => encodeURIComponent(value);
+
+const LIBSQL_DEFAULT_COMMAND =
+	"sqld --db-path iku.db --http-listen-addr 0.0.0.0:8080 --grpc-listen-addr 0.0.0.0:5001 --admin-listen-addr 0.0.0.0:5000";
+
+const buildMongoStartupScript = (
+	appName: string,
+	databaseUser: string,
+	databasePassword: string,
+	command?: string | null,
+) => `
+#!/bin/bash
+
+mongod --port 27017 --replSet rs0 --bind_ip_all &
+MONGOD_PID=$!
+
+# Wait for MongoDB to be ready
+while ! mongosh --eval "db.adminCommand('ping')" > /dev/null 2>&1; do
+	sleep 2
+done
+
+# Check if replica set is already initialized
+REPLICA_STATUS=$(mongosh --quiet --eval "rs.status().ok || 0")
+
+if [ "$REPLICA_STATUS" != "1" ]; then
+	echo "Initializing replica set..."
+	mongosh --eval '
+	rs.initiate({
+		_id: "rs0",
+		members: [{ _id: 0, host: "${appName}:27017", priority: 1 }]
+	});
+
+    // Wait for the replica set to initialize
+	while (!rs.isMaster().ismaster) {
+		sleep(1000);
+	}
+
+    // Create root user after replica set is initialized and we are primary
+	db.getSiblingDB("admin").createUser({
+		user: "${databaseUser}",
+		pwd: "${databasePassword}",
+		roles: ["root"]
+	});
+	'
+
+else
+	echo "Replica set already initialized."
+fi
+
+
+${command ?? "wait $MONGOD_PID"}`;
 
 // ---------------------------------------------------------------------------
 // PostgreSQL
@@ -302,7 +379,12 @@ const mysqlEngine: DatabaseEngine<"mysql"> = {
 		dumpCommand: ({ database, databasePassword }) =>
 			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mysqldump --default-character-set=utf8mb4 -u 'root' --password='${databasePassword}' --single-transaction --no-tablespaces --quick '${database}' | gzip"`,
 	},
-	changePassword: ({ databaseRootPassword, targetUser, databaseUser, newPassword }) =>
+	changePassword: ({
+		databaseRootPassword,
+		targetUser,
+		databaseUser,
+		newPassword,
+	}) =>
 		`docker exec "$CONTAINER_ID" mysql -u root -p'${databaseRootPassword}' -e "ALTER USER '${targetUser ?? databaseUser}'@'%' IDENTIFIED BY '${newPassword}'; FLUSH PRIVILEGES;"`,
 };
 
@@ -318,7 +400,11 @@ const mariadbEngine: DatabaseEngine<"mariadb"> = {
 	defaultImage: "mariadb:11",
 	containerPort: 3306,
 	imagePatterns: ["mariadb", "bitnami/mariadb"],
-	detectEnvKeys: ["MARIADB_ROOT_PASSWORD", "MARIADB_PASSWORD", "MARIADB_DATABASE"],
+	detectEnvKeys: [
+		"MARIADB_ROOT_PASSWORD",
+		"MARIADB_PASSWORD",
+		"MARIADB_DATABASE",
+	],
 	detectHealthcheck: ["mariadb-admin ping", "healthcheck.sh"],
 	configSchema: mariadbConfigSchema,
 	mountPath: () => "/var/lib/mysql",
@@ -348,7 +434,12 @@ const mariadbEngine: DatabaseEngine<"mariadb"> = {
 		dumpCommand: ({ database, databaseUser, databasePassword }) =>
 			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mariadb-dump --user='${databaseUser}' --password='${databasePassword}' --single-transaction --quick --databases ${database} | gzip"`,
 	},
-	changePassword: ({ databaseRootPassword, targetUser, databaseUser, newPassword }) =>
+	changePassword: ({
+		databaseRootPassword,
+		targetUser,
+		databaseUser,
+		newPassword,
+	}) =>
 		`docker exec "$CONTAINER_ID" mariadb -u root -p'${databaseRootPassword}' -e "ALTER USER '${targetUser ?? databaseUser}'@'%' IDENTIFIED BY '${newPassword}'; FLUSH PRIVILEGES;"`,
 };
 
@@ -372,6 +463,26 @@ const mongoEngine: DatabaseEngine<"mongo"> = {
 		`MONGO_INITDB_ROOT_USERNAME="${databaseUser}"\nMONGO_INITDB_ROOT_PASSWORD="${databasePassword}"${
 			replicaSets ? "\nMONGO_INITDB_DATABASE=admin" : ""
 		}${env ? `\n${env}` : ""}`,
+	buildContainerCommand: ({ appName, config, command, args }) => {
+		if (config.replicaSets) {
+			return {
+				Command: ["/bin/bash"],
+				Args: [
+					"-c",
+					buildMongoStartupScript(
+						appName,
+						config.databaseUser,
+						config.databasePassword,
+						command,
+					),
+				],
+			};
+		}
+		return {
+			...(command ? { Command: command.split(" ") } : {}),
+			...(args && args.length > 0 ? { Args: args } : {}),
+		};
+	},
 	connectionVars: ({ appName, config }) => {
 		const user = encodeUrlPart(config.databaseUser);
 		const password = encodeUrlPart(config.databasePassword);
@@ -411,6 +522,18 @@ const redisEngine: DatabaseEngine<"redis"> = {
 	mountPath: () => "/data",
 	buildDefaultEnv: ({ databasePassword }, env) =>
 		`REDIS_PASSWORD="${databasePassword}"${env ? `\n${env}` : ""}`,
+	buildContainerCommand: ({ config, command, args }) => {
+		if (command || (args && args.length > 0)) {
+			return {
+				...(command ? { Command: command.split(" ") } : {}),
+				...(args && args.length > 0 ? { Args: args } : {}),
+			};
+		}
+		return {
+			Command: ["/bin/sh"],
+			Args: ["-c", `redis-server --requirepass ${config.databasePassword}`],
+		};
+	},
 	connectionVars: ({ appName, config }) => {
 		const password = encodeUrlPart(config.databasePassword);
 		return [
@@ -440,7 +563,10 @@ const libsqlEngine: DatabaseEngine<"libsql"> = {
 	detectHealthcheck: [],
 	configSchema: libsqlConfigSchema,
 	mountPath: () => "/var/lib/sqld",
-	buildDefaultEnv: ({ databaseUser, databasePassword, sqldNode, sqldPrimaryUrl }, env) => {
+	buildDefaultEnv: (
+		{ databaseUser, databasePassword, sqldNode, sqldPrimaryUrl },
+		env,
+	) => {
 		const basicAuth = Buffer.from(
 			`${databaseUser}:${databasePassword}`,
 			"utf-8",
@@ -449,12 +575,19 @@ const libsqlEngine: DatabaseEngine<"libsql"> = {
 			env ? `\n${env}` : ""
 		}${sqldNode === "replica" ? `\nSQLD_PRIMARY_URL="${sqldPrimaryUrl}"` : ""}`;
 	},
-	extraPorts: ({ externalGRPCPort, externalAdminPort }) => {
-		const ports: ExtraPort[] = [];
-		if (externalGRPCPort)
-			ports.push({ key: "grpc", targetPort: 5001, externalPort: externalGRPCPort });
-		if (externalAdminPort)
-			ports.push({ key: "admin", targetPort: 5000, externalPort: externalAdminPort });
+	buildContainerCommand: ({ config, command }) => {
+		let finalCommand = command ?? LIBSQL_DEFAULT_COMMAND;
+		if (config.enableNamespaces) finalCommand += " --enable-namespaces";
+		return { Command: ["/bin/sh"], Args: ["-c", finalCommand] };
+	},
+	publishedPorts: ({ config, externalPort }) => {
+		const ports: PublishedPort[] = [];
+		if (externalPort)
+			ports.push({ targetPort: 8080, publishedPort: externalPort });
+		if (config.externalGRPCPort)
+			ports.push({ targetPort: 5001, publishedPort: config.externalGRPCPort });
+		if (config.externalAdminPort)
+			ports.push({ targetPort: 5000, publishedPort: config.externalAdminPort });
 		return ports;
 	},
 	connectionVars: ({ appName, config }) => [
@@ -480,7 +613,9 @@ export const databaseEngines: {
 	libsql: libsqlEngine,
 };
 
-export const isDatabaseEngineKey = (value: string): value is DatabaseEngineKey =>
+export const isDatabaseEngineKey = (
+	value: string,
+): value is DatabaseEngineKey =>
 	(DATABASE_ENGINE_KEYS as readonly string[]).includes(value);
 
 export const getDatabaseEngine = <K extends DatabaseEngineKey>(
@@ -497,3 +632,60 @@ export const parseDatabaseConfig = <K extends DatabaseEngineKey>(
 /** Engines that support a logical (dump-based) backup. Redis/libSQL do not. */
 export const databaseEngineSupportsBackup = (key: DatabaseEngineKey): boolean =>
 	Boolean(databaseEngines[key].backup);
+
+// ---------------------------------------------------------------------------
+// Dispatch helpers — call engine behavior with a runtime key + parsed config.
+// These centralize the single cast needed to index the engine record with a
+// dynamic key; consumers stay type-safe.
+// ---------------------------------------------------------------------------
+
+export const buildDatabaseEnv = <K extends DatabaseEngineKey>(
+	key: K,
+	config: DatabaseConfigByKey[K],
+	customEnv?: string | null,
+): string => databaseEngines[key].buildDefaultEnv(config as never, customEnv);
+
+export const databaseConnectionVars = <K extends DatabaseEngineKey>(
+	key: K,
+	args: ConnectionVarsArgs<DatabaseConfigByKey[K]>,
+): EnvEntry[] => databaseEngines[key].connectionVars(args as never);
+
+export const databaseMountPath = (
+	key: DatabaseEngineKey,
+	dockerImage: string,
+): string => databaseEngines[key].mountPath(dockerImage);
+
+export const buildDatabaseContainerCommand = <K extends DatabaseEngineKey>(
+	key: K,
+	args: ContainerCommandArgs<DatabaseConfigByKey[K]>,
+): ContainerCommand => {
+	const engine = databaseEngines[key];
+	if (engine.buildContainerCommand)
+		return engine.buildContainerCommand(args as never);
+	const { command, args: cmdArgs } = args;
+	return {
+		...(command ? { Command: command.split(" ") } : {}),
+		...(cmdArgs && cmdArgs.length > 0 ? { Args: cmdArgs } : {}),
+	};
+};
+
+export const buildDatabasePublishedPorts = <K extends DatabaseEngineKey>(
+	key: K,
+	args: { config: DatabaseConfigByKey[K]; externalPort?: number | null },
+): PublishedPort[] => {
+	const engine = databaseEngines[key];
+	if (engine.publishedPorts) return engine.publishedPorts(args as never);
+	return args.externalPort
+		? [{ targetPort: engine.containerPort, publishedPort: args.externalPort }]
+		: [];
+};
+
+export const databaseBackupCommand = <K extends DatabaseEngineKey>(
+	key: K,
+	args: BackupCommandArgs,
+): string | null => databaseEngines[key].backup?.dumpCommand(args) ?? null;
+
+export const databaseChangePasswordCommand = <K extends DatabaseEngineKey>(
+	key: K,
+	args: ChangePasswordArgs,
+): string | null => databaseEngines[key].changePassword?.(args) ?? null;

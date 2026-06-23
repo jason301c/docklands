@@ -13,6 +13,7 @@ import { nanoid } from "nanoid";
 import { z } from "zod";
 import { generateAppName } from ".";
 import { compose } from "./compose";
+import { database } from "./database";
 import { deployments } from "./deployment";
 import { destinations } from "./destination";
 import { libsql } from "./libsql";
@@ -80,6 +81,10 @@ export const backups = pgTable("backup", {
 	libsqlId: text("libsqlId").references((): AnyPgColumn => libsql.libsqlId, {
 		onDelete: "cascade",
 	}),
+	databaseId: text("databaseId").references(
+		(): AnyPgColumn => database.databaseId,
+		{ onDelete: "cascade" },
+	),
 	userId: text("userId").references(() => user.id),
 	// Only for compose backups
 	metadata: jsonb("metadata").$type<
@@ -127,6 +132,10 @@ export const backupsRelations = relations(backups, ({ one, many }) => ({
 	libsql: one(libsql, {
 		fields: [backups.libsqlId],
 		references: [libsql.libsqlId],
+	}),
+	database: one(database, {
+		fields: [backups.databaseId],
+		references: [database.databaseId],
 	}),
 	user: one(user, {
 		fields: [backups.userId],

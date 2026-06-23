@@ -8,6 +8,7 @@ import { docker } from "@/server/core/constants/docker";
 import { paths } from "@/server/core/constants/paths";
 import type { Compose } from "@/server/core/services/compose";
 import type { ApplicationNested } from "../builders";
+import type { DatabaseNested } from "../databases/build";
 import type { LibsqlNested } from "../databases/libsql";
 import type { MariadbNested } from "../databases/mariadb";
 import type { MongoNested } from "../databases/mongo";
@@ -677,6 +678,7 @@ export const generateFileMounts = (
 	appName: string,
 	service:
 		| ApplicationNested
+		| DatabaseNested
 		| LibsqlNested
 		| MongoNested
 		| MariadbNested

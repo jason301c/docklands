@@ -78,6 +78,43 @@ export const createMount = async (input: z.infer<typeof apiCreateMount>) => {
 	}
 };
 
+/**
+ * Create a mount for the unified managed-database table. Links via `databaseId`
+ * directly rather than the per-engine `serviceType` switch in `createMount`.
+ */
+export const createDatabaseMount = async (
+	databaseId: string,
+	input: {
+		type: Mount["type"];
+		mountPath: string;
+		volumeName?: string | null;
+		hostPath?: string | null;
+		filePath?: string | null;
+		content?: string | null;
+	},
+) => {
+	const value = await db
+		.insert(mounts)
+		.values({
+			...input,
+			databaseId,
+		})
+		.returning()
+		.then((rows) => rows[0]);
+
+	if (!value) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Error inserting database mount",
+		});
+	}
+
+	if (value.type === "file") {
+		await createFileMount(value.mountId);
+	}
+	return value;
+};
+
 export const createFileMount = async (mountId: string) => {
 	try {
 		const mount = await findMountById(mountId);

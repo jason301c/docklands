@@ -22,6 +22,13 @@
       "when": 1782139131901,
       "tag": "0002_giant_molten_man",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782187564655,
+      "tag": "0003_lying_raza",
+      "breakpoints": true
     }
   ]
 }

@@ -9,9 +9,9 @@
  * `service_database` so it inherits backups and connection variables.
  */
 import {
-	databaseEngines,
 	DATABASE_ENGINE_KEYS,
 	type DatabaseEngineKey,
+	databaseEngines,
 	KNOWN_APPLICATION_IMAGE_DENYLIST,
 } from "./registry";
 
@@ -28,7 +28,12 @@ const DATABASE_PORTS = [
 ];
 
 /** App-specific env/healthcheck signals that argue *against* "this is a database". */
-const APPLICATION_ENV_SIGNALS = ["SERVICE_FQDN", "API_KEYS", "APP_", "APPLICATION_"];
+const APPLICATION_ENV_SIGNALS = [
+	"SERVICE_FQDN",
+	"API_KEYS",
+	"APP_",
+	"APPLICATION_",
+];
 
 export interface ComposeServiceConfig {
 	image?: string;
@@ -39,7 +44,9 @@ export interface ComposeServiceConfig {
 
 /** Strip the tag and registry prefix from an image, returning the base name. */
 const baseImageName = (image: string): string => {
-	const withoutTag = image.includes(":") ? image.slice(0, image.indexOf(":")) : image;
+	const withoutTag = image.includes(":")
+		? image.slice(0, image.indexOf(":"))
+		: image;
 	return withoutTag.includes("/")
 		? withoutTag.slice(withoutTag.lastIndexOf("/") + 1)
 		: withoutTag;
@@ -125,7 +132,9 @@ export const detectDatabaseEngine = (
 	config?: ComposeServiceConfig,
 ): DatabaseEngineKey | null => {
 	if (!image) return null;
-	const imageName = image.includes(":") ? image.slice(0, image.indexOf(":")) : image;
+	const imageName = image.includes(":")
+		? image.slice(0, image.indexOf(":"))
+		: image;
 	const engineKey = engineForBaseName(baseImageName(image));
 	if (!engineKey) return null;
 	if (config && !confirmDatabaseWithContext(imageName, config, engineKey))

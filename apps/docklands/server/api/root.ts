@@ -7,6 +7,7 @@ import { certificateRouter } from "./routers/certificate";
 import { clusterRouter } from "./routers/cluster";
 import { composeRouter } from "./routers/compose";
 import { customRoleRouter } from "./routers/custom-role";
+import { databaseRouter } from "./routers/database";
 import { deploymentRouter } from "./routers/deployment";
 import { destinationRouter } from "./routers/destination";
 import { dockerRouter } from "./routers/docker";
@@ -56,6 +57,7 @@ export const appRouter = createTRPCRouter({
 	certificates: certificateRouter,
 	cluster: clusterRouter,
 	compose: composeRouter,
+	database: databaseRouter,
 	deployment: deploymentRouter,
 	destination: destinationRouter,
 	docker: dockerRouter,
