@@ -1,15 +1,65 @@
 import type { z } from "zod";
-import { parseDatabaseConfig } from "@/server/core/databases/registry";
+import { paths } from "@/server/core/constants/paths";
+import {
+	databaseBackupCommand,
+	parseDatabaseConfig,
+} from "@/server/core/databases/registry";
 import type { apiRestoreBackup } from "@/server/core/db/schema";
 import type { Database } from "@/server/core/services/database";
 import type { Destination } from "@/server/core/services/destination";
 import {
+	getBackupTimestamp,
 	getS3CredentialEnv,
 	getS3Credentials,
 	getServiceContainerCommand,
 } from "../backups/utils";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import { getRestoreCommand } from "./utils";
+
+/**
+ * Build a command that snapshots the *current* database to a local file before a
+ * destructive restore overwrites it, so there's a recovery point if the restore
+ * is wrong/corrupt. Returns null for engines we can't snapshot. Mirrors the
+ * backup dump's per-engine auth (mysql/mariadb dump as root).
+ */
+const buildPreRestoreSnapshotCommand = (
+	database: Database,
+	databaseName: string,
+): { command: string; file: string } | null => {
+	const { appName, engine, runtimeWorkerId } = database;
+	const config = parseDatabaseConfig(engine, database.config);
+	const { BASE_PATH } = paths(!!runtimeWorkerId);
+	const dir = `${BASE_PATH}/pre-restore-snapshots`;
+	const containerSearch = getServiceContainerCommand(appName);
+	const stamp = getBackupTimestamp();
+
+	if (engine === "libsql") {
+		const file = `${dir}/${appName}-${stamp}.tar.gz`;
+		const command = `mkdir -p "${dir}" && CONTAINER_ID=$(${containerSearch}) && docker exec -i $CONTAINER_ID sh -c "tar czf - -C /var/lib/sqld ." > "${file}"`;
+		return { command, file };
+	}
+
+	const dumpCommand = databaseBackupCommand(engine, {
+		database: databaseName,
+		databaseUser: "databaseUser" in config ? config.databaseUser : "",
+		// mysql/mariadb dumps authenticate as root (the registry stores the root
+		// password); postgres/mongo use the regular password.
+		databasePassword:
+			engine === "mysql" || engine === "mariadb"
+				? "databaseRootPassword" in config
+					? config.databaseRootPassword
+					: ""
+				: "databasePassword" in config
+					? config.databasePassword
+					: "",
+	});
+	if (!dumpCommand) return null;
+
+	const ext = engine === "mongo" ? "archive.gz" : "sql.gz";
+	const file = `${dir}/${appName}-${stamp}.${ext}`;
+	const command = `mkdir -p "${dir}" && CONTAINER_ID=$(${containerSearch}) && ${dumpCommand} > "${file}"`;
+	return { command, file };
+};
 
 /**
  * Generic database restore runner. Replaces the five per-engine restore runners
@@ -100,6 +150,36 @@ export const restoreDatabaseBackup = async (
 			);
 		} else {
 			throw new Error(`Database engine does not support restore: ${engine}`);
+		}
+
+		// Take a pre-restore snapshot of the current data first — restore is
+		// destructive (pg_restore --clean / mysql replay / mongorestore --drop)
+		// and applies to the live database. Best-effort: if it fails we warn and
+		// continue rather than block the restore the user explicitly requested.
+		const snapshot = buildPreRestoreSnapshotCommand(
+			database,
+			backupInput.databaseName,
+		);
+		if (snapshot) {
+			emit("Taking a pre-restore snapshot of the current database…");
+			try {
+				if (runtimeWorkerId) {
+					await execAsyncRemote(runtimeWorkerId, snapshot.command);
+				} else {
+					await execAsync(snapshot.command);
+				}
+				emit(
+					`Pre-restore snapshot saved to ${snapshot.file} — delete it once you've verified the restore.`,
+				);
+			} catch (snapshotError) {
+				emit(
+					`⚠️ Could not take a pre-restore snapshot (${
+						snapshotError instanceof Error
+							? snapshotError.message
+							: "unknown error"
+					}). Continuing — the current data will be overwritten with no automatic recovery point.`,
+				);
+			}
 		}
 
 		if (runtimeWorkerId) {

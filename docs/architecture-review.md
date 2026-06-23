@@ -889,7 +889,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | B2 | S3 creds plaintext + cmdline | **✅ P1 (store)** + **✅ P2 (cmdline → RCLONE_S3_* env)** |
 | B3 | retention errors swallowed | **✅ P7** (logged with context, still non-throwing) |
 | B4 | retention sorts by filename | **✅ P7** (sort by rclone mtime) |
-| B5 | restore destructive no snapshot | **P7 guard (pre-snapshot)** |
+| B5 | restore destructive no snapshot | **✅ P7** (best-effort pre-restore snapshot) |
 | B6 | stop-mode volume backup downtime | **✅ P7** (already documented) |
 | B7 | scheduler no catch-up | **◑ deferred** — missed-cron backfill belongs in the durable-jobs abstraction (needs live env) |
 | B8 | destination test ignores worker | **✅ P7** (runs on the worker when set; creds via env) |
