@@ -413,36 +413,56 @@ export const prepareEnvironmentVariables = (
 	const environmentVars = parse(environmentEnv ?? "");
 	const serviceVars = parse(serviceEnv ?? "");
 
-	const resolvedVars = Object.entries(serviceVars).map(([key, value]) => {
-		let resolvedValue = value;
+	// Inheritance cascade. The workspace env store is the base layer, the
+	// environment store overrides it, and the service's own variables override
+	// both — so a variable set once at the workspace or environment level is
+	// inherited by every service unless that service sets its own value.
+	// Generated connection variables already live in the service layer, so they
+	// win over inherited values too. The `${{workspace.X}}` / `${{environment.Y}}`
+	// reference syntax stays as an escape hatch for renaming or composing a value
+	// as it flows down (e.g. exposing workspace.DB_HOST under a different key).
+	const mergedVars: Record<string, string> = {
+		...workspaceVars,
+		...environmentVars,
+		...serviceVars,
+	};
+	// Output order: the service's own variables first (as the user wrote them),
+	// then inherited environment-only variables, then inherited workspace-only
+	// variables. Functionally the env is a set; this just keeps output stable.
+	const orderedKeys = [
+		...Object.keys(serviceVars),
+		...Object.keys(environmentVars).filter((key) => !(key in serviceVars)),
+		...Object.keys(workspaceVars).filter(
+			(key) => !(key in serviceVars) && !(key in environmentVars),
+		),
+	];
+
+	const resolvedVars = orderedKeys.map((key) => {
+		let resolvedValue = mergedVars[key] ?? "";
 
 		// Replace variables backed by the workspace env store.
-		if (workspaceVars) {
-			resolvedValue = resolvedValue.replace(
-				/\$\{\{workspace\.(.*?)\}\}/g,
-				(_, ref) => {
-					if (workspaceVars[ref] !== undefined) {
-						return workspaceVars[ref];
-					}
-					throw new Error(
-						`Invalid workspace environment variable: workspace.${ref}`,
-					);
-				},
-			);
-		}
+		resolvedValue = resolvedValue.replace(
+			/\$\{\{workspace\.(.*?)\}\}/g,
+			(_, ref) => {
+				if (workspaceVars[ref] !== undefined) {
+					return workspaceVars[ref];
+				}
+				throw new Error(
+					`Invalid workspace environment variable: workspace.${ref}`,
+				);
+			},
+		);
 
-		// Replace environment variables
-		if (environmentVars) {
-			resolvedValue = resolvedValue.replace(
-				/\$\{\{environment\.(.*?)\}\}/g,
-				(_, ref) => {
-					if (environmentVars[ref] !== undefined) {
-						return environmentVars[ref];
-					}
-					throw new Error(`Invalid environment variable: environment.${ref}`);
-				},
-			);
-		}
+		// Replace variables backed by the environment env store.
+		resolvedValue = resolvedValue.replace(
+			/\$\{\{environment\.(.*?)\}\}/g,
+			(_, ref) => {
+				if (environmentVars[ref] !== undefined) {
+					return environmentVars[ref];
+				}
+				throw new Error(`Invalid environment variable: environment.${ref}`);
+			},
+		);
 
 		const legacyProjectRef = resolvedValue.match(/\$\{\{project\.(.*?)\}\}/);
 		if (legacyProjectRef?.[1]) {
@@ -451,10 +471,10 @@ export const prepareEnvironmentVariables = (
 			);
 		}
 
-		// Replace self-references (service variables)
+		// Replace bare references against the merged set (self- and cross-layer).
 		resolvedValue = resolvedValue.replace(/\$\{\{(.*?)\}\}/g, (_, ref) => {
-			if (serviceVars[ref] !== undefined) {
-				return serviceVars[ref];
+			if (mergedVars[ref] !== undefined) {
+				return mergedVars[ref];
 			}
 			throw new Error(`Invalid service environment variable: ${ref}`);
 		});

@@ -284,6 +284,16 @@ previews, topology, and connection mapping.
   lifecycle, deployment, variables, previews, logs, and provider behavior keep
   using the existing domain services and routers unless there is a deliberate
   migration.
+- **Environment-variable cascade.** Env vars layer
+  **workspace → environment → service** (most-specific wins), resolved in
+  `prepareEnvironmentVariables` (`server/core/utils/docker/utils.ts`) and applied
+  by every builder. The `workspace.env` and `environment.env` stores are **base
+  layers inherited by every service** unless the service sets its own value, not
+  just a reference table. The `${{workspace.X}}` / `${{environment.Y}}` syntax
+  remains as an escape hatch for renaming/composing a value as it cascades down,
+  and `${{X}}` resolves a bare name against the merged set. Generated connection
+  variables are persisted into the service env, so they sit at the service layer
+  and win over inherited values.
 - Do not add legacy dashboard aliases or redirect-only compatibility routes.
   Keep `next.config.mjs` free of legacy redirects.
 - Canonical product routes for navigation and new links:

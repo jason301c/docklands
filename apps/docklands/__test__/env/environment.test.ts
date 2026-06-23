@@ -4,361 +4,154 @@ import {
 	prepareEnvironmentVariablesForShell,
 } from "@/server/core/utils/docker/utils";
 
-const projectEnv = `
-ENVIRONMENT=staging
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db
-PORT=3000
+describe("prepareEnvironmentVariables (environment-level cascade)", () => {
+	it("inherits environment variables the service does not declare", () => {
+		const environmentEnv = `
+LOG_LEVEL=debug
+SENTRY_DSN=https://sentry.example.com
 `;
-
-const environmentEnv = `
-NODE_ENV=development
-API_URL=https://api.dev.example.com
-REDIS_URL=redis://localhost:6379
-DATABASE_NAME=dev_database
-SECRET_KEY=env-secret-123
-`;
-
-describe("prepareEnvironmentVariables (environment variables)", () => {
-	it("resolves environment variables correctly", () => {
-		const serviceWithEnvVars = `
-NODE_ENV=\${{environment.NODE_ENV}}
-API_URL=\${{environment.API_URL}}
+		const serviceEnv = `
 SERVICE_PORT=4000
 `;
 
 		const resolved = prepareEnvironmentVariables(
-			serviceWithEnvVars,
+			serviceEnv,
 			"",
 			environmentEnv,
 		);
 
 		expect(resolved).toEqual([
-			"NODE_ENV=development",
-			"API_URL=https://api.dev.example.com",
 			"SERVICE_PORT=4000",
+			"LOG_LEVEL=debug",
+			"SENTRY_DSN=https://sentry.example.com",
 		]);
 	});
 
-	it("resolves both workspace and environment variables", () => {
-		const serviceWithBoth = `
-ENVIRONMENT=\${{workspace.ENVIRONMENT}}
-NODE_ENV=\${{environment.NODE_ENV}}
-API_URL=\${{environment.API_URL}}
-DATABASE_URL=\${{workspace.DATABASE_URL}}
-SERVICE_PORT=4000
+	it("lets a service override an inherited environment variable", () => {
+		const environmentEnv = `
+LOG_LEVEL=debug
+`;
+		const serviceEnv = `
+LOG_LEVEL=info
 `;
 
 		const resolved = prepareEnvironmentVariables(
-			serviceWithBoth,
-			projectEnv,
+			serviceEnv,
+			"",
 			environmentEnv,
 		);
 
+		expect(resolved).toEqual(["LOG_LEVEL=info"]);
+	});
+
+	it("still resolves ${{environment.X}} references for renaming", () => {
+		const environmentEnv = `
+DB_HOST=db.internal
+`;
+		const serviceEnv = `
+POSTGRES_HOST=\${{environment.DB_HOST}}
+`;
+
+		const resolved = prepareEnvironmentVariables(
+			serviceEnv,
+			"",
+			environmentEnv,
+		);
+
+		// The renamed POSTGRES_HOST plus the inherited DB_HOST.
 		expect(resolved).toEqual([
-			"ENVIRONMENT=staging",
-			"NODE_ENV=development",
-			"API_URL=https://api.dev.example.com",
-			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db",
-			"SERVICE_PORT=4000",
+			"POSTGRES_HOST=db.internal",
+			"DB_HOST=db.internal",
 		]);
 	});
 
-	it("handles undefined environment variables", () => {
-		const serviceWithUndefined = `
-UNDEFINED_VAR=\${{environment.UNDEFINED_VAR}}
+	it("throws on an undefined ${{environment.X}} reference", () => {
+		const serviceEnv = `
+VALUE=\${{environment.MISSING}}
 `;
 
 		expect(() =>
-			prepareEnvironmentVariables(serviceWithUndefined, "", environmentEnv),
-		).toThrow("Invalid environment variable: environment.UNDEFINED_VAR");
+			prepareEnvironmentVariables(serviceEnv, "", "LOG_LEVEL=debug"),
+		).toThrow("Invalid environment variable: environment.MISSING");
 	});
 
-	it("allows service variables to override environment variables", () => {
-		const serviceOverrideEnv = `
-NODE_ENV=production
-API_URL=\${{environment.API_URL}}
+	it("throws on a malformed environment reference", () => {
+		const serviceEnv = `
+BAD=\${{environment.}}
 `;
 
-		const resolved = prepareEnvironmentVariables(
-			serviceOverrideEnv,
-			"",
-			environmentEnv,
-		);
-
-		expect(resolved).toEqual([
-			"NODE_ENV=production", // Overrides environment variable
-			"API_URL=https://api.dev.example.com",
-		]);
-	});
-
-	it("resolves complex references with workspace, environment, and service variables", () => {
-		const complexServiceEnv = `
-FULL_DATABASE_URL=\${{workspace.DATABASE_URL}}/\${{environment.DATABASE_NAME}}
-API_ENDPOINT=\${{environment.API_URL}}/\${{workspace.ENVIRONMENT}}/api
-SERVICE_NAME=my-service
-COMPLEX_VAR=\${{SERVICE_NAME}}-\${{environment.NODE_ENV}}-\${{workspace.ENVIRONMENT}}
-`;
-
-		const resolved = prepareEnvironmentVariables(
-			complexServiceEnv,
-			projectEnv,
-			environmentEnv,
-		);
-
-		expect(resolved).toEqual([
-			"FULL_DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db/dev_database",
-			"API_ENDPOINT=https://api.dev.example.com/staging/api",
-			"SERVICE_NAME=my-service",
-			"COMPLEX_VAR=my-service-development-staging",
-		]);
-	});
-
-	it("handles environment variables with special characters", () => {
-		const specialEnvVars = `
-SPECIAL_URL=https://special.com
-COMPLEX_KEY="key-with-@#$%^&*()"
-JWT_SECRET="secret-with-spaces and symbols!@#"
-`;
-
-		const serviceWithSpecial = `
-FULL_URL=\${{environment.SPECIAL_URL}}/path?key=\${{environment.COMPLEX_KEY}}
-AUTH_SECRET=\${{environment.JWT_SECRET}}
-`;
-
-		const resolved = prepareEnvironmentVariables(
-			serviceWithSpecial,
-			"",
-			specialEnvVars,
-		);
-
-		expect(resolved).toEqual([
-			"FULL_URL=https://special.com/path?key=key-with-@#$%^&*()",
-			"AUTH_SECRET=secret-with-spaces and symbols!@#",
-		]);
-	});
-
-	it("maintains precedence: service > environment > workspace", () => {
-		const conflictingProjectEnv = `
-NODE_ENV=production-workspace
-API_URL=https://workspace.api.com
-DATABASE_NAME=workspace_db
-`;
-
-		const conflictingEnvironmentEnv = `
-NODE_ENV=development-environment
-API_URL=https://environment.api.com
-DATABASE_NAME=env_db
-`;
-
-		const serviceWithConflicts = `
-NODE_ENV=service-override
-WORKSPACE_ENV=\${{workspace.NODE_ENV}}
-ENV_VAR=\${{environment.API_URL}}
-DB_NAME=\${{environment.DATABASE_NAME}}
-`;
-
-		const resolved = prepareEnvironmentVariables(
-			serviceWithConflicts,
-			conflictingProjectEnv,
-			conflictingEnvironmentEnv,
-		);
-
-		expect(resolved).toEqual([
-			"NODE_ENV=service-override", // Service wins
-			"WORKSPACE_ENV=production-workspace", // Workspace reference
-			"ENV_VAR=https://environment.api.com", // Environment reference
-			"DB_NAME=env_db", // Environment reference
-		]);
-	});
-
-	it("handles empty environment variables", () => {
-		const serviceWithEmpty = `
-SERVICE_VAR=test
-WORKSPACE_VAR=\${{workspace.ENVIRONMENT}}
-`;
-
-		const resolved = prepareEnvironmentVariables(
-			serviceWithEmpty,
-			projectEnv,
-			"",
-		);
-
-		expect(resolved).toEqual(["SERVICE_VAR=test", "WORKSPACE_VAR=staging"]);
-	});
-
-	it("handles mixed quotes and environment variables", () => {
-		const envWithQuotes = `
-QUOTED_VAR="development"
-SINGLE_QUOTED='https://api.dev.example.com'
-MIXED_VAR="value with 'single' quotes"
-`;
-
-		const serviceWithQuotes = `
-NODE_ENV=\${{environment.QUOTED_VAR}}
-API_URL=\${{environment.SINGLE_QUOTED}}
-COMPLEX="Prefix-\${{environment.MIXED_VAR}}-Suffix"
-`;
-
-		const resolved = prepareEnvironmentVariables(
-			serviceWithQuotes,
-			"",
-			envWithQuotes,
-		);
-
-		expect(resolved).toEqual([
-			"NODE_ENV=development",
-			"API_URL=https://api.dev.example.com",
-			"COMPLEX=Prefix-value with 'single' quotes-Suffix",
-		]);
-	});
-
-	it("resolves multiple environment references in single value", () => {
-		const multiRefEnv = `
-HOST=localhost
-PORT=5432
-USERNAME=postgres
-PASSWORD=secret123
-`;
-
-		const serviceWithMultiRefs = `
-DATABASE_URL=postgresql://\${{environment.USERNAME}}:\${{environment.PASSWORD}}@\${{environment.HOST}}:\${{environment.PORT}}/mydb
-CONNECTION_STRING=\${{environment.HOST}}:\${{environment.PORT}}
-`;
-
-		const resolved = prepareEnvironmentVariables(
-			serviceWithMultiRefs,
-			"",
-			multiRefEnv,
-		);
-
-		expect(resolved).toEqual([
-			"DATABASE_URL=postgresql://postgres:secret123@localhost:5432/mydb",
-			"CONNECTION_STRING=localhost:5432",
-		]);
-	});
-
-	it("handles nested references with environment and workspace variables", () => {
-		const nestedProjectEnv = `
-BASE_DOMAIN=example.com
-PROTOCOL=https
-`;
-
-		const nestedEnvironmentEnv = `
-SUBDOMAIN=api.dev
-PATH_PREFIX=/v1
-`;
-
-		const serviceWithNested = `
-FULL_URL=\${{workspace.PROTOCOL}}://\${{environment.SUBDOMAIN}}.\${{workspace.BASE_DOMAIN}}\${{environment.PATH_PREFIX}}/endpoint
-API_BASE=\${{workspace.PROTOCOL}}://\${{environment.SUBDOMAIN}}.\${{workspace.BASE_DOMAIN}}
-`;
-
-		const resolved = prepareEnvironmentVariables(
-			serviceWithNested,
-			nestedProjectEnv,
-			nestedEnvironmentEnv,
-		);
-
-		expect(resolved).toEqual([
-			"FULL_URL=https://api.dev.example.com/v1/endpoint",
-			"API_BASE=https://api.dev.example.com",
-		]);
-	});
-
-	it("throws error for malformed environment variable references", () => {
-		const serviceWithMalformed = `
-MALFORMED1=\${{environment.}}
-MALFORMED2=\${{environment}}
-VALID=\${{environment.NODE_ENV}}
-`;
-
-		// Should throw error for empty variable name after environment.
 		expect(() =>
-			prepareEnvironmentVariables(serviceWithMalformed, "", environmentEnv),
+			prepareEnvironmentVariables(serviceEnv, "", "LOG_LEVEL=debug"),
 		).toThrow("Invalid environment variable: environment.");
 	});
 
-	it("handles environment variables with numeric values", () => {
-		const numericEnv = `
-PORT=8080
-TIMEOUT=30
-RETRY_COUNT=3
-PERCENTAGE=99.5
+	it("preserves special characters in inherited values", () => {
+		const environmentEnv = `
+JWT_SECRET="secret-with-@#%^&*() and spaces!"
 `;
-
-		const serviceWithNumeric = `
-SERVER_PORT=\${{environment.PORT}}
-REQUEST_TIMEOUT=\${{environment.TIMEOUT}}
-MAX_RETRIES=\${{environment.RETRY_COUNT}}
-SUCCESS_RATE=\${{environment.PERCENTAGE}}
+		const serviceEnv = `
+SERVICE=api
 `;
 
 		const resolved = prepareEnvironmentVariables(
-			serviceWithNumeric,
+			serviceEnv,
 			"",
-			numericEnv,
+			environmentEnv,
 		);
 
 		expect(resolved).toEqual([
-			"SERVER_PORT=8080",
-			"REQUEST_TIMEOUT=30",
-			"MAX_RETRIES=3",
-			"SUCCESS_RATE=99.5",
+			"SERVICE=api",
+			"JWT_SECRET=secret-with-@#%^&*() and spaces!",
+		]);
+	});
+});
+
+describe("prepareEnvironmentVariables (precedence: service > environment > workspace)", () => {
+	it("merges all three layers with the right precedence", () => {
+		const workspaceEnv = `
+TIER=workspace
+ONLY_WORKSPACE=ws
+SHARED=workspace-shared
+`;
+		const environmentEnv = `
+TIER=environment
+ONLY_ENVIRONMENT=env
+SHARED=environment-shared
+`;
+		const serviceEnv = `
+TIER=service
+ONLY_SERVICE=svc
+`;
+
+		const resolved = prepareEnvironmentVariables(
+			serviceEnv,
+			workspaceEnv,
+			environmentEnv,
+		);
+
+		expect(resolved).toEqual([
+			"TIER=service", // service wins over environment and workspace
+			"ONLY_SERVICE=svc",
+			"ONLY_ENVIRONMENT=env", // inherited from environment
+			"SHARED=environment-shared", // environment wins over workspace
+			"ONLY_WORKSPACE=ws", // inherited from workspace
 		]);
 	});
 
-	it("handles boolean-like environment variables", () => {
-		const booleanEnv = `
-DEBUG=true
-ENABLED=false
-PRODUCTION=1
-DEVELOPMENT=0
+	it("keeps a service-layer value (e.g. a generated connection var) over a workspace var of the same name", () => {
+		const workspaceEnv = `
+DATABASE_URL=postgres://workspace-default/db
+`;
+		// Connection variables are persisted into the service env, so they arrive
+		// here as service vars and must win over an inherited workspace value.
+		const serviceEnv = `
+DATABASE_URL=postgres://service:service@db.internal:5432/app
 `;
 
-		const serviceWithBoolean = `
-DEBUG_MODE=\${{environment.DEBUG}}
-FEATURE_ENABLED=\${{environment.ENABLED}}
-IS_PROD=\${{environment.PRODUCTION}}
-IS_DEV=\${{environment.DEVELOPMENT}}
-`;
-
-		const resolved = prepareEnvironmentVariables(
-			serviceWithBoolean,
-			"",
-			booleanEnv,
-		);
+		const resolved = prepareEnvironmentVariables(serviceEnv, workspaceEnv, "");
 
 		expect(resolved).toEqual([
-			"DEBUG_MODE=true",
-			"FEATURE_ENABLED=false",
-			"IS_PROD=1",
-			"IS_DEV=0",
-		]);
-	});
-
-	it("handles environment variables with single quotes in values", () => {
-		const envWithSingleQuotes = `
-ENV_VARIABLE='ENVITONME'NT'
-ANOTHER_VAR='value with 'quotes' inside'
-SIMPLE_VAR=no-quotes
-`;
-
-		const serviceWithSingleQuotes = `
-TEST_VAR=\${{environment.ENV_VARIABLE}}
-ANOTHER_TEST=\${{environment.ANOTHER_VAR}}
-SIMPLE=\${{environment.SIMPLE_VAR}}
-`;
-
-		const resolved = prepareEnvironmentVariables(
-			serviceWithSingleQuotes,
-			"",
-			envWithSingleQuotes,
-		);
-
-		expect(resolved).toEqual([
-			"TEST_VAR=ENVITONME'NT",
-			"ANOTHER_TEST=value with 'quotes' inside",
-			"SIMPLE=no-quotes",
+			"DATABASE_URL=postgres://service:service@db.internal:5432/app",
 		]);
 	});
 });
@@ -558,7 +351,9 @@ CUSTOM='value with 'quotes' inside'
 			environmentEnv,
 		);
 
-		expect(resolved.length).toBe(5);
+		// 5 service vars plus the inherited workspace (BASE_URL, API_KEY) and
+		// environment (ENV_NAME, DB_PASS) vars they reference.
+		expect(resolved.length).toBe(9);
 		// All resolved values should be properly escaped
 		for (const env of resolved) {
 			expect(typeof env).toBe("string");

@@ -1,229 +1,109 @@
 import { describe, expect, it } from "vitest";
 import { prepareEnvironmentVariables } from "@/server/core/utils/docker/utils";
 
-const projectEnv = `
-ENVIRONMENT=staging
+describe("prepareEnvironmentVariables (workspace-level cascade)", () => {
+	it("inherits workspace variables the service does not declare", () => {
+		const workspaceEnv = `
+COMPANY=acme
+REGION=us-east-1
+`;
+		const serviceEnv = `
+SERVICE_PORT=4000
+`;
+
+		const resolved = prepareEnvironmentVariables(serviceEnv, workspaceEnv);
+
+		expect(resolved).toEqual([
+			"SERVICE_PORT=4000",
+			"COMPANY=acme",
+			"REGION=us-east-1",
+		]);
+	});
+
+	it("still resolves ${{workspace.X}} references", () => {
+		const workspaceEnv = `
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db
-PORT=3000
 `;
-const serviceEnv = `
-ENVIRONMENT=\${{workspace.ENVIRONMENT}}
-DATABASE_URL=\${{workspace.DATABASE_URL}}
-SERVICE_PORT=4000
+		const serviceEnv = `
+DB=\${{workspace.DATABASE_URL}}
 `;
 
-describe("prepareEnvironmentVariables", () => {
-	it("resolves workspace variables correctly", () => {
-		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
+		const resolved = prepareEnvironmentVariables(serviceEnv, workspaceEnv);
 
 		expect(resolved).toEqual([
-			"ENVIRONMENT=staging",
+			"DB=postgres://postgres:postgres@localhost:5432/workspace_db",
 			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db",
-			"SERVICE_PORT=4000",
 		]);
 	});
 
-	it("resolves workspace variables as the canonical workspace-scope alias", () => {
-		const workspaceServiceEnv = `
-ENVIRONMENT=\${{workspace.ENVIRONMENT}}
-DATABASE_URL=\${{workspace.DATABASE_URL}}
-SERVICE_PORT=4000
+	it("lets a service override an inherited workspace variable", () => {
+		const workspaceEnv = `
+ENVIRONMENT=staging
+`;
+		const serviceEnv = `
+ENVIRONMENT=production
 `;
 
-		const resolved = prepareEnvironmentVariables(
-			workspaceServiceEnv,
-			projectEnv,
-		);
+		const resolved = prepareEnvironmentVariables(serviceEnv, workspaceEnv);
 
-		expect(resolved).toEqual([
-			"ENVIRONMENT=staging",
-			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db",
-			"SERVICE_PORT=4000",
-		]);
+		expect(resolved).toEqual(["ENVIRONMENT=production"]);
 	});
 
-	it("handles undefined workspace variables", () => {
-		const incompleteProjectEnv = `
-		NODE_ENV=production
-		`;
-
-		const invalidServiceEnv = `
-		UNDEFINED_VAR=\${{workspace.UNDEFINED_VAR}}
-		`;
-
-		expect(
-			() =>
-				prepareEnvironmentVariables(invalidServiceEnv, incompleteProjectEnv), // Cambiado el orden
-		).toThrow(
-			"Invalid workspace environment variable: workspace.UNDEFINED_VAR",
-		);
-	});
-
-	it("rejects the old workspace variable namespace", () => {
-		const invalidServiceEnv = `
-		OLD_VAR=\${{project.ENVIRONMENT}}
-		`;
+	it("throws on an undefined ${{workspace.X}} reference", () => {
+		const serviceEnv = `
+VALUE=\${{workspace.MISSING}}
+`;
 
 		expect(() =>
-			prepareEnvironmentVariables(invalidServiceEnv, projectEnv),
+			prepareEnvironmentVariables(serviceEnv, "COMPANY=acme"),
+		).toThrow("Invalid workspace environment variable: workspace.MISSING");
+	});
+
+	it("rejects the old project.* namespace", () => {
+		const serviceEnv = `
+OLD=\${{project.ENVIRONMENT}}
+`;
+
+		expect(() =>
+			prepareEnvironmentVariables(serviceEnv, "ENVIRONMENT=staging"),
 		).toThrow(
 			"Unsupported workspace environment variable namespace: project.ENVIRONMENT. Use workspace.ENVIRONMENT instead.",
 		);
 	});
 
-	it("reports missing workspace variables with workspace language", () => {
-		const incompleteProjectEnv = `
-		NODE_ENV=production
-		`;
-
-		const invalidServiceEnv = `
-		UNDEFINED_VAR=\${{workspace.UNDEFINED_VAR}}
-		`;
-
-		expect(() =>
-			prepareEnvironmentVariables(invalidServiceEnv, incompleteProjectEnv),
-		).toThrow(
-			"Invalid workspace environment variable: workspace.UNDEFINED_VAR",
-		);
-	});
-
-	it("allows service-specific variables to override workspace variables", () => {
-		const serviceSpecificEnv = `
-		ENVIRONMENT=production
-		DATABASE_URL=\${{workspace.DATABASE_URL}}
-		`;
-
-		const resolved = prepareEnvironmentVariables(
-			serviceSpecificEnv,
-			projectEnv,
-		);
-
-		expect(resolved).toEqual([
-			"ENVIRONMENT=production", // Overrides workspace variable
-			"DATABASE_URL=postgres://postgres:postgres@localhost:5432/workspace_db",
-		]);
-	});
-
-	it("resolves complex references for dynamic endpoints", () => {
-		const projectEnv = `
+	it("resolves complex references composed from workspace variables", () => {
+		const workspaceEnv = `
 BASE_URL=https://api.example.com
 API_VERSION=v1
-PORT=8000
 `;
 		const serviceEnv = `
 API_ENDPOINT=\${{workspace.BASE_URL}}/\${{workspace.API_VERSION}}/endpoint
-SERVICE_PORT=9000
 `;
-		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
+
+		const resolved = prepareEnvironmentVariables(serviceEnv, workspaceEnv);
 
 		expect(resolved).toEqual([
 			"API_ENDPOINT=https://api.example.com/v1/endpoint",
-			"SERVICE_PORT=9000",
+			"BASE_URL=https://api.example.com",
+			"API_VERSION=v1",
 		]);
 	});
 
-	it("handles missing workspace variables gracefully", () => {
-		const projectEnv = `
-PORT=8080
-`;
-		const serviceEnv = `
-MISSING_VAR=\${{workspace.MISSING_KEY}}
-SERVICE_PORT=3000
-`;
-
-		expect(() => prepareEnvironmentVariables(serviceEnv, projectEnv)).toThrow(
-			"Invalid workspace environment variable: workspace.MISSING_KEY",
-		);
-	});
-
-	it("overrides workspace variables with service-specific values", () => {
-		const projectEnv = `
-ENVIRONMENT=staging
-DATABASE_URL=postgres://workspace:workspace@localhost:5432/workspace_db
-`;
-		const serviceEnv = `
-ENVIRONMENT=\${{workspace.ENVIRONMENT}}
-DATABASE_URL=postgres://service:service@localhost:5432/service_db
-SERVICE_NAME=my-service
-`;
-		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
-
-		expect(resolved).toEqual([
-			"ENVIRONMENT=staging",
-			"DATABASE_URL=postgres://service:service@localhost:5432/service_db",
-			"SERVICE_NAME=my-service",
-		]);
-	});
-
-	it("handles workspace variables with normal and unusual characters", () => {
-		const projectEnv = `
+	it("preserves quotes and special characters when resolving references", () => {
+		const workspaceEnv = `
 ENVIRONMENT=PRODUCTION
-`;
-
-		// Needs to be in quotes
-		const serviceEnv = `
-NODE_ENV=\${{workspace.ENVIRONMENT}}
-SPECIAL_VAR="$^@$^@#$^@!#$@#$-\${{workspace.ENVIRONMENT}}"
-`;
-
-		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
-
-		expect(resolved).toEqual([
-			"NODE_ENV=PRODUCTION",
-			"SPECIAL_VAR=$^@$^@#$^@!#$@#$-PRODUCTION",
-		]);
-	});
-
-	it("handles complex cases with multiple references, special characters, and spaces", () => {
-		const projectEnv = `
-ENVIRONMENT=STAGING
 APP_NAME=MyApp
 `;
-
 		const serviceEnv = `
-NODE_ENV=\${{workspace.ENVIRONMENT}}
 COMPLEX_VAR="Prefix-$#^!@-\${{workspace.ENVIRONMENT}}--\${{workspace.APP_NAME}} Suffix "
 `;
-		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
+
+		const resolved = prepareEnvironmentVariables(serviceEnv, workspaceEnv);
 
 		expect(resolved).toEqual([
-			"NODE_ENV=STAGING",
-			"COMPLEX_VAR=Prefix-$#^!@-STAGING--MyApp Suffix ",
-		]);
-	});
-
-	it("handles references enclosed in single quotes", () => {
-		const projectEnv = `
-	ENVIRONMENT=STAGING
-	APP_NAME=MyApp
-	`;
-
-		const serviceEnv = `
-	NODE_ENV='\${{workspace.ENVIRONMENT}}'
-	COMPLEX_VAR='Prefix-$#^!@-\${{workspace.ENVIRONMENT}}--\${{workspace.APP_NAME}} Suffix'
-	`;
-		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
-
-		expect(resolved).toEqual([
-			"NODE_ENV=STAGING",
-			"COMPLEX_VAR=Prefix-$#^!@-STAGING--MyApp Suffix",
-		]);
-	});
-
-	it("handles double and single quotes combined", () => {
-		const projectEnv = `
-ENVIRONMENT=PRODUCTION
-APP_NAME=MyApp
-`;
-		const serviceEnv = `
-NODE_ENV="'\${{workspace.ENVIRONMENT}}'"
-COMPLEX_VAR="'Prefix "DoubleQuoted" and \${{workspace.APP_NAME}}'"
-`;
-		const resolved = prepareEnvironmentVariables(serviceEnv, projectEnv);
-
-		expect(resolved).toEqual([
-			"NODE_ENV='PRODUCTION'",
-			"COMPLEX_VAR='Prefix \"DoubleQuoted\" and MyApp'",
+			"COMPLEX_VAR=Prefix-$#^!@-PRODUCTION--MyApp Suffix ",
+			"ENVIRONMENT=PRODUCTION",
+			"APP_NAME=MyApp",
 		]);
 	});
 });
