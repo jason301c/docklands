@@ -402,6 +402,10 @@ export const backupRouter = createTRPCRouter({
 						await restoreDatabaseBackup(database, destination, input, onLog);
 					}
 				} else if (input.backupType === "compose") {
+					// NOTE: for a compose restore, `input.databaseId` actually carries
+					// the *compose* id — the restore input reuses the single
+					// `databaseId` field (see apiRestoreBackup) for whichever service
+					// the backup belongs to. It is not a managed-database id here.
 					const compose = await findComposeById(input.databaseId);
 					await restoreComposeBackup(compose, destination, input, onLog);
 				}

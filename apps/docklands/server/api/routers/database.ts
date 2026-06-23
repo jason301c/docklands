@@ -196,7 +196,7 @@ export const databaseRouter = createTRPCRouter({
 				if (portCheck.isInUse) {
 					throw new TRPCError({
 						code: "CONFLICT",
-						message: `Port ${input.externalPort} is already in use by ${portCheck.conflictingContainer}`,
+						message: `Port ${input.externalPort} is already in use by ${portCheck.conflictingContainer}. Note this check is best-effort — it only inspects the worker's Docker containers and host listeners at this moment, so it can miss host processes or lose a race, and a later bind may still fail.`,
 					});
 				}
 			}

@@ -801,8 +801,8 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 |---|---|---|
 | A1 | nginx `runtimeWorker {` token | **✅ P0** |
 | A2 | build secrets exported as plain env | **✅ P2** (base64 → exported env, not cmdline) |
-| A3 | publishDir + SPA no coupling | **P7 guard** |
-| A4 | drop + buildType unvalidated | **P7 guard** |
+| A3 | publishDir + SPA no coupling | **✅ P7** (warn on static+publishDir without SPA) |
+| A4 | drop + buildType unvalidated | **✅ P7** (warn on drop+dockerfile) |
 | A5 | audit resourceType inconsistent | **✅ P7** (canonical: application/compose/owning-type) |
 | A6 | rollbacks inert; image-less row leak | **✅ P7** (row always deleted) |
 | A7 | paketo/railpack version pinning | **✅ P7** (documented) |
@@ -813,7 +813,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | A12 | patch audit resourceType:settings | **✅ P7** (uses owning service type) |
 | D1 | conn vars embed plaintext password | **✅ P1 (store)** + **✅ P5 (binding; env encrypted at rest)** |
 | D2 | password change no propagation | **✅ P5** (re-resolve at deploy) |
-| D3 | external-port TOCTOU | **P7 (best-effort + clear error)** |
+| D3 | external-port TOCTOU | **✅ P7** (clear best-effort error) |
 | D4 | changePassword shell interpolation | **✅ P2** (regex backtick gap fixed + boundary assert) |
 | D5 | backup UI hardcodes engines | **P7 (registry-drive)** |
 | D6 | redis/libsql no logical backup | no action (by design) |
@@ -826,7 +826,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | C5 | detection runs twice | **P7 (single call site)** |
 | C6 | stack stop/start asymmetry | **P7 (add start path)** |
 | C7 | delete swallows cleanup errors | **✅ P7** (logged; app/compose/db parity) |
-| C8 | catalog header parsing fragile | **P7 (robust parse)** |
+| C8 | catalog header parsing fragile | **✅ P7** (robust header scan) |
 | C9 | libsql embedded detection weak | **P7 (note/strengthen)** |
 | N1 | "custom" cert provider ≠ upload | **P7 (UI clarity)** |
 | N2 | cert private keys plaintext | **✅ P1** |
@@ -879,7 +879,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | B6 | stop-mode volume backup downtime | **✅ P7** (already documented) |
 | B7 | scheduler no catch-up | **◑ deferred** — missed-cron backfill belongs in the durable-jobs abstraction (needs live env) |
 | B8 | destination test ignores worker | **P7 fix** |
-| B9 | backups naming smells | **P7 cleanup** |
+| B9 | backups naming smells | **✅ P7** (documented the composeId reuse) |
 | R1 | deploy queue wrong partition | **✅ P3** (partition by build worker) |
 | R2 | no build worker for compose | **◑ deferred** (real feature, design separately) |
 | R3 | node removal force-rm | **P7 guard (drain-wait/quorum)** |

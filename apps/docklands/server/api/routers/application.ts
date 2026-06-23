@@ -30,6 +30,7 @@ import {
 	environments,
 	workspaces,
 } from "@/server/core/db/schema";
+import { logger } from "@/server/core/lib/logger";
 import { cancelDeployment } from "@/server/core/runtime/deploy";
 import {
 	createApplication,
@@ -404,6 +405,21 @@ export const applicationRouter = createTRPCRouter({
 			await checkServicePermissionAndAccess(ctx, input.applicationId, {
 				service: ["create"],
 			});
+			// Non-fatal heads-up: a static build with a publishDirectory but
+			// isStaticSpa off serves files without the index.html fallback, so
+			// client-side routes 404 on refresh/deep-link. The UI only pairs these
+			// correctly, but a direct API/OpenAPI caller can set this broken combo —
+			// warn rather than reject, since a non-SPA static site is still valid.
+			if (
+				input.buildType === "static" &&
+				input.publishDirectory &&
+				!input.isStaticSpa
+			) {
+				logger.warn(
+					{ applicationId: input.applicationId },
+					"static build sets publishDirectory without isStaticSpa: client-side routing will 404 on deep-links (no index.html fallback)",
+				);
+			}
 			await updateApplication(input.applicationId, {
 				buildType: input.buildType,
 				dockerfile: input.dockerfile,
@@ -820,6 +836,22 @@ export const applicationRouter = createTRPCRouter({
 				deployment: ["create"],
 			});
 			const app = await findApplicationById(applicationId);
+
+			// A drop only supplies the source code; the existing buildType still
+			// drives the build. dockerfile is the one combo that fails late (and
+			// with a generic Docker error) when the uploaded zip doesn't contain
+			// the configured Dockerfile, since the file has to come from the
+			// upload. Warn up front so the cause is clear in the logs; don't
+			// reject — a drop with a Dockerfile inside is a valid setup.
+			if (app.buildType === "dockerfile") {
+				logger.warn(
+					{
+						applicationId: app.applicationId,
+						dockerfile: app.dockerfile,
+					},
+					"drop deployment with buildType=dockerfile: the uploaded zip must contain the configured Dockerfile or the build will fail",
+				);
+			}
 
 			await updateApplication(applicationId, {
 				sourceType: "drop",

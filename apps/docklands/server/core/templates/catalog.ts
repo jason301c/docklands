@@ -68,12 +68,22 @@ function parseTemplateHeaders(content: string) {
 	const headers: Record<string, string> = {};
 	for (const line of content.split(/\r?\n/)) {
 		const match = line.match(/^#\s*([^:]+):\s*(.*)$/);
-		if (!match) {
-			if (line.trim() && !line.trim().startsWith("#")) break;
+		if (match) {
+			const [, key, value] = match;
+			if (key) headers[key.trim().toLowerCase()] = value?.trim() || "";
 			continue;
 		}
-		const [, key, value] = match;
-		if (key) headers[key.trim().toLowerCase()] = value?.trim() || "";
+		const trimmed = line.trim();
+		// Skip blank lines and any other comment lines (e.g. a bare `# note`)
+		// without bailing — they shouldn't drop the headers that follow.
+		if (!trimmed || trimmed.startsWith("#")) continue;
+		// Stop only when we reach the start of the YAML body: a top-level,
+		// non-indented mapping key like `services:` / `version:`. A stray
+		// non-comment line that isn't a top-level key is tolerated so a single
+		// fluke line doesn't silently drop the remaining metadata. We avoid
+		// scanning into the compose body (where inline `# key: value` comments
+		// could be misread as headers) by terminating at that first real key.
+		if (/^\S[^\s:]*:/.test(line)) break;
 	}
 	return headers;
 }
