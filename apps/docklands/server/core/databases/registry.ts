@@ -1,0 +1,499 @@
+/**
+ * Database engine registry — the single source of truth for Docklands' managed
+ * database/cache services.
+ *
+ * Every per-engine fact that used to be hard-coded across six parallel
+ * schema/router/service/builder files lives here as one descriptor per engine:
+ * detection signals, deploy specifics (image, port, mount path, env recipe),
+ * connection-variable recipes, backup commands, and credential rotation.
+ *
+ * This module is intentionally free of database, Docker, and filesystem imports
+ * so it stays a pure, unit-testable description of engine behavior. The generic
+ * `database` table stores the shared columns plus an engine-specific `config`
+ * jsonb validated by the engine's `configSchema`; everything engine-specific is
+ * derived from these descriptors.
+ */
+import { z } from "zod";
+
+export const DATABASE_ENGINE_KEYS = [
+	"postgres",
+	"mysql",
+	"mariadb",
+	"mongo",
+	"redis",
+	"libsql",
+] as const;
+
+export type DatabaseEngineKey = (typeof DATABASE_ENGINE_KEYS)[number];
+
+export interface EnvEntry {
+	key: string;
+	value: string;
+}
+
+// ---------------------------------------------------------------------------
+// Per-engine config schemas (the engine-specific `config` jsonb)
+// ---------------------------------------------------------------------------
+
+export const postgresConfigSchema = z.object({
+	databaseName: z.string(),
+	databaseUser: z.string(),
+	databasePassword: z.string(),
+});
+
+export const mysqlConfigSchema = z.object({
+	databaseName: z.string(),
+	databaseUser: z.string(),
+	databasePassword: z.string(),
+	databaseRootPassword: z.string(),
+});
+
+export const mariadbConfigSchema = mysqlConfigSchema;
+
+export const mongoConfigSchema = z.object({
+	databaseUser: z.string(),
+	databasePassword: z.string(),
+	replicaSets: z.boolean().default(false),
+});
+
+export const redisConfigSchema = z.object({
+	databasePassword: z.string(),
+});
+
+export const libsqlConfigSchema = z.object({
+	databaseUser: z.string(),
+	databasePassword: z.string(),
+	sqldNode: z.enum(["primary", "replica"]).default("primary"),
+	sqldPrimaryUrl: z.string().optional(),
+	enableNamespaces: z.boolean().default(false),
+	externalGRPCPort: z.number().int().optional(),
+	externalAdminPort: z.number().int().optional(),
+});
+
+export type PostgresConfig = z.infer<typeof postgresConfigSchema>;
+export type MysqlConfig = z.infer<typeof mysqlConfigSchema>;
+export type MariadbConfig = z.infer<typeof mariadbConfigSchema>;
+export type MongoConfig = z.infer<typeof mongoConfigSchema>;
+export type RedisConfig = z.infer<typeof redisConfigSchema>;
+export type LibsqlConfig = z.infer<typeof libsqlConfigSchema>;
+
+export interface DatabaseConfigByKey {
+	postgres: PostgresConfig;
+	mysql: MysqlConfig;
+	mariadb: MariadbConfig;
+	mongo: MongoConfig;
+	redis: RedisConfig;
+	libsql: LibsqlConfig;
+}
+
+// ---------------------------------------------------------------------------
+// Detection signals (ported from Coolify bootstrap/helpers)
+// ---------------------------------------------------------------------------
+
+/**
+ * Image base names (registry prefix stripped) that, when used in a standalone
+ * fashion, contain a database. Used by the template detection bridge to decide
+ * "is this compose service a database we should manage?"
+ */
+
+/**
+ * Images whose names contain a database keyword but which are applications, not
+ * databases. Detection must treat these as apps. Ported from Coolify's
+ * `isDatabaseImageWithContext` known-application list.
+ */
+export const KNOWN_APPLICATION_IMAGE_DENYLIST = [
+	"supertokens/supertokens-mysql",
+	"supertokens/supertokens-postgresql",
+	"supertokens/supertokens-mongodb",
+	"registry.supertokens.io/supertokens",
+	"metabase/metabase",
+	"amancevice/superset",
+	"nocodb/nocodb",
+	"ghcr.io/umami-software/umami",
+	"infisical/infisical",
+	"postgrest/postgrest",
+	"supabase/postgres-meta",
+	"bluewaveuptime/uptime_redis",
+] as const;
+
+// ---------------------------------------------------------------------------
+// Engine descriptor
+// ---------------------------------------------------------------------------
+
+export interface ConnectionVarsArgs<C> {
+	appName: string;
+	config: C;
+}
+
+export interface BackupCommandArgs {
+	/** database name / collection target */
+	database: string;
+	databaseUser: string;
+	databasePassword: string;
+}
+
+export interface ChangePasswordArgs {
+	databaseUser: string;
+	databasePassword: string;
+	databaseRootPassword?: string;
+	/** the user whose password is being changed (defaults to databaseUser) */
+	targetUser?: string;
+	newPassword: string;
+}
+
+export interface ExtraPort {
+	/** stable key, e.g. "grpc" | "admin" */
+	key: string;
+	targetPort: number;
+	/** the config field holding the published external port, if any */
+	externalPort?: number;
+}
+
+export interface DatabaseEngine<K extends DatabaseEngineKey = DatabaseEngineKey> {
+	key: K;
+	label: string;
+	/** icon/logo key, matching public/templates or component icon maps */
+	logo: string;
+	tags: string[];
+
+	/** default docker image suggested in the create UI */
+	defaultImage: string;
+	/** the port the database listens on inside the container */
+	containerPort: number;
+
+	// --- detection ---
+	/** base image names (registry prefix stripped) that mean this engine */
+	imagePatterns: string[];
+	/** env keys whose presence strongly signals this engine in a compose file */
+	detectEnvKeys: string[];
+	/** healthcheck command fragments that signal this engine */
+	detectHealthcheck: string[];
+
+	// --- config ---
+	configSchema: z.ZodType<DatabaseConfigByKey[K]>;
+
+	// --- deploy specifics ---
+	mountPath: (dockerImage: string) => string;
+	/**
+	 * Build the default environment block (the engine's required env), then
+	 * append any user-provided custom env. Mirrors the old `buildX` builders.
+	 */
+	buildDefaultEnv: (
+		config: DatabaseConfigByKey[K],
+		customEnv?: string | null,
+	) => string;
+	/** extra published ports beyond the primary external port (e.g. libSQL) */
+	extraPorts?: (config: DatabaseConfigByKey[K]) => ExtraPort[];
+
+	// --- capabilities ---
+	connectionVars: (args: ConnectionVarsArgs<DatabaseConfigByKey[K]>) => EnvEntry[];
+	backup?: {
+		/** inner command (without container resolution) for a logical backup */
+		dumpCommand: (args: BackupCommandArgs) => string;
+	};
+	changePassword?: (args: ChangePasswordArgs) => string;
+}
+
+const encodeUrlPart = (value: string) => encodeURIComponent(value);
+
+// ---------------------------------------------------------------------------
+// PostgreSQL
+// ---------------------------------------------------------------------------
+
+const postgresEngine: DatabaseEngine<"postgres"> = {
+	key: "postgres",
+	label: "PostgreSQL",
+	logo: "postgres",
+	tags: ["postgres", "postgresql", "sql", "relational"],
+	defaultImage: "postgres:18",
+	containerPort: 5432,
+	imagePatterns: [
+		"postgres",
+		"postgis/postgis",
+		"pgvector/pgvector",
+		"supabase/postgres",
+		"elestio/postgres",
+		"timescaledb",
+		"timescaledb-ha",
+		"bitnami/postgresql",
+	],
+	detectEnvKeys: ["POSTGRES_PASSWORD", "POSTGRES_USER", "POSTGRES_DB"],
+	detectHealthcheck: ["pg_isready"],
+	configSchema: postgresConfigSchema,
+	mountPath: (dockerImage) => {
+		const versionMatch = dockerImage.match(/postgres:(\d+)/);
+		if (versionMatch?.[1]) {
+			const version = Number.parseInt(versionMatch[1], 10);
+			// PostgreSQL 18+ uses /var/lib/postgresql/{version}/docker as PGDATA
+			if (version >= 18) return `/var/lib/postgresql/${version}/docker`;
+		}
+		return "/var/lib/postgresql/data";
+	},
+	buildDefaultEnv: ({ databaseName, databaseUser, databasePassword }, env) =>
+		`POSTGRES_DB="${databaseName}"\nPOSTGRES_USER="${databaseUser}"\nPOSTGRES_PASSWORD="${databasePassword}"${
+			env ? `\n${env}` : ""
+		}`,
+	connectionVars: ({ appName, config }) => {
+		const user = encodeUrlPart(config.databaseUser);
+		const password = encodeUrlPart(config.databasePassword);
+		const database = encodeUrlPart(config.databaseName);
+		return [
+			{
+				key: "DATABASE_URL",
+				value: `postgresql://${user}:${password}@${appName}:5432/${database}`,
+			},
+			{ key: "POSTGRES_HOST", value: appName },
+			{ key: "POSTGRES_DB", value: config.databaseName },
+			{ key: "POSTGRES_USER", value: config.databaseUser },
+			{ key: "POSTGRES_PASSWORD", value: config.databasePassword },
+		];
+	},
+	backup: {
+		dumpCommand: ({ database, databaseUser }) =>
+			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; pg_dump -Fc --no-acl --no-owner -h localhost -U ${databaseUser} --no-password '${database}' | gzip"`,
+	},
+	changePassword: ({ databaseUser, newPassword }) =>
+		`docker exec "$CONTAINER_ID" psql -U ${databaseUser} -c "ALTER USER \\"${databaseUser}\\" WITH PASSWORD '${newPassword}';"`,
+};
+
+// ---------------------------------------------------------------------------
+// MySQL
+// ---------------------------------------------------------------------------
+
+const mysqlEngine: DatabaseEngine<"mysql"> = {
+	key: "mysql",
+	label: "MySQL",
+	logo: "mysql",
+	tags: ["mysql", "sql", "relational"],
+	defaultImage: "mysql:8",
+	containerPort: 3306,
+	imagePatterns: ["mysql", "mysql/mysql-server", "bitnami/mysql"],
+	detectEnvKeys: ["MYSQL_ROOT_PASSWORD", "MYSQL_PASSWORD", "MYSQL_DATABASE"],
+	detectHealthcheck: ["mysqladmin ping"],
+	configSchema: mysqlConfigSchema,
+	mountPath: () => "/var/lib/mysql",
+	buildDefaultEnv: (
+		{ databaseName, databaseUser, databasePassword, databaseRootPassword },
+		env,
+	) =>
+		databaseUser !== "root"
+			? `MYSQL_USER="${databaseUser}"\nMYSQL_DATABASE="${databaseName}"\nMYSQL_PASSWORD="${databasePassword}"\nMYSQL_ROOT_PASSWORD="${databaseRootPassword}"${
+					env ? `\n${env}` : ""
+				}`
+			: `MYSQL_DATABASE="${databaseName}"\nMYSQL_ROOT_PASSWORD="${databaseRootPassword}"${
+					env ? `\n${env}` : ""
+				}`,
+	connectionVars: ({ appName, config }) => {
+		const user = encodeUrlPart(config.databaseUser);
+		const password = encodeUrlPart(config.databasePassword);
+		const database = encodeUrlPart(config.databaseName);
+		return [
+			{
+				key: "DATABASE_URL",
+				value: `mysql://${user}:${password}@${appName}:3306/${database}`,
+			},
+			{ key: "MYSQL_HOST", value: appName },
+			{ key: "MYSQL_DATABASE", value: config.databaseName },
+			{ key: "MYSQL_USER", value: config.databaseUser },
+			{ key: "MYSQL_PASSWORD", value: config.databasePassword },
+		];
+	},
+	backup: {
+		dumpCommand: ({ database, databasePassword }) =>
+			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mysqldump --default-character-set=utf8mb4 -u 'root' --password='${databasePassword}' --single-transaction --no-tablespaces --quick '${database}' | gzip"`,
+	},
+	changePassword: ({ databaseRootPassword, targetUser, databaseUser, newPassword }) =>
+		`docker exec "$CONTAINER_ID" mysql -u root -p'${databaseRootPassword}' -e "ALTER USER '${targetUser ?? databaseUser}'@'%' IDENTIFIED BY '${newPassword}'; FLUSH PRIVILEGES;"`,
+};
+
+// ---------------------------------------------------------------------------
+// MariaDB
+// ---------------------------------------------------------------------------
+
+const mariadbEngine: DatabaseEngine<"mariadb"> = {
+	key: "mariadb",
+	label: "MariaDB",
+	logo: "mariadb",
+	tags: ["mariadb", "mysql", "sql", "relational"],
+	defaultImage: "mariadb:11",
+	containerPort: 3306,
+	imagePatterns: ["mariadb", "bitnami/mariadb"],
+	detectEnvKeys: ["MARIADB_ROOT_PASSWORD", "MARIADB_PASSWORD", "MARIADB_DATABASE"],
+	detectHealthcheck: ["mariadb-admin ping", "healthcheck.sh"],
+	configSchema: mariadbConfigSchema,
+	mountPath: () => "/var/lib/mysql",
+	buildDefaultEnv: (
+		{ databaseName, databaseUser, databasePassword, databaseRootPassword },
+		env,
+	) =>
+		`MARIADB_DATABASE="${databaseName}"\nMARIADB_USER="${databaseUser}"\nMARIADB_PASSWORD="${databasePassword}"\nMARIADB_ROOT_PASSWORD="${databaseRootPassword}"${
+			env ? `\n${env}` : ""
+		}`,
+	connectionVars: ({ appName, config }) => {
+		const user = encodeUrlPart(config.databaseUser);
+		const password = encodeUrlPart(config.databasePassword);
+		const database = encodeUrlPart(config.databaseName);
+		return [
+			{
+				key: "DATABASE_URL",
+				value: `mariadb://${user}:${password}@${appName}:3306/${database}`,
+			},
+			{ key: "MARIADB_HOST", value: appName },
+			{ key: "MARIADB_DATABASE", value: config.databaseName },
+			{ key: "MARIADB_USER", value: config.databaseUser },
+			{ key: "MARIADB_PASSWORD", value: config.databasePassword },
+		];
+	},
+	backup: {
+		dumpCommand: ({ database, databaseUser, databasePassword }) =>
+			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mariadb-dump --user='${databaseUser}' --password='${databasePassword}' --single-transaction --quick --databases ${database} | gzip"`,
+	},
+	changePassword: ({ databaseRootPassword, targetUser, databaseUser, newPassword }) =>
+		`docker exec "$CONTAINER_ID" mariadb -u root -p'${databaseRootPassword}' -e "ALTER USER '${targetUser ?? databaseUser}'@'%' IDENTIFIED BY '${newPassword}'; FLUSH PRIVILEGES;"`,
+};
+
+// ---------------------------------------------------------------------------
+// MongoDB
+// ---------------------------------------------------------------------------
+
+const mongoEngine: DatabaseEngine<"mongo"> = {
+	key: "mongo",
+	label: "MongoDB",
+	logo: "mongo",
+	tags: ["mongo", "mongodb", "document", "nosql"],
+	defaultImage: "mongo:8",
+	containerPort: 27017,
+	imagePatterns: ["mongo", "bitnami/mongodb"],
+	detectEnvKeys: ["MONGO_INITDB_ROOT_PASSWORD", "MONGO_INITDB_ROOT_USERNAME"],
+	detectHealthcheck: ["mongosh", "mongo --eval", "db.adminCommand"],
+	configSchema: mongoConfigSchema,
+	mountPath: () => "/data/db",
+	buildDefaultEnv: ({ databaseUser, databasePassword, replicaSets }, env) =>
+		`MONGO_INITDB_ROOT_USERNAME="${databaseUser}"\nMONGO_INITDB_ROOT_PASSWORD="${databasePassword}"${
+			replicaSets ? "\nMONGO_INITDB_DATABASE=admin" : ""
+		}${env ? `\n${env}` : ""}`,
+	connectionVars: ({ appName, config }) => {
+		const user = encodeUrlPart(config.databaseUser);
+		const password = encodeUrlPart(config.databasePassword);
+		return [
+			{
+				key: "MONGO_URL",
+				value: `mongodb://${user}:${password}@${appName}:27017/?authSource=admin`,
+			},
+			{ key: "MONGO_HOST", value: appName },
+			{ key: "MONGO_USER", value: config.databaseUser },
+			{ key: "MONGO_PASSWORD", value: config.databasePassword },
+		];
+	},
+	backup: {
+		dumpCommand: ({ database, databaseUser, databasePassword }) =>
+			`docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mongodump -d '${database}' -u '${databaseUser}' -p '${databasePassword}' --archive --authenticationDatabase admin --gzip"`,
+	},
+	changePassword: ({ databaseUser, databasePassword, newPassword }) =>
+		`docker exec "$CONTAINER_ID" mongosh -u '${databaseUser}' -p '${databasePassword}' --authenticationDatabase admin --eval "db.getSiblingDB('admin').changeUserPassword('${databaseUser}', '${newPassword}')"`,
+};
+
+// ---------------------------------------------------------------------------
+// Redis
+// ---------------------------------------------------------------------------
+
+const redisEngine: DatabaseEngine<"redis"> = {
+	key: "redis",
+	label: "Redis",
+	logo: "redis",
+	tags: ["redis", "cache", "queue", "key-value", "datastore"],
+	defaultImage: "redis:7",
+	containerPort: 6379,
+	imagePatterns: ["redis", "bitnami/redis", "valkey/valkey"],
+	detectEnvKeys: ["REDIS_PASSWORD"],
+	detectHealthcheck: ["redis-cli ping"],
+	configSchema: redisConfigSchema,
+	mountPath: () => "/data",
+	buildDefaultEnv: ({ databasePassword }, env) =>
+		`REDIS_PASSWORD="${databasePassword}"${env ? `\n${env}` : ""}`,
+	connectionVars: ({ appName, config }) => {
+		const password = encodeUrlPart(config.databasePassword);
+		return [
+			{ key: "REDIS_URL", value: `redis://:${password}@${appName}:6379` },
+			{ key: "REDIS_HOST", value: appName },
+			{ key: "REDIS_PASSWORD", value: config.databasePassword },
+		];
+	},
+	// Redis has no logical dump backup in Docklands (excluded by design).
+	changePassword: ({ databasePassword, newPassword }) =>
+		`docker exec "$CONTAINER_ID" redis-cli -a '${databasePassword}' config set requirepass '${newPassword}'`,
+};
+
+// ---------------------------------------------------------------------------
+// libSQL (sqld)
+// ---------------------------------------------------------------------------
+
+const libsqlEngine: DatabaseEngine<"libsql"> = {
+	key: "libsql",
+	label: "libSQL",
+	logo: "libsql",
+	tags: ["libsql", "sqlite", "turso"],
+	defaultImage: "ghcr.io/tursodatabase/libsql-server:v0.24.32",
+	containerPort: 8080,
+	imagePatterns: ["tursodatabase/libsql-server", "libsql-server"],
+	detectEnvKeys: ["SQLD_NODE", "SQLD_HTTP_AUTH"],
+	detectHealthcheck: [],
+	configSchema: libsqlConfigSchema,
+	mountPath: () => "/var/lib/sqld",
+	buildDefaultEnv: ({ databaseUser, databasePassword, sqldNode, sqldPrimaryUrl }, env) => {
+		const basicAuth = Buffer.from(
+			`${databaseUser}:${databasePassword}`,
+			"utf-8",
+		).toString("base64");
+		return `SQLD_NODE="${sqldNode}"\nSQLD_HTTP_AUTH="basic:${basicAuth}"${
+			env ? `\n${env}` : ""
+		}${sqldNode === "replica" ? `\nSQLD_PRIMARY_URL="${sqldPrimaryUrl}"` : ""}`;
+	},
+	extraPorts: ({ externalGRPCPort, externalAdminPort }) => {
+		const ports: ExtraPort[] = [];
+		if (externalGRPCPort)
+			ports.push({ key: "grpc", targetPort: 5001, externalPort: externalGRPCPort });
+		if (externalAdminPort)
+			ports.push({ key: "admin", targetPort: 5000, externalPort: externalAdminPort });
+		return ports;
+	},
+	connectionVars: ({ appName, config }) => [
+		{ key: "LIBSQL_URL", value: `http://${appName}:8080` },
+		{ key: "LIBSQL_AUTH_TOKEN", value: config.databasePassword },
+	],
+	// libSQL backup is a tar of /var/lib/sqld, handled by the volume path; no
+	// logical dump command. changePassword is not supported (auth is env-baked).
+};
+
+// ---------------------------------------------------------------------------
+// The registry
+// ---------------------------------------------------------------------------
+
+export const databaseEngines: {
+	[K in DatabaseEngineKey]: DatabaseEngine<K>;
+} = {
+	postgres: postgresEngine,
+	mysql: mysqlEngine,
+	mariadb: mariadbEngine,
+	mongo: mongoEngine,
+	redis: redisEngine,
+	libsql: libsqlEngine,
+};
+
+export const isDatabaseEngineKey = (value: string): value is DatabaseEngineKey =>
+	(DATABASE_ENGINE_KEYS as readonly string[]).includes(value);
+
+export const getDatabaseEngine = <K extends DatabaseEngineKey>(
+	key: K,
+): DatabaseEngine<K> => databaseEngines[key];
+
+/** Validate a raw config blob against an engine's schema, returning the typed config. */
+export const parseDatabaseConfig = <K extends DatabaseEngineKey>(
+	key: K,
+	raw: unknown,
+): DatabaseConfigByKey[K] =>
+	databaseEngines[key].configSchema.parse(raw) as DatabaseConfigByKey[K];
+
+/** Engines that support a logical (dump-based) backup. Redis/libSQL do not. */
+export const databaseEngineSupportsBackup = (key: DatabaseEngineKey): boolean =>
+	Boolean(databaseEngines[key].backup);
