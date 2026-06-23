@@ -64,6 +64,13 @@
       "when": 1782216671727,
       "tag": "0008_clever_gamora",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1782221998508,
+      "tag": "0009_sticky_chimera",
+      "breakpoints": true
     }
   ]
 }

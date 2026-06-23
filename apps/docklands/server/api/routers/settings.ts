@@ -14,8 +14,6 @@ import {
 	apiReadStatsLogs,
 	apiReadTraefikConfig,
 	apiRuntimeWorkerSchema,
-	apiSaveSSHKey,
-	apiTraefikConfig,
 	apiUpdateDockerCleanup,
 	apiUpdateWebServerBuildsConcurrency,
 	runtimeWorkers,
@@ -58,7 +56,6 @@ import {
 	cleanupBuilders,
 	cleanupContainers,
 	cleanupImages,
-	cleanupSystem,
 	cleanupVolumes,
 	getDockerDiskUsage,
 	prepareEnvironmentVariables,
@@ -68,10 +65,8 @@ import { checkGPUStatus, setupGPUSupport } from "@/server/core/utils/gpu-setup";
 import { sendDockerCleanupNotifications } from "@/server/core/utils/notifications/docker-cleanup";
 import { spawnAsync } from "@/server/core/utils/process/spawnAsync";
 import {
-	readConfig,
 	readConfigInPath,
 	readMonitoringConfig,
-	writeConfig,
 	writeTraefikConfigInPath,
 } from "@/server/core/utils/traefik/application";
 import {
@@ -96,12 +91,7 @@ const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || "jason301c/docklands";
 export const settingsRouter = createTRPCRouter({
 	getWebServerSettings: protectedProcedure.query(async () => {
 		const settings = await getWebServerSettings();
-		if (!settings) {
-			return settings;
-		}
-		// Never expose the host SSH private key to clients. It is only consumed
-		// server-side; the UI only needs to know whether one is configured.
-		return { ...settings, sshPrivateKey: null };
+		return settings;
 	}),
 	reloadServer: adminProcedure.mutation(async ({ ctx }) => {
 		await reloadDockerResource("docklands", undefined, packageInfo.version);
@@ -229,18 +219,6 @@ export const settingsRouter = createTRPCRouter({
 				resourceName: "clean-docker-builder",
 			});
 		}),
-	cleanDockerPrune: adminProcedure
-		.input(apiRuntimeWorkerSchema)
-		.mutation(async ({ input, ctx }) => {
-			await cleanupSystem(input?.runtimeWorkerId);
-			await cleanupBuilders(input?.runtimeWorkerId);
-			await audit(ctx, {
-				action: "delete",
-				resourceType: "settings",
-				resourceName: "clean-docker-prune",
-			});
-			return true;
-		}),
 	cleanAll: adminProcedure
 		.input(apiRuntimeWorkerSchema)
 		.mutation(async ({ input, ctx }) => {
@@ -266,19 +244,6 @@ export const settingsRouter = createTRPCRouter({
 	getDockerDiskUsage: adminProcedure.query(async () => {
 		return getDockerDiskUsage();
 	}),
-	saveSSHPrivateKey: adminProcedure
-		.input(apiSaveSSHKey)
-		.mutation(async ({ input, ctx }) => {
-			await updateWebServerSettings({
-				sshPrivateKey: input.sshPrivateKey,
-			});
-			await audit(ctx, {
-				action: "update",
-				resourceType: "settings",
-				resourceName: "ssh-private-key",
-			});
-			return true;
-		}),
 	assignDomainServer: adminProcedure
 		.input(apiAssignDomain)
 		.mutation(async ({ input, ctx }) => {
@@ -308,17 +273,6 @@ export const settingsRouter = createTRPCRouter({
 			});
 			return settings;
 		}),
-	cleanSSHPrivateKey: adminProcedure.mutation(async ({ ctx }) => {
-		await updateWebServerSettings({
-			sshPrivateKey: null,
-		});
-		await audit(ctx, {
-			action: "delete",
-			resourceType: "settings",
-			resourceName: "ssh-private-key",
-		});
-		return true;
-	}),
 	updateDockerCleanup: adminProcedure
 		.input(apiUpdateDockerCleanup)
 		.mutation(async ({ input, ctx }) => {
@@ -435,55 +389,6 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 
-	readTraefikConfig: adminProcedure.query(() => {
-		const traefikConfig = readMainConfig();
-		return traefikConfig;
-	}),
-
-	updateTraefikConfig: adminProcedure
-		.input(apiTraefikConfig)
-		.mutation(async ({ input, ctx }) => {
-			writeMainConfig(input.traefikConfig);
-			await audit(ctx, {
-				action: "update",
-				resourceType: "settings",
-				resourceName: "traefik-config",
-			});
-			return true;
-		}),
-
-	readWebServerTraefikConfig: adminProcedure.query(() => {
-		const traefikConfig = readConfig("docklands");
-		return traefikConfig;
-	}),
-	updateWebServerTraefikConfig: adminProcedure
-		.input(apiTraefikConfig)
-		.mutation(async ({ input, ctx }) => {
-			writeConfig("docklands", input.traefikConfig);
-			await audit(ctx, {
-				action: "update",
-				resourceType: "settings",
-				resourceName: "web-server-traefik-config",
-			});
-			return true;
-		}),
-
-	readMiddlewareTraefikConfig: adminProcedure.query(() => {
-		const traefikConfig = readConfig("middlewares");
-		return traefikConfig;
-	}),
-
-	updateMiddlewareTraefikConfig: adminProcedure
-		.input(apiTraefikConfig)
-		.mutation(async ({ input, ctx }) => {
-			writeConfig("middlewares", input.traefikConfig);
-			await audit(ctx, {
-				action: "update",
-				resourceType: "settings",
-				resourceName: "middleware-traefik-config",
-			});
-			return true;
-		}),
 	getUpdateData: protectedProcedure.mutation(async () => {
 		return await getUpdateData(packageInfo.version);
 	}),
