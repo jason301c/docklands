@@ -13,7 +13,7 @@ Docklands is early and should be treated as a fork-in-progress.
 - A first batch of security-positive upstream PRs was merged after review.
 - Remaining upstream PRs are intentionally not mass-merged. Most need dedicated security or product review.
 - The primary project environment view is now a workspace canvas with persisted service layout, service connections, generated connection variables, service variables, deployments, domains, previews, topology grouping, and command-bar navigation.
-- The inherited list view remains available as a fallback while remaining bulk operations are migrated into the workspace surface.
+- A searchable, tag-filterable projects list (`/dashboard/workspace?view=workspaces`) complements the overview dashboard, and the per-environment canvas owns the bulk service operations (multi-select deploy, move, duplicate, and delete).
 
 ## What It Does
 
