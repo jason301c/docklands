@@ -1,0 +1,49 @@
+/*
+ * Kumo + Tailwind v4 entrypoint — mirrors apps/docklands/app/globals.css.
+ *
+ * `@cloudflare/kumo/styles` registers the Kumo design tokens as Tailwind `@theme`
+ * variables, which is what generates the `*-kumo-*` utilities (bg-kumo-canvas,
+ * text-kumo-subtle, border-kumo-hairline, ...). The `@source` glob keeps Kumo's
+ * own class names from being purged; `@config` pulls in dark-mode + the Inter
+ * font family. The theme is selected by `data-theme="kumo"` on <html>; dark mode
+ * by `data-mode="dark"`. Inter is self-hosted via `@fontsource-variable/inter`
+ * (imported in app/layout.tsx) and surfaced through `--font-inter`.
+ */
+@import "@cloudflare/kumo/styles";
+@import "tailwindcss";
+@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
+@config "../tailwind.config.ts";
+
+@layer base {
+	:root {
+		--font-inter: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+	}
+
+	*,
+	::before,
+	::after {
+		border-color: var(--color-kumo-hairline);
+	}
+
+	body {
+		@apply bg-kumo-canvas text-kumo-default;
+	}
+
+	::-webkit-scrollbar {
+		width: 0.3125rem;
+	}
+
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: var(--color-kumo-hairline);
+		border-radius: 0.3125rem;
+	}
+
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: var(--color-kumo-hairline) transparent;
+	}
+}

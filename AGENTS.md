@@ -5,10 +5,11 @@
 Docklands is a community fork of the upstream self-hosted deployment platform
 ([dokploy/dokploy](https://github.com/dokploy/dokploy)), focused on a cleaner,
 project-first deployment control plane that users run on their own VM. Treat the
-repository as a Bun workspace with separate deployable surfaces. Today
-`apps/docklands` (the control plane) and `apps/docs` (an Astro/Starlight
-documentation site) exist; `apps/site` can later be added as another independent
-Astro deployable.
+repository as a Bun workspace with separate deployable surfaces:
+`apps/docklands` (the control plane), `apps/docs` (an Astro/Starlight
+documentation site), and `apps/site` (the public landing/marketing site, a
+separate Next.js deployable). Each app is independently deployable and must not
+import another app's source.
 
 This root file owns repo-wide concerns: the workspace layout, the runtime split,
 the toolchain, development modes, repo-wide rules, dependency notes, and
@@ -74,7 +75,9 @@ and reconcile it before wrapping up.
 
 - `apps/docklands/` is the installable Next.js control plane users run on their own VM.
 - `apps/docs/` is the public documentation site, built on Astro + Starlight.
-- Future `apps/site/` should be the public landing/marketing site, likely Astro.
+- `apps/site/` is the public landing/marketing site, built on Next.js so it can
+  use the Cloudflare Kumo component library natively (not just its tokens); see
+  the Repository Layout note below for why it diverges from `apps/docs`.
 - The hosted surfaces explain and document Docklands. They must not assume Docklands itself is hosted for users.
 - The Docklands app assumes customer-owned infrastructure: Docker Engine, the VM
   filesystem, ports, secrets, domains, and app data all live on the user's
@@ -92,6 +95,13 @@ and reconcile it before wrapping up.
     variables onto them in `apps/docs/src/styles/docs.css` — no cross-app import.
     It exposes `llms.txt`/`llms-full.txt` via `starlight-llms-txt`. Astro is a
     static build, so it sits outside the Node-24 app-runtime rule below.
+  - `apps/site/` — the public landing/marketing site (Next.js 16, App Router,
+    Turbopack). It is Next rather than Astro on purpose: the marketing surface
+    uses the **Cloudflare Kumo** component library natively as React (Button,
+    etc.), not just Kumo's design tokens, so it reuses the app's Tailwind 4 + Kumo
+    wiring (`@cloudflare/kumo/styles` + `@config`, `data-theme="kumo"`, Inter via
+    `next/font`). It is still fully decoupled — no cross-app import — and can be
+    statically exported for CDN hosting. Like the app it runs on Node 24.
 - `tools/` — repository-level development and release scripts (e.g.
   `tools/docker/` image build/push helpers, `tools/check-bundler.mjs`). Tools may
   coordinate app packages or release artifacts but must not be required at
