@@ -25,6 +25,7 @@ interface DeploymentQueue {
 	) => Promise<{ id: string }>;
 	getJobs: (states?: Array<"waiting" | "active">) => Promise<InMemoryJob[]>;
 	close: () => Promise<void>;
+	drain: (timeoutMs?: number) => Promise<void>;
 	on: (...args: unknown[]) => void;
 	run: () => Promise<void>;
 	removeWaiting: (predicate: (data: DeploymentJob) => boolean) => number;
@@ -41,6 +42,7 @@ const createInMemoryQueue = (): DeploymentQueue => {
 		add: (_name, data) => queue.add(data),
 		getJobs: (states) => queue.getJobs(states),
 		close: () => queue.close(),
+		drain: (timeoutMs) => queue.drain(timeoutMs),
 		on: () => {},
 		run: () => queue.run(),
 		removeWaiting: (predicate) => queue.removeWaiting(predicate),
@@ -77,11 +79,21 @@ export const getJobsByComposeId = async (composeId: string) => {
 	return jobs.filter((job) => (job.data as any)?.composeId === composeId);
 };
 
-process.on("SIGTERM", () => {
-	logger.info("SIGTERM received, closing deployment queue");
-	myQueue.close();
+let shuttingDown = false;
+const gracefulShutdown = async (signal: string) => {
+	if (shuttingDown) return;
+	shuttingDown = true;
+	logger.info({ signal }, "shutting down: draining deployment queue");
+	try {
+		// Stop accepting new jobs and let in-flight builds finish (bounded).
+		await myQueue.drain(30_000);
+	} catch (error) {
+		logger.error({ err: error }, "error draining deployment queue on shutdown");
+	}
 	process.exit(0);
-});
+};
+process.on("SIGTERM", () => void gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => void gracefulShutdown("SIGINT"));
 
 export const cleanQueuesByApplication = async (applicationId: string) => {
 	const removed = myQueue.removeWaiting(

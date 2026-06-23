@@ -90,6 +90,8 @@ export class InMemoryQueue {
 	private processor: Processor | null = null;
 	private running = false;
 	private seq = 0;
+	/** In-flight runJob promises, tracked so drain() can await them. */
+	private activeRuns = new Set<Promise<void>>();
 	private readonly resolveConcurrency: InMemoryQueueOptions["resolveConcurrency"];
 	private readonly now: () => number;
 
@@ -218,6 +220,26 @@ export class InMemoryQueue {
 		return Promise.resolve();
 	}
 
+	/**
+	 * Graceful shutdown: stop scheduling new jobs and await in-flight ones, up to
+	 * `timeoutMs`. Jobs still running after the timeout are abandoned; their DB
+	 * rows are reconciled on the next boot.
+	 */
+	async drain(timeoutMs = 30_000): Promise<void> {
+		this.running = false;
+		if (this.activeRuns.size === 0) return;
+		logger.info(
+			{ active: this.activeRuns.size, timeoutMs },
+			"draining in-flight deployment jobs",
+		);
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		const timeout = new Promise<void>((resolve) => {
+			timer = setTimeout(resolve, timeoutMs);
+		});
+		await Promise.race([Promise.allSettled([...this.activeRuns]), timeout]);
+		if (timer) clearTimeout(timer);
+	}
+
 	private schedule() {
 		if (!this.running || !this.processor) return;
 		for (const key of this.partitions.keys()) {
@@ -249,7 +271,9 @@ export class InMemoryQueue {
 				{ jobId: job.id, partition: key, group: job.group },
 				"deployment job started",
 			);
-			void this.runJob(job);
+			const run = this.runJob(job);
+			this.activeRuns.add(run);
+			void run.finally(() => this.activeRuns.delete(run));
 		}
 	}
 
