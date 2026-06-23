@@ -46,6 +46,7 @@ import {
 } from "./deployment";
 import { generateApplyPatchesCommand } from "./patch";
 import { validUniqueServerAppName } from "./workspace";
+import { refreshConnectionVariablesForDeploy } from "./workspace-graph";
 
 export type Compose = typeof compose.$inferSelect;
 
@@ -242,6 +243,14 @@ export const deployCompose = async ({
 	descriptionLog: string;
 }) => {
 	const compose = await findComposeById(composeId);
+	// Binding: re-resolve inbound connection variables from current source state
+	// before building, so rotated credentials propagate on this deploy.
+	const refreshedEnv = await refreshConnectionVariablesForDeploy({
+		environmentId: compose.environmentId,
+		serviceType: "compose",
+		serviceId: composeId,
+	});
+	if (refreshedEnv !== null) compose.env = refreshedEnv;
 
 	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
 		workspaceId: compose.environment.workspaceId,
@@ -381,6 +390,13 @@ export const rebuildCompose = async ({
 	descriptionLog: string;
 }) => {
 	const compose = await findComposeById(composeId);
+	// Binding: re-resolve inbound connection variables before rebuilding.
+	const refreshedEnv = await refreshConnectionVariablesForDeploy({
+		environmentId: compose.environmentId,
+		serviceType: "compose",
+		serviceId: composeId,
+	});
+	if (refreshedEnv !== null) compose.env = refreshedEnv;
 
 	const deployment = await createDeploymentCompose({
 		composeId: composeId,

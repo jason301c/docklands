@@ -12,8 +12,13 @@ import {
 	workspaceServiceConnections,
 	workspaceServiceLayouts,
 } from "@/server/core/db/schema";
+import { logger } from "@/server/core/lib/logger";
 import type { findEnvironmentById } from "@/server/core/services/environment";
-import { type EnvEntry, upsertEnvironmentVariables } from "@/shared/env-string";
+import {
+	type EnvEntry,
+	removeEnvironmentVariables,
+	upsertEnvironmentVariables,
+} from "@/shared/env-string";
 import {
 	extractWorkspaceServicesFromEnvironment,
 	getWorkspaceServiceKey,
@@ -231,12 +236,49 @@ export const findWorkspaceConnectionById = async (connectionId: string) => {
 	return connection;
 };
 
-export const removeWorkspaceConnection = async (connectionId: string) =>
-	db
+export const removeWorkspaceConnection = async (connectionId: string) => {
+	const connection = await db.query.workspaceServiceConnections.findFirst({
+		where: eq(workspaceServiceConnections.connectionId, connectionId),
+	});
+
+	const removed = await db
 		.delete(workspaceServiceConnections)
 		.where(eq(workspaceServiceConnections.connectionId, connectionId))
 		.returning()
 		.then((rows) => rows[0]);
+
+	// Binding model: disconnecting retracts this connection's projected keys from
+	// the target, then re-applies the remaining inbound connections so any key
+	// still provided by another source is restored. (Previously the link row was
+	// deleted but the written keys lingered as stale credentials — W2.)
+	if (connection) {
+		try {
+			const entries = await getConnectionVariableEntriesFromSource(connection);
+			if (entries.length > 0) {
+				const target = await readTargetEnv(connection);
+				if (target) {
+					const pruned = removeEnvironmentVariables(
+						target.env,
+						entries.map((entry) => entry.key),
+					);
+					await updateTargetEnv(connection, pruned);
+				}
+			}
+			await syncWorkspaceConnectionVariablesForService({
+				environmentId: connection.environmentId,
+				serviceType: connection.targetServiceType,
+				serviceId: connection.targetServiceId,
+			});
+		} catch (error) {
+			logger.warn(
+				{ connectionId, error },
+				"Failed to retract connection variables on disconnect",
+			);
+		}
+	}
+
+	return removed;
+};
 
 const getConnectionVariableEntriesFromSource = async (
 	connection: WorkspaceConnection,
@@ -405,6 +447,36 @@ export const syncWorkspaceConnectionVariablesForService = async (input: {
 			})),
 		),
 	};
+};
+
+/**
+ * The connection-variable *binding*: just before a consumer service deploys,
+ * re-resolve and re-apply its inbound connection variables from the source's
+ * *current* config, and return the refreshed env string for the caller to use.
+ *
+ * This is what makes connection variables a binding rather than a one-time
+ * snapshot — a source credential rotation is reflected on the consumer's next
+ * deploy with no manual "apply" (D2/W2/W5). Best-effort: a sync failure never
+ * blocks the deploy; the caller falls back to the existing env.
+ */
+export const refreshConnectionVariablesForDeploy = async (input: {
+	environmentId: string;
+	serviceType: WorkspaceServiceType;
+	serviceId: string;
+}): Promise<string | null> => {
+	try {
+		await syncWorkspaceConnectionVariablesForService(input);
+	} catch (error) {
+		logger.warn(
+			{ ...input, error },
+			"Failed to refresh connection variables at deploy",
+		);
+	}
+	const target = await readWorkspaceServiceEnv({
+		serviceType: input.serviceType,
+		serviceId: input.serviceId,
+	});
+	return target?.env ?? null;
 };
 
 export const deleteWorkspaceNodesForMissingServices = async (

@@ -34,6 +34,26 @@ export const parseEnvironmentVariables = (
 	return entries;
 };
 
+/**
+ * Remove the given keys from an env string (used to retract connection-variable
+ * bindings when a connection is removed). Keeps every other line intact.
+ */
+export const removeEnvironmentVariables = (
+	input: string | null | undefined,
+	keys: string[],
+) => {
+	if (keys.length === 0) return (input ?? "").trim();
+	const remove = new Set(keys);
+	const kept = (input ?? "").split(/\r?\n/).filter((line) => {
+		const entries = parseEnvironmentVariables(line);
+		const key = entries[0]?.key;
+		// Drop only well-formed `KEY=...` lines whose key is being retracted;
+		// blank lines / comments / malformed lines are preserved.
+		return !(key && remove.has(key));
+	});
+	return kept.join("\n").trim();
+};
+
 export const upsertEnvironmentVariables = (
 	input: string | null | undefined,
 	entries: EnvEntry[],

@@ -534,6 +534,22 @@ means shipped and green (`typecheck` + `test:ci`).
   Gitea HMAC vs Bitbucket none) and webhook changes are breakage-sensitive. All
   tracked, none silently dropped. Green: `tsc` clean, 83 files / 671 tests pass,
   Biome clean.
+- **P5 — Connection-var binding — ✅ done (2026-06-23).** Connection variables
+  are now a **binding**, not a snapshot (D2, W2, W5; D1-expose finished by P1's
+  encryption). Two halves: **(1) re-resolve at deploy** —
+  `refreshConnectionVariablesForDeploy` runs at the start of `deployApplication`,
+  `rebuildApplication`, `deployCompose`, `rebuildCompose`; it re-applies the
+  consumer's inbound connections from each source's *current* config and returns
+  the fresh env (mutated into the in-memory service before the builder reads it),
+  so a source password rotation propagates on the consumer's next deploy with no
+  manual "apply" (best-effort — a sync failure never blocks the deploy). **(2)
+  retract on disconnect** — `removeWorkspaceConnection` now prunes the removed
+  connection's projected keys from the target env (new
+  `removeEnvironmentVariables` helper) and re-applies the remaining inbound
+  connections (so a key still provided by another source is restored), instead of
+  leaving stale credentials behind. The manual apply/sync mutations remain as a
+  convenience but are no longer the source of truth. Green: `tsc` clean, 83 files
+  / 675 tests pass (4 new env-string tests), Biome clean.
 
 ### Discovered during remediation
 
@@ -659,7 +675,7 @@ the cleanup. Phases are independently shippable and each ends green
 | **P2** ✅ | Shell-exec safety | `shellArg`/arg-array sweep + secrets off cmdline | A2, A10, D4, N3, G5, R4, B2(cmdline) |
 | **P3** ◑ | Durable jobs | R1 fixed; durable-queue rewrite (O6/B7) deferred — needs live env | **R1 ✅**; O6, B7 deferred |
 | **P4** ◑ | RBAC hard boundary | 5 closed (O2,O3,AC3,AC5,AC6) + 2 already-enforced (C2-read,R5); AC1/AC2/AC4/G2 deferred | O2,O3,AC3,AC5,AC6 ✅; AC1,AC2,AC4,G2 deferred |
-| **P5** | Connection-var binding | abstraction ③ | D1(expose), D2, W2, W5 |
+| **P5** ✅ | Connection-var binding | abstraction ③ | D1(expose), D2, W2, W5 |
 | **P6** | Keep / cut | finish or remove the 8 half-built features | O1, C1, O5, S5, AC9, B1, R2, W3 |
 | **P7** | Guardrails + consistency | guard safety-critical footguns; finish rename; canonical taxonomy | N1, N4, N5, N6, A3, A4, D3, D5, B3, B4, B5, B6, B8, B9, C4, C5, C6, C7, C8, C9, R3, R6, W1, W4, S4, A5/O7, N8, N9, A6, A7, A12, G6, G8, W6 |
 
@@ -752,8 +768,8 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | A10 | patch filePath shell interpolation | **✅ P2** (base64 + path-containment check) |
 | A11 | patches re-apply conflicts | no action (documented) |
 | A12 | patch audit resourceType:settings | **P7 (taxonomy)** |
-| D1 | conn vars embed plaintext password | **✅ P1 (store)** + P5 (expose) |
-| D2 | password change no propagation | **P5** |
+| D1 | conn vars embed plaintext password | **✅ P1 (store)** + **✅ P5 (binding; env encrypted at rest)** |
+| D2 | password change no propagation | **✅ P5** (re-resolve at deploy) |
 | D3 | external-port TOCTOU | **P7 (best-effort + clear error)** |
 | D4 | changePassword shell interpolation | **✅ P2** (regex backtick gap fixed + boundary assert) |
 | D5 | backup UI hardcodes engines | **P7 (registry-drive)** |
@@ -830,10 +846,10 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | R7 | build-workers route is concurrency | no action (documented) |
 | R8 | execAsyncRemote timeout + dead sleep | **✅ P0** (drop sleep; timeout 30s; rm dead var) |
 | W1 | canvas layout race | **P7 (debounce + guard)** |
-| W2 | conn vars snapshot not binding | **P5 (= D2)** |
+| W2 | conn vars snapshot not binding | **✅ P5** (re-resolve at deploy + retract on disconnect) |
 | W3 | environment promotion absent | **P6 defer** |
 | W4 | orphaned layout rows | **P7 (call cleanup)** |
-| W5 | apply/sync doesn't redeploy | **P5 (binding resolves)** |
+| W5 | apply/sync doesn't redeploy | **✅ P5** (binding re-resolves on next deploy) |
 | W6 | connection orientation auto-flip | **P7 (doc/UI hint)** |
 | W7 | permission gating correct | no action (positive) |
 | W8 | list view toggle / tags scope | no action (note) |

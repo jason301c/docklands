@@ -53,6 +53,7 @@ import {
 	updatePreviewDeployment,
 } from "./preview-deployment";
 import { validUniqueServerAppName } from "./workspace";
+import { refreshConnectionVariablesForDeploy } from "./workspace-graph";
 
 export type Application = typeof applications.$inferSelect;
 
@@ -174,6 +175,14 @@ export const deployApplication = async ({
 	descriptionLog: string;
 }) => {
 	const application = await findApplicationById(applicationId);
+	// Binding: re-resolve inbound connection variables from current source state
+	// before building, so rotated credentials propagate on this deploy.
+	const refreshedEnv = await refreshConnectionVariablesForDeploy({
+		environmentId: application.environmentId,
+		serviceType: "application",
+		serviceId: applicationId,
+	});
+	if (refreshedEnv !== null) application.env = refreshedEnv;
 	const runtimeWorkerId =
 		application.buildRuntimeWorkerId || application.runtimeWorkerId;
 	const applicationEntity = {
@@ -304,6 +313,13 @@ export const rebuildApplication = async ({
 	descriptionLog: string;
 }) => {
 	const application = await findApplicationById(applicationId);
+	// Binding: re-resolve inbound connection variables before rebuilding.
+	const refreshedEnv = await refreshConnectionVariablesForDeploy({
+		environmentId: application.environmentId,
+		serviceType: "application",
+		serviceId: applicationId,
+	});
+	if (refreshedEnv !== null) application.env = refreshedEnv;
 	const runtimeWorkerId =
 		application.buildRuntimeWorkerId || application.runtimeWorkerId;
 	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({

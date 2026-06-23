@@ -1,8 +1,38 @@
 import { describe, expect, it } from "vitest";
 import {
 	parseEnvironmentVariables,
+	removeEnvironmentVariables,
 	upsertEnvironmentVariables,
 } from "@/shared/env-string";
+
+describe("removeEnvironmentVariables (connection-var retraction)", () => {
+	it("removes the named keys and keeps the rest", () => {
+		const out = removeEnvironmentVariables(
+			"PORT=3000\nDATABASE_URL=postgres://x\nLOG_LEVEL=info",
+			["DATABASE_URL"],
+		);
+		expect(out).toBe("PORT=3000\nLOG_LEVEL=info");
+	});
+
+	it("preserves comments, blanks, and malformed lines", () => {
+		const out = removeEnvironmentVariables(
+			"# config\nPORT=3000\nDATABASE_URL=x\n\nnot-an-env-line",
+			["DATABASE_URL"],
+		);
+		expect(out).toContain("# config");
+		expect(out).toContain("PORT=3000");
+		expect(out).toContain("not-an-env-line");
+		expect(out).not.toContain("DATABASE_URL");
+	});
+
+	it("is a no-op for an empty key list", () => {
+		expect(removeEnvironmentVariables("A=1\nB=2", [])).toBe("A=1\nB=2");
+	});
+
+	it("handles null input", () => {
+		expect(removeEnvironmentVariables(null, ["X"])).toBe("");
+	});
+});
 
 describe("parseEnvironmentVariables", () => {
 	it("extracts valid keys without requiring values to be visible", () => {
