@@ -1,4 +1,3 @@
-import type { inferRouterOutputs } from "@trpc/server";
 import {
 	Activity,
 	BarChartHorizontalBigIcon,
@@ -26,11 +25,10 @@ import {
 	Users,
 } from "lucide-react";
 import type { ComponentType } from "react";
-import type { AppRouter } from "@/server/api/root";
+import type { RouterOutputs } from "@/client/api/trpc";
 
-export type AuthQueryOutput = inferRouterOutputs<AppRouter>["user"]["get"];
-export type PermissionsOutput =
-	inferRouterOutputs<AppRouter>["user"]["getPermissions"];
+export type AuthQueryOutput = RouterOutputs["user"]["get"];
+export type PermissionsOutput = RouterOutputs["user"]["getPermissions"];
 
 type EnabledOpts = {
 	auth?: AuthQueryOutput;
