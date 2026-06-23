@@ -29,6 +29,27 @@ type Permissions = {
 	[R in Resource]?: Action<R>[];
 };
 
+/**
+ * Merge a parsed permission map into an accumulator, unioning the action list
+ * per resource. The accumulator is keyed by the canonical {@link Resource}
+ * union so only known resources/actions are representable. We work through an
+ * untyped index inside this single helper because iterating a heterogeneous
+ * keyed record collapses each resource's action type to the (empty)
+ * intersection of all of them; the input/output stay strongly typed.
+ */
+const mergePermissions = (target: Permissions, source: Permissions): void => {
+	const acc = target as Record<Resource, string[] | undefined>;
+	for (const resource of Object.keys(source) as Resource[]) {
+		const actions = (source as Record<Resource, string[] | undefined>)[
+			resource
+		];
+		if (!actions) {
+			continue;
+		}
+		acc[resource] = [...new Set([...(acc[resource] ?? []), ...actions])];
+	}
+};
+
 export type PermissionCtx = {
 	user: { id: string };
 	session: { activeOrganizationId: string };
@@ -65,17 +86,16 @@ const resolveRole = async (
 		return null;
 	}
 
-	const merged: Record<string, string[]> = {};
+	const merged: Permissions = {};
 	for (const entry of customRoles) {
-		const parsed = JSON.parse(entry.permission) as Record<string, string[]>;
-		for (const [resource, actions] of Object.entries(parsed)) {
-			merged[resource] = [
-				...new Set([...(merged[resource] ?? []), ...actions]),
-			];
-		}
+		// `organization_role.permission` is validated against `statements`
+		// (resource × action) before it is persisted (see custom-role router),
+		// so the parsed JSON conforms to the `Permissions` shape here.
+		const parsed = JSON.parse(entry.permission) as Permissions;
+		mergePermissions(merged, parsed);
 	}
 
-	return ac.newRole(merged as any);
+	return ac.newRole(merged);
 };
 
 export const checkPermission = async (
@@ -127,15 +147,20 @@ export const resolvePermissions = async (
 	const role = await resolveRole(memberRecord.role, organizationId);
 
 	const result = {} as ResolvedPermissions;
+	// View `result` through a uniform per-resource shape while we fill it in:
+	// iterating the heterogeneous `ResolvedPermissions` keyed record would
+	// otherwise collapse each resource's action map to their intersection. The
+	// returned value keeps the precise `ResolvedPermissions` type.
+	const resultAcc = result as Record<Resource, Record<string, boolean>>;
 
-	for (const [resource, actions] of Object.entries(statements)) {
-		const resourcePerms = {} as Record<string, boolean>;
-		for (const action of actions) {
+	for (const resource of Object.keys(statements) as Resource[]) {
+		const resourcePerms: Record<string, boolean> = {};
+		for (const action of statements[resource]) {
 			resourcePerms[action] = role
 				? role.authorize({ [resource]: [action] }).success
 				: false;
 		}
-		(result as any)[resource] = resourcePerms;
+		resultAcc[resource] = resourcePerms;
 	}
 
 	return result;
