@@ -3,10 +3,12 @@ import { logger } from "@/server/core/lib/logger";
 import type { BackupSchedule } from "@/server/core/services/backup";
 import { findDatabaseById } from "@/server/core/services/database";
 import type { Destination } from "@/server/core/services/destination";
+import { findServiceDatabaseById } from "@/server/core/services/service-database";
 import { keepLatestNBackups } from ".";
 import { runComposeBackup } from "./compose";
 import { runDatabaseBackup } from "./database";
 import { redactRcloneCredentials } from "./redact";
+import { runServiceDatabaseBackup } from "./service-database";
 import { runWebServerBackup } from "./web-server";
 
 export const scheduleBackup = (backup: BackupSchedule) => {
@@ -16,6 +18,10 @@ export const scheduleBackup = (backup: BackupSchedule) => {
 			if (databaseType === "web-server") {
 				await runWebServerBackup(backup);
 				await keepLatestNBackups(backup);
+			} else if (backup.serviceDatabaseId) {
+				const sdb = await findServiceDatabaseById(backup.serviceDatabaseId);
+				await runServiceDatabaseBackup(sdb, backup);
+				await keepLatestNBackups(backup, sdb.compose.runtimeWorkerId);
 			} else if (backup.databaseId) {
 				const database = await findDatabaseById(backup.databaseId);
 				await runDatabaseBackup(database, backup);

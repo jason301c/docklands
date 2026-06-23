@@ -16,6 +16,7 @@ import { compose } from "./compose";
 import { database } from "./database";
 import { deployments } from "./deployment";
 import { destinations } from "./destination";
+import { serviceDatabase } from "./service-database";
 import { user } from "./user";
 
 export const databaseType = pgEnum("databaseType", [
@@ -59,6 +60,10 @@ export const backups = pgTable("backup", {
 		(): AnyPgColumn => database.databaseId,
 		{ onDelete: "cascade" },
 	),
+	serviceDatabaseId: text("serviceDatabaseId").references(
+		(): AnyPgColumn => serviceDatabase.serviceDatabaseId,
+		{ onDelete: "cascade" },
+	),
 	userId: text("userId").references(() => user.id),
 	// Only for compose backups
 	metadata: jsonb("metadata").$type<
@@ -91,6 +96,10 @@ export const backupsRelations = relations(backups, ({ one, many }) => ({
 		fields: [backups.databaseId],
 		references: [database.databaseId],
 	}),
+	serviceDatabase: one(serviceDatabase, {
+		fields: [backups.serviceDatabaseId],
+		references: [serviceDatabase.serviceDatabaseId],
+	}),
 	user: one(user, {
 		fields: [backups.userId],
 		references: [user.id],
@@ -119,6 +128,7 @@ const createSchema = createInsertSchema(backups, {
 		"libsql",
 	]),
 	databaseId: z.string().nullish(),
+	serviceDatabaseId: z.string().nullish(),
 	composeId: z.string().nullish(),
 	serviceName: z.string().nullish(),
 	userId: z.string().nullish(),
@@ -133,6 +143,7 @@ export const apiCreateBackup = createSchema.pick({
 	keepLatestCount: true,
 	database: true,
 	databaseId: true,
+	serviceDatabaseId: true,
 	databaseType: true,
 	userId: true,
 	backupType: true,

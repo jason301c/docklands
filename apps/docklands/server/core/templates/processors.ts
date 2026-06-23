@@ -2,7 +2,10 @@ import { randomBytes } from "node:crypto";
 import path from "node:path";
 import { parse, stringify } from "yaml";
 import { detectDatabaseEngine } from "@/server/core/databases/detection";
-import type { DatabaseEngineKey } from "@/server/core/databases/registry";
+import {
+	type DatabaseEngineKey,
+	extractDatabaseCredentials,
+} from "@/server/core/databases/registry";
 import type { ComposeSpecification } from "@/server/core/utils/docker/types";
 import {
 	generateBase64,
@@ -32,7 +35,28 @@ export interface TemplateDatabase {
 	serviceName: string;
 	engine: DatabaseEngineKey;
 	image: string;
+	/** credentials extracted from the service's resolved environment */
+	config: Record<string, unknown>;
 }
+
+/** Normalize a compose service `environment` (array or map) into a record. */
+const composeEnvToRecord = (environment: unknown): Record<string, string> => {
+	const record: Record<string, string> = {};
+	if (Array.isArray(environment)) {
+		for (const entry of environment) {
+			const str = String(entry);
+			const eq = str.indexOf("=");
+			if (eq > 0) record[str.slice(0, eq)] = str.slice(eq + 1);
+		}
+	} else if (environment && typeof environment === "object") {
+		for (const [key, value] of Object.entries(
+			environment as Record<string, unknown>,
+		)) {
+			record[key] = value == null ? "" : String(value);
+		}
+	}
+	return record;
+};
 
 export interface ProcessedTemplate {
 	compose: string;
@@ -844,6 +868,10 @@ export function processComposeTemplate(
 				serviceName,
 				engine: detectedEngine,
 				image: service.image,
+				config: extractDatabaseCredentials(
+					detectedEngine,
+					composeEnvToRecord(service.environment),
+				),
 			});
 		}
 		setEnv(

@@ -1,9 +1,13 @@
 import { relations } from "drizzle-orm";
-import { pgTable, text } from "drizzle-orm/pg-core";
+import { json, pgTable, text } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { DATABASE_ENGINE_KEYS } from "@/server/core/databases/registry";
+import {
+	DATABASE_ENGINE_KEYS,
+	type DatabaseConfigByKey,
+	type DatabaseEngineKey,
+} from "@/server/core/databases/registry";
 import { compose } from "./compose";
 import { databaseEngine } from "./database";
 
@@ -27,6 +31,10 @@ export const serviceDatabase = pgTable("service_database", {
 	/** detected engine (may be overridden manually) */
 	engine: databaseEngine("engine").notNull(),
 	image: text("image").notNull(),
+	/** credentials extracted from the compose service env (registry-validated) */
+	config: json("config")
+		.$type<DatabaseConfigByKey[DatabaseEngineKey]>()
+		.notNull(),
 	/** whether this detected DB is managed (backups / connection variables) */
 	managed: text("managed").notNull().default("true"),
 	createdAt: text("createdAt")
@@ -50,6 +58,7 @@ const createSchema = createInsertSchema(serviceDatabase, {
 	serviceName: z.string().min(1),
 	engine: z.enum(DATABASE_ENGINE_KEYS),
 	image: z.string().min(1),
+	config: z.record(z.string(), z.unknown()),
 	managed: z.string().optional(),
 	createdAt: z.string().optional(),
 });
@@ -59,6 +68,7 @@ export const apiCreateServiceDatabase = createSchema.pick({
 	serviceName: true,
 	engine: true,
 	image: true,
+	config: true,
 });
 
 export const apiFindOneServiceDatabase = z.object({

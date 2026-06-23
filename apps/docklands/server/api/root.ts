@@ -29,6 +29,7 @@ import { rollbackRouter } from "./routers/rollbacks";
 import { runtimeWorkerRouter } from "./routers/runtime-worker";
 import { scheduleRouter } from "./routers/schedule";
 import { securityRouter } from "./routers/security";
+import { serviceDatabaseRouter } from "./routers/service-database";
 import { settingsRouter } from "./routers/settings";
 import { sshRouter } from "./routers/ssh-key";
 import { swarmRouter } from "./routers/swarm";
@@ -73,6 +74,7 @@ export const appRouter = createTRPCRouter({
 	user: userRouter,
 	organization: organizationRouter,
 	customRole: customRoleRouter,
+	serviceDatabase: serviceDatabaseRouter,
 	auditLog: auditLogRouter,
 	schedule: scheduleRouter,
 	rollback: rollbackRouter,

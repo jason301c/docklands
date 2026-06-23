@@ -689,3 +689,78 @@ export const databaseChangePasswordCommand = <K extends DatabaseEngineKey>(
 	key: K,
 	args: ChangePasswordArgs,
 ): string | null => databaseEngines[key].changePassword?.(args) ?? null;
+
+/**
+ * Best-effort extraction of an engine's credentials from a compose service's
+ * resolved `environment` map (magic variables already expanded). Used by the
+ * template bridge to give a `service_database` its credentials so it can be
+ * backed up and surface connection info, without typed columns. Missing values
+ * fall back to sensible defaults so the result still validates.
+ */
+export const extractDatabaseCredentials = <K extends DatabaseEngineKey>(
+	key: K,
+	env: Record<string, string>,
+): DatabaseConfigByKey[K] => {
+	const decodeLibsql = () => {
+		const auth = env.SQLD_HTTP_AUTH ?? "";
+		const basic = auth.startsWith("basic:") ? auth.slice("basic:".length) : "";
+		if (basic) {
+			try {
+				const [user, ...rest] = Buffer.from(basic, "base64")
+					.toString("utf-8")
+					.split(":");
+				return { user: user ?? "", password: rest.join(":") };
+			} catch {
+				/* ignore */
+			}
+		}
+		return { user: env.SQLD_USER ?? "libsql", password: "" };
+	};
+
+	switch (key) {
+		case "postgres":
+			return {
+				databaseName: env.POSTGRES_DB ?? "postgres",
+				databaseUser: env.POSTGRES_USER ?? "postgres",
+				databasePassword: env.POSTGRES_PASSWORD ?? "",
+			} as DatabaseConfigByKey[K];
+		case "mysql":
+			return {
+				databaseName: env.MYSQL_DATABASE ?? "mysql",
+				databaseUser: env.MYSQL_USER ?? "root",
+				databasePassword: env.MYSQL_PASSWORD ?? env.MYSQL_ROOT_PASSWORD ?? "",
+				databaseRootPassword: env.MYSQL_ROOT_PASSWORD ?? "",
+			} as DatabaseConfigByKey[K];
+		case "mariadb":
+			return {
+				databaseName: env.MARIADB_DATABASE ?? env.MYSQL_DATABASE ?? "mariadb",
+				databaseUser: env.MARIADB_USER ?? env.MYSQL_USER ?? "root",
+				databasePassword:
+					env.MARIADB_PASSWORD ??
+					env.MYSQL_PASSWORD ??
+					env.MARIADB_ROOT_PASSWORD ??
+					"",
+				databaseRootPassword:
+					env.MARIADB_ROOT_PASSWORD ?? env.MYSQL_ROOT_PASSWORD ?? "",
+			} as DatabaseConfigByKey[K];
+		case "mongo":
+			return {
+				databaseUser: env.MONGO_INITDB_ROOT_USERNAME ?? "mongo",
+				databasePassword: env.MONGO_INITDB_ROOT_PASSWORD ?? "",
+				replicaSets: false,
+			} as DatabaseConfigByKey[K];
+		case "redis":
+			return {
+				databasePassword: env.REDIS_PASSWORD ?? "",
+			} as DatabaseConfigByKey[K];
+		default: {
+			const { user, password } = decodeLibsql();
+			return {
+				databaseUser: user,
+				databasePassword: password,
+				sqldNode: "primary",
+				enableNamespaces: false,
+			} as DatabaseConfigByKey[K];
+		}
+	}
+};

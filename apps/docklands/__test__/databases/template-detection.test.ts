@@ -31,6 +31,18 @@ describe("template database detection (bridge)", () => {
 		expect(byService.get("database-mariadb")).toBe("mariadb");
 	});
 
+	it("extracts credentials from the detected database's env (bridge)", () => {
+		// fixture: database-postgres-main has POSTGRES_USER/PASSWORD/DB set
+		const pg = result.databases.find(
+			(d) => d.serviceName === "database-postgres-main",
+		);
+		expect(pg?.config).toMatchObject({
+			databaseUser: "admin",
+			databasePassword: "secret123",
+			databaseName: "maindb",
+		});
+	});
+
 	it("does NOT flag applications that merely embed a database keyword", () => {
 		// Coolify known-app denylist + base-name mismatch cases
 		expect(byService.has("application-supertokens")).toBe(false);
