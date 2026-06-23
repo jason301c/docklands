@@ -9,7 +9,6 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	apiCreateApplication,
@@ -31,7 +30,7 @@ import {
 	environments,
 	workspaces,
 } from "@/server/core/db/schema";
-import { cancelDeployment, deploy } from "@/server/core/runtime/deploy";
+import { cancelDeployment } from "@/server/core/runtime/deploy";
 import {
 	createApplication,
 	findApplicationById,
@@ -95,10 +94,7 @@ export const applicationRouter = createTRPCRouter({
 				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
-				if (
-					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.runtimeWorkerId
-				) {
+				if (webServerSettings?.remoteServersOnly && !input.runtimeWorkerId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message:
@@ -250,9 +246,7 @@ export const applicationRouter = createTRPCRouter({
 				.where(eq(applications.applicationId, input.applicationId))
 				.returning();
 
-			if (!IS_CLOUD) {
-				await cleanQueuesByApplication(input.applicationId);
-			}
+			await cleanQueuesByApplication(input.applicationId);
 
 			const cleanupOperations = [
 				async () => await deleteAllMiddlewares(application),
@@ -355,18 +349,6 @@ export const applicationRouter = createTRPCRouter({
 				runtimeWorkerId: application.runtimeWorkerId ?? undefined,
 			};
 
-			if (IS_CLOUD && application.runtimeWorkerId) {
-				deploy(jobData).catch((error) => {
-					console.error("Background deployment failed:", error);
-				});
-				await audit(ctx, {
-					action: "rebuild",
-					resourceType: "application",
-					resourceId: application.applicationId,
-					resourceName: application.appName,
-				});
-				return true;
-			}
 			await myQueue.add(
 				"deployments",
 				{ ...jobData },
@@ -722,18 +704,6 @@ export const applicationRouter = createTRPCRouter({
 				runtimeWorker: !!application.runtimeWorkerId,
 				runtimeWorkerId: application.runtimeWorkerId ?? undefined,
 			};
-			if (IS_CLOUD && application.runtimeWorkerId) {
-				deploy(jobData).catch((error) => {
-					console.error("Background deployment failed:", error);
-				});
-				await audit(ctx, {
-					action: "deploy",
-					resourceType: "application",
-					resourceId: application.applicationId,
-					resourceName: application.appName,
-				});
-				return true;
-			}
 			await myQueue.add(
 				"deployments",
 				{ ...jobData },
@@ -844,13 +814,6 @@ export const applicationRouter = createTRPCRouter({
 				runtimeWorker: !!app.runtimeWorkerId,
 				runtimeWorkerId: app.runtimeWorkerId ?? undefined,
 			};
-			if (IS_CLOUD && app.runtimeWorkerId) {
-				deploy(jobData).catch((error) => {
-					console.error("Background deployment failed:", error);
-				});
-				return true;
-			}
-
 			await myQueue.add(
 				"deployments",
 				{ ...jobData },
@@ -894,12 +857,6 @@ export const applicationRouter = createTRPCRouter({
 	readAppMonitoring: withPermission("monitoring", "read")
 		.input(apiFindMonitoringStats)
 		.query(async ({ input }) => {
-			if (IS_CLOUD) {
-				throw new TRPCError({
-					code: "UNAUTHORIZED",
-					message: "Functionality not available in cloud version",
-				});
-			}
 			const stats = await getApplicationStats(input.appName);
 
 			return stats;

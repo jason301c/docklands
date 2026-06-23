@@ -28,7 +28,6 @@ export const ShowRuntimeWorkers = () => {
 	const { data, refetch, isPending } = api.runtimeWorker.all.useQuery();
 	const { mutateAsync } = api.runtimeWorker.remove.useMutation();
 	const { data: sshKeys } = api.sshKey.all.useQuery();
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
 	return (
@@ -100,42 +99,6 @@ export const ShowRuntimeWorkers = () => {
 																</div>
 																<TooltipProvider>
 																	<div className="flex gap-2 mt-2 flex-wrap">
-																		{isCloud && (
-																			<>
-																				{runtimeWorker.runtimeWorkerStatus ===
-																				"active" ? (
-																					<Badge variant="primary">
-																						{runtimeWorker.runtimeWorkerStatus}
-																					</Badge>
-																				) : (
-																					<Tooltip
-																						delay={0}
-																						side="bottom"
-																						className="max-w-xs"
-																						content={
-																							<p className="text-sm">
-																								This worker is currently marked
-																								inactive. Update its status or
-																								connection details before
-																								running services on it.
-																							</p>
-																						}
-																						render={
-																							<span className="inline-block">
-																								<Badge
-																									variant="error"
-																									className="cursor-help"
-																								>
-																									{
-																										runtimeWorker.runtimeWorkerStatus
-																									}
-																								</Badge>
-																							</span>
-																						}
-																					/>
-																				)}
-																			</>
-																		)}
 																		<Badge
 																			variant={
 																				isBuildServer

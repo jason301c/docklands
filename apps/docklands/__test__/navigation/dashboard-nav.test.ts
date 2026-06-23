@@ -37,7 +37,6 @@ describe("dashboard nav", () => {
 	it("exposes the Railway-style self-hosted workspace labels", () => {
 		const menu = createMenuForAuthUser({
 			permissions: fullPermissions as any,
-			isCloud: false,
 		});
 
 		expect(menuTitles(menu)).toEqual({
@@ -74,30 +73,9 @@ describe("dashboard nav", () => {
 		});
 	});
 
-	it("keeps VM-only runtime controls out of cloud mode", () => {
-		const menu = createMenuForAuthUser({
-			permissions: fullPermissions as any,
-			isCloud: true,
-		});
-		const titles = menuTitles(menu);
-
-		expect(titles.settings).not.toContain("Ingress");
-		expect(titles.settings).not.toContain("Build Workers");
-		expect(titles.runtime).not.toContain("Ingress Requests");
-		expect(titles.runtime).not.toContain("Host Metrics");
-		expect(titles.settings).toContain("Profile");
-		expect(titles.runtime).toEqual([
-			"Runtime Workers",
-			"Container Runtime",
-			"Cluster Runtime",
-			"Ingress Files",
-		]);
-	});
-
 	it("keeps old admin nouns out of the visible navigation shell", () => {
 		const menu = createMenuForAuthUser({
 			permissions: fullPermissions as any,
-			isCloud: false,
 		});
 		const titles = menuTitles(menu);
 		const visibleTitles = [
@@ -135,7 +113,6 @@ describe("dashboard nav", () => {
 	it("finds active nested runtime items for breadcrumbs", () => {
 		const menu = createMenuForAuthUser({
 			permissions: fullPermissions as any,
-			isCloud: false,
 		});
 
 		expect(

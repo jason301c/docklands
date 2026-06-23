@@ -1,7 +1,6 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Radio } from "@cloudflare/kumo/components/radio";
-import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Loader2, Palette, User } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -13,7 +12,6 @@ import { Avatar, AvatarFallback } from "@/components/shared/avatar";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -57,7 +55,6 @@ const randomImages = [
 
 export const ProfileForm = () => {
 	const { data, refetch, isPending } = api.user.get.useQuery();
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 
 	const {
 		mutateAsync,
@@ -405,32 +402,6 @@ export const ProfileForm = () => {
 												</FormItem>
 											)}
 										/>
-										{isCloud && (
-											<FormField
-												control={form.control}
-												name="allowImpersonation"
-												render={({ field }) => (
-													<FormItem className="flex flex-row items-center justify-between p-3 mt-4 border rounded-lg shadow-sm">
-														<div className="space-y-0.5">
-															<FormLabel>Allow Impersonation</FormLabel>
-															<FormDescription>
-																Enable this option to allow Docklands Cloud
-																administrators to temporarily access your
-																account for troubleshooting and support
-																purposes. This helps them quickly identify and
-																resolve any issues you may encounter.
-															</FormDescription>
-														</div>
-														<FormControl>
-															<Switch
-																checked={field.value}
-																onCheckedChange={field.onChange}
-															/>
-														</FormControl>
-													</FormItem>
-												)}
-											/>
-										)}
 									</div>
 
 									<div className="flex items-center justify-end gap-2">

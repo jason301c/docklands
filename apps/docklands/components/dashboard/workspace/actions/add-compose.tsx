@@ -62,10 +62,9 @@ export const AddCompose = ({
 	const visible = controlledOpen ?? internalVisible;
 	const setVisible = onOpenChange ?? setInternalVisible;
 	const slug = slugify(projectName);
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
-	const showLocalOption = !isCloud && !webServerSettings?.remoteServersOnly;
+	const showLocalOption = !webServerSettings?.remoteServersOnly;
 	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const { mutateAsync, isPending, error, isError } =
 		api.compose.create.useMutation();

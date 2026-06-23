@@ -83,7 +83,6 @@ type AddInvitation = z.infer<typeof addInvitation>;
 export const AddInvitation = () => {
 	const [open, setOpen] = useState(false);
 	const utils = api.useUtils();
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: emailProviders } =
 		api.notification.getEmailProviders.useQuery();
 	const { mutateAsync: inviteMember, isPending: isInviting } =
@@ -112,12 +111,6 @@ export const AddInvitation = () => {
 		form.reset();
 	}, [form, form.formState.isSubmitSuccessful, form.reset]);
 
-	useEffect(() => {
-		if (isCloud && form.getValues("mode") === "credentials") {
-			form.setValue("mode", "invitation");
-		}
-	}, [form, isCloud]);
-
 	const onSubmit = async (data: AddInvitation) => {
 		setError(null);
 
@@ -136,7 +129,7 @@ export const AddInvitation = () => {
 					role: data.role,
 				});
 
-				if (!isCloud && data.notificationId) {
+				if (data.notificationId) {
 					await sendInvitation({
 						invitationId: result!.id,
 						notificationId: data.notificationId || "",
@@ -193,41 +186,39 @@ export const AddInvitation = () => {
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="grid w-full gap-4 "
 					>
-						{!isCloud && (
-							<FormField
-								control={form.control}
-								name="mode"
-								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>Invite Method</FormLabel>
-											<Select
-												aria-label="Invite method"
-												onValueChange={field.onChange}
-												defaultValue={field.value}
-											>
-												<FormControl>
-													<></>
-												</FormControl>
-												<>
-													<Select.Option value="invitation">
-														Invitation Link
-													</Select.Option>
-													<Select.Option value="credentials">
-														Initial Credentials
-													</Select.Option>
-												</>
-											</Select>
-											<FormDescription>
-												Choose between invitation link flow or direct
-												credentials provisioning
-											</FormDescription>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-						)}
+						<FormField
+							control={form.control}
+							name="mode"
+							render={({ field }) => {
+								return (
+									<FormItem>
+										<FormLabel>Invite Method</FormLabel>
+										<Select
+											aria-label="Invite method"
+											onValueChange={field.onChange}
+											defaultValue={field.value}
+										>
+											<FormControl>
+												<></>
+											</FormControl>
+											<>
+												<Select.Option value="invitation">
+													Invitation Link
+												</Select.Option>
+												<Select.Option value="credentials">
+													Initial Credentials
+												</Select.Option>
+											</>
+										</Select>
+										<FormDescription>
+											Choose between invitation link flow or direct credentials
+											provisioning
+										</FormDescription>
+										<FormMessage />
+									</FormItem>
+								);
+							}}
+						/>
 
 						<FormField
 							control={form.control}
@@ -282,7 +273,7 @@ export const AddInvitation = () => {
 							}}
 						/>
 
-						{!isCloud && mode === "invitation" && (
+						{mode === "invitation" && (
 							<FormField
 								control={form.control}
 								name="notificationId"
@@ -322,7 +313,7 @@ export const AddInvitation = () => {
 							/>
 						)}
 
-						{!isCloud && mode === "credentials" && (
+						{mode === "credentials" && (
 							<>
 								<FormField
 									control={form.control}

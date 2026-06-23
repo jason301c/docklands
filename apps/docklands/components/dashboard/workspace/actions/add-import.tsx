@@ -79,11 +79,9 @@ export const AddImport = ({
 	const [templateInfo, setTemplateInfo] = useState<TemplateInfo | null>(null);
 
 	const slug = slugify(projectName);
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
-	const showAutomaticPlacement =
-		!isCloud && !webServerSettings?.remoteServersOnly;
+	const showAutomaticPlacement = !webServerSettings?.remoteServersOnly;
 	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const shouldShowServerDropdown = !!(servers && servers.length > 0);
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button, LinkButton } from "@cloudflare/kumo/components/button";
+import { LinkButton } from "@cloudflare/kumo/components/button";
 import { Table } from "@cloudflare/kumo/components/table";
 import type { inferRouterOutputs } from "@trpc/server";
 import { formatDistanceToNow } from "date-fns";
@@ -13,7 +13,6 @@ import {
 	ListTodo,
 	Loader2,
 	TimerReset,
-	XCircle,
 } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { api } from "@/client/api/trpc";
@@ -106,21 +105,6 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 		undefined,
 		{ refetchInterval: 3000 },
 	);
-	const { data: isCloud } = api.settings.isCloud.useQuery();
-	const utils = api.useUtils();
-	const {
-		mutateAsync: cancelApplicationDeployment,
-		isPending: isCancellingApp,
-	} = api.application.cancelDeployment.useMutation({
-		onSuccess: () => void utils.deployment.queueList.invalidate(),
-	});
-	const {
-		mutateAsync: cancelComposeDeployment,
-		isPending: isCancellingCompose,
-	} = api.compose.cancelDeployment.useMutation({
-		onSuccess: () => void utils.deployment.queueList.invalidate(),
-	});
-	const isCancelling = isCancellingApp || isCancellingCompose;
 
 	const queueStats = useMemo(() => {
 		const rows = queueList ?? [];
@@ -319,39 +303,6 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 																—
 															</span>
 														)}
-														{isCloud &&
-															row.state === "active" &&
-															(d?.applicationId != null ||
-																d?.composeId != null) && (
-																<Button
-																	variant="ghost"
-																	size="sm"
-																	className="text-kumo-danger hover:text-kumo-danger"
-																	disabled={isCancelling}
-																	onClick={() => {
-																		const appId =
-																			typeof d.applicationId === "string"
-																				? d.applicationId
-																				: undefined;
-																		const compId =
-																			typeof d.composeId === "string"
-																				? d.composeId
-																				: undefined;
-																		if (appId) {
-																			void cancelApplicationDeployment({
-																				applicationId: appId,
-																			});
-																		} else if (compId) {
-																			void cancelComposeDeployment({
-																				composeId: compId,
-																			});
-																		}
-																	}}
-																>
-																	<XCircle className="size-4 mr-1" />
-																	Cancel
-																</Button>
-															)}
 													</div>
 												</Table.Cell>
 											</Table.Row>

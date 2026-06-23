@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { createTRPCRouter, withPermission } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	apiCreateDestination,
@@ -17,10 +16,7 @@ import {
 	removeDestinationById,
 	updateDestinationById,
 } from "@/server/core/services/destination";
-import {
-	execAsync,
-	execAsyncRemote,
-} from "@/server/core/utils/process/execAsync";
+import { execAsync } from "@/server/core/utils/process/execAsync";
 
 export const destinationRouter = createTRPCRouter({
 	create: withPermission("destination", "create")
@@ -80,18 +76,7 @@ export const destinationRouter = createTRPCRouter({
 				const rcloneDestination = `:s3:${bucket}`;
 				const rcloneCommand = `rclone ls ${rcloneFlags.join(" ")} "${rcloneDestination}"`;
 
-				if (IS_CLOUD && !input.runtimeWorkerId) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: "Server not found",
-					});
-				}
-
-				if (IS_CLOUD) {
-					await execAsyncRemote(input.runtimeWorkerId || "", rcloneCommand);
-				} else {
-					await execAsync(rcloneCommand);
-				}
+				await execAsync(rcloneCommand);
 			} catch (error) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",

@@ -8,7 +8,6 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	apiCreateWorkspace,
@@ -26,7 +25,6 @@ import {
 	redis,
 	workspaces,
 } from "@/server/core/db/schema";
-import { findUserById } from "@/server/core/services/admin";
 import {
 	createApplication,
 	findApplicationById,
@@ -69,15 +67,6 @@ export const workspaceRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			try {
 				await checkWorkspaceAccess(ctx, "create");
-
-				const admin = await findUserById(ctx.user.ownerId);
-
-				if (admin.serversQuantity === 0 && IS_CLOUD) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: "No runtime workers available, please subscribe to a plan",
-					});
-				}
 
 				const workspace = await createWorkspace(
 					input,

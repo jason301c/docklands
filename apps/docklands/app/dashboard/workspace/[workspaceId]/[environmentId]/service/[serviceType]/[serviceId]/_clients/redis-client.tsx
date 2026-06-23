@@ -9,7 +9,6 @@ import { ShowEnvironment } from "@/components/dashboard/application/environment/
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
-import { ContainerPaidMonitoring } from "@/components/dashboard/metrics/paid/container/show-paid-container-monitoring";
 import { ShowExternalRedisCredentials } from "@/components/dashboard/redis/general/show-external-redis-credentials";
 import { ShowGeneralRedis } from "@/components/dashboard/redis/general/show-general-redis";
 import { ShowInternalRedisCredentials } from "@/components/dashboard/redis/general/show-internal-redis-credentials";
@@ -42,10 +41,8 @@ const Redis = (props: {
 	const [tab, setSab] = useState<TabState>(activeTab);
 	const { data } = api.redis.one.useQuery({ redisId });
 
-	const { data: auth } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: serverIp } = api.settings.getIp.useQuery();
 	const { data: environments } = api.environment.byWorkspaceId.useQuery({
 		workspaceId: data?.environment?.workspaceId || "",
@@ -128,9 +125,7 @@ const Redis = (props: {
 											permissions?.logs.read
 												? { value: "logs", label: "Logs" }
 												: null,
-											permissions?.monitoring.read &&
-											((data?.runtimeWorkerId && isCloud) ||
-												!data?.runtimeWorker)
+											permissions?.monitoring.read && !data?.runtimeWorker
 												? { value: "monitoring", label: "Metrics" }
 												: null,
 											permissions?.service.create
@@ -159,46 +154,9 @@ const Redis = (props: {
 									<div>
 										<div className="pt-2.5">
 											<div className="flex flex-col gap-4 border rounded-lg p-6">
-												{data?.runtimeWorkerId && isCloud ? (
-													<ContainerPaidMonitoring
-														appName={data?.appName || ""}
-														baseUrl={`${data?.runtimeWorkerId ? `http://${data?.runtimeWorker?.ipAddress}:${data?.runtimeWorker?.metricsConfig?.runtimeWorker?.port}` : "http://localhost:4500"}`}
-														token={
-															data?.runtimeWorker?.metricsConfig?.runtimeWorker
-																?.token || ""
-														}
-													/>
-												) : (
-													<>
-														{/* {monitoring?.enabledFeatures && (
-															<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2">
-																<Label className="text-kumo-subtle">
-																	Metrics source
-																</Label>
-																<Switch
-																	checked={toggleMonitoring}
-																	onCheckedChange={setToggleMonitoring}
-																/>
-															</div>
-														)}
-
-														{toggleMonitoring ? (
-															<ContainerPaidMonitoring
-																appName={data?.appName || ""}
-																baseUrl={`http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.runtimeWorker?.port}`}
-																token={
-																	monitoring?.metricsConfig?.runtimeWorker?.token || ""
-																}
-															/>
-														) : (
-															<div> */}
-														<ContainerFreeMonitoring
-															appName={data?.appName || ""}
-														/>
-														{/* </div> */}
-														{/* )} */}
-													</>
-												)}
+												<ContainerFreeMonitoring
+													appName={data?.appName || ""}
+												/>
 											</div>
 										</div>
 									</div>

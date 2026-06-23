@@ -1,7 +1,6 @@
 import "server-only";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import type { statements } from "@/server/core/lib/access-control";
 import { validateRequestHeaders } from "@/server/core/lib/auth";
 import { hasPermission } from "@/server/core/services/permission";
@@ -39,11 +38,7 @@ export const requireAdmin = async () => {
 	return auth;
 };
 
-export const requireSelfHosted = () => {
-	if (IS_CLOUD) {
-		redirect("/dashboard/workspace");
-	}
-};
+export const requireSelfHosted = () => {};
 
 export const requireSelfHostedAdmin = async () => {
 	requireSelfHosted();

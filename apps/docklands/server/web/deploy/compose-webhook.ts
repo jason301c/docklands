@@ -1,8 +1,6 @@
 import { eq } from "drizzle-orm";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import { compose } from "@/server/core/db/schema";
-import { deploy } from "@/server/core/runtime/deploy";
 import { shouldDeploy } from "@/server/core/utils/watch-paths/should-deploy";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
@@ -177,21 +175,14 @@ export async function handleComposeDeployWebhook(
 				runtimeWorker: !!composeResult.runtimeWorkerId,
 			};
 
-			if (IS_CLOUD && composeResult.runtimeWorkerId) {
-				jobData.runtimeWorkerId = composeResult.runtimeWorkerId;
-				deploy(jobData).catch((error) => {
-					console.error("Background deployment failed:", error);
-				});
-			} else {
-				await myQueue.add(
-					"deployments",
-					{ ...jobData },
-					{
-						removeOnComplete: true,
-						removeOnFail: true,
-					},
-				);
-			}
+			await myQueue.add(
+				"deployments",
+				{ ...jobData },
+				{
+					removeOnComplete: true,
+					removeOnFail: true,
+				},
+			);
 		} catch (error) {
 			logWebhookError("Error deploying Compose:", error);
 			return jsonResponse({ message: "Error deploying Compose" }, 400);

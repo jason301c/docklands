@@ -22,7 +22,6 @@ import {
 	ADDITIONAL_FLAG_ERROR,
 	ADDITIONAL_FLAG_REGEX,
 } from "@/server/core/db/validations/destination";
-import { cn } from "@/shared/utils";
 import { S3_PROVIDERS } from "./provider-options";
 
 const storageProviderSchema = z.object({
@@ -55,8 +54,6 @@ interface Props {
 export const HandleStorageProvider = ({ destinationId }: Props) => {
 	const [open, setOpen] = useState(false);
 	const utils = api.useUtils();
-	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 
 	const { mutateAsync, isError, error, isPending } = destinationId
 		? api.destination.update.useMutation()
@@ -167,11 +164,6 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 			toast.error("Please fill all required fields", {
 				description: errorFields,
 			});
-			return;
-		}
-
-		if (isCloud && !runtimeWorkerId) {
-			toast.error("Please select a runtime worker");
 			return;
 		}
 
@@ -422,79 +414,17 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 						</div>
 					</form>
 
-					<div
-						className={cn(
-							isCloud ? "!flex-col" : "flex-row",
-							"flex w-full  !justify-between gap-4",
-						)}
-					>
-						{isCloud ? (
-							<div className="flex flex-col gap-4 border p-2 rounded-lg">
-								<span className="text-sm text-kumo-subtle">
-									Select a runtime worker to test this storage provider. If you
-									do not have a worker, use automatic placement.
-								</span>
-								<FormField
-									control={form.control}
-									name="runtimeWorkerId"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Runtime Worker (Optional)</FormLabel>
-											<FormControl>
-												<Select
-													aria-label="Storage provider test worker"
-													onValueChange={field.onChange}
-													defaultValue={field.value}
-												>
-													<></>
-													<>
-														<Select.Group>
-															<Select.GroupLabel>
-																Runtime Workers
-															</Select.GroupLabel>
-															{servers?.map((runtimeWorker) => (
-																<Select.Option
-																	key={runtimeWorker.runtimeWorkerId}
-																	value={runtimeWorker.runtimeWorkerId}
-																>
-																	{runtimeWorker.name}
-																</Select.Option>
-															))}
-															<Select.Option value={"none"}>None</Select.Option>
-														</Select.Group>
-													</>
-												</Select>
-											</FormControl>
-
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<Button
-									type="button"
-									variant={"secondary"}
-									loading={isPendingConnection}
-									onClick={async () => {
-										await handleTestConnection(
-											form.getValues("runtimeWorkerId"),
-										);
-									}}
-								>
-									Test Connection
-								</Button>
-							</div>
-						) : (
-							<Button
-								loading={isPendingConnection}
-								type="button"
-								variant="secondary"
-								onClick={async () => {
-									await handleTestConnection();
-								}}
-							>
-								Test connection
-							</Button>
-						)}
+					<div className="flex-row flex w-full  !justify-between gap-4">
+						<Button
+							loading={isPendingConnection}
+							type="button"
+							variant="secondary"
+							onClick={async () => {
+								await handleTestConnection();
+							}}
+						>
+							Test connection
+						</Button>
 
 						<Button
 							loading={isPending}

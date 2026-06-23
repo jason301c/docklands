@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server";
 import { asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import { deployments } from "@/server/core/db/schema/deployment";
 import {
@@ -10,7 +9,6 @@ import {
 	schedules,
 	updateScheduleSchema,
 } from "@/server/core/db/schema/schedule";
-import { removeJob, schedule } from "@/server/core/runtime/backup";
 import {
 	checkPermission,
 	checkServicePermissionAndAccess,
@@ -40,14 +38,6 @@ export const scheduleRouter = createTRPCRouter({
 					schedule: ["create"],
 				});
 			} else {
-				if (input.scheduleType === "docklands-server" && IS_CLOUD) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"Host-level schedules are not available in the cloud version.",
-					});
-				}
-
 				await checkPermission(ctx, { schedule: ["create"] });
 
 				if (
@@ -89,16 +79,7 @@ export const scheduleRouter = createTRPCRouter({
 			});
 
 			if (newSchedule?.enabled) {
-				if (IS_CLOUD) {
-					schedule({
-						scheduleId: newSchedule.scheduleId,
-						type: "schedule",
-						cronSchedule: newSchedule.cronExpression,
-						timezone: newSchedule.timezone,
-					});
-				} else {
-					scheduleJob(newSchedule);
-				}
+				scheduleJob(newSchedule);
 			}
 			await audit(ctx, {
 				action: "create",
@@ -114,17 +95,6 @@ export const scheduleRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			const existingSchedule = await findScheduleById(input.scheduleId);
 
-			if (
-				IS_CLOUD &&
-				input.scheduleType &&
-				input.scheduleType !== existingSchedule.scheduleType
-			) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message: "Changing scheduleType is not allowed in the cloud version.",
-				});
-			}
-
 			const serviceId =
 				existingSchedule.applicationId || existingSchedule.composeId;
 			if (serviceId) {
@@ -132,14 +102,6 @@ export const scheduleRouter = createTRPCRouter({
 					schedule: ["update"],
 				});
 			} else {
-				if (existingSchedule.scheduleType === "docklands-server" && IS_CLOUD) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"Host-level schedules are not available in the cloud version.",
-					});
-				}
-
 				await checkPermission(ctx, { schedule: ["update"] });
 
 				if (
@@ -178,28 +140,11 @@ export const scheduleRouter = createTRPCRouter({
 			}
 			const updatedSchedule = await updateSchedule(input);
 
-			if (IS_CLOUD) {
-				if (updatedSchedule?.enabled) {
-					schedule({
-						scheduleId: updatedSchedule.scheduleId,
-						type: "schedule",
-						cronSchedule: updatedSchedule.cronExpression,
-						timezone: updatedSchedule.timezone,
-					});
-				} else {
-					await removeJob({
-						cronSchedule: updatedSchedule.cronExpression,
-						scheduleId: updatedSchedule.scheduleId,
-						type: "schedule",
-					});
-				}
+			if (updatedSchedule?.enabled) {
+				removeScheduleJob(updatedSchedule.scheduleId);
+				scheduleJob(updatedSchedule);
 			} else {
-				if (updatedSchedule?.enabled) {
-					removeScheduleJob(updatedSchedule.scheduleId);
-					scheduleJob(updatedSchedule);
-				} else {
-					removeScheduleJob(updatedSchedule.scheduleId);
-				}
+				removeScheduleJob(updatedSchedule.scheduleId);
 			}
 			await audit(ctx, {
 				action: "update",
@@ -220,14 +165,6 @@ export const scheduleRouter = createTRPCRouter({
 					schedule: ["delete"],
 				});
 			} else {
-				if (scheduleItem.scheduleType === "docklands-server" && IS_CLOUD) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"Host-level schedules are not available in the cloud version.",
-					});
-				}
-
 				await checkPermission(ctx, { schedule: ["delete"] });
 
 				if (
@@ -266,15 +203,7 @@ export const scheduleRouter = createTRPCRouter({
 			}
 			await deleteSchedule(input.scheduleId);
 
-			if (IS_CLOUD) {
-				await removeJob({
-					cronSchedule: scheduleItem.cronExpression,
-					scheduleId: scheduleItem.scheduleId,
-					type: "schedule",
-				});
-			} else {
-				removeScheduleJob(scheduleItem.scheduleId);
-			}
+			removeScheduleJob(scheduleItem.scheduleId);
 			await audit(ctx, {
 				action: "delete",
 				resourceType: "schedule",
@@ -397,14 +326,6 @@ export const scheduleRouter = createTRPCRouter({
 					schedule: ["create"],
 				});
 			} else {
-				if (scheduleItem.scheduleType === "docklands-server" && IS_CLOUD) {
-					throw new TRPCError({
-						code: "FORBIDDEN",
-						message:
-							"Host-level schedules are not available in the cloud version.",
-					});
-				}
-
 				await checkPermission(ctx, { schedule: ["create"] });
 
 				if (

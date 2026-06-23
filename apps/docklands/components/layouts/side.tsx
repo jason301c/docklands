@@ -62,7 +62,6 @@ function LogoWrapper() {
 
 function SidebarLogo() {
 	const { state } = useSidebar();
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: user } = api.user.get.useQuery();
 	const { data: session } = api.user.session.useQuery();
 	const {
@@ -286,9 +285,7 @@ function SidebarLogo() {
 										);
 									})}
 								</div>
-								{(user?.role === "owner" ||
-									user?.role === "admin" ||
-									isCloud) && (
+								{(user?.role === "owner" || user?.role === "admin") && (
 									<>
 										<DropdownMenu.Separator />
 										<AddOrganization />
@@ -426,7 +423,6 @@ export default function Page({ children }: Props) {
 		api.settings.getDocklandsVersion.useQuery();
 
 	const includesProjects = isWorkspaceDetailPath(pathname);
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 
 	const {
 		home: filteredHome,
@@ -435,7 +431,6 @@ export default function Page({ children }: Props) {
 	} = createMenuForAuthUser({
 		auth,
 		permissions,
-		isCloud: !!isCloud,
 	});
 
 	const activeItem = findActiveNavItem(
@@ -660,7 +655,7 @@ export default function Page({ children }: Props) {
 				</SidebarContent>
 				<SidebarFooter className="h-auto flex-col items-stretch gap-0 overflow-visible border-t bg-kumo-canvas p-2 pb-3">
 					<SidebarMenu className="flex flex-col gap-2">
-						{!isCloud && permissions?.organization.update && (
+						{permissions?.organization.update && (
 							<SidebarMenuItem>
 								<RuntimeUpdateButton />
 							</SidebarMenuItem>
@@ -690,7 +685,7 @@ export default function Page({ children }: Props) {
 									</Breadcrumbs.Link>
 								</Breadcrumbs>
 							</div>
-							{!isCloud && <TimeBadge />}
+							<TimeBadge />
 						</div>
 					</header>
 				)}

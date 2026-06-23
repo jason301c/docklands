@@ -42,7 +42,6 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 	const [open, setOpen] = useState(false);
 	const utils = api.useUtils();
 
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const hasServers = servers && servers.length > 0;
 	const shouldShowServerDropdown = hasServers && !certificateId; // Hide on edit
@@ -219,30 +218,26 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel className="break-all w-fit flex flex-row gap-1 items-center">
-											Placement {!isCloud && "(Optional)"}
+											Placement (Optional)
 											<HelpCircle className="size-4 text-kumo-subtle" />
 										</FormLabel>
 
 										<Select
 											aria-label="Certificate placement"
 											onValueChange={field.onChange}
-											defaultValue={
-												field.value || (!isCloud ? "docklands" : undefined)
-											}
+											defaultValue={field.value || "docklands"}
 										>
 											<></>
 											<>
 												<Select.Group>
-													{!isCloud && (
-														<Select.Option value="docklands">
-															<span className="flex items-center gap-2 justify-between w-full">
-																<span>Automatic placement</span>
-																<span className="text-kumo-subtle text-xs self-center">
-																	Default
-																</span>
+													<Select.Option value="docklands">
+														<span className="flex items-center gap-2 justify-between w-full">
+															<span>Automatic placement</span>
+															<span className="text-kumo-subtle text-xs self-center">
+																Default
 															</span>
-														</Select.Option>
-													)}
+														</span>
+													</Select.Option>
 													{servers?.map((runtimeWorker) => (
 														<Select.Option
 															key={runtimeWorker.runtimeWorkerId}
@@ -257,8 +252,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 														</Select.Option>
 													))}
 													<Select.GroupLabel>
-														Runtime workers (
-														{servers?.length + (!isCloud ? 1 : 0)})
+														Runtime workers ({servers?.length + 1})
 													</Select.GroupLabel>
 												</Select.Group>
 											</>

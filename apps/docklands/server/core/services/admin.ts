@@ -7,7 +7,6 @@ import {
 	organization,
 	user,
 } from "@/server/core/db/schema";
-import { IS_CLOUD } from "../constants/env";
 import { getWebServerSettings } from "./web-server-settings";
 
 export const findUserById = async (userId: string) => {
@@ -105,9 +104,6 @@ export const removeUserById = async (userId: string) => {
 };
 
 export const getDocklandsUrl = async () => {
-	if (IS_CLOUD) {
-		return process.env.DOCKLANDS_APP_URL || "http://localhost:3000";
-	}
 	const settings = await getWebServerSettings();
 
 	if (settings?.host) {
@@ -116,9 +112,6 @@ export const getDocklandsUrl = async () => {
 	}
 	return `http://${settings?.serverIp}:${process.env.PORT}`;
 };
-
-const TRUSTED_ORIGINS_CACHE_TTL_MS = 30 * 60_000;
-let trustedOriginsCache: { data: string[]; expiresAt: number } | null = null;
 
 export const getTrustedOrigins = async () => {
 	const runQuery = async () => {
@@ -129,24 +122,6 @@ export const getTrustedOrigins = async () => {
 			.where(eq(member.role, "owner"));
 		return Array.from(new Set(rows.flatMap((r) => r.trustedOrigins ?? [])));
 	};
-
-	if (IS_CLOUD) {
-		const now = Date.now();
-		if (trustedOriginsCache && now < trustedOriginsCache.expiresAt) {
-			return trustedOriginsCache.data;
-		}
-		try {
-			const trustedOrigins = await runQuery();
-			trustedOriginsCache = {
-				data: trustedOrigins,
-				expiresAt: now + TRUSTED_ORIGINS_CACHE_TTL_MS,
-			};
-			return trustedOrigins;
-		} catch (error) {
-			console.error("Failed to fetch trusted origins:", error);
-			return trustedOriginsCache?.data ?? [];
-		}
-	}
 
 	try {
 		return await runQuery();

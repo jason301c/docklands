@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { createTRPCRouter, withPermission } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	apiCreateCertificate,
@@ -21,12 +20,6 @@ export const certificateRouter = createTRPCRouter({
 	create: withPermission("certificate", "create")
 		.input(apiCreateCertificate)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD && !input.runtimeWorkerId) {
-				throw new TRPCError({
-					code: "UNAUTHORIZED",
-					message: "Please set a runtimeWorker to create a certificate",
-				});
-			}
 			const cert = await createCertificate(
 				input,
 				ctx.session.activeOrganizationId,

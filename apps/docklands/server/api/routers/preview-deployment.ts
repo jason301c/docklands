@@ -1,8 +1,6 @@
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { apiFindAllByApplication } from "@/server/core/db/schema";
-import { deploy } from "@/server/core/runtime/deploy";
 import { findApplicationById } from "@/server/core/services/application";
 import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 import {
@@ -89,17 +87,6 @@ export const previewDeploymentRouter = createTRPCRouter({
 				runtimeWorkerId: application.runtimeWorkerId ?? undefined,
 			};
 
-			if (IS_CLOUD && application.runtimeWorkerId) {
-				deploy(jobData).catch((error) => {
-					console.error("Background deployment failed:", error);
-				});
-				await audit(ctx, {
-					action: "redeploy",
-					resourceType: "previewDeployment",
-					resourceId: input.previewDeploymentId,
-				});
-				return true;
-			}
 			await myQueue.add(
 				"deployments",
 				{ ...jobData },

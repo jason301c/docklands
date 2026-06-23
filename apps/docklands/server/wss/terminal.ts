@@ -1,7 +1,6 @@
 import type http from "node:http";
 import { Client, type ConnectConfig } from "ssh2";
 import { WebSocketServer } from "ws";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { getDockerHost } from "@/server/core/runtime/docker";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
@@ -67,11 +66,6 @@ export const setupTerminalWebSocketServer = (
 		const isLocalServer = runtimeWorkerId === "local";
 
 		if (isLocalServer) {
-			if (IS_CLOUD) {
-				ws.send("This feature is not available in the cloud version.");
-				ws.close();
-				return;
-			}
 			const port = Number(url.searchParams.get("port"));
 			const username = url.searchParams.get("username");
 

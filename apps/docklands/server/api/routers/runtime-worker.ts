@@ -8,7 +8,6 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	apiCreateRuntimeWorker,
@@ -182,18 +181,11 @@ export const runtimeWorkerRouter = createTRPCRouter({
 
 		const result = await db.query.runtimeWorkers.findMany({
 			orderBy: desc(runtimeWorkers.createdAt),
-			where: IS_CLOUD
-				? and(
-						isNotNull(runtimeWorkers.sshKeyId),
-						eq(runtimeWorkers.organizationId, ctx.session.activeOrganizationId),
-						eq(runtimeWorkers.runtimeWorkerStatus, "active"),
-						eq(runtimeWorkers.runtimeWorkerType, "deploy"),
-					)
-				: and(
-						isNotNull(runtimeWorkers.sshKeyId),
-						eq(runtimeWorkers.organizationId, ctx.session.activeOrganizationId),
-						eq(runtimeWorkers.runtimeWorkerType, "deploy"),
-					),
+			where: and(
+				isNotNull(runtimeWorkers.sshKeyId),
+				eq(runtimeWorkers.organizationId, ctx.session.activeOrganizationId),
+				eq(runtimeWorkers.runtimeWorkerType, "deploy"),
+			),
 		});
 		return result.filter((s) => accessibleIds.has(s.runtimeWorkerId));
 	}),
@@ -203,24 +195,11 @@ export const runtimeWorkerRouter = createTRPCRouter({
 
 			const result = await db.query.runtimeWorkers.findMany({
 				orderBy: desc(runtimeWorkers.createdAt),
-				where: IS_CLOUD
-					? and(
-							isNotNull(runtimeWorkers.sshKeyId),
-							eq(
-								runtimeWorkers.organizationId,
-								ctx.session.activeOrganizationId,
-							),
-							eq(runtimeWorkers.runtimeWorkerStatus, "active"),
-							eq(runtimeWorkers.runtimeWorkerType, "build"),
-						)
-					: and(
-							isNotNull(runtimeWorkers.sshKeyId),
-							eq(
-								runtimeWorkers.organizationId,
-								ctx.session.activeOrganizationId,
-							),
-							eq(runtimeWorkers.runtimeWorkerType, "build"),
-						),
+				where: and(
+					isNotNull(runtimeWorkers.sshKeyId),
+					eq(runtimeWorkers.organizationId, ctx.session.activeOrganizationId),
+					eq(runtimeWorkers.runtimeWorkerType, "build"),
+				),
 			});
 			return result.filter((s) => accessibleIds.has(s.runtimeWorkerId));
 		},
@@ -481,16 +460,10 @@ export const runtimeWorkerRouter = createTRPCRouter({
 			});
 		}),
 	publicIp: protectedProcedure.query(async () => {
-		if (IS_CLOUD) {
-			return "";
-		}
 		const ip = await getPublicIpWithFallback();
 		return ip;
 	}),
 	getServerTime: protectedProcedure.query(() => {
-		if (IS_CLOUD) {
-			return null;
-		}
 		return {
 			time: new Date(),
 			timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,

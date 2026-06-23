@@ -1,8 +1,6 @@
 import { eq } from "drizzle-orm";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import { applications } from "@/server/core/db/schema";
-import { deploy } from "@/server/core/runtime/deploy";
 import type { Bitbucket } from "@/server/core/services/bitbucket";
 import { getBitbucketHeaders } from "@/server/core/utils/providers/bitbucket";
 import { shouldDeploy } from "@/server/core/utils/watch-paths/should-deploy";
@@ -251,21 +249,14 @@ export async function handleApplicationDeployWebhook(
 				runtimeWorker: !!application.runtimeWorkerId,
 			};
 
-			if (IS_CLOUD && application.runtimeWorkerId) {
-				jobData.runtimeWorkerId = application.runtimeWorkerId;
-				deploy(jobData).catch((error) => {
-					console.error("Background deployment failed:", error);
-				});
-			} else {
-				await myQueue.add(
-					"deployments",
-					{ ...jobData },
-					{
-						removeOnComplete: true,
-						removeOnFail: true,
-					},
-				);
-			}
+			await myQueue.add(
+				"deployments",
+				{ ...jobData },
+				{
+					removeOnComplete: true,
+					removeOnFail: true,
+				},
+			);
 		} catch (error) {
 			logWebhookError("Error deploying Application:", error);
 			return jsonResponse({ message: "Error deploying Application" }, 400);

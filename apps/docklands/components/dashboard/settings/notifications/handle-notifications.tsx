@@ -234,7 +234,6 @@ interface Props {
 export const HandleNotifications = ({ notificationId }: Props) => {
 	const utils = api.useUtils();
 	const [visible, setVisible] = useState(false);
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 
 	const { data: notification } = api.notification.one.useQuery(
 		{
@@ -1937,52 +1936,26 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 									)}
 								/>
 
-								{!isCloud && (
-									<FormField
-										control={form.control}
-										name="docklandsRestart"
-										render={({ field }) => (
-											<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
-												<div className="space-y-0.5">
-													<FormLabel>Docklands Restart</FormLabel>
-													<FormDescription>
-														Trigger the action when Docklands is restarted.
-													</FormDescription>
-												</div>
-												<FormControl>
-													<Switch
-														checked={field.value}
-														onCheckedChange={field.onChange}
-													/>
-												</FormControl>
-											</FormItem>
-										)}
-									/>
-								)}
-
-								{isCloud && (
-									<FormField
-										control={form.control}
-										name="serverThreshold"
-										render={({ field }) => (
-											<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
-												<div className="space-y-0.5">
-													<FormLabel>Server Threshold</FormLabel>
-													<FormDescription>
-														Trigger the action when the runtime worker threshold
-														is reached.
-													</FormDescription>
-												</div>
-												<FormControl>
-													<Switch
-														checked={field.value}
-														onCheckedChange={field.onChange}
-													/>
-												</FormControl>
-											</FormItem>
-										)}
-									/>
-								)}
+								<FormField
+									control={form.control}
+									name="docklandsRestart"
+									render={({ field }) => (
+										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
+											<div className="space-y-0.5">
+												<FormLabel>Docklands Restart</FormLabel>
+												<FormDescription>
+													Trigger the action when Docklands is restarted.
+												</FormDescription>
+											</div>
+											<FormControl>
+												<Switch
+													checked={field.value}
+													onCheckedChange={field.onChange}
+												/>
+											</FormControl>
+										</FormItem>
+									)}
+								/>
 							</div>
 						</div>
 					</form>

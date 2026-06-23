@@ -34,7 +34,6 @@ export type PermissionsOutput =
 type EnabledOpts = {
 	auth?: AuthQueryOutput;
 	permissions?: PermissionsOutput;
-	isCloud: boolean;
 };
 
 export type SingleNavItem = {
@@ -98,8 +97,7 @@ export const DASHBOARD_MENU: Menu = {
 			title: "Ingress",
 			url: "/dashboard/settings/ingress",
 			icon: Activity,
-			isEnabled: ({ permissions, isCloud }) =>
-				!!(permissions?.organization.update && !isCloud),
+			isEnabled: ({ permissions }) => !!permissions?.organization.update,
 		},
 		{
 			isSingle: true,
@@ -112,8 +110,7 @@ export const DASHBOARD_MENU: Menu = {
 			title: "Build Workers",
 			url: "/dashboard/settings/build-workers",
 			icon: Boxes,
-			isEnabled: ({ permissions, isCloud }) =>
-				!!(permissions?.runtimeWorker.read && !isCloud),
+			isEnabled: ({ permissions }) => !!permissions?.runtimeWorker.read,
 		},
 		{
 			isSingle: true,
@@ -216,8 +213,7 @@ export const DASHBOARD_MENU: Menu = {
 					title: "Ingress Requests",
 					url: "/dashboard/requests",
 					icon: Forward,
-					isEnabled: ({ permissions, isCloud }) =>
-						!!(permissions?.docker.read && !isCloud),
+					isEnabled: ({ permissions }) => !!permissions?.docker.read,
 				},
 				{
 					isSingle: true,
@@ -231,8 +227,7 @@ export const DASHBOARD_MENU: Menu = {
 					title: "Host Metrics",
 					url: "/dashboard/host-metrics",
 					icon: BarChartHorizontalBigIcon,
-					isEnabled: ({ isCloud, permissions }) =>
-						!isCloud && !!permissions?.monitoring.read,
+					isEnabled: ({ permissions }) => !!permissions?.monitoring.read,
 				},
 			],
 		},
@@ -255,12 +250,10 @@ export const DASHBOARD_MENU: Menu = {
 export function createMenuForAuthUser(opts: {
 	auth?: AuthQueryOutput;
 	permissions?: PermissionsOutput;
-	isCloud: boolean;
 }): Menu {
 	const enabledOpts = {
 		auth: opts.auth,
 		permissions: opts.permissions,
-		isCloud: opts.isCloud,
 	};
 	const isEnabled = (item: { isEnabled?: (o: EnabledOpts) => boolean }) =>
 		!item.isEnabled || item.isEnabled(enabledOpts);

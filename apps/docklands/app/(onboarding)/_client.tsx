@@ -36,10 +36,7 @@ const _TwoFactorSchema = z.object({
 
 type LoginForm = z.infer<typeof LoginSchema>;
 
-interface Props {
-	IS_CLOUD: boolean;
-}
-export default function Home({ IS_CLOUD }: Props) {
+export default function Home() {
 	const router = useRouter();
 	const [isLoginLoading, setIsLoginLoading] = useState(false);
 	const [isTwoFactorLoading, setIsTwoFactorLoading] = useState(false);
@@ -326,33 +323,13 @@ export default function Home({ IS_CLOUD }: Props) {
 
 				<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
 					<div>
-						{IS_CLOUD && (
-							<Link
-								className="hover:underline text-kumo-subtle"
-								href="/register"
-							>
-								Create an account
-							</Link>
-						)}
-					</div>
-
-					<div>
-						{IS_CLOUD ? (
-							<Link
-								className="hover:underline text-kumo-subtle"
-								href="/send-reset-password"
-							>
-								Lost your password?
-							</Link>
-						) : (
-							<Link
-								className="hover:underline text-kumo-subtle"
-								href="https://github.com/jason301c/docklands"
-								target="_blank"
-							>
-								Lost your password?
-							</Link>
-						)}
+						<Link
+							className="hover:underline text-kumo-subtle"
+							href="https://github.com/jason301c/docklands"
+							target="_blank"
+						>
+							Lost your password?
+						</Link>
 					</div>
 				</div>
 			</div>

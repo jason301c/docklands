@@ -3,7 +3,6 @@ import { and, desc, eq, exists } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	invitation,
@@ -12,7 +11,6 @@ import {
 	organizationRole,
 	user,
 } from "@/server/core/db/schema";
-import { sendInvitationEmail } from "@/server/core/verification/send-verification-email";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 
 export const organizationRouter = createTRPCRouter({
@@ -24,7 +22,7 @@ export const organizationRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			if (ctx.user.role !== "owner" && ctx.user.role !== "admin" && !IS_CLOUD) {
+			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
 				throw new TRPCError({
 					code: "FORBIDDEN",
 					message: "Only the organization owner can create an organization",
@@ -334,24 +332,6 @@ export const organizationRouter = createTRPCRouter({
 					inviterId: ctx.user.id,
 				})
 				.returning();
-
-			if (IS_CLOUD && created) {
-				const host =
-					process.env.NODE_ENV === "development"
-						? "http://localhost:3000"
-						: process.env.DOCKLANDS_APP_URL || "http://localhost:3000";
-				const inviteLink = `${host}/invitation?token=${created.id}`;
-
-				const org = await db.query.organization.findFirst({
-					where: eq(organization.id, orgId),
-				});
-
-				await sendInvitationEmail({
-					email,
-					inviteLink,
-					organizationName: org?.name || "organization",
-				});
-			}
 
 			await audit(ctx, {
 				action: "create",

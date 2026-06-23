@@ -24,7 +24,6 @@ import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-st
 import { UpdateCompose } from "@/components/dashboard/compose/update-compose";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
 import { ComposeFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-compose-monitoring";
-import { ComposePaidMonitoring } from "@/components/dashboard/metrics/paid/container/show-paid-compose-monitoring";
 import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,
@@ -72,9 +71,7 @@ const Service = (props: {
 
 	const { data } = api.compose.one.useQuery({ composeId });
 
-	const { data: auth } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: serverIp } = api.settings.getIp.useQuery();
 	const { data: environments } = api.environment.byWorkspaceId.useQuery({
 		workspaceId: data?.environment?.workspaceId || "",
@@ -108,8 +105,7 @@ const Service = (props: {
 			: null,
 		permissions?.logs.read ? { value: "logs", label: "Logs" } : null,
 		data?.sourceType !== "raw" ? { value: "patches", label: "Patches" } : null,
-		permissions?.monitoring.read &&
-		((data?.runtimeWorkerId && isCloud) || !data?.runtimeWorker)
+		permissions?.monitoring.read && !data?.runtimeWorker
 			? { value: "monitoring", label: "Metrics" }
 			: null,
 		permissions?.service.create
@@ -240,53 +236,11 @@ const Service = (props: {
 									<div>
 										<div className="pt-2.5">
 											<div className="flex flex-col border rounded-lg ">
-												{data?.runtimeWorkerId && isCloud ? (
-													<ComposePaidMonitoring
-														runtimeWorkerId={data?.runtimeWorkerId || ""}
-														baseUrl={`${data?.runtimeWorkerId ? `http://${data?.runtimeWorker?.ipAddress}:${data?.runtimeWorker?.metricsConfig?.runtimeWorker?.port}` : "http://localhost:4500"}`}
-														appName={data?.appName || ""}
-														token={
-															data?.runtimeWorker?.metricsConfig?.runtimeWorker
-																?.token || ""
-														}
-														appType={data?.composeType || "docker-compose"}
-													/>
-												) : (
-													<>
-														{/* {monitoring?.enabledFeatures &&
-															isCloud &&
-															data?.runtimeWorkerId && (
-																<div className="flex flex-row border w-fit p-4 rounded-lg items-center gap-2 m-4">
-																	<Label className="text-kumo-subtle">
-																		Metrics source
-																	</Label>
-																	<Switch
-																		checked={toggleMonitoring}
-																		onCheckedChange={setToggleMonitoring}
-																	/>
-																</div>
-															)}
-
-														{toggleMonitoring ? (
-															<ComposePaidMonitoring
-																appName={data?.appName || ""}
-																baseUrl={`http://${monitoring?.serverIp}:${monitoring?.metricsConfig?.runtimeWorker?.port}`}
-																token={
-																	monitoring?.metricsConfig?.runtimeWorker?.token || ""
-																}
-																appType={data?.composeType || "docker-compose"}
-															/>
-														) : ( */}
-														{/* <div> */}
-														<ComposeFreeMonitoring
-															runtimeWorkerId={data?.runtimeWorkerId || ""}
-															appName={data?.appName || ""}
-															appType={data?.composeType || "docker-compose"}
-														/>
-														{/* </div> */}
-														{/* )} */}
-													</>
-												)}
+												<ComposeFreeMonitoring
+													runtimeWorkerId={data?.runtimeWorkerId || ""}
+													appName={data?.appName || ""}
+													appType={data?.composeType || "docker-compose"}
+												/>
 											</div>
 										</div>
 									</div>

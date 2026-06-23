@@ -46,10 +46,13 @@ Docklands is a single Node process that serves both the UI and the backend:
 - **Better Auth + custom RBAC.** Better Auth handles identity, sessions, orgs,
   2FA, and API keys; Docklands layers organization roles, custom roles, and
   per-resource access on top.
-- **`IS_CLOUD` divergence.** A single codebase branches on `IS_CLOUD`
-  (`server/core/constants/env.ts`) to gate email verification, cookie security,
-  host-terminal/stats sockets, queue behavior, and startup bootstrapping. The
-  self-hosted path is the product; do not regress it for cloud-only behavior.
+- **Self-hosted only — single tenant.** This is software you install on your own
+  VM/Mac, not a hosted multi-tenant PaaS. There is no "cloud" mode: the upstream
+  `IS_CLOUD` flag and every cloud-only branch were removed. Signup is a
+  single-owner bootstrap (the first registrant becomes the owner; everyone else
+  is invite-only), the deployment queue and Swarm/Traefik bootstrap always run,
+  and host terminal/stats are always available. Do not reintroduce hosted/
+  multi-tenant code paths.
 
 ## Directory Map
 
@@ -209,8 +212,8 @@ reason to move code out.
   `.docker/` in dev, `/etc/docklands` in production).
 - `runtime/` — runtime helpers that back production deploy behavior (deploy
   orchestration, docker ops, cleanup/GC, host/network info).
-- `constants/` — `env.ts` (`IS_CLOUD`), `docker.ts` (the dockerode client with
-  socket/host detection), paths, cleanup.
+- `constants/` — `docker.ts` (the dockerode client with socket/host detection),
+  paths, cleanup.
 - `templates/` — template *logic* (keep template code here, not in a root-level
   `templates/` dir; the app-root `templates/` directory is template *data`).
 - `monitoring/`, `emails/`, `openapi/`, `verification/`, `types/` — Docker stats

@@ -5,7 +5,6 @@ import { parse, stringify } from "yaml";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
 import { CLEANUP_CRON_JOB } from "@/server/core/constants/cleanup";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { paths } from "@/server/core/constants/paths";
 import { db } from "@/server/core/db";
 import {
@@ -23,7 +22,6 @@ import {
 	workspaces,
 } from "@/server/core/db/schema";
 import { generateOpenApiDocument } from "@/server/core/openapi/generator/index.mjs";
-import { removeJob, schedule } from "@/server/core/runtime/backup";
 import { checkPermission } from "@/server/core/services/permission";
 import {
 	findRuntimeWorkerById,
@@ -31,7 +29,6 @@ import {
 } from "@/server/core/services/runtime-worker";
 import {
 	checkPortInUse,
-	DEFAULT_UPDATE_DATA,
 	getDocklandsImageTag,
 	getUpdateData,
 	readDirectory,
@@ -98,9 +95,6 @@ const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || "jason301c/docklands";
 
 export const settingsRouter = createTRPCRouter({
 	getWebServerSettings: protectedProcedure.query(async () => {
-		if (IS_CLOUD) {
-			return null;
-		}
 		const settings = await getWebServerSettings();
 		if (!settings) {
 			return settings;
@@ -110,9 +104,6 @@ export const settingsRouter = createTRPCRouter({
 		return { ...settings, sshPrivateKey: null };
 	}),
 	reloadServer: adminProcedure.mutation(async ({ ctx }) => {
-		if (IS_CLOUD) {
-			return true;
-		}
 		await reloadDockerResource("docklands", undefined, packageInfo.version);
 		await audit(ctx, {
 			action: "reload",
@@ -122,9 +113,6 @@ export const settingsRouter = createTRPCRouter({
 		return true;
 	}),
 	cleanAllDeploymentQueue: adminProcedure.mutation(async ({ ctx }) => {
-		if (IS_CLOUD) {
-			return true;
-		}
 		const result = cleanAllDeploymentQueue();
 		await audit(ctx, {
 			action: "update",
@@ -266,9 +254,6 @@ export const settingsRouter = createTRPCRouter({
 			return result;
 		}),
 	cleanMonitoring: adminProcedure.mutation(async ({ ctx }) => {
-		if (IS_CLOUD) {
-			return true;
-		}
 		const { MONITORING_PATH } = paths();
 		await recreateDirectory(MONITORING_PATH);
 		await audit(ctx, {
@@ -279,17 +264,11 @@ export const settingsRouter = createTRPCRouter({
 		return true;
 	}),
 	getDockerDiskUsage: adminProcedure.query(async () => {
-		if (IS_CLOUD) {
-			return [];
-		}
 		return getDockerDiskUsage();
 	}),
 	saveSSHPrivateKey: adminProcedure
 		.input(apiSaveSSHKey)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return true;
-			}
 			await updateWebServerSettings({
 				sshPrivateKey: input.sshPrivateKey,
 			});
@@ -303,9 +282,6 @@ export const settingsRouter = createTRPCRouter({
 	assignDomainServer: adminProcedure
 		.input(apiAssignDomain)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return true;
-			}
 			const settings = await updateWebServerSettings({
 				host: input.host,
 				letsEncryptEmail: input.letsEncryptEmail,
@@ -333,9 +309,6 @@ export const settingsRouter = createTRPCRouter({
 			return settings;
 		}),
 	cleanSSHPrivateKey: adminProcedure.mutation(async ({ ctx }) => {
-		if (IS_CLOUD) {
-			return true;
-		}
 		await updateWebServerSettings({
 			sshPrivateKey: null,
 		});
@@ -377,42 +350,26 @@ export const settingsRouter = createTRPCRouter({
 							message: "Runtime worker is inactive",
 						});
 					}
-					if (IS_CLOUD) {
-						await schedule({
-							cronSchedule: CLEANUP_CRON_JOB,
-							runtimeWorkerId: input.runtimeWorkerId,
-							type: "runtimeWorker",
-						});
-					} else {
-						scheduleJob(
-							runtimeWorkers.runtimeWorkerId,
-							CLEANUP_CRON_JOB,
-							async () => {
-								console.log(
-									`Container Runtime Cleanup ${new Date().toLocaleString()}] Running...`,
-								);
+					scheduleJob(
+						runtimeWorkers.runtimeWorkerId,
+						CLEANUP_CRON_JOB,
+						async () => {
+							console.log(
+								`Container Runtime Cleanup ${new Date().toLocaleString()}] Running...`,
+							);
 
-								await cleanupAll(runtimeWorkers.runtimeWorkerId);
+							await cleanupAll(runtimeWorkers.runtimeWorkerId);
 
-								await sendDockerCleanupNotifications(
-									runtimeWorkers.organizationId,
-								);
-							},
-						);
-					}
+							await sendDockerCleanupNotifications(
+								runtimeWorkers.organizationId,
+							);
+						},
+					);
 				} else {
-					if (IS_CLOUD) {
-						await removeJob({
-							cronSchedule: CLEANUP_CRON_JOB,
-							runtimeWorkerId: input.runtimeWorkerId,
-							type: "runtimeWorker",
-						});
-					} else {
-						const currentJob = scheduledJobs[runtimeWorkers.runtimeWorkerId];
-						currentJob?.cancel();
-					}
+					const currentJob = scheduledJobs[runtimeWorkers.runtimeWorkerId];
+					currentJob?.cancel();
 				}
-			} else if (!IS_CLOUD) {
+			} else {
 				const settingsUpdated = await updateWebServerSettings({
 					enableDockerCleanup: input.enableDockerCleanup,
 				});
@@ -446,13 +403,6 @@ export const settingsRouter = createTRPCRouter({
 	updateRemoteServersOnly: adminProcedure
 		.input(z.object({ remoteServersOnly: z.boolean() }))
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "This feature is only available for self-hosted instances",
-				});
-			}
-
 			await updateWebServerSettings({
 				remoteServersOnly: input.remoteServersOnly,
 			});
@@ -468,13 +418,6 @@ export const settingsRouter = createTRPCRouter({
 	updateBuildsConcurrency: adminProcedure
 		.input(apiUpdateWebServerBuildsConcurrency)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "This feature is only available for self-hosted instances",
-				});
-			}
-
 			await assertBuildsConcurrencyAllowed(
 				input.buildsConcurrency,
 				ctx.session.activeOrganizationId,
@@ -493,9 +436,6 @@ export const settingsRouter = createTRPCRouter({
 		}),
 
 	readTraefikConfig: adminProcedure.query(() => {
-		if (IS_CLOUD) {
-			return true;
-		}
 		const traefikConfig = readMainConfig();
 		return traefikConfig;
 	}),
@@ -503,9 +443,6 @@ export const settingsRouter = createTRPCRouter({
 	updateTraefikConfig: adminProcedure
 		.input(apiTraefikConfig)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return true;
-			}
 			writeMainConfig(input.traefikConfig);
 			await audit(ctx, {
 				action: "update",
@@ -516,18 +453,12 @@ export const settingsRouter = createTRPCRouter({
 		}),
 
 	readWebServerTraefikConfig: adminProcedure.query(() => {
-		if (IS_CLOUD) {
-			return true;
-		}
 		const traefikConfig = readConfig("docklands");
 		return traefikConfig;
 	}),
 	updateWebServerTraefikConfig: adminProcedure
 		.input(apiTraefikConfig)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return true;
-			}
 			writeConfig("docklands", input.traefikConfig);
 			await audit(ctx, {
 				action: "update",
@@ -538,9 +469,6 @@ export const settingsRouter = createTRPCRouter({
 		}),
 
 	readMiddlewareTraefikConfig: adminProcedure.query(() => {
-		if (IS_CLOUD) {
-			return true;
-		}
 		const traefikConfig = readConfig("middlewares");
 		return traefikConfig;
 	}),
@@ -548,9 +476,6 @@ export const settingsRouter = createTRPCRouter({
 	updateMiddlewareTraefikConfig: adminProcedure
 		.input(apiTraefikConfig)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return true;
-			}
 			writeConfig("middlewares", input.traefikConfig);
 			await audit(ctx, {
 				action: "update",
@@ -560,17 +485,9 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 	getUpdateData: protectedProcedure.mutation(async () => {
-		if (IS_CLOUD) {
-			return DEFAULT_UPDATE_DATA;
-		}
-
 		return await getUpdateData(packageInfo.version);
 	}),
 	updateServer: adminProcedure.mutation(async ({ ctx }) => {
-		if (IS_CLOUD) {
-			return true;
-		}
-
 		const data = await getUpdateData(packageInfo.version);
 		if (data.updateAvailable) {
 			void spawnAsync("docker", [
@@ -650,9 +567,6 @@ export const settingsRouter = createTRPCRouter({
 			return readConfigInPath(input.path, input.runtimeWorkerId);
 		}),
 	getIp: protectedProcedure.query(async () => {
-		if (IS_CLOUD) {
-			return "";
-		}
 		const settings = await getWebServerSettings();
 		return settings?.serverIp || "";
 	}),
@@ -663,9 +577,6 @@ export const settingsRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return true;
-			}
 			const settings = await updateWebServerSettings({
 				serverIp: input.serverIp,
 			});
@@ -812,12 +723,6 @@ export const settingsRouter = createTRPCRouter({
 		})
 		.input(apiReadStatsLogs)
 		.query(async ({ input }) => {
-			if (IS_CLOUD) {
-				return {
-					data: [],
-					totalCount: 0,
-				};
-			}
 			const rawConfig = await readMonitoringConfig(
 				!!input.dateRange?.start && !!input.dateRange?.end,
 			);
@@ -855,9 +760,6 @@ export const settingsRouter = createTRPCRouter({
 				.optional(),
 		)
 		.query(async ({ input }) => {
-			if (IS_CLOUD) {
-				return [];
-			}
 			const rawConfig = await readMonitoringConfig(
 				!!input?.dateRange?.start || !!input?.dateRange?.end,
 			);
@@ -865,9 +767,6 @@ export const settingsRouter = createTRPCRouter({
 			return processedLogs || [];
 		}),
 	haveActivateRequests: protectedProcedure.query(async () => {
-		if (IS_CLOUD) {
-			return true;
-		}
 		const config = readMainConfig();
 
 		if (!config) return false;
@@ -886,9 +785,6 @@ export const settingsRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return true;
-			}
 			const mainConfig = readMainConfig();
 			if (!mainConfig) return false;
 
@@ -919,9 +815,6 @@ export const settingsRouter = createTRPCRouter({
 			});
 			return true;
 		}),
-	isCloud: publicProcedure.query(async () => {
-		return IS_CLOUD;
-	}),
 	isUserSubscribed: protectedProcedure.query(async ({ ctx }) => {
 		const haveServers = await db.query.runtimeWorkers.findMany({
 			where: eq(
@@ -947,13 +840,6 @@ export const settingsRouter = createTRPCRouter({
 		}
 	}),
 	checkInfrastructureHealth: adminProcedure.query(async () => {
-		if (IS_CLOUD) {
-			return {
-				postgres: { status: "healthy" as const },
-				traefik: { status: "healthy" as const },
-			};
-		}
-
 		const [postgres, traefik] = await Promise.all([
 			checkPostgresHealth(),
 			checkTraefikHealth(),
@@ -968,10 +854,6 @@ export const settingsRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD && !input.runtimeWorkerId) {
-				throw new Error("Select a runtime worker to enable the GPU Setup");
-			}
-
 			try {
 				await setupGPUSupport(input.runtimeWorkerId);
 				await audit(ctx, {
@@ -992,22 +874,6 @@ export const settingsRouter = createTRPCRouter({
 			}),
 		)
 		.query(async ({ input }) => {
-			if (IS_CLOUD && !input.runtimeWorkerId) {
-				return {
-					driverInstalled: false,
-					driverVersion: undefined,
-					gpuModel: undefined,
-					runtimeInstalled: false,
-					runtimeConfigured: false,
-					cudaSupport: undefined,
-					cudaVersion: undefined,
-					memoryInfo: undefined,
-					availableGPUs: 0,
-					swarmEnabled: false,
-					gpuResources: 0,
-				};
-			}
-
 			try {
 				return await checkGPUStatus(input.runtimeWorkerId || "");
 			} catch (error) {
@@ -1034,12 +900,6 @@ export const settingsRouter = createTRPCRouter({
 		)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				if (IS_CLOUD && !input.runtimeWorkerId) {
-					throw new TRPCError({
-						code: "UNAUTHORIZED",
-						message: "Please set a runtimeWorkerId to update Traefik ports",
-					});
-				}
 				const env = await readEnvironmentVariables(
 					"docklands-traefik",
 					input?.runtimeWorkerId,
@@ -1103,9 +963,6 @@ export const settingsRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return true;
-			}
 			let result: boolean;
 			if (input.cronExpression) {
 				result = await startLogCleanup(input.cronExpression);
@@ -1122,13 +979,5 @@ export const settingsRouter = createTRPCRouter({
 
 	getLogCleanupStatus: protectedProcedure.query(async () => {
 		return getLogCleanupStatus();
-	}),
-
-	getDocklandsCloudIps: adminProcedure.query(async () => {
-		if (!IS_CLOUD) {
-			return [];
-		}
-		const ips = process.env.DOCKLANDS_CLOUD_IPS?.split(",");
-		return ips;
 	}),
 });

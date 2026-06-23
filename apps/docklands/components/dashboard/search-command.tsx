@@ -97,7 +97,6 @@ export const SearchCommand = () => {
 	const { data } = api.workspaces.all.useQuery(undefined, {
 		enabled: !!session,
 	});
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 
 	React.useEffect(() => {
 		const down = (e: KeyboardEvent) => {
@@ -195,40 +194,36 @@ export const SearchCommand = () => {
 				searchText: "automations schedules cron jobs tasks",
 				onSelect: () => navigate("/dashboard/automations"),
 			},
-			...(!isCloud
-				? [
-						{
-							id: "app-monitoring",
-							title: "Host metrics",
-							searchText: "host metrics monitoring runtime",
-							onSelect: () => navigate("/dashboard/host-metrics"),
-						},
-						{
-							id: "app-traefik",
-							title: "Ingress files",
-							searchText: "ingress files traefik proxy",
-							onSelect: () => navigate("/dashboard/proxy-files"),
-						},
-						{
-							id: "app-docker",
-							title: "Container runtime",
-							searchText: "runtime containers docker",
-							onSelect: () => navigate("/dashboard/container-runtime"),
-						},
-						{
-							id: "app-cluster-runtime",
-							title: "Cluster runtime",
-							searchText: "cluster runtime workers swarm orchestration",
-							onSelect: () => navigate("/dashboard/cluster-runtime"),
-						},
-						{
-							id: "app-requests",
-							title: "Ingress requests",
-							searchText: "ingress requests runtime proxy",
-							onSelect: () => navigate("/dashboard/requests"),
-						},
-					]
-				: []),
+			{
+				id: "app-monitoring",
+				title: "Host metrics",
+				searchText: "host metrics monitoring runtime",
+				onSelect: () => navigate("/dashboard/host-metrics"),
+			},
+			{
+				id: "app-traefik",
+				title: "Ingress files",
+				searchText: "ingress files traefik proxy",
+				onSelect: () => navigate("/dashboard/proxy-files"),
+			},
+			{
+				id: "app-docker",
+				title: "Container runtime",
+				searchText: "runtime containers docker",
+				onSelect: () => navigate("/dashboard/container-runtime"),
+			},
+			{
+				id: "app-cluster-runtime",
+				title: "Cluster runtime",
+				searchText: "cluster runtime workers swarm orchestration",
+				onSelect: () => navigate("/dashboard/cluster-runtime"),
+			},
+			{
+				id: "app-requests",
+				title: "Ingress requests",
+				searchText: "ingress requests runtime proxy",
+				onSelect: () => navigate("/dashboard/requests"),
+			},
 			{
 				id: "app-settings",
 				title: "Ingress settings",
@@ -266,7 +261,7 @@ export const SearchCommand = () => {
 			{ label: "Services", items: services },
 			{ label: "Application", items: applicationItems },
 		].filter((group) => group.items.length > 0);
-	}, [data, isCloud, router]);
+	}, [data, router]);
 
 	const filteredGroups = React.useMemo(() => {
 		const query = search.trim().toLowerCase();

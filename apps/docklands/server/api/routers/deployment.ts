@@ -2,7 +2,6 @@ import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	apiFindAllByApplication,
@@ -239,10 +238,6 @@ export const deploymentRouter = createTRPCRouter({
 			if (runtimeWorkerId) {
 				const { stdout } = await execAsyncRemote(runtimeWorkerId, command);
 				return stdout;
-			}
-
-			if (IS_CLOUD) {
-				return "";
 			}
 
 			const { stdout } = await execAsync(command);

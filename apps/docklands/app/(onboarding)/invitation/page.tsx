@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { getUserByToken } from "@/server/core/services/admin";
 import ClientPage from "./_client";
 
@@ -21,7 +20,6 @@ export default async function Page({ searchParams }: PageProps) {
 
 		return (
 			<ClientPage
-				isCloud={IS_CLOUD}
 				token={token}
 				invitation={invitation}
 				userAlreadyExists={!!invitation.userAlreadyExists}

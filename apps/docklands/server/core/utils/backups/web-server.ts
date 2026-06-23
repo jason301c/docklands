@@ -2,7 +2,6 @@ import { createWriteStream } from "node:fs";
 import { mkdtemp, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { paths } from "@/server/core/constants/paths";
 import type { BackupSchedule } from "@/server/core/services/backup";
 import {
@@ -24,10 +23,6 @@ function formatBytes(bytes?: number) {
 }
 
 export const runWebServerBackup = async (backup: BackupSchedule) => {
-	if (IS_CLOUD) {
-		return;
-	}
-
 	const deployment = await createDeploymentBackup({
 		backupId: backup.backupId,
 		title: "Web Server Backup",

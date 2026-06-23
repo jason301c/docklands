@@ -3,7 +3,6 @@ import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	apiChangePostgresStatus,
@@ -69,10 +68,7 @@ export const postgresRouter = createTRPCRouter({
 				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
-				if (
-					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.runtimeWorkerId
-				) {
+				if (webServerSettings?.remoteServersOnly && !input.runtimeWorkerId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You need to select a runtime worker to create a Postgres",

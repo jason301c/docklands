@@ -5,19 +5,16 @@ import { Table } from "@cloudflare/kumo/components/table";
 import { format } from "date-fns";
 import { Loader2, MoreHorizontal, Users } from "lucide-react";
 import { api } from "@/client/api/trpc";
-import { authClient } from "@/client/auth/client";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { AddUserPermissions } from "./add-permissions";
 import { ChangeRole } from "./change-role";
 
 export const ShowUsers = () => {
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data, isPending, refetch } = api.user.all.useQuery();
 	const { mutateAsync } = api.user.remove.useMutation();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
-	const utils = api.useUtils();
 	const { data: session } = api.user.session.useQuery();
 
 	return (
@@ -98,14 +95,10 @@ export const ShowUsers = () => {
 															member.role !== "admin") ||
 														(canDeleteMember && !isStaticAdminOrOwner));
 
-												const canDelete = canRemove && !isCloud;
-												const canUnlink = canRemove && !!isCloud;
+												const canDelete = canRemove;
 
 												const hasAnyAction =
-													canEditPermissions ||
-													canChangeRole ||
-													canDelete ||
-													canUnlink;
+													canEditPermissions || canChangeRole || canDelete;
 
 												return (
 													<Table.Row key={member.id}>
@@ -205,65 +198,6 @@ export const ShowUsers = () => {
 																					onSelect={(e) => e.preventDefault()}
 																				>
 																					Delete User
-																				</DropdownMenu.Item>
-																			</DialogAction>
-																		)}
-
-																		{canUnlink && (
-																			<DialogAction
-																				title="Unlink User"
-																				description="Are you sure you want to unlink this user?"
-																				type="destructive"
-																				onClick={async () => {
-																					if (!isCloud) {
-																						const orgCount =
-																							await utils.user.checkUserOrganizations.fetch(
-																								{
-																									userId: member.user.id,
-																								},
-																							);
-
-																						if (orgCount === 1) {
-																							await mutateAsync({
-																								userId: member.user.id,
-																							})
-																								.then(() => {
-																									toast.success(
-																										"User deleted successfully",
-																									);
-																									refetch();
-																								})
-																								.catch(() => {
-																									toast.error(
-																										"Error deleting user",
-																									);
-																								});
-																							return;
-																						}
-																					}
-
-																					const { error } =
-																						await authClient.organization.removeMember(
-																							{
-																								memberIdOrEmail: member.id,
-																							},
-																						);
-
-																					if (!error) {
-																						toast.success(
-																							"User unlinked successfully",
-																						);
-																						refetch();
-																					} else {
-																						toast.error("Error unlinking user");
-																					}
-																				}}
-																			>
-																				<DropdownMenu.Item
-																					className="w-full cursor-pointer text-kumo-danger hover:!text-kumo-danger"
-																					onSelect={(e) => e.preventDefault()}
-																				>
-																					Unlink User
 																				</DropdownMenu.Item>
 																			</DialogAction>
 																		)}

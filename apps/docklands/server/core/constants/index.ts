@@ -5,5 +5,4 @@ export {
 	DOCKLANDS_DOCKER_PORT,
 	docker,
 } from "./docker";
-export { IS_CLOUD } from "./env";
 export { paths } from "./paths";

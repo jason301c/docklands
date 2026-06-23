@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { paths } from "@/server/core/constants/paths";
 import { checkPermission } from "@/server/core/services/permission";
 import { execAsync } from "@/server/core/utils/process/execAsync";
@@ -109,9 +108,6 @@ export const getRuntimeWorkerIdParam = (url: URL) =>
 	url.searchParams.get("runtimeWorkerId");
 
 export const getShell = () => {
-	if (IS_CLOUD) {
-		return "NO_AVAILABLE";
-	}
 	switch (os.platform()) {
 		case "win32":
 			return "powershell.exe";

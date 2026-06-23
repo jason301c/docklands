@@ -79,8 +79,6 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 		},
 	);
 
-	const { data: isCloud } = api.settings.isCloud.useQuery();
-
 	const { mutateAsync, error, isError } = registryId
 		? api.registry.update.useMutation()
 		: api.registry.create.useMutation();
@@ -352,48 +350,22 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 								name="runtimeWorkerId"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>
-											Runtime worker {!isCloud && "(Optional)"}
-										</FormLabel>
+										<FormLabel>Runtime worker (Optional)</FormLabel>
 										<FormDescription>
-											{!isCloud ? (
+											{runtimeWorkerId &&
+											runtimeWorkerId !== "none" &&
+											selectedRuntimeWorker ? (
 												<>
-													{runtimeWorkerId &&
-													runtimeWorkerId !== "none" &&
-													selectedRuntimeWorker ? (
-														<>
-															Authentication will be performed on{" "}
-															<strong>{selectedRuntimeWorker.name}</strong>.
-															This registry will be available on this runtime
-															worker.
-														</>
-													) : (
-														<>
-															Choose where to authenticate with the registry. By
-															default, authentication occurs on the local
-															Docklands runtime. Select a specific worker to
-															authenticate from that worker instead.
-														</>
-													)}
+													Authentication will be performed on{" "}
+													<strong>{selectedRuntimeWorker.name}</strong>. This
+													registry will be available on this runtime worker.
 												</>
 											) : (
 												<>
-													{runtimeWorkerId &&
-													runtimeWorkerId !== "none" &&
-													selectedRuntimeWorker ? (
-														<>
-															Authentication will be performed on{" "}
-															<strong>{selectedRuntimeWorker.name}</strong>.
-															This registry will be available on this runtime
-															worker.
-														</>
-													) : (
-														<>
-															Select a runtime worker to authenticate with the
-															registry. Authentication will be performed from
-															the selected worker.
-														</>
-													)}
+													Choose where to authenticate with the registry. By
+													default, authentication occurs on the local Docklands
+													runtime. Select a specific worker to authenticate from
+													that worker instead.
 												</>
 											)}
 										</FormDescription>

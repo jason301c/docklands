@@ -3,14 +3,12 @@ import { observable } from "@trpc/server/observable";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	createVolumeBackupSchema,
 	updateVolumeBackupSchema,
 	volumeBackups,
 } from "@/server/core/db/schema";
-import { removeJob, schedule, updateJob } from "@/server/core/runtime/backup";
 import { findDestinationById } from "@/server/core/services/destination";
 import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
@@ -88,15 +86,7 @@ export const volumeBackupsRouter = createTRPCRouter({
 			const newVolumeBackup = await createVolumeBackup(input);
 
 			if (newVolumeBackup?.enabled) {
-				if (IS_CLOUD) {
-					await schedule({
-						cronSchedule: newVolumeBackup.cronExpression,
-						volumeBackupId: newVolumeBackup.volumeBackupId,
-						type: "volume-backup",
-					});
-				} else {
-					await scheduleVolumeBackup(newVolumeBackup.volumeBackupId);
-				}
+				await scheduleVolumeBackup(newVolumeBackup.volumeBackupId);
 			}
 			await audit(ctx, {
 				action: "create",
@@ -189,27 +179,11 @@ export const volumeBackupsRouter = createTRPCRouter({
 				});
 			}
 
-			if (IS_CLOUD) {
-				if (updatedVolumeBackup.enabled) {
-					await updateJob({
-						cronSchedule: updatedVolumeBackup.cronExpression,
-						volumeBackupId: updatedVolumeBackup.volumeBackupId,
-						type: "volume-backup",
-					});
-				} else {
-					await removeJob({
-						cronSchedule: updatedVolumeBackup.cronExpression,
-						volumeBackupId: updatedVolumeBackup.volumeBackupId,
-						type: "volume-backup",
-					});
-				}
+			if (updatedVolumeBackup?.enabled) {
+				removeVolumeBackupJob(updatedVolumeBackup.volumeBackupId);
+				scheduleVolumeBackup(updatedVolumeBackup.volumeBackupId);
 			} else {
-				if (updatedVolumeBackup?.enabled) {
-					removeVolumeBackupJob(updatedVolumeBackup.volumeBackupId);
-					scheduleVolumeBackup(updatedVolumeBackup.volumeBackupId);
-				} else {
-					removeVolumeBackupJob(updatedVolumeBackup.volumeBackupId);
-				}
+				removeVolumeBackupJob(updatedVolumeBackup.volumeBackupId);
 			}
 			await audit(ctx, {
 				action: "update",

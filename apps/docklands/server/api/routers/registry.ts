@@ -1,7 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	apiCreateRegistry,
@@ -115,13 +114,6 @@ export const registryRouter = createTRPCRouter({
 					"--password-stdin",
 				];
 
-				if (IS_CLOUD && !input.runtimeWorkerId) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: "Select a runtimeWorker to test the registry",
-					});
-				}
-
 				if (input.runtimeWorkerId && input.runtimeWorkerId !== "none") {
 					await execAsyncRemote(
 						input.runtimeWorkerId,
@@ -174,13 +166,6 @@ export const registryRouter = createTRPCRouter({
 					registryData.username,
 					"--password-stdin",
 				];
-
-				if (IS_CLOUD && !input.runtimeWorkerId) {
-					throw new TRPCError({
-						code: "NOT_FOUND",
-						message: "Select a runtimeWorker to test the registry",
-					});
-				}
 
 				if (input.runtimeWorkerId && input.runtimeWorkerId !== "none") {
 					await execAsyncRemote(

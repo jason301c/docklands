@@ -21,7 +21,6 @@ describe("runtime worker filter copy", () => {
 		expect(source).toContain("Runtime worker");
 		expect(source).toContain("Runtime worker filter");
 		expect(source).toContain("Runtime workers");
-		expect(source).toContain("No runtime workers yet");
 		expect(source).toContain("Local runtime worker");
 		expect(source).toContain('"runtimeWorkerId"');
 		expect(source).toContain('query.set("runtimeWorkerId"');

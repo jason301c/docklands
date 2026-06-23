@@ -1,8 +1,7 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
-import { LinkButton } from "@cloudflare/kumo/components/button";
 import { Label } from "@cloudflare/kumo/components/label";
 import { Select } from "@cloudflare/kumo/components/select";
-import { Loader2, PlusIcon, ServerIcon } from "lucide-react";
+import { Loader2, ServerIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
 import { api } from "@/client/api/trpc";
@@ -20,9 +19,6 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 	const currentPathname = pathname ?? "/dashboard/workspace";
 	const { data: runtimeWorkers, isLoading: isLoadingRuntimeWorkers } =
 		api.runtimeWorker.withSSHKey.useQuery();
-	const { data: isCloud, isLoading: isLoadingCloud } =
-		api.settings.isCloud.useQuery();
-	const { data: permissions } = api.user.getPermissions.useQuery();
 
 	const queryRuntimeWorkerId =
 		searchParams?.get("runtimeWorkerId") ?? undefined;
@@ -30,12 +26,9 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 	const selectedRuntimeWorker = runtimeWorkers?.find(
 		(runtimeWorker) => runtimeWorker.runtimeWorkerId === queryRuntimeWorkerId,
 	);
-	// Cloud has no local runtime, so fall back to the first remote runtime.
 	const runtimeWorkerId = selectedRuntimeWorker
 		? selectedRuntimeWorker.runtimeWorkerId
-		: isCloud
-			? runtimeWorkers?.[0]?.runtimeWorkerId
-			: undefined;
+		: undefined;
 
 	const setRuntimeWorkerId = (value: string) => {
 		const query = new URLSearchParams(searchParams?.toString() ?? "");
@@ -51,35 +44,11 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 		});
 	};
 
-	if (isLoadingRuntimeWorkers || isLoadingCloud) {
+	if (isLoadingRuntimeWorkers) {
 		return (
 			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-2 rounded-lg border bg-kumo-canvas">
 				<span className="text-lg font-medium text-kumo-subtle">Loading...</span>
 				<Loader2 className="size-8 animate-spin text-kumo-subtle" />
-			</div>
-		);
-	}
-
-	if (isCloud && !runtimeWorkers?.length) {
-		return (
-			<div className="flex min-h-[60vh] w-full flex-col items-center justify-center gap-5 rounded-lg border border-dashed bg-kumo-canvas px-4">
-				<div className="flex size-16 items-center justify-center rounded-full bg-kumo-fill">
-					<ServerIcon className="size-8 text-kumo-subtle" />
-				</div>
-				<div className="flex max-w-md flex-col items-center gap-1.5 text-center">
-					<span className="text-lg font-medium">No runtime workers yet</span>
-					<span className="text-sm text-kumo-subtle">
-						{permissions?.runtimeWorker.create
-							? "This section works on remote runtime workers. Add your first worker to start managing it from here."
-							: "This section works on remote runtime workers. Ask an administrator to add a worker to your organization."}
-					</span>
-				</div>
-				{permissions?.runtimeWorker.create && (
-					<LinkButton href="/dashboard/settings/runtime">
-						<PlusIcon className="size-4" />
-						Add worker
-					</LinkButton>
-				)}
 			</div>
 		);
 	}
@@ -109,19 +78,17 @@ export const RuntimeWorkerFilter = ({ children }: Props) => {
 						<>
 							<Select.Group>
 								<Select.GroupLabel>Runtime workers</Select.GroupLabel>
-								{!isCloud && (
-									<Select.Option value={LOCAL_RUNTIME_WORKER}>
-										<div className="flex items-center gap-2">
-											<span>Local runtime worker</span>
-											<Badge
-												variant="secondary"
-												className="text-[10px] px-1.5 py-0"
-											>
-												Local
-											</Badge>
-										</div>
-									</Select.Option>
-								)}
+								<Select.Option value={LOCAL_RUNTIME_WORKER}>
+									<div className="flex items-center gap-2">
+										<span>Local runtime worker</span>
+										<Badge
+											variant="secondary"
+											className="text-[10px] px-1.5 py-0"
+										>
+											Local
+										</Badge>
+									</div>
+								</Select.Option>
 								{runtimeWorkers.map((runtimeWorker) => (
 									<Select.Option
 										key={runtimeWorker.runtimeWorkerId}

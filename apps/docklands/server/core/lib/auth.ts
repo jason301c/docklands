@@ -4,9 +4,8 @@ import * as bcrypt from "bcrypt";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
-import { admin, organization, twoFactor } from "better-auth/plugins";
+import { organization, twoFactor } from "better-auth/plugins";
 import { and, desc, eq } from "drizzle-orm";
-import { IS_CLOUD } from "../constants/env";
 import { db } from "../db";
 import * as schema from "../db/schema";
 import { getPublicIpWithFallback } from "../runtime/host";
@@ -16,10 +15,7 @@ import {
 	getWebServerSettings,
 	updateWebServerSettings,
 } from "../services/web-server-settings";
-import {
-	sendEmail,
-	sendVerificationEmail,
-} from "../verification/send-verification-email";
+import { sendEmail } from "../verification/send-verification-email";
 import { ac, adminRole, memberRole, ownerRole } from "./access-control";
 import { betterAuthSecret } from "./auth-secret";
 
@@ -55,22 +51,21 @@ const { handler, api } = betterAuth({
 		"/organization/create",
 		"/organization/update",
 		"/organization/delete",
-		...(!IS_CLOUD ? ["/verify-email"] : []),
+		"/verify-email",
 	],
 	secret: betterAuthSecret,
-	...(!IS_CLOUD
-		? {
-				advanced: {
-					useSecureCookies: false,
-					defaultCookieAttributes: {
-						sameSite: "lax",
-						secure: false,
-						httpOnly: true,
-						path: "/",
-					},
-				},
-			}
-		: {}),
+	// Self-hosted installs are commonly reached over plain HTTP on a LAN/IP, so
+	// cookies are not forced to Secure. Tightening this for HTTPS-behind-a-domain
+	// is a separate decision.
+	advanced: {
+		useSecureCookies: false,
+		defaultCookieAttributes: {
+			sameSite: "lax",
+			secure: false,
+			httpOnly: true,
+			path: "/",
+		},
+	},
 	appName: "Docklands",
 	logger: {
 		disabled: process.env.NODE_ENV === "production",
@@ -80,9 +75,6 @@ const { handler, api } = betterAuth({
 			return [];
 		}
 		try {
-			if (IS_CLOUD) {
-				return await getTrustedOrigins();
-			}
 			const devOrigins =
 				process.env.NODE_ENV === "development"
 					? [
@@ -108,24 +100,9 @@ const { handler, api } = betterAuth({
 			return [];
 		}
 	},
-	emailVerification: {
-		sendOnSignUp: true,
-		autoSignInAfterVerification: true,
-		sendOnSignIn: true,
-		sendVerificationEmail: async ({ user, url }) => {
-			if (IS_CLOUD) {
-				await sendVerificationEmail({
-					userName: user.name || "User",
-					email: user.email,
-					verificationUrl: url,
-				});
-			}
-		},
-	},
 	emailAndPassword: {
 		enabled: true,
-		autoSignIn: !IS_CLOUD,
-		requireEmailVerification: IS_CLOUD && process.env.NODE_ENV === "production",
+		autoSignIn: true,
 		password: {
 			async hash(password) {
 				return bcrypt.hashSync(password, 10);
@@ -148,45 +125,43 @@ const { handler, api } = betterAuth({
 		user: {
 			create: {
 				before: async (_user, context) => {
-					if (!IS_CLOUD) {
-						const xDocklandsToken =
-							context?.request?.headers?.get("x-docklands-token");
-						if (xDocklandsToken) {
-							let invitation: Awaited<ReturnType<typeof getUserByToken>>;
-							try {
-								invitation = await getUserByToken(xDocklandsToken);
-							} catch {
-								throw new APIError("BAD_REQUEST", {
-									message: "Invalid invitation token",
-								});
-							}
-							if (invitation.isExpired) {
-								throw new APIError("BAD_REQUEST", {
-									message: "Invitation has expired",
-								});
-							}
-							if (invitation.status !== "pending") {
-								throw new APIError("BAD_REQUEST", {
-									message: "Invitation has already been used",
-								});
-							}
-							if (
-								_user.email.toLowerCase().trim() !==
-								invitation.email.toLowerCase().trim()
-							) {
-								throw new APIError("BAD_REQUEST", {
-									message: "Email does not match invitation",
-								});
-							}
-						} else {
-							const isAdminPresent = await db.query.member.findFirst({
-								where: eq(schema.member.role, "owner"),
+					const xDocklandsToken =
+						context?.request?.headers?.get("x-docklands-token");
+					if (xDocklandsToken) {
+						let invitation: Awaited<ReturnType<typeof getUserByToken>>;
+						try {
+							invitation = await getUserByToken(xDocklandsToken);
+						} catch {
+							throw new APIError("BAD_REQUEST", {
+								message: "Invalid invitation token",
 							});
-							if (isAdminPresent) {
-								throw new APIError("BAD_REQUEST", {
-									message: "Admin is already created",
-								});
-							}
+						}
+						if (invitation.isExpired) {
+							throw new APIError("BAD_REQUEST", {
+								message: "Invitation has expired",
+							});
+						}
+						if (invitation.status !== "pending") {
+							throw new APIError("BAD_REQUEST", {
+								message: "Invitation has already been used",
+							});
+						}
+						if (
+							_user.email.toLowerCase().trim() !==
+							invitation.email.toLowerCase().trim()
+						) {
+							throw new APIError("BAD_REQUEST", {
+								message: "Email does not match invitation",
+							});
+						}
+					} else {
+						const isAdminPresent = await db.query.member.findFirst({
+							where: eq(schema.member.role, "owner"),
+						});
+						if (isAdminPresent) {
+							throw new APIError("BAD_REQUEST", {
+								message: "Admin is already created",
+							});
 						}
 					}
 				},
@@ -195,13 +170,13 @@ const { handler, api } = betterAuth({
 						where: eq(schema.member.role, "owner"),
 					});
 
-					if (!IS_CLOUD && !isAdminPresent) {
+					// The first registrant becomes the single owner: record the
+					// server IP and create their default organization.
+					if (!isAdminPresent) {
 						await updateWebServerSettings({
 							serverIp: await getPublicIpWithFallback(),
 						});
-					}
 
-					if (IS_CLOUD || !isAdminPresent) {
 						await db.transaction(async (tx) => {
 							const organization = await tx
 								.insert(schema.organization)
@@ -348,13 +323,6 @@ const { handler, api } = betterAuth({
 				maximumRolesPerOrganization: 10,
 			},
 		}),
-		...(IS_CLOUD
-			? [
-					admin({
-						adminUserIds: [process.env.USER_ADMIN_ID as string],
-					}),
-				]
-			: []),
 	],
 });
 

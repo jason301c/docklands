@@ -1,9 +1,7 @@
 import { Webhooks } from "@octokit/webhooks";
 import { and, eq } from "drizzle-orm";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import { applications, compose, github } from "@/server/core/db/schema";
-import { deploy } from "@/server/core/runtime/deploy";
 import {
 	createSecurityBlockedComment,
 	findGithubById,
@@ -132,13 +130,6 @@ export async function handleGithubDeployWebhook(request: Request) {
 					runtimeWorker: !!app.runtimeWorkerId,
 				};
 
-				if (IS_CLOUD && app.runtimeWorkerId) {
-					jobData.runtimeWorkerId = app.runtimeWorkerId;
-					deploy(jobData).catch((error) => {
-						console.error("Background deployment failed:", error);
-					});
-					continue;
-				}
 				await myQueue.add(
 					"deployments",
 					{ ...jobData },
@@ -170,14 +161,6 @@ export async function handleGithubDeployWebhook(request: Request) {
 					descriptionLog: `Hash: ${deploymentHash}`,
 					runtimeWorker: !!composeApp.runtimeWorkerId,
 				};
-
-				if (IS_CLOUD && composeApp.runtimeWorkerId) {
-					jobData.runtimeWorkerId = composeApp.runtimeWorkerId;
-					deploy(jobData).catch((error) => {
-						console.error("Background deployment failed:", error);
-					});
-					continue;
-				}
 
 				await myQueue.add(
 					"deployments",
@@ -252,13 +235,6 @@ export async function handleGithubDeployWebhook(request: Request) {
 					continue;
 				}
 
-				if (IS_CLOUD && app.runtimeWorkerId) {
-					jobData.runtimeWorkerId = app.runtimeWorkerId;
-					deploy(jobData).catch((error) => {
-						console.error("Background deployment failed:", error);
-					});
-					continue;
-				}
 				await myQueue.add(
 					"deployments",
 					{ ...jobData },
@@ -297,13 +273,6 @@ export async function handleGithubDeployWebhook(request: Request) {
 				);
 
 				if (!shouldDeployPaths) {
-					continue;
-				}
-				if (IS_CLOUD && composeApp.runtimeWorkerId) {
-					jobData.runtimeWorkerId = composeApp.runtimeWorkerId;
-					deploy(jobData).catch((error) => {
-						console.error("Background deployment failed:", error);
-					});
 					continue;
 				}
 
@@ -509,13 +478,6 @@ export async function handleGithubDeployWebhook(request: Request) {
 				};
 
 				if (previewDeploymentId) {
-					if (IS_CLOUD && app.runtimeWorkerId) {
-						jobData.runtimeWorkerId = app.runtimeWorkerId;
-						deploy(jobData).catch((error) => {
-							console.error("Background deployment failed:", error);
-						});
-						continue;
-					}
 					await myQueue.add(
 						"deployments",
 						{ ...jobData },

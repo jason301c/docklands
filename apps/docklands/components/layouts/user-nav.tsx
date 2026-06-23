@@ -18,7 +18,6 @@ export const UserNav = () => {
 	const router = useRouter();
 	const { data } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const userName =
 		`${data?.user?.firstName ?? ""} ${data?.user?.lastName ?? ""}`.trim() ||
 		data?.user?.email ||
@@ -89,48 +88,33 @@ export const UserNav = () => {
 					>
 						Workspace
 					</DropdownMenu.Item>
-					{!isCloud ? (
-						<>
-							<DropdownMenu.Item
-								className="cursor-pointer"
-								onClick={() => {
-									router.push("/dashboard/host-metrics");
-								}}
-							>
-								Host metrics
-							</DropdownMenu.Item>
-							{permissions?.traefikFiles.read && (
-								<DropdownMenu.Item
-									className="cursor-pointer"
-									onClick={() => {
-										router.push("/dashboard/proxy-files");
-									}}
-								>
-									Proxy files
-								</DropdownMenu.Item>
-							)}
-							{permissions?.docker.read && (
-								<DropdownMenu.Item
-									className="cursor-pointer"
-									onClick={() => {
-										router.push("/dashboard/container-runtime");
-									}}
-								>
-									Container runtime
-								</DropdownMenu.Item>
-							)}
-						</>
-					) : (
-						permissions?.organization.update && (
-							<DropdownMenu.Item
-								className="cursor-pointer"
-								onClick={() => {
-									router.push("/dashboard/settings/runtime");
-								}}
-							>
-								Runtime workers
-							</DropdownMenu.Item>
-						)
+					<DropdownMenu.Item
+						className="cursor-pointer"
+						onClick={() => {
+							router.push("/dashboard/host-metrics");
+						}}
+					>
+						Host metrics
+					</DropdownMenu.Item>
+					{permissions?.traefikFiles.read && (
+						<DropdownMenu.Item
+							className="cursor-pointer"
+							onClick={() => {
+								router.push("/dashboard/proxy-files");
+							}}
+						>
+							Proxy files
+						</DropdownMenu.Item>
+					)}
+					{permissions?.docker.read && (
+						<DropdownMenu.Item
+							className="cursor-pointer"
+							onClick={() => {
+								router.push("/dashboard/container-runtime");
+							}}
+						>
+							Container runtime
+						</DropdownMenu.Item>
 					)}
 				</DropdownMenu.Group>
 				<DropdownMenu.Separator />

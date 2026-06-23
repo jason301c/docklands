@@ -1,7 +1,6 @@
 import type http from "node:http";
 import { WebSocketServer } from "ws";
 import { docker } from "@/server/core/constants/docker";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import {
 	getHostSystemStats,
@@ -35,11 +34,6 @@ export const setupDockerStatsMonitoringSocketServer = (
 	wssTerm.on("connection", async (ws, req) => {
 		const url = new URL(req.url || "", `http://${req.headers.host}`);
 
-		if (IS_CLOUD) {
-			ws.send("This feature is not available in the cloud version.");
-			ws.close();
-			return;
-		}
 		const appName = url.searchParams.get("appName");
 		const appType = (url.searchParams.get("appType") || "application") as
 			| "application"

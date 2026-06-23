@@ -6,7 +6,6 @@ import {
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	apiCreateBackup,
 	apiFindOneBackup,
@@ -14,7 +13,6 @@ import {
 	apiRestoreBackup,
 	apiUpdateBackup,
 } from "@/server/core/db/schema";
-import { removeJob, schedule, updateJob } from "@/server/core/runtime/backup";
 import {
 	createBackup,
 	findBackupById,
@@ -107,54 +105,8 @@ export const backupRouter = createTRPCRouter({
 				const newBackup = await createBackup(input);
 				const backup = await findBackupById(newBackup.backupId);
 
-				if (IS_CLOUD && backup.enabled) {
-					const databaseType = backup.databaseType;
-					let runtimeWorkerId = "";
-					if (databaseType === "postgres" && backup.postgres?.runtimeWorkerId) {
-						runtimeWorkerId = backup.postgres.runtimeWorkerId;
-					} else if (
-						databaseType === "mysql" &&
-						backup.mysql?.runtimeWorkerId
-					) {
-						runtimeWorkerId = backup.mysql.runtimeWorkerId;
-					} else if (
-						databaseType === "mongo" &&
-						backup.mongo?.runtimeWorkerId
-					) {
-						runtimeWorkerId = backup.mongo.runtimeWorkerId;
-					} else if (
-						databaseType === "mariadb" &&
-						backup.mariadb?.runtimeWorkerId
-					) {
-						runtimeWorkerId = backup.mariadb.runtimeWorkerId;
-					} else if (
-						databaseType === "libsql" &&
-						backup.libsql?.runtimeWorkerId
-					) {
-						runtimeWorkerId = backup.libsql.runtimeWorkerId;
-					} else if (
-						backup.backupType === "compose" &&
-						backup.compose?.runtimeWorkerId
-					) {
-						runtimeWorkerId = backup.compose.runtimeWorkerId;
-					}
-					const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
-
-					if (runtimeWorker.runtimeWorkerStatus === "inactive") {
-						throw new TRPCError({
-							code: "NOT_FOUND",
-							message: "Runtime worker is inactive",
-						});
-					}
-					await schedule({
-						cronSchedule: backup.schedule,
-						backupId: backup.backupId,
-						type: "backup",
-					});
-				} else {
-					if (backup.enabled) {
-						scheduleBackup(backup);
-					}
+				if (backup.enabled) {
+					scheduleBackup(backup);
 				}
 				await audit(ctx, {
 					action: "create",
@@ -214,27 +166,11 @@ export const backupRouter = createTRPCRouter({
 				await updateBackupById(input.backupId, input);
 				const backup = await findBackupById(input.backupId);
 
-				if (IS_CLOUD) {
-					if (backup.enabled) {
-						await updateJob({
-							cronSchedule: backup.schedule,
-							backupId: backup.backupId,
-							type: "backup",
-						});
-					} else {
-						await removeJob({
-							cronSchedule: backup.schedule,
-							backupId: backup.backupId,
-							type: "backup",
-						});
-					}
+				if (backup.enabled) {
+					removeScheduleBackup(input.backupId);
+					scheduleBackup(backup);
 				} else {
-					if (backup.enabled) {
-						removeScheduleBackup(input.backupId);
-						scheduleBackup(backup);
-					} else {
-						removeScheduleBackup(input.backupId);
-					}
+					removeScheduleBackup(input.backupId);
 				}
 				await audit(ctx, {
 					action: "update",
@@ -269,15 +205,7 @@ export const backupRouter = createTRPCRouter({
 				}
 
 				const value = await removeBackupById(input.backupId);
-				if (IS_CLOUD && value) {
-					removeJob({
-						backupId: input.backupId,
-						cronSchedule: value.schedule,
-						type: "backup",
-					});
-				} else if (!IS_CLOUD) {
-					removeScheduleBackup(input.backupId);
-				}
+				removeScheduleBackup(input.backupId);
 				await audit(ctx, {
 					action: "delete",
 					resourceType: "backup",

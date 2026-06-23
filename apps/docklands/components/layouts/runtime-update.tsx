@@ -13,7 +13,6 @@ export const RuntimeUpdateButton = () => {
 		latestVersion: null,
 		updateAvailable: false,
 	});
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { mutateAsync: getUpdateData } =
 		api.settings.getUpdateData.useMutation();
 	const [isOpen, setIsOpen] = useState(false);
@@ -22,10 +21,6 @@ export const RuntimeUpdateButton = () => {
 
 	useEffect(() => {
 		// Handling of automatic check for runtimeWorker updates
-		if (isCloud) {
-			return;
-		}
-
 		if (!localStorage.getItem("enableAutoCheckUpdates")) {
 			// Enable auto update checking by default if user didn't change it
 			localStorage.setItem("enableAutoCheckUpdates", "true");
@@ -68,7 +63,7 @@ export const RuntimeUpdateButton = () => {
 		};
 	}, []);
 
-	return !isCloud && updateData.updateAvailable ? (
+	return updateData.updateAvailable ? (
 		<div className="border-t pt-4">
 			<RuntimeUpdateDialog
 				updateData={updateData}

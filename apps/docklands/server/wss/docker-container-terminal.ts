@@ -2,7 +2,6 @@ import type http from "node:http";
 import { spawn } from "node-pty";
 import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
@@ -158,11 +157,6 @@ export const setupDockerContainerTerminalWebSocketServer = (
 						privateKey: runtimeWorker.sshKey?.privateKey,
 					});
 			} else {
-				if (IS_CLOUD) {
-					ws.send("This feature is not available in the cloud version.");
-					ws.close();
-					return;
-				}
 				const ptyProcess = spawn(
 					"docker",
 					["exec", "-it", "-w", "/", containerId, shell],

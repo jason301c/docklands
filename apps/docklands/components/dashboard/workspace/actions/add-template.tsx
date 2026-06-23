@@ -73,11 +73,9 @@ export const AddTemplate = ({
 			enabled: open,
 		},
 	);
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
-	const showAutomaticPlacement =
-		!isCloud && !webServerSettings?.remoteServersOnly;
+	const showAutomaticPlacement = !webServerSettings?.remoteServersOnly;
 	const { data: runtimeWorkers } = api.runtimeWorker.withSSHKey.useQuery();
 	const { data: tags, isPending: isLoadingTags } = api.compose.getTags.useQuery(
 		{},

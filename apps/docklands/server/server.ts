@@ -1,7 +1,6 @@
 import http from "node:http";
 import { config } from "dotenv";
 import next from "next";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { setupDirectories } from "@/server/core/setup/config-paths";
 import { initializeNetwork } from "@/server/core/setup/setup";
 import {
@@ -29,7 +28,7 @@ const dev = process.env.NODE_ENV !== "production";
 
 // Initialize critical directories and Traefik config BEFORE Next.js starts
 // This prevents race conditions with the install script
-if (process.env.NODE_ENV === "production" && !IS_CLOUD) {
+if (process.env.NODE_ENV === "production") {
 	setupDirectories();
 	createDefaultTraefikConfig();
 	createDefaultServerTraefikConfig();
@@ -66,13 +65,11 @@ void app.prepare().then(async () => {
 		setupDockerContainerLogsWebSocketServer(runtimeWorker);
 		setupDockerContainerTerminalWebSocketServer(runtimeWorker);
 		setupTerminalWebSocketServer(runtimeWorker);
-		if (!IS_CLOUD) {
-			setupDockerStatsMonitoringSocketServer(runtimeWorker);
-		}
+		setupDockerStatsMonitoringSocketServer(runtimeWorker);
 
 		runtimeWorker.listen(PORT, HOST);
 		console.log(`Server Started on: http://${HOST}:${PORT}`);
-		if (process.env.NODE_ENV === "production" && !IS_CLOUD) {
+		if (process.env.NODE_ENV === "production") {
 			createDefaultMiddlewares();
 			await initializeNetwork();
 			await initCronJobs();
@@ -81,11 +78,9 @@ void app.prepare().then(async () => {
 			await initVolumeBackupsCronJobs();
 			await sendDocklandsRestartNotifications();
 		}
-		if (!IS_CLOUD) {
-			console.log("Starting Deployment Worker");
-			const { startDeploymentWorker } = await import("./queues/queueSetup");
-			await startDeploymentWorker();
-		}
+		console.log("Starting Deployment Worker");
+		const { startDeploymentWorker } = await import("./queues/queueSetup");
+		await startDeploymentWorker();
 	} catch (e) {
 		console.error("Main Server Error", e);
 	}

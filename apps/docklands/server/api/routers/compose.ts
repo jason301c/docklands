@@ -4,7 +4,6 @@ import _ from "lodash";
 import { nanoid } from "nanoid";
 import { stringify } from "yaml";
 import { z } from "zod";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	apiCreateCompose,
@@ -20,7 +19,7 @@ import {
 	environments,
 	workspaces,
 } from "@/server/core/db/schema";
-import { cancelDeployment, deploy } from "@/server/core/runtime/deploy";
+import { cancelDeployment } from "@/server/core/runtime/deploy";
 import {
 	createCompose,
 	createComposeByTemplate,
@@ -151,10 +150,7 @@ export const composeRouter = createTRPCRouter({
 				await checkServiceAccess(ctx, workspace.workspaceId, "create");
 
 				const webServerSettings = await getWebServerSettings();
-				if (
-					(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-					!input.runtimeWorkerId
-				) {
+				if (webServerSettings?.remoteServersOnly && !input.runtimeWorkerId) {
 					throw new TRPCError({
 						code: "UNAUTHORIZED",
 						message: "You need to select a runtime worker to create a compose",
@@ -312,9 +308,7 @@ export const composeRouter = createTRPCRouter({
 				.where(eq(composeTable.composeId, input.composeId))
 				.returning();
 
-			if (!IS_CLOUD) {
-				await cleanQueuesByCompose(input.composeId);
-			}
+			await cleanQueuesByCompose(input.composeId);
 
 			const cleanupOperations = [
 				async () => await removeCompose(composeResult, input.deleteVolumes),
@@ -489,18 +483,6 @@ export const composeRouter = createTRPCRouter({
 				runtimeWorkerId: compose.runtimeWorkerId ?? undefined,
 			};
 
-			if (IS_CLOUD && compose.runtimeWorkerId) {
-				deploy(jobData).catch((error) => {
-					console.error("Background deployment failed:", error);
-				});
-				await audit(ctx, {
-					action: "deploy",
-					resourceType: "compose",
-					resourceId: input.composeId,
-					resourceName: compose.name,
-				});
-				return true;
-			}
 			await myQueue.add(
 				"deployments",
 				{ ...jobData },
@@ -537,18 +519,6 @@ export const composeRouter = createTRPCRouter({
 				runtimeWorker: !!compose.runtimeWorkerId,
 				runtimeWorkerId: compose.runtimeWorkerId ?? undefined,
 			};
-			if (IS_CLOUD && compose.runtimeWorkerId) {
-				deploy(jobData).catch((error) => {
-					console.error("Background deployment failed:", error);
-				});
-				await audit(ctx, {
-					action: "deploy",
-					resourceType: "compose",
-					resourceId: input.composeId,
-					resourceName: compose.name,
-				});
-				return true;
-			}
 			await myQueue.add(
 				"deployments",
 				{ ...jobData },
@@ -643,10 +613,7 @@ export const composeRouter = createTRPCRouter({
 			await checkServiceAccess(ctx, environment.workspaceId, "create");
 
 			const webServerSettings = await getWebServerSettings();
-			if (
-				(IS_CLOUD || webServerSettings?.remoteServersOnly) &&
-				!input.runtimeWorkerId
-			) {
+			if (webServerSettings?.remoteServersOnly && !input.runtimeWorkerId) {
 				throw new TRPCError({
 					code: "UNAUTHORIZED",
 					message: "You need to select a runtime worker to create a compose",

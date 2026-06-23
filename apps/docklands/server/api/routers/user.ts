@@ -3,7 +3,6 @@ import * as bcrypt from "bcrypt";
 import { and, asc, eq, gt, ne } from "drizzle-orm";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { db } from "@/server/core/db";
 import {
 	account,
@@ -158,16 +157,7 @@ export const userRouter = createTRPCRouter({
 	getPermissions: protectedProcedure.query(async ({ ctx }) => {
 		return resolvePermissions(ctx);
 	}),
-	haveRootAccess: protectedProcedure.query(async ({ ctx }) => {
-		if (!IS_CLOUD) {
-			return false;
-		}
-		if (
-			process.env.USER_ADMIN_ID === ctx.user.id ||
-			ctx.session?.impersonatedBy === process.env.USER_ADMIN_ID
-		) {
-			return true;
-		}
+	haveRootAccess: protectedProcedure.query(async () => {
 		return false;
 	}),
 	getBackups: adminProcedure.query(async ({ ctx }) => {
@@ -290,10 +280,6 @@ export const userRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return true;
-			}
-
 			// Ensure the acting user has admin privileges in the active organization
 			if (ctx.user.role !== "owner" && ctx.user.role !== "admin") {
 				throw new TRPCError({
@@ -598,14 +584,6 @@ export const userRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				throw new TRPCError({
-					code: "FORBIDDEN",
-					message:
-						"Creating users with initial credentials is only available in self-hosted mode",
-				});
-			}
-
 			if (!ctx.session.activeOrganizationId) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
@@ -635,10 +613,6 @@ export const userRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (IS_CLOUD) {
-				return;
-			}
-
 			const notification = await findNotificationById(input.notificationId);
 
 			const email = notification.email;

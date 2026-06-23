@@ -69,24 +69,12 @@ export const ShowDeployments = ({
 			},
 		);
 
-	const { data: isCloud } = api.settings.isCloud.useQuery();
-
 	const { mutateAsync: rollback, isPending: isRollingBack } =
 		api.rollback.rollback.useMutation();
 	const { mutateAsync: killProcess, isPending: isKillingProcess } =
 		api.deployment.killProcess.useMutation();
 	const { mutateAsync: removeDeployment, isPending: isRemovingDeployment } =
 		api.deployment.removeDeployment.useMutation();
-
-	// Cancel deployment mutations
-	const {
-		mutateAsync: cancelApplicationDeployment,
-		isPending: isCancellingApp,
-	} = api.application.cancelDeployment.useMutation();
-	const {
-		mutateAsync: cancelComposeDeployment,
-		isPending: isCancellingCompose,
-	} = api.compose.cancelDeployment.useMutation();
 
 	const [url, setUrl] = React.useState("");
 	const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(
@@ -113,28 +101,6 @@ export const ShowDeployments = ({
 		return `${truncated}...`;
 	};
 
-	// Check for stuck deployment, only for the most recent deployment.
-	const stuckDeployment = useMemo(() => {
-		if (!isCloud || !deployments || deployments.length === 0) return null;
-
-		const now = Date.now();
-		const TEN_MINUTES = 10 * 60 * 1000;
-
-		// Get the most recent deployment (first in the list since they're sorted by date)
-		const mostRecentDeployment = deployments[0];
-
-		if (
-			mostRecentDeployment?.status !== "running" ||
-			!mostRecentDeployment.startedAt
-		) {
-			return null;
-		}
-
-		const startTime = new Date(mostRecentDeployment.startedAt).getTime();
-		const elapsed = now - startTime;
-
-		return elapsed > TEN_MINUTES ? mostRecentDeployment : null;
-	}, [isCloud, deployments]);
 	useEffect(() => {
 		setUrl(document.location.origin);
 	}, []);
@@ -166,54 +132,6 @@ export const ShowDeployments = ({
 				</div>
 			</div>
 			<div className="flex flex-col gap-4">
-				{stuckDeployment && (type === "application" || type === "compose") && (
-					<AlertBlock
-						type="warning"
-						className="flex-col items-start w-full p-4"
-					>
-						<div className="flex flex-col gap-3">
-							<div>
-								<div className="font-medium text-sm mb-1">
-									Build appears to be stuck
-								</div>
-								<p className="text-sm">
-									Hey! Looks like the build has been running for more than 10
-									minutes. Would you like to cancel this build?
-								</p>
-							</div>
-							<Button
-								variant="destructive"
-								size="sm"
-								className="w-fit"
-								loading={
-									type === "application" ? isCancellingApp : isCancellingCompose
-								}
-								onClick={async () => {
-									try {
-										if (type === "application") {
-											await cancelApplicationDeployment({
-												applicationId: id,
-											});
-										} else if (type === "compose") {
-											await cancelComposeDeployment({
-												composeId: id,
-											});
-										}
-										toast.success("Build cancellation requested");
-									} catch (error) {
-										toast.error(
-											error instanceof Error
-												? error.message
-												: "Failed to cancel build",
-										);
-									}
-								}}
-							>
-								Cancel Build
-							</Button>
-						</div>
-					</AlertBlock>
-				)}
 				{refreshToken && (
 					<div className="flex flex-col gap-2 text-sm">
 						<span>

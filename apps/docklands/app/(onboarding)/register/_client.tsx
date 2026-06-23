@@ -10,7 +10,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
-import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
 	FormControl,
@@ -68,14 +67,12 @@ type Register = z.infer<typeof registerSchema>;
 
 interface Props {
 	hasAdmin: boolean;
-	isCloud: boolean;
 }
 
-const Register = ({ isCloud }: Props) => {
+const Register = (_props: Props) => {
 	const router = useRouter();
 	const [isError, setIsError] = useState(false);
 	const [error, setError] = useState<string | null>(null);
-	const [data, setData] = useState<any>(null);
 
 	const form = useForm<Register>({
 		defaultValues: {
@@ -93,7 +90,7 @@ const Register = ({ isCloud }: Props) => {
 	}, [form, form.reset, form.formState.isSubmitSuccessful]);
 
 	const onSubmit = async (values: Register) => {
-		const { data, error } = await authClient.signUp.email({
+		const { error } = await authClient.signUp.email({
 			email: values.email,
 			password: values.password,
 			name: values.name,
@@ -107,11 +104,7 @@ const Register = ({ isCloud }: Props) => {
 			toast.success("User registered successfully", {
 				duration: 2000,
 			});
-			if (!isCloud) {
-				router.push("/");
-			} else {
-				setData(data);
-			}
+			router.push("/");
 		}
 	};
 	return (
@@ -121,7 +114,7 @@ const Register = ({ isCloud }: Props) => {
 					<Logo className="size-12" />
 				</Link>
 				<h1 className="font-semibold text-2xl tracking-tight">
-					{isCloud ? "Sign Up" : "Set up Docklands"}
+					Set up Docklands
 				</h1>
 			</div>
 			{isError && (
@@ -129,14 +122,6 @@ const Register = ({ isCloud }: Props) => {
 					<AlertTriangle className="text-kumo-danger" />
 					<span className="text-sm text-kumo-danger">{error}</span>
 				</div>
-			)}
-			{isCloud && data && (
-				<AlertBlock type="success" className="my-2">
-					<span>
-						Registered successfully, please check your inbox or spam folder to
-						confirm your account.
-					</span>
-				</AlertBlock>
 			)}
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -217,12 +202,6 @@ const Register = ({ isCloud }: Props) => {
 				</form>
 			</Form>
 			<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
-				{isCloud && (
-					<Link className="hover:underline text-kumo-subtle" href="/">
-						Sign in
-					</Link>
-				)}
-
 				<Link
 					className="hover:underline text-kumo-subtle"
 					href="https://github.com/jason301c/docklands"

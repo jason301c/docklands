@@ -7,7 +7,6 @@ import {
 	execAsync,
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
-import { IS_CLOUD } from "../constants";
 
 export type Registry = typeof registry.$inferSelect;
 
@@ -58,16 +57,6 @@ export const createRegistry = async (
 			});
 		}
 
-		if (
-			IS_CLOUD &&
-			!input.runtimeWorkerId &&
-			input.runtimeWorkerId !== "none"
-		) {
-			throw new TRPCError({
-				code: "NOT_FOUND",
-				message: "Select a runtimeWorker to add the registry",
-			});
-		}
 		const loginCommand = safeDockerLoginCommand(
 			input.registryUrl,
 			input.username,
@@ -103,9 +92,7 @@ export const removeRegistry = async (registryId: string) => {
 			});
 		}
 
-		if (!IS_CLOUD) {
-			await execAsync(`docker logout ${shEscape(response.registryUrl)}`);
-		}
+		await execAsync(`docker logout ${shEscape(response.registryUrl)}`);
 
 		return response;
 	} catch (error) {
@@ -136,17 +123,6 @@ export const updateRegistry = async (
 			response?.username,
 			response?.password,
 		);
-
-		if (
-			IS_CLOUD &&
-			!registryData?.runtimeWorkerId &&
-			registryData?.runtimeWorkerId !== "none"
-		) {
-			throw new TRPCError({
-				code: "NOT_FOUND",
-				message: "Select a runtimeWorker to add the registry",
-			});
-		}
 
 		try {
 			if (

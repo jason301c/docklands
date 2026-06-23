@@ -69,16 +69,10 @@ type Register = z.infer<typeof registerSchema>;
 interface Props {
 	token: string;
 	invitation: RouterOutputs["user"]["getUserByToken"];
-	isCloud: boolean;
 	userAlreadyExists: boolean;
 }
 
-const Invitation = ({
-	token,
-	invitation,
-	isCloud,
-	userAlreadyExists,
-}: Props) => {
+const Invitation = ({ token, invitation, userAlreadyExists }: Props) => {
 	const router = useRouter();
 	const { data } = api.user.getUserByToken.useQuery(
 		{
@@ -255,20 +249,6 @@ const Invitation = ({
 							>
 								Register
 							</Button>
-
-							{isCloud && (
-								<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
-									<Link className="hover:underline text-kumo-subtle" href="/">
-										Login
-									</Link>
-									<Link
-										className="hover:underline text-kumo-subtle"
-										href="/send-reset-password"
-									>
-										Lost your password?
-									</Link>
-								</div>
-							)}
 						</form>
 					</Form>
 				</>

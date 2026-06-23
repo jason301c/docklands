@@ -1,7 +1,6 @@
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { paths } from "@/server/core/constants/paths";
 import type { Destination } from "@/server/core/services/destination";
 import { getS3Credentials } from "../backups/utils";
@@ -12,9 +11,6 @@ export const restoreWebServerBackup = async (
 	backupFile: string,
 	emit: (log: string) => void,
 ) => {
-	if (IS_CLOUD) {
-		return;
-	}
 	try {
 		const rcloneFlags = getS3Credentials(destination);
 		const bucketPath = `:s3:${destination.bucket}`;

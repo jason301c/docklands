@@ -10,7 +10,6 @@ import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowBackups } from "@/components/dashboard/database/backups/show-backups";
 import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
-import { ContainerPaidMonitoring } from "@/components/dashboard/metrics/paid/container/show-paid-container-monitoring";
 import { ShowExternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-external-postgres-credentials";
 import { ShowGeneralPostgres } from "@/components/dashboard/postgres/general/show-general-postgres";
 import { ShowInternalPostgresCredentials } from "@/components/dashboard/postgres/general/show-internal-postgres-credentials";
@@ -48,10 +47,8 @@ const Postgresql = (props: {
 	const { workspaceId, environmentId } = props;
 	const [tab, setSab] = useState<TabState>(activeTab);
 	const { data } = api.postgres.one.useQuery({ postgresId });
-	const { data: auth } = api.user.get.useQuery();
 	const { data: permissions } = api.user.getPermissions.useQuery();
 
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: serverIp } = api.settings.getIp.useQuery();
 	const { data: environments } = api.environment.byWorkspaceId.useQuery({
 		workspaceId: data?.environment?.workspaceId || "",
@@ -134,9 +131,7 @@ const Postgresql = (props: {
 											permissions?.logs.read
 												? { value: "logs", label: "Logs" }
 												: null,
-											permissions?.monitoring.read &&
-											((data?.runtimeWorkerId && isCloud) ||
-												!data?.runtimeWorker)
+											permissions?.monitoring.read && !data?.runtimeWorker
 												? { value: "monitoring", label: "Metrics" }
 												: null,
 											{ value: "backups", label: "Backups" },
@@ -170,26 +165,9 @@ const Postgresql = (props: {
 									<div>
 										<div className="pt-2.5">
 											<div className="flex flex-col gap-4 border rounded-lg p-6">
-												{data?.runtimeWorkerId && isCloud ? (
-													<ContainerPaidMonitoring
-														appName={data?.appName || ""}
-														baseUrl={`${
-															data?.runtimeWorkerId
-																? `http://${data?.runtimeWorker?.ipAddress}:${data?.runtimeWorker?.metricsConfig?.runtimeWorker?.port}`
-																: "http://localhost:4500"
-														}`}
-														token={
-															data?.runtimeWorker?.metricsConfig?.runtimeWorker
-																?.token || ""
-														}
-													/>
-												) : (
-													<>
-														<ContainerFreeMonitoring
-															appName={data?.appName || ""}
-														/>
-													</>
-												)}
+												<ContainerFreeMonitoring
+													appName={data?.appName || ""}
+												/>
 											</div>
 										</div>
 									</div>

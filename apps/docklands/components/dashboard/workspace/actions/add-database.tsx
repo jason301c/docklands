@@ -211,10 +211,9 @@ export const AddDatabase = ({
 	const setVisible = onOpenChange ?? setInternalVisible;
 	const slug = slugify(projectName);
 	const defaultDatabaseType = initialType ?? "postgres";
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
-	const showLocalOption = !isCloud && !webServerSettings?.remoteServersOnly;
+	const showLocalOption = !webServerSettings?.remoteServersOnly;
 	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const libsqlMutation = api.libsql.create.useMutation();
 	const mariadbMutation = api.mariadb.create.useMutation();

@@ -22,8 +22,6 @@ interface Props {
  * self-hosted instances.
  */
 export const BuildsConcurrency = ({ runtimeWorkerId, label }: Props) => {
-	const { data: isCloud } = api.settings.isCloud.useQuery();
-
 	const serverQuery = api.runtimeWorker.one.useQuery(
 		{ runtimeWorkerId: runtimeWorkerId ?? "" },
 		{ enabled: !!runtimeWorkerId },
@@ -55,9 +53,6 @@ export const BuildsConcurrency = ({ runtimeWorkerId, label }: Props) => {
 			setValue(String(current));
 		}
 	}, [current]);
-
-	// Concurrent builds are a self-hosted feature; not shown in cloud.
-	if (isCloud) return null;
 
 	const clamp = (n: number) => Math.min(MAX_BUILDS_CONCURRENCY, Math.max(1, n));
 

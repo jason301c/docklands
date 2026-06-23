@@ -57,10 +57,9 @@ export const AddApplication = ({
 	hideTrigger = false,
 }: Props) => {
 	const utils = api.useUtils();
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const { data: webServerSettings } =
 		api.settings.getWebServerSettings.useQuery();
-	const showLocalOption = !isCloud && !webServerSettings?.remoteServersOnly;
+	const showLocalOption = !webServerSettings?.remoteServersOnly;
 	const [internalVisible, setInternalVisible] = useState(false);
 	const visible = controlledOpen ?? internalVisible;
 	const setVisible = onOpenChange ?? setInternalVisible;

@@ -14,11 +14,6 @@ export const CancelQueues = ({ id, type }: Props) => {
 		type === "application"
 			? api.application.cleanQueues.useMutation()
 			: api.compose.cleanQueues.useMutation();
-	const { data: isCloud } = api.settings.isCloud.useQuery();
-
-	if (isCloud) {
-		return null;
-	}
 
 	return (
 		<Dialog.Root role="alertdialog">

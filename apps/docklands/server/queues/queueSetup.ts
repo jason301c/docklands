@@ -1,4 +1,3 @@
-import { IS_CLOUD } from "@/server/core/constants/env";
 import {
 	execAsync,
 	execAsyncRemote,
@@ -11,9 +10,8 @@ import type { DeploymentJob } from "./queue-types";
 /**
  * Deployment queue.
  *
- * Self-hosted uses an in-memory, per-group FIFO queue with configurable
- * concurrency per runtimeWorker. Cloud does not use the queue at
- * all — deployments run directly in the background — so we expose a no-op.
+ * An in-memory, per-group FIFO queue with configurable concurrency per
+ * runtimeWorker.
  */
 
 interface DeploymentQueue {
@@ -29,16 +27,6 @@ interface DeploymentQueue {
 	removeWaiting: (predicate: (data: DeploymentJob) => boolean) => number;
 	clearWaiting: () => number;
 }
-
-const createNoopQueue = (): DeploymentQueue => ({
-	add: () => Promise.resolve({ id: "noop" }),
-	getJobs: () => Promise.resolve([]),
-	close: () => Promise.resolve(),
-	on: () => {},
-	run: () => Promise.resolve(),
-	removeWaiting: () => 0,
-	clearWaiting: () => 0,
-});
 
 const createInMemoryQueue = (): DeploymentQueue => {
 	const queue = new InMemoryQueue({
@@ -66,14 +54,12 @@ const globalForQueue = globalThis as unknown as {
 };
 
 if (!globalForQueue.__docklandsDeploymentQueue) {
-	globalForQueue.__docklandsDeploymentQueue = !IS_CLOUD
-		? createInMemoryQueue()
-		: createNoopQueue();
+	globalForQueue.__docklandsDeploymentQueue = createInMemoryQueue();
 }
 
 const myQueue: DeploymentQueue = globalForQueue.__docklandsDeploymentQueue;
 
-/** Start processing jobs. Called once on runtimeWorker startup (self-hosted). */
+/** Start processing jobs. Called once on runtimeWorker startup. */
 export const startDeploymentWorker = () => myQueue.run();
 
 export const getJobsByApplicationId = async (applicationId: string) => {
@@ -88,12 +74,10 @@ export const getJobsByComposeId = async (composeId: string) => {
 	return jobs.filter((job) => (job.data as any)?.composeId === composeId);
 };
 
-if (!IS_CLOUD) {
-	process.on("SIGTERM", () => {
-		myQueue.close();
-		process.exit(0);
-	});
-}
+process.on("SIGTERM", () => {
+	myQueue.close();
+	process.exit(0);
+});
 
 export const cleanQueuesByApplication = async (applicationId: string) => {
 	const removed = myQueue.removeWaiting(

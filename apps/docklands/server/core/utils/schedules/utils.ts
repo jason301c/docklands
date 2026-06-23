@@ -1,7 +1,6 @@
 import { createWriteStream } from "node:fs";
 import path from "node:path";
 import { scheduledJobs, scheduleJob as scheduleJobNode } from "node-schedule";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { paths } from "@/server/core/constants/paths";
 import type { Schedule } from "@/server/core/db/schema/schedule";
 import {
@@ -94,13 +93,6 @@ export const runCommand = async (scheduleId: string) => {
 			const writeStream = createWriteStream(deployment.logPath, { flags: "a" });
 
 			try {
-				if (IS_CLOUD) {
-					writeStream.write(
-						"This feature is not available in the cloud version.",
-					);
-					writeStream.end();
-					return;
-				}
 				writeStream.write(
 					`docker exec ${containerId} ${shellType} -c ${command}\n`,
 				);

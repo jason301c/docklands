@@ -40,7 +40,6 @@ export const SetupRuntimeWorker = ({
 	);
 
 	const [activeLog, setActiveLog] = useState<string | null>(null);
-	const { data: isCloud } = api.settings.isCloud.useQuery();
 	const isBuildServer = runtimeWorker?.runtimeWorkerType === "build";
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 	const [filteredLogs, setFilteredLogs] = useState<LogLine[]>([]);

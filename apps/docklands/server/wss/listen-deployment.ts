@@ -2,7 +2,6 @@ import { spawn } from "node:child_process";
 import type http from "node:http";
 import { Client } from "ssh2";
 import { WebSocketServer } from "ws";
-import { IS_CLOUD } from "@/server/core/constants/env";
 import { validateRequest } from "@/server/core/lib/auth";
 import { readValidDirectory } from "@/server/core/runtime/host";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
@@ -122,11 +121,6 @@ export const setupDeploymentLogsWebSocketServer = (
 					}
 				});
 			} else {
-				if (IS_CLOUD) {
-					ws.send("This feature is not available in the cloud version.");
-					ws.close();
-					return;
-				}
 				tailProcess = spawn("tail", ["-n", "+1", "-f", logPath]);
 
 				const stdout = tailProcess.stdout;
