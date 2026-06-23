@@ -489,6 +489,24 @@ means shipped and green (`typecheck` + `test:ci`).
   command line. **B2-cmdline:** S3 creds moved off the rclone argv into an
   `RCLONE_S3_*` env prefix (+ redaction updated). All green: `tsc` clean, 83
   files / 667 tests pass (5 new shell-safety/redact tests), Biome clean.
+- **P3 — Durable jobs — ◑ partial (2026-06-23): R1 done, O6/B7 deferred.**
+  **R1 fixed:** deploy/redeploy/drop/preview now enqueue with a partition key of
+  `buildRuntimeWorkerId ?? runtimeWorkerId`, so per-build-worker `buildsConcurrency`
+  is actually honored (the handler re-resolves the real target from the DB, so
+  this only affects partitioning — verified safe). **O6/B7 deferred — deliberate
+  scope decision.** The full Postgres durable-jobs abstraction (a generic `job`
+  table replacing the in-memory concurrency queue *and* `node-schedule`, with
+  queued-job persistence + missed-cron backfill) is a deep rewrite of the deploy
+  hot path. It cannot be validated without a live deploy/Postgres environment
+  (neither queue is integration-tested in CI; the real-deploy test needs Docker),
+  so shipping it blind would risk the product core — the opposite of "polished."
+  Crucially, O6's *worst* symptom is **already mitigated**: `initCancelDeployments`
+  (startup, `server.ts`) marks orphaned `running` deployments and resets their
+  services to idle, so there are no zombie "running" rows and History stays
+  consistent. The residual gap (a job queued in the brief pre-start window is
+  lost on restart; a cron that fired while down isn't backfilled) is narrow and
+  is the right work for a dedicated effort against a live environment. Tracked,
+  not silently dropped.
 
 ### Discovered during remediation
 
@@ -612,7 +630,7 @@ the cleanup. Phases are independently shippable and each ends green
 | **P0** ✅ | Pure bugs | spot fixes, no new abstraction | A1, G1, S1, C3, N7, R8, A8, G7 (+ X1–X4) |
 | **P1** ✅ | Secrets at rest | abstraction ① + apply to inventory + `DOCKLANDS_ENCRYPTION_KEY` + docs | G3, G4, N2, S2, S3, B2(store), D1(store), C2(store) |
 | **P2** ✅ | Shell-exec safety | `shellArg`/arg-array sweep + secrets off cmdline | A2, A10, D4, N3, G5, R4, B2(cmdline) |
-| **P3** | Durable jobs | abstraction ② (queue + scheduler + backups) | O6, B7, R1 |
+| **P3** ◑ | Durable jobs | R1 fixed; durable-queue rewrite (O6/B7) deferred — needs live env | **R1 ✅**; O6, B7 deferred |
 | **P4** | RBAC hard boundary | per-service authz everywhere + API-key scope + webhook signing | AC1, O2, O3, R5, AC2, AC4, AC5, AC6, G2, AC3, C2(read) |
 | **P5** | Connection-var binding | abstraction ③ | D1(expose), D2, W2, W5 |
 | **P6** | Keep / cut | finish or remove the 8 half-built features | O1, C1, O5, S5, AC9, B1, R2, W3 |
@@ -755,7 +773,7 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | O3 | request-analytics read gate | **P4** |
 | O4 | metrics only while watched | **P7 (doc; opt. collector)** |
 | O5 | remote/paid metrics half-wired | **P6 cut** |
-| O6 | in-memory queue loses state | **P3** |
+| O6 | in-memory queue loses state | **◑ deferred** — in-flight reconciled by `initCancelDeployments`; full durable queue needs live env |
 | O7 | audit resourceType inconsistency | **P7 (= A5)** |
 | O8 | request analytics 1000-line window | no action (note) |
 | O9 | host metrics Linux-only | no action (note) |
@@ -773,10 +791,10 @@ Every Part I note, accounted for. (Positives and intentional-design notes are
 | B4 | retention sorts by filename | **P7 (sort by mtime)** |
 | B5 | restore destructive no snapshot | **P7 guard (pre-snapshot)** |
 | B6 | stop-mode volume backup downtime | no action (documented) |
-| B7 | scheduler no catch-up | **P3** |
+| B7 | scheduler no catch-up | **◑ deferred** — missed-cron backfill belongs in the durable-jobs abstraction (needs live env) |
 | B8 | destination test ignores worker | **P7 fix** |
 | B9 | backups naming smells | **P7 cleanup** |
-| R1 | deploy queue wrong partition | **P3** |
+| R1 | deploy queue wrong partition | **✅ P3** (partition by build worker) |
 | R2 | no build worker for compose | **P6 defer** |
 | R3 | node removal force-rm | **P7 guard (drain-wait/quorum)** |
 | R4 | nodeId no regex guard | **✅ P2** (charset-validated) |

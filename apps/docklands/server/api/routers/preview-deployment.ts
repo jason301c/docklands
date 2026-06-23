@@ -84,7 +84,11 @@ export const previewDeploymentRouter = createTRPCRouter({
 				applicationType: "application-preview",
 				previewDeploymentId: input.previewDeploymentId,
 				runtimeWorker: !!application.runtimeWorkerId,
-				runtimeWorkerId: application.runtimeWorkerId ?? undefined,
+				// Partition by the build worker so per-build-worker concurrency holds.
+				runtimeWorkerId:
+					application.buildRuntimeWorkerId ??
+					application.runtimeWorkerId ??
+					undefined,
 			};
 
 			await myQueue.add(

@@ -346,7 +346,13 @@ export const applicationRouter = createTRPCRouter({
 				type: "redeploy",
 				applicationType: "application",
 				runtimeWorker: !!application.runtimeWorkerId,
-				runtimeWorkerId: application.runtimeWorkerId ?? undefined,
+				// Partition by the worker the build actually runs on (the build
+				// worker when set — see services/deployment.ts), so per-build-worker
+				// concurrency is honored. The handler re-resolves the real target.
+				runtimeWorkerId:
+					application.buildRuntimeWorkerId ??
+					application.runtimeWorkerId ??
+					undefined,
 			};
 
 			await myQueue.add(
@@ -705,7 +711,13 @@ export const applicationRouter = createTRPCRouter({
 				type: "deploy",
 				applicationType: "application",
 				runtimeWorker: !!application.runtimeWorkerId,
-				runtimeWorkerId: application.runtimeWorkerId ?? undefined,
+				// Partition by the worker the build actually runs on (the build
+				// worker when set — see services/deployment.ts), so per-build-worker
+				// concurrency is honored. The handler re-resolves the real target.
+				runtimeWorkerId:
+					application.buildRuntimeWorkerId ??
+					application.runtimeWorkerId ??
+					undefined,
 			};
 			await myQueue.add(
 				"deployments",
@@ -815,7 +827,9 @@ export const applicationRouter = createTRPCRouter({
 				type: "deploy",
 				applicationType: "application",
 				runtimeWorker: !!app.runtimeWorkerId,
-				runtimeWorkerId: app.runtimeWorkerId ?? undefined,
+				// Partition by the build worker so per-build-worker concurrency holds.
+				runtimeWorkerId:
+					app.buildRuntimeWorkerId ?? app.runtimeWorkerId ?? undefined,
 			};
 			await myQueue.add(
 				"deployments",
