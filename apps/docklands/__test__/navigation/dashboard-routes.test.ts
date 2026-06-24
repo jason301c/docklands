@@ -3,7 +3,6 @@ import {
 	isEnvironmentCanvasPath,
 	isWorkspaceDetailPath,
 	workspaceEnvironmentPath,
-	workspaceListPath,
 	workspaceOverviewPath,
 	workspaceServicePath,
 } from "@/shared/routes";
@@ -11,7 +10,6 @@ import {
 describe("dashboard route helpers", () => {
 	it("builds canonical canvas-first workspace paths", () => {
 		expect(workspaceOverviewPath).toBe("/dashboard/workspace");
-		expect(workspaceListPath).toBe("/dashboard/workspace?view=workspaces");
 		expect(
 			workspaceEnvironmentPath({
 				workspaceId: "workspace_1",

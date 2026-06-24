@@ -137,6 +137,17 @@
 	}
 }
 
+/*
+ * Headings use the Fraunces display serif, matching the site and docs.
+ * Kept unlayered so it reliably outranks Tailwind's layered base/utilities
+ * (a `@layer base` rule here was being beaten by the cascade).
+ */
+h1 {
+	font-family: var(--font-fraunces);
+	font-optical-sizing: auto;
+	letter-spacing: -0.02em;
+}
+
 .xterm-viewport {
 	border-radius: /* 12px */ 0.75rem !important;
 }

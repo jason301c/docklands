@@ -1,12 +1,12 @@
 ---
 title: Navigation
-description: The command bar, global search, and the list-view fallback.
+description: The command bar, global search, and managing workspaces.
 ---
 
 Docklands gives you two fast ways to move around — a global **search command**
 available everywhere, and a **canvas command bar** scoped to the environment
-you are looking at — plus a **list-view fallback** for the workspaces that suits
-bulk, table-style work.
+you are looking at — plus the **workspace overview** where you list and manage
+workspaces.
 
 ## Global search command
 
@@ -48,28 +48,26 @@ Type to filter; the bar matches your query against each command's label,
 description, and keywords. Press `Escape` to close it (which also cancels an
 in-progress connection and closes any open dialogs).
 
-## The list-view fallback
+## Managing workspaces from the overview
 
-The canvas is the primary surface, but a **list view** of your workspaces remains
-available as a fallback — useful for scanning many projects at once or for
-table-style bulk operations that have not moved onto the canvas yet.
+The `/dashboard/workspace` overview is the single workspace surface. Alongside
+the stats and recent activity it lists your workspaces, and each row carries a
+management menu to **rename**, edit **tags**, or **delete** the workspace
+(deletion requires the workspace to have no services). Creating a workspace, and
+opening its environment canvas, both start here too.
 
-Reach it at `/dashboard/workspace?view=workspaces`, or via "Manage workspaces" /
-"Workspaces" links from the overview and the global search. The same
-`/dashboard/workspace` route shows the **overview dashboard** by default and
-switches to the list only when `?view=workspaces` is present.
-
-:::note[Canvas and list show the same data]
-The list view and the canvas are two presentations of the same workspaces,
+:::note[Overview and canvas show the same data]
+The overview and the canvas are two presentations of the same workspaces,
 environments, and services — not separate stores. A service you create on the
-canvas appears in the list and vice versa. The list does not show canvas-only
-metadata (card positions or connections); for those, open the environment's
-canvas.
+canvas appears in the overview and vice versa. The overview does not show
+canvas-only metadata (card positions or connections); for those, open the
+environment's canvas.
 :::
 
 ## Tags
 
 Workspaces can carry **tags** (named, optionally colored labels scoped to your
-organization) for organizing and filtering the workspaces list. Tags are managed
-under [Settings → Tags](/settings/tags/) and assigned to workspaces; they are a
-property of the workspace, not of individual services or canvas cards.
+organization) for organizing them. Tags are managed under
+[Settings → Tags](/settings/tags/) and assigned to a workspace from its
+management menu on the overview; they are a property of the workspace, not of
+individual services or canvas cards.

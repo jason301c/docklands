@@ -1,16 +1,29 @@
-import { LinkButton } from "@cloudflare/kumo/components/button";
+import { Button } from "@cloudflare/kumo/components/button";
+import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { formatDistanceToNow } from "date-fns";
-import { ArrowRight, BookIcon, FolderInput, Rocket } from "lucide-react";
+import {
+	AlertTriangle,
+	ArrowRight,
+	BookIcon,
+	FolderInput,
+	MoreHorizontalIcon,
+	Rocket,
+	TrashIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
+import { createClientLogger } from "@/client/lib/logger";
 import { HandleWorkspace } from "@/components/dashboard/workspace/manage/handle-workspace";
+import { Dialog } from "@/components/shared/dialog";
+import { toast } from "@/components/shared/toast";
 import {
 	workspaceEnvironmentPath,
-	workspaceListPath,
 	workspaceServicePath,
 } from "@/shared/routes";
+
+const logger = createClientLogger("workspace");
 
 type DeploymentStatus = "idle" | "running" | "done" | "error";
 
@@ -146,20 +159,11 @@ function FirstRunWorkspacePanel({
 					Create the first workspace, then drop services onto one environment
 					canvas.
 				</p>
-				<div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-					{canCreateWorkspaces ? (
+				{canCreateWorkspaces && (
+					<div className="mt-6 flex flex-wrap items-center justify-center gap-2">
 						<HandleWorkspace />
-					) : (
-						<LinkButton
-							href={workspaceListPath}
-							variant="secondary"
-							className="w-fit"
-						>
-							Open workspaces
-							<ArrowRight className="size-4" />
-						</LinkButton>
-					)}
-				</div>
+					</div>
+				)}
 
 				<div className="mt-10 grid w-full gap-3 sm:grid-cols-3">
 					<div className="flex min-h-[112px] flex-col gap-3 rounded-lg border bg-kumo-fill/20 p-4 text-left">
@@ -192,6 +196,104 @@ function FirstRunWorkspacePanel({
 				</div>
 			</div>
 		</div>
+	);
+}
+
+// Per-workspace management (rename/tags/delete). This used to live on the
+// separate `?view=workspaces` list; it now hangs off each row in the overview's
+// Workspaces panel so the overview is the single workspace surface.
+function WorkspaceRowActions({
+	workspaceId,
+	serviceCount,
+}: {
+	workspaceId: string;
+	serviceCount: number;
+}) {
+	const utils = api.useUtils();
+	const { permissions } = usePermissions();
+	const { mutateAsync } = api.workspaces.remove.useMutation();
+	const emptyServices = serviceCount === 0;
+
+	return (
+		<DropdownMenu>
+			<DropdownMenu.Trigger
+				render={
+					(
+						<Button
+							aria-label="Workspace actions"
+							variant="ghost"
+							shape="square"
+						>
+							<MoreHorizontalIcon className="size-5" />
+						</Button>
+					) as never
+				}
+			/>
+			<DropdownMenu.Content
+				className="w-[200px] space-y-2 overflow-y-auto max-h-[280px]"
+				onClick={(e) => e.stopPropagation()}
+			>
+				<DropdownMenu.Group>
+					<DropdownMenu.Label className="font-normal">
+						Actions
+					</DropdownMenu.Label>
+				</DropdownMenu.Group>
+				<div onClick={(e) => e.stopPropagation()}>
+					<HandleWorkspace workspaceId={workspaceId} />
+				</div>
+				{permissions?.workspace.delete && (
+					<div onClick={(e) => e.stopPropagation()}>
+						<Dialog.Root role="alertdialog">
+							<Dialog.Trigger className="w-full">
+								<DropdownMenu.Item
+									className="w-full cursor-pointer space-x-3"
+									onSelect={(e) => e.preventDefault()}
+								>
+									<TrashIcon className="size-4" />
+									<span>Delete</span>
+								</DropdownMenu.Item>
+							</Dialog.Trigger>
+							<Dialog>
+								<Dialog.Header>
+									<Dialog.Title>Delete workspace?</Dialog.Title>
+									{!emptyServices ? (
+										<div className="flex flex-row gap-4 rounded-lg bg-kumo-warning-tint p-2">
+											<AlertTriangle className="text-kumo-warning" />
+											<span className="text-sm text-kumo-warning">
+												Delete services first.
+											</span>
+										</div>
+									) : (
+										<Dialog.Description>
+											This action cannot be undone
+										</Dialog.Description>
+									)}
+								</Dialog.Header>
+								<Dialog.Footer>
+									<Dialog.Close>Cancel</Dialog.Close>
+									<Dialog.Close
+										disabled={!emptyServices}
+										onClick={async () => {
+											try {
+												await mutateAsync({ workspaceId });
+												toast.success("Workspace deleted");
+											} catch (err) {
+												logger.error("Error deleting workspace", err);
+												toast.error("Error deleting this workspace");
+											} finally {
+												await utils.workspaces.all.invalidate();
+											}
+										}}
+									>
+										Delete
+									</Dialog.Close>
+								</Dialog.Footer>
+							</Dialog>
+						</Dialog.Root>
+					</div>
+				)}
+			</DropdownMenu.Content>
+		</DropdownMenu>
 	);
 }
 
@@ -297,20 +399,14 @@ export const WorkspaceOverview = () => {
 		<div className="w-full">
 			<div className="flex min-h-[85vh] flex-col gap-6 rounded-lg border bg-kumo-canvas p-6">
 				<div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-					<h1 className="text-3xl font-semibold tracking-tight">
+					<h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
 						{firstName ? `Welcome back, ${firstName}` : "Welcome back"}
 					</h1>
-					<div className="flex flex-wrap items-center gap-2">
-						<LinkButton
-							href={workspaceListPath}
-							variant="secondary"
-							className="w-fit"
-						>
-							Manage workspaces
-							<ArrowRight className="size-4" />
-						</LinkButton>
-						{canCreateWorkspaces && <HandleWorkspace />}
-					</div>
+					{canCreateWorkspaces && (
+						<div className="flex flex-wrap items-center gap-2">
+							<HandleWorkspace />
+						</div>
+					)}
 				</div>
 
 				{showFirstRun ? (
@@ -436,17 +532,9 @@ export const WorkspaceOverview = () => {
 							</div>
 
 							<div className="rounded-lg border bg-kumo-canvas">
-								<div className="flex items-center justify-between px-5 py-4 border-b">
-									<div className="flex items-center gap-2">
-										<FolderInput className="size-4 text-kumo-subtle" />
-										<h2 className="text-sm font-semibold">Workspaces</h2>
-									</div>
-									<Link
-										href={workspaceListPath}
-										className="text-xs text-kumo-subtle hover:text-kumo-default transition-colors"
-									>
-										view all →
-									</Link>
+								<div className="flex items-center gap-2 px-5 py-4 border-b">
+									<FolderInput className="size-4 text-kumo-subtle" />
+									<h2 className="text-sm font-semibold">Workspaces</h2>
 								</div>
 
 								{isWorkspacesLoading ? (
@@ -462,19 +550,15 @@ export const WorkspaceOverview = () => {
 								) : (
 									<ul className="divide-y">
 										{recentProjects.map(
-											({ workspace, environment, services }) => (
-												<li key={workspace.workspaceId}>
-													<Link
-														href={
-															environment
-																? workspaceEnvironmentPath({
-																		workspaceId: workspace.workspaceId,
-																		environmentId: environment.environmentId,
-																	})
-																: workspaceListPath
-														}
-														className="flex items-center gap-4 px-5 py-4 hover:bg-kumo-fill/40 transition-colors"
-													>
+											({ workspace, environment, services }) => {
+												const href = environment
+													? workspaceEnvironmentPath({
+															workspaceId: workspace.workspaceId,
+															environmentId: environment.environmentId,
+														})
+													: null;
+												const rowBody = (
+													<>
 														<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
 															<BookIcon className="size-4 text-kumo-subtle" />
 														</span>
@@ -488,10 +572,36 @@ export const WorkspaceOverview = () => {
 																{services === 1 ? "service" : "services"}
 															</span>
 														</div>
-														<ArrowRight className="size-4 shrink-0 text-kumo-subtle" />
-													</Link>
-												</li>
-											),
+														{href && (
+															<ArrowRight className="size-4 shrink-0 text-kumo-subtle" />
+														)}
+													</>
+												);
+
+												return (
+													<li
+														key={workspace.workspaceId}
+														className="flex items-center pr-3 hover:bg-kumo-fill/40 transition-colors"
+													>
+														{href ? (
+															<Link
+																href={href}
+																className="flex flex-1 items-center gap-4 px-5 py-4 min-w-0"
+															>
+																{rowBody}
+															</Link>
+														) : (
+															<div className="flex flex-1 items-center gap-4 px-5 py-4 min-w-0">
+																{rowBody}
+															</div>
+														)}
+														<WorkspaceRowActions
+															workspaceId={workspace.workspaceId}
+															serviceCount={services}
+														/>
+													</li>
+												);
+											},
 										)}
 									</ul>
 								)}

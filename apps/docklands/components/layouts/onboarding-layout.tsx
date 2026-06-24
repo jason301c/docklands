@@ -30,7 +30,7 @@ export const OnboardingLayout = ({ children }: Props) => {
 						className="flex items-center gap-2.5"
 					>
 						<Logo className="size-7" />
-						<span className="font-semibold text-kumo-default text-lg tracking-tight">
+						<span className="font-display font-semibold text-kumo-default text-lg tracking-tight">
 							{siteConfig.name}
 						</span>
 					</Link>

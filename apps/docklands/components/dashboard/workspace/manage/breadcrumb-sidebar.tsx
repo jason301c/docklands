@@ -1,10 +1,7 @@
 import { Breadcrumbs } from "@cloudflare/kumo/components/breadcrumbs";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { SidebarTrigger } from "@cloudflare/kumo/components/sidebar";
 import { ChevronDown } from "lucide-react";
 import { Fragment } from "react";
-import { Separator } from "@/components/shared/separator";
-import { TimeBadge } from "@/components/shared/time-badge";
 
 interface BreadcrumbEntry {
 	name: string;
@@ -22,10 +19,8 @@ interface Props {
 export const BreadcrumbSidebar = ({ list }: Props) => {
 	return (
 		<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-			<div className="flex items-center justify-between w-full px-4">
+			<div className="flex items-center w-full px-4">
 				<div className="flex items-center gap-2">
-					<SidebarTrigger className="-ml-1" />
-					<Separator orientation="vertical" className="mr-2 h-4" />
 					<Breadcrumbs>
 						{list.map((item, index) => (
 							<Fragment key={`${item.name}-${index}`}>
@@ -58,7 +53,6 @@ export const BreadcrumbSidebar = ({ list }: Props) => {
 						))}
 					</Breadcrumbs>
 				</div>
-				<TimeBadge />
 			</div>
 		</header>
 	);

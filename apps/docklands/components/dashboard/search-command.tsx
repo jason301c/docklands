@@ -19,7 +19,6 @@ import {
 import {
 	isEnvironmentCanvasPath,
 	workspaceEnvironmentPath,
-	workspaceListPath,
 	workspaceOverviewPath,
 	workspaceServicePath,
 } from "@/shared/routes";
@@ -187,14 +186,8 @@ export const SearchCommand = () => {
 			{
 				id: "app-workspace",
 				title: "Workspace",
-				searchText: "workspace overview dashboard home",
+				searchText: "workspace overview dashboard home workspaces list",
 				onSelect: () => navigate(workspaceOverviewPath),
-			},
-			{
-				id: "app-workspaces",
-				title: "Workspaces",
-				searchText: "workspaces workspaces list",
-				onSelect: () => navigate(workspaceListPath),
 			},
 			{
 				id: "app-deployments",

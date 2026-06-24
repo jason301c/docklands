@@ -1,5 +1,4 @@
 "use client";
-import { Breadcrumbs } from "@cloudflare/kumo/components/breadcrumbs";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Collapsible } from "@cloudflare/kumo/components/collapsible";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
@@ -17,36 +16,28 @@ import {
 	SidebarMenuSubButton,
 	SidebarMenuSubItem,
 	SidebarProvider,
-	SidebarRail,
-	SidebarTrigger,
 	useSidebar,
 } from "@cloudflare/kumo/components/sidebar";
 import { Bell, ChevronRight, Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
 import { useCurrentUser } from "@/client/hooks/use-current-user";
 import { usePermissions } from "@/client/hooks/use-permissions";
-import { Separator } from "@/components/shared/separator";
-import { TimeBadge } from "@/components/shared/time-badge";
 import { toast } from "@/components/shared/toast";
 import {
 	createMenuForAuthUser,
 	type ExternalLink,
-	findActiveNavItem,
 	isActiveRoute,
 	type NavItem,
 } from "@/shared/dashboard-nav";
-import { isWorkspaceDetailPath, workspaceOverviewPath } from "@/shared/routes";
 import { cn } from "@/shared/utils";
 import { EditInstance } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
 import { Logo } from "../shared/logo";
 import { RuntimeUpdateButton } from "./runtime-update";
 import { UserNav } from "./user-nav";
-
-const SIDEBAR_COOKIE_NAME = "sidebar_state";
 
 interface Props {
 	children: React.ReactNode;
@@ -100,7 +91,7 @@ function SidebarLogo() {
 									isCollapsed && "hidden",
 								)}
 							>
-								<span className="truncate font-semibold">
+								<span className="truncate font-display font-semibold">
 									{activeOrganization?.name ?? "Docklands"}
 								</span>
 								{user?.role && (
@@ -311,28 +302,11 @@ function NavMenuItems({
 }
 
 export default function Page({ children }: Props) {
-	const [sidebarOpen, setSidebarOpen] = useState<boolean | undefined>(
-		undefined,
-	);
-	const [isLoaded, setIsLoaded] = useState(false);
-
-	useEffect(() => {
-		const cookieValue = document.cookie
-			.split("; ")
-			.find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
-			?.split("=")[1];
-
-		setSidebarOpen(cookieValue === undefined ? true : cookieValue === "true");
-		setIsLoaded(true);
-	}, []);
-
 	const pathname = usePathname() ?? "";
 	const { user: auth } = useCurrentUser();
 	const { permissions } = usePermissions();
 	const { data: docklandsVersion } =
 		api.settings.getDocklandsVersion.useQuery();
-
-	const includesProjects = isWorkspaceDetailPath(pathname);
 
 	const {
 		home: filteredHome,
@@ -343,28 +317,13 @@ export default function Page({ children }: Props) {
 		permissions,
 	});
 
-	const activeItem = findActiveNavItem(
-		[...filteredHome, ...filteredSettings],
-		pathname,
-	);
 	const isSettingsPath = pathname.startsWith("/dashboard/settings");
-
-	if (!isLoaded) {
-		return <div className="w-full h-screen bg-kumo-canvas" />; // Placeholder while the persisted sidebar state loads
-	}
 
 	return (
 		<SidebarProvider
-			open={sidebarOpen}
-			collapsible="icon"
+			collapsible="none"
 			variant="sidebar"
 			className="h-svh min-h-svh"
-			onOpenChange={(open) => {
-				setSidebarOpen(open);
-
-				// biome-ignore lint/suspicious/noDocumentCookie: this sets the cookie to keep the sidebar state.
-				document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}`;
-			}}
 			style={
 				{
 					"--sidebar-width": "19.5rem",
@@ -424,40 +383,9 @@ export default function Page({ children }: Props) {
 						)}
 					</SidebarMenu>
 				</SidebarFooter>
-				<SidebarRail />
 			</Sidebar>
 			<main className="flex min-h-svh min-w-0 flex-1 flex-col bg-kumo-canvas">
-				{!includesProjects && (
-					<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-						<div className="flex items-center justify-between w-full px-4">
-							<div className="flex items-center gap-2">
-								<SidebarTrigger className="-ml-1" />
-								<Separator orientation="vertical" className="mr-2 h-4" />
-								<Breadcrumbs>
-									<Breadcrumbs.Link href={workspaceOverviewPath}>
-										Dashboard
-									</Breadcrumbs.Link>
-									{activeItem && (
-										<>
-											<Breadcrumbs.Separator />
-											<Breadcrumbs.Current>
-												{activeItem.title}
-											</Breadcrumbs.Current>
-										</>
-									)}
-								</Breadcrumbs>
-							</div>
-							<TimeBadge />
-						</div>
-					</header>
-				)}
-
-				<div
-					className={cn(
-						"flex w-full flex-1 flex-col px-4 pb-8",
-						includesProjects ? "pt-4" : "pt-0",
-					)}
-				>
+				<div className="flex w-full flex-1 flex-col px-4 pb-8 pt-4">
 					<div
 						className={cn(
 							"flex w-full flex-1 flex-col",

@@ -63,10 +63,10 @@ stop, remove) still go through the normal service machinery.
 ## Getting to the canvas
 
 - `/dashboard/workspace` — the **workspace overview**: a home dashboard with
-  service/deployment counts, recent deployments, and recent workspaces. From
-  here you create your first workspace.
-- `/dashboard/workspace?view=workspaces` — the **list-view fallback** (see
-  [Navigation](/workspace/navigation/)).
+  service/deployment counts, recent deployments, and your workspaces with
+  per-row management (rename, tags, delete; see
+  [Navigation](/workspace/navigation/)). From here you create your first
+  workspace.
 - `/dashboard/workspace/<workspaceId>/<environmentId>` — the **canvas** for one
   environment.
 
@@ -99,5 +99,5 @@ refresh or reopen the canvas.
   variables.
 - [Topology](/workspace/topology/) — how the canvas groups connected services
   into stacks.
-- [Navigation](/workspace/navigation/) — the command bar, search, and the
-  list-view fallback.
+- [Navigation](/workspace/navigation/) — the command bar, search, and managing
+  workspaces from the overview.
