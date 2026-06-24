@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { useUrl } from "@/client/hooks/use-url";
-import { createClientLogger } from "@/client/lib/logger";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { GitlabIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -21,7 +21,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { toast } from "@/components/shared/toast";
 
 const Schema = z.object({
 	name: z.string().min(1, {
@@ -49,14 +48,21 @@ const Schema = z.object({
 
 type Schema = z.infer<typeof Schema>;
 
-const logger = createClientLogger("git-providers");
-
 export const AddGitlabProvider = () => {
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
 	const url = useUrl();
 	const { data: auth } = api.user.get.useQuery();
-	const { mutateAsync, error, isError } = api.gitlab.create.useMutation();
+	const { mutate, error, isError, isPending } = api.gitlab.create.useMutation(
+		crudMutationOptions({
+			successMessage: "GitLab created successfully",
+			errorMessage: "Error configuring GitLab",
+			loggerScope: "git-providers",
+			toastError: false,
+			invalidate: () => utils.gitProvider.getAll.invalidate(),
+			onSuccess: () => setIsOpen(false),
+		}),
+	);
 	const webhookUrl = `${url}/api/providers/gitlab/callback`;
 
 	const form = useForm({
@@ -86,8 +92,8 @@ export const AddGitlabProvider = () => {
 		});
 	}, [form, isOpen]);
 
-	const onSubmit = async (data: Schema) => {
-		await mutateAsync({
+	const onSubmit = (data: Schema) => {
+		mutate({
 			applicationId: data.applicationId || "",
 			secret: data.applicationSecret || "",
 			groupName: data.groupName || "",
@@ -96,16 +102,7 @@ export const AddGitlabProvider = () => {
 			redirectUri: data.redirectUri || "",
 			gitlabUrl: data.gitlabUrl || "https://gitlab.com",
 			gitlabInternalUrl: data.gitlabInternalUrl || undefined,
-		})
-			.then(async () => {
-				await utils.gitProvider.getAll.invalidate();
-				toast.success("GitLab created successfully");
-				setIsOpen(false);
-			})
-			.catch((err) => {
-				logger.error("Error creating gitlab provider", err);
-				toast.error("Error configuring GitLab");
-			});
+		});
 	};
 
 	return (
@@ -293,9 +290,7 @@ export const AddGitlabProvider = () => {
 									)}
 								/>
 
-								<Button loading={form.formState.isSubmitting}>
-									Configure GitLab App
-								</Button>
+								<Button loading={isPending}>Configure GitLab App</Button>
 							</div>
 						</div>
 					</form>
