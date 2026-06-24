@@ -9,11 +9,16 @@ APP_DIR="$ROOT_DIR/apps/docklands"
 BUILD_TYPE=${1:-production}
 IMAGE_NAME=${IMAGE_NAME:-jason301c/docklands}
 
+# Image tag format: production builds tag the image with the package version
+# verbatim (e.g. "0.29.8"), so apps/docklands/package.json#version MUST be a
+# plain semver string with NO "v" prefix — otherwise the tag becomes "vv..."
+# downstream. Canary builds use the fixed "canary" tag.
 if [ "$BUILD_TYPE" == "canary" ]; then
     TAG="canary"
 else
     VERSION=$(node -p "require('$APP_DIR/package.json').version")
-    TAG="$VERSION"
+    # Strip an accidental leading "v" so the tag stays clean semver.
+    TAG="${VERSION#v}"
 fi
 
 BUILDER=$(docker buildx create --use)

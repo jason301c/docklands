@@ -28,6 +28,7 @@ try {
 		.build({
 			entryPoints: {
 				server: "server/server.ts",
+				"check-secrets": "server/ops/check-secrets.ts",
 				"migrate-db": "server/ops/migrate-db.ts",
 				"wait-for-postgres": "server/ops/wait-for-postgres.ts",
 				"reset-password": "server/ops/reset-password.ts",

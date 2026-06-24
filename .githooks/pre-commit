@@ -1,0 +1,53 @@
+#!/bin/sh
+#
+# Docklands pre-commit hook.
+#
+# Runs the repo's staged-file check (Biome via lint-staged) so formatting/lint
+# issues are caught before they land. Installed by the root `prepare` script
+# (`git config core.hooksPath .githooks`), so `bun install` wires it up with no
+# extra dependency.
+#
+# The hook is intentionally resilient: an unrelated tooling problem (no Bun, no
+# lint-staged, etc.) must NOT block a commit. It only fails the commit when the
+# staged-file check itself reports real lint/format errors.
+
+# Resolve the repo root so the hook works regardless of where git invokes it.
+ROOT_DIR=$(git rev-parse --show-toplevel 2>/dev/null) || ROOT_DIR=$(pwd)
+
+# Need a working `bunx` to run any of the checks below; skip cleanly otherwise.
+if ! command -v bunx >/dev/null 2>&1; then
+	echo "pre-commit: bunx not found; skipping staged-file check." >&2
+	exit 0
+fi
+
+# The lint-staged config lives in apps/docklands/package.json, so run lint-staged
+# from there (lint-staged resolves its config from the working directory). Fall
+# back to the root `format-and-lint` script if lint-staged is unavailable.
+APP_DIR="$ROOT_DIR/apps/docklands"
+
+if [ -d "$APP_DIR" ]; then
+	( cd "$APP_DIR" && bunx --no-install lint-staged )
+	status=$?
+	if [ "$status" -eq 0 ]; then
+		exit 0
+	fi
+	# Distinguish "lint-staged not installed" (resilient skip) from a real lint
+	# failure. `--no-install` returns 127 when the binary can't be resolved.
+	if [ "$status" -eq 127 ]; then
+		echo "pre-commit: lint-staged unavailable; falling back to format-and-lint." >&2
+		( cd "$ROOT_DIR" && bun run format-and-lint ) || {
+			fallback_status=$?
+			if [ "$fallback_status" -eq 127 ]; then
+				echo "pre-commit: format-and-lint unavailable; skipping check." >&2
+				exit 0
+			fi
+			exit "$fallback_status"
+		}
+		exit 0
+	fi
+	# Real lint/format errors — block the commit.
+	exit "$status"
+fi
+
+echo "pre-commit: apps/docklands not found; skipping staged-file check." >&2
+exit 0

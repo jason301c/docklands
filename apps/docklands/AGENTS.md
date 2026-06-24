@@ -224,7 +224,8 @@ the custom-role manager) all hang off `components/dashboard/`.
   restrict host-terminal access to owner/admin, and validate container ids,
   tail/since values, search strings, and shells against the existing allowlists.
 - `server/ops/` — runtime/admin entrypoints bundled into `dist` (DB migration,
-  setup, wait-for-postgres, reset-password, ensure auth-secret/encryption-key).
+  setup, wait-for-postgres, reset-password, ensure auth-secret/encryption-key,
+  and a production secret preflight `check-secrets` that runs first in `start`).
   Keep imports server-only and startup-safe; never log secrets,
   tokens, keys, database URLs, or generated passwords unless the command exists
   to reveal them. When adding an entrypoint, update `package.json`,

@@ -1,12 +1,12 @@
 {
 	"name": "docklands",
-	"version": "v0.29.8",
+	"version": "0.29.8",
 	"private": true,
 	"license": "Apache-2.0",
 	"type": "module",
 	"scripts": {
 		"build": "bun run check:bundler && bun run build-server && bun run build-next",
-		"start": "node -r dotenv/config dist/migrate-db.mjs && node -r dotenv/config dist/server.mjs",
+		"start": "node -r dotenv/config dist/check-secrets.mjs && node -r dotenv/config dist/migrate-db.mjs && node -r dotenv/config dist/server.mjs",
 		"build-server": "tsx esbuild.config.ts",
 		"build-next": "DATABASE_URL=${DATABASE_URL:-postgres://docklands_build:docklands_build@127.0.0.1:5432/docklands_build} BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-docklands-build-secret-000000000000000000} next build --turbopack",
 		"setup": "tsx -r dotenv/config server/ops/ensure-auth-secret.ts && tsx -r dotenv/config server/ops/ensure-encryption-key.ts && tsx -r dotenv/config server/ops/setup-instance.ts && bun run wait-for-postgres-dev && bun run migration:run",

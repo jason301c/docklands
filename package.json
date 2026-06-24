@@ -7,6 +7,7 @@
 		"apps/*"
 	],
 	"scripts": {
+		"prepare": "git config core.hooksPath .githooks",
 		"dev": "bun --filter docklands dev",
 		"build": "bun --filter docklands build",
 		"start": "bun --filter docklands start",

@@ -223,6 +223,12 @@ Environment files live with the app, never at the repo root: copy
 `-r dotenv/config` with the working directory set to `apps/docklands` (that is
 what `--filter docklands` does), so a root-level `.env` would be ignored.
 
+The root `prepare` script (run on `bun install`) points git at `.githooks` via
+`core.hooksPath`, so `.githooks/pre-commit` runs the staged-file Biome check
+(`lint-staged`, config in `apps/docklands/package.json`) before each commit — no
+extra dependency. The hook is resilient: an unrelated tooling failure (missing
+Bun/lint-staged) skips rather than blocks; only real lint errors fail the commit.
+
 ## Local Documentation
 
 The installed Next.js package ships bundled docs under
