@@ -112,7 +112,10 @@ export const destinationRouter = createTRPCRouter({
 			return destination;
 		}),
 	all: withPermission("destination", "read").query(async ({ ctx }) => {
+		// Never ship the (transparently decrypted) S3 credentials to the list view;
+		// backups read them through the service layer at backup time.
 		return await db.query.destinations.findMany({
+			columns: { accessKey: false, secretAccessKey: false },
 			where: eq(destinations.organizationId, ctx.session.activeOrganizationId),
 			orderBy: [desc(destinations.createdAt)],
 		});

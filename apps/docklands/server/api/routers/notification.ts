@@ -465,20 +465,24 @@ export const notificationRouter = createTRPCRouter({
 			return notification;
 		}),
 	all: withPermission("notification", "read").query(async ({ ctx }) => {
+		// Each provider sub-table holds a (transparently decrypted) secret
+		// (webhook URL / token / smtp password / api key …). The list view only
+		// needs the non-secret config, so exclude the secret column per provider;
+		// the send/test paths supply their own credentials at call time.
 		return await db.query.notifications.findMany({
 			with: {
-				slack: true,
-				telegram: true,
-				discord: true,
-				email: true,
-				resend: true,
-				gotify: true,
-				ntfy: true,
-				mattermost: true,
-				custom: true,
-				lark: true,
-				pushover: true,
-				teams: true,
+				slack: { columns: { webhookUrl: false } },
+				telegram: { columns: { botToken: false } },
+				discord: { columns: { webhookUrl: false } },
+				email: { columns: { password: false } },
+				resend: { columns: { apiKey: false } },
+				gotify: { columns: { appToken: false } },
+				ntfy: { columns: { accessToken: false } },
+				mattermost: { columns: { webhookUrl: false } },
+				custom: { columns: { endpoint: false } },
+				lark: { columns: { webhookUrl: false } },
+				pushover: { columns: { userKey: false, apiToken: false } },
+				teams: { columns: { webhookUrl: false } },
 			},
 			orderBy: desc(notifications.createdAt),
 			where: eq(notifications.organizationId, ctx.session.activeOrganizationId),

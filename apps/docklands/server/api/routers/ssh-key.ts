@@ -82,7 +82,10 @@ export const sshRouter = createTRPCRouter({
 			return sshKey;
 		}),
 	all: withPermission("sshKeys", "read").query(async ({ ctx }) => {
+		// Never ship the (transparently decrypted) private key to the list view —
+		// it is write-only material consumed at clone time via the service layer.
 		return await db.query.sshKeys.findMany({
+			columns: { privateKey: false },
 			where: eq(sshKeys.organizationId, ctx.session.activeOrganizationId),
 			orderBy: desc(sshKeys.createdAt),
 		});

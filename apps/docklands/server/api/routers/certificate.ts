@@ -65,7 +65,12 @@ export const certificateRouter = createTRPCRouter({
 			return true;
 		}),
 	all: withPermission("certificate", "read").query(async ({ ctx }) => {
+		// Never ship the (transparently decrypted) private key to the list view; it
+		// is written to disk for Traefik via the service layer. `certificateData`
+		// (the public certificate body) is kept because the list parses it to show
+		// expiry/chain/common-name — it is the public half of the keypair.
 		return await db.query.certificates.findMany({
+			columns: { privateKey: false },
 			where: eq(certificates.organizationId, ctx.session.activeOrganizationId),
 			with: {
 				runtimeWorker: true,

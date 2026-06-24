@@ -85,7 +85,11 @@ export const registryRouter = createTRPCRouter({
 			return true;
 		}),
 	all: withPermission("registry", "read").query(async ({ ctx }) => {
+		// Exclude the (transparently decrypted) password, matching `findRegistryById`
+		// used by `one`; deploy/test flows read it via
+		// `findRegistryByIdWithCredentials` in the service layer.
 		const registryResponse = await db.query.registry.findMany({
+			columns: { password: false },
 			where: eq(registry.organizationId, ctx.session.activeOrganizationId),
 		});
 		return registryResponse;

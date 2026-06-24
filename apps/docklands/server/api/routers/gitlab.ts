@@ -29,6 +29,25 @@ import {
 	testGitlabConnection,
 } from "@/server/core/utils/providers/gitlab";
 
+/**
+ * Strip the (transparently decrypted) GitLab OAuth secret + tokens before
+ * returning to the browser. They are write-only credentials; clone/OAuth flows
+ * read them through the service layer (`findGitlabById`), never this read.
+ */
+const sanitizeGitlab = <
+	T extends { secret?: unknown; accessToken?: unknown; refreshToken?: unknown },
+>(
+	provider: T,
+) => {
+	const {
+		secret: _secret,
+		accessToken: _accessToken,
+		refreshToken: _refreshToken,
+		...rest
+	} = provider;
+	return rest;
+};
+
 export const gitlabRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")
 		.input(apiCreateGitlab)
@@ -56,7 +75,7 @@ export const gitlabRouter = createTRPCRouter({
 			}
 		}),
 	one: protectedProcedure.input(apiFindOneGitlab).query(async ({ input }) => {
-		return await findGitlabById(input.gitlabId);
+		return sanitizeGitlab(await findGitlabById(input.gitlabId));
 	}),
 	gitlabProviders: protectedProcedure.query(async ({ ctx }) => {
 		const accessibleIds = await getAccessibleGitProviderIds(ctx.session);

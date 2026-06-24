@@ -22,9 +22,32 @@ import {
 	haveGithubRequirements,
 } from "@/server/core/utils/providers/github";
 
+/**
+ * Strip the (transparently decrypted) GitHub App secrets before returning to the
+ * browser. They are write-only credentials; deploy/clone/webhook flows read them
+ * through the service layer (`findGithubById`), never this read procedure.
+ */
+const sanitizeGithub = <
+	T extends {
+		githubClientSecret?: unknown;
+		githubPrivateKey?: unknown;
+		githubWebhookSecret?: unknown;
+	},
+>(
+	provider: T,
+) => {
+	const {
+		githubClientSecret: _githubClientSecret,
+		githubPrivateKey: _githubPrivateKey,
+		githubWebhookSecret: _githubWebhookSecret,
+		...rest
+	} = provider;
+	return rest;
+};
+
 export const githubRouter = createTRPCRouter({
 	one: protectedProcedure.input(apiFindOneGithub).query(async ({ input }) => {
-		return await findGithubById(input.githubId);
+		return sanitizeGithub(await findGithubById(input.githubId));
 	}),
 	getGithubRepositories: protectedProcedure
 		.input(apiFindOneGithub)
