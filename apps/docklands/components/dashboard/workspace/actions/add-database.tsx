@@ -388,6 +388,8 @@ export const AddDatabase = ({
 					await utils.environment.one.invalidate({
 						environmentId,
 					});
+					// Keep workspace-level service counts fresh (matches add-compose).
+					await utils.workspaces.all.invalidate();
 				})
 				.catch((err) => {
 					logger.error("Error creating a database", err);
