@@ -6,9 +6,10 @@ import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Table } from "@cloudflare/kumo/components/table";
 import { format } from "date-fns";
-import { Loader2, ScrollText } from "lucide-react";
+import { ScrollText } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { EmptyState, QueryState } from "@/components/shared/states";
 import { cn } from "@/shared/utils";
 
 const PAGE_SIZE = 50;
@@ -100,7 +101,7 @@ export const ShowAuditLog = () => {
 	const [resourceType, setResourceType] = useState<string>(ALL);
 	const [offset, setOffset] = useState(0);
 
-	const { data, isPending } = api.auditLog.all.useQuery({
+	const auditLogQuery = api.auditLog.all.useQuery({
 		resourceName: resourceName.trim() || undefined,
 		action: action === ALL ? undefined : action,
 		resourceType: resourceType === ALL ? undefined : resourceType,
@@ -108,7 +109,7 @@ export const ShowAuditLog = () => {
 		offset,
 	});
 
-	const logs = data?.logs ?? [];
+	const { data } = auditLogQuery;
 	const total = data?.total ?? 0;
 	const rangeStart = total === 0 ? 0 : offset + 1;
 	const rangeEnd = Math.min(offset + PAGE_SIZE, total);
@@ -176,75 +177,74 @@ export const ShowAuditLog = () => {
 				</div>
 
 				<div className="space-y-2 py-8">
-					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
-							<span>Loading...</span>
-							<Loader2 className="animate-spin size-4" />
-						</div>
-					) : logs.length === 0 ? (
-						<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-							<ScrollText className="size-8 self-center text-kumo-subtle" />
-							<span className="text-base text-kumo-subtle">
-								No audit entries match the current filters.
-							</span>
-						</div>
-					) : (
-						<div className="rounded-md border overflow-auto">
-							<Table>
-								<Table.Header>
-									<Table.Row>
-										<Table.Head>When</Table.Head>
-										<Table.Head>User</Table.Head>
-										<Table.Head>Action</Table.Head>
-										<Table.Head>Resource</Table.Head>
-										<Table.Head>Details</Table.Head>
-									</Table.Row>
-								</Table.Header>
-								<Table.Body>
-									{logs.map((log) => (
-										<Table.Row key={log.id}>
-											<Table.Cell className="whitespace-nowrap text-sm">
-												{format(new Date(log.createdAt), "PPp")}
-											</Table.Cell>
-											<Table.Cell>
-												<div className="flex flex-col">
-													<span className="text-sm">{log.userEmail}</span>
-													<span className="text-xs text-kumo-subtle">
-														{log.userRole}
-													</span>
-												</div>
-											</Table.Cell>
-											<Table.Cell>
-												<Badge variant={actionVariant(log.action)}>
-													{log.action}
-												</Badge>
-											</Table.Cell>
-											<Table.Cell>
-												<div className="flex flex-col">
-													<span className="text-xs text-kumo-subtle">
-														{log.resourceType}
-													</span>
-													{log.resourceName && (
-														<span className="text-sm break-words">
-															{log.resourceName}
-														</span>
-													)}
-												</div>
-											</Table.Cell>
-											<Table.Cell
-												className={cn(
-													"max-w-md align-top text-xs text-kumo-subtle",
-													log.metadata && "whitespace-pre-wrap break-words",
-												)}
-											>
-												{log.metadata ?? "—"}
-											</Table.Cell>
+					<QueryState
+						query={auditLogQuery}
+						isEmpty={(data) => data.logs.length === 0}
+						empty={
+							<EmptyState
+								icon={ScrollText}
+								title="No audit entries match the current filters."
+							/>
+						}
+					>
+						{(data) => (
+							<div className="rounded-md border overflow-auto">
+								<Table>
+									<Table.Header>
+										<Table.Row>
+											<Table.Head>When</Table.Head>
+											<Table.Head>User</Table.Head>
+											<Table.Head>Action</Table.Head>
+											<Table.Head>Resource</Table.Head>
+											<Table.Head>Details</Table.Head>
 										</Table.Row>
-									))}
-								</Table.Body>
-							</Table>
-						</div>
-					)}
+									</Table.Header>
+									<Table.Body>
+										{data.logs.map((log) => (
+											<Table.Row key={log.id}>
+												<Table.Cell className="whitespace-nowrap text-sm">
+													{format(new Date(log.createdAt), "PPp")}
+												</Table.Cell>
+												<Table.Cell>
+													<div className="flex flex-col">
+														<span className="text-sm">{log.userEmail}</span>
+														<span className="text-xs text-kumo-subtle">
+															{log.userRole}
+														</span>
+													</div>
+												</Table.Cell>
+												<Table.Cell>
+													<Badge variant={actionVariant(log.action)}>
+														{log.action}
+													</Badge>
+												</Table.Cell>
+												<Table.Cell>
+													<div className="flex flex-col">
+														<span className="text-xs text-kumo-subtle">
+															{log.resourceType}
+														</span>
+														{log.resourceName && (
+															<span className="text-sm break-words">
+																{log.resourceName}
+															</span>
+														)}
+													</div>
+												</Table.Cell>
+												<Table.Cell
+													className={cn(
+														"max-w-md align-top text-xs text-kumo-subtle",
+														log.metadata && "whitespace-pre-wrap break-words",
+													)}
+												>
+													{log.metadata ?? "—"}
+												</Table.Cell>
+											</Table.Row>
+										))}
+									</Table.Body>
+								</Table>
+							</div>
+						)}
+					</QueryState>
 				</div>
 
 				<div className="flex items-center justify-end gap-4 border-t pt-4">

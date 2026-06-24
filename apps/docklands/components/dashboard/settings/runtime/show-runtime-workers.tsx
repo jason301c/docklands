@@ -9,7 +9,6 @@ import {
 	Clock,
 	Key,
 	KeyIcon,
-	Loader2,
 	Network,
 	ServerIcon,
 	Terminal,
@@ -26,6 +25,7 @@ import { AlertBlock } from "@/components/shared/alert-block";
 const logger = createClientLogger("runtime-workers");
 
 import { DialogAction } from "@/components/shared/dialog-action";
+import { EmptyState, QueryState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
 import { ShowRuntimeWorkerActions } from "./actions/show-runtime-worker-actions";
 import { ToggleRemoteWorkersOnly } from "./actions/toggle-remote-workers-only";
@@ -34,7 +34,8 @@ import { SetupRuntimeWorker } from "./setup-runtime-worker";
 import { RuntimeTerminalModal } from "./terminal/runtime-terminal-modal";
 
 export const ShowRuntimeWorkers = () => {
-	const { data, refetch, isPending } = api.runtimeWorker.all.useQuery();
+	const runtimeWorkersQuery = api.runtimeWorker.all.useQuery();
+	const { refetch } = runtimeWorkersQuery;
 	const { mutateAsync } = api.runtimeWorker.remove.useMutation();
 	const { data: sshKeys } = api.sshKey.all.useQuery();
 	const { permissions } = usePermissions();
@@ -54,313 +55,298 @@ export const ShowRuntimeWorkers = () => {
 					{isAdmin && <ToggleRemoteWorkersOnly />}
 				</div>
 				<div className="space-y-2 py-8 border-t">
-					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
-							<span>Loading...</span>
-							<Loader2 className="animate-spin size-4" />
-						</div>
-					) : (
-						<>
-							{sshKeys?.length === 0 && data?.length === 0 ? (
-								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-									<KeyIcon className="size-8" />
-									<span className="text-base text-kumo-subtle">
-										No SSH keys found. Add an SSH key to start adding workers.{" "}
-										<Link
-											href="/dashboard/settings/ssh-keys"
-											className="text-kumo-brand"
-										>
-											Add SSH Key
-										</Link>
-									</span>
-								</div>
+					<QueryState
+						query={runtimeWorkersQuery}
+						isEmpty={(data) => data.length === 0}
+						empty={
+							sshKeys?.length === 0 ? (
+								<EmptyState
+									icon={KeyIcon}
+									title={
+										<>
+											No SSH keys found. Add an SSH key to start adding workers.{" "}
+											<Link
+												href="/dashboard/settings/ssh-keys"
+												className="text-kumo-brand"
+											>
+												Add SSH Key
+											</Link>
+										</>
+									}
+								/>
 							) : (
-								<>
-									{data?.length === 0 ? (
-										<div className="flex flex-col items-center gap-3  min-h-[25vh] justify-center">
-											<ServerIcon className="size-8 self-center text-kumo-subtle" />
-											<span className="text-base text-kumo-subtle">
-												Start adding workers to run your applications across
-												remote machines.
-											</span>
-											{permissions?.runtimeWorker.create && (
-												<HandleRuntimeWorker />
-											)}
-										</div>
-									) : (
-										<div className="flex flex-col gap-4 min-h-[25vh]">
-											<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-												{data?.map((runtimeWorker) => {
-													const canDelete = runtimeWorker.totalSum === 0;
-													const isActive =
-														runtimeWorker.runtimeWorkerStatus === "active";
-													const isBuildRuntimeWorker =
-														runtimeWorker.runtimeWorkerType === "build";
-													return (
-														<LayerCard
-															key={runtimeWorker.runtimeWorkerId}
-															className="relative hover:shadow-lg transition-shadow flex flex-col bg-transparent"
-														>
-															<div className="pb-3">
-																<div className="flex items-start justify-between gap-2">
-																	<div className="flex min-w-0 items-center gap-2">
-																		<ServerIcon className="size-5 shrink-0 text-kumo-subtle" />
-																		<h3 className="text-lg break-words min-w-0">
-																			{runtimeWorker.name}
-																		</h3>
-																	</div>
-																</div>
-																<TooltipProvider>
-																	<div className="flex gap-2 mt-2 flex-wrap">
-																		<Badge
-																			variant={
-																				isBuildRuntimeWorker
-																					? "secondary"
-																					: "secondary"
-																			}
-																		>
-																			{runtimeWorker.runtimeWorkerType}
-																		</Badge>
-																	</div>
-																</TooltipProvider>
-															</div>
-															<div className="space-y-3 flex-1 flex flex-col">
-																<div className="flex items-center gap-2 text-sm">
-																	<Network className="size-4 text-kumo-subtle" />
-																	<span className="text-kumo-subtle">IP:</span>
-																	<Badge variant="outline">
-																		{runtimeWorker.ipAddress}
-																	</Badge>
-																	<span className="text-kumo-subtle">
-																		Port:
-																	</span>
-																	<span className="font-medium">
-																		{runtimeWorker.port}
-																	</span>
-																</div>
-																<div className="flex items-center gap-2 text-sm">
-																	<User className="size-4 text-kumo-subtle" />
-																	<span className="text-kumo-subtle">
-																		User:
-																	</span>
-																	<span className="font-medium">
-																		{runtimeWorker.username}
-																	</span>
-																</div>
-																<div className="flex items-center gap-2 text-sm">
-																	<Key className="size-4 text-kumo-subtle" />
-																	<span className="text-kumo-subtle">
-																		SSH Key:
-																	</span>
-																	<span className="font-medium">
-																		{runtimeWorker.sshKeyId ? "Yes" : "No"}
-																	</span>
-																</div>
-																<div className="flex items-center gap-2 text-sm pt-2 border-t">
-																	<Clock className="size-4 text-kumo-subtle" />
-																	<span className="text-xs text-kumo-subtle">
-																		Created{" "}
-																		{format(
-																			new Date(runtimeWorker.createdAt),
-																			"PPp",
-																		)}
-																	</span>
-																</div>
+								<EmptyState
+									icon={ServerIcon}
+									title="Start adding workers to run your applications across remote machines."
+									action={
+										permissions?.runtimeWorker.create ? (
+											<HandleRuntimeWorker />
+										) : null
+									}
+								/>
+							)
+						}
+					>
+						{(data) => (
+							<div className="flex flex-col gap-4 min-h-[25vh]">
+								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+									{data.map((runtimeWorker) => {
+										const canDelete = runtimeWorker.totalSum === 0;
+										const isActive =
+											runtimeWorker.runtimeWorkerStatus === "active";
+										const isBuildRuntimeWorker =
+											runtimeWorker.runtimeWorkerType === "build";
+										return (
+											<LayerCard
+												key={runtimeWorker.runtimeWorkerId}
+												className="relative hover:shadow-lg transition-shadow flex flex-col bg-transparent"
+											>
+												<div className="pb-3">
+													<div className="flex items-start justify-between gap-2">
+														<div className="flex min-w-0 items-center gap-2">
+															<ServerIcon className="size-5 shrink-0 text-kumo-subtle" />
+															<h3 className="text-lg break-words min-w-0">
+																{runtimeWorker.name}
+															</h3>
+														</div>
+													</div>
+													<TooltipProvider>
+														<div className="flex gap-2 mt-2 flex-wrap">
+															<Badge
+																variant={
+																	isBuildRuntimeWorker
+																		? "secondary"
+																		: "secondary"
+																}
+															>
+																{runtimeWorker.runtimeWorkerType}
+															</Badge>
+														</div>
+													</TooltipProvider>
+												</div>
+												<div className="space-y-3 flex-1 flex flex-col">
+													<div className="flex items-center gap-2 text-sm">
+														<Network className="size-4 text-kumo-subtle" />
+														<span className="text-kumo-subtle">IP:</span>
+														<Badge variant="outline">
+															{runtimeWorker.ipAddress}
+														</Badge>
+														<span className="text-kumo-subtle">Port:</span>
+														<span className="font-medium">
+															{runtimeWorker.port}
+														</span>
+													</div>
+													<div className="flex items-center gap-2 text-sm">
+														<User className="size-4 text-kumo-subtle" />
+														<span className="text-kumo-subtle">User:</span>
+														<span className="font-medium">
+															{runtimeWorker.username}
+														</span>
+													</div>
+													<div className="flex items-center gap-2 text-sm">
+														<Key className="size-4 text-kumo-subtle" />
+														<span className="text-kumo-subtle">SSH Key:</span>
+														<span className="font-medium">
+															{runtimeWorker.sshKeyId ? "Yes" : "No"}
+														</span>
+													</div>
+													<div className="flex items-center gap-2 text-sm pt-2 border-t">
+														<Clock className="size-4 text-kumo-subtle" />
+														<span className="text-xs text-kumo-subtle">
+															Created{" "}
+															{format(new Date(runtimeWorker.createdAt), "PPp")}
+														</span>
+													</div>
 
-																{/* Compact Actions */}
-																{isActive && (
-																	<div className="flex items-center  gap-2 pt-3 border-t mt-auto flex-wrap">
-																		<div className="flex items-center gap-2 w-full">
-																			<Tooltip
-																				content={
-																					<>
-																						<div className="space-y-1">
-																							<p className="font-semibold">
-																								Set Up Worker
-																							</p>
-																							<p className="text-xs text-kumo-subtle">
-																								Configure and initialize your
-																								runtime worker with a container
-																								engine, ingress, and the
-																								services Docklands needs
-																							</p>
-																						</div>
-																					</>
+													{/* Compact Actions */}
+													{isActive && (
+														<div className="flex items-center  gap-2 pt-3 border-t mt-auto flex-wrap">
+															<div className="flex items-center gap-2 w-full">
+																<Tooltip
+																	content={
+																		<>
+																			<div className="space-y-1">
+																				<p className="font-semibold">
+																					Set Up Worker
+																				</p>
+																				<p className="text-xs text-kumo-subtle">
+																					Configure and initialize your runtime
+																					worker with a container engine,
+																					ingress, and the services Docklands
+																					needs
+																				</p>
+																			</div>
+																		</>
+																	}
+																	className="max-w-xs"
+																	side="bottom"
+																	asChild
+																>
+																	<SetupRuntimeWorker
+																		runtimeWorkerId={
+																			runtimeWorker.runtimeWorkerId
+																		}
+																	/>
+																</Tooltip>
+															</div>
+
+															<TooltipProvider>
+																{runtimeWorker.sshKeyId && (
+																	<Tooltip
+																		content={
+																			<>
+																				<p>Terminal</p>
+																			</>
+																		}
+																		asChild
+																	>
+																		<div>
+																			<RuntimeTerminalModal
+																				runtimeWorkerId={
+																					runtimeWorker.runtimeWorkerId
 																				}
-																				className="max-w-xs"
-																				side="bottom"
-																				asChild
+																				asButton={true}
 																			>
-																				<SetupRuntimeWorker
+																				<Button
+																					aria-label="Open worker terminal"
+																					variant="outline"
+																					shape="square"
+																					className="h-9 w-9"
+																				>
+																					<Terminal className="h-4 w-4" />
+																				</Button>
+																			</RuntimeTerminalModal>
+																		</div>
+																	</Tooltip>
+																)}
+
+																<Tooltip
+																	content={
+																		<>
+																			<p>Edit worker</p>
+																		</>
+																	}
+																	asChild
+																>
+																	<div>
+																		<HandleRuntimeWorker
+																			runtimeWorkerId={
+																				runtimeWorker.runtimeWorkerId
+																			}
+																			asButton={true}
+																		/>
+																	</div>
+																</Tooltip>
+
+																{runtimeWorker.sshKeyId &&
+																	!isBuildRuntimeWorker && (
+																		<Tooltip
+																			content={
+																				<>
+																					<p>Ingress runtime actions</p>
+																				</>
+																			}
+																			asChild
+																		>
+																			<div>
+																				<ShowRuntimeWorkerActions
 																					runtimeWorkerId={
 																						runtimeWorker.runtimeWorkerId
 																					}
+																					asButton={true}
 																				/>
-																			</Tooltip>
-																		</div>
+																			</div>
+																		</Tooltip>
+																	)}
 
-																		<TooltipProvider>
-																			{runtimeWorker.sshKeyId && (
-																				<Tooltip
-																					content={
-																						<>
-																							<p>Terminal</p>
-																						</>
-																					}
-																					asChild
-																				>
-																					<div>
-																						<RuntimeTerminalModal
-																							runtimeWorkerId={
-																								runtimeWorker.runtimeWorkerId
-																							}
-																							asButton={true}
-																						>
-																							<Button
-																								aria-label="Open worker terminal"
-																								variant="outline"
-																								shape="square"
-																								className="h-9 w-9"
-																							>
-																								<Terminal className="h-4 w-4" />
-																							</Button>
-																						</RuntimeTerminalModal>
-																					</div>
-																				</Tooltip>
-																			)}
+																<div className="flex-1" />
 
-																			<Tooltip
-																				content={
-																					<>
-																						<p>Edit worker</p>
-																					</>
+																{permissions?.runtimeWorker.delete && (
+																	<Tooltip
+																		content={
+																			<>
+																				<p>
+																					{canDelete
+																						? "Delete Worker"
+																						: "Cannot delete - has active services"}
+																				</p>
+																			</>
+																		}
+																		asChild
+																	>
+																		<div>
+																			<DialogAction
+																				disabled={!canDelete}
+																				title={
+																					canDelete
+																						? "Delete Worker"
+																						: "Worker has active services"
 																				}
-																				asChild
-																			>
-																				<div>
-																					<HandleRuntimeWorker
-																						runtimeWorkerId={
-																							runtimeWorker.runtimeWorkerId
-																						}
-																						asButton={true}
-																					/>
-																				</div>
-																			</Tooltip>
-
-																			{runtimeWorker.sshKeyId &&
-																				!isBuildRuntimeWorker && (
-																					<Tooltip
-																						content={
-																							<>
-																								<p>Ingress runtime actions</p>
-																							</>
-																						}
-																						asChild
-																					>
-																						<div>
-																							<ShowRuntimeWorkerActions
-																								runtimeWorkerId={
-																									runtimeWorker.runtimeWorkerId
-																								}
-																								asButton={true}
-																							/>
+																				description={
+																					canDelete ? (
+																						"This will delete the worker and all associated data"
+																					) : (
+																						<div className="flex flex-col gap-2">
+																							You can not delete this worker
+																							because it has active services.
+																							<AlertBlock type="warning">
+																								You have active services
+																								associated with this worker,
+																								please delete them first.
+																							</AlertBlock>
 																						</div>
-																					</Tooltip>
-																				)}
-
-																			<div className="flex-1" />
-
-																			{permissions?.runtimeWorker.delete && (
-																				<Tooltip
-																					content={
-																						<>
-																							<p>
-																								{canDelete
-																									? "Delete Worker"
-																									: "Cannot delete - has active services"}
-																							</p>
-																						</>
-																					}
-																					asChild
+																					)
+																				}
+																				onClick={async () => {
+																					await mutateAsync({
+																						runtimeWorkerId:
+																							runtimeWorker.runtimeWorkerId,
+																					})
+																						.then(() => {
+																							refetch();
+																							toast.success(
+																								`Worker ${runtimeWorker.name} deleted successfully`,
+																							);
+																						})
+																						.catch((err) => {
+																							logger.error(err);
+																							toast.error(err.message);
+																						});
+																				}}
+																			>
+																				<Button
+																					aria-label={`Delete worker ${runtimeWorker.name}`}
+																					variant="ghost"
+																					shape="square"
+																					className={`h-9 w-9 ${canDelete ? "text-kumo-danger hover:text-kumo-danger hover:bg-kumo-danger/10" : "text-kumo-subtle hover:bg-kumo-fill"}`}
 																				>
-																					<div>
-																						<DialogAction
-																							disabled={!canDelete}
-																							title={
-																								canDelete
-																									? "Delete Worker"
-																									: "Worker has active services"
-																							}
-																							description={
-																								canDelete ? (
-																									"This will delete the worker and all associated data"
-																								) : (
-																									<div className="flex flex-col gap-2">
-																										You can not delete this
-																										worker because it has active
-																										services.
-																										<AlertBlock type="warning">
-																											You have active services
-																											associated with this
-																											worker, please delete them
-																											first.
-																										</AlertBlock>
-																									</div>
-																								)
-																							}
-																							onClick={async () => {
-																								await mutateAsync({
-																									runtimeWorkerId:
-																										runtimeWorker.runtimeWorkerId,
-																								})
-																									.then(() => {
-																										refetch();
-																										toast.success(
-																											`Worker ${runtimeWorker.name} deleted successfully`,
-																										);
-																									})
-																									.catch((err) => {
-																										logger.error(err);
-																										toast.error(err.message);
-																									});
-																							}}
-																						>
-																							<Button
-																								aria-label={`Delete worker ${runtimeWorker.name}`}
-																								variant="ghost"
-																								shape="square"
-																								className={`h-9 w-9 ${canDelete ? "text-kumo-danger hover:text-kumo-danger hover:bg-kumo-danger/10" : "text-kumo-subtle hover:bg-kumo-fill"}`}
-																							>
-																								<Trash2 className="h-4 w-4" />
-																							</Button>
-																						</DialogAction>
-																					</div>
-																				</Tooltip>
-																			)}
-																		</TooltipProvider>
-																	</div>
+																					<Trash2 className="h-4 w-4" />
+																				</Button>
+																			</DialogAction>
+																		</div>
+																	</Tooltip>
 																)}
-															</div>
-														</LayerCard>
-													);
-												})}
-											</div>
-
-											{permissions?.runtimeWorker.create && (
-												<div className="flex flex-row gap-2 flex-wrap w-full justify-end mt-4">
-													{data && data?.length > 0 && (
-														<div>
-															<HandleRuntimeWorker />
+															</TooltipProvider>
 														</div>
 													)}
 												</div>
-											)}
-										</div>
-									)}
-								</>
-							)}
-						</>
-					)}
+											</LayerCard>
+										);
+									})}
+								</div>
+
+								{permissions?.runtimeWorker.create && (
+									<div className="flex flex-row gap-2 flex-wrap w-full justify-end mt-4">
+										{data.length > 0 && (
+											<div>
+												<HandleRuntimeWorker />
+											</div>
+										)}
+									</div>
+								)}
+							</div>
+						)}
+					</QueryState>
 				</div>
 			</div>
 		</div>

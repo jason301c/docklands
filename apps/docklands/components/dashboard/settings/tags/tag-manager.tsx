@@ -1,11 +1,12 @@
 "use client";
 
 import { Button } from "@cloudflare/kumo/components/button";
-import { Loader2, TagIcon, Trash2 } from "lucide-react";
+import { TagIcon, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { EmptyState, QueryState } from "@/components/shared/states";
 import { TagBadge } from "@/components/shared/tag-badge";
 import { toast } from "@/components/shared/toast";
 import { HandleTag } from "./handle-tag";
@@ -14,7 +15,7 @@ const logger = createClientLogger("tags");
 
 export const TagManager = () => {
 	const utils = api.useUtils();
-	const { data: tags, isPending } = api.tag.all.useQuery();
+	const tagsQuery = api.tag.all.useQuery();
 	const { mutateAsync: deleteTag, isPending: isRemoving } =
 		api.tag.remove.useMutation();
 	const { permissions } = usePermissions();
@@ -30,88 +31,82 @@ export const TagManager = () => {
 					<p>Create and manage tags to organize your workspaces</p>
 				</div>
 				<div className="space-y-2 py-8 border-t">
-					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
-							<span>Loading...</span>
-							<Loader2 className="animate-spin size-4" />
-						</div>
-					) : (
-						<>
-							{!tags || tags.length === 0 ? (
-								<div className="flex flex-col items-center gap-3 min-h-[25vh] justify-center">
-									<TagIcon className="size-6 text-kumo-subtle" />
-									<span className="text-base text-kumo-subtle text-center">
-										No tags yet. Create your first tag to start organizing
-										workspaces.
-									</span>
-									{permissions?.tag.create && <HandleTag />}
-								</div>
-							) : (
-								<div className="flex flex-col gap-4 min-h-[25vh]">
-									<div className="flex flex-col gap-4 rounded-lg">
-										{tags.map((tag) => (
-											<div
-												key={tag.tagId}
-												className="flex items-center justify-between bg-kumo-elevated p-1 w-full rounded-lg"
-											>
-												<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border w-full">
-													<div className="flex items-center gap-3">
-														<TagBadge name={tag.name} color={tag.color} />
-														{tag.color && (
-															<span className="text-xs text-kumo-subtle font-mono">
-																{tag.color}
-															</span>
-														)}
-													</div>
-													<div className="flex flex-row gap-1 items-center">
-														{permissions?.tag.update && (
-															<HandleTag tagId={tag.tagId} />
-														)}
-														{permissions?.tag.delete && (
-															<DialogAction
-																title="Delete Tag"
-																description={`Are you sure you want to delete the tag "${tag.name}"? This will remove the tag from all workspaces. This action cannot be undone.`}
-																type="destructive"
-																onClick={async () => {
-																	await deleteTag({
-																		tagId: tag.tagId,
+					<QueryState
+						query={tagsQuery}
+						isEmpty={(tags) => tags.length === 0}
+						empty={
+							<EmptyState
+								icon={TagIcon}
+								title="No tags yet. Create your first tag to start organizing workspaces."
+								action={permissions?.tag.create ? <HandleTag /> : null}
+							/>
+						}
+					>
+						{(tags) => (
+							<div className="flex flex-col gap-4 min-h-[25vh]">
+								<div className="flex flex-col gap-4 rounded-lg">
+									{tags.map((tag) => (
+										<div
+											key={tag.tagId}
+											className="flex items-center justify-between bg-kumo-elevated p-1 w-full rounded-lg"
+										>
+											<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border w-full">
+												<div className="flex items-center gap-3">
+													<TagBadge name={tag.name} color={tag.color} />
+													{tag.color && (
+														<span className="text-xs text-kumo-subtle font-mono">
+															{tag.color}
+														</span>
+													)}
+												</div>
+												<div className="flex flex-row gap-1 items-center">
+													{permissions?.tag.update && (
+														<HandleTag tagId={tag.tagId} />
+													)}
+													{permissions?.tag.delete && (
+														<DialogAction
+															title="Delete Tag"
+															description={`Are you sure you want to delete the tag "${tag.name}"? This will remove the tag from all workspaces. This action cannot be undone.`}
+															type="destructive"
+															onClick={async () => {
+																await deleteTag({
+																	tagId: tag.tagId,
+																})
+																	.then(async () => {
+																		await utils.tag.all.invalidate();
+																		toast.success("Tag deleted successfully");
 																	})
-																		.then(async () => {
-																			await utils.tag.all.invalidate();
-																			toast.success("Tag deleted successfully");
-																		})
-																		.catch((err) => {
-																			logger.error(err);
-																			toast.error("Error deleting tag");
-																		});
-																}}
+																	.catch((err) => {
+																		logger.error(err);
+																		toast.error("Error deleting tag");
+																	});
+															}}
+														>
+															<Button
+																aria-label="Delete tag"
+																variant="ghost"
+																shape="square"
+																className="group hover:bg-kumo-danger/10"
+																loading={isRemoving}
 															>
-																<Button
-																	aria-label="Delete tag"
-																	variant="ghost"
-																	shape="square"
-																	className="group hover:bg-kumo-danger/10"
-																	loading={isRemoving}
-																>
-																	<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
-																</Button>
-															</DialogAction>
-														)}
-													</div>
+																<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
+															</Button>
+														</DialogAction>
+													)}
 												</div>
 											</div>
-										))}
-									</div>
-
-									{permissions?.tag.create && (
-										<div className="flex flex-row gap-2 flex-wrap w-full justify-end mr-4">
-											<HandleTag />
 										</div>
-									)}
+									))}
 								</div>
-							)}
-						</>
-					)}
+
+								{permissions?.tag.create && (
+									<div className="flex flex-row gap-2 flex-wrap w-full justify-end mr-4">
+										<HandleTag />
+									</div>
+								)}
+							</div>
+						)}
+					</QueryState>
 				</div>
 			</div>
 		</div>
