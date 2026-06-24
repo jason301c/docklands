@@ -96,9 +96,7 @@ describe("createRouterConfig (Traefik rule sink)", () => {
 			{ ...baseDomain, host: "app.example.com", path: "/api" },
 			"web",
 		);
-		expect(router.rule).toBe(
-			"Host(`app.example.com`) && PathPrefix(`/api`)",
-		);
+		expect(router.rule).toBe("Host(`app.example.com`) && PathPrefix(`/api`)");
 	});
 
 	it("throws when an internal caller supplies a host that breaks the rule", async () => {
