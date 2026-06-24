@@ -57,6 +57,15 @@ export const findEnvironmentById = async (environmentId: string) => {
 							orderBy: [desc(deployments.createdAt)],
 							limit: 1,
 						},
+						domains: {
+							columns: { host: true, createdAt: true },
+						},
+						mounts: {
+							columns: { type: true, volumeName: true },
+						},
+						runtimeWorker: {
+							columns: { name: true },
+						},
 					},
 					columns: {
 						name: true,
@@ -66,9 +75,18 @@ export const findEnvironmentById = async (environmentId: string) => {
 						description: true,
 						runtimeWorkerId: true,
 						icon: true,
+						replicas: true,
 					},
 				},
 				database: {
+					with: {
+						mounts: {
+							columns: { type: true, volumeName: true },
+						},
+						runtimeWorker: {
+							columns: { name: true },
+						},
+					},
 					columns: {
 						databaseId: true,
 						engine: true,
@@ -89,6 +107,15 @@ export const findEnvironmentById = async (environmentId: string) => {
 							},
 							orderBy: [desc(deployments.createdAt)],
 							limit: 1,
+						},
+						domains: {
+							columns: { host: true, createdAt: true },
+						},
+						mounts: {
+							columns: { type: true, volumeName: true },
+						},
+						runtimeWorker: {
+							columns: { name: true },
 						},
 					},
 					columns: {

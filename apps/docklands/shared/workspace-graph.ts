@@ -38,6 +38,18 @@ export type WorkspaceService = {
 	refreshToken?: string | null;
 	composeType?: "docker-compose" | "stack" | null;
 	icon?: string | null;
+	/** Host of the service's primary/first domain (no scheme). null for databases or when no domains. */
+	primaryDomain?: string | null;
+	/** True iff the service has at least one domain. Always false for databases. */
+	exposed?: boolean;
+	/** Number of domains attached. 0 for databases. */
+	domainCount?: number;
+	/** Named docker volumes mounted by the service (mount `type === "volume"`). */
+	volumes?: { name: string }[];
+	/** Human name of the runtime worker the service is placed on. null = automatic/local placement. */
+	runtimeWorkerName?: string | null;
+	/** Replica count for application/compose when the column exists; null for databases or when absent. */
+	replicas?: number | null;
 };
 
 export type WorkspaceNodePosition = {
@@ -183,6 +195,75 @@ const getLatestDeploymentDate = (record: ServiceLike) => {
 	return latest;
 };
 
+/**
+ * Picks the primary domain host: the earliest by `createdAt` when present,
+ * otherwise the first domain in the relation array. Returns just the hostname
+ * (no scheme).
+ */
+const getPrimaryDomainHost = (record: ServiceLike) => {
+	const domains = record.domains;
+	if (!Array.isArray(domains) || domains.length === 0) return null;
+
+	let primary: ServiceLike | null = null;
+	let primaryCreatedAt: string | null = null;
+	for (const domain of domains) {
+		const domainRecord = domain as ServiceLike;
+		if (!asString(domainRecord.host)) continue;
+
+		if (!primary) {
+			primary = domainRecord;
+			primaryCreatedAt = asString(domainRecord.createdAt);
+			continue;
+		}
+
+		const candidateCreatedAt = asString(domainRecord.createdAt);
+		if (
+			candidateCreatedAt &&
+			(!primaryCreatedAt ||
+				new Date(candidateCreatedAt).getTime() <
+					new Date(primaryCreatedAt).getTime())
+		) {
+			primary = domainRecord;
+			primaryCreatedAt = candidateCreatedAt;
+		}
+	}
+
+	return primary ? asString(primary.host) : null;
+};
+
+const getDomainCount = (record: ServiceLike) => {
+	const domains = record.domains;
+	return Array.isArray(domains) ? domains.length : 0;
+};
+
+/** Collects named docker volumes (mount `type === "volume"`) by `volumeName`. */
+const getNamedVolumes = (record: ServiceLike): { name: string }[] => {
+	const mounts = record.mounts;
+	if (!Array.isArray(mounts)) return [];
+
+	const volumes: { name: string }[] = [];
+	for (const mount of mounts) {
+		const mountRecord = mount as ServiceLike;
+		if (mountRecord.type !== "volume") continue;
+		const name = asString(mountRecord.volumeName);
+		if (!name) continue;
+		volumes.push({ name });
+	}
+
+	return volumes;
+};
+
+const getRuntimeWorkerName = (record: ServiceLike) => {
+	const runtimeWorker = record.runtimeWorker;
+	if (!runtimeWorker || typeof runtimeWorker !== "object") return null;
+	return asString((runtimeWorker as ServiceLike).name);
+};
+
+const getReplicas = (record: ServiceLike) => {
+	const replicas = record.replicas;
+	return typeof replicas === "number" ? replicas : null;
+};
+
 const toWorkspaceService = (
 	record: ServiceLike,
 	type: WorkspaceServiceType,
@@ -193,6 +274,8 @@ const toWorkspaceService = (
 	const name = asString(record.name);
 
 	if (!id || !name) return null;
+
+	const domainCount = getDomainCount(record);
 
 	return {
 		id,
@@ -210,6 +293,12 @@ const toWorkspaceService = (
 				? record.composeType
 				: null,
 		icon: asString(record.icon),
+		primaryDomain: getPrimaryDomainHost(record),
+		exposed: domainCount > 0,
+		domainCount,
+		volumes: getNamedVolumes(record),
+		runtimeWorkerName: getRuntimeWorkerName(record),
+		replicas: getReplicas(record),
 	};
 };
 

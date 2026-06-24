@@ -276,3 +276,53 @@ h1 {
 [data-toast-title] {
 	font-size: 0.875rem;
 }
+
+/*
+ * React Flow (the workspace canvas engine) ships a light default theme. Map its
+ * CSS variables onto Kumo tokens so the canvas, edges, controls, and handles
+ * follow the app's light/dark theme automatically (Kumo tokens are theme-aware
+ * via light-dark()). Keep this in sync with components/dashboard/workspace.
+ */
+.react-flow {
+	--xy-background-color: transparent;
+	--xy-edge-stroke: var(--color-kumo-line);
+	--xy-edge-stroke-selected: var(--color-kumo-brand);
+	--xy-connectionline-stroke: var(--color-kumo-brand);
+	--xy-connectionline-stroke-width: 2;
+	--xy-handle-background-color: var(--color-kumo-canvas);
+	--xy-handle-border-color: var(--color-kumo-line);
+	--xy-controls-button-background-color: var(--color-kumo-base);
+	--xy-controls-button-background-color-hover: var(--color-kumo-fill);
+	--xy-controls-button-color: var(--text-color-kumo-default);
+	--xy-controls-button-color-hover: var(--text-color-kumo-strong);
+	--xy-controls-button-border-color: var(--color-kumo-hairline);
+}
+
+.react-flow__controls {
+	border: 1px solid var(--color-kumo-line);
+	border-radius: 0.625rem;
+	overflow: hidden;
+	box-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+.react-flow__controls-button {
+	border-bottom: 1px solid var(--color-kumo-hairline);
+	width: 1.875rem;
+	height: 1.875rem;
+}
+
+.react-flow__controls-button svg {
+	max-width: 0.875rem;
+	max-height: 0.875rem;
+	fill: currentColor;
+}
+
+/* The active service ring is driven by node data, so suppress React Flow's own
+ * selected-node box-shadow to avoid a doubled outline. */
+.react-flow__node.selected {
+	box-shadow: none;
+}
+
+.react-flow__attribution {
+	display: none;
+}

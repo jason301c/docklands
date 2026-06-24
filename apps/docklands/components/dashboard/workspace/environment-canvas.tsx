@@ -4,7 +4,18 @@ import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
-import { formatDistanceToNow } from "date-fns";
+import {
+	Background,
+	BackgroundVariant,
+	type Connection,
+	ControlButton,
+	Controls,
+	type Edge,
+	type NodeChange,
+	Panel,
+	ReactFlow,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import {
 	ArrowRight,
 	ArrowUpDown,
@@ -20,6 +31,7 @@ import {
 	FolderInput,
 	GitPullRequest,
 	GlobeIcon,
+	Grid2x2,
 	Grip,
 	Loader2,
 	Network,
@@ -31,6 +43,7 @@ import {
 	Search,
 	ServerIcon,
 	Settings2,
+	SlidersHorizontal,
 	SquareTerminal,
 	Trash2,
 	X,
@@ -38,7 +51,6 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
-	type PointerEvent,
 	type ReactNode,
 	useCallback,
 	useEffect,
@@ -85,6 +97,13 @@ import {
 import { serviceTypeLabels } from "@/components/dashboard/workspace/canvas/constants";
 import { DuplicateServicesDialog } from "@/components/dashboard/workspace/canvas/duplicate-services-dialog";
 import { MoveServicesDialog } from "@/components/dashboard/workspace/canvas/move-services-dialog";
+import {
+	formatLastDeployment,
+	type ServiceFlowNode,
+	ServiceNode,
+	type ServiceNodeData,
+	WorkspaceServiceIcon,
+} from "@/components/dashboard/workspace/canvas/service-node";
 import { WorkspaceVariables } from "@/components/dashboard/workspace/manage/workspace-variables";
 import {
 	LibsqlIcon,
@@ -118,11 +137,13 @@ import {
 	resolveWorkspaceConnectionGroups,
 	type WorkspaceNode,
 	type WorkspaceService,
-	type WorkspaceServiceStatus,
 	type WorkspaceServiceType,
 } from "@/shared/workspace-graph";
 
 const logger = createClientLogger("workspace-canvas");
+
+// Stable reference so React Flow doesn't re-register node types each render.
+const CANVAS_NODE_TYPES = { service: ServiceNode };
 
 type WorkspaceData = RouterOutputs["workspaceGraph"]["byEnvironment"];
 type WorkspaceConnection = WorkspaceData["connections"][number];
@@ -130,16 +151,6 @@ type WorkspaceConnection = WorkspaceData["connections"][number];
 type SelectedServiceRef = {
 	serviceId: string;
 	serviceType: WorkspaceServiceType;
-};
-
-type DragState = {
-	key: string;
-	pointerId: number;
-	startX: number;
-	startY: number;
-	originX: number;
-	originY: number;
-	moved: boolean;
 };
 
 type CreateServiceDialog =
@@ -225,112 +236,6 @@ const serviceSortOptions: { value: ServiceSort; label: string }[] = [
 	{ value: "status-asc", label: "Status" },
 	{ value: "last-deploy-desc", label: "Recent deployment" },
 ];
-
-const serviceTypeDescriptions: Record<WorkspaceServiceType, string> = {
-	application: "Code service",
-	compose: "Stack",
-	libsql: "SQLite-compatible database",
-	mariadb: "Relational database",
-	mongo: "Document database",
-	mysql: "Relational database",
-	postgres: "Relational database",
-	redis: "Cache",
-};
-
-const serviceIconClassName = "size-6 text-kumo-subtle";
-
-const WorkspaceServiceIcon = ({ service }: { service: WorkspaceService }) => {
-	if (service.type === "application") {
-		if (service.icon) {
-			return (
-				<img
-					src={service.icon}
-					alt=""
-					className="size-7 object-contain"
-					aria-hidden="true"
-				/>
-			);
-		}
-		return <GlobeIcon className={serviceIconClassName} />;
-	}
-
-	if (service.type === "compose")
-		return <CircuitBoard className={serviceIconClassName} />;
-	if (service.type === "libsql")
-		return <LibsqlIcon className={serviceIconClassName} />;
-	if (service.type === "mariadb")
-		return <MariadbIcon className={serviceIconClassName} />;
-	if (service.type === "mongo")
-		return <MongodbIcon className={serviceIconClassName} />;
-	if (service.type === "mysql")
-		return <MysqlIcon className={serviceIconClassName} />;
-	if (service.type === "postgres")
-		return <PostgresqlIcon className={serviceIconClassName} />;
-	if (service.type === "redis")
-		return <RedisIcon className={serviceIconClassName} />;
-
-	return <Database className={serviceIconClassName} />;
-};
-
-const pulseToneClass: Record<WorkspaceServiceStatus, string> = {
-	done: "bg-kumo-info",
-	error: "bg-kumo-danger",
-	idle: "bg-kumo-subtle/40",
-	running: "bg-kumo-success",
-};
-
-const getServicePulseBars = (service: WorkspaceService, linkCount: number) => {
-	const seed = [...service.id].reduce(
-		(total, char) => total + char.charCodeAt(0),
-		0,
-	);
-	const deployAge = service.lastDeployAt
-		? Date.now() - new Date(service.lastDeployAt).getTime()
-		: Number.POSITIVE_INFINITY;
-	const recentDeployBoost = deployAge < 1000 * 60 * 60 * 24 ? 16 : 0;
-	const runningBoost = service.status === "running" ? 10 : 0;
-
-	return Array.from({ length: 12 }, (_, index) => {
-		const value =
-			18 +
-			((seed + index * 17 + linkCount * 11) % 44) +
-			recentDeployBoost +
-			runningBoost;
-		return Math.min(82, value);
-	});
-};
-
-const ServiceRuntimePulse = ({
-	service,
-	linkCount,
-}: {
-	service: WorkspaceService;
-	linkCount: number;
-}) => {
-	const tone = pulseToneClass[service.status ?? "idle"];
-	const bars = getServicePulseBars(service, linkCount);
-
-	return (
-		<div
-			className="pointer-events-none absolute inset-x-3 bottom-3 rounded-md border bg-kumo-canvas/95 px-2 py-1.5 opacity-0 shadow-sm transition group-hover:opacity-100"
-			aria-hidden="true"
-		>
-			<div className="mb-1 flex items-center justify-between gap-2 text-[10px] uppercase text-kumo-subtle">
-				<span>Runtime pulse</span>
-				<span>{linkCount} links</span>
-			</div>
-			<div className="flex h-8 items-end gap-1">
-				{bars.map((height, index) => (
-					<span
-						key={`${service.id}-${index}`}
-						className={cn("w-full rounded-sm opacity-80", tone)}
-						style={{ height: `${height}%` }}
-					/>
-				))}
-			</div>
-		</div>
-	);
-};
 
 const ConnectionVariablePreview = ({
 	connectionId,
@@ -445,27 +350,6 @@ const ConnectionVariableFlowCard = ({
 	</div>
 );
 
-const nodeCenter = (node: WorkspaceNode) => ({
-	x: node.x + node.width / 2,
-	y: node.y + node.height / 2,
-});
-
-const connectionPath = (source: WorkspaceNode, target: WorkspaceNode) => {
-	const from = nodeCenter(source);
-	const to = nodeCenter(target);
-	const distance = Math.max(80, Math.abs(to.x - from.x) / 2);
-	return `M ${from.x} ${from.y} C ${from.x + distance} ${from.y}, ${to.x - distance} ${to.y}, ${to.x} ${to.y}`;
-};
-
-const connectionPreviewPath = (
-	source: WorkspaceNode,
-	pointer: { x: number; y: number },
-) => {
-	const from = nodeCenter(source);
-	const distance = Math.max(80, Math.abs(pointer.x - from.x) / 2);
-	return `M ${from.x} ${from.y} C ${from.x + distance} ${from.y}, ${pointer.x - distance} ${pointer.y}, ${pointer.x} ${pointer.y}`;
-};
-
 const getActionInput = (service: WorkspaceService) => {
 	switch (service.type) {
 		case "application":
@@ -497,11 +381,6 @@ const getServiceSettingsHref = (
 		serviceType: service.type,
 		serviceId: service.id,
 	});
-
-const formatLastDeployment = (lastDeployAt?: string | null) =>
-	lastDeployAt
-		? formatDistanceToNow(new Date(lastDeployAt), { addSuffix: true })
-		: "No deployments yet";
 
 const getDatabaseBackupType = (service: WorkspaceService) =>
 	databaseBackupServiceTypes.has(service.type)
@@ -571,6 +450,8 @@ export const EnvironmentCanvas = ({
 		null,
 	);
 	const [isTopologyOpen, setIsTopologyOpen] = useState(true);
+	const [isFilterBarOpen, setIsFilterBarOpen] = useState(false);
+	const [showGrid, setShowGrid] = useState(true);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [commandQuery, setCommandQuery] = useState("");
 	const [serviceKindFilter, setServiceKindFilter] =
@@ -600,7 +481,6 @@ export const EnvironmentCanvas = ({
 		| "resources"
 		| "connections"
 	>("overview");
-	const [isArranging, setIsArranging] = useState(false);
 	const [isSelectionMode, setIsSelectionMode] = useState(false);
 	const [selectedBulkKeys, setSelectedBulkKeys] = useState<string[]>([]);
 	const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
@@ -619,12 +499,6 @@ export const EnvironmentCanvas = ({
 	const [selectedTargetProject, setSelectedTargetProject] = useState("");
 	const [selectedTargetEnvironment, setSelectedTargetEnvironment] =
 		useState("");
-	const [connectionPointer, setConnectionPointer] = useState<{
-		x: number;
-		y: number;
-	} | null>(null);
-	const dragState = useRef<DragState | null>(null);
-	const suppressClick = useRef(false);
 	// Node keys whose local position is being (or was just) saved. While a key is
 	// here, the server-sync effect preserves the locally-moved position instead of
 	// clobbering it with a possibly-stale refetch — this prevents a card from
@@ -730,7 +604,6 @@ export const EnvironmentCanvas = ({
 			}
 			if (event.key === "Escape") {
 				setConnectSource(null);
-				setConnectionPointer(null);
 				setCommandOpen(false);
 				setCommandQuery("");
 				setCreateDialog(null);
@@ -1089,14 +962,6 @@ export const EnvironmentCanvas = ({
 					connection.targetServiceType === selectedService.serviceType,
 			)
 		: [];
-	const connectSourceNode = connectSource
-		? nodesByKey.get(
-				getWorkspaceServiceKey(
-					connectSource.serviceType,
-					connectSource.serviceId,
-				),
-			)
-		: undefined;
 	const connectSourceService = connectSource
 		? servicesByKey.get(
 				getWorkspaceServiceKey(
@@ -1105,10 +970,6 @@ export const EnvironmentCanvas = ({
 				),
 			)
 		: undefined;
-	const connectionPreview =
-		connectSourceNode && connectionPointer
-			? connectionPreviewPath(connectSourceNode, connectionPointer)
-			: null;
 	const projectVariableKeys = useMemo(
 		() =>
 			parseEnvironmentVariables(workspace?.environment.env)
@@ -1131,21 +992,6 @@ export const EnvironmentCanvas = ({
 		[filteredServices, serviceLinkCounts],
 	);
 
-	const canvasBounds = useMemo(() => {
-		const maxX = nodes.reduce(
-			(max, node) => Math.max(max, node.x + node.width),
-			0,
-		);
-		const maxY = nodes.reduce(
-			(max, node) => Math.max(max, node.y + node.height),
-			0,
-		);
-		return {
-			width: Math.max(1280, maxX + 320),
-			height: Math.max(720, maxY + 240),
-		};
-	}, [nodes]);
-
 	const persistNode = useCallback(
 		async (node: WorkspaceNode) => {
 			await updateNode.mutateAsync({
@@ -1162,108 +1008,144 @@ export const EnvironmentCanvas = ({
 		[environmentId, updateNode, utils.workspaceGraph.byEnvironment],
 	);
 
-	const onNodePointerDown = (
-		event: PointerEvent<HTMLButtonElement>,
-		node: WorkspaceNode,
-	) => {
-		if (isSelectionMode) return;
-		if (event.button !== 0) return;
-		if ((event.target as HTMLElement).closest("[data-node-action]")) return;
+	// React Flow owns drag interaction; we mirror its position changes into the
+	// canonical `nodes` state so edges, groups, and persistence stay in sync.
+	const onNodesChange = useCallback(
+		(changes: NodeChange<ServiceFlowNode>[]) => {
+			setNodes((current) => {
+				let next = current;
+				for (const change of changes) {
+					if (change.type !== "position" || !change.position) continue;
+					const movedKey = change.id;
+					const position = change.position;
+					next = next.map((node) =>
+						getWorkspaceServiceKey(node.serviceType, node.serviceId) ===
+						movedKey
+							? { ...node, x: position.x, y: position.y }
+							: node,
+					);
+				}
+				return next;
+			});
+		},
+		[],
+	);
 
-		event.currentTarget.setPointerCapture(event.pointerId);
-		dragState.current = {
-			key: getWorkspaceServiceKey(node.serviceType, node.serviceId),
-			pointerId: event.pointerId,
-			startX: event.clientX,
-			startY: event.clientY,
-			originX: node.x,
-			originY: node.y,
-			moved: false,
-		};
-	};
-
-	const onNodePointerMove = (event: PointerEvent<HTMLButtonElement>) => {
-		const drag = dragState.current;
-		if (!drag) return;
-
-		const deltaX = event.clientX - drag.startX;
-		const deltaY = event.clientY - drag.startY;
-
-		if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
-			drag.moved = true;
-			suppressClick.current = true;
-		}
-
-		setNodes((current) =>
-			current.map((node) =>
-				getWorkspaceServiceKey(node.serviceType, node.serviceId) === drag.key
-					? {
-							...node,
-							x: Math.max(20, drag.originX + deltaX),
-							y: Math.max(20, drag.originY + deltaY),
-						}
-					: node,
-			),
-		);
-	};
-
-	const onNodePointerUp = async (event: PointerEvent<HTMLButtonElement>) => {
-		const drag = dragState.current;
-		if (!drag) return;
-
-		event.currentTarget.releasePointerCapture(drag.pointerId);
-		dragState.current = null;
-
-		if (!drag.moved) return;
-
-		const node = nodes.find(
-			(item) =>
-				getWorkspaceServiceKey(item.serviceType, item.serviceId) === drag.key,
-		);
-		if (!node) return;
-
-		// Guard this node from being clobbered by an in-flight refetch (e.g. a
-		// concurrent drag's save) until our own save has settled and been reflected.
-		pendingNodeKeys.current.add(drag.key);
-		try {
-			await persistNode(node);
-		} catch (error) {
-			logger.error("Could not save service position", error);
-			toast.error(
-				`Could not save service position: ${error instanceof Error ? error.message : "Unknown error"}`,
-			);
-		} finally {
-			// Hold the guard briefly past the save so a refetch that started just
-			// before the mutation resolved cannot snap the node back, then release it
-			// so future server updates flow through normally.
-			const settledKey = drag.key;
-			setTimeout(() => {
-				pendingNodeKeys.current.delete(settledKey);
-			}, 750);
-		}
-	};
+	// Persist a node's final position once a drag settles. The pending guard keeps
+	// an in-flight refetch from snapping the card back before our save lands.
+	const persistNodePosition = useCallback(
+		(key: string, x: number, y: number) => {
+			const node = nodesByKey.get(key);
+			if (!node) return;
+			pendingNodeKeys.current.add(key);
+			void persistNode({ ...node, x, y })
+				.catch((error) => {
+					logger.error("Could not save service position", error);
+					toast.error(
+						`Could not save service position: ${error instanceof Error ? error.message : "Unknown error"}`,
+					);
+				})
+				.finally(() => {
+					setTimeout(() => {
+						pendingNodeKeys.current.delete(key);
+					}, 750);
+				});
+		},
+		[nodesByKey, persistNode],
+	);
 
 	const startConnectionFromService = (service: WorkspaceService) => {
 		setConnectSource({
 			serviceId: service.id,
 			serviceType: service.type,
 		});
-		const node = nodesByKey.get(
-			getWorkspaceServiceKey(service.type, service.id),
-		);
-		setConnectionPointer(node ? nodeCenter(node) : null);
 		closeSelectedService();
 		toast.info(
-			"Select another service on the canvas. Database links auto-apply variables when possible.",
+			"Select a target service, or drag from a card handle. Database links auto-apply variables when possible.",
+		);
+	};
+
+	// Shared connect path: normalize endpoints, create the link, and apply any
+	// generated connection variables. Used by both click-to-connect (connectSource)
+	// and React Flow's drag-between-handles (`onConnect`).
+	const connectServices = async (
+		sourceRef: SelectedServiceRef,
+		targetRef: SelectedServiceRef,
+	) => {
+		if (
+			sourceRef.serviceId === targetRef.serviceId &&
+			sourceRef.serviceType === targetRef.serviceType
+		) {
+			return;
+		}
+
+		try {
+			const normalized = normalizeWorkspaceConnectionEndpoints(
+				sourceRef,
+				targetRef,
+			);
+			const normalizedSource = servicesByKey.get(
+				getWorkspaceServiceKey(
+					normalized.source.serviceType,
+					normalized.source.serviceId,
+				),
+			);
+			const normalizedTarget = servicesByKey.get(
+				getWorkspaceServiceKey(
+					normalized.target.serviceType,
+					normalized.target.serviceId,
+				),
+			);
+			const canApplyVariables =
+				canWorkspaceServiceExposeVariables(normalized.source.serviceType) &&
+				!!permissions?.envVars.write;
+
+			const result = await connect.mutateAsync({
+				environmentId,
+				source: normalized.source,
+				target: normalized.target,
+				label: canWorkspaceServiceExposeVariables(normalized.source.serviceType)
+					? "Private network + variables"
+					: "Private network",
+				applyVariables: canApplyVariables,
+			});
+			await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
+			if (result.variablesApplied > 0) {
+				await invalidateServiceEnvironment({
+					serviceId: result.connection.targetServiceId,
+					serviceType: result.connection.targetServiceType,
+				});
+			}
+			const edgeLabel =
+				normalizedSource && normalizedTarget
+					? `${normalizedSource.name} -> ${normalizedTarget.name}`
+					: "Services connected";
+			toast.success(
+				result.variablesApplied > 0
+					? `${edgeLabel}; ${result.variablesApplied} variable${result.variablesApplied === 1 ? "" : "s"} applied`
+					: edgeLabel,
+			);
+		} catch (error) {
+			logger.error("Could not connect services", error);
+			toast.error(
+				`Could not connect services: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+		}
+	};
+
+	// React Flow connection (drag from one card's handle to another).
+	const onConnect = (connection: Connection) => {
+		if (!connection.source || !connection.target) return;
+		const source = servicesByKey.get(connection.source);
+		const target = servicesByKey.get(connection.target);
+		if (!source || !target) return;
+		void connectServices(
+			{ serviceId: source.id, serviceType: source.type },
+			{ serviceId: target.id, serviceType: target.type },
 		);
 	};
 
 	const selectOrConnectService = async (service: WorkspaceService) => {
-		if (suppressClick.current) {
-			suppressClick.current = false;
-			return;
-		}
-
 		const nextRef = { serviceId: service.id, serviceType: service.type };
 
 		if (isSelectionMode) {
@@ -1272,72 +1154,9 @@ export const EnvironmentCanvas = ({
 		}
 
 		if (connectSource) {
-			if (
-				connectSource.serviceId === service.id &&
-				connectSource.serviceType === service.type
-			) {
-				setConnectSource(null);
-				setConnectionPointer(null);
-				return;
-			}
-
-			try {
-				const normalized = normalizeWorkspaceConnectionEndpoints(
-					connectSource,
-					nextRef,
-				);
-				const normalizedSource = servicesByKey.get(
-					getWorkspaceServiceKey(
-						normalized.source.serviceType,
-						normalized.source.serviceId,
-					),
-				);
-				const normalizedTarget = servicesByKey.get(
-					getWorkspaceServiceKey(
-						normalized.target.serviceType,
-						normalized.target.serviceId,
-					),
-				);
-				const canApplyVariables =
-					canWorkspaceServiceExposeVariables(normalized.source.serviceType) &&
-					!!permissions?.envVars.write;
-
-				const result = await connect.mutateAsync({
-					environmentId,
-					source: normalized.source,
-					target: normalized.target,
-					label: canWorkspaceServiceExposeVariables(
-						normalized.source.serviceType,
-					)
-						? "Private network + variables"
-						: "Private network",
-					applyVariables: canApplyVariables,
-				});
-				await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
-				if (result.variablesApplied > 0) {
-					await invalidateServiceEnvironment({
-						serviceId: result.connection.targetServiceId,
-						serviceType: result.connection.targetServiceType,
-					});
-				}
-				const edgeLabel =
-					normalizedSource && normalizedTarget
-						? `${normalizedSource.name} -> ${normalizedTarget.name}`
-						: "Services connected";
-				toast.success(
-					result.variablesApplied > 0
-						? `${edgeLabel}; ${result.variablesApplied} variable${result.variablesApplied === 1 ? "" : "s"} applied`
-						: edgeLabel,
-				);
-			} catch (error) {
-				logger.error("Could not connect services", error);
-				toast.error(
-					`Could not connect services: ${error instanceof Error ? error.message : "Unknown error"}`,
-				);
-			} finally {
-				setConnectSource(null);
-				setConnectionPointer(null);
-			}
+			const source = connectSource;
+			setConnectSource(null);
+			await connectServices(source, nextRef);
 			return;
 		}
 
@@ -1350,7 +1169,6 @@ export const EnvironmentCanvas = ({
 			const next = !current;
 			if (next) {
 				setConnectSource(null);
-				setConnectionPointer(null);
 				closeSelectedService();
 			} else {
 				setSelectedBulkKeys([]);
@@ -1389,29 +1207,9 @@ export const EnvironmentCanvas = ({
 		if (selectableKeys.length === 0) return;
 
 		setConnectSource(null);
-		setConnectionPointer(null);
 		setIsSelectionMode(true);
 		setSelectedBulkKeys(selectableKeys);
 		closeSelectedService();
-	};
-
-	const handleConnectionHandleClick = (service: WorkspaceService) => {
-		if (connectSource) {
-			void selectOrConnectService(service);
-			return;
-		}
-
-		startConnectionFromService(service);
-	};
-
-	const updateConnectionPointer = (event: PointerEvent<HTMLDivElement>) => {
-		if (!connectSource) return;
-
-		const rect = event.currentTarget.getBoundingClientRect();
-		setConnectionPointer({
-			x: Math.max(0, event.clientX - rect.left),
-			y: Math.max(0, event.clientY - rect.top),
-		});
 	};
 
 	const resetCanvasFilters = () => {
@@ -1423,7 +1221,6 @@ export const EnvironmentCanvas = ({
 	const toggleTopologyPanel = () => {
 		if (connectSource) {
 			setConnectSource(null);
-			setConnectionPointer(null);
 			return;
 		}
 
@@ -1783,7 +1580,6 @@ export const EnvironmentCanvas = ({
 
 	const openServiceFromTopology = (service: WorkspaceService) => {
 		setConnectSource(null);
-		setConnectionPointer(null);
 		setIsSelectionMode(false);
 		setSelectedBulkKeys([]);
 		setSelectedService({
@@ -1807,7 +1603,6 @@ export const EnvironmentCanvas = ({
 			serviceType: service.type,
 		}));
 		setNodes(arrangedNodes);
-		setIsArranging(true);
 
 		toast.promise(
 			Promise.all(
@@ -1822,7 +1617,7 @@ export const EnvironmentCanvas = ({
 						height: node.height,
 					}),
 				),
-			).finally(() => setIsArranging(false)),
+			),
 			{
 				loading: "Arranging workspace...",
 				success: async () => {
@@ -2512,6 +2307,76 @@ export const EnvironmentCanvas = ({
 		"System",
 	];
 
+	const rfNodes = useMemo<ServiceFlowNode[]>(
+		() =>
+			nodes.flatMap((node) => {
+				const key = getWorkspaceServiceKey(node.serviceType, node.serviceId);
+				const service = servicesByKey.get(key);
+				if (!service) return [];
+				const isActive =
+					selectedService?.serviceId === service.id &&
+					selectedService.serviceType === service.type;
+				const isConnectSource =
+					connectSource?.serviceId === service.id &&
+					connectSource.serviceType === service.type;
+				const data: ServiceNodeData = {
+					service,
+					linkCount: serviceLinkCounts.get(key) ?? 0,
+					dimmed: !visibleServiceKeys.has(key),
+					selectionMode: isSelectionMode,
+					isActive,
+					isBulkSelected: selectedBulkKeySet.has(key),
+					isConnectSource,
+					isConnectCandidate: !!connectSource && !isConnectSource,
+				};
+				return [
+					{
+						id: key,
+						type: "service" as const,
+						position: { x: node.x, y: node.y },
+						width: node.width,
+						height: node.height,
+						draggable: !isSelectionMode,
+						data,
+					},
+				];
+			}),
+		[
+			nodes,
+			servicesByKey,
+			serviceLinkCounts,
+			visibleServiceKeys,
+			selectedBulkKeySet,
+			connectSource,
+			selectedService,
+			isSelectionMode,
+		],
+	);
+
+	const rfEdges = useMemo<Edge[]>(
+		() =>
+			connections.map((connection) => {
+				const sourceKey = getWorkspaceServiceKey(
+					connection.sourceServiceType,
+					connection.sourceServiceId,
+				);
+				const targetKey = getWorkspaceServiceKey(
+					connection.targetServiceType,
+					connection.targetServiceId,
+				);
+				const dimmed =
+					!visibleServiceKeys.has(sourceKey) ||
+					!visibleServiceKeys.has(targetKey);
+				return {
+					id: connection.connectionId,
+					source: sourceKey,
+					target: targetKey,
+					style: { opacity: dimmed ? 0.15 : 0.5 },
+				};
+			}),
+		[connections, visibleServiceKeys],
+	);
+
 	if (workspaceQuery.isPending) {
 		return (
 			<div className="flex min-h-[70vh] items-center justify-center gap-2 text-sm text-kumo-subtle">
@@ -2563,19 +2428,12 @@ export const EnvironmentCanvas = ({
 									currentEnvironmentId={environmentId}
 								/>
 							</div>
-							<p className="truncate text-sm text-kumo-subtle">
-								{workspace.environment.description ||
-									`${workspace.environment.name} environment`}
+							<p className="truncate text-xs text-kumo-subtle">
+								{workspaceStats.services} services · {workspaceStats.running}{" "}
+								online · {workspaceStats.errors} failed ·{" "}
+								{workspaceStats.connections} links
+								{hasCanvasFilters ? ` · ${filteredServices.length} shown` : ""}
 							</p>
-							<div className="mt-2 flex flex-wrap items-center gap-1.5">
-								<Badge>{workspaceStats.services} services</Badge>
-								<Badge>{workspaceStats.running} running</Badge>
-								<Badge>{workspaceStats.errors} errors</Badge>
-								<Badge>{workspaceStats.connections} links</Badge>
-								{hasCanvasFilters && (
-									<Badge>{filteredServices.length} visible</Badge>
-								)}
-							</div>
 						</div>
 					</div>
 
@@ -2585,75 +2443,37 @@ export const EnvironmentCanvas = ({
 								placeholder="Search services..."
 								value={searchQuery}
 								onChange={(event) => setSearchQuery(event.target.value)}
-								className="h-9 w-[220px] pr-9"
+								className="h-9 w-[200px] pr-9"
 							/>
 							<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-kumo-subtle" />
 						</div>
-						<div className="w-[150px]">
-							<Select
-								aria-label="Service type filter"
-								value={serviceKindFilter}
-								onValueChange={(value) =>
-									value !== null &&
-									setServiceKindFilter(value as ServiceKindFilter)
-								}
-							>
-								{serviceKindFilterOptions.map((option) => (
-									<Select.Option key={option.value} value={option.value}>
-										{option.label}
-									</Select.Option>
-								))}
-							</Select>
-						</div>
-						<div className="w-[140px]">
-							<Select
-								aria-label="Service status filter"
-								value={serviceStatusFilter}
-								onValueChange={(value) =>
-									value !== null &&
-									setServiceStatusFilter(value as ServiceStatusFilter)
-								}
-							>
-								{serviceStatusFilterOptions.map((option) => (
-									<Select.Option key={option.value} value={option.value}>
-										{option.label}
-									</Select.Option>
-								))}
-							</Select>
-						</div>
-						<div className="flex w-[170px] items-center gap-2">
-							<ArrowUpDown className="size-4 shrink-0 text-kumo-subtle" />
-							<Select
-								aria-label="Service sort"
-								value={serviceSort}
-								onValueChange={(value) =>
-									value !== null && setServiceSort(value as ServiceSort)
-								}
-							>
-								{serviceSortOptions.map((option) => (
-									<Select.Option key={option.value} value={option.value}>
-										{option.label}
-									</Select.Option>
-								))}
-							</Select>
-						</div>
-						{hasCanvasFilters && (
-							<Button variant="outline" onClick={resetCanvasFilters}>
-								<X className="size-4" />
-								Reset {canvasFilterCount}
-							</Button>
-						)}
 
 						<Button
+							variant={
+								isFilterBarOpen || hasCanvasFilters ? "primary" : "outline"
+							}
+							onClick={() => setIsFilterBarOpen((current) => !current)}
+						>
+							<SlidersHorizontal className="size-4" />
+							Filters
+							{canvasFilterCount > 0 && (
+								<Badge className="ml-1">{canvasFilterCount}</Badge>
+							)}
+						</Button>
+
+						<Button
+							aria-label={
+								connectSource
+									? "Cancel link"
+									: isTopologyOpen
+										? "Hide topology"
+										: "Show topology"
+							}
 							variant={connectSource || isTopologyOpen ? "primary" : "outline"}
+							shape="square"
 							onClick={toggleTopologyPanel}
 						>
 							<Cable className="size-4" />
-							{connectSource
-								? "Cancel link"
-								: isTopologyOpen
-									? "Hide topology"
-									: "Topology"}
 						</Button>
 
 						<Button
@@ -2668,24 +2488,15 @@ export const EnvironmentCanvas = ({
 						</Button>
 
 						<Button
+							aria-label="Command menu"
 							variant="outline"
+							shape="square"
 							onClick={() => {
 								setCommandQuery("");
 								setCommandOpen(true);
 							}}
 						>
 							<Command className="size-4" />
-							Cmd K
-						</Button>
-
-						<Button
-							variant="outline"
-							onClick={arrangeWorkspace}
-							loading={isArranging}
-							disabled={services.length === 0}
-						>
-							<Grip className="size-4" />
-							Arrange
 						</Button>
 
 						<DropdownMenu>
@@ -2799,6 +2610,64 @@ export const EnvironmentCanvas = ({
 							</DropdownMenu>
 						)}
 					</div>
+					{isFilterBarOpen && (
+						<div className="flex basis-full flex-wrap items-center gap-2 rounded-md border bg-kumo-fill/20 px-3 py-2">
+							<div className="w-[160px]">
+								<Select
+									aria-label="Service type filter"
+									value={serviceKindFilter}
+									onValueChange={(value) =>
+										value !== null &&
+										setServiceKindFilter(value as ServiceKindFilter)
+									}
+								>
+									{serviceKindFilterOptions.map((option) => (
+										<Select.Option key={option.value} value={option.value}>
+											{option.label}
+										</Select.Option>
+									))}
+								</Select>
+							</div>
+							<div className="w-[150px]">
+								<Select
+									aria-label="Service status filter"
+									value={serviceStatusFilter}
+									onValueChange={(value) =>
+										value !== null &&
+										setServiceStatusFilter(value as ServiceStatusFilter)
+									}
+								>
+									{serviceStatusFilterOptions.map((option) => (
+										<Select.Option key={option.value} value={option.value}>
+											{option.label}
+										</Select.Option>
+									))}
+								</Select>
+							</div>
+							<div className="flex w-[190px] items-center gap-2">
+								<ArrowUpDown className="size-4 shrink-0 text-kumo-subtle" />
+								<Select
+									aria-label="Service sort"
+									value={serviceSort}
+									onValueChange={(value) =>
+										value !== null && setServiceSort(value as ServiceSort)
+									}
+								>
+									{serviceSortOptions.map((option) => (
+										<Select.Option key={option.value} value={option.value}>
+											{option.label}
+										</Select.Option>
+									))}
+								</Select>
+							</div>
+							{hasCanvasFilters && (
+								<Button variant="outline" onClick={resetCanvasFilters}>
+									<X className="size-4" />
+									Reset {canvasFilterCount}
+								</Button>
+							)}
+						</div>
+					)}
 					{isSelectionMode && (
 						<div className="flex basis-full flex-wrap items-center justify-between gap-3 rounded-md border bg-kumo-fill/20 px-3 py-2 text-sm">
 							<div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -2996,152 +2865,59 @@ export const EnvironmentCanvas = ({
 							</div>
 						</aside>
 					)}
-					<div className="relative min-w-0 overflow-auto">
-						<div
-							className="relative"
-							onPointerMove={updateConnectionPointer}
-							onPointerLeave={() => connectSource && setConnectionPointer(null)}
-							style={{
-								width: canvasBounds.width,
-								height: canvasBounds.height,
-								backgroundImage:
-									"linear-gradient(to right, color-mix(in oklab, var(--color-kumo-hairline) 45%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in oklab, var(--color-kumo-hairline) 45%, transparent) 1px, transparent 1px)",
-								backgroundSize: "32px 32px",
+					<div className="relative min-h-0 min-w-0 overflow-hidden">
+						<ReactFlow
+							nodes={rfNodes}
+							edges={rfEdges}
+							nodeTypes={CANVAS_NODE_TYPES}
+							onNodesChange={onNodesChange}
+							onConnect={onConnect}
+							onNodeClick={(_, node) =>
+								void selectOrConnectService(node.data.service)
+							}
+							onNodeDragStop={(_, node) =>
+								persistNodePosition(node.id, node.position.x, node.position.y)
+							}
+							onPaneClick={() => {
+								if (connectSource) setConnectSource(null);
 							}}
+							nodesDraggable={!isSelectionMode}
+							nodesConnectable={!isSelectionMode}
+							minZoom={0.3}
+							maxZoom={1.75}
+							fitView
+							fitViewOptions={{ padding: 0.25, maxZoom: 1 }}
+							proOptions={{ hideAttribution: true }}
+							className="bg-kumo-fill/20"
 						>
-							{connectionGroupSummaries.map((group) => {
-								const groupSelected = group.nodeKeys.every((nodeKey) =>
-									selectedBulkKeySet.has(nodeKey),
-								);
-
-								return (
-									<div
-										key={group.id}
-										className={cn(
-											"pointer-events-none absolute rounded-xl border border-dashed bg-kumo-canvas/35",
-											groupSelected
-												? "border-kumo-brand/80 bg-kumo-brand/5"
-												: "border-kumo-line",
-										)}
-										style={{
-											left: group.x,
-											top: group.y,
-											width: group.width,
-											height: group.height,
-										}}
-									>
-										<div className="pointer-events-auto absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] items-center gap-2 rounded-md border bg-kumo-canvas/90 px-2 py-1 text-xs text-kumo-subtle shadow-sm backdrop-blur">
-											<div className="min-w-0">
-												<p className="truncate font-medium text-kumo-default">
-													{group.title || `Service group ${group.index + 1}`}
-												</p>
-												<div className="flex flex-wrap gap-x-2 gap-y-0.5">
-													<span>{group.serviceCount} services</span>
-													<span>{group.connectionCount} links</span>
-													{group.runtimeCount > 0 && (
-														<span>{group.runtimeCount} runtimes</span>
-													)}
-													{group.dataCount > 0 && (
-														<span>{group.dataCount} data stores</span>
-													)}
-												</div>
-											</div>
-											<button
-												type="button"
-												className="shrink-0 rounded border px-2 py-1 font-medium text-kumo-default transition hover:bg-kumo-fill"
-												onClick={() => selectServiceGroup(group.nodeKeys)}
-											>
-												{groupSelected ? "Selected" : "Select group"}
-											</button>
-										</div>
-									</div>
-								);
-							})}
-
-							<svg
-								className="pointer-events-none absolute inset-0"
-								width={canvasBounds.width}
-								height={canvasBounds.height}
-								aria-hidden="true"
-							>
-								<defs>
-									<marker
-										id="workspace-arrow"
-										viewBox="0 0 10 10"
-										refX="8"
-										refY="5"
-										markerWidth="6"
-										markerHeight="6"
-										orient="auto-start-reverse"
-									>
-										<path
-											d="M 0 0 L 10 5 L 0 10 z"
-											className="fill-kumo-subtle"
-										/>
-									</marker>
-									<marker
-										id="workspace-preview-dot"
-										viewBox="0 0 10 10"
-										refX="5"
-										refY="5"
-										markerWidth="5"
-										markerHeight="5"
-									>
-										<circle cx="5" cy="5" r="4" className="fill-kumo-brand" />
-									</marker>
-								</defs>
-								{connections.map((connection) => {
-									const source = nodesByKey.get(
-										getWorkspaceServiceKey(
-											connection.sourceServiceType,
-											connection.sourceServiceId,
-										),
-									);
-									const target = nodesByKey.get(
-										getWorkspaceServiceKey(
-											connection.targetServiceType,
-											connection.targetServiceId,
-										),
-									);
-									if (!source || !target) return null;
-
-									const sourceVisible = visibleServiceKeys.has(
-										getWorkspaceServiceKey(
-											connection.sourceServiceType,
-											connection.sourceServiceId,
-										),
-									);
-									const targetVisible = visibleServiceKeys.has(
-										getWorkspaceServiceKey(
-											connection.targetServiceType,
-											connection.targetServiceId,
-										),
-									);
-
-									return (
-										<path
-											key={connection.connectionId}
-											d={connectionPath(source, target)}
-											className={cn(
-												"fill-none stroke-kumo-subtle/60 stroke-2",
-												(!sourceVisible || !targetVisible) && "opacity-20",
-											)}
-											markerEnd="url(#workspace-arrow)"
-										/>
-									);
-								})}
-								{connectionPreview && (
-									<path
-										d={connectionPreview}
-										className="fill-none stroke-kumo-brand stroke-2 opacity-80"
-										strokeDasharray="8 8"
-										markerEnd="url(#workspace-preview-dot)"
-									/>
-								)}
-							</svg>
+							{showGrid && (
+								<Background
+									variant={BackgroundVariant.Dots}
+									gap={24}
+									size={1.5}
+									color="var(--color-kumo-hairline)"
+								/>
+							)}
+							<Controls showInteractive={false}>
+								<ControlButton
+									onClick={() => setShowGrid((current) => !current)}
+									title={showGrid ? "Hide grid" : "Show grid"}
+								>
+									<Grid2x2 />
+								</ControlButton>
+								<ControlButton
+									onClick={() => void arrangeWorkspace()}
+									title="Auto-arrange layout"
+								>
+									<Grip />
+								</ControlButton>
+							</Controls>
 
 							{connectSourceService && (
-								<div className="pointer-events-none absolute left-1/2 top-6 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full border bg-kumo-canvas/95 px-3 py-2 text-xs shadow-sm backdrop-blur">
+								<Panel
+									position="top-center"
+									className="pointer-events-none flex items-center gap-2 rounded-full border bg-kumo-canvas/95 px-3 py-2 text-xs shadow-sm backdrop-blur"
+								>
 									<Cable className="size-4 text-kumo-brand" />
 									<span>
 										Connecting from{" "}
@@ -3152,11 +2928,11 @@ export const EnvironmentCanvas = ({
 									<span className="text-kumo-subtle">
 										Select a target service
 									</span>
-								</div>
+								</Panel>
 							)}
 
-							{services.length === 0 ? (
-								<div className="absolute left-1/2 top-1/2 flex w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 rounded-lg border bg-kumo-canvas/95 p-5 text-center shadow-sm backdrop-blur">
+							{services.length === 0 && (
+								<div className="pointer-events-none absolute left-1/2 top-1/2 z-10 flex w-[min(92vw,520px)] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 rounded-lg border bg-kumo-canvas/95 p-5 text-center shadow-sm backdrop-blur">
 									<div className="flex size-12 items-center justify-center rounded-md border bg-kumo-fill/30">
 										<FolderInput className="size-6 text-kumo-subtle" />
 									</div>
@@ -3168,7 +2944,7 @@ export const EnvironmentCanvas = ({
 										</p>
 									</div>
 									{permissions?.service.create && (
-										<div className="flex flex-wrap justify-center gap-2">
+										<div className="pointer-events-auto flex flex-wrap justify-center gap-2">
 											<Button onClick={() => openCreateDialog("application")}>
 												<Folder className="size-4" />
 												New app
@@ -3197,154 +2973,8 @@ export const EnvironmentCanvas = ({
 										</div>
 									)}
 								</div>
-							) : null}
-
-							{nodes.map((node) => {
-								const serviceKey = getWorkspaceServiceKey(
-									node.serviceType,
-									node.serviceId,
-								);
-								const service = servicesByKey.get(serviceKey);
-								if (!service) return null;
-
-								const visible = visibleServiceKeys.has(serviceKey);
-								const isConnectSource =
-									connectSource?.serviceId === service.id &&
-									connectSource.serviceType === service.type;
-								const isBulkSelected = selectedBulkKeySet.has(serviceKey);
-								const linkCount = serviceLinkCounts.get(serviceKey) ?? 0;
-
-								return (
-									<div
-										key={serviceKey}
-										className={cn(
-											"group absolute rounded-lg transition",
-											!visible && "pointer-events-none opacity-20",
-										)}
-										style={{
-											left: node.x,
-											top: node.y,
-											width: node.width,
-											height: node.height,
-										}}
-									>
-										<button
-											type="button"
-											onPointerDown={(event) => onNodePointerDown(event, node)}
-											onPointerMove={onNodePointerMove}
-											onPointerUp={onNodePointerUp}
-											onClick={() => selectOrConnectService(service)}
-											className={cn(
-												"h-full w-full touch-none rounded-lg text-left outline-none transition",
-												isSelectionMode
-													? "cursor-pointer"
-													: "cursor-grab active:cursor-grabbing",
-												"focus-visible:ring-2 focus-visible:ring-kumo-focus",
-											)}
-										>
-											<LayerCard
-												className={cn(
-													"relative h-full bg-kumo-canvas/95 shadow-sm transition hover:bg-kumo-canvas",
-													isConnectSource && "ring-2 ring-kumo-brand",
-													connectSource &&
-														!isConnectSource &&
-														"ring-1 ring-kumo-brand/30",
-													isBulkSelected && "ring-2 ring-kumo-brand",
-												)}
-											>
-												<div className="flex h-full flex-col gap-4">
-													<div className="flex items-start justify-between gap-4">
-														<div className="flex min-w-0 items-start gap-3">
-															<div className="flex size-10 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/40">
-																<WorkspaceServiceIcon service={service} />
-															</div>
-															<div className="min-w-0">
-																<div className="flex items-center gap-2">
-																	<span className="truncate font-medium">
-																		{service.name}
-																	</span>
-																	<Grip className="size-3 shrink-0 text-kumo-subtle" />
-																</div>
-																<p className="truncate text-xs text-kumo-subtle">
-																	{serviceTypeLabels[service.type]}
-																</p>
-															</div>
-														</div>
-														<div className="flex shrink-0 items-center gap-1.5">
-															{isSelectionMode && (
-																<Badge>
-																	{isBulkSelected ? "Selected" : "Select"}
-																</Badge>
-															)}
-															<StatusTooltip
-																status={service.status ?? undefined}
-															/>
-														</div>
-													</div>
-
-													<p className="line-clamp-2 min-h-[2.5rem] text-sm text-kumo-subtle">
-														{service.description ||
-															serviceTypeDescriptions[service.type]}
-													</p>
-
-													<div className="mt-auto space-y-1 text-xs text-kumo-subtle">
-														<div className="flex items-center justify-between gap-3">
-															<span className="flex min-w-0 items-center gap-1.5">
-																<Network className="size-3 shrink-0" />
-																<span className="truncate">
-																	Private runtime
-																</span>
-															</span>
-															<span>{linkCount} links</span>
-														</div>
-														<div className="flex min-w-0 items-center gap-1.5">
-															<RefreshCw className="size-3 shrink-0" />
-															<span className="truncate">
-																{service.lastDeployAt
-																	? `Deployed ${formatLastDeployment(service.lastDeployAt)}`
-																	: "No deployments yet"}
-															</span>
-														</div>
-													</div>
-												</div>
-												<ServiceRuntimePulse
-													service={service}
-													linkCount={linkCount}
-												/>
-											</LayerCard>
-										</button>
-										{!isSelectionMode && (
-											<button
-												type="button"
-												aria-label={
-													isConnectSource
-														? `Cancel connection from ${service.name}`
-														: connectSource
-															? `Connect to ${service.name}`
-															: `Start connection from ${service.name}`
-												}
-												className={cn(
-													"absolute -right-4 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border bg-kumo-canvas text-kumo-subtle opacity-0 shadow-sm transition hover:text-kumo-default group-hover:opacity-100",
-													connectSource && "opacity-100",
-													isConnectSource &&
-														"border-kumo-brand text-kumo-brand",
-												)}
-												onClick={(event) => {
-													event.stopPropagation();
-													handleConnectionHandleClick(service);
-												}}
-											>
-												{isConnectSource ? (
-													<X className="size-4" />
-												) : (
-													<Cable className="size-4" />
-												)}
-											</button>
-										)}
-									</div>
-								);
-							})}
-						</div>
+							)}
+						</ReactFlow>
 					</div>
 				</div>
 			</div>
