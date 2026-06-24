@@ -50,15 +50,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-	type ReactNode,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
-import { api, type RouterOutputs } from "@/client/api/trpc";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { ShowPorts } from "@/components/dashboard/application/advanced/ports/show-port";
@@ -73,14 +66,11 @@ import { ShowComposeContainers } from "@/components/dashboard/compose/containers
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
 import { ShowBackups } from "@/components/dashboard/database-service/backups/show-backups";
-import { ShowExternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-external-database-credentials";
-import { ShowInternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-internal-database-credentials";
 import { ComposeMonitoring } from "@/components/dashboard/metrics/container/show-compose-monitoring";
 import { ContainerMonitoring } from "@/components/dashboard/metrics/container/show-container-monitoring";
 import { DeleteService } from "@/components/dashboard/service/delete-service";
 import { ShowResources } from "@/components/dashboard/shared/show-resources";
 import { ShowVolumes } from "@/components/dashboard/shared/show-volumes";
-import { ServiceTerminalModal } from "@/components/dashboard/shared/terminal/service-terminal-modal";
 import { AddApplication } from "@/components/dashboard/workspace/actions/add-application";
 import { AddCompose } from "@/components/dashboard/workspace/actions/add-compose";
 import { AddDatabase } from "@/components/dashboard/workspace/actions/add-database";
@@ -94,9 +84,26 @@ import {
 	type CommandGroup,
 	type CommandItem,
 } from "@/components/dashboard/workspace/canvas/command-bar-dialog";
+import { ConnectionVariableFlowCard } from "@/components/dashboard/workspace/canvas/connection-cards";
 import { serviceTypeLabels } from "@/components/dashboard/workspace/canvas/constants";
 import { DuplicateServicesDialog } from "@/components/dashboard/workspace/canvas/duplicate-services-dialog";
 import { MoveServicesDialog } from "@/components/dashboard/workspace/canvas/move-services-dialog";
+import {
+	databaseCredentialServiceTypes,
+	deploymentServiceTypes,
+	getActionInput,
+	getDatabaseBackupType,
+	getDeleteInput,
+	getServiceSettingsHref,
+	hasDatabaseCredentials,
+	serviceKindFilterOptions,
+	serviceSortOptions,
+	serviceStatusFilterOptions,
+} from "@/components/dashboard/workspace/canvas/service-classification";
+import {
+	DatabaseCredentials,
+	ServiceTerminalButton,
+} from "@/components/dashboard/workspace/canvas/service-detail-helpers";
 import {
 	formatLastDeployment,
 	type ServiceFlowNode,
@@ -105,6 +112,15 @@ import {
 	serviceStatusMeta,
 	WorkspaceServiceIcon,
 } from "@/components/dashboard/workspace/canvas/service-node";
+import type {
+	CreateDatabaseType,
+	CreateServiceDialog,
+	SelectedServiceRef,
+	ServiceKindFilter,
+	ServiceSort,
+	ServiceStatusFilter,
+	WorkspaceConnection,
+} from "@/components/dashboard/workspace/canvas/types";
 import { WorkspaceVariables } from "@/components/dashboard/workspace/manage/workspace-variables";
 import {
 	LibsqlIcon,
@@ -122,10 +138,7 @@ import { Select } from "@/components/shared/select";
 import { ErrorState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
 import { parseEnvironmentVariables } from "@/shared/env-string";
-import {
-	workspaceEnvironmentPath,
-	workspaceServicePath,
-} from "@/shared/routes";
+import { workspaceEnvironmentPath } from "@/shared/routes";
 import { cn } from "@/shared/utils";
 import {
 	canWorkspaceServiceExposeVariables,
@@ -137,295 +150,12 @@ import {
 	resolveWorkspaceConnectionGroups,
 	type WorkspaceNode,
 	type WorkspaceService,
-	type WorkspaceServiceType,
 } from "@/shared/workspace-graph";
 
 const logger = createClientLogger("workspace-canvas");
 
 // Stable reference so React Flow doesn't re-register node types each render.
 const CANVAS_NODE_TYPES = { service: ServiceNode };
-
-type WorkspaceData = RouterOutputs["workspaceGraph"]["byEnvironment"];
-type WorkspaceConnection = WorkspaceData["connections"][number];
-
-type SelectedServiceRef = {
-	serviceId: string;
-	serviceType: WorkspaceServiceType;
-};
-
-type CreateServiceDialog =
-	| "application"
-	| "database"
-	| "compose"
-	| "template"
-	| "import";
-
-type CreateDatabaseType =
-	| "libsql"
-	| "mariadb"
-	| "mongo"
-	| "mysql"
-	| "postgres"
-	| "redis";
-
-type ServiceKindFilter =
-	| "all"
-	| "runtimes"
-	| "databases"
-	| WorkspaceServiceType;
-type ServiceStatusFilter = "all" | NonNullable<WorkspaceService["status"]>;
-type ServiceSort =
-	| "manual"
-	| "name-asc"
-	| "type-asc"
-	| "status-asc"
-	| "last-deploy-desc";
-
-const deploymentServiceTypes = new Set<WorkspaceServiceType>([
-	"application",
-	"compose",
-]);
-
-const databaseBackupServiceTypes = new Set<WorkspaceServiceType>([
-	"libsql",
-	"mariadb",
-	"mongo",
-	"mysql",
-	"postgres",
-]);
-
-const databaseCredentialServiceTypes = new Set<WorkspaceServiceType>([
-	"libsql",
-	"mariadb",
-	"mongo",
-	"mysql",
-	"postgres",
-	"redis",
-]);
-
-const serviceKindFilterOptions: { value: ServiceKindFilter; label: string }[] =
-	[
-		{ value: "all", label: "All types" },
-		{ value: "runtimes", label: "Apps & stacks" },
-		{ value: "databases", label: "Databases" },
-		{ value: "application", label: "Applications" },
-		{ value: "compose", label: "Compose" },
-		{ value: "postgres", label: "PostgreSQL" },
-		{ value: "mysql", label: "MySQL" },
-		{ value: "mariadb", label: "MariaDB" },
-		{ value: "mongo", label: "MongoDB" },
-		{ value: "redis", label: "Redis" },
-		{ value: "libsql", label: "LibSQL" },
-	];
-
-const serviceStatusFilterOptions: {
-	value: ServiceStatusFilter;
-	label: string;
-}[] = [
-	{ value: "all", label: "All statuses" },
-	{ value: "running", label: "Running" },
-	{ value: "error", label: "Errors" },
-	{ value: "done", label: "Done" },
-	{ value: "idle", label: "Idle" },
-];
-
-const serviceSortOptions: { value: ServiceSort; label: string }[] = [
-	{ value: "manual", label: "Manual layout" },
-	{ value: "name-asc", label: "Name" },
-	{ value: "type-asc", label: "Type" },
-	{ value: "status-asc", label: "Status" },
-	{ value: "last-deploy-desc", label: "Recent deployment" },
-];
-
-const ConnectionVariablePreview = ({
-	connectionId,
-	enabled,
-}: {
-	connectionId: string;
-	enabled: boolean;
-}) => {
-	const variablesQuery = api.workspaceGraph.connectionVariables.useQuery(
-		{ connectionId },
-		{ enabled },
-	);
-
-	if (!enabled) return null;
-
-	if (variablesQuery.isPending) {
-		return <p className="text-xs text-kumo-subtle">Loading variable keys...</p>;
-	}
-
-	if (!variablesQuery.data?.length) {
-		return (
-			<p className="text-xs text-kumo-subtle">
-				No generated variables for this source.
-			</p>
-		);
-	}
-
-	return (
-		<div className="flex flex-wrap gap-1.5">
-			{variablesQuery.data.map((variable) => (
-				<Badge key={variable.key}>{variable.key}</Badge>
-			))}
-		</div>
-	);
-};
-
-const WorkspaceServiceFlowNode = ({
-	service,
-	serviceType,
-	fallbackLabel,
-}: {
-	service?: WorkspaceService;
-	serviceType: WorkspaceServiceType;
-	fallbackLabel: string;
-}) => (
-	<div className="min-w-0 rounded-md border bg-kumo-canvas px-3 py-2">
-		<div className="flex min-w-0 items-center gap-2">
-			<div className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
-				{service ? (
-					<WorkspaceServiceIcon service={service} />
-				) : (
-					<Network className="size-4 text-kumo-subtle" />
-				)}
-			</div>
-			<div className="min-w-0">
-				<p className="truncate text-sm font-medium">
-					{service?.name ?? fallbackLabel}
-				</p>
-				<p className="truncate text-xs text-kumo-subtle">
-					{serviceTypeLabels[service?.type ?? serviceType] ?? serviceType}
-				</p>
-			</div>
-		</div>
-	</div>
-);
-
-const ConnectionVariableFlowCard = ({
-	connection,
-	source,
-	target,
-	variablePreviewEnabled,
-	actions,
-}: {
-	connection: WorkspaceConnection;
-	source?: WorkspaceService;
-	target?: WorkspaceService;
-	variablePreviewEnabled: boolean;
-	actions?: ReactNode;
-}) => (
-	<div className="space-y-3 rounded-md border bg-kumo-canvas/80 p-3">
-		<div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
-			<WorkspaceServiceFlowNode
-				service={source}
-				serviceType={connection.sourceServiceType}
-				fallbackLabel="Unknown source"
-			/>
-			<div className="flex size-8 items-center justify-center rounded-full border bg-kumo-fill/30">
-				<ArrowRight className="size-4 text-kumo-subtle" />
-			</div>
-			<WorkspaceServiceFlowNode
-				service={target}
-				serviceType={connection.targetServiceType}
-				fallbackLabel="Unknown target"
-			/>
-		</div>
-
-		<div className="flex items-start justify-between gap-3">
-			<div className="min-w-0 flex-1 space-y-2">
-				<div className="flex flex-wrap items-center gap-1.5">
-					<Badge>{connection.label || "Private network"}</Badge>
-					<Badge>Generated variables</Badge>
-				</div>
-				<ConnectionVariablePreview
-					connectionId={connection.connectionId}
-					enabled={variablePreviewEnabled}
-				/>
-			</div>
-			{actions ? (
-				<div className="flex shrink-0 items-center gap-1">{actions}</div>
-			) : null}
-		</div>
-	</div>
-);
-
-const getActionInput = (service: WorkspaceService) => {
-	switch (service.type) {
-		case "application":
-			return { applicationId: service.id };
-		case "compose":
-			return { composeId: service.id };
-		default:
-			// all managed database engines resolve to the unified database router
-			return { databaseId: service.id };
-	}
-};
-
-const getDeleteInput = (service: WorkspaceService, deleteVolumes: boolean) => {
-	if (service.type === "compose") {
-		return { composeId: service.id, deleteVolumes };
-	}
-
-	return getActionInput(service);
-};
-
-const getServiceSettingsHref = (
-	workspaceId: string,
-	environmentId: string,
-	service: WorkspaceService,
-) =>
-	workspaceServicePath({
-		workspaceId: workspaceId,
-		environmentId,
-		serviceType: service.type,
-		serviceId: service.id,
-	});
-
-const getDatabaseBackupType = (service: WorkspaceService) =>
-	databaseBackupServiceTypes.has(service.type)
-		? (service.type as "libsql" | "mariadb" | "mongo" | "mysql" | "postgres")
-		: undefined;
-
-const hasDatabaseCredentials = (service: WorkspaceService) =>
-	databaseCredentialServiceTypes.has(service.type);
-
-const DatabaseCredentials = ({ service }: { service: WorkspaceService }) => {
-	if (!databaseCredentialServiceTypes.has(service.type)) return null;
-	return (
-		<div className="space-y-4">
-			<ShowInternalDatabaseCredentials databaseId={service.id} />
-			<ShowExternalDatabaseCredentials databaseId={service.id} />
-		</div>
-	);
-};
-
-const ServiceTerminalButton = ({
-	service,
-	className,
-}: {
-	service: WorkspaceService;
-	className?: string;
-}) => {
-	if (!service.appName) return null;
-
-	return (
-		<ServiceTerminalModal
-			appName={service.appName}
-			runtimeWorkerId={service.runtimeWorkerId || ""}
-			appType={
-				service.type === "compose"
-					? service.composeType || "docker-compose"
-					: undefined
-			}
-		>
-			<Button variant="outline" className={className}>
-				<SquareTerminal className="size-4" />
-				Open terminal
-			</Button>
-		</ServiceTerminalModal>
-	);
-};
 
 export const EnvironmentCanvas = ({
 	workspaceId,
