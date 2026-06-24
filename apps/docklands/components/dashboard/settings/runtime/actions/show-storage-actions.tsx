@@ -1,7 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("storage-actions");

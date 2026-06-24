@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { ChevronDownIcon, PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
@@ -9,6 +8,7 @@ import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { toast } from "@/components/shared/toast";
 import type { findEnvironmentsByWorkspaceId } from "@/server/core/services/environment";
 import {

@@ -1,7 +1,7 @@
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 
 interface Props {
 	containerId: string;

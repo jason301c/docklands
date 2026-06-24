@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import {
 	Form,
 	FormControl,

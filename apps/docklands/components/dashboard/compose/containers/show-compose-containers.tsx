@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Table } from "@cloudflare/kumo/components/table";
 import { Loader2, MoreHorizontal, RefreshCw } from "lucide-react";
@@ -12,6 +11,7 @@ import { ShowContainerMounts } from "@/components/dashboard/container-runtime/mo
 import { ShowContainerNetworks } from "@/components/dashboard/container-runtime/networks/show-container-networks";
 import { DockerTerminalModal } from "@/components/dashboard/container-runtime/terminal/docker-terminal-modal";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { toast } from "@/components/shared/toast";
 
 const DockerLogsId = dynamic(

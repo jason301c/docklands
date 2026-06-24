@@ -1,12 +1,12 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Table } from "@cloudflare/kumo/components/table";
 import copy from "copy-to-clipboard";
 import { format, isPast } from "date-fns";
 import { Mail, MoreHorizontal, Users } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { SectionCard } from "@/components/shared/section-card";
 import { EmptyState, QueryState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";

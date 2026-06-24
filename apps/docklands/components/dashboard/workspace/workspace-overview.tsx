@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { formatDistanceToNow } from "date-fns";
 import {
 	AlertTriangle,
@@ -17,6 +16,7 @@ import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { HandleWorkspace } from "@/components/dashboard/workspace/manage/handle-workspace";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { toast } from "@/components/shared/toast";
 import {
 	workspaceEnvironmentPath,

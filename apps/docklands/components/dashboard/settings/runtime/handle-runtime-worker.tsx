@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
@@ -12,6 +11,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 
 const logger = createClientLogger("runtime-worker");
 

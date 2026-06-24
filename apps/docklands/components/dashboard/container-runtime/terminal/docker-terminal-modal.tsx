@@ -1,8 +1,8 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import dynamic from "next/dynamic";
 import { useState } from "react";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 
 const Terminal = dynamic(
 	() => import("./docker-terminal").then((e) => e.DockerTerminal),

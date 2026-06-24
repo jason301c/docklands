@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Table } from "@cloudflare/kumo/components/table";
 import {
@@ -16,6 +15,7 @@ import {
 import { ChevronDown, Container } from "lucide-react";
 import * as React from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { SectionCard } from "@/components/shared/section-card";
 import { columns } from "./columns";
 

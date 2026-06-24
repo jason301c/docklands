@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Radio } from "@cloudflare/kumo/components/radio";
 import { Select } from "@cloudflare/kumo/components/select";
@@ -21,6 +20,7 @@ import {
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import {
 	Form,
 	FormControl,

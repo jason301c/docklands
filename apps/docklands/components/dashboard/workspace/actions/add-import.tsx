@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Code2, FileInput, Globe2, HardDrive } from "lucide-react";
@@ -10,6 +9,7 @@ import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import {
 	Form,
 	FormControl,

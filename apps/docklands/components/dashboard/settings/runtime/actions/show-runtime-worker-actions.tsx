@@ -1,8 +1,8 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Activity } from "lucide-react";
 import { useState } from "react";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { ShowIngressActions } from "./show-ingress-actions";
 import { ShowStorageActions } from "./show-storage-actions";
 import { ToggleDockerCleanup } from "./toggle-docker-cleanup";

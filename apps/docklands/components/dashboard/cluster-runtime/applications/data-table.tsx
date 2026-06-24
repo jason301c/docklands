@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Table } from "@cloudflare/kumo/components/table";
 import {
@@ -18,6 +17,7 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDown } from "lucide-react";
 import React from "react";
+import { DropdownMenu } from "@/components/shared/dropdown";
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];

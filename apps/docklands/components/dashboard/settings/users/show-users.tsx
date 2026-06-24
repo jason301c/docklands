@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Table } from "@cloudflare/kumo/components/table";
 import { format } from "date-fns";
 import { MoreHorizontal, Users } from "lucide-react";
@@ -8,6 +7,7 @@ import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { SectionCard } from "@/components/shared/section-card";
 import { EmptyState, QueryState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";

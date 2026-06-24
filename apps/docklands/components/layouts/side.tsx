@@ -1,10 +1,10 @@
 "use client";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Collapsible } from "@cloudflare/kumo/components/collapsible";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Sidebar,
 	SidebarContent,
+	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupLabel,
 	SidebarHeader,
@@ -24,6 +24,7 @@ import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
 import { useCurrentUser } from "@/client/hooks/use-current-user";
 import { usePermissions } from "@/client/hooks/use-permissions";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { toast } from "@/components/shared/toast";
 import {
 	createMenuForAuthUser,
@@ -35,6 +36,7 @@ import { cn } from "@/shared/utils";
 import { EditInstance } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
 import { Logo } from "../shared/logo";
+import { ModeToggle } from "../shared/mode-toggle";
 import { RuntimeUpdateButton } from "./runtime-update";
 import { UserNav } from "./user-nav";
 
@@ -48,11 +50,13 @@ function LogoWrapper() {
 
 function SidebarLogo() {
 	const { state } = useSidebar();
-	const { user, isOwnerOrAdmin: canEditInstance } = useCurrentUser();
+	const { isOwnerOrAdmin: canEditInstance } = useCurrentUser();
 	const { isMobile } = useSidebar();
 	const isCollapsed = state === "collapsed" && !isMobile;
 	const { data: activeOrganization, isLoading } =
 		api.organization.active.useQuery();
+	const { data: docklandsVersion } =
+		api.settings.getDocklandsVersion.useQuery();
 
 	const { data: invitations, refetch: refetchInvitations } =
 		api.user.getInvitations.useQuery();
@@ -66,45 +70,51 @@ function SidebarLogo() {
 			) : (
 				<SidebarMenu
 					className={cn(
-						"flex gap-2",
-						isCollapsed ? "flex-col" : "flex-row justify-between items-center",
+						"flex gap-1",
+						isCollapsed
+							? "flex-col items-center"
+							: "flex-row items-center justify-between",
 					)}
 				>
 					{/* Instance identity — single-tenant, so no organization switcher */}
-					<SidebarMenuItem className={"w-full"}>
+					<SidebarMenuItem className={cn("min-w-0", !isCollapsed && "flex-1")}>
 						<div
 							className={cn(
-								"flex h-auto min-h-14 w-full items-center gap-3 rounded-md px-2 py-2",
-								isCollapsed && "min-h-10 justify-center px-1",
+								"flex h-auto items-center gap-2.5 px-1",
+								isCollapsed && "min-h-10 justify-center px-0",
 							)}
 						>
-							<div className="flex size-8 shrink-0 items-center justify-center rounded-lg border">
-								<Logo
-									className="size-5 transition-all"
-									logoUrl={activeOrganization?.logo || undefined}
-								/>
-							</div>
+							<Logo
+								className="size-7 shrink-0 transition-all"
+								logoUrl={activeOrganization?.logo || undefined}
+							/>
 							<div
 								className={cn(
-									"grid min-w-0 flex-1 text-left text-sm leading-tight",
+									"grid min-w-0 flex-1 text-left leading-tight",
 									isCollapsed && "hidden",
 								)}
 							>
-								<span className="truncate font-display font-semibold">
+								<span className="truncate font-display text-sm font-semibold">
 									{activeOrganization?.name ?? "Docklands"}
 								</span>
-								{user?.role && (
-									<span className="truncate text-xs text-kumo-subtle capitalize">
-										{user.role}
+								{docklandsVersion && (
+									<span className="truncate text-xs text-kumo-subtle">
+										{docklandsVersion}
 									</span>
 								)}
 							</div>
-							{!isCollapsed && canEditInstance && <EditInstance />}
 						</div>
 					</SidebarMenuItem>
 
-					{/* Notification Bell */}
-					<SidebarMenuItem className={cn(isCollapsed && "mt-2")}>
+					{/* Instance actions — settings + notifications */}
+					<SidebarMenuItem
+						className={cn(
+							"flex shrink-0 items-center gap-0.5",
+							isCollapsed && "mt-2 flex-col",
+						)}
+					>
+						<ModeToggle variant="ghost" />
+						{canEditInstance && <EditInstance />}
 						<DropdownMenu>
 							<DropdownMenu.Trigger
 								render={
@@ -112,14 +122,11 @@ function SidebarLogo() {
 										variant="ghost"
 										shape="square"
 										aria-label="Open invitations"
-										className={cn(
-											"relative",
-											isCollapsed && "h-8 w-8 p-1.5 mx-auto",
-										)}
+										className="relative"
 									>
 										<Bell className="size-4" />
 										{invitations && invitations.length > 0 && (
-											<span className="absolute -top-0 -right-0 flex size-4 items-center justify-center rounded-full bg-kumo-info text-xs text-white">
+											<span className="absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-kumo-info text-xs text-white">
 												{invitations.length}
 											</span>
 										)}
@@ -304,8 +311,6 @@ export default function Page({ children }: Props) {
 	const pathname = usePathname() ?? "";
 	const { user: auth } = useCurrentUser();
 	const { permissions } = usePermissions();
-	const { data: docklandsVersion } =
-		api.settings.getDocklandsVersion.useQuery();
 
 	const {
 		home: filteredHome,
@@ -332,23 +337,9 @@ export default function Page({ children }: Props) {
 		>
 			<MobileCloser />
 			<Sidebar className="h-svh min-h-svh" contentClassName="h-svh min-h-svh">
-				<SidebarHeader className="h-auto flex-col items-stretch gap-2 overflow-visible border-b bg-kumo-canvas p-2 pb-3">
+				<SidebarHeader className="h-auto flex-col items-stretch gap-2 overflow-visible border-b bg-kumo-canvas p-2">
 					<LogoWrapper />
-					<SidebarMenu className="flex flex-col gap-2">
-						{permissions?.organization.update && (
-							<SidebarMenuItem>
-								<RuntimeUpdateButton />
-							</SidebarMenuItem>
-						)}
-						<SidebarMenuItem>
-							<UserNav />
-						</SidebarMenuItem>
-						{docklandsVersion && (
-							<div className="px-3 text-xs text-kumo-subtle text-center">
-								Version {docklandsVersion}
-							</div>
-						)}
-					</SidebarMenu>
+					{permissions?.organization.update && <RuntimeUpdateButton />}
 				</SidebarHeader>
 				<SidebarContent>
 					<SidebarGroup>
@@ -380,6 +371,13 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 				</SidebarContent>
+				<SidebarFooter className="h-auto flex-col items-stretch overflow-visible border-t bg-kumo-canvas p-2">
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<UserNav />
+						</SidebarMenuItem>
+					</SidebarMenu>
+				</SidebarFooter>
 			</Sidebar>
 			<main className="flex min-h-svh min-w-0 flex-1 flex-col bg-kumo-canvas">
 				<div className="flex w-full flex-1 flex-col px-4 pb-8 pt-4">

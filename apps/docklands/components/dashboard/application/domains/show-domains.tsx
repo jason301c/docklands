@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Table } from "@cloudflare/kumo/components/table";
@@ -37,6 +36,7 @@ import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { toast } from "@/components/shared/toast";
 import { createColumns } from "./columns";
 import { DnsHelperModal } from "./dns-helper-modal";

@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { api } from "@/client/api/trpc";
 import { useHealthCheckAfterMutation } from "@/client/hooks/use-health-check-after-mutation";
 import { ServiceLogsModal } from "@/components/dashboard/container-runtime/logs/service-logs-modal";
@@ -7,6 +6,7 @@ import { EditIngressEnv } from "@/components/dashboard/settings/ingress-runtime/
 import { ManageIngressPorts } from "@/components/dashboard/settings/ingress-runtime/manage-ingress-ports";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { toast } from "@/components/shared/toast";
 
 interface Props {

@@ -1,6 +1,6 @@
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { useState } from "react";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { GPUSupport } from "./gpu-support";
 
 export const GPUSupportModal = () => {

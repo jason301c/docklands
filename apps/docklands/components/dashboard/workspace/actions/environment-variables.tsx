@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Terminal } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -11,6 +10,7 @@ import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import {
 	Form,
 	FormControl,

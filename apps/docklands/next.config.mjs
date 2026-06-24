@@ -18,6 +18,8 @@ const buildCpus = configuredBuildCpus > 0 ? configuredBuildCpus : 4;
 /** @type {import("next").NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
+	// Hide the floating Next.js dev indicator badge.
+	devIndicators: false,
 	allowedDevOrigins: ["0.0.0.0", "127.0.0.1"],
 	// Pin the Turbopack workspace root. Without this, Next infers the root from
 	// the nearest lockfile and can wrongly pick a parent/home directory (e.g. a

@@ -1,8 +1,8 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { ShowContainerConfig } from "../config/show-container-config";
 import { ShowDockerModalLogs } from "../logs/show-docker-modal-logs";
 import { ShowContainerMounts } from "../mounts/show-container-mounts";

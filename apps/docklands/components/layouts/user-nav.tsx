@@ -1,4 +1,3 @@
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { SidebarMenuButton } from "@cloudflare/kumo/components/sidebar";
 import { ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -10,7 +9,7 @@ import {
 	AvatarFallback,
 	AvatarImage,
 } from "@/components/shared/avatar";
-import { ModeToggle } from "@/components/shared/mode-toggle";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { navShortcutsForUrls } from "@/shared/dashboard-nav";
 import { getFallbackAvatarInitials } from "@/shared/utils";
 
@@ -46,9 +45,9 @@ export const UserNav = () => {
 				render={
 					<SidebarMenuButton
 						size="base"
-						className="h-auto min-h-14 w-full gap-3 px-2 py-2 data-[state=open]:bg-kumo-fill-hover data-[state=open]:text-kumo-default group-data-[collapsible=icon]:min-h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-1"
+						className="h-auto min-h-9 w-full gap-2.5 px-1 py-1 data-[state=open]:bg-kumo-fill-hover data-[state=open]:text-kumo-default group-data-[collapsible=icon]:min-h-10 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-1"
 					>
-						<Avatar className="size-8 shrink-0 rounded-lg border">
+						<Avatar className="size-7 shrink-0 rounded-lg border">
 							<AvatarImage
 								className="object-cover"
 								src={data?.user?.image || undefined}
@@ -74,23 +73,19 @@ export const UserNav = () => {
 				align="end"
 				sideOffset={4}
 			>
-				<div className="flex items-center justify-between px-2 py-1.5">
-					<div className="min-w-0">
-						<DropdownMenu.Group>
-							<DropdownMenu.Label>My Account</DropdownMenu.Label>
-						</DropdownMenu.Group>
-						<span className="text-xs font-normal text-kumo-subtle">
-							{data?.user?.email}
-						</span>
-					</div>
-					<ModeToggle />
+				<div className="px-2 py-1.5">
+					<DropdownMenu.Group>
+						<DropdownMenu.Label>My Account</DropdownMenu.Label>
+					</DropdownMenu.Group>
+					<span className="text-xs font-normal text-kumo-subtle">
+						{data?.user?.email}
+					</span>
 				</div>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Group>
 					{shortcuts.map((item) => (
 						<DropdownMenu.Item
 							key={item.url}
-							className="cursor-pointer"
 							onClick={() => {
 								router.push(item.url);
 							}}
@@ -101,7 +96,7 @@ export const UserNav = () => {
 				</DropdownMenu.Group>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Item
-					className="cursor-pointer"
+					variant="danger"
 					onClick={async () => {
 						await authClient.signOut().then(() => {
 							router.push("/");

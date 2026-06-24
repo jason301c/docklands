@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { PlusIcon, SquarePen } from "lucide-react";
@@ -11,6 +10,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import {
 	Form,
 	FormControl,

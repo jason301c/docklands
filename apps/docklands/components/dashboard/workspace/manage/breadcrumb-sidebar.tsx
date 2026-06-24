@@ -1,7 +1,7 @@
 import { Breadcrumbs } from "@cloudflare/kumo/components/breadcrumbs";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { ChevronDown } from "lucide-react";
 import { Fragment } from "react";
+import { DropdownMenu } from "@/components/shared/dropdown";
 
 interface BreadcrumbEntry {
 	name: string;

@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
@@ -32,6 +31,7 @@ import {
 	CommandItem,
 } from "@/components/shared/command";
 import { Dialog } from "@/components/shared/dialog";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
