@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
@@ -12,6 +11,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 
 const logger = createClientLogger("runtime-worker");
 
@@ -165,7 +165,7 @@ export const HandleRuntimeWorker = ({
 				/>
 			)}
 			<Dialog className="sm:max-w-3xl ">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						{runtimeWorkerId ? "Edit" : "Create"} Runtime Worker
 					</Dialog.Title>
@@ -173,7 +173,7 @@ export const HandleRuntimeWorker = ({
 						{runtimeWorkerId ? "Edit" : "Create"} a worker to run services on a
 						remote machine.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<div>
 					<p className="text-kumo-brand text-sm font-medium">
 						Use any VPS or machine that supports SSH and a Docker-compatible
@@ -385,7 +385,7 @@ export const HandleRuntimeWorker = ({
 						/>
 					</form>
 
-					<div>
+					<Dialog.Footer>
 						<Button
 							loading={isPending}
 							form="hook-form-add-runtimeWorker"
@@ -393,7 +393,7 @@ export const HandleRuntimeWorker = ({
 						>
 							{runtimeWorkerId ? "Update" : "Create"}
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

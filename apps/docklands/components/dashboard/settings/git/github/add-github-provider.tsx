@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { format } from "date-fns";
@@ -7,6 +6,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { useUrl } from "@/client/hooks/use-url";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
+import { Dialog } from "@/components/shared/dialog";
 
 export const AddGithubProvider = () => {
 	const [isOpen, setIsOpen] = useState(false);
@@ -62,11 +62,11 @@ export const AddGithubProvider = () => {
 				}
 			/>
 			<Dialog className="sm:max-w-2xl ">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title className="flex items-center gap-2">
 						Github Provider <GithubIcon className="size-5" />
 					</Dialog.Title>
-				</div>
+				</Dialog.Header>
 
 				<div id="hook-form-add-workspace" className="grid w-full gap-1">
 					<div className="p-0">

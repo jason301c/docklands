@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -10,6 +9,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -150,7 +150,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						{certificateId ? "Update" : "Add New"} Certificate
 					</Dialog.Title>
@@ -159,7 +159,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 							? "Modify the certificate details"
 							: "Upload or generate a certificate to secure your application"}
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -268,7 +268,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 						)}
 					</form>
 
-					<div className="flex w-full flex-row !justify-end">
+					<Dialog.Footer className="w-full">
 						<Button
 							loading={isPending}
 							form="hook-form-handle-certificate"
@@ -276,7 +276,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 						>
 							{certificateId ? "Update" : "Create"}
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

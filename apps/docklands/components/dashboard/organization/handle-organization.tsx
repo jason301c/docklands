@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon } from "lucide-react";
@@ -8,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -89,17 +89,14 @@ export function EditInstance() {
 				}
 			/>
 			<Dialog className="sm:max-w-[425px]">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Instance settings</Dialog.Title>
 					<Dialog.Description>
 						Update the name and logo shown for this Docklands instance.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<Form {...form}>
-					<form
-						onSubmit={form.handleSubmit(onSubmit)}
-						className="grid gap-4 py-4"
-					>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
 						<FormField
 							control={form.control}
 							name="name"
@@ -130,11 +127,11 @@ export function EditInstance() {
 								</FormItem>
 							)}
 						/>
-						<div>
+						<Dialog.Footer>
 							<Button type="submit" loading={isPending}>
 								Save changes
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 			</Dialog>

@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Radio } from "@cloudflare/kumo/components/radio";
@@ -21,6 +20,7 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -409,9 +409,9 @@ export const AddDatabase = ({
 				</Dialog.Trigger>
 			)}
 			<Dialog className="md:max-h-[90vh]  sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Create Database</Dialog.Title>
-				</div>
+				</Dialog.Header>
 
 				<Form {...form}>
 					<form
@@ -771,7 +771,7 @@ export const AddDatabase = ({
 						</div>
 					</form>
 
-					<div>
+					<Dialog.Footer>
 						<Button
 							loading={form.formState.isSubmitting}
 							form="hook-form"
@@ -779,7 +779,7 @@ export const AddDatabase = ({
 						>
 							Create
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

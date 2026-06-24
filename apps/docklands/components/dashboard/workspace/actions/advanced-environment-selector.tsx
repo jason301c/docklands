@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
@@ -9,9 +8,13 @@ import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 import type { findEnvironmentsByWorkspaceId } from "@/server/core/services/environment";
-import { workspaceEnvironmentPath, workspaceListPath } from "@/shared/routes";
+import {
+	workspaceEnvironmentPath,
+	workspaceOverviewPath,
+} from "@/shared/routes";
 
 type Environment = Awaited<
 	ReturnType<typeof findEnvironmentsByWorkspaceId>
@@ -136,8 +139,8 @@ export const AdvancedEnvironmentSelector = ({
 						}),
 					);
 				} else {
-					// No other environments, return to the workspace list.
-					router.push(workspaceListPath);
+					// No other environments, return to the workspace overview.
+					router.push(workspaceOverviewPath);
 				}
 			}
 		} catch (error) {
@@ -284,12 +287,12 @@ export const AdvancedEnvironmentSelector = ({
 				onOpenChange={setIsCreateDialogOpen}
 			>
 				<Dialog>
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>Create Environment</Dialog.Title>
 						<Dialog.Description>
 							Create a new environment for this workspace.
 						</Dialog.Description>
-					</div>
+					</Dialog.Header>
 
 					<div className="space-y-4">
 						<div className="space-y-1">
@@ -313,7 +316,7 @@ export const AdvancedEnvironmentSelector = ({
 						</div>
 					</div>
 
-					<div>
+					<Dialog.Footer>
 						<Button
 							variant="outline"
 							onClick={() => {
@@ -330,19 +333,19 @@ export const AdvancedEnvironmentSelector = ({
 						>
 							{createEnvironment.isPending ? "Creating..." : "Create"}
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Dialog>
 			</Dialog.Root>
 
 			{/* Edit Environment Dialog */}
 			<Dialog.Root open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
 				<Dialog>
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>Edit Environment</Dialog.Title>
 						<Dialog.Description>
 							Update the environment details.
 						</Dialog.Description>
-					</div>
+					</Dialog.Header>
 
 					<div className="space-y-4">
 						<div className="space-y-1">
@@ -366,7 +369,7 @@ export const AdvancedEnvironmentSelector = ({
 						</div>
 					</div>
 
-					<div>
+					<Dialog.Footer>
 						<Button
 							variant="outline"
 							onClick={() => {
@@ -384,7 +387,7 @@ export const AdvancedEnvironmentSelector = ({
 						>
 							{updateEnvironment.isPending ? "Updating..." : "Update"}
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Dialog>
 			</Dialog.Root>
 
@@ -394,14 +397,14 @@ export const AdvancedEnvironmentSelector = ({
 				onOpenChange={setIsDeleteDialogOpen}
 			>
 				<Dialog>
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>Delete Environment</Dialog.Title>
 						<Dialog.Description>
 							Are you sure you want to delete the environment "
 							{selectedEnvironment?.name}"? This action cannot be undone and
 							will also delete all services in this environment.
 						</Dialog.Description>
-					</div>
+					</Dialog.Header>
 
 					{haveServices && (
 						<AlertBlock type="warning">
@@ -409,7 +412,7 @@ export const AdvancedEnvironmentSelector = ({
 						</AlertBlock>
 					)}
 
-					<div>
+					<Dialog.Footer>
 						<Button
 							variant="outline"
 							onClick={() => {
@@ -430,7 +433,7 @@ export const AdvancedEnvironmentSelector = ({
 						>
 							{deleteEnvironment.isPending ? "Deleting..." : "Delete"}
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Dialog>
 			</Dialog.Root>
 		</>

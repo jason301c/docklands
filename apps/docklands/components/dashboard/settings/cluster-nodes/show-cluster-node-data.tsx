@@ -1,6 +1,6 @@
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 
 interface Props {
 	data: unknown;
@@ -21,12 +21,12 @@ export const ShowClusterNodeData = ({ data }: Props) => {
 				}
 			/>
 			<Dialog className={"sm:max-w-5xl"}>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Node Config</Dialog.Title>
 					<Dialog.Description>
 						See in detail the metadata of this node
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<div className="text-wrap rounded-lg border p-4 text-sm sm:max-w-[59rem] bg-kumo-base">
 					<code>
 						<pre className="whitespace-pre-wrap break-words">

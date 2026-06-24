@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
@@ -10,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -132,13 +132,13 @@ export const AddApiKey = () => {
 			<Dialog.Root open={open} onOpenChange={setOpen}>
 				<Dialog.Trigger render={<Button>Generate New Key</Button>} />
 				<Dialog className="sm:max-w-xl max-h-[90vh]">
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>Generate API Key</Dialog.Title>
 						<Dialog.Description>
 							Create a new API key for accessing the API. You can set an
 							expiration date and a custom prefix for better organization.
 						</Dialog.Description>
-					</div>
+					</Dialog.Header>
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 							<FormField
@@ -389,7 +389,7 @@ export const AddApiKey = () => {
 								/>
 							</div>
 
-							<div className="flex justify-end gap-3 pt-4">
+							<Dialog.Footer>
 								<Button
 									type="button"
 									variant="outline"
@@ -398,7 +398,7 @@ export const AddApiKey = () => {
 									Cancel
 								</Button>
 								<Button type="submit">Generate</Button>
-							</div>
+							</Dialog.Footer>
 						</form>
 					</Form>
 				</Dialog>
@@ -406,36 +406,34 @@ export const AddApiKey = () => {
 
 			<Dialog.Root open={showSuccessModal} onOpenChange={setShowSuccessModal}>
 				<Dialog className="sm:max-w-xl">
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>API Key Generated Successfully</Dialog.Title>
 						<Dialog.Description>
 							Please copy your API key now. You won't be able to see it again!
 						</Dialog.Description>
-					</div>
-					<div className="mt-4 space-y-4">
-						<CodeEditor
-							className="font-mono text-sm break-all"
-							language="properties"
-							value={newApiKey}
-							readOnly
-						/>
-						<div className="flex justify-end gap-3">
-							<Button
-								onClick={() => {
-									copy(newApiKey);
-									toast.success("API key copied to clipboard");
-								}}
-							>
-								Copy to Clipboard
-							</Button>
-							<Button
-								variant="outline"
-								onClick={() => setShowSuccessModal(false)}
-							>
-								Close
-							</Button>
-						</div>
-					</div>
+					</Dialog.Header>
+					<CodeEditor
+						className="font-mono text-sm break-all"
+						language="properties"
+						value={newApiKey}
+						readOnly
+					/>
+					<Dialog.Footer>
+						<Button
+							onClick={() => {
+								copy(newApiKey);
+								toast.success("API key copied to clipboard");
+							}}
+						>
+							Copy to Clipboard
+						</Button>
+						<Button
+							variant="outline"
+							onClick={() => setShowSuccessModal(false)}
+						>
+							Close
+						</Button>
+					</Dialog.Footer>
 				</Dialog>
 			</Dialog.Root>
 		</>

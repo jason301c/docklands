@@ -1,10 +1,10 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import DOMPurify from "dompurify";
 import { GlobeIcon, Pencil, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import { Dropzone } from "@/components/shared/dropzone";
 import { toast } from "@/components/shared/toast";
 import { type BundledIcon, bundledIcons } from "@/shared/bundled-icons";
@@ -180,7 +180,7 @@ export const ShowIconSettings = ({
 				}
 			/>
 			<Dialog className="max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title className="flex items-center justify-between">
 						Change Icon
 						{icon && (
@@ -195,7 +195,7 @@ export const ShowIconSettings = ({
 							</Button>
 						)}
 					</Dialog.Title>
-				</div>
+				</Dialog.Header>
 
 				<div className="space-y-4">
 					<div className="relative">

@@ -1,8 +1,8 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Ban } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("deployments");
@@ -29,15 +29,15 @@ export const CancelQueues = ({ id, type }: Props) => {
 				}
 			/>
 			<Dialog>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						Are you sure you want to cancel queued builds?
 					</Dialog.Title>
 					<Dialog.Description>
 						This will cancel all queued builds for this service.
 					</Dialog.Description>
-				</div>
-				<div>
+				</Dialog.Header>
+				<Dialog.Footer>
 					<Dialog.Close>Cancel</Dialog.Close>
 					<Dialog.Close
 						onClick={async () => {
@@ -56,7 +56,7 @@ export const CancelQueues = ({ id, type }: Props) => {
 					>
 						Confirm
 					</Dialog.Close>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

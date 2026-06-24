@@ -1,7 +1,7 @@
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { RefreshCcw } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("deployments");
@@ -22,14 +22,14 @@ export const RefreshToken = ({ id, type }: Props) => {
 				<RefreshCcw className="h-4 w-4 cursor-pointer text-kumo-subtle" />
 			</Dialog.Trigger>
 			<Dialog>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Are you absolutely sure?</Dialog.Title>
 					<Dialog.Description>
 						This action cannot be undone. This will change the refresh token and
 						other tokens will be invalidated.
 					</Dialog.Description>
-				</div>
-				<div>
+				</Dialog.Header>
+				<Dialog.Footer>
 					<Dialog.Close>Cancel</Dialog.Close>
 					<Dialog.Close
 						onClick={async () => {
@@ -57,7 +57,7 @@ export const RefreshToken = ({ id, type }: Props) => {
 					>
 						Confirm
 					</Dialog.Close>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

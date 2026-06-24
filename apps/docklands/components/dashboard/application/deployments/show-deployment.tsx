@@ -1,11 +1,11 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import copy from "copy-to-clipboard";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { TerminalLine } from "@/components/shared/logs/terminal-line";
 import { type LogLine, parseLogs } from "@/components/shared/logs/utils";
 import { toast } from "@/components/shared/toast";

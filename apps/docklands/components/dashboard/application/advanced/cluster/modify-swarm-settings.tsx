@@ -1,9 +1,9 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Settings } from "lucide-react";
 import { useState } from "react";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import { cn } from "@/shared/utils";
 import {
 	EndpointSpecForm,

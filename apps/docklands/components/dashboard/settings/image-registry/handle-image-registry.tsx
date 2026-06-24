@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -9,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -219,14 +219,14 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						{registryId ? "Update" : "Add"} Image Registry
 					</Dialog.Title>
 					<Dialog.Description>
 						Configure credentials for a container image registry.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{(isError || testRegistryIsError || testRegistryByIdIsError) && (
 					<div className="flex flex-row gap-4 rounded-lg bg-kumo-danger-tint p-2">
 						<AlertTriangle className="text-kumo-danger" />
@@ -427,7 +427,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 						</div>
 
 						<div className="flex flex-col w-full sm:justify-between gap-4 flex-wrap sm:flex-col col-span-2">
-							<div className="flex flex-row gap-2 justify-between">
+							<Dialog.Footer className="justify-between">
 								<Button
 									type="button"
 									variant={"secondary"}
@@ -510,7 +510,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 								<Button loading={form.formState.isSubmitting} type="submit">
 									{registryId ? "Update" : "Create"}
 								</Button>
-							</div>
+							</Dialog.Footer>
 						</div>
 					</form>
 				</Form>

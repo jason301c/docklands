@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
@@ -12,6 +11,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { useHealthCheckAfterMutation } from "@/client/hooks/use-health-check-after-mutation";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -111,7 +111,7 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 			</button>
 			<Dialog.Root open={open} onOpenChange={setOpen}>
 				<Dialog className="sm:max-w-3xl">
-					<div>
+					<Dialog.Header>
 						<Dialog.Title className="flex items-center gap-2 text-xl">
 							Additional Port Mappings
 						</Dialog.Title>
@@ -134,7 +134,7 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 								</Button>
 							</div>
 						</Dialog.Description>
-					</div>
+					</Dialog.Header>
 
 					<Form {...form}>
 						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -300,7 +300,7 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 									which may cause downtime in your applications.
 								</AlertBlock>
 							</div>
-							<div>
+							<Dialog.Footer>
 								<Button
 									type="submit"
 									variant="primary"
@@ -309,7 +309,7 @@ export const ManageIngressPorts = ({ children, runtimeWorkerId }: Props) => {
 								>
 									Save
 								</Button>
-							</div>
+							</Dialog.Footer>
 						</form>
 					</Form>
 				</Dialog>

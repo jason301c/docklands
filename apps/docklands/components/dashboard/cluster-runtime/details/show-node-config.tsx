@@ -1,8 +1,8 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Settings } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 
 interface Props {
 	nodeId: string;
@@ -25,12 +25,12 @@ export const ShowNodeConfig = ({ nodeId, runtimeWorkerId }: Props) => {
 				}
 			/>
 			<Dialog className={"sm:max-w-5xl"}>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Node Config</Dialog.Title>
 					<Dialog.Description>
 						See in detail the metadata of this node
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<div className="text-wrap rounded-lg border p-4 text-sm sm:max-w-[59rem] bg-kumo-base max-h-[70vh] overflow-auto ">
 					<code>
 						<pre className="whitespace-pre-wrap break-words items-center justify-center">

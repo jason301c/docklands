@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -11,6 +10,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -199,13 +199,13 @@ export const IsolatedDeploymentTab = ({ composeId }: Props) => {
 									onOpenChange={setIsOpenPreview}
 								>
 									<Dialog className="sm:max-w-6xl max-h-[80vh]">
-										<div>
+										<Dialog.Header>
 											<Dialog.Title>Isolated Runtime Preview</Dialog.Title>
 											<Dialog.Description>
 												Preview of the compose file with isolated runtime
 												configuration
 											</Dialog.Description>
-										</div>
+										</Dialog.Header>
 										<div className="flex flex-col gap-4 overflow-auto">
 											{isPreviewLoading ? (
 												<div className="flex flex-col items-center justify-center py-12 gap-4">

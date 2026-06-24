@@ -1,8 +1,8 @@
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import copy from "copy-to-clipboard";
 import { CopyIcon, Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 interface Props {
@@ -16,12 +16,12 @@ export const AddClusterWorker = ({ runtimeWorkerId }: Props) => {
 
 	return (
 		<div className="sm:max-w-4xl   flex flex-col gap-4 px-0">
-			<div>
+			<Dialog.Header>
 				<Dialog.Title>Add Cluster Worker</Dialog.Title>
 				<Dialog.Description>
 					Add a worker machine to the cluster runtime.
 				</Dialog.Description>
-			</div>
+			</Dialog.Header>
 			{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 			{isPending ? (
 				<Loader2 className="w-full animate-spin text-kumo-subtle" />

@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -10,6 +9,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -230,14 +230,14 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						{destinationId ? "Update" : "Add"} Storage Provider
 					</Dialog.Title>
 					<Dialog.Description>
 						Configure the object storage provider Docklands uses for backups.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{(isError || isErrorConnection) && (
 					<AlertBlock type="error" className="w-full">
 						{connectionError?.message || error?.message}
@@ -421,7 +421,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 						</div>
 					</form>
 
-					<div className="flex-row flex w-full  !justify-between gap-4">
+					<Dialog.Footer className="w-full justify-between">
 						<Button
 							loading={isPendingConnection}
 							type="button"
@@ -440,7 +440,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 						>
 							{destinationId ? "Update" : "Create"}
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

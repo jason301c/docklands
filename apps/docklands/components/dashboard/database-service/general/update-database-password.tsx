@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBox } from "lucide-react";
@@ -7,6 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -93,12 +93,12 @@ export const UpdateDatabasePassword = ({
 				}
 			/>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Update {label}</Dialog.Title>
 					<Dialog.Description>
 						Enter the new {label.toLowerCase()} for the database
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{error && <AlertBlock type="error">{error}</AlertBlock>}
 				<AlertBlock type="warning" className="my-4">
 					This will change the {label.toLowerCase()} both in the running
@@ -144,11 +144,11 @@ export const UpdateDatabasePassword = ({
 								</FormItem>
 							)}
 						/>
-						<div>
+						<Dialog.Footer>
 							<Button loading={isPending} type="submit">
 								Update
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 			</Dialog>

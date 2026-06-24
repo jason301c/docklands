@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Table } from "@cloudflare/kumo/components/table";
@@ -28,6 +27,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { columns, getStatusColor } from "./columns";

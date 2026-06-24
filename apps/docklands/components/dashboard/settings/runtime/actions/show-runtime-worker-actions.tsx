@@ -1,8 +1,8 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Activity } from "lucide-react";
 import { useState } from "react";
+import { Dialog } from "@/components/shared/dialog";
 import { ShowIngressActions } from "./show-ingress-actions";
 import { ShowStorageActions } from "./show-storage-actions";
 import { ToggleDockerCleanup } from "./toggle-docker-cleanup";
@@ -44,12 +44,12 @@ export const ShowRuntimeWorkerActions = ({
 				</DropdownMenu.Item>
 			)}
 			<Dialog className="sm:max-w-xl">
-				<div className="flex flex-col gap-1">
+				<Dialog.Header>
 					<Dialog.Title className="text-xl">Ingress runtime</Dialog.Title>
 					<Dialog.Description>
 						Reload the edge proxy and clean runtime state.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				<div className="grid grid-cols-2 w-full gap-4">
 					<ShowIngressActions runtimeWorkerId={runtimeWorkerId} />

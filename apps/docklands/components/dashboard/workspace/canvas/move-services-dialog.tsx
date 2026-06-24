@@ -1,9 +1,9 @@
 "use client";
 
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Select } from "@cloudflare/kumo/components/select";
 import type { RouterOutputs } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import type { WorkspaceService } from "@/shared/workspace-graph";
 
 type Workspace = RouterOutputs["workspaces"]["all"][number];
@@ -39,14 +39,14 @@ export const MoveServicesDialog = ({
 	return (
 		<Dialog.Root open={open} onOpenChange={onOpenChange}>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Move Services</Dialog.Title>
 					<Dialog.Description>
 						Move {selectedBulkServices.length} selected service
 						{selectedBulkServices.length === 1 ? "" : "s"} to another
 						environment.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				<div className="space-y-4">
 					<div className="space-y-2">
@@ -99,7 +99,7 @@ export const MoveServicesDialog = ({
 					</div>
 				</div>
 
-				<div className="flex justify-end gap-2">
+				<Dialog.Footer>
 					<Button variant="outline" onClick={resetMoveDialog}>
 						Cancel
 					</Button>
@@ -114,7 +114,7 @@ export const MoveServicesDialog = ({
 					>
 						Move services
 					</Button>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

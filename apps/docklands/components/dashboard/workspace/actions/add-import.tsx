@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -10,6 +9,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -177,12 +177,12 @@ export const AddImport = ({
 					</Dialog.Trigger>
 				)}
 				<Dialog className="sm:max-w-xl">
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>Import Compose</Dialog.Title>
 						<Dialog.Description>
 							Paste a base64-encoded compose export to preview and import it
 						</Dialog.Description>
-					</div>
+					</Dialog.Header>
 
 					<Form {...form}>
 						<form
@@ -259,7 +259,7 @@ export const AddImport = ({
 								)}
 							/>
 
-							<div className="flex justify-end">
+							<Dialog.Footer>
 								<Button
 									type="submit"
 									variant="outline"
@@ -267,7 +267,7 @@ export const AddImport = ({
 								>
 									Load
 								</Button>
-							</div>
+							</Dialog.Footer>
 						</form>
 					</Form>
 				</Dialog>
@@ -279,7 +279,7 @@ export const AddImport = ({
 				onOpenChange={(open) => !open && handleCancelPreview()}
 			>
 				<Dialog className="max-w-[60vw]">
-					<div>
+					<Dialog.Header>
 						<Dialog.Title className="text-2xl font-bold">
 							Template Information
 						</Dialog.Title>
@@ -290,7 +290,7 @@ export const AddImport = ({
 								mounts, and domains from this service.
 							</AlertBlock>
 						</Dialog.Description>
-					</div>
+					</Dialog.Header>
 
 					<div className="flex flex-col gap-6">
 						<div className="space-y-4">
@@ -389,26 +389,26 @@ export const AddImport = ({
 							)}
 					</div>
 
-					<div className="flex justify-end gap-2 pt-4">
+					<Dialog.Footer>
 						<Button variant="outline" onClick={handleCancelPreview}>
 							Cancel
 						</Button>
 						<Button loading={isImporting} onClick={handleImport}>
 							Import
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Dialog>
 			</Dialog.Root>
 
 			{/* Mount content modal */}
 			<Dialog.Root open={mountOpen} onOpenChange={setMountOpen}>
 				<Dialog className="max-w-[50vw]">
-					<div>
+					<Dialog.Header>
 						<Dialog.Title className="text-xl font-bold">
 							{selectedMount?.filePath}
 						</Dialog.Title>
 						<Dialog.Description>Mount File Content</Dialog.Description>
-					</div>
+					</Dialog.Header>
 					<ScrollArea className="h-[45vh] pr-4">
 						<CodeEditor
 							language="yaml"
@@ -417,9 +417,9 @@ export const AddImport = ({
 							readOnly
 						/>
 					</ScrollArea>
-					<div className="flex justify-end gap-2 pt-4">
+					<Dialog.Footer>
 						<Button onClick={() => setMountOpen(false)}>Close</Button>
-					</div>
+					</Dialog.Footer>
 				</Dialog>
 			</Dialog.Root>
 		</>

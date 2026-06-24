@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Radio } from "@cloudflare/kumo/components/radio";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -12,6 +11,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -155,9 +155,9 @@ export const AddVolumes = ({
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
 			<Dialog.Trigger className="" render={<Button>{children}</Button>} />
 			<Dialog className="sm:max-w-3xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Volumes / Mounts</Dialog.Title>
-				</div>
+				</Dialog.Header>
 				{/* {isError && (
         <div className="flex items-center flex-row gap-4 rounded-lg bg-red-50 p-2 dark:bg-red-950">
           <AlertTriangle className="text-red-600 dark:text-red-400" />
@@ -336,7 +336,7 @@ PORT=3000
 						</div>
 					</form>
 
-					<div>
+					<Dialog.Footer>
 						<Button
 							loading={form.formState.isSubmitting}
 							form="hook-form-volume"
@@ -344,7 +344,7 @@ PORT=3000
 						>
 							Create
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

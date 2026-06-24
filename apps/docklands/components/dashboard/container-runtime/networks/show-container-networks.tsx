@@ -1,8 +1,8 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Table } from "@cloudflare/kumo/components/table";
 import { api } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 
 interface Props {
 	containerId: string;

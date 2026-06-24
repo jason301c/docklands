@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import {
 	AlertTriangle,
 	CheckCircle2,
@@ -11,6 +10,7 @@ import {
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("runtime-update");
@@ -143,7 +143,7 @@ export const ApplyRuntimeUpdate = () => {
 				}
 			/>
 			<Dialog>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						{modalState === "idle" && "Are you absolutely sure?"}
 						{modalState === "checking" && "Verifying Services..."}
@@ -221,19 +221,19 @@ export const ApplyRuntimeUpdate = () => {
 							)}
 						</div>
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{modalState === "idle" && (
-					<div>
+					<Dialog.Footer>
 						<Dialog.Close onClick={handleClose}>Cancel</Dialog.Close>
 						<Button variant="secondary" onClick={handleVerify}>
 							<RefreshCw className="h-4 w-4" />
 							Verify Status
 						</Button>
 						<Dialog.Close onClick={handleConfirm}>Confirm</Dialog.Close>
-					</div>
+					</Dialog.Footer>
 				)}
 				{modalState === "results" && (
-					<div>
+					<Dialog.Footer>
 						<Dialog.Close onClick={handleClose}>Cancel</Dialog.Close>
 						<Button variant="secondary" onClick={handleVerify}>
 							<RefreshCw className="h-4 w-4" />
@@ -242,7 +242,7 @@ export const ApplyRuntimeUpdate = () => {
 						<Dialog.Close onClick={handleConfirm}>
 							{allHealthy ? "Confirm" : "Confirm Anyway"}
 						</Dialog.Close>
-					</div>
+					</Dialog.Footer>
 				)}
 			</Dialog>
 		</Dialog.Root>

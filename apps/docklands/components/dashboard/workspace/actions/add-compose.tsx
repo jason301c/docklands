@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
@@ -11,6 +10,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -130,12 +130,12 @@ export const AddCompose = ({
 				</Dialog.Trigger>
 			)}
 			<Dialog className="sm:max-w-xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Create Compose</Dialog.Title>
 					<Dialog.Description>
 						Assign a name and description to your compose
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -237,11 +237,11 @@ export const AddCompose = ({
 						/>
 					</form>
 
-					<div>
+					<Dialog.Footer>
 						<Button loading={isPending} form="hook-form" type="submit">
 							Create
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

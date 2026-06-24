@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import copy from "copy-to-clipboard";
@@ -10,6 +9,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
 import { toast } from "@/components/shared/toast";
@@ -101,16 +101,14 @@ export const SetupRuntimeWorker = ({
 				</Button>
 			)}
 			<Dialog className="sm:max-w-4xl  ">
-				<div>
-					<div className="flex flex-col gap-1.5">
-						<Dialog.Title className="flex items-center gap-2">
-							<ServerIcon className="size-5" /> Set Up Worker
-						</Dialog.Title>
-						<p className="text-kumo-subtle text-sm">
-							To set up this worker, click the button below.
-						</p>
-					</div>
-				</div>
+				<Dialog.Header>
+					<Dialog.Title className="flex items-center gap-2">
+						<ServerIcon className="size-5" /> Set Up Worker
+					</Dialog.Title>
+					<Dialog.Description>
+						To set up this worker, click the button below.
+					</Dialog.Description>
+				</Dialog.Header>
 				{!runtimeWorker?.sshKeyId ? (
 					<div className="flex flex-col gap-2 text-sm text-kumo-subtle pt-3">
 						<AlertBlock type="warning">

@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Label } from "@cloudflare/kumo/components/label";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
@@ -11,6 +10,7 @@ import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -107,12 +107,12 @@ export const UpdateIngressConfig = ({ applicationId }: Props) => {
 				<Dialog.Trigger render={<Button loading={isPending}>Modify</Button>} />
 			)}
 			<Dialog className="sm:max-w-4xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Update ingress config</Dialog.Title>
 					<Dialog.Description>
 						Update the service ingress config
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -155,7 +155,7 @@ routers:
 						</div>
 					</form>
 
-					<div className="flex-col sm:flex-row gap-4">
+					<Dialog.Footer className="flex-col sm:flex-row">
 						<div className="flex flex-col gap-1 w-full sm:w-auto sm:mr-auto">
 							<div className="flex items-center space-x-2">
 								<Checkbox
@@ -183,7 +183,7 @@ routers:
 						>
 							Update
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

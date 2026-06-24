@@ -3,7 +3,7 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	getWorkspaceServiceKey,
 	type WorkspaceService,
@@ -34,14 +34,14 @@ export const BulkDeleteDialog = ({
 	return (
 		<Dialog.Root open={open} onOpenChange={onOpenChange}>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Delete Services</Dialog.Title>
 					<Dialog.Description>
 						Delete {selectedBulkServices.length} selected service
 						{selectedBulkServices.length === 1 ? "" : "s"}. This cannot be
 						undone.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				<div className="space-y-4 text-sm">
 					{selectedBulkRunningServices.length > 0 ? (
@@ -80,7 +80,7 @@ export const BulkDeleteDialog = ({
 					)}
 				</div>
 
-				<div className="flex justify-end gap-2">
+				<Dialog.Footer>
 					<Button variant="outline" onClick={resetBulkDeleteDialog}>
 						Cancel
 					</Button>
@@ -95,7 +95,7 @@ export const BulkDeleteDialog = ({
 					>
 						Delete services
 					</Button>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

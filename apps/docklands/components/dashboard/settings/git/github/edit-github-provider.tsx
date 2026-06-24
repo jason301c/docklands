@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon } from "lucide-react";
@@ -11,6 +10,7 @@ import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { createClientLogger } from "@/client/lib/logger";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -105,11 +105,11 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-2xl ">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title className="flex items-center gap-2">
 						Update Github <GithubIcon className="size-5" />
 					</Dialog.Title>
-				</div>
+				</Dialog.Header>
 
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
@@ -153,7 +153,7 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 									)}
 								/>
 
-								<div className="flex w-full justify-between gap-4 mt-4">
+								<Dialog.Footer className="w-full justify-between">
 									<Button
 										type="button"
 										variant={"secondary"}
@@ -179,7 +179,7 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 									<Button type="submit" loading={isUpdating}>
 										Update
 									</Button>
-								</div>
+								</Dialog.Footer>
 							</div>
 						</div>
 					</form>

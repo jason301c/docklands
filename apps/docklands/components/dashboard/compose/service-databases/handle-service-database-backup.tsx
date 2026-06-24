@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Combobox } from "@cloudflare/kumo/components/combobox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
@@ -15,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -150,7 +150,7 @@ export const HandleServiceDatabaseBackup = ({
 				}
 			/>
 			<Dialog className="sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						{backupId ? "Update Backup" : "Create Backup"}
 					</Dialog.Title>
@@ -158,7 +158,7 @@ export const HandleServiceDatabaseBackup = ({
 						{backupId ? "Update a backup" : "Add a new backup"} for{" "}
 						<span className="font-medium">{serviceName}</span>
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				<Form {...form}>
 					<form
@@ -326,7 +326,7 @@ export const HandleServiceDatabaseBackup = ({
 								)}
 							/>
 						</div>
-						<div>
+						<Dialog.Footer>
 							<Button
 								loading={isCreating}
 								form="hook-form-add-service-database-backup"
@@ -334,7 +334,7 @@ export const HandleServiceDatabaseBackup = ({
 							>
 								{backupId ? "Update" : "Create"}
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 			</Dialog>

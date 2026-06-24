@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Textarea } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -11,6 +10,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -179,7 +179,7 @@ export const ShowImport = ({ composeId }: Props) => {
 							</div>
 							<Dialog.Root open={showModal} onOpenChange={setShowModal}>
 								<Dialog className="max-w-[50vw]">
-									<div>
+									<Dialog.Header>
 										<Dialog.Title className="text-2xl font-bold">
 											Template Information
 										</Dialog.Title>
@@ -190,7 +190,7 @@ export const ShowImport = ({ composeId }: Props) => {
 												variables, mounts, and domains from this service.
 											</AlertBlock>
 										</Dialog.Description>
-									</div>
+									</Dialog.Header>
 
 									<div className="flex flex-col gap-6">
 										<div className="space-y-4">
@@ -289,7 +289,7 @@ export const ShowImport = ({ composeId }: Props) => {
 											)}
 									</div>
 
-									<div className="flex justify-end gap-2 pt-4">
+									<Dialog.Footer>
 										<Button
 											variant="outline"
 											onClick={() => setShowModal(false)}
@@ -304,7 +304,7 @@ export const ShowImport = ({ composeId }: Props) => {
 										>
 											Import
 										</Button>
-									</div>
+									</Dialog.Footer>
 								</Dialog>
 							</Dialog.Root>
 						</form>
@@ -314,12 +314,12 @@ export const ShowImport = ({ composeId }: Props) => {
 
 			<Dialog.Root open={showMountContent} onOpenChange={setShowMountContent}>
 				<Dialog className="max-w-[50vw]">
-					<div>
+					<Dialog.Header>
 						<Dialog.Title className="text-xl font-bold">
 							{selectedMount?.filePath}
 						</Dialog.Title>
 						<Dialog.Description>Mount File Content</Dialog.Description>
-					</div>
+					</Dialog.Header>
 
 					<ScrollArea className="h-[45vh] pr-4">
 						<CodeEditor
@@ -330,9 +330,9 @@ export const ShowImport = ({ composeId }: Props) => {
 						/>
 					</ScrollArea>
 
-					<div className="flex justify-end gap-2 pt-4">
+					<Dialog.Footer>
 						<Button onClick={() => setShowMountContent(false)}>Close</Button>
-					</div>
+					</Dialog.Footer>
 				</Dialog>
 			</Dialog.Root>
 		</>

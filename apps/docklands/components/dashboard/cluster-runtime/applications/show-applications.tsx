@@ -1,7 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Layers, Loader2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import { type ApplicationList, columns } from "./columns";
 import { DataTable } from "./data-table";
 
@@ -88,12 +88,12 @@ export const ShowNodeApplications = ({ runtimeWorkerId }: Props) => {
 				}
 			/>
 			<Dialog className={"sm:max-w-10xl"}>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Node Applications</Dialog.Title>
 					<Dialog.Description>
 						See in detail the applications running on this node
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<div className="max-h-[80vh]">
 					<DataTable columns={columns} data={combinedData ?? []} />
 				</div>

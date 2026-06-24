@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { FileIcon } from "lucide-react";
@@ -11,6 +10,7 @@ import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -120,13 +120,13 @@ export const WorkspaceVariables = ({ workspaceId, children }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-6xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Workspace variables</Dialog.Title>
 					<Dialog.Description>
 						Update variables that are accessible to every service in this
 						workspace.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<AlertBlock type="info">
 					Use this syntax to reference workspace-level variables in your service
@@ -167,11 +167,11 @@ PORT=3000
 									)}
 								/>
 								{canWrite && (
-									<div>
+									<Dialog.Footer>
 										<Button loading={isPending} type="submit">
 											Update
 										</Button>
-									</div>
+									</Dialog.Footer>
 								)}
 							</form>
 						</Form>

@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon, PlusIcon } from "lucide-react";
@@ -9,6 +8,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -122,12 +122,12 @@ export const HandleSecurity = ({
 				}
 			/>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Security</Dialog.Title>
 					<Dialog.Description>
 						{securityId ? "Update" : "Add"} security to your application
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -168,7 +168,7 @@ export const HandleSecurity = ({
 						</div>
 					</form>
 
-					<div>
+					<Dialog.Footer>
 						<Button
 							loading={isPending}
 							form="hook-form-add-security"
@@ -176,7 +176,7 @@ export const HandleSecurity = ({
 						>
 							{securityId ? "Update" : "Create"}
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

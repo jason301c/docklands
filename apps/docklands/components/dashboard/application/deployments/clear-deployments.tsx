@@ -1,8 +1,8 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Paintbrush } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("deployments");
@@ -33,7 +33,7 @@ export const ClearDeployments = ({ id, type }: Props) => {
 				}
 			/>
 			<Dialog>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						Are you sure you want to clear old build records?
 					</Dialog.Title>
@@ -41,8 +41,8 @@ export const ClearDeployments = ({ id, type }: Props) => {
 						This will delete all old build records and logs, keeping only the
 						active build (the most recent successful one).
 					</Dialog.Description>
-				</div>
-				<div>
+				</Dialog.Header>
+				<Dialog.Footer>
 					<Dialog.Close>Cancel</Dialog.Close>
 					<Dialog.Close
 						onClick={async () => {
@@ -65,7 +65,7 @@ export const ClearDeployments = ({ id, type }: Props) => {
 					>
 						Confirm
 					</Dialog.Close>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

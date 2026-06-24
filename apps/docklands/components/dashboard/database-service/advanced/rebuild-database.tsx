@@ -1,8 +1,8 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { AlertTriangle, DatabaseIcon } from "lucide-react";
 import { api } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 interface Props {
@@ -60,7 +60,7 @@ export const RebuildDatabase = ({ id }: Props) => {
 							}
 						/>
 						<Dialog>
-							<div>
+							<Dialog.Header>
 								<Dialog.Title className="flex items-center gap-2">
 									<AlertTriangle className="h-5 w-5 text-kumo-danger" />
 									Are you absolutely sure?
@@ -77,8 +77,8 @@ export const RebuildDatabase = ({ id }: Props) => {
 										This action cannot be undone.
 									</p>
 								</Dialog.Description>
-							</div>
-							<div>
+							</Dialog.Header>
+							<Dialog.Footer>
 								<Dialog.Close>Cancel</Dialog.Close>
 								<Dialog.Close
 									onClick={handleRebuild}
@@ -89,7 +89,7 @@ export const RebuildDatabase = ({ id }: Props) => {
 										</Button>
 									}
 								/>
-							</div>
+							</Dialog.Footer>
 						</Dialog>
 					</Dialog.Root>
 				</div>

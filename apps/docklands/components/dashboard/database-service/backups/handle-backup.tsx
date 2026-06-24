@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
@@ -11,6 +10,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -228,14 +228,14 @@ export const HandleBackup = ({
 				}
 			/>
 			<Dialog className="sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						{backupId ? "Update Backup" : "Create Backup"}
 					</Dialog.Title>
 					<Dialog.Description>
 						{backupId ? "Update a backup" : "Add a new backup"}
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				<Form {...form}>
 					<form
@@ -393,7 +393,7 @@ export const HandleBackup = ({
 								/>
 							)}
 						</div>
-						<div>
+						<Dialog.Footer>
 							<Button
 								loading={isCreatingPostgresBackup}
 								form="hook-form-add-backup"
@@ -401,7 +401,7 @@ export const HandleBackup = ({
 							>
 								{backupId ? "Update" : "Create"}
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 			</Dialog>

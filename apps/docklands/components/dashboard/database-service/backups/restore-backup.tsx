@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
@@ -17,6 +16,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
 
 const logger = createClientLogger("database-backup");
@@ -223,7 +223,7 @@ export const RestoreBackup = ({
 				}
 			/>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title className="flex items-center">
 						<RotateCcw className="mr-2 size-4" />
 						Restore Backup
@@ -231,7 +231,7 @@ export const RestoreBackup = ({
 					<Dialog.Description>
 						Select a destination and search for backup files
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				<Form {...form}>
 					<form
@@ -438,7 +438,7 @@ export const RestoreBackup = ({
 							</>
 						)}
 
-						<div>
+						<Dialog.Footer>
 							<Button
 								loading={isDeploying}
 								form="hook-form-restore-backup"
@@ -450,7 +450,7 @@ export const RestoreBackup = ({
 							>
 								Restore
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 

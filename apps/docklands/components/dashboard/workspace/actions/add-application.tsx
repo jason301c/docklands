@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
@@ -11,6 +10,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -124,12 +124,12 @@ export const AddApplication = ({
 				</Dialog.Trigger>
 			)}
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Create</Dialog.Title>
 					<Dialog.Description>
 						Assign a name and description to your application
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<Form {...form}>
 					<form
@@ -218,11 +218,11 @@ export const AddApplication = ({
 						/>
 					</form>
 
-					<div>
+					<Dialog.Footer>
 						<Button loading={isPending} form="hook-form" type="submit">
 							Create
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

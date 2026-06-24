@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -11,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -249,14 +249,14 @@ export const Enable2FA = () => {
 				}
 			/>
 			<Dialog className="sm:max-w-xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>2FA Setup</Dialog.Title>
 					<Dialog.Description>
 						{step === "password"
 							? "Enter your password to begin 2FA setup"
 							: "Scan the QR code and verify with your authenticator app"}
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				{step === "password" ? (
 					<Form {...passwordForm}>

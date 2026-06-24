@@ -1,7 +1,7 @@
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import dynamic from "next/dynamic";
 import type React from "react";
+import { Dialog } from "@/components/shared/dialog";
 
 export const DockerLogsId = dynamic(
 	() =>

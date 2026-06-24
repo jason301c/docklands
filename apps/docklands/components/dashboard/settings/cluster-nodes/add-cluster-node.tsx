@@ -1,10 +1,10 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { ExternalLink, PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import { AddClusterManager } from "./manager/add-cluster-manager";
 import { AddClusterWorker } from "./workers/add-cluster-worker";
 
@@ -26,7 +26,7 @@ export const AddClusterNode = ({ runtimeWorkerId }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-4xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Add Runtime Worker</Dialog.Title>
 					<Dialog.Description className="flex flex-col gap-2">
 						Follow the steps to add a worker or manager to your orchestration
@@ -53,7 +53,7 @@ export const AddClusterNode = ({ runtimeWorkerId }: Props) => {
 							architecture as the rest of the cluster.
 						</AlertBlock>
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<div className="flex flex-col gap-2">
 					<Tabs
 						value={activeTab}

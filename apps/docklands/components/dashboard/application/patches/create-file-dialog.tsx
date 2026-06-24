@@ -1,10 +1,10 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { FilePlus } from "lucide-react";
 import { useState } from "react";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 
 interface Props {
 	folderPath: string;
@@ -53,13 +53,13 @@ export const CreateFileDialog = ({
 						handleCreate();
 					}}
 				>
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>Create file</Dialog.Title>
 						<Dialog.Description>
 							{folderPath ? `New file in ${folderPath}/` : "New file in root"}
 						</Dialog.Description>
-					</div>
-					<div className="space-y-4 py-4">
+					</Dialog.Header>
+					<div className="space-y-4">
 						<div className="space-y-2">
 							<Label htmlFor="filename">Filename</Label>
 							<Input
@@ -83,7 +83,7 @@ export const CreateFileDialog = ({
 							</div>
 						</div>
 					</div>
-					<div>
+					<Dialog.Footer>
 						<Dialog.Close
 							render={
 								<Button variant="outline" type="button">
@@ -98,7 +98,7 @@ export const CreateFileDialog = ({
 								</Button>
 							}
 						/>
-					</div>
+					</Dialog.Footer>
 				</form>
 			</Dialog>
 		</Dialog.Root>

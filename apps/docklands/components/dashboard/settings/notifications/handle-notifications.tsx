@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Radio } from "@cloudflare/kumo/components/radio";
 import { Switch } from "@cloudflare/kumo/components/switch";
@@ -8,6 +7,7 @@ import { AlertTriangle, PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { api } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -204,7 +204,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-3xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						{notificationId ? "Update" : "Add"} Notification
 					</Dialog.Title>
@@ -213,7 +213,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 							? "Update your notification providers for multiple channels."
 							: "Create new notification providers for multiple channels."}
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<Form {...form}>
 					<form
 						id="hook-form"
@@ -370,7 +370,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 						</div>
 					</form>
 
-					<div className="flex flex-row gap-2 !justify-between w-full">
+					<Dialog.Footer className="!justify-between w-full">
 						<Button
 							loading={isTesting}
 							variant="secondary"
@@ -386,7 +386,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 						>
 							{notificationId ? "Update" : "Create"}
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

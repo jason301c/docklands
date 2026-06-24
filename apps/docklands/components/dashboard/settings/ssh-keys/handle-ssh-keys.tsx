@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { DownloadIcon, PenBoxIcon, PlusIcon } from "lucide-react";
@@ -9,6 +8,7 @@ import type { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 
 const logger = createClientLogger("ssh-keys");
 
@@ -158,7 +158,7 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>SSH Key</Dialog.Title>
 					<Dialog.Description className="space-y-4">
 						<div>
@@ -196,7 +196,7 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 							</div>
 						)}
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -272,7 +272,7 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 								</FormItem>
 							)}
 						/>
-						<div className="flex items-center justify-between">
+						<Dialog.Footer className="justify-between">
 							<div className="flex items-center gap-4">
 								{form.watch("privateKey") && (
 									<Button
@@ -306,7 +306,7 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 							<Button loading={isPending} type="submit">
 								{sshKeyId ? "Update" : "Create"}
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 			</Dialog>

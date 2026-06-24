@@ -1,7 +1,7 @@
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("container-runtime");
@@ -32,7 +32,7 @@ export const RemoveContainerDialog = ({
 				}
 			/>
 			<Dialog>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Are you sure?</Dialog.Title>
 					<Dialog.Description>
 						This will permanently remove the container{" "}
@@ -40,8 +40,8 @@ export const RemoveContainerDialog = ({
 						container is running, it will be forcefully stopped and removed.
 						This action cannot be undone.
 					</Dialog.Description>
-				</div>
-				<div>
+				</Dialog.Header>
+				<Dialog.Footer>
 					<Dialog.Close>Cancel</Dialog.Close>
 					<Dialog.Close
 						disabled={isPending}
@@ -59,7 +59,7 @@ export const RemoveContainerDialog = ({
 					>
 						Confirm
 					</Dialog.Close>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

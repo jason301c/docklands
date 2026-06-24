@@ -1,5 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
+import { Dialog } from "@/components/shared/dialog";
 
 interface Props {
 	title?: string | React.ReactNode;
@@ -25,13 +25,13 @@ export const DialogAction = ({
 		<Dialog.Root role="alertdialog">
 			<Dialog.Trigger render={children as never} />
 			<Dialog>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>{title ?? "Are you absolutely sure?"}</Dialog.Title>
 					<Dialog.Description>
 						{description ?? "This action cannot be undone."}
 					</Dialog.Description>
-				</div>
-				<div>
+				</Dialog.Header>
+				<Dialog.Footer>
 					<Dialog.Close render={<Button variant="secondary">Cancel</Button>} />
 					<Dialog.Close
 						render={
@@ -44,7 +44,7 @@ export const DialogAction = ({
 							</Button>
 						}
 					/>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

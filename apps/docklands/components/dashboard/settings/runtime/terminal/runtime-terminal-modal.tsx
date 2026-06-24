@@ -1,9 +1,9 @@
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import dynamic from "next/dynamic";
 import type React from "react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import { LocalRuntimeTerminalConfig } from "./local-runtime-terminal-config";
 
 const RuntimeTerminal = dynamic(

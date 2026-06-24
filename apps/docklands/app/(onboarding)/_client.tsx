@@ -2,7 +2,6 @@
 
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -23,6 +22,7 @@ import {
 	authLinkClassName,
 	PasswordInput,
 } from "@/components/shared/auth-screen";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -304,12 +304,12 @@ export default function Home() {
 						onOpenChange={setIsBackupCodeModalOpen}
 					>
 						<Dialog>
-							<div>
+							<Dialog.Header>
 								<Dialog.Title>Enter Backup Code</Dialog.Title>
 								<Dialog.Description>
 									Enter one of your backup codes to access your account
 								</Dialog.Description>
-							</div>
+							</Dialog.Header>
 
 							<form onSubmit={onBackupCodeSubmit} className="space-y-4">
 								<div className="flex flex-col gap-2">
@@ -327,7 +327,7 @@ export default function Home() {
 									</p>
 								</div>
 
-								<div className="flex gap-4">
+								<Dialog.Footer className="gap-4">
 									<Button
 										variant="outline"
 										className="w-full justify-center"
@@ -346,7 +346,7 @@ export default function Home() {
 									>
 										Verify
 									</Button>
-								</div>
+								</Dialog.Footer>
 							</form>
 						</Dialog>
 					</Dialog.Root>

@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
@@ -27,6 +26,7 @@ import {
 	CommandInput,
 	CommandItem,
 } from "@/components/shared/command";
+import { Dialog } from "@/components/shared/dialog";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
 import {
 	Form,
@@ -149,7 +149,7 @@ export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title className="flex items-center">
 						<RotateCcw className="mr-2 size-4" />
 						Restore Volume Backup
@@ -160,7 +160,7 @@ export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 					<AlertBlock>
 						Make sure the volume name is not being used by another container.
 					</AlertBlock>
-				</div>
+				</Dialog.Header>
 
 				<Form {...form}>
 					<form
@@ -368,7 +368,7 @@ export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 							)}
 						/>
 
-						<div>
+						<Dialog.Footer>
 							<Button
 								loading={isDeploying}
 								form="hook-form-restore-backup"
@@ -380,7 +380,7 @@ export const RestoreVolumeBackups = ({ id, type, runtimeWorkerId }: Props) => {
 							>
 								Restore
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { ArrowRight, Search } from "lucide-react";
 import type { ReactNode } from "react";
+import { Dialog } from "@/components/shared/dialog";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 
 export type CommandGroup =

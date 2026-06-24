@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -9,6 +8,7 @@ import { useHealthCheckAfterMutation } from "@/client/hooks/use-health-check-aft
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -104,12 +104,12 @@ export const EditIngressEnv = ({ children, runtimeWorkerId }: Props) => {
 		<Dialog.Root>
 			<Dialog.Trigger render={children as never} />
 			<Dialog className="sm:max-w-4xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Update Ingress Environment</Dialog.Title>
 					<Dialog.Description>
 						Update ingress runtime environment variables
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -162,7 +162,7 @@ TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_HTTP_CHALLENGE_DNS_PROVIDER=cloudflare
 						</div>
 					</form>
 
-					<div>
+					<Dialog.Footer>
 						<Button
 							loading={isPending || isHealthCheckExecuting}
 							disabled={canEdit || isPending || isHealthCheckExecuting}
@@ -171,7 +171,7 @@ TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_HTTP_CHALLENGE_DNS_PROVIDER=cloudflare
 						>
 							Update
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

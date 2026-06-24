@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
@@ -15,6 +14,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -215,7 +215,7 @@ export const Configure2FA = () => {
 					}
 				/>
 				<Dialog className="sm:max-w-xl">
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>
 							{step === "password" && "Verify Your Identity"}
 							{step === "actions" && "2FA Configuration"}
@@ -229,7 +229,7 @@ export const Configure2FA = () => {
 							{step === "backup-codes" &&
 								"Save these backup codes in a secure place"}
 						</Dialog.Description>
-					</div>
+					</Dialog.Header>
 
 					{step === "password" && (
 						<Form {...form}>
@@ -257,7 +257,7 @@ export const Configure2FA = () => {
 										</FormItem>
 									)}
 								/>
-								<div className="flex justify-end gap-4">
+								<Dialog.Footer>
 									<Button
 										type="button"
 										variant="outline"
@@ -268,7 +268,7 @@ export const Configure2FA = () => {
 									<Button type="submit" loading={isRegenerating}>
 										Continue
 									</Button>
-								</div>
+								</Dialog.Footer>
 							</form>
 						</Form>
 					)}
@@ -324,14 +324,14 @@ export const Configure2FA = () => {
 								</div>
 							</div>
 
-							<div className="flex justify-end">
+							<Dialog.Footer>
 								<Button
 									variant="outline"
 									onClick={() => setIsDialogOpen(false)}
 								>
 									Close
 								</Button>
-							</div>
+							</Dialog.Footer>
 						</div>
 					)}
 
@@ -374,12 +374,12 @@ export const Configure2FA = () => {
 								</Button>
 							</div>
 
-							<div className="flex justify-end gap-4">
+							<Dialog.Footer>
 								<Button variant="outline" onClick={handleCloseDialog}>
 									Back to Actions
 								</Button>
 								<Button onClick={() => setIsDialogOpen(false)}>Done</Button>
-							</div>
+							</Dialog.Footer>
 						</div>
 					)}
 				</Dialog>
@@ -391,14 +391,14 @@ export const Configure2FA = () => {
 				onOpenChange={setShowDisableConfirm}
 			>
 				<Dialog>
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>Are you absolutely sure?</Dialog.Title>
 						<Dialog.Description>
 							This will permanently disable Two-Factor Authentication for your
 							account. Your account will be less secure without 2FA enabled.
 						</Dialog.Description>
-					</div>
-					<div>
+					</Dialog.Header>
+					<Dialog.Footer>
 						<Dialog.Close>Cancel</Dialog.Close>
 						<Dialog.Close
 							onClick={handleDisable2FA}
@@ -407,7 +407,7 @@ export const Configure2FA = () => {
 						>
 							{isDisabling ? "Disabling..." : "Disable 2FA"}
 						</Dialog.Close>
-					</div>
+					</Dialog.Footer>
 				</Dialog>
 			</Dialog.Root>
 		</>

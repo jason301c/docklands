@@ -1,6 +1,6 @@
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Dialog } from "@/components/shared/dialog";
 import { TerminalLine } from "./logs/terminal-line";
 import type { LogLine } from "./logs/utils";
 
@@ -42,10 +42,12 @@ export const DrawerLogs = ({ isOpen, onClose, filteredLogs }: Props) => {
 			}}
 		>
 			<Dialog size="xl" className="flex flex-col">
-				<Dialog.Title>Build Logs</Dialog.Title>
-				<Dialog.Description>
-					Details of the request log entry.
-				</Dialog.Description>
+				<Dialog.Header>
+					<Dialog.Title>Build Logs</Dialog.Title>
+					<Dialog.Description>
+						Details of the request log entry.
+					</Dialog.Description>
+				</Dialog.Header>
 				<div
 					ref={scrollRef}
 					onScroll={handleScroll}

@@ -1,12 +1,12 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("roles");
@@ -107,13 +107,13 @@ export const HandleRole = ({ role }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-2xl max-h-[85vh]">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>{isEdit ? "Update" : "Create"} role</Dialog.Title>
 					<Dialog.Description>
 						Choose the capabilities this role grants. Members assigned this role
 						gain exactly these permissions.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 				<div className="grid w-full gap-4">
 					<div className="grid gap-2">
@@ -158,7 +158,7 @@ export const HandleRole = ({ role }: Props) => {
 						)}
 					</div>
 				</div>
-				<div>
+				<Dialog.Footer>
 					<Button
 						onClick={onSubmit}
 						disabled={!name.trim()}
@@ -166,7 +166,7 @@ export const HandleRole = ({ role }: Props) => {
 					>
 						{isEdit ? "Update" : "Create"}
 					</Button>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

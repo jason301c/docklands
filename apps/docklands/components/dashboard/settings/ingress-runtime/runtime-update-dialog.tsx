@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	Bug,
@@ -14,6 +13,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("runtime-update");
@@ -250,7 +250,7 @@ export const RuntimeUpdateDialog = ({
 					<ToggleAutoCheckUpdates disabled={isPending} />
 				</div>
 
-				<div className="space-y-4 flex items-center justify-end mt-4	">
+				<Dialog.Footer>
 					<div className="flex items-center gap-2">
 						<Button variant="outline" onClick={() => onOpenChange?.(false)}>
 							Cancel
@@ -277,7 +277,7 @@ export const RuntimeUpdateDialog = ({
 							</Button>
 						)}
 					</div>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

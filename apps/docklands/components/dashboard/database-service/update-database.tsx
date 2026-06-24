@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBox } from "lucide-react";
@@ -9,6 +8,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -107,10 +107,10 @@ export const UpdateDatabase = ({ databaseId }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Modify Database</Dialog.Title>
 					<Dialog.Description>Update the database data</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<div className="grid gap-4">
@@ -184,7 +184,7 @@ export const UpdateDatabase = ({ databaseId }: Props) => {
 										</FormItem>
 									)}
 								/>
-								<div>
+								<Dialog.Footer>
 									<Button
 										loading={isPending}
 										form="hook-form-update-database"
@@ -193,7 +193,7 @@ export const UpdateDatabase = ({ databaseId }: Props) => {
 									>
 										Update
 									</Button>
-								</div>
+								</Dialog.Footer>
 							</form>
 						</Form>
 					</div>

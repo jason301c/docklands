@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
@@ -13,6 +12,7 @@ import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -144,14 +144,14 @@ export const DeleteService = ({ id, type }: Props) => {
 				}
 			/>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Are you absolutely sure?</Dialog.Title>
 					<Dialog.Description>
 						This action cannot be undone. This will permanently delete the
 						service. If you are sure please enter the service name to delete
 						this service.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<div className="grid gap-4">
 					<Form {...form}>
 						<form
@@ -227,7 +227,7 @@ export const DeleteService = ({ id, type }: Props) => {
 						build to finish and then try again.
 					</AlertBlock>
 				)}
-				<div>
+				<Dialog.Footer>
 					<Button
 						variant="secondary"
 						onClick={() => {
@@ -246,7 +246,7 @@ export const DeleteService = ({ id, type }: Props) => {
 					>
 						Confirm
 					</Button>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

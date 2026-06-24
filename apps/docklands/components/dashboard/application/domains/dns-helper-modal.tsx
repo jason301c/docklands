@@ -1,7 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Copy, Globe, HelpCircle } from "lucide-react";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 interface Props {
@@ -32,7 +32,7 @@ export const DnsHelperModal = ({ domain, ingressAddress }: Props) => {
 				</Button>
 			</Dialog.Trigger>
 			<Dialog className="sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title className="flex items-center gap-2">
 						<Globe className="size-5" />
 						DNS Configuration Guide
@@ -40,7 +40,7 @@ export const DnsHelperModal = ({ domain, ingressAddress }: Props) => {
 					<Dialog.Description>
 						Follow these steps to configure your DNS records for {domain.host}
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				<div className="flex flex-col gap-4">
 					<AlertBlock type="info">

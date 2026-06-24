@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
@@ -13,6 +12,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -154,13 +154,13 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 					}
 				/>
 				<Dialog className="sm:max-w-5xl w-full">
-					<div>
+					<Dialog.Header>
 						<Dialog.Title>Preview Environment Settings</Dialog.Title>
 						<Dialog.Description>
 							Adjust pull request environments for this application, including
 							environment variables, build options, and build rules.
 						</Dialog.Description>
-					</div>
+					</Dialog.Header>
 					<div className="grid gap-4">
 						{isTraefikMeDomain && (
 							<AlertBlock type="info">
@@ -539,7 +539,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 							</form>
 						</Form>
 					</div>
-					<div>
+					<Dialog.Footer>
 						<Button
 							variant="secondary"
 							onClick={() => {
@@ -555,7 +555,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 						>
 							Save
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Dialog>
 			</Dialog.Root>
 			{/* */}

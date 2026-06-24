@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { Select } from "@cloudflare/kumo/components/select";
@@ -12,6 +11,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -180,12 +180,12 @@ export const HandleRedirect = ({
 				}
 			/>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Redirects</Dialog.Title>
 					<Dialog.Description>
 						Redirects are used to redirect requests to another url.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<div className="md:col-span-2">
@@ -268,7 +268,7 @@ export const HandleRedirect = ({
 						</div>
 					</form>
 
-					<div>
+					<Dialog.Footer>
 						<Button
 							loading={isPending}
 							form="hook-form-add-redirect"
@@ -276,7 +276,7 @@ export const HandleRedirect = ({
 						>
 							{redirectId ? "Update" : "Create"}
 						</Button>
-					</div>
+					</Dialog.Footer>
 				</Form>
 			</Dialog>
 		</Dialog.Root>

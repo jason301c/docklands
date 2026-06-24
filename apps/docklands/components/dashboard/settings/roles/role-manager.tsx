@@ -1,11 +1,11 @@
 "use client";
 
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Loader2, ShieldCheck, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { EmptyState, QueryState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
@@ -49,7 +49,9 @@ const RoleMembersDialog = ({
 				}
 			/>
 			<Dialog className="sm:max-w-md">
-				<Dialog.Title>Members of "{roleName}"</Dialog.Title>
+				<Dialog.Header>
+					<Dialog.Title>Members of "{roleName}"</Dialog.Title>
+				</Dialog.Header>
 				{isPending ? (
 					<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[8rem]">
 						<span>Loading...</span>

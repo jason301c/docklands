@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { ClipboardText } from "@cloudflare/kumo/components/clipboard-text";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -10,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -178,14 +178,14 @@ export const AddInvitation = () => {
 				}
 			/>
 			<Dialog className="sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Add Invitation</Dialog.Title>
 					<Dialog.Description>
 						{mode === "credentials"
 							? "Create a user with initial credentials"
 							: "Invite a new user"}
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{error && <AlertBlock type="error">{error}</AlertBlock>}
 
 				{inviteLink ? (
@@ -348,7 +348,7 @@ export const AddInvitation = () => {
 							</>
 						)}
 
-						<div className="flex w-full flex-row">
+						<Dialog.Footer className="w-full justify-start">
 							<Button
 								loading={form.formState.isSubmitting}
 								form="hook-form-add-invitation"
@@ -356,7 +356,7 @@ export const AddInvitation = () => {
 							>
 								Create
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 			</Dialog>

@@ -1,6 +1,6 @@
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { useState } from "react";
+import { Dialog } from "@/components/shared/dialog";
 import { GPUSupport } from "./gpu-support";
 
 export const GPUSupportModal = () => {
@@ -20,11 +20,11 @@ export const GPUSupportModal = () => {
 				}
 			/>
 			<Dialog className="sm:max-w-4xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title className="flex items-center gap-2">
 						Local Runtime GPU Setup
 					</Dialog.Title>
-				</div>
+				</Dialog.Header>
 
 				<GPUSupport runtimeWorkerId="" />
 			</Dialog>

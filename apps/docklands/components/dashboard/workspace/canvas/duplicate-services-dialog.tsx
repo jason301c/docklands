@@ -2,10 +2,10 @@
 
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import type { RouterOutputs } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	getWorkspaceServiceKey,
 	type WorkspaceService,
@@ -57,13 +57,13 @@ export const DuplicateServicesDialog = ({
 	return (
 		<Dialog.Root open={open} onOpenChange={onOpenChange}>
 			<Dialog className="sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Duplicate Services</Dialog.Title>
 					<Dialog.Description>
 						Duplicate {selectedBulkServices.length} selected service
 						{selectedBulkServices.length === 1 ? "" : "s"}.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				<div className="space-y-4">
 					<div className="grid grid-cols-2 gap-2">
@@ -184,7 +184,7 @@ export const DuplicateServicesDialog = ({
 					</div>
 				</div>
 
-				<div className="flex justify-end gap-2">
+				<Dialog.Footer>
 					<Button variant="outline" onClick={resetDuplicateDialog}>
 						Cancel
 					</Button>
@@ -200,7 +200,7 @@ export const DuplicateServicesDialog = ({
 					>
 						Duplicate services
 					</Button>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -7,6 +6,7 @@ import { Upload } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { api } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import { Dropzone } from "@/components/shared/dropzone";
 import {
 	Form,
@@ -89,7 +89,7 @@ export const UploadFileModal = ({
 				}
 			/>
 			<Dialog className="sm:max-w-2xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title className="flex items-center gap-2">
 						<Upload className="h-5 w-5" />
 						Upload File to Container
@@ -97,7 +97,7 @@ export const UploadFileModal = ({
 					<Dialog.Description>
 						Upload a file directly into the container's filesystem
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -162,7 +162,7 @@ export const UploadFileModal = ({
 							)}
 						/>
 
-						<div>
+						<Dialog.Footer>
 							<Button
 								type="button"
 								variant="outline"
@@ -177,7 +177,7 @@ export const UploadFileModal = ({
 							>
 								Upload File
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 			</Dialog>

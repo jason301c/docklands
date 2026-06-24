@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { FileTerminal } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -12,6 +11,7 @@ import { AlertBlock } from "@/components/shared/alert-block";
 const logger = createClientLogger("runtime-script");
 
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,

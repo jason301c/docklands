@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -9,6 +8,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -91,12 +91,12 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 				}
 			/>
 			<Dialog className="max-h-[85vh] sm:max-w-lg">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Change User Role</Dialog.Title>
 					<Dialog.Description>
 						Change the role for <strong>{userEmail}</strong>
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -156,7 +156,7 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 					</form>
 				</Form>
 
-				<div>
+				<Dialog.Footer>
 					<Button
 						loading={isPending}
 						form="hook-form-change-role"
@@ -164,7 +164,7 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 					>
 						Update Role
 					</Button>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

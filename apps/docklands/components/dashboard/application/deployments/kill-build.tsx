@@ -1,8 +1,8 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Scissors } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { Dialog } from "@/components/shared/dialog";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("deployments");
@@ -29,13 +29,13 @@ export const KillBuild = ({ id, type }: Props) => {
 				}
 			/>
 			<Dialog>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Are you sure to kill the build?</Dialog.Title>
 					<Dialog.Description>
 						This will kill the build process
 					</Dialog.Description>
-				</div>
-				<div>
+				</Dialog.Header>
+				<Dialog.Footer>
 					<Dialog.Close>Cancel</Dialog.Close>
 					<Dialog.Close
 						onClick={async () => {
@@ -54,7 +54,7 @@ export const KillBuild = ({ id, type }: Props) => {
 					>
 						Confirm
 					</Dialog.Close>
-				</div>
+				</Dialog.Footer>
 			</Dialog>
 		</Dialog.Root>
 	);

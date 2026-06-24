@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
@@ -29,6 +28,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { CodeEditor } from "@/components/shared/code-editor";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -343,7 +343,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 						: "sm:max-w-lg",
 				)}
 			>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>
 						{scheduleId ? "Edit" : "Create"} Automation
 					</Dialog.Title>
@@ -351,7 +351,7 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 						{scheduleId ? "Manage" : "Create"} an automation that runs at a
 						specific time or interval.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 						{scheduleTypeForm === "compose" && (

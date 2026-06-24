@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -8,6 +7,7 @@ import type React from "react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { badgeStateColor } from "@/components/shared/badge-state-color";
+import { Dialog } from "@/components/shared/dialog";
 
 const Terminal = dynamic(
 	() =>

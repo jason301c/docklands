@@ -1,7 +1,7 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { useState } from "react";
 import type { RouterOutputs } from "@/client/api/trpc";
+import { Dialog } from "@/components/shared/dialog";
 import { ShowDeployment } from "../deployments/show-deployment";
 import { ShowDeployments } from "./show-deployments";
 

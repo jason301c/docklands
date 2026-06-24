@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { PenBoxIcon } from "lucide-react";
@@ -11,6 +10,7 @@ import { api } from "@/client/api/trpc";
 import { getGiteaOAuthUrl } from "@/client/git/gitea";
 import { useUrl } from "@/client/hooks/use-url";
 import { crudMutationOptions } from "@/client/lib/crud-mutation";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -190,12 +190,12 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 				}
 			/>
 			<Dialog>
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Edit Gitea Provider</Dialog.Title>
 					<Dialog.Description>
 						Update your Gitea provider details.
 					</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<FormField
@@ -281,7 +281,7 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 							)}
 						/>
 
-						<div className="flex justify-end gap-2">
+						<Dialog.Footer>
 							<Button
 								type="button"
 								variant="outline"
@@ -313,7 +313,7 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 							<Button type="submit" loading={isUpdating}>
 								Save
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 			</Dialog>

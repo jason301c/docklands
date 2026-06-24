@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import { z } from "zod";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
@@ -200,10 +200,10 @@ export const AddUserPermissions = ({ userId }: Props) => {
 				}
 			/>
 			<Dialog className="max-h-[85vh]  sm:max-w-4xl">
-				<div>
+				<Dialog.Header>
 					<Dialog.Title>Permissions</Dialog.Title>
 					<Dialog.Description>Add or remove permissions</Dialog.Description>
-				</div>
+				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
 
 				<Form {...form}>
@@ -685,7 +685,7 @@ export const AddUserPermissions = ({ userId }: Props) => {
 								</FormItem>
 							)}
 						/>
-						<div className="flex w-full flex-row justify-end md:col-span-2">
+						<Dialog.Footer className="w-full md:col-span-2">
 							<Button
 								loading={isPending}
 								form="hook-form-add-permissions"
@@ -693,7 +693,7 @@ export const AddUserPermissions = ({ userId }: Props) => {
 							>
 								Update
 							</Button>
-						</div>
+						</Dialog.Footer>
 					</form>
 				</Form>
 			</Dialog>
