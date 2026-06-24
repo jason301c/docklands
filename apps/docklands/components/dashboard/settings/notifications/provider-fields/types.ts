@@ -2,7 +2,7 @@ import type { Control, UseFieldArrayReturn } from "react-hook-form";
 import type {
 	NotificationFormInput,
 	NotificationSchema,
-} from "../handle-notifications";
+} from "../notification-schema";
 
 /**
  * Shared prop types for the per-provider notification field-sets extracted from

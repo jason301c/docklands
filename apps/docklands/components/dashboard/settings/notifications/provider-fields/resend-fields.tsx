@@ -11,7 +11,7 @@ import {
 import type {
 	NotificationFormInput,
 	NotificationSchema,
-} from "../handle-notifications";
+} from "../notification-schema";
 import type { NotificationFormControl, ToAddressesFieldArray } from "./types";
 
 interface ResendFieldsProps {
