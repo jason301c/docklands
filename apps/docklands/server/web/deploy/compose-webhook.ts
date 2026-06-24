@@ -17,6 +17,7 @@ import {
 	extractHash,
 	getProviderByHeader,
 	logWebhookError,
+	validateDeployWebhookBody,
 } from "./application-webhook";
 
 const logger = createLogger("compose-webhook");
@@ -26,7 +27,7 @@ export async function handleComposeDeployWebhook(
 	refreshToken: string,
 ) {
 	const headers = requestHeadersToObject(request.headers);
-	const body = await parseRequestBody(request);
+	const body = validateDeployWebhookBody(await parseRequestBody(request));
 
 	try {
 		if (headers["x-github-event"] === "ping") {
@@ -67,7 +68,7 @@ export async function handleComposeDeployWebhook(
 		if (sourceType === "github") {
 			const branchName = extractBranchName(headers, body);
 			const normalizedCommits = body?.commits?.flatMap(
-				(commit: any) => commit.modified,
+				(commit) => commit.modified,
 			);
 
 			const shouldDeployPaths = shouldDeploy(
@@ -85,7 +86,7 @@ export async function handleComposeDeployWebhook(
 		} else if (sourceType === "gitlab") {
 			const branchName = extractBranchName(headers, body);
 			const normalizedCommits = body?.commits?.flatMap(
-				(commit: any) => commit.modified,
+				(commit) => commit.modified,
 			);
 
 			const shouldDeployPaths = shouldDeploy(
@@ -127,20 +128,14 @@ export async function handleComposeDeployWebhook(
 				return jsonResponse({ message: "Branch Not Match" }, 301);
 			}
 			const provider = getProviderByHeader(headers);
-			let normalizedCommits: string[] = [];
+			let normalizedCommits: (string | undefined)[] | undefined = [];
 
 			if (provider === "github") {
-				normalizedCommits = body?.commits?.flatMap(
-					(commit: any) => commit.modified,
-				);
+				normalizedCommits = body?.commits?.flatMap((commit) => commit.modified);
 			} else if (provider === "gitlab") {
-				normalizedCommits = body?.commits?.flatMap(
-					(commit: any) => commit.modified,
-				);
+				normalizedCommits = body?.commits?.flatMap((commit) => commit.modified);
 			} else if (provider === "gitea") {
-				normalizedCommits = body?.commits?.flatMap(
-					(commit: any) => commit.modified,
-				);
+				normalizedCommits = body?.commits?.flatMap((commit) => commit.modified);
 			}
 
 			const shouldDeployPaths = shouldDeploy(
@@ -155,7 +150,7 @@ export async function handleComposeDeployWebhook(
 			const branchName = extractBranchName(headers, body);
 
 			const normalizedCommits = body?.commits?.flatMap(
-				(commit: any) => commit.modified,
+				(commit) => commit.modified,
 			);
 
 			const shouldDeployPaths = shouldDeploy(

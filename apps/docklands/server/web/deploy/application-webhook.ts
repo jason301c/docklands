@@ -12,8 +12,28 @@ import {
 	parseRequestBody,
 	requestHeadersToObject,
 } from "@/server/web/request";
+import {
+	type DeployWebhookBody,
+	deployWebhookBodySchema,
+} from "./webhook-schema";
 
 const logger = createLogger("application-webhook");
+
+/**
+ * Validate an already-parsed webhook body against the lenient deploy schema.
+ *
+ * The schema only checks the fields the extractors read and passes everything
+ * else through, so any real provider payload (always a JSON object) succeeds and
+ * flows on unchanged. A non-object payload (string/array/number/undefined) fails
+ * to parse; we substitute an empty object so the handler reaches the same
+ * "couldn't act on it" responses (e.g. "Branch Not Match") it already returned
+ * for a missing/empty body, instead of introducing a new status code that
+ * webhook providers might choke on.
+ */
+export const validateDeployWebhookBody = (body: unknown): DeployWebhookBody => {
+	const parsed = deployWebhookBodySchema.safeParse(body);
+	return parsed.success ? parsed.data : {};
+};
 
 /**
  * Log a webhook handler error runtimeWorker-side without leaking its shape to the HTTP
@@ -27,7 +47,7 @@ export const logWebhookError = (context: string, error: unknown) => {
 /**
  * Helper function to get package_version from registry_package events
  */
-const getPackageVersion = (headers: any, body: any) => {
+const getPackageVersion = (headers: any, body: DeployWebhookBody) => {
 	const event = headers["x-github-event"];
 	if (event === "registry_package") {
 		return body.registry_package?.package_version;
@@ -40,7 +60,7 @@ export async function handleApplicationDeployWebhook(
 	refreshToken: string,
 ) {
 	const headers = requestHeadersToObject(request.headers);
-	const body = await parseRequestBody(request);
+	const body = validateDeployWebhookBody(await parseRequestBody(request));
 
 	try {
 		if (headers["x-github-event"] === "ping") {
@@ -131,7 +151,7 @@ export async function handleApplicationDeployWebhook(
 			// If webhook doesn't provide image info, we'll use the configured image (old behavior)
 		} else if (sourceType === "github") {
 			const normalizedCommits = body?.commits?.flatMap(
-				(commit: any) => commit.modified,
+				(commit) => commit.modified,
 			);
 
 			const shouldDeployPaths = shouldDeploy(
@@ -155,24 +175,16 @@ export async function handleApplicationDeployWebhook(
 			}
 
 			const provider = getProviderByHeader(headers);
-			let normalizedCommits: string[] = [];
+			let normalizedCommits: (string | undefined)[] | undefined = [];
 
 			if (provider === "github") {
-				normalizedCommits = body?.commits?.flatMap(
-					(commit: any) => commit.modified,
-				);
+				normalizedCommits = body?.commits?.flatMap((commit) => commit.modified);
 			} else if (provider === "gitlab") {
-				normalizedCommits = body?.commits?.flatMap(
-					(commit: any) => commit.modified,
-				);
+				normalizedCommits = body?.commits?.flatMap((commit) => commit.modified);
 			} else if (provider === "gitea") {
-				normalizedCommits = body?.commits?.flatMap(
-					(commit: any) => commit.modified,
-				);
+				normalizedCommits = body?.commits?.flatMap((commit) => commit.modified);
 			} else if (provider === "soft-serve") {
-				normalizedCommits = body?.commits?.flatMap(
-					(commit: any) => commit.modified,
-				);
+				normalizedCommits = body?.commits?.flatMap((commit) => commit.modified);
 			}
 
 			const shouldDeployPaths = shouldDeploy(
@@ -187,7 +199,7 @@ export async function handleApplicationDeployWebhook(
 			const branchName = extractBranchName(headers, body);
 
 			const normalizedCommits = body?.commits?.flatMap(
-				(commit: any) => commit.modified,
+				(commit) => commit.modified,
 			);
 
 			const shouldDeployPaths = shouldDeploy(
@@ -229,7 +241,7 @@ export async function handleApplicationDeployWebhook(
 			const branchName = extractBranchName(headers, body);
 
 			const normalizedCommits = body?.commits?.flatMap(
-				(commit: any) => commit.modified,
+				(commit) => commit.modified,
 			);
 
 			const shouldDeployPaths = shouldDeploy(
@@ -250,7 +262,11 @@ export async function handleApplicationDeployWebhook(
 			const jobData: DeploymentJob = {
 				applicationId: application.applicationId as string,
 				titleLog: deploymentTitle,
-				...(deploymentHash && { descriptionLog: `Hash: ${deploymentHash}` }),
+				// Behavior-identical to the previous conditional spread: when there
+				// is no hash the consumer defaulted the omitted field to "" anyway
+				// (services/application.ts `descriptionLog = ""`), so an empty string
+				// here produces the same downstream result.
+				descriptionLog: deploymentHash ? `Hash: ${deploymentHash}` : "",
 				type: "deploy",
 				applicationType: "application",
 				runtimeWorker: !!application.runtimeWorkerId,
@@ -352,7 +368,7 @@ export function extractImageTag(dockerImage: string | null) {
  */
 export const extractImageNameFromRequest = (
 	headers: any,
-	body: any,
+	body: DeployWebhookBody,
 ): string | null => {
 	// GitHub Packages: registry_package events (container registry)
 	const packageVersion = getPackageVersion(headers, body);
@@ -388,7 +404,7 @@ export const extractImageNameFromRequest = (
  */
 export const extractImageTagFromRequest = (
 	headers: any,
-	body: any,
+	body: DeployWebhookBody,
 ): string | null => {
 	// GitHub Packages: registry_package events (container registry)
 	const packageVersion = getPackageVersion(headers, body);
@@ -420,13 +436,13 @@ export const extractImageTagFromRequest = (
 	// Docker Hub
 	if (headers["user-agent"]?.includes("Go-http-client")) {
 		if (body.push_data && body.repository) {
-			return body.push_data.tag;
+			return body.push_data.tag ?? null;
 		}
 	}
 	return null;
 };
 
-export const extractCommitMessage = (headers: any, body: any) => {
+export const extractCommitMessage = (headers: any, body: DeployWebhookBody) => {
 	// GitHub Packages: registry_package events (container tags)
 	const githubEvent = headers["x-github-event"];
 	if (githubEvent === "registry_package") {
@@ -441,34 +457,38 @@ export const extractCommitMessage = (headers: any, body: any) => {
 	}
 	// GitHub
 	if (headers["x-github-event"]) {
-		return body.head_commit ? body.head_commit.message : "NEW COMMIT";
+		return body.head_commit ? body.head_commit.message! : "NEW COMMIT";
 	}
 
 	// GitLab
 	if (headers["x-gitlab-event"]) {
 		return body.commits && body.commits.length > 0
-			? body.commits[0].message
+			? body.commits[0]!.message!
 			: "NEW COMMIT";
 	}
 
 	// Bitbucket
+	// Unguarded `body.push!...` access is intentional: the original `any` code
+	// threw here when the payload lacked these fields, and the caller's
+	// try/catch turned that into the existing 400. The casts keep
+	// that exact runtime behavior (they compile to no-ops).
 	if (headers["x-event-key"]?.includes("repo:push")) {
-		return body.push.changes && body.push.changes.length > 0
-			? body.push.changes[0].new.target.message
+		return body.push!.changes && body.push!.changes.length > 0
+			? body.push!.changes[0]!.new!.target!.message!
 			: "NEW COMMIT";
 	}
 
 	// Gitea
 	if (headers["x-gitea-event"]) {
 		return body.commits && body.commits.length > 0
-			? body.commits[0].message
+			? body.commits[0]!.message!
 			: "NEW COMMIT";
 	}
 
 	// Soft Serve
 	if (headers["x-softserve-event"]) {
 		return body.commits && body.commits.length > 0
-			? body.commits[0].message
+			? body.commits[0]!.message!
 			: "NEW COMMIT";
 	}
 
@@ -481,10 +501,10 @@ export const extractCommitMessage = (headers: any, body: any) => {
 	return "NEW CHANGES";
 };
 
-export const extractHash = (headers: any, body: any) => {
+export const extractHash = (headers: any, body: DeployWebhookBody) => {
 	// GitHub
 	if (headers["x-github-event"]) {
-		return body.head_commit ? body.head_commit.id : "";
+		return body.head_commit ? body.head_commit.id! : "";
 	}
 
 	// GitLab
@@ -492,15 +512,15 @@ export const extractHash = (headers: any, body: any) => {
 		return (
 			body.checkout_sha ||
 			(body.commits && body.commits.length > 0
-				? body.commits[0].id
+				? body.commits[0]!.id!
 				: "NEW COMMIT")
 		);
 	}
 
-	// Bitbucket
+	// Bitbucket — see note in extractCommitMessage on the intentional throw.
 	if (headers["x-event-key"]?.includes("repo:push")) {
-		return body.push.changes && body.push.changes.length > 0
-			? body.push.changes[0].new.target.hash
+		return body.push!.changes && body.push!.changes.length > 0
+			? body.push!.changes[0]!.new!.target!.hash!
 			: "NEW COMMIT";
 	}
 
@@ -517,7 +537,7 @@ export const extractHash = (headers: any, body: any) => {
 	return "";
 };
 
-export const extractBranchName = (headers: any, body: any) => {
+export const extractBranchName = (headers: any, body: DeployWebhookBody) => {
 	if (headers["x-github-event"] || headers["x-gitea-event"]) {
 		return body?.ref?.replace("refs/heads/", "");
 	}
@@ -529,8 +549,10 @@ export const extractBranchName = (headers: any, body: any) => {
 		return body?.ref ? body?.ref.replace("refs/heads/", "") : null;
 	}
 
+	// Bitbucket — `changes[0]` is accessed unguarded exactly as before; it threw
+	// when `changes` was absent and the caller's try/catch produced the 400.
 	if (headers["x-event-key"]?.includes("repo:push")) {
-		return body?.push?.changes[0]?.new?.name;
+		return (body?.push?.changes as { new?: { name?: string } }[])[0]?.new?.name;
 	}
 
 	return null;
@@ -561,14 +583,14 @@ export const getProviderByHeader = (headers: any) => {
 };
 
 export const extractCommittedPaths = async (
-	body: any,
+	body: DeployWebhookBody,
 	bitbucket: Bitbucket | null,
 	repository: string,
 ) => {
 	const changes = body.push?.changes || [];
 
 	const commitHashes = changes
-		.map((change: any) => change.new?.target?.hash)
+		.map((change) => change.new?.target?.hash)
 		.filter(Boolean);
 	const committedPaths: string[] = [];
 	const username =

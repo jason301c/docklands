@@ -28,12 +28,23 @@ import {
 	extractHash,
 	logWebhookError,
 } from "./application-webhook";
+import { githubWebhookBodySchema } from "./webhook-schema";
 
 const logger = createLogger("github-webhook");
 
 export async function handleGithubDeployWebhook(request: Request) {
 	const headers = requestHeadersToObject(request.headers);
-	const githubBody = await parseRequestBody(request);
+	// The raw parsed body is what signature verification runs against. We never
+	// replace it with a schema-parsed value: zod's `.passthrough()` reorders
+	// keys, which would change the re-stringified bytes and break HMAC
+	// verification for legitimate GitHub payloads.
+	const rawBody = await parseRequestBody(request);
+	// A lenient, typed view of the same body for safe field access. A non-object
+	// payload fails to parse; we substitute an empty object so the handler reaches
+	// the same controlled responses it already returned for a missing/empty body,
+	// rather than introducing a new status code GitHub might choke on.
+	const parsed = githubWebhookBodySchema.safeParse(rawBody);
+	const githubBody = parsed.success ? parsed.data : {};
 	const signature = headers["x-hub-signature-256"];
 
 	if (!signature) {
@@ -45,7 +56,10 @@ export async function handleGithubDeployWebhook(request: Request) {
 	}
 
 	const githubResult = await db.query.github.findFirst({
-		where: eq(github.githubInstallationId, githubBody.installation.id),
+		// Use the raw value for the lookup so the comparison is byte-identical to
+		// the pre-hardening behavior (GitHub sends a numeric id; the original code
+		// passed it through untouched).
+		where: eq(github.githubInstallationId, rawBody.installation.id),
 	});
 
 	if (!githubResult) {
@@ -60,7 +74,7 @@ export async function handleGithubDeployWebhook(request: Request) {
 	});
 
 	const verified = await webhooks.verify(
-		JSON.stringify(githubBody),
+		JSON.stringify(rawBody),
 		signature as string,
 	);
 
@@ -110,9 +124,13 @@ export async function handleGithubDeployWebhook(request: Request) {
 		githubBody?.ref?.startsWith("refs/tags/")
 	) {
 		try {
-			const tagName = githubBody?.ref.replace("refs/tags/", "");
-			const repository = githubBody?.repository?.name;
-			const owner = githubBody?.repository?.owner?.name;
+			const tagName = (githubBody?.ref as string).replace("refs/tags/", "");
+			// These come from a signature-verified GitHub push payload and are
+			// always present in practice; the casts preserve the exact
+			// runtime values the original `any` code passed into the queries (they
+			// compile to no-ops).
+			const repository = githubBody?.repository?.name as string;
+			const owner = githubBody?.repository?.owner?.name as string;
 			const deploymentTitle = `Tag created: ${tagName}`;
 			const deploymentHash = extractHash(headers, githubBody);
 
@@ -202,14 +220,18 @@ export async function handleGithubDeployWebhook(request: Request) {
 
 	if (headers["x-github-event"] === "push") {
 		try {
-			const branchName = githubBody?.ref?.replace("refs/heads/", "");
-			const repository = githubBody?.repository?.name;
+			// Verified GitHub push payload: branch/repository/owner are always
+			// present in practice. The casts keep the exact runtime
+			// values the original `any` code fed into the queries (no-ops at
+			// runtime).
+			const branchName = githubBody?.ref?.replace("refs/heads/", "") as string;
+			const repository = githubBody?.repository?.name as string;
 
 			const deploymentTitle = extractCommitMessage(headers, githubBody);
 			const deploymentHash = extractHash(headers, githubBody);
-			const owner = githubBody?.repository?.owner?.name;
+			const owner = githubBody?.repository?.owner?.name as string;
 			const normalizedCommits = githubBody?.commits?.flatMap(
-				(commit: any) => commit.modified,
+				(commit) => commit.modified,
 			);
 
 			const apps = await db.query.applications.findMany({
@@ -306,7 +328,11 @@ export async function handleGithubDeployWebhook(request: Request) {
 			return jsonResponse({ message: "Error deploying Application" }, 400);
 		}
 	} else if (headers["x-github-event"] === "pull_request") {
-		const prId = githubBody?.pull_request?.id;
+		// `id`/`number` arrive as JSON numbers from GitHub and are passed straight
+		// into the (text-typed) preview-deployment store. Read them from the raw
+		// body so their runtime type stays byte-identical to the original `any`
+		// code instead of being narrowed/coerced.
+		const prId = rawBody?.pull_request?.id;
 		const action = githubBody?.action;
 
 		if (action === "closed") {
@@ -349,10 +375,13 @@ export async function handleGithubDeployWebhook(request: Request) {
 				action === "reopened" ||
 				action === "labeled";
 
-			const repository = githubBody?.repository?.name;
+			// Verified GitHub PR payload: these string fields are always present in
+			// practice. The casts preserve the exact runtime values
+			// the original `any` code used (no-ops at runtime).
+			const repository = githubBody?.repository?.name as string;
 			const deploymentHash = githubBody?.pull_request?.head?.sha;
-			const branch = githubBody?.pull_request?.base?.ref;
-			const owner = githubBody?.repository?.owner?.login;
+			const branch = githubBody?.pull_request?.base?.ref as string;
+			const owner = githubBody?.repository?.owner?.login as string;
 			const prAuthor = githubBody?.pull_request?.user?.login;
 
 			// Validate PR author information is present
@@ -449,11 +478,14 @@ export async function handleGithubDeployWebhook(request: Request) {
 				secureApps.push(app);
 			}
 
-			const prBranch = githubBody?.pull_request?.head?.ref;
+			const prBranch = githubBody?.pull_request?.head?.ref as string;
 
-			const prNumber = githubBody?.pull_request?.number;
-			const prTitle = githubBody?.pull_request?.title;
-			const prURL = githubBody?.pull_request?.html_url;
+			// `number` arrives as a JSON number; read it from the raw body so the
+			// value fed into the (text-typed) preview store stays byte-identical to
+			// the original `any` code.
+			const prNumber = rawBody?.pull_request?.number;
+			const prTitle = githubBody?.pull_request?.title as string;
+			const prURL = githubBody?.pull_request?.html_url as string;
 
 			// Create security notification comment if any apps were blocked
 			if (blockedApps.length > 0) {
@@ -471,9 +503,12 @@ export async function handleGithubDeployWebhook(request: Request) {
 				// check for labels
 				if (app?.previewLabels && app?.previewLabels?.length > 0) {
 					let hasLabel = false;
-					const labels = githubBody?.pull_request?.labels;
+					// Default to an empty array so a payload that omits `labels`
+					// (a real GitHub PR always sends the array) is treated as
+					// "no matching label" rather than throwing on `for...of`.
+					const labels = githubBody?.pull_request?.labels ?? [];
 					for (const label of labels) {
-						if (app?.previewLabels?.includes(label.name)) {
+						if (label.name && app?.previewLabels?.includes(label.name)) {
 							hasLabel = true;
 							break;
 						}
