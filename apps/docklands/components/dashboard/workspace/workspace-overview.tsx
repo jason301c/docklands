@@ -29,6 +29,7 @@ import {
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
 import { Dialog } from "@/components/shared/dialog";
+import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { workspaceEnvironmentPath } from "@/shared/routes";
 import { cn } from "@/shared/utils";
@@ -199,7 +200,7 @@ function FirstRunWorkspacePanel({
 	canCreateWorkspaces: boolean;
 }) {
 	return (
-		<div className="flex min-h-[560px] items-center justify-center rounded-lg border bg-kumo-canvas px-6 py-12">
+		<div className="flex min-h-[480px] items-center justify-center px-6 py-12">
 			<div className="flex w-full max-w-3xl flex-col items-center text-center">
 				<span className="flex size-12 items-center justify-center rounded-lg border bg-kumo-fill/30">
 					<FolderInput className="size-5 text-kumo-subtle" />
@@ -509,16 +510,13 @@ export const WorkspaceOverview = () => {
 		sortOptions.find((option) => option.value === sortBy)?.label ?? "";
 
 	return (
-		<div className="flex w-full flex-col gap-6">
-			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-				<h1 className="text-3xl font-semibold tracking-tight">Workspaces</h1>
-				{canCreateWorkspaces && (
-					<div className="flex flex-wrap items-center gap-2">
-						<HandleWorkspace />
-					</div>
-				)}
-			</div>
-
+		<SectionCard
+			icon={LayoutGrid}
+			title="Workspaces"
+			description="Your project workspaces and the services running in each."
+			actions={canCreateWorkspaces ? <HandleWorkspace /> : undefined}
+			contentClassName="space-y-5"
+		>
 			{showFirstRun ? (
 				<FirstRunWorkspacePanel canCreateWorkspaces={canCreateWorkspaces} />
 			) : (
@@ -602,6 +600,6 @@ export const WorkspaceOverview = () => {
 					)}
 				</>
 			)}
-		</div>
+		</SectionCard>
 	);
 };
