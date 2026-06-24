@@ -22,11 +22,7 @@ export const TagManager = () => {
 	const { permissions } = usePermissions();
 
 	return (
-		<SectionCard
-			icon={TagIcon}
-			title="Tags"
-			description="Create and manage tags to organize your workspaces"
-		>
+		<SectionCard title="Tags">
 			<QueryState
 				query={tagsQuery}
 				isEmpty={(tags) => tags.length === 0}

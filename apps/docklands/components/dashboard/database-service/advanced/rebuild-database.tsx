@@ -30,11 +30,7 @@ export const RebuildDatabase = ({ id }: Props) => {
 	};
 
 	return (
-		<SectionCard
-			icon={AlertTriangle}
-			title="Danger Zone"
-			className="border-kumo-danger/50"
-		>
+		<SectionCard title="Danger Zone" className="border-kumo-danger/50">
 			<div className="flex flex-col gap-4">
 				<div className="flex flex-col gap-2">
 					<h3 className="text-base font-semibold">Rebuild Database</h3>

@@ -20,11 +20,7 @@ export const ShowNotifications = () => {
 	const { permissions } = usePermissions();
 
 	return (
-		<SectionCard
-			icon={Bell}
-			title="Notifications"
-			description="Add your providers to receive notifications, like Discord, Slack, Telegram, Teams, Email, Resend, Lark."
-		>
+		<SectionCard title="Notifications">
 			{isPending ? (
 				<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 					<span>Loading...</span>

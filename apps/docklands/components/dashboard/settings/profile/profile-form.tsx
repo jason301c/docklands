@@ -2,7 +2,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Radio } from "@cloudflare/kumo/components/radio";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { Loader2, Palette, User } from "lucide-react";
+import { Loader2, Palette } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -140,9 +140,7 @@ export const ProfileForm = () => {
 
 	return (
 		<SectionCard
-			icon={User}
 			title="Account"
-			description="Change the details of your profile here."
 			actions={!data?.user.twoFactorEnabled ? <Enable2FA /> : <Configure2FA />}
 			contentClassName="space-y-2"
 		>

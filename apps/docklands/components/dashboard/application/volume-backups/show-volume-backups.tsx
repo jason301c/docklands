@@ -71,9 +71,7 @@ export const ShowVolumeBackups = ({
 
 	return (
 		<SectionCard
-			icon={DatabaseBackup}
 			title="Volume Backups"
-			description="Schedule volume backups to run automatically at specified intervals"
 			className="h-full min-h-[50vh]"
 			actions={
 				volumeBackups && volumeBackups.length > 0 ? (

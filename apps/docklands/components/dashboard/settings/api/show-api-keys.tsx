@@ -14,12 +14,7 @@ export const ShowApiKeys = () => {
 		api.user.deleteApiKey.useMutation();
 
 	return (
-		<SectionCard
-			icon={KeyIcon}
-			title="API/CLI Keys"
-			description="Generate and manage API keys to access the API/CLI"
-			contentClassName="space-y-6"
-		>
+		<SectionCard title="API/CLI Keys" contentClassName="space-y-6">
 			<div className="flex flex-col gap-4">
 				{data?.user.apiKeys && data.user.apiKeys.length > 0 ? (
 					data.user.apiKeys.map((apiKey) => (

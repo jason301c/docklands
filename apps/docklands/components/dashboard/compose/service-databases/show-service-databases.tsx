@@ -207,12 +207,7 @@ export const ShowServiceDatabases = ({ composeId }: Props) => {
 	}
 
 	return (
-		<SectionCard
-			icon={DatabaseZap}
-			title="Detected Databases"
-			description="Databases discovered inside this compose stack. Their connection variables and backups are managed by Docklands."
-			contentClassName="space-y-4"
-		>
+		<SectionCard title="Detected Databases" contentClassName="space-y-4">
 			{databases.map((database) => (
 				<ServiceDatabaseCard
 					key={database.serviceDatabaseId}

@@ -23,11 +23,7 @@ export const ShowSshKeys = () => {
 	const { permissions } = usePermissions();
 
 	return (
-		<SectionCard
-			icon={KeyRound}
-			title="SSH Keys"
-			description="Create and manage SSH Keys, you can use them to access your runtime workers, git private repositories, and more."
-		>
+		<SectionCard title="SSH Keys">
 			<QueryState
 				query={sshKeysQuery}
 				isEmpty={(data) => data.length === 0}

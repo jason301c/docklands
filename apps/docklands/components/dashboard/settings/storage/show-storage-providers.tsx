@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@cloudflare/kumo/components/button";
-import { Database, FolderUp, Trash2 } from "lucide-react";
+import { FolderUp, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
@@ -20,11 +20,7 @@ export const ShowStorageProviders = () => {
 		api.destination.remove.useMutation();
 	const { permissions } = usePermissions();
 	return (
-		<SectionCard
-			icon={Database}
-			title="Storage providers"
-			description="Add your providers like AWS S3, Cloudflare R2, Wasabi, DigitalOcean Spaces etc."
-		>
+		<SectionCard title="Storage providers">
 			<QueryState
 				query={destinationsQuery}
 				isEmpty={(data) => data.length === 0}

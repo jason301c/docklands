@@ -1,5 +1,4 @@
 import {
-	FileIcon,
 	Folder,
 	FolderOpen,
 	Loader2,
@@ -34,12 +33,7 @@ export const ShowIngressFiles = ({ runtimeWorkerId }: Props) => {
 	);
 
 	return (
-		<SectionCard
-			icon={FileIcon}
-			title="Ingress Files"
-			description="Manage generated and custom ingress files."
-			contentClassName="space-y-2"
-		>
+		<SectionCard title="Ingress Files" contentClassName="space-y-2">
 			<AlertBlock type="warning">
 				Invalid ingress configuration can break access to your applications.
 			</AlertBlock>

@@ -44,9 +44,7 @@ export const ShowRuntimeWorkers = () => {
 
 	return (
 		<SectionCard
-			icon={ServerIcon}
 			title="Runtime Workers"
-			description="Add workers to run services on remote machines."
 			actions={isAdmin ? <ToggleRemoteWorkersOnly /> : null}
 		>
 			<QueryState

@@ -12,10 +12,7 @@ const Page = () => {
 	return (
 		<div className="w-full">
 			<PageSection className="h-full gap-4">
-				<PageHeader
-					title="Concurrent Builds"
-					description="Configure how many builds can run at the same time on each runtime worker. Builds of the same service are always serialized."
-				/>
+				<PageHeader title="Concurrent Builds" />
 				<div className="flex flex-col gap-6">
 					<AlertBlock type="warning">
 						Running multiple builds at once increases CPU, memory and disk usage

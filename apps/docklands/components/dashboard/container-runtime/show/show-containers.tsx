@@ -12,7 +12,7 @@ import {
 	useReactTable,
 	type VisibilityState,
 } from "@tanstack/react-table";
-import { ChevronDown, Container } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import * as React from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { DropdownMenu } from "@/components/shared/dropdown";
@@ -60,12 +60,7 @@ export const ShowContainers = ({ runtimeWorkerId }: Props) => {
 	});
 
 	return (
-		<SectionCard
-			icon={Container}
-			title="Runtime Containers"
-			description="Inspect the containers running on this Docklands runtime."
-			contentClassName="space-y-2"
-		>
+		<SectionCard title="Runtime Containers" contentClassName="space-y-2">
 			<div className="gap-4 pb-20 w-full">
 				<div className="flex flex-col gap-4  w-full overflow-auto">
 					<div className="flex items-center gap-2 max-sm:flex-wrap">

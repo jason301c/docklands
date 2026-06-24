@@ -647,8 +647,6 @@ export const WorkspaceOverview = () => {
 	return (
 		<SectionCard
 			title="Workspaces"
-			size="lg"
-			className="bg-kumo-base"
 			actions={canCreateWorkspaces ? <HandleWorkspace /> : undefined}
 			contentClassName="space-y-5"
 		>

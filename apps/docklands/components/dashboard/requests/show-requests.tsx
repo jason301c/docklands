@@ -11,12 +11,7 @@ import {
 } from "@cloudflare/kumo/components/popover";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { format } from "date-fns";
-import {
-	AlertCircle,
-	ArrowDownUp,
-	Calendar as CalendarIcon,
-	InfoIcon,
-} from "lucide-react";
+import { AlertCircle, Calendar as CalendarIcon, InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
@@ -86,9 +81,7 @@ export const ShowRequests = () => {
 
 	return (
 		<SectionCard
-			icon={ArrowDownUp}
 			title="Requests"
-			description="See incoming requests handled by the ingress runtime."
 			className="mx-auto max-w-8xl"
 			contentClassName="space-y-2"
 		>

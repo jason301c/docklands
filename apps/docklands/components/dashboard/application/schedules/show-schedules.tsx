@@ -71,9 +71,7 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 
 	return (
 		<SectionCard
-			icon={ClipboardList}
 			title="Automations"
-			description="Run commands automatically at specified intervals."
 			className="h-full min-h-[50vh]"
 			actions={
 				schedules && schedules.length > 0 ? (

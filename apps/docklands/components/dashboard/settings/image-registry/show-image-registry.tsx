@@ -21,11 +21,7 @@ export const ShowImageRegistry = () => {
 	const { permissions } = usePermissions();
 
 	return (
-		<SectionCard
-			icon={Package}
-			title="Image Registry"
-			description="Manage credentials for container image registries."
-		>
+		<SectionCard title="Image Registry">
 			<QueryState
 				query={registriesQuery}
 				isEmpty={(data) => data.length === 0}

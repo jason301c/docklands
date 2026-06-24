@@ -1,12 +1,6 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
-import {
-	ClipboardList,
-	Database,
-	DatabaseBackup,
-	Play,
-	Trash2,
-} from "lucide-react";
+import { ClipboardList, DatabaseBackup, Play, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
@@ -79,9 +73,7 @@ export const ShowBackups = ({
 
 	return (
 		<SectionCard
-			icon={Database}
 			title="Backups"
-			description="Add backups to your database to save the data to a different provider."
 			actions={
 				postgres && postgres?.backups?.length > 0 ? (
 					<div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto">

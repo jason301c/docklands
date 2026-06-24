@@ -2,13 +2,7 @@ import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Table } from "@cloudflare/kumo/components/table";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
-import {
-	Boxes,
-	HelpCircle,
-	Loader2,
-	LockIcon,
-	MoreHorizontal,
-} from "lucide-react";
+import { HelpCircle, Loader2, LockIcon, MoreHorizontal } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { DateTooltip } from "@/components/shared/date-tooltip";
@@ -36,9 +30,7 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 	const haveAtLeastOneRegistry = !!(registry && registry?.length > 0);
 	return (
 		<SectionCard
-			icon={Boxes}
 			title="Cluster"
-			description="Add nodes to your cluster runtime."
 			actions={
 				haveAtLeastOneRegistry ? (
 					<AddClusterNode runtimeWorkerId={runtimeWorkerId} />

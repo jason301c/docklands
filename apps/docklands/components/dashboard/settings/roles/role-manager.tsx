@@ -98,11 +98,7 @@ export const RoleManager = () => {
 		api.customRole.remove.useMutation();
 
 	return (
-		<SectionCard
-			icon={ShieldCheck}
-			title="Roles"
-			description="Define custom roles with specific capabilities, then assign them to members. The built-in owner, admin, and member roles cannot be edited."
-		>
+		<SectionCard title="Roles">
 			<QueryState
 				query={rolesQuery}
 				isEmpty={(roles) => roles.length === 0}

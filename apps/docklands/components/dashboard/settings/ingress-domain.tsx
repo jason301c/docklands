@@ -3,7 +3,6 @@ import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { GlobeIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -103,12 +102,7 @@ export const IngressDomain = () => {
 	};
 
 	return (
-		<SectionCard
-			icon={GlobeIcon}
-			title="Ingress Domain"
-			description="Add a domain to the Docklands ingress."
-			contentClassName="space-y-2"
-		>
+		<SectionCard title="Ingress Domain" contentClassName="space-y-2">
 			{/* Warning for GitHub webhook URL changes */}
 			{hasChanged && (
 				<AlertBlock type="warning">

@@ -1,7 +1,6 @@
 "use client";
 
 import { Tabs } from "@cloudflare/kumo/components/tabs";
-import { Rocket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { ShowDeploymentsTable } from "@/components/dashboard/deployments/show-deployments-table";
@@ -36,11 +35,7 @@ function DeploymentsPage() {
 	return (
 		<div className="w-full">
 			<PageSection className="min-h-[45vh] gap-0">
-				<PageHeader
-					icon={Rocket}
-					title="Deployments"
-					description="Deployment history and worker queue across every service."
-				/>
+				<PageHeader title="Deployments" />
 				<Tabs
 					value={tab}
 					onValueChange={(value) => value !== null && setTab(value as never)}

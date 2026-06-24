@@ -123,12 +123,7 @@ export const ShowAuditLog = () => {
 	};
 
 	return (
-		<SectionCard
-			icon={ScrollText}
-			title="Audit Log"
-			description="Who did what across this instance."
-			contentClassName="space-y-6"
-		>
+		<SectionCard title="Audit Log" contentClassName="space-y-6">
 			<div className="flex flex-wrap items-center gap-2">
 				<Input
 					aria-label="Filter audit log by resource name"

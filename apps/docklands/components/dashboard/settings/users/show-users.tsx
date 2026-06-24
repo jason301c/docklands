@@ -25,11 +25,7 @@ export const ShowUsers = () => {
 	const { data: session } = api.user.session.useQuery();
 
 	return (
-		<SectionCard
-			icon={Users}
-			title="Users"
-			description="Add your users to your Docklands account."
-		>
+		<SectionCard title="Users">
 			<QueryState
 				query={usersQuery}
 				isEmpty={(data) => data.length === 0}

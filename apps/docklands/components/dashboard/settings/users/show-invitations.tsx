@@ -3,7 +3,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Table } from "@cloudflare/kumo/components/table";
 import copy from "copy-to-clipboard";
 import { format, isPast } from "date-fns";
-import { Mail, MoreHorizontal, Users } from "lucide-react";
+import { MoreHorizontal, Users } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
 import { DropdownMenu } from "@/components/shared/dropdown";
@@ -20,11 +20,7 @@ export const ShowInvitations = () => {
 		api.organization.removeInvitation.useMutation();
 
 	return (
-		<SectionCard
-			icon={Mail}
-			title="Invitations"
-			description="Create invitations to your organization."
-		>
+		<SectionCard title="Invitations">
 			<QueryState
 				query={invitationsQuery}
 				isEmpty={(data) => data.length === 0}

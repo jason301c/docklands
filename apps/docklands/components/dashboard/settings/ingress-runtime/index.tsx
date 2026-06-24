@@ -1,5 +1,5 @@
 import copy from "copy-to-clipboard";
-import { CopyIcon, ServerIcon } from "lucide-react";
+import { CopyIcon } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
@@ -17,12 +17,7 @@ export const IngressRuntime = () => {
 		api.settings.getDocklandsVersion.useQuery();
 
 	return (
-		<SectionCard
-			icon={ServerIcon}
-			title="Ingress Runtime"
-			description="Reload the edge proxy, clean runtime state, and inspect updates."
-			contentClassName="space-y-6"
-		>
+		<SectionCard title="Ingress Runtime" contentClassName="space-y-6">
 			<div className="grid md:grid-cols-2 gap-4">
 				<ShowDocklandsActions />
 				<ShowIngressActions />

@@ -61,11 +61,7 @@ export const ShowGitProviders = () => {
 	};
 
 	return (
-		<SectionCard
-			icon={GitBranch}
-			title="Git Providers"
-			description="Connect your Git provider for authentication."
-		>
+		<SectionCard title="Git Providers">
 			{isPending ? (
 				<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[25vh]">
 					<span>Loading...</span>

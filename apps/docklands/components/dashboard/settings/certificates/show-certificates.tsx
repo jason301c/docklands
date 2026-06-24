@@ -38,12 +38,7 @@ export const ShowCertificates = () => {
 	const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
 
 	return (
-		<SectionCard
-			icon={ShieldCheck}
-			title="Certificates"
-			description="Create certificates in the ingress runtime directory"
-			contentClassName="space-y-2"
-		>
+		<SectionCard title="Certificates" contentClassName="space-y-2">
 			<AlertBlock type="warning">
 				Certificates are created in the ingress runtime directory. The ingress
 				runtime uses these certificates to secure your applications. Invalid

@@ -14,7 +14,7 @@ export function PageSection({
 	return (
 		<div
 			className={cn(
-				"flex w-full flex-col gap-6 rounded-lg border border-kumo-hairline bg-kumo-canvas p-6",
+				"flex w-full flex-col gap-6 rounded-lg border border-kumo-hairline bg-kumo-base p-6",
 				className,
 			)}
 			{...props}
