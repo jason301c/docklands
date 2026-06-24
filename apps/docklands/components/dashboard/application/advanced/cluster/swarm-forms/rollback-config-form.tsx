@@ -4,8 +4,7 @@ import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { api } from "@/client/api/trpc";
+import type { z } from "zod";
 import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
@@ -17,52 +16,23 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+import { swarmConfigFormSchema } from "./schemas";
+import { type SwarmServiceType, useServiceData } from "./use-service-data";
 
 const logger = createClientLogger("application");
 
-export const rollbackConfigFormSchema = z.object({
-	Parallelism: z.coerce.number().optional(),
-	Delay: z.coerce.number().optional(),
-	FailureAction: z.string().optional(),
-	Monitor: z.coerce.number().optional(),
-	MaxFailureRatio: z.coerce.number().optional(),
-	Order: z.string().optional(),
-});
-
 interface RollbackConfigFormProps {
 	id: string;
-	type:
-		| "postgres"
-		| "mariadb"
-		| "mongo"
-		| "mysql"
-		| "redis"
-		| "application"
-		| "libsql";
+	type: SwarmServiceType;
 }
 
 export const RollbackConfigForm = ({ id, type }: RollbackConfigFormProps) => {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const isApplication = type === "application";
-	const applicationQuery = api.application.one.useQuery(
-		{ applicationId: id },
-		{ enabled: !!id && isApplication },
-	);
-	const databaseQuery = api.database.one.useQuery(
-		{ databaseId: id },
-		{ enabled: !!id && !isApplication },
-	);
-	const { data, refetch } = isApplication ? applicationQuery : databaseQuery;
+	const { data, refetch, mutateAsync } = useServiceData(id, type);
 
-	const applicationMutation = api.application.update.useMutation();
-	const databaseMutation = api.database.update.useMutation();
-	const { mutateAsync } = isApplication
-		? applicationMutation
-		: databaseMutation;
-
-	const form = useForm<any>({
-		resolver: zodResolver(rollbackConfigFormSchema),
+	const form = useForm({
+		resolver: zodResolver(swarmConfigFormSchema),
 		defaultValues: {
 			Parallelism: undefined,
 			Delay: undefined,
@@ -79,9 +49,7 @@ export const RollbackConfigForm = ({ id, type }: RollbackConfigFormProps) => {
 		}
 	}, [data, form]);
 
-	const onSubmit = async (
-		formData: z.infer<typeof rollbackConfigFormSchema>,
-	) => {
+	const onSubmit = async (formData: z.infer<typeof swarmConfigFormSchema>) => {
 		setIsLoading(true);
 		try {
 			// Check if all values are empty, if so, send null to clear the database

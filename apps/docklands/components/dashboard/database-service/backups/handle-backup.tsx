@@ -1,23 +1,10 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@cloudflare/kumo/components/popover";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import {
-	CheckIcon,
-	ChevronsUpDown,
-	DatabaseZap,
-	PenBoxIcon,
-	PlusIcon,
-	RefreshCw,
-} from "lucide-react";
+import { PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -33,11 +20,14 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { BACKUP_DATABASE_ENGINE_KEYS } from "@/shared/database-engines";
-import { cn } from "@/shared/utils";
 import { ScheduleFormField } from "../../application/schedules/handle-schedules";
+import {
+	ComposeServicePicker,
+	useComposeServices,
+} from "../../shared/compose-service-picker";
+import { DestinationPicker } from "../../shared/destination-picker";
 import { ENGINE_LABELS } from "../general/engine-labels";
 import {
 	composeBackupMetadataEngineShape,
@@ -46,16 +36,6 @@ import {
 import { ComposeCredentialFields } from "./compose-credential-fields";
 
 const logger = createClientLogger("database-backup");
-
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-} from "@/components/shared/command";
-
-type CacheType = "cache" | "fetch";
 
 type DatabaseType =
 	| "postgres"
@@ -119,7 +99,6 @@ export const HandleBackup = ({
 }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 
-	const { data, isPending } = api.destination.all.useQuery();
 	const { data: backup } = api.backup.one.useQuery(
 		{
 			backupId: backupId ?? "",
@@ -128,7 +107,6 @@ export const HandleBackup = ({
 			enabled: !!backupId,
 		},
 	);
-	const [cacheType, setCacheType] = useState<CacheType>("cache");
 	const updateBackup = api.backup.update.useMutation();
 	const createBackupMutation = api.backup.create.useMutation();
 	const { mutateAsync: createBackup, isPending: isCreatingPostgresBackup } =
@@ -156,21 +134,15 @@ export const HandleBackup = ({
 	});
 
 	const {
-		data: services,
-		isFetching: isLoadingServices,
+		services,
+		isLoadingServices,
 		error: errorServices,
-		refetch: refetchServices,
-	} = api.compose.loadServices.useQuery(
-		{
-			composeId: backup?.composeId ?? id ?? "",
-			type: cacheType,
-		},
-		{
-			retry: false,
-			refetchOnWindowFocus: false,
-			enabled: backupType === "compose" && !!backup?.composeId && !!id,
-		},
-	);
+		cacheType,
+		setCacheType,
+		refetchServices,
+	} = useComposeServices(backup?.composeId ?? id, {
+		enabled: backupType === "compose" && !!backup?.composeId && !!id,
+	});
 
 	useEffect(() => {
 		form.reset({
@@ -307,181 +279,18 @@ export const HandleBackup = ({
 									)}
 								/>
 							)}
-							<FormField
-								control={form.control}
-								name="destinationId"
-								render={({ field }) => (
-									<FormItem className="">
-										<FormLabel>Destination</FormLabel>
-										<Popover>
-											<PopoverTrigger asChild>
-												<FormControl>
-													<Button
-														variant="outline"
-														className={cn(
-															"w-full justify-between !bg-kumo-line",
-															!field.value && "text-kumo-subtle",
-														)}
-													>
-														{isPending
-															? "Loading...."
-															: field.value
-																? data?.find(
-																		(destination) =>
-																			destination.destinationId === field.value,
-																	)?.name
-																: "Select Destination"}
-
-														<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-													</Button>
-												</FormControl>
-											</PopoverTrigger>
-											<PopoverContent className="p-0" align="start">
-												<Command items={[]}>
-													<CommandInput
-														placeholder="Search Destination..."
-														className="h-9"
-													/>
-													{isPending && (
-														<span className="py-6 text-center text-sm">
-															Loading Destinations....
-														</span>
-													)}
-													<CommandEmpty>No destinations found.</CommandEmpty>
-													<ScrollArea className="h-64">
-														<CommandGroup>
-															{data?.map((destination) => (
-																<CommandItem
-																	value={destination.destinationId}
-																	key={destination.destinationId}
-																	onSelect={() => {
-																		form.setValue(
-																			"destinationId",
-																			destination.destinationId,
-																		);
-																	}}
-																>
-																	{destination.name}
-																	<CheckIcon
-																		className={cn(
-																			"ml-auto h-4 w-4",
-																			destination.destinationId === field.value
-																				? "opacity-100"
-																				: "opacity-0",
-																		)}
-																	/>
-																</CommandItem>
-															))}
-														</CommandGroup>
-													</ScrollArea>
-												</Command>
-											</PopoverContent>
-										</Popover>
-
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
+							<DestinationPicker control={form.control} name="destinationId" />
 							{backupType === "compose" && (
 								<div className="flex flex-row items-end w-full gap-4">
-									<FormField
+									<ComposeServicePicker
 										control={form.control}
 										name="serviceName"
-										render={({ field }) => (
-											<FormItem className="w-full">
-												<FormLabel>Service Name</FormLabel>
-												<div className="flex gap-2">
-													<Select
-														aria-label="Database service"
-														onValueChange={field.onChange}
-														value={field.value || undefined}
-													>
-														<FormControl>
-															<></>
-														</FormControl>
-
-														<>
-															{services?.map((service, index) => (
-																<Select.Option
-																	value={service}
-																	key={`${service}-${index}`}
-																>
-																	{service}
-																</Select.Option>
-															))}
-															{(!services || services.length === 0) && (
-																<Select.Option value="none" disabled>
-																	Empty
-																</Select.Option>
-															)}
-														</>
-													</Select>
-													<TooltipProvider delay={0}>
-														<Tooltip
-															content={
-																<>
-																	<p>
-																		Fetch: Will clone the repository and load
-																		the services
-																	</p>
-																</>
-															}
-															side="left"
-															className="max-w-[10rem]"
-															asChild
-														>
-															<Button
-																variant="secondary"
-																type="button"
-																loading={isLoadingServices}
-																onClick={() => {
-																	if (cacheType === "fetch") {
-																		refetchServices();
-																	} else {
-																		setCacheType("fetch");
-																	}
-																}}
-															>
-																<RefreshCw className="size-4 text-kumo-subtle" />
-															</Button>
-														</Tooltip>
-													</TooltipProvider>
-													<TooltipProvider delay={0}>
-														<Tooltip
-															content={
-																<>
-																	<p>
-																		Cache: If you previously built this compose,
-																		it will read the services from the last
-																		build or repository fetch
-																	</p>
-																</>
-															}
-															side="left"
-															className="max-w-[10rem]"
-															asChild
-														>
-															<Button
-																variant="secondary"
-																type="button"
-																loading={isLoadingServices}
-																onClick={() => {
-																	if (cacheType === "cache") {
-																		refetchServices();
-																	} else {
-																		setCacheType("cache");
-																	}
-																}}
-															>
-																<DatabaseZap className="size-4 text-kumo-subtle" />
-															</Button>
-														</Tooltip>
-													</TooltipProvider>
-												</div>
-
-												<FormMessage />
-											</FormItem>
-										)}
+										services={services}
+										cacheType={cacheType}
+										setCacheType={setCacheType}
+										isLoadingServices={isLoadingServices}
+										refetchServices={refetchServices}
+										ariaLabel="Database service"
 									/>
 								</div>
 							)}

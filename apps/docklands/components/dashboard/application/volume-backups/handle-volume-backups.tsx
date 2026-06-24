@@ -3,9 +3,8 @@ import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { DatabaseZap, PenBoxIcon, PlusCircle, RefreshCw } from "lucide-react";
+import { PenBoxIcon, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,7 +22,10 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
-import type { CacheType } from "../domains/handle-domain";
+import {
+	ComposeServicePicker,
+	useComposeServices,
+} from "../../shared/compose-service-picker";
 import { ScheduleFormField } from "../schedules/handle-schedules";
 
 const logger = createClientLogger("volume-backup");
@@ -98,7 +100,6 @@ export const HandleVolumeBackups = ({
 	volumeBackupType,
 }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
-	const [cacheType, setCacheType] = useState<CacheType>("cache");
 	const [keepLatestCountInput, setKeepLatestCountInput] = useState("");
 
 	const utils = api.useUtils();
@@ -130,21 +131,15 @@ export const HandleVolumeBackups = ({
 	);
 
 	const {
-		data: services,
-		isFetching: isLoadingServices,
+		services,
+		isLoadingServices,
 		error: errorServices,
-		refetch: refetchServices,
-	} = api.compose.loadServices.useQuery(
-		{
-			composeId: id || "",
-			type: cacheType,
-		},
-		{
-			retry: false,
-			refetchOnWindowFocus: false,
-			enabled: !!id && volumeBackupType === "compose",
-		},
-	);
+		cacheType,
+		setCacheType,
+		refetchServices,
+	} = useComposeServices(id, {
+		enabled: !!id && volumeBackupType === "compose",
+	});
 
 	const serviceName = form.watch("serviceName");
 
@@ -336,102 +331,17 @@ export const HandleVolumeBackups = ({
 											{errorServices?.message}
 										</AlertBlock>
 									)}
-									<FormField
+									<ComposeServicePicker
 										control={form.control}
 										name="serviceName"
-										render={({ field }) => (
-											<FormItem className="w-full">
-												<FormLabel>Service Name</FormLabel>
-												<div className="flex gap-2">
-													<Select
-														aria-label="Volume backup service"
-														onValueChange={field.onChange}
-														defaultValue={field.value || ""}
-													>
-														<FormControl>
-															<></>
-														</FormControl>
-
-														<>
-															{services?.map((service, index) => (
-																<Select.Option
-																	value={service}
-																	key={`${service}-${index}`}
-																>
-																	{service}
-																</Select.Option>
-															))}
-															<Select.Option value="none" disabled>
-																Empty
-															</Select.Option>
-														</>
-													</Select>
-													<TooltipProvider delay={0}>
-														<Tooltip
-															content={
-																<>
-																	<p>
-																		Fetch: Will clone the repository and load
-																		the services
-																	</p>
-																</>
-															}
-															side="left"
-															className="max-w-[10rem]"
-															asChild
-														>
-															<Button
-																variant="secondary"
-																type="button"
-																loading={isLoadingServices}
-																onClick={() => {
-																	if (cacheType === "fetch") {
-																		refetchServices();
-																	} else {
-																		setCacheType("fetch");
-																	}
-																}}
-															>
-																<RefreshCw className="size-4 text-kumo-subtle" />
-															</Button>
-														</Tooltip>
-													</TooltipProvider>
-													<TooltipProvider delay={0}>
-														<Tooltip
-															content={
-																<>
-																	<p>
-																		Cache: If you previously built this compose,
-																		it will read the services from the last
-																		build or repository fetch
-																	</p>
-																</>
-															}
-															side="left"
-															className="max-w-[10rem]"
-															asChild
-														>
-															<Button
-																variant="secondary"
-																type="button"
-																loading={isLoadingServices}
-																onClick={() => {
-																	if (cacheType === "cache") {
-																		refetchServices();
-																	} else {
-																		setCacheType("cache");
-																	}
-																}}
-															>
-																<DatabaseZap className="size-4 text-kumo-subtle" />
-															</Button>
-														</Tooltip>
-													</TooltipProvider>
-												</div>
-
-												<FormMessage />
-											</FormItem>
-										)}
+										services={services}
+										cacheType={cacheType}
+										setCacheType={setCacheType}
+										isLoadingServices={isLoadingServices}
+										refetchServices={refetchServices}
+										ariaLabel="Volume backup service"
+										bindMode="uncontrolled"
+										alwaysShowEmptyOption
 									/>
 								</div>
 								{mountsByService && mountsByService.length > 0 && (

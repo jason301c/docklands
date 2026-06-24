@@ -4,7 +4,6 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
@@ -16,13 +15,10 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+import { optionalNumber } from "./schemas";
+import { type SwarmServiceType, useServiceData } from "./use-service-data";
 
 const logger = createClientLogger("application");
-
-const optionalNumber = z
-	.union([z.string(), z.number()])
-	.transform((val) => (val === "" ? undefined : Number(val)))
-	.optional();
 
 export const healthCheckFormSchema = z.object({
 	Test: z.array(z.string()).optional(),
@@ -34,37 +30,15 @@ export const healthCheckFormSchema = z.object({
 
 interface HealthCheckFormProps {
 	id: string;
-	type:
-		| "postgres"
-		| "mariadb"
-		| "mongo"
-		| "mysql"
-		| "redis"
-		| "application"
-		| "libsql";
+	type: SwarmServiceType;
 }
 
 export const HealthCheckForm = ({ id, type }: HealthCheckFormProps) => {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const isApplication = type === "application";
-	const applicationQuery = api.application.one.useQuery(
-		{ applicationId: id },
-		{ enabled: !!id && isApplication },
-	);
-	const databaseQuery = api.database.one.useQuery(
-		{ databaseId: id },
-		{ enabled: !!id && !isApplication },
-	);
-	const { data, refetch } = isApplication ? applicationQuery : databaseQuery;
+	const { data, refetch, mutateAsync } = useServiceData(id, type);
 
-	const applicationMutation = api.application.update.useMutation();
-	const databaseMutation = api.database.update.useMutation();
-	const { mutateAsync } = isApplication
-		? applicationMutation
-		: databaseMutation;
-
-	const form = useForm<any>({
+	const form = useForm({
 		resolver: zodResolver(healthCheckFormSchema),
 		defaultValues: {
 			Test: [],

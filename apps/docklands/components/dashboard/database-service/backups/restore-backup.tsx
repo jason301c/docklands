@@ -8,18 +8,10 @@ import {
 	PopoverTrigger,
 } from "@cloudflare/kumo/components/popover";
 import { Select } from "@cloudflare/kumo/components/select";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import debounce from "lodash/debounce";
-import {
-	CheckIcon,
-	ChevronsUpDown,
-	Copy,
-	DatabaseZap,
-	RefreshCw,
-	RotateCcw,
-} from "lucide-react";
+import { CheckIcon, ChevronsUpDown, Copy, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,7 +23,6 @@ const logger = createClientLogger("database-backup");
 
 import {
 	Command,
-	CommandEmpty,
 	CommandGroup,
 	CommandInput,
 	CommandItem,
@@ -50,6 +41,11 @@ import { BACKUP_DATABASE_ENGINE_KEYS } from "@/shared/database-engines";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
 import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
+import {
+	ComposeServicePicker,
+	useComposeServices,
+} from "../../shared/compose-service-picker";
+import { DestinationPicker } from "../../shared/destination-picker";
 import { ENGINE_LABELS } from "../general/engine-labels";
 import {
 	composeBackupMetadataEngineShape,
@@ -129,8 +125,6 @@ export const RestoreBackup = ({
 	const [isOpen, setIsOpen] = useState(false);
 	const [search, setSearch] = useState("");
 	const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-
-	const { data: destinations = [] } = api.destination.all.useQuery();
 
 	const form = useForm({
 		defaultValues: {
@@ -217,22 +211,13 @@ export const RestoreBackup = ({
 		setIsDeploying(true);
 	};
 
-	const [cacheType, setCacheType] = useState<"fetch" | "cache">("cache");
 	const {
-		data: services = [],
-		isLoading: isLoadingServices,
-		refetch: refetchServices,
-	} = api.compose.loadServices.useQuery(
-		{
-			composeId: id,
-			type: cacheType,
-		},
-		{
-			retry: false,
-			refetchOnWindowFocus: false,
-			enabled: backupType === "compose",
-		},
-	);
+		services,
+		isLoadingServices,
+		cacheType,
+		setCacheType,
+		refetchServices,
+	} = useComposeServices(id, { enabled: backupType === "compose" });
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -261,71 +246,7 @@ export const RestoreBackup = ({
 						onSubmit={form.handleSubmit(onSubmit)}
 						className="grid w-full gap-4"
 					>
-						<FormField
-							control={form.control}
-							name="destinationId"
-							render={({ field }) => (
-								<FormItem className="">
-									<FormLabel>Destination</FormLabel>
-									<Popover>
-										<PopoverTrigger asChild>
-											<FormControl>
-												<Button
-													variant="outline"
-													className={cn(
-														"w-full justify-between !bg-kumo-line",
-														!field.value && "text-kumo-subtle",
-													)}
-												>
-													{field.value
-														? destinations.find(
-																(d) => d.destinationId === field.value,
-															)?.name
-														: "Select Destination"}
-													<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-												</Button>
-											</FormControl>
-										</PopoverTrigger>
-										<PopoverContent className="p-0" align="start">
-											<Command items={[]}>
-												<CommandInput
-													placeholder="Search destinations..."
-													className="h-9"
-												/>
-												<CommandEmpty>No destinations found.</CommandEmpty>
-												<ScrollArea className="h-64">
-													<CommandGroup>
-														{destinations.map((destination) => (
-															<CommandItem
-																value={destination.destinationId}
-																key={destination.destinationId}
-																onSelect={() => {
-																	form.setValue(
-																		"destinationId",
-																		destination.destinationId,
-																	);
-																}}
-															>
-																{destination.name}
-																<CheckIcon
-																	className={cn(
-																		"ml-auto h-4 w-4",
-																		destination.destinationId === field.value
-																			? "opacity-100"
-																			: "opacity-0",
-																	)}
-																/>
-															</CommandItem>
-														))}
-													</CommandGroup>
-												</ScrollArea>
-											</Command>
-										</PopoverContent>
-									</Popover>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+						<DestinationPicker control={form.control} name="destinationId" />
 
 						<FormField
 							control={form.control}
@@ -499,104 +420,15 @@ export const RestoreBackup = ({
 									)}
 								/>
 
-								<FormField
+								<ComposeServicePicker
 									control={form.control}
 									name="metadata.serviceName"
-									render={({ field }) => (
-										<FormItem className="w-full">
-											<FormLabel>Service Name</FormLabel>
-											<div className="flex gap-2">
-												<Select
-													aria-label="Restore target service"
-													onValueChange={field.onChange}
-													value={field.value || undefined}
-												>
-													<FormControl>
-														<></>
-													</FormControl>
-
-													<>
-														{services?.map((service, index) => (
-															<Select.Option
-																value={service}
-																key={`${service}-${index}`}
-															>
-																{service}
-															</Select.Option>
-														))}
-														{(!services || services.length === 0) && (
-															<Select.Option value="none" disabled>
-																Empty
-															</Select.Option>
-														)}
-													</>
-												</Select>
-												<TooltipProvider delay={0}>
-													<Tooltip
-														content={
-															<>
-																<p>
-																	Fetch: Will clone the repository and load the
-																	services
-																</p>
-															</>
-														}
-														side="left"
-														className="max-w-[10rem]"
-														asChild
-													>
-														<Button
-															variant="secondary"
-															type="button"
-															loading={isLoadingServices}
-															onClick={() => {
-																if (cacheType === "fetch") {
-																	refetchServices();
-																} else {
-																	setCacheType("fetch");
-																}
-															}}
-														>
-															<RefreshCw className="size-4 text-kumo-subtle" />
-														</Button>
-													</Tooltip>
-												</TooltipProvider>
-												<TooltipProvider delay={0}>
-													<Tooltip
-														content={
-															<>
-																<p>
-																	Cache: If you previously built this compose,
-																	it will read the services from the last build
-																	or repository fetch
-																</p>
-															</>
-														}
-														side="left"
-														className="max-w-[10rem]"
-														asChild
-													>
-														<Button
-															variant="secondary"
-															type="button"
-															loading={isLoadingServices}
-															onClick={() => {
-																if (cacheType === "cache") {
-																	refetchServices();
-																} else {
-																	setCacheType("cache");
-																}
-															}}
-														>
-															<DatabaseZap className="size-4 text-kumo-subtle" />
-														</Button>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-
-											<FormMessage />
-										</FormItem>
-									)}
+									services={services}
+									cacheType={cacheType}
+									setCacheType={setCacheType}
+									isLoadingServices={isLoadingServices}
+									refetchServices={refetchServices}
+									ariaLabel="Restore target service"
 								/>
 
 								<ComposeCredentialFields

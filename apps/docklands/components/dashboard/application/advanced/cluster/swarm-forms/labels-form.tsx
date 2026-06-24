@@ -4,7 +4,6 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
@@ -16,6 +15,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+import { type SwarmServiceType, useServiceData } from "./use-service-data";
 
 const logger = createClientLogger("application");
 
@@ -32,37 +32,15 @@ export const labelsFormSchema = z.object({
 
 interface LabelsFormProps {
 	id: string;
-	type:
-		| "postgres"
-		| "mariadb"
-		| "mongo"
-		| "mysql"
-		| "redis"
-		| "application"
-		| "libsql";
+	type: SwarmServiceType;
 }
 
 export const LabelsForm = ({ id, type }: LabelsFormProps) => {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const isApplication = type === "application";
-	const applicationQuery = api.application.one.useQuery(
-		{ applicationId: id },
-		{ enabled: !!id && isApplication },
-	);
-	const databaseQuery = api.database.one.useQuery(
-		{ databaseId: id },
-		{ enabled: !!id && !isApplication },
-	);
-	const { data, refetch } = isApplication ? applicationQuery : databaseQuery;
+	const { data, refetch, mutateAsync } = useServiceData(id, type);
 
-	const applicationMutation = api.application.update.useMutation();
-	const databaseMutation = api.database.update.useMutation();
-	const { mutateAsync } = isApplication
-		? applicationMutation
-		: databaseMutation;
-
-	const form = useForm<any>({
+	const form = useForm({
 		resolver: zodResolver(labelsFormSchema),
 		defaultValues: {
 			labels: [],

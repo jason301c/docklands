@@ -1,9 +1,10 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
+import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { api } from "@/client/api/trpc";
+import { z } from "zod";
 import { createClientLogger } from "@/client/lib/logger";
 import {
 	Form,
@@ -15,42 +16,27 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+import { type SwarmServiceType, useServiceData } from "./use-service-data";
 
 const logger = createClientLogger("application");
 
+export const modeFormSchema = z.object({
+	type: z.enum(["Replicated", "Global"]).optional(),
+	Replicas: z.union([z.string(), z.number()]).optional(),
+});
+
 interface ModeFormProps {
 	id: string;
-	type:
-		| "postgres"
-		| "mariadb"
-		| "mongo"
-		| "mysql"
-		| "redis"
-		| "application"
-		| "libsql";
+	type: SwarmServiceType;
 }
 
 export const ModeForm = ({ id, type }: ModeFormProps) => {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const isApplication = type === "application";
-	const applicationQuery = api.application.one.useQuery(
-		{ applicationId: id },
-		{ enabled: !!id && isApplication },
-	);
-	const databaseQuery = api.database.one.useQuery(
-		{ databaseId: id },
-		{ enabled: !!id && !isApplication },
-	);
-	const { data, refetch } = isApplication ? applicationQuery : databaseQuery;
+	const { data, refetch, mutateAsync } = useServiceData(id, type);
 
-	const applicationMutation = api.application.update.useMutation();
-	const databaseMutation = api.database.update.useMutation();
-	const { mutateAsync } = isApplication
-		? applicationMutation
-		: databaseMutation;
-
-	const form = useForm<any>({
+	const form = useForm({
+		resolver: zodResolver(modeFormSchema),
 		defaultValues: {
 			type: undefined,
 			Replicas: undefined,
@@ -76,7 +62,7 @@ export const ModeForm = ({ id, type }: ModeFormProps) => {
 		}
 	}, [data, form]);
 
-	const onSubmit = async (formData: any) => {
+	const onSubmit = async (formData: z.infer<typeof modeFormSchema>) => {
 		setIsLoading(true);
 		try {
 			// If no type is selected, send null to clear the database

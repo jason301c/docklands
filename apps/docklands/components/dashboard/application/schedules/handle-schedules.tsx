@@ -13,11 +13,9 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
 	CheckIcon,
 	ChevronsUpDown,
-	DatabaseZap,
 	Info,
 	PenBoxIcon,
 	PlusCircle,
-	RefreshCw,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
@@ -43,7 +41,10 @@ import {
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
-import type { CacheType } from "../domains/handle-domain";
+import {
+	ComposeServicePicker,
+	useComposeServices,
+} from "../../shared/compose-service-picker";
 import { getTimezoneLabel, TIMEZONES } from "./timezones";
 
 const logger = createClientLogger("schedules");
@@ -216,7 +217,6 @@ export const ScheduleFormField = <TFieldValues extends FieldValues>({
 
 export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
-	const [cacheType, setCacheType] = useState<CacheType>("cache");
 	const utils = api.useUtils();
 	const form = useForm({
 		resolver: standardSchemaResolver(formSchema),
@@ -242,21 +242,15 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 	);
 
 	const {
-		data: services,
-		isFetching: isLoadingServices,
+		services,
+		isLoadingServices,
 		error: errorServices,
-		refetch: refetchServices,
-	} = api.compose.loadServices.useQuery(
-		{
-			composeId: id || "",
-			type: cacheType,
-		},
-		{
-			retry: false,
-			refetchOnWindowFocus: false,
-			enabled: !!id && scheduleType === "compose",
-		},
-	);
+		cacheType,
+		setCacheType,
+		refetchServices,
+	} = useComposeServices(id, {
+		enabled: !!id && scheduleType === "compose",
+	});
 
 	useEffect(() => {
 		if (scheduleId && schedule) {
@@ -370,104 +364,17 @@ export const HandleSchedules = ({ id, scheduleId, scheduleType }: Props) => {
 										{errorServices?.message}
 									</AlertBlock>
 								)}
-								<FormField
+								<ComposeServicePicker
 									control={form.control}
 									name="serviceName"
-									render={({ field }) => (
-										<FormItem className="w-full">
-											<FormLabel>Service Name</FormLabel>
-											<div className="flex gap-2">
-												<Select
-													aria-label="Automation target service"
-													onValueChange={field.onChange}
-													defaultValue={field.value || ""}
-												>
-													<FormControl>
-														<></>
-													</FormControl>
-
-													<>
-														{services?.map((service, index) => (
-															<Select.Option
-																value={service}
-																key={`${service}-${index}`}
-															>
-																{service}
-															</Select.Option>
-														))}
-														<Select.Option value="none" disabled>
-															Empty
-														</Select.Option>
-													</>
-												</Select>
-												<TooltipProvider delay={0}>
-													<Tooltip
-														content={
-															<>
-																<p>
-																	Fetch: Will clone the repository and load the
-																	services
-																</p>
-															</>
-														}
-														side="left"
-														className="max-w-[10rem]"
-														asChild
-													>
-														<Button
-															aria-label="Fetch compose services"
-															variant="secondary"
-															type="button"
-															loading={isLoadingServices}
-															onClick={() => {
-																if (cacheType === "fetch") {
-																	refetchServices();
-																} else {
-																	setCacheType("fetch");
-																}
-															}}
-														>
-															<RefreshCw className="size-4 text-kumo-subtle" />
-														</Button>
-													</Tooltip>
-												</TooltipProvider>
-												<TooltipProvider delay={0}>
-													<Tooltip
-														content={
-															<>
-																<p>
-																	Cache: If you previously built this compose,
-																	it will read the services from the last build
-																	or repository fetch
-																</p>
-															</>
-														}
-														side="left"
-														className="max-w-[10rem]"
-														asChild
-													>
-														<Button
-															aria-label="Load cached compose services"
-															variant="secondary"
-															type="button"
-															loading={isLoadingServices}
-															onClick={() => {
-																if (cacheType === "cache") {
-																	refetchServices();
-																} else {
-																	setCacheType("cache");
-																}
-															}}
-														>
-															<DatabaseZap className="size-4 text-kumo-subtle" />
-														</Button>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-
-											<FormMessage />
-										</FormItem>
-									)}
+									services={services}
+									cacheType={cacheType}
+									setCacheType={setCacheType}
+									isLoadingServices={isLoadingServices}
+									refetchServices={refetchServices}
+									ariaLabel="Automation target service"
+									bindMode="uncontrolled"
+									alwaysShowEmptyOption
 								/>
 							</div>
 						)}
