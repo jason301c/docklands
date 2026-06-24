@@ -5,7 +5,6 @@ import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
 	Sidebar,
 	SidebarContent,
-	SidebarFooter,
 	SidebarGroup,
 	SidebarGroupLabel,
 	SidebarHeader,
@@ -333,8 +332,23 @@ export default function Page({ children }: Props) {
 		>
 			<MobileCloser />
 			<Sidebar className="h-svh min-h-svh" contentClassName="h-svh min-h-svh">
-				<SidebarHeader>
+				<SidebarHeader className="h-auto flex-col items-stretch gap-2 overflow-visible border-b bg-kumo-canvas p-2 pb-3">
 					<LogoWrapper />
+					<SidebarMenu className="flex flex-col gap-2">
+						{permissions?.organization.update && (
+							<SidebarMenuItem>
+								<RuntimeUpdateButton />
+							</SidebarMenuItem>
+						)}
+						<SidebarMenuItem>
+							<UserNav />
+						</SidebarMenuItem>
+						{docklandsVersion && (
+							<div className="px-3 text-xs text-kumo-subtle text-center">
+								Version {docklandsVersion}
+							</div>
+						)}
+					</SidebarMenu>
 				</SidebarHeader>
 				<SidebarContent>
 					<SidebarGroup>
@@ -366,23 +380,6 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 				</SidebarContent>
-				<SidebarFooter className="h-auto flex-col items-stretch gap-0 overflow-visible border-t bg-kumo-canvas p-2 pb-3">
-					<SidebarMenu className="flex flex-col gap-2">
-						{permissions?.organization.update && (
-							<SidebarMenuItem>
-								<RuntimeUpdateButton />
-							</SidebarMenuItem>
-						)}
-						<SidebarMenuItem>
-							<UserNav />
-						</SidebarMenuItem>
-						{docklandsVersion && (
-							<div className="px-3 text-xs text-kumo-subtle text-center group-data-[collapsible=icon]:hidden">
-								Version {docklandsVersion}
-							</div>
-						)}
-					</SidebarMenu>
-				</SidebarFooter>
 			</Sidebar>
 			<main className="flex min-h-svh min-w-0 flex-1 flex-col bg-kumo-canvas">
 				<div className="flex w-full flex-1 flex-col px-4 pb-8 pt-4">
