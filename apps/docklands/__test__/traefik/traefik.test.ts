@@ -152,6 +152,9 @@ const baseDomain: Domain = {
 	internalPath: "/",
 	stripPath: false,
 	middlewares: null,
+	ingressMode: "public",
+	tunnelId: null,
+	cfDnsRecordId: null,
 };
 
 const baseRedirect: Redirect = {

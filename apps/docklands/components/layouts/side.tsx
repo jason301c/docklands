@@ -216,8 +216,8 @@ function MobileCloser() {
 
 /**
  * Renders one nav group's items (single links and collapsible groups). Shared
- * by the "Canvas" and "Control Plane" groups, which previously duplicated this
- * exact Collapsible/SidebarMenuButton/SidebarMenuSub composition verbatim.
+ * by the top-level (home) and Settings groups, which would otherwise duplicate
+ * this exact Collapsible/SidebarMenuButton/SidebarMenuSub composition verbatim.
  */
 function NavMenuItems({
 	items,
@@ -338,13 +338,12 @@ export default function Page({ children }: Props) {
 				</SidebarHeader>
 				<SidebarContent>
 					<SidebarGroup>
-						<SidebarGroupLabel>Canvas</SidebarGroupLabel>
 						<SidebarMenu>
 							<NavMenuItems items={filteredHome} pathname={pathname} />
 						</SidebarMenu>
 					</SidebarGroup>
 					<SidebarGroup>
-						<SidebarGroupLabel>Control Plane</SidebarGroupLabel>
+						<SidebarGroupLabel>Settings</SidebarGroupLabel>
 						<SidebarMenu className="gap-1">
 							<NavMenuItems items={filteredSettings} pathname={pathname} />
 						</SidebarMenu>

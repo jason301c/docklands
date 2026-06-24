@@ -5,10 +5,13 @@ import {
 	BlocksIcon,
 	BookIcon,
 	Boxes,
+	Cloud,
+	Compass,
 	Database,
 	Forward,
 	GalleryVerticalEnd,
 	GitBranch,
+	Globe,
 	House,
 	KeyRound,
 	type LucideIcon,
@@ -18,7 +21,6 @@ import {
 	ScrollText,
 	Server,
 	ShieldCheck,
-	Tags,
 	Users,
 } from "lucide-react";
 import type { ComponentType } from "react";
@@ -65,7 +67,18 @@ export type Menu = {
 };
 
 export const DASHBOARD_MENU: Menu = {
+	// Top-level operating surfaces — the day-to-day loop. Rendered with no group
+	// label. Collapsible groups appear only when at least one child is permitted
+	// (createMenuForAuthUser prunes empty groups), so the parents carry no gate.
 	home: [
+		{
+			isSingle: true,
+			title: "Setup",
+			url: "/dashboard/setup",
+			icon: Compass,
+			// The onboarding/setup hub — admin-only, pinned above everything else.
+			isEnabled: ({ permissions }) => !!permissions?.organization.update,
+		},
 		{
 			isSingle: true,
 			title: "Workspaces",
@@ -79,112 +92,39 @@ export const DASHBOARD_MENU: Menu = {
 			icon: Rocket,
 			isEnabled: ({ permissions }) => !!permissions?.deployment.read,
 		},
-	],
-
-	settings: [
-		{
-			isSingle: true,
-			title: "Ingress",
-			url: "/dashboard/settings/ingress",
-			icon: Activity,
-			isEnabled: ({ permissions }) => !!permissions?.organization.update,
-		},
-		{
-			isSingle: true,
-			title: "Build Workers",
-			url: "/dashboard/settings/build-workers",
-			icon: Boxes,
-			isEnabled: ({ permissions }) => !!permissions?.runtimeWorker.read,
-		},
-		{
-			isSingle: true,
-			title: "Users",
-			icon: Users,
-			url: "/dashboard/settings/users",
-			isEnabled: ({ permissions }) => !!permissions?.member.read,
-		},
-		{
-			isSingle: true,
-			title: "Roles",
-			icon: ShieldCheck,
-			url: "/dashboard/settings/roles",
-			isEnabled: ({ permissions }) => !!permissions?.member.read,
-		},
-		{
-			isSingle: true,
-			title: "Audit Log",
-			icon: ScrollText,
-			url: "/dashboard/settings/audit-log",
-			isEnabled: ({ permissions }) => !!permissions?.auditLog.read,
-		},
-		{
-			isSingle: true,
-			title: "SSH Keys",
-			icon: KeyRound,
-			url: "/dashboard/settings/ssh-keys",
-			isEnabled: ({ permissions }) => !!permissions?.sshKeys.read,
-		},
-		{
-			isSingle: true,
-			title: "Tags",
-			url: "/dashboard/settings/tags",
-			icon: Tags,
-			isEnabled: ({ permissions }) => !!permissions?.tag.read,
-		},
-		{
-			isSingle: true,
-			title: "Git Providers",
-			url: "/dashboard/settings/git-providers",
-			icon: GitBranch,
-			isEnabled: ({ permissions }) => !!permissions?.gitProviders.read,
-		},
-		{
-			isSingle: true,
-			title: "Image Registry",
-			url: "/dashboard/settings/image-registry",
-			icon: Package,
-			isEnabled: ({ permissions }) => !!permissions?.registry.read,
-		},
-		{
-			isSingle: true,
-			title: "Storage",
-			url: "/dashboard/settings/storage",
-			icon: Database,
-			isEnabled: ({ permissions }) => !!permissions?.destination.read,
-		},
-		{
-			isSingle: true,
-			title: "Certificates",
-			url: "/dashboard/settings/certificates",
-			icon: ShieldCheck,
-			isEnabled: ({ permissions }) => !!permissions?.certificate.read,
-		},
-		{
-			isSingle: true,
-			title: "Cluster Nodes",
-			url: "/dashboard/settings/cluster-nodes",
-			icon: Boxes,
-			isEnabled: ({ permissions }) => !!permissions?.organization.update,
-		},
-		{
-			isSingle: true,
-			title: "Notifications",
-			url: "/dashboard/settings/notifications",
-			icon: Bell,
-			isEnabled: ({ permissions }) => !!permissions?.notification.read,
-		},
 		{
 			isSingle: false,
-			title: "Runtime",
-			icon: BlocksIcon,
+			title: "Domains",
+			icon: Globe,
 			items: [
 				{
 					isSingle: true,
-					title: "Runtime Workers",
-					url: "/dashboard/settings/runtime",
-					icon: Server,
-					isEnabled: ({ permissions }) => !!permissions?.runtimeWorker.read,
+					title: "Cloudflare Tunnels",
+					url: "/dashboard/settings/cloudflare",
+					icon: Cloud,
+					isEnabled: ({ permissions }) => !!permissions?.tunnel.read,
 				},
+				{
+					isSingle: true,
+					title: "Ingress",
+					url: "/dashboard/settings/ingress",
+					icon: Activity,
+					isEnabled: ({ permissions }) => !!permissions?.organization.update,
+				},
+				{
+					isSingle: true,
+					title: "Certificates",
+					url: "/dashboard/settings/certificates",
+					icon: ShieldCheck,
+					isEnabled: ({ permissions }) => !!permissions?.certificate.read,
+				},
+			],
+		},
+		{
+			isSingle: false,
+			title: "Monitoring",
+			icon: BarChartHorizontalBigIcon,
+			items: [
 				{
 					isSingle: true,
 					title: "Container Runtime",
@@ -201,6 +141,13 @@ export const DASHBOARD_MENU: Menu = {
 				},
 				{
 					isSingle: true,
+					title: "Host Metrics",
+					url: "/dashboard/host-metrics",
+					icon: BarChartHorizontalBigIcon,
+					isEnabled: ({ permissions }) => !!permissions?.monitoring.read,
+				},
+				{
+					isSingle: true,
 					title: "Ingress Requests",
 					url: "/dashboard/requests",
 					icon: Forward,
@@ -213,14 +160,109 @@ export const DASHBOARD_MENU: Menu = {
 					icon: GalleryVerticalEnd,
 					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
 				},
+			],
+		},
+	],
+
+	// Configure-once surfaces, grouped into sections under a "Settings" label.
+	settings: [
+		{
+			isSingle: false,
+			title: "Team & Access",
+			icon: Users,
+			items: [
 				{
 					isSingle: true,
-					title: "Host Metrics",
-					url: "/dashboard/host-metrics",
-					icon: BarChartHorizontalBigIcon,
-					isEnabled: ({ permissions }) => !!permissions?.monitoring.read,
+					title: "Users",
+					url: "/dashboard/settings/users",
+					icon: Users,
+					isEnabled: ({ permissions }) => !!permissions?.member.read,
+				},
+				{
+					isSingle: true,
+					title: "Roles",
+					url: "/dashboard/settings/roles",
+					icon: ShieldCheck,
+					isEnabled: ({ permissions }) => !!permissions?.member.read,
+				},
+				{
+					isSingle: true,
+					title: "Audit Log",
+					url: "/dashboard/settings/audit-log",
+					icon: ScrollText,
+					isEnabled: ({ permissions }) => !!permissions?.auditLog.read,
 				},
 			],
+		},
+		{
+			isSingle: false,
+			title: "Connections",
+			icon: GitBranch,
+			items: [
+				{
+					isSingle: true,
+					title: "Git Providers",
+					url: "/dashboard/settings/git-providers",
+					icon: GitBranch,
+					isEnabled: ({ permissions }) => !!permissions?.gitProviders.read,
+				},
+				{
+					isSingle: true,
+					title: "Image Registry",
+					url: "/dashboard/settings/image-registry",
+					icon: Package,
+					isEnabled: ({ permissions }) => !!permissions?.registry.read,
+				},
+			],
+		},
+		{
+			isSingle: false,
+			title: "Infrastructure",
+			icon: Server,
+			items: [
+				{
+					isSingle: true,
+					title: "Runtime Workers",
+					url: "/dashboard/settings/runtime",
+					icon: Server,
+					isEnabled: ({ permissions }) => !!permissions?.runtimeWorker.read,
+				},
+				{
+					isSingle: true,
+					title: "Build Workers",
+					url: "/dashboard/settings/build-workers",
+					icon: Boxes,
+					isEnabled: ({ permissions }) => !!permissions?.runtimeWorker.read,
+				},
+				{
+					isSingle: true,
+					title: "Cluster Nodes",
+					url: "/dashboard/settings/cluster-nodes",
+					icon: Boxes,
+					isEnabled: ({ permissions }) => !!permissions?.organization.update,
+				},
+				{
+					isSingle: true,
+					title: "SSH Keys",
+					url: "/dashboard/settings/ssh-keys",
+					icon: KeyRound,
+					isEnabled: ({ permissions }) => !!permissions?.sshKeys.read,
+				},
+			],
+		},
+		{
+			isSingle: true,
+			title: "Backups",
+			url: "/dashboard/settings/storage",
+			icon: Database,
+			isEnabled: ({ permissions }) => !!permissions?.destination.read,
+		},
+		{
+			isSingle: true,
+			title: "Notifications",
+			url: "/dashboard/settings/notifications",
+			icon: Bell,
+			isEnabled: ({ permissions }) => !!permissions?.notification.read,
 		},
 	],
 

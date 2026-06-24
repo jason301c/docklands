@@ -38,6 +38,20 @@ Docklands is a single Node process that serves both the UI and the backend:
   `docklands-network` overlay; Traefik provides ingress, configured by generating
   YAML files on disk (no direct Traefik API calls). Remote runtime workers are
   reached over SSH (`ssh2`); local Docker is reached via `dockerode`.
+- **Ingress modes — public or Cloudflare Tunnel.** Each `domain` has an
+  `ingressMode` (`public` | `tunnel`). `public` is the classic path (Traefik on
+  published ports 80/443, TLS via the domain's `certificateType`). `tunnel` is the
+  beginner-first default: a managed `cloudflared` container (one per server,
+  `setup/cloudflared-setup.ts`) holds a single catch-all ingress rule to
+  `docklands-traefik` and Cloudflare terminates TLS at the edge — so tunnel
+  domains need no open ports, public IP, manual DNS, or local cert
+  (`certificateType` is forced to `none`). Traefik still does all host→container
+  routing, so a tunnel only changes how traffic *enters*. The Cloudflare
+  integration (encrypted API token + zones) and tunnels live in
+  `db/schema/cloudflare.ts`; `services/cloudflare.ts` + `services/tunnel.ts` and
+  `utils/cloudflare/client.ts` provision tunnels and create per-host DNS CNAMEs;
+  `createDomain`/`removeDomainById` attach/detach the CNAME. The instance default
+  mode is `webServerSettings.defaultIngressMode`.
 - **In-memory deployment queue.** `server/queues/` is a per-runtime-worker FIFO
   queue with per-service serialization, kept as a process-global singleton. There
   is **no Redis / BullMQ** in the control plane (it was removed). Managed Redis is
@@ -323,10 +337,19 @@ previews, topology, and connection mapping.
 - Do not add legacy dashboard aliases or redirect-only compatibility routes.
   Keep `next.config.mjs` free of legacy redirects.
 - Canonical product routes for navigation and new links:
-  `/dashboard/workspace`, `/dashboard/deployments`, `/dashboard/container-runtime`,
+  `/dashboard/setup`, `/dashboard/workspace`, `/dashboard/deployments`, `/dashboard/container-runtime`,
   `/dashboard/cluster-runtime`, `/dashboard/proxy-files`, `/dashboard/host-metrics`,
   `/dashboard/automations`, and the settings routes
-  `/dashboard/settings/{ingress,runtime,storage,build-workers,image-registry,cluster-nodes,roles,git-providers,ssh-keys,certificates,tags,users,notifications,profile}`.
+  `/dashboard/settings/{ingress,cloudflare,runtime,storage,build-workers,image-registry,cluster-nodes,roles,git-providers,ssh-keys,certificates,tags,users,notifications,profile}`.
+- **Sidebar IA.** `shared/dashboard-nav.ts` (`DASHBOARD_MENU`) pins an admin-only
+  **Setup** hub (`/dashboard/setup`, the onboarding/getting-started surface in
+  `components/dashboard/onboarding/`) at the very top, then four top-level surfaces
+  (Workspaces, Deployments, Domains, Monitoring) plus a sectioned Settings (Team &
+  Access, Connections, Infrastructure, Backups, Notifications). Collapsible groups
+  carry no permission gate — they appear iff a child is permitted
+  (`createMenuForAuthUser` prunes empty groups). Rarely-used admin pages (e.g.
+  Tags) live in the command palette (`components/dashboard/search-command.tsx`),
+  not the sidebar.
 - **Product vocabulary:** prefer workspace, service, runtime, worker, ingress,
   container image, preview environment, and automatic placement. Reserve Docker,
   Traefik, Swarm, "server", and old route names for exact engine identifiers,

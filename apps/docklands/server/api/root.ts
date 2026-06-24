@@ -4,6 +4,7 @@ import { auditLogRouter } from "./routers/audit-log";
 import { backupRouter } from "./routers/backup";
 import { bitbucketRouter } from "./routers/bitbucket";
 import { certificateRouter } from "./routers/certificate";
+import { cloudflareRouter } from "./routers/cloudflare";
 import { clusterRouter } from "./routers/cluster";
 import { composeRouter } from "./routers/compose";
 import { customRoleRouter } from "./routers/custom-role";
@@ -33,6 +34,7 @@ import { settingsRouter } from "./routers/settings";
 import { sshRouter } from "./routers/ssh-key";
 import { swarmRouter } from "./routers/swarm";
 import { tagRouter } from "./routers/tag";
+import { tunnelRouter } from "./routers/tunnel";
 import { userRouter } from "./routers/user";
 import { volumeBackupsRouter } from "./routers/volume-backups";
 import { workspaceRouter } from "./routers/workspace";
@@ -49,6 +51,7 @@ export const appRouter = createTRPCRouter({
 	backup: backupRouter,
 	bitbucket: bitbucketRouter,
 	certificates: certificateRouter,
+	cloudflare: cloudflareRouter,
 	cluster: clusterRouter,
 	compose: composeRouter,
 	database: databaseRouter,
@@ -79,6 +82,7 @@ export const appRouter = createTRPCRouter({
 	volumeBackups: volumeBackupsRouter,
 	environment: environmentRouter,
 	tag: tagRouter,
+	tunnel: tunnelRouter,
 	patch: patchRouter,
 	workspaceGraph: workspaceGraphRouter,
 	workspaces: workspaceRouter,

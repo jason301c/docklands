@@ -128,6 +128,7 @@ export default defineConfig({
 				{
 					label: "Networking",
 					items: [
+						{ slug: "networking/cloudflare-tunnels" },
 						{ slug: "networking/domains" },
 						{ slug: "networking/tls-certificates" },
 						{ slug: "networking/ingress" },

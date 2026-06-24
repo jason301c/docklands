@@ -14,6 +14,17 @@ export const certificateType = pgEnum("certificateType", [
 	"custom",
 ]);
 
+/**
+ * How public traffic reaches a domain:
+ * - `public`: Traefik on the host's published ports (80/443), TLS via the
+ *   `certificateType` resolver — requires a public IP, open ports, and a DNS
+ *   A record. The classic path.
+ * - `tunnel`: a Cloudflare Tunnel terminates TLS at the edge and forwards to
+ *   Traefik over the internal network — no open ports, public IP, manual DNS,
+ *   or local cert. The default beginner path.
+ */
+export const ingressMode = pgEnum("ingressMode", ["public", "tunnel"]);
+
 export const triggerType = pgEnum("triggerType", ["push", "tag"]);
 
 export const sqldNode = pgEnum("sqldNode", ["primary", "replica"]);

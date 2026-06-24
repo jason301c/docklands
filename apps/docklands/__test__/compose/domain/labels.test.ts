@@ -23,6 +23,9 @@ describe("createDomainLabels", () => {
 		internalPath: "/",
 		stripPath: false,
 		middlewares: null,
+		ingressMode: "public",
+		tunnelId: null,
+		cfDnsRecordId: null,
 	};
 
 	it("should create basic labels for web entrypoint", async () => {

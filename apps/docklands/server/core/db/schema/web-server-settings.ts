@@ -10,7 +10,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { certificateType } from "./shared";
+import { certificateType, ingressMode } from "./shared";
 
 export const webServerSettings = pgTable("webServerSettings", {
 	id: text("id")
@@ -23,6 +23,10 @@ export const webServerSettings = pgTable("webServerSettings", {
 	https: boolean("https").notNull().default(false),
 	host: text("host"),
 	letsEncryptEmail: text("letsEncryptEmail"),
+	// The default ingress mode applied to new domains (set during onboarding).
+	defaultIngressMode: ingressMode("defaultIngressMode")
+		.notNull()
+		.default("public"),
 	enableDockerCleanup: boolean("enableDockerCleanup").notNull().default(true),
 	logCleanupCron: text("logCleanupCron").default("0 0 * * *"),
 	// Metrics Configuration
@@ -105,6 +109,7 @@ export const apiUpdateWebServerSettings = createSchema.partial().extend({
 	https: z.boolean().optional(),
 	host: z.string().optional(),
 	letsEncryptEmail: z.string().email().optional().nullable(),
+	defaultIngressMode: z.enum(["public", "tunnel"]).optional(),
 	enableDockerCleanup: z.boolean().optional(),
 	logCleanupCron: z.string().optional().nullable(),
 	metricsConfig: z

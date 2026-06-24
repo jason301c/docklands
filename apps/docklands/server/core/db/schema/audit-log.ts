@@ -69,6 +69,8 @@ export type AuditResourceType =
 	| "user"
 	| "customRole"
 	| "domain"
+	| "tunnel"
+	| "cloudflare"
 	| "certificate"
 	| "registry"
 	| "runtimeWorker"

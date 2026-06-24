@@ -4,6 +4,7 @@ import {
 	findActiveNavItem,
 	isActiveRoute,
 	type Menu,
+	type NavItem,
 } from "@/shared/dashboard-nav";
 
 const fullPermissions = {
@@ -22,52 +23,84 @@ const fullPermissions = {
 	sshKeys: { read: true },
 	tag: { read: true },
 	traefikFiles: { read: true },
+	tunnel: { read: true },
 } as const;
 
-const menuTitles = (menu: Menu) => ({
-	home: menu.home.map((item) => item.title),
-	settings: menu.settings.map((item) => item.title),
-	runtime: (() => {
-		const runtime = menu.settings.find((item) => item.title === "Runtime");
-		if (runtime?.isSingle !== false) return [];
-		return runtime.items.map((item) => item.title);
-	})(),
-});
+// The resolved permission set always carries every resource key (gates read
+// nested actions without guarding), so a realistic "denied" fixture sets every
+// key present-but-false rather than omitting it.
+const emptyPermissions = {
+	auditLog: { read: false },
+	certificate: { read: false },
+	deployment: { read: false },
+	destination: { read: false },
+	docker: { read: false },
+	gitProviders: { read: false },
+	member: { read: false },
+	monitoring: { read: false },
+	notification: { read: false },
+	organization: { update: false },
+	registry: { read: false },
+	runtimeWorker: { read: false },
+	sshKeys: { read: false },
+	tag: { read: false },
+	traefikFiles: { read: false },
+	tunnel: { read: false },
+} as const;
+
+const subItems = (items: NavItem[], title: string) => {
+	const group = items.find((item) => item.title === title);
+	return group?.isSingle === false ? group.items.map((item) => item.title) : [];
+};
+
+const allTitles = (menu: Menu) =>
+	[...menu.home, ...menu.settings].flatMap((item) =>
+		item.isSingle === false
+			? [item.title, ...item.items.map((sub) => sub.title)]
+			: [item.title],
+	);
 
 describe("dashboard nav", () => {
-	it("exposes the Railway-style self-hosted workspace labels", () => {
+	it("groups the nav into beginner-first sections", () => {
 		const menu = createMenuForAuthUser({
 			permissions: fullPermissions as any,
 		});
 
-		expect(menuTitles(menu)).toEqual({
-			home: ["Workspaces", "Deployments"],
+		expect({
+			home: menu.home.map((item) => item.title),
+			settings: menu.settings.map((item) => item.title),
+			domains: subItems(menu.home, "Domains"),
+			monitoring: subItems(menu.home, "Monitoring"),
+			teamAccess: subItems(menu.settings, "Team & Access"),
+			connections: subItems(menu.settings, "Connections"),
+			infrastructure: subItems(menu.settings, "Infrastructure"),
+		}).toEqual({
+			home: ["Setup", "Workspaces", "Deployments", "Domains", "Monitoring"],
 			settings: [
-				"Ingress",
-				"Profile",
-				"Build Workers",
-				"Users",
-				"Roles",
-				"Audit Log",
-				"SSH Keys",
-				"Tags",
-				"Git Providers",
-				"Image Registry",
-				"Storage",
-				"Certificates",
-				"Cluster Nodes",
+				"Team & Access",
+				"Connections",
+				"Infrastructure",
+				"Backups",
 				"Notifications",
-				"Runtime",
 			],
-			runtime: [
-				"Runtime Workers",
+			domains: ["Cloudflare Tunnels", "Ingress", "Certificates"],
+			monitoring: [
 				"Container Runtime",
 				"Cluster Runtime",
+				"Host Metrics",
 				"Ingress Requests",
 				"Ingress Files",
-				"Host Metrics",
+			],
+			teamAccess: ["Users", "Roles", "Audit Log"],
+			connections: ["Git Providers", "Image Registry"],
+			infrastructure: [
+				"Runtime Workers",
+				"Build Workers",
+				"Cluster Nodes",
+				"SSH Keys",
 			],
 		});
+
 		expect(
 			menu.home.find((item) => item.title === "Deployments"),
 		).toMatchObject({
@@ -75,29 +108,38 @@ describe("dashboard nav", () => {
 		});
 	});
 
-	it("keeps old admin nouns out of the visible navigation shell", () => {
+	it("keeps old admin nouns and demoted items out of the sidebar", () => {
 		const menu = createMenuForAuthUser({
 			permissions: fullPermissions as any,
 		});
-		const titles = menuTitles(menu);
-		const visibleTitles = [
-			...titles.home,
-			...titles.settings,
-			...titles.runtime,
-		];
+		const titles = allTitles(menu);
 
-		expect(visibleTitles).not.toContain("Networking");
-		expect(visibleTitles).not.toContain("Builders");
-		expect(visibleTitles).not.toContain("Registry");
-		expect(visibleTitles).not.toContain("Nodes");
-		expect(visibleTitles).not.toContain("Capacity");
-		expect(visibleTitles).not.toContain("Containers");
-		expect(visibleTitles).not.toContain("Cluster");
-		expect(visibleTitles).not.toContain("Proxy Requests");
-		expect(visibleTitles).not.toContain("Metrics");
+		// Tags is demoted to the command palette, not the sidebar.
+		expect(titles).not.toContain("Tags");
+		// Old flat-list grouping label is gone.
+		expect(titles).not.toContain("Runtime");
+		expect(titles).not.toContain("Storage");
+		expect(titles).not.toContain("Networking");
+		expect(titles).not.toContain("Containers");
+		expect(titles).not.toContain("Metrics");
 	});
 
-	it("keeps canonical workspace detail routes active under Canvas", () => {
+	it("prunes empty groups when no child is permitted", () => {
+		// A user who can only read deployments sees Workspaces + Deployments,
+		// but no Domains/Monitoring groups (all their children are gated away),
+		// and an empty Settings group.
+		const menu = createMenuForAuthUser({
+			permissions: { ...emptyPermissions, deployment: { read: true } } as any,
+		});
+
+		expect(menu.home.map((item) => item.title)).toEqual([
+			"Workspaces",
+			"Deployments",
+		]);
+		expect(menu.settings).toEqual([]);
+	});
+
+	it("keeps canonical workspace detail routes active under the home group", () => {
 		expect(
 			isActiveRoute({
 				itemUrl: "/dashboard/workspace",
@@ -112,7 +154,7 @@ describe("dashboard nav", () => {
 		).toBe(false);
 	});
 
-	it("finds active nested runtime items for breadcrumbs", () => {
+	it("finds active nested items for breadcrumbs", () => {
 		const menu = createMenuForAuthUser({
 			permissions: fullPermissions as any,
 		});
@@ -129,5 +171,11 @@ describe("dashboard nav", () => {
 				"/dashboard/container-runtime",
 			)?.title,
 		).toBe("Container Runtime");
+		expect(
+			findActiveNavItem(
+				[...menu.home, ...menu.settings],
+				"/dashboard/settings/users",
+			)?.title,
+		).toBe("Users");
 	});
 });

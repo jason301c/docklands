@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import { api } from "@/client/api/trpc";
+import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Dialog } from "@/components/shared/dialog";
@@ -53,6 +54,7 @@ export const domain = z
 		customCertResolver: z.string().optional(),
 		serviceName: z.string().optional(),
 		domainType: z.enum(["application", "compose", "preview"]).optional(),
+		ingressMode: z.enum(["public", "tunnel"]).optional(),
 		middlewares: z.array(z.string()).optional(),
 	})
 	.superRefine((input, ctx) => {
@@ -128,6 +130,14 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 	const [middlewareDraft, setMiddlewareDraft] = useState("");
 
 	const utils = api.useUtils();
+	const { can } = usePermissions();
+	// Only owners/admins can read the Cloudflare integration; gate the query so
+	// members never trigger a forbidden request. When connected, new domains can
+	// be exposed through the tunnel instead of the public path.
+	const { data: cloudflare } = api.cloudflare.get.useQuery(undefined, {
+		enabled: can("tunnel", "read"),
+	});
+	const showIngressMode = !domainId && !!cloudflare?.connected;
 	const { data, refetch } = api.domain.one.useQuery(
 		{
 			domainId,
@@ -202,6 +212,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 			customCertResolver: undefined,
 			serviceName: undefined,
 			domainType: type,
+			ingressMode: undefined,
 			middlewares: [],
 		},
 		mode: "onChange",
@@ -212,7 +223,18 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 	const https = form.watch("https");
 	const domainType = form.watch("domainType");
 	const host = form.watch("host");
+	const ingressMode = form.watch("ingressMode");
 	const isTraefikMeDomain = host?.includes("sslip.io") || false;
+	// In tunnel mode TLS terminates at the Cloudflare edge, so the local
+	// HTTPS/cert options don't apply.
+	const tlsAtEdge = showIngressMode && ingressMode === "tunnel";
+
+	// Default new domains to the tunnel when Cloudflare is connected.
+	useEffect(() => {
+		if (showIngressMode && !form.getValues("ingressMode")) {
+			form.setValue("ingressMode", "tunnel");
+		}
+	}, [showIngressMode, form]);
 
 	useEffect(() => {
 		if (data) {
@@ -566,6 +588,40 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 									)}
 								/>
 
+								{showIngressMode && (
+									<FormField
+										control={form.control}
+										name="ingressMode"
+										render={({ field }) => (
+											<FormItem>
+												<FormLabel>How traffic reaches this domain</FormLabel>
+												<FormDescription>
+													A Cloudflare Tunnel needs no open ports or DNS setup
+													and gets free HTTPS. Public IP serves through Traefik
+													on this server (requires a DNS record and open ports).
+												</FormDescription>
+												<FormControl>
+													<Select
+														aria-label="Ingress mode"
+														onValueChange={(value) => {
+															if (value) field.onChange(value);
+														}}
+														value={field.value ?? "tunnel"}
+													>
+														<Select.Option value="tunnel">
+															Cloudflare Tunnel (recommended)
+														</Select.Option>
+														<Select.Option value="public">
+															Public IP (Traefik)
+														</Select.Option>
+													</Select>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+								)}
+
 								<FormField
 									control={form.control}
 									name="path"
@@ -699,27 +755,34 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 									/>
 								)}
 
-								<FormField
-									control={form.control}
-									name="https"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between p-3 mt-4 border rounded-lg shadow-sm">
-											<div className="space-y-0.5">
-												<FormLabel>HTTPS</FormLabel>
-												<FormDescription>
-													Automatically provision SSL Certificate.
-												</FormDescription>
-												<FormMessage />
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
+								{tlsAtEdge ? (
+									<AlertBlock type="info" className="mt-4">
+										HTTPS is handled automatically by Cloudflare for tunnel
+										domains — no certificate setup is needed here.
+									</AlertBlock>
+								) : (
+									<FormField
+										control={form.control}
+										name="https"
+										render={({ field }) => (
+											<FormItem className="flex flex-row items-center justify-between p-3 mt-4 border rounded-lg shadow-sm">
+												<div className="space-y-0.5">
+													<FormLabel>HTTPS</FormLabel>
+													<FormDescription>
+														Automatically provision SSL Certificate.
+													</FormDescription>
+													<FormMessage />
+												</div>
+												<FormControl>
+													<Switch
+														checked={field.value}
+														onCheckedChange={field.onChange}
+													/>
+												</FormControl>
+											</FormItem>
+										)}
+									/>
+								)}
 
 								{https && (
 									<>

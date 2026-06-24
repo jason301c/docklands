@@ -34,6 +34,9 @@ describe("Host rule format regression tests", () => {
 		stripPath: false,
 		customEntrypoint: null,
 		middlewares: null,
+		ingressMode: "public",
+		tunnelId: null,
+		cfDnsRecordId: null,
 	};
 
 	describe("Host rule format validation", () => {

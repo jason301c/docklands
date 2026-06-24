@@ -58,6 +58,12 @@ bun run build
 Open the dashboard (default `http://localhost:3000`). The first account you
 create becomes the organization **owner**.
 
+Start at **Setup** (top of the sidebar). It walks you through the one-time choices
+to get online: how the public reaches your apps (a
+[Cloudflare Tunnel](/networking/cloudflare-tunnels/) is the easiest — no ports,
+DNS, or certificates — or a public IP), connecting a
+[Git provider](/git/overview/), and deploying your first app.
+
 The primary surface is the workspace canvas at `/dashboard/workspace` — the
 project environment view for services, variables, deployments, domains, previews,
 and topology. From there:
@@ -66,4 +72,5 @@ and topology. From there:
 - Deploy an [application](/applications/overview/), a
   [managed database](/databases/overview/), or a
   [template](/compose/templates/).
-- Attach a [domain with HTTPS](/networking/domains/).
+- Attach a [domain](/networking/domains/) — over a Cloudflare Tunnel or with
+  [HTTPS on a public IP](/networking/tls-certificates/).

@@ -16,7 +16,7 @@ import { domain } from "@/shared/validations/domain";
 import { applications } from "./application";
 import { compose } from "./compose";
 import { previewDeployments } from "./preview-deployments";
-import { certificateType } from "./shared";
+import { certificateType, ingressMode } from "./shared";
 
 export const domainType = pgEnum("domainType", [
 	"compose",
@@ -60,6 +60,12 @@ export const domains = pgTable(
 		internalPath: text("internalPath").default("/"),
 		stripPath: boolean("stripPath").notNull().default(false),
 		middlewares: text("middlewares").array().default(sql`ARRAY[]::text[]`),
+		// How public traffic reaches this domain (see `ingressMode` enum). In
+		// `tunnel` mode `tunnelId` points at the serving tunnel and
+		// `cfDnsRecordId` holds the Cloudflare DNS record so it can be torn down.
+		ingressMode: ingressMode("ingressMode").notNull().default("public"),
+		tunnelId: text("tunnelId"),
+		cfDnsRecordId: text("cfDnsRecordId"),
 	},
 	(t) => [
 		index("domain_applicationId_idx").on(t.applicationId),
@@ -87,6 +93,7 @@ const createSchema = createInsertSchema(domains, {
 	...domain.shape,
 	// Override pgEnum so Zod 4 infers only string literals, not numeric enum index
 	domainType: z.enum(["compose", "application", "preview"]).optional(),
+	ingressMode: z.enum(["public", "tunnel"]).optional(),
 });
 
 export const apiCreateDomain = createSchema.pick({
@@ -105,6 +112,7 @@ export const apiCreateDomain = createSchema.pick({
 	internalPath: true,
 	stripPath: true,
 	middlewares: true,
+	ingressMode: true,
 });
 
 export const apiFindDomain = z.object({

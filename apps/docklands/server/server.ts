@@ -2,6 +2,7 @@ import http from "node:http";
 import { config } from "dotenv";
 import next from "next";
 import { createLogger } from "@/server/core/lib/logger";
+import { ensureTunnelRunning } from "@/server/core/services/tunnel";
 import { setupDirectories } from "@/server/core/setup/config-paths";
 import { initializeNetwork } from "@/server/core/setup/setup";
 import {
@@ -89,6 +90,9 @@ void app.prepare().then(async () => {
 		if (process.env.NODE_ENV === "production") {
 			createDefaultMiddlewares();
 			await initializeNetwork();
+			// Restore any Cloudflare Tunnels (managed cloudflared) after the
+			// overlay network exists. Best-effort per tunnel.
+			await ensureTunnelRunning();
 			await initCronJobs();
 			await initCancelDeployments();
 			await initVolumeBackupsCronJobs();

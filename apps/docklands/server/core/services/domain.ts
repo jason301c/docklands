@@ -11,17 +11,41 @@ import { generateRandomDomain } from "@/server/core/templates";
 import { manageDomain } from "@/server/core/utils/traefik/domain";
 import { type apiCreateDomain, domains } from "../db/schema";
 import { findApplicationById } from "./application";
+import { findZoneForHost, requireCloudflareIntegration } from "./cloudflare";
 import { findRuntimeWorkerById } from "./runtime-worker";
+import { attachDomainToTunnel, detachDomainFromTunnel } from "./tunnel";
 
 export type Domain = typeof domains.$inferSelect;
 
 export const createDomain = async (input: z.infer<typeof apiCreateDomain>) => {
+	const host = input.host?.trim();
+	const settings = await getWebServerSettings();
+	// Explicit choice wins; otherwise the instance default (set at onboarding).
+	const ingressMode =
+		input.ingressMode ?? settings?.defaultIngressMode ?? "public";
+
+	// Fail fast before mutating: tunnel mode needs a connected Cloudflare zone
+	// that owns this host.
+	if (ingressMode === "tunnel") {
+		const integration = await requireCloudflareIntegration();
+		if (!findZoneForHost(integration.zones, host ?? "")) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: `${host} is not within a domain connected to Cloudflare.`,
+			});
+		}
+	}
+
 	const result = await db.transaction(async (tx) => {
 		const domain = await tx
 			.insert(domains)
 			.values({
 				...input,
-				host: input.host?.trim(),
+				host,
+				ingressMode,
+				// In tunnel mode TLS terminates at the Cloudflare edge, so Traefik
+				// serves plain HTTP internally — no local certificate.
+				...(ingressMode === "tunnel" ? { certificateType: "none" } : {}),
 			} as typeof domains.$inferInsert)
 			.returning()
 			.then((response) => response[0]);
@@ -40,6 +64,11 @@ export const createDomain = async (input: z.infer<typeof apiCreateDomain>) => {
 
 		return domain;
 	});
+
+	// DNS/CNAME creation is a network call, so it runs outside the transaction.
+	if (result.ingressMode === "tunnel") {
+		await attachDomainToTunnel(result);
+	}
 
 	return result;
 };
@@ -128,7 +157,13 @@ export const updateDomainById = async (
 };
 
 export const removeDomainById = async (domainId: string) => {
-	await findDomainById(domainId);
+	const domain = await findDomainById(domainId);
+
+	// Remove the tunnel's DNS record before dropping the row (best-effort).
+	if (domain.ingressMode === "tunnel") {
+		await detachDomainFromTunnel(domain);
+	}
+
 	const result = await db
 		.delete(domains)
 		.where(eq(domains.domainId, domainId))

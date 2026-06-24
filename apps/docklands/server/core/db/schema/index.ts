@@ -4,6 +4,7 @@ export * from "./audit-log";
 export * from "./backups";
 export * from "./bitbucket";
 export * from "./certificate";
+export * from "./cloudflare";
 export * from "./compose";
 export * from "./database";
 export * from "./deployment";

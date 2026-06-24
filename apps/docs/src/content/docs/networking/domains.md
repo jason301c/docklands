@@ -13,6 +13,23 @@ Domains live on the service, not on the project. Deleting the service removes it
 domains; the database row cascades and the generated Traefik config file is
 cleaned up.
 
+## Ingress modes: tunnel or public
+
+Every domain has an **ingress mode** that decides how outside traffic gets in:
+
+- **Cloudflare Tunnel** (recommended, the default once you connect Cloudflare):
+  no open ports, public IP, manual DNS, or certificate setup — Cloudflare
+  terminates HTTPS at the edge and forwards to Traefik. See
+  [Cloudflare Tunnels](/networking/cloudflare-tunnels/).
+- **Public IP:** the classic path — your server's published ports `80`/`443`,
+  a DNS A record pointing at the server, and TLS via
+  [Let's Encrypt or a custom certificate](/networking/tls-certificates/).
+
+Either way, Traefik does the host-based routing described below — the mode only
+changes how requests reach Traefik. Pick the default during **Setup** (top of the
+sidebar); the **Add domain** dialog lets you override it per domain, and a single
+server can mix both.
+
 ## How a domain routes traffic
 
 Every domain you add produces a Traefik HTTP router whose rule combines the host

@@ -255,6 +255,12 @@ export const SearchCommand = () => {
 				searchText: "settings build workers concurrency queue",
 				onSelect: () => navigate("/dashboard/settings/build-workers"),
 			},
+			{
+				id: "app-tags-settings",
+				title: "Tags",
+				searchText: "settings tags labels organize services",
+				onSelect: () => navigate("/dashboard/settings/tags"),
+			},
 		];
 
 		return [

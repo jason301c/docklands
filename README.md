@@ -24,6 +24,7 @@ Docklands inherits the upstream project's core capabilities:
 - Arrange services on a project canvas and model private service-to-service connections.
 - Apply generated database/cache connection variables to connected services.
 - Route traffic through the Docklands ingress runtime, powered by Traefik under the hood.
+- Expose apps over a Cloudflare Tunnel (the default, beginner-first path) — no open ports, public IP, manual DNS, or certificate setup — or the classic public-IP path.
 - Run database and volume backups.
 - Manage local and remote runtime workers for multi-machine container builds.
 - Inspect deployments, logs, metrics, resources, and service state.
@@ -46,6 +47,7 @@ Preferred route names in docs, navigation, and new links:
 - `/dashboard/host-metrics` for host and runtime metrics.
 - `/dashboard/deployments` for deployment history and worker queue state.
 - `/dashboard/automations` for scheduled tasks.
+- `/dashboard/settings/cloudflare` for the Cloudflare Tunnel connection.
 - `/dashboard/settings/ingress`, `/dashboard/settings/runtime`, and `/dashboard/settings/storage` for the renamed settings surfaces.
 
 ## Development
