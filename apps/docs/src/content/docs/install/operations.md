@@ -35,45 +35,41 @@ bun run reset-password
 node -r dotenv/config dist/reset-password.mjs
 ```
 
-Disable two-factor on the owner account (if you're locked out by a lost 2FA
-device):
-
-```bash
-bun run reset-2fa
-# or: node -r dotenv/config dist/reset-2fa.mjs
-```
-
-## Rotate the auth secret
-
-If you need to change `BETTER_AUTH_SECRET`, re-encrypt existing data with the
-migration entrypoint, supplying the old and new secrets:
-
-```bash
-OLD_SECRET="<current>" NEW_SECRET="<new>" \
-  node -r dotenv/config dist/migrate-auth-secret.mjs
-```
-
-Then update `BETTER_AUTH_SECRET` (or `BETTER_AUTH_SECRET_FILE`) to the new value.
+Docklands does not use TOTP/2FA — second-factor authentication is handled with
+[passkeys](/access/profile-and-security/), not authenticator apps — so there is
+no 2FA-reset entrypoint to recover from a lost device. If you lose your only
+passkey, recover the account with `reset-password` above and re-register a
+passkey after signing in.
 
 ## Back up the control plane itself
 
 Backups you configure inside Docklands cover your **databases and volumes** (see
 [Backups](/backups/overview/)). To capture **Docklands' own state** for disaster
-recovery, back up two things together:
+recovery, back up three things together:
 
 1. **The PostgreSQL database** behind `DATABASE_URL` (projects, services,
    settings, credentials).
 2. **The base directory** `/etc/docklands` (Traefik config, TLS certificates,
    SSH keys, registry data, schedules). See [Architecture](/concepts/architecture/)
    for the layout.
+3. **The encryption key** `DOCKLANDS_ENCRYPTION_KEY` (or whatever
+   `DOCKLANDS_ENCRYPTION_KEY_FILE` points at). Secret material in the database is
+   encrypted at rest with this key, so a database dump restored **without** it is
+   undecryptable. Keep the key backed up alongside (but stored separately from)
+   the dump.
 
-A restore needs both: the database without the keys/certs, or vice versa, is
-incomplete.
+A restore needs all three: the database without the encryption key cannot be
+read, and the database without the keys/certs in `/etc/docklands` is incomplete.
 
 :::caution[Secrets at rest]
-Provider tokens, SSH private keys, database credentials, and TLS private keys are
-stored unencrypted in the database and on disk. Protect your database dumps and
-`/etc/docklands` backups accordingly — treat them as secret material.
+Provider tokens, SSH private keys, database credentials, TLS private keys, and
+service environment variables are **encrypted at rest with AES-256-GCM** before
+being written to the database (see [Configuration → Secrets at
+rest](/install/configuration/#secrets-at-rest)). A database dump therefore does
+not expose those secrets in the clear — but it is only as protected as
+`DOCKLANDS_ENCRYPTION_KEY`. Treat that key, your database dumps, and
+`/etc/docklands` backups as secret material and store the key apart from the
+dumps.
 :::
 
 ## Upgrading

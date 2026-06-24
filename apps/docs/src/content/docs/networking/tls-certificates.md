@@ -92,12 +92,17 @@ which is a different mechanism — see the
 [caution in the Domains guide](/networking/domains/#serve-over-https).
 
 :::caution
-**Uploaded private keys are stored unencrypted.** The certificate data and
-private key are saved as plain text in the Docklands database and written as
-plain files into the ingress runtime directory. Protect database and filesystem
-access accordingly, and prefer short-lived certificates you can rotate. Only
-owners/admins (or members granted the `certificate` permission) can view, create,
-or delete certificates, and certificates are scoped to your organization.
+**Private keys are written as plain files for the ingress runtime.** In the
+Docklands database the certificate data and private key are
+[encrypted at rest with AES-256-GCM](/install/configuration/#secrets-at-rest),
+but Traefik needs the material in the clear to serve TLS, so it is also written
+as plain files into the ingress runtime directory (under `/etc/docklands`).
+Protect filesystem access accordingly, back up
+[`DOCKLANDS_ENCRYPTION_KEY`](/install/operations/#back-up-the-control-plane-itself)
+with your database dumps, and prefer short-lived certificates you can rotate.
+Only owners/admins (or members granted the `certificate` permission) can view,
+create, or delete certificates, and certificates are scoped to your
+organization.
 :::
 
 ### Editing and removing certificates

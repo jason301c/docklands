@@ -46,9 +46,14 @@ Preferred route names in docs, navigation, and new links:
 - `/dashboard/proxy-files` for ingress runtime files.
 - `/dashboard/host-metrics` for host and runtime metrics.
 - `/dashboard/deployments` for deployment history and worker queue state.
-- `/dashboard/automations` for scheduled tasks.
 - `/dashboard/settings/cloudflare` for the Cloudflare Tunnel connection.
 - `/dashboard/settings/ingress`, `/dashboard/settings/runtime`, and `/dashboard/settings/storage` for the renamed settings surfaces.
+
+`/dashboard/automations` is reserved for scheduled tasks, but that surface is
+planned and not implemented yet, so it is not a usable page today. Domain
+management is likewise not an aggregate page: domains are configured per service
+on the workspace canvas, and the related settings live under the Cloudflare,
+Ingress, and Certificates groups rather than a single Domains screen.
 
 ## Development
 

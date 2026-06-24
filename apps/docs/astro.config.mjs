@@ -58,7 +58,7 @@ export default defineConfig({
 				{
 					icon: "github",
 					label: "GitHub",
-					href: "https://github.com/dokploy/dokploy",
+					href: "https://github.com/jason301c/docklands",
 				},
 			],
 			sidebar: [

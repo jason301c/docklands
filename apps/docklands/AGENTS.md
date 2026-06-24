@@ -153,7 +153,15 @@ like `@/server/...`, `@/components/...`, `@/shared/...`, `@/client/...`.
 
 The **workspace canvas** is the centerpiece: `components/dashboard/workspace/`
 (`environment-canvas.tsx`, `workspace-overview.tsx`, plus `actions/` and
-`manage/`). Per-service feature trees (`application/`, `compose/`, and the
+`manage/`). The canvas is rendered with **React Flow** (`@xyflow/react`, MIT) —
+services are React Flow nodes and connections are its edges, so layout/zoom/pan
+and node interaction go through React Flow rather than hand-rolled positioning.
+Its pieces live in a `canvas/` subfolder: `service-node.tsx` (the React Flow
+custom node plus the shared service-card helpers `WorkspaceServiceIcon`,
+`serviceStatusMeta`, and `formatLastDeployment`), the `command-bar-dialog.tsx`
+palette, the bulk-operation dialogs (`bulk-delete-dialog.tsx`,
+`move-services-dialog.tsx`, `duplicate-services-dialog.tsx`), and `constants.ts`.
+Per-service feature trees (`application/`, `compose/`, and the
 **single** `database-service/` tree that serves all six managed engines — with
 `general/`, `advanced/`, and `backups/` subfolders),
 runtime surfaces (`container-runtime/`, `cluster-runtime/`, `proxy-files/`,
@@ -339,8 +347,11 @@ previews, topology, and connection mapping.
 - Canonical product routes for navigation and new links:
   `/dashboard/setup`, `/dashboard/workspace`, `/dashboard/deployments`, `/dashboard/container-runtime`,
   `/dashboard/cluster-runtime`, `/dashboard/proxy-files`, `/dashboard/host-metrics`,
-  `/dashboard/automations`, and the settings routes
+  and the settings routes
   `/dashboard/settings/{ingress,cloudflare,runtime,storage,build-workers,image-registry,cluster-nodes,roles,git-providers,ssh-keys,certificates,tags,users,notifications,profile}`.
+  `/dashboard/automations` is the **planned** route for scheduled tasks; the page
+  is not implemented yet, so reserve the name but do not link to it as if it
+  exists until the surface ships.
 - **Sidebar IA.** `shared/dashboard-nav.ts` (`DASHBOARD_MENU`) pins an admin-only
   **Setup** hub (`/dashboard/setup`, the onboarding/getting-started surface in
   `components/dashboard/onboarding/`) at the very top, then four top-level surfaces
