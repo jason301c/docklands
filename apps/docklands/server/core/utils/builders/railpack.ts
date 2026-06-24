@@ -100,12 +100,14 @@ export const getRailpackCommand = (application: ApplicationNested) => {
 
 export RAILPACK_VERSION=${quote([application.railpackVersion ?? ""])}
 bash -c "$(curl -fsSL https://railpack.com/install.sh)"
+# Always tear down the per-build buildx builder on exit (success, failure, or the
+# build being killed) so isolated builders don't leak on the daemon.
+trap 'docker buildx rm ${builderName} >/dev/null 2>&1 || true' EXIT
 docker buildx create --name ${builderName} --driver docker-container || true
 
 echo "Preparing Railpack build plan..." ;
 railpack ${prepareArgs.join(" ")} || {
 	echo "❌ Railpack prepare failed" ;
-	docker buildx rm ${builderName} || true
 	exit 1;
 }
 echo "✅ Railpack prepare completed." ;
@@ -115,11 +117,9 @@ echo "Building with Railpack frontend..." ;
 ${exportEnvs.join("\n")}
 docker ${buildArgs.join(" ")} || {
 	echo "❌ Railpack build failed" ;
-	docker buildx rm ${builderName} || true
 	exit 1;
 }
 echo "✅ Railpack build completed." ;
-docker buildx rm ${builderName} || true
 `;
 
 	return bashCommand;

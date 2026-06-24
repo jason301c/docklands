@@ -173,31 +173,42 @@ export const mechanizeDockerContainer = async (
 		UpdateConfig,
 	};
 
-	try {
-		const service = docker.getService(appName);
-		const inspect = await service.inspect();
+	// Existence check first: only a genuine 404 (service absent) should fall through
+	// to create. Previously *any* error in the update path (a transient daemon
+	// error, a rejected spec) was swallowed into a create attempt — which then
+	// 409s or masks the real failure, and on a half-updated service leaves bad
+	// state. A non-404 inspect error (e.g. daemon unreachable) must propagate.
+	const inspectExisting = async () => {
+		try {
+			return await docker.getService(appName).inspect();
+		} catch (error) {
+			if ((error as { statusCode?: number })?.statusCode !== 404) {
+				throw error;
+			}
+			return null;
+		}
+	};
+	const existing = await inspectExisting();
 
-		await service.update({
-			version: Number.parseInt(inspect.Version.Index, 10),
+	if (existing) {
+		await docker.getService(appName).update({
+			version: Number.parseInt(existing.Version.Index, 10),
 			...settings,
 			TaskTemplate: {
 				...settings.TaskTemplate,
-				ForceUpdate: inspect.Spec.TaskTemplate.ForceUpdate + 1,
+				ForceUpdate: existing.Spec.TaskTemplate.ForceUpdate + 1,
 			},
 		});
 		logger.info({ appName }, "Docker service updated");
-	} catch (error) {
-		logger.warn(
-			{ err: error, appName },
-			"service update failed, attempting create",
-		);
-		if (authConfig) {
-			await docker.createService(authConfig, settings);
-		} else {
-			await docker.createService(settings);
-		}
-		logger.info({ appName }, "Docker service created");
+		return;
 	}
+
+	if (authConfig) {
+		await docker.createService(authConfig, settings);
+	} else {
+		await docker.createService(settings);
+	}
+	logger.info({ appName }, "Docker service created");
 };
 
 const getImageName = async (application: ApplicationNested) => {

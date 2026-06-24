@@ -495,10 +495,17 @@ const mongoEngine: DatabaseEngine<"mongo"> = {
 	connectionVars: ({ appName, config }) => {
 		const user = encodeUrlPart(config.databaseUser);
 		const password = encodeUrlPart(config.databasePassword);
+		// A replica-set mongo is a single node here, so drivers must connect
+		// directly (directConnection=true) instead of attempting replica-set
+		// topology discovery, which would hang/fail against one seed. Without this
+		// the generated MONGO_URL drifts from how the server is actually deployed.
+		const query = config.replicaSets
+			? "?authSource=admin&directConnection=true"
+			: "?authSource=admin";
 		return [
 			{
 				key: "MONGO_URL",
-				value: `mongodb://${user}:${password}@${appName}:27017/?authSource=admin`,
+				value: `mongodb://${user}:${password}@${appName}:27017/${query}`,
 			},
 			{ key: "MONGO_HOST", value: appName },
 			{ key: "MONGO_USER", value: config.databaseUser },
