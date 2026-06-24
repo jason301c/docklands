@@ -27,7 +27,7 @@ import {
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
-import { ScheduleFormField } from "../../application/schedules/handle-schedules";
+import { ScheduleFormField } from "../../shared/cron-expression-field";
 
 const logger = createClientLogger("compose");
 

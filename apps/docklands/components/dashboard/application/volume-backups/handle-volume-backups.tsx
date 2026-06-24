@@ -26,7 +26,7 @@ import {
 	ComposeServicePicker,
 	useComposeServices,
 } from "../../shared/compose-service-picker";
-import { ScheduleFormField } from "../schedules/handle-schedules";
+import { ScheduleFormField } from "../../shared/cron-expression-field";
 
 const logger = createClientLogger("volume-backup");
 

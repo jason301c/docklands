@@ -24,7 +24,6 @@ export * from "./redirects";
 export * from "./registry";
 export * from "./rollbacks";
 export * from "./runtime-worker";
-export * from "./schedule";
 export * from "./security";
 export * from "./service-database";
 export * from "./session";

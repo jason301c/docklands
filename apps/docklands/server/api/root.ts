@@ -27,7 +27,6 @@ import { redirectsRouter } from "./routers/redirects";
 import { registryRouter } from "./routers/registry";
 import { rollbackRouter } from "./routers/rollbacks";
 import { runtimeWorkerRouter } from "./routers/runtime-worker";
-import { scheduleRouter } from "./routers/schedule";
 import { securityRouter } from "./routers/security";
 import { serviceDatabaseRouter } from "./routers/service-database";
 import { settingsRouter } from "./routers/settings";
@@ -76,7 +75,6 @@ export const appRouter = createTRPCRouter({
 	customRole: customRoleRouter,
 	serviceDatabase: serviceDatabaseRouter,
 	auditLog: auditLogRouter,
-	schedule: scheduleRouter,
 	rollback: rollbackRouter,
 	volumeBackups: volumeBackupsRouter,
 	environment: environmentRouter,

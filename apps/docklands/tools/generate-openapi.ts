@@ -57,7 +57,6 @@ async function generateOpenAPI() {
 				"runtimeWorker",
 				"swarm",
 				"organization",
-				"schedule",
 				"rollback",
 				"volumeBackups",
 				"environment",

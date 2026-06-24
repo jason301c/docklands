@@ -35,7 +35,6 @@ describe("runtime worker filter copy", () => {
 
 	it("keeps runtime pages on the shared runtime worker filter", () => {
 		const pages = [
-			"app/dashboard/automations/_client.tsx",
 			"app/dashboard/cluster-runtime/_client.tsx",
 			"app/dashboard/container-runtime/_client.tsx",
 			"app/dashboard/proxy-files/_client.tsx",

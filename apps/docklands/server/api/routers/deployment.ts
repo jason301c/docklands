@@ -16,7 +16,6 @@ import {
 	findMemberByUserId,
 	isOwnerOrAdmin,
 } from "@/server/core/services/permission";
-import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import {
 	execAsync,
 	execAsyncRemote,
@@ -97,19 +96,6 @@ export const deploymentRouter = createTRPCRouter({
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					deployment: ["cancel"],
 				});
-			} else if (deployment.schedule?.runtimeWorkerId) {
-				const targetRuntimeWorker = await findRuntimeWorkerById(
-					deployment.schedule.runtimeWorkerId,
-				);
-				if (
-					targetRuntimeWorker.organizationId !==
-					ctx.session.activeOrganizationId
-				) {
-					throw new TRPCError({
-						code: "UNAUTHORIZED",
-						message: "You don't have access to this deployment.",
-					});
-				}
 			}
 
 			if (!deployment.pid) {
@@ -120,8 +106,8 @@ export const deploymentRouter = createTRPCRouter({
 			}
 
 			const command = `kill -9 ${deployment.pid}`;
-			if (deployment.schedule?.runtimeWorkerId) {
-				await execAsyncRemote(deployment.schedule.runtimeWorkerId, command);
+			if (deployment.runtimeWorkerId) {
+				await execAsyncRemote(deployment.runtimeWorkerId, command);
 			} else {
 				await execAsync(command);
 			}
@@ -147,19 +133,6 @@ export const deploymentRouter = createTRPCRouter({
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					deployment: ["cancel"],
 				});
-			} else if (deployment.schedule?.runtimeWorkerId) {
-				const targetRuntimeWorker = await findRuntimeWorkerById(
-					deployment.schedule.runtimeWorkerId,
-				);
-				if (
-					targetRuntimeWorker.organizationId !==
-					ctx.session.activeOrganizationId
-				) {
-					throw new TRPCError({
-						code: "UNAUTHORIZED",
-						message: "You don't have access to this deployment.",
-					});
-				}
 			}
 			const result = await removeDeployment(input.deploymentId);
 			await audit(ctx, {
@@ -184,19 +157,6 @@ export const deploymentRouter = createTRPCRouter({
 				await checkServicePermissionAndAccess(ctx, serviceId, {
 					deployment: ["read"],
 				});
-			} else if (deployment.schedule?.runtimeWorkerId) {
-				const targetRuntimeWorker = await findRuntimeWorkerById(
-					deployment.schedule.runtimeWorkerId,
-				);
-				if (
-					targetRuntimeWorker.organizationId !==
-					ctx.session.activeOrganizationId
-				) {
-					throw new TRPCError({
-						code: "UNAUTHORIZED",
-						message: "You don't have access to this deployment.",
-					});
-				}
 			}
 
 			if (!deployment.logPath) {
@@ -204,8 +164,7 @@ export const deploymentRouter = createTRPCRouter({
 			}
 
 			const command = `tail -n ${input.tail} "${deployment.logPath}" 2>/dev/null || echo ""`;
-			const runtimeWorkerId =
-				deployment.runtimeWorkerId || deployment.schedule?.runtimeWorkerId;
+			const runtimeWorkerId = deployment.runtimeWorkerId;
 			if (runtimeWorkerId) {
 				const { stdout } = await execAsyncRemote(runtimeWorkerId, command);
 				return stdout;

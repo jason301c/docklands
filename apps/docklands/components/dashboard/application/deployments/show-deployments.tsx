@@ -35,7 +35,6 @@ interface Props {
 	type:
 		| "application"
 		| "compose"
-		| "schedule"
 		| "runtimeWorker"
 		| "backup"
 		| "previewDeployment"

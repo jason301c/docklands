@@ -16,7 +16,6 @@ import { certificates } from "./certificate";
 import { compose } from "./compose";
 import { database } from "./database";
 import { deployments } from "./deployment";
-import { schedules } from "./schedule";
 import { sshKeys } from "./ssh-key";
 import { generateAppName } from "./utils";
 
@@ -132,7 +131,6 @@ export const runtimeWorkerRelations = relations(
 			fields: [runtimeWorkers.organizationId],
 			references: [organization.id],
 		}),
-		schedules: many(schedules),
 	}),
 );
 

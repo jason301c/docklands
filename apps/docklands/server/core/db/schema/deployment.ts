@@ -16,7 +16,6 @@ import { compose } from "./compose";
 import { previewDeployments } from "./preview-deployments";
 import { rollbacks } from "./rollbacks";
 import { runtimeWorkers } from "./runtime-worker";
-import { schedules } from "./schedule";
 import { volumeBackups } from "./volume-backups";
 
 export const deploymentStatus = pgEnum("deploymentStatus", [
@@ -62,10 +61,6 @@ export const deployments = pgTable(
 		startedAt: text("startedAt"),
 		finishedAt: text("finishedAt"),
 		errorMessage: text("errorMessage"),
-		scheduleId: text("scheduleId").references(
-			(): AnyPgColumn => schedules.scheduleId,
-			{ onDelete: "cascade" },
-		),
 		backupId: text("backupId").references((): AnyPgColumn => backups.backupId, {
 			onDelete: "cascade",
 		}),
@@ -116,10 +111,6 @@ export const deploymentsRelations = relations(deployments, ({ one }) => ({
 	previewDeployment: one(previewDeployments, {
 		fields: [deployments.previewDeploymentId],
 		references: [previewDeployments.previewDeploymentId],
-	}),
-	schedule: one(schedules, {
-		fields: [deployments.scheduleId],
-		references: [schedules.scheduleId],
 	}),
 	backup: one(backups, {
 		fields: [deployments.backupId],
@@ -206,17 +197,6 @@ export const apiCreateDeploymentServer = schema
 		runtimeWorkerId: z.string().min(1),
 	});
 
-export const apiCreateDeploymentSchedule = schema
-	.pick({
-		title: true,
-		status: true,
-		logPath: true,
-		description: true,
-	})
-	.extend({
-		scheduleId: z.string().min(1),
-	});
-
 export const apiCreateDeploymentVolumeBackup = schema
 	.pick({
 		title: true,
@@ -246,7 +226,6 @@ export const apiFindAllByType = z.object({
 		"application",
 		"compose",
 		"runtimeWorker",
-		"schedule",
 		"previewDeployment",
 		"backup",
 		"volumeBackup",

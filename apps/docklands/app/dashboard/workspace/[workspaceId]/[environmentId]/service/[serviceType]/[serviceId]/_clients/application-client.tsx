@@ -23,7 +23,6 @@ import { ShowIconSettings } from "@/components/dashboard/application/icon/show-i
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { ShowPatches } from "@/components/dashboard/application/patches/show-patches";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
-import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
 import { UpdateApplication } from "@/components/dashboard/application/update-application";
 import { ShowVolumeBackups } from "@/components/dashboard/application/volume-backups/show-volume-backups";
 import { ContainerMonitoring } from "@/components/dashboard/metrics/container/show-container-monitoring";
@@ -46,7 +45,6 @@ type TabState =
 	| "monitoring"
 	| "patches"
 	| "preview-deployments"
-	| "schedules"
 	| "volume-backups"
 	| "icon";
 
@@ -94,9 +92,6 @@ const Service = (props: {
 		// offering a tab that can't work.
 		permissions?.deployment.read && data?.sourceType === "github"
 			? { value: "preview-deployments", label: "Previews" }
-			: null,
-		permissions?.schedule.read
-			? { value: "schedules", label: "Automations" }
 			: null,
 		permissions?.volumeBackup.read
 			? { value: "volume-backups", label: "Volume Backups" }
@@ -212,16 +207,6 @@ const Service = (props: {
 											<ShowDockerLogs
 												appName={data?.appName || ""}
 												runtimeWorkerId={data?.runtimeWorkerId || ""}
-											/>
-										</div>
-									</div>
-								)}
-								{permissions?.schedule.read && tab === "schedules" && (
-									<div>
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowSchedules
-												id={applicationId}
-												scheduleType="application"
 											/>
 										</div>
 									</div>

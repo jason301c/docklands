@@ -13,7 +13,6 @@ import { ShowDeployments } from "@/components/dashboard/application/deployments/
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
 import { ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowPatches } from "@/components/dashboard/application/patches/show-patches";
-import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
 import { ShowVolumeBackups } from "@/components/dashboard/application/volume-backups/show-volume-backups";
 import { AddCommandCompose } from "@/components/dashboard/compose/advanced/add-command";
 import { IsolatedDeploymentTab } from "@/components/dashboard/compose/advanced/add-isolation";
@@ -46,7 +45,6 @@ type TabState =
 	| "logs"
 	| "monitoring"
 	| "patches"
-	| "schedules"
 	| "volumeBackups";
 
 const Service = (props: {
@@ -91,9 +89,6 @@ const Service = (props: {
 		permissions?.service.create ? { value: "backups", label: "Backups" } : null,
 		permissions?.service.read && (serviceDatabases?.length ?? 0) > 0
 			? { value: "databases", label: "Databases" }
-			: null,
-		permissions?.schedule.read
-			? { value: "schedules", label: "Automations" }
 			: null,
 		permissions?.volumeBackup.read
 			? { value: "volumeBackups", label: "Volume Backups" }
@@ -205,13 +200,6 @@ const Service = (props: {
 									</div>
 								)}
 
-								{permissions?.schedule.read && tab === "schedules" && (
-									<div>
-										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowSchedules id={composeId} scheduleType="compose" />
-										</div>
-									</div>
-								)}
 								{permissions?.volumeBackup.read && tab === "volumeBackups" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">

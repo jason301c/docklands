@@ -21,8 +21,8 @@ import type { CacheType } from "../application/domains/handle-domain";
 
 /**
  * Loads the service names inside a compose stack via `api.compose.loadServices`,
- * owning the fetch-vs-cache toggle so callers don't re-implement it. Each backup/
- * schedule dialog that targets a compose service previously inlined this query +
+ * owning the fetch-vs-cache toggle so callers don't re-implement it. Each backup
+ * dialog that targets a compose service previously inlined this query +
  * `cacheType` state; this hook is the single source. The returned `error` is left
  * to the caller so it can place its own `AlertBlock` exactly where it wants it.
  */
@@ -149,11 +149,11 @@ interface ComposeServicePickerProps<TFieldValues extends FieldValues>
 	ariaLabel: string;
 	/**
 	 * How the `Select` binds its value. `controlled` passes `value` (backup
-	 * dialogs); `uncontrolled` passes `defaultValue` (schedule/volume dialogs).
+	 * dialogs); `uncontrolled` passes `defaultValue` (volume dialogs).
 	 */
 	bindMode?: "controlled" | "uncontrolled";
 	/**
-	 * Whether the disabled "Empty" option is always rendered (schedule/volume)
+	 * Whether the disabled "Empty" option is always rendered (volume dialogs)
 	 * or only when there are no services (backup dialogs).
 	 */
 	alwaysShowEmptyOption?: boolean;
@@ -162,7 +162,7 @@ interface ComposeServicePickerProps<TFieldValues extends FieldValues>
 /**
  * Renders the "Service Name" `Select` populated from a compose stack's services,
  * with the fetch/cache toggle buttons beside it. Shared by the backup, restore,
- * schedule, and volume-backup dialogs.
+ * and volume-backup dialogs.
  */
 export const ComposeServicePicker = <TFieldValues extends FieldValues>({
 	control,

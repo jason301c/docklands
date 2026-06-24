@@ -12,7 +12,6 @@ import {
 	Cable,
 	CheckCircle2,
 	CircuitBoard,
-	Clock,
 	Command,
 	Database,
 	ExternalLink,
@@ -59,7 +58,6 @@ import { ShowApplicationEnvironment } from "@/components/dashboard/application/e
 import { ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
-import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
 import { ShowVolumeBackups } from "@/components/dashboard/application/volume-backups/show-volume-backups";
 import { ShowComposeContainers } from "@/components/dashboard/compose/containers/show-compose-containers";
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
@@ -596,7 +594,6 @@ export const EnvironmentCanvas = ({
 		| "terminal"
 		| "containers"
 		| "metrics"
-		| "schedules"
 		| "backups"
 		| "volume-backups"
 		| "credentials"
@@ -863,11 +860,6 @@ export const EnvironmentCanvas = ({
 			: []),
 		...(selectedServiceModel?.type === "application"
 			? [{ value: "previews", label: "Previews" }]
-			: []),
-		...(selectedServiceModel &&
-		deploymentServiceTypes.has(selectedServiceModel.type) &&
-		permissions?.schedule.read
-			? [{ value: "schedules", label: "Automations" }]
 			: []),
 		...(selectedServiceModel?.type === "compose" ||
 		(selectedServiceModel && getDatabaseBackupType(selectedServiceModel))
@@ -2265,27 +2257,6 @@ export const EnvironmentCanvas = ({
 							},
 						]
 					: []),
-				...(deploymentServiceTypes.has(service.type) &&
-				permissions?.schedule.read
-					? [
-							{
-								id: `schedules:${service.type}:${service.id}`,
-								group: "Actions" as const,
-								label: `Automations for ${service.name}`,
-								detail: `${serviceTypeLabels[service.type]} · cron jobs and tasks`,
-								search: `${baseSearch} schedules cron jobs tasks automation`,
-								icon: <Clock className="size-5 text-kumo-subtle" />,
-								run: () => {
-									setSelectedService({
-										serviceId: service.id,
-										serviceType: service.type,
-									});
-									setDrawerTab("schedules");
-									setCommandOpen(false);
-								},
-							},
-						]
-					: []),
 				...(service.type === "compose" || getDatabaseBackupType(service)
 					? [
 							{
@@ -3644,15 +3615,6 @@ export const EnvironmentCanvas = ({
 								selectedServiceModel.type === "application" && (
 									<ShowPreviewDeployments
 										applicationId={selectedServiceModel.id}
-									/>
-								)}
-
-							{activeDrawerTab === "schedules" &&
-								(selectedServiceModel.type === "application" ||
-									selectedServiceModel.type === "compose") && (
-									<ShowSchedules
-										id={selectedServiceModel.id}
-										scheduleType={selectedServiceModel.type}
 									/>
 								)}
 

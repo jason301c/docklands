@@ -11,14 +11,6 @@ type JournalEntry = {
 	when: number;
 };
 
-function getPostgresCode(error: unknown) {
-	if (typeof error !== "object" || error === null) {
-		return undefined;
-	}
-	const code = "code" in error ? error.code : undefined;
-	return typeof code === "string" ? code : undefined;
-}
-
 async function tableExists(sql: Sql, tableName: string) {
 	const rows = await sql`
 		select 1
@@ -138,36 +130,12 @@ export async function repairLegacySchema(sql: Sql) {
 		select pg_temp.rename_column_if_exists('mysql', 'serverId', 'runtimeWorkerId');
 		select pg_temp.rename_column_if_exists('postgres', 'serverId', 'runtimeWorkerId');
 		select pg_temp.rename_column_if_exists('redis', 'serverId', 'runtimeWorkerId');
-		select pg_temp.rename_column_if_exists('schedule', 'serverId', 'runtimeWorkerId');
 
 		select pg_temp.rename_column_if_exists('member', 'canCreateProjects', 'canCreateWorkspaces');
 		select pg_temp.rename_column_if_exists('member', 'canDeleteProjects', 'canDeleteWorkspaces');
 		select pg_temp.rename_column_if_exists('member', 'accesedProjects', 'accessedWorkspaces');
 		select pg_temp.rename_column_if_exists('member', 'accessedServers', 'accessedRuntimeWorkers');
 	`);
-
-	await sql.unsafe(`
-		do $$
-		begin
-			if exists (select 1 from pg_type where typname = 'scheduleType') then
-				alter type "scheduleType" add value if not exists 'runtimeWorker';
-			end if;
-		end $$;
-	`);
-
-	await sql
-		.unsafe(`
-		update "schedule"
-		set "scheduleType" = 'runtimeWorker'
-		where "scheduleType"::text = 'server';
-	`)
-		.catch((error) => {
-			const code = getPostgresCode(error);
-			if (code === "42P01" || code === "42703") {
-				return;
-			}
-			throw error;
-		});
 }
 
 export async function adoptResetBaseline(

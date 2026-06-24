@@ -81,7 +81,6 @@ export type AuditResourceType =
 	| "port"
 	| "redirect"
 	| "security"
-	| "schedule"
 	| "backup"
 	| "volumeBackup"
 	| "docker"

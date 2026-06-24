@@ -5,7 +5,6 @@ import {
 	BlocksIcon,
 	BookIcon,
 	Boxes,
-	Clock,
 	Database,
 	Forward,
 	GalleryVerticalEnd,
@@ -79,13 +78,6 @@ export const DASHBOARD_MENU: Menu = {
 			url: "/dashboard/deployments",
 			icon: Rocket,
 			isEnabled: ({ permissions }) => !!permissions?.deployment.read,
-		},
-		{
-			isSingle: true,
-			title: "Automations",
-			url: "/dashboard/automations",
-			icon: Clock,
-			isEnabled: ({ permissions }) => !!permissions?.organization.update,
 		},
 	],
 

@@ -22,11 +22,11 @@ import {
 import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 import { BACKUP_DATABASE_ENGINE_KEYS } from "@/shared/database-engines";
-import { ScheduleFormField } from "../../application/schedules/handle-schedules";
 import {
 	ComposeServicePicker,
 	useComposeServices,
 } from "../../shared/compose-service-picker";
+import { ScheduleFormField } from "../../shared/cron-expression-field";
 import { DestinationPicker } from "../../shared/destination-picker";
 import { ENGINE_LABELS } from "../general/engine-labels";
 import {

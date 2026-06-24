@@ -12,7 +12,6 @@ import {
 import { initCronJobs } from "@/server/core/utils/backups/index";
 import { sendDocklandsRestartNotifications } from "@/server/core/utils/notifications/docklands-restart";
 import { initPreviewCleanupCron } from "@/server/core/utils/previews/index";
-import { initSchedules } from "@/server/core/utils/schedules/index";
 import { initCancelDeployments } from "@/server/core/utils/startup/cancel-deployments";
 import { initVolumeBackupsCronJobs } from "@/server/core/utils/volume-backups/index";
 import packageInfo from "../package.json";
@@ -91,7 +90,6 @@ void app.prepare().then(async () => {
 			createDefaultMiddlewares();
 			await initializeNetwork();
 			await initCronJobs();
-			await initSchedules();
 			await initCancelDeployments();
 			await initVolumeBackupsCronJobs();
 			initPreviewCleanupCron();

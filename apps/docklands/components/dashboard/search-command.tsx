@@ -196,12 +196,6 @@ export const SearchCommand = () => {
 				onSelect: () => navigate("/dashboard/deployments"),
 			},
 			{
-				id: "app-automations",
-				title: "Automations",
-				searchText: "automations schedules cron jobs tasks",
-				onSelect: () => navigate("/dashboard/automations"),
-			},
-			{
 				id: "app-monitoring",
 				title: "Host metrics",
 				searchText: "host metrics monitoring runtime",

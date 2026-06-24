@@ -12,7 +12,6 @@ import { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
 import { account, apikey, organization, passkey } from "./account";
 import { backups } from "./backups";
-import { schedules } from "./schedule";
 import { workspaces } from "./workspace";
 
 /**
@@ -70,7 +69,6 @@ export const usersRelations = relations(user, ({ one, many }) => ({
 	apiKeys: many(apikey),
 	passkeys: many(passkey),
 	backups: many(backups),
-	schedules: many(schedules),
 }));
 
 const createSchema = createInsertSchema(user, {

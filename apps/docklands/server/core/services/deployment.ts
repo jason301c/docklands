@@ -13,7 +13,6 @@ import {
 	type apiCreateDeploymentBackup,
 	type apiCreateDeploymentCompose,
 	type apiCreateDeploymentPreview,
-	type apiCreateDeploymentSchedule,
 	type apiCreateDeploymentServer,
 	type apiCreateDeploymentVolumeBackup,
 	applications,
@@ -46,7 +45,6 @@ import {
 } from "./preview-deployment";
 import { removeRollbackById } from "./rollbacks";
 import { findRuntimeWorkerById, type RuntimeWorker } from "./runtime-worker";
-import { findScheduleById } from "./schedule";
 import { findVolumeBackupById } from "./volume-backups";
 
 export type ServicePath = { href: string | null; label: string };
@@ -144,7 +142,6 @@ export const findDeploymentById = async (deploymentId: string) => {
 			where: eq(deployments.deploymentId, deploymentId),
 			with: {
 				application: true,
-				schedule: true,
 			},
 		}),
 		"Deployment",
@@ -208,7 +205,7 @@ type DeploymentRecordValues = Partial<DeploymentInsert>;
 const createDeploymentRecord = async (params: {
 	/** Runtime worker that owns the build/log, or null/undefined for local. */
 	runtimeWorkerId: string | null | undefined;
-	/** Base directory for the log file (LOGS_PATH / SCHEDULES_PATH / …). */
+	/** Base directory for the log file (LOGS_PATH / VOLUME_BACKUPS_PATH / …). */
 	basePath: string;
 	/** Service/app name used for the per-service log subdirectory. */
 	appName: string;
@@ -497,52 +494,6 @@ echo "Initializing backup\n" >> ${logFilePath};
 	});
 };
 
-export const createDeploymentSchedule = async (
-	deployment: Omit<
-		z.infer<typeof apiCreateDeploymentSchedule>,
-		"deploymentId" | "createdAt" | "status" | "logPath"
-	>,
-) => {
-	const schedule = await findScheduleById(deployment.scheduleId);
-
-	const runtimeWorkerId =
-		schedule.application?.runtimeWorkerId ||
-		schedule.compose?.runtimeWorkerId ||
-		schedule.runtimeWorker?.runtimeWorkerId;
-	await removeLastTenDeployments(
-		deployment.scheduleId,
-		"schedule",
-		runtimeWorkerId,
-	);
-	const { SCHEDULES_PATH } = paths(!!runtimeWorkerId);
-	const title = deployment.title || "Deployment";
-	const description = deployment.description || "";
-	return createDeploymentRecord({
-		runtimeWorkerId,
-		basePath: SCHEDULES_PATH,
-		appName: schedule.appName,
-		buildRemoteCommand: ({ basePath, appName, logFilePath }) => `
-				mkdir -p ${basePath}/${appName};
-            	echo "Initializing schedule" >> ${logFilePath};
-			`,
-		localInitContent: "Initializing schedule\n",
-		title,
-		description,
-		successValues: {
-			scheduleId: deployment.scheduleId,
-		},
-		errorValues: {
-			scheduleId: deployment.scheduleId,
-		},
-		errorMessage: "Error creating the deployment",
-		logErrorBeforeInsert: (error) =>
-			logger.error(
-				{ err: error, scheduleId: deployment.scheduleId },
-				"Failed to create schedule deployment",
-			),
-	});
-};
-
 export const createDeploymentVolumeBackup = async (
 	deployment: Omit<
 		z.infer<typeof apiCreateDeploymentVolumeBackup>,
@@ -636,7 +587,6 @@ const getDeploymentsByType = async (
 		| "application"
 		| "compose"
 		| "runtimeWorker"
-		| "schedule"
 		| "previewDeployment"
 		| "backup"
 		| "volumeBackup",
@@ -669,7 +619,6 @@ const removeLastTenDeployments = async (
 		| "application"
 		| "compose"
 		| "runtimeWorker"
-		| "schedule"
 		| "previewDeployment"
 		| "backup"
 		| "volumeBackup",
