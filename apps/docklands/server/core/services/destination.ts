@@ -63,10 +63,16 @@ export const updateDestinationById = async (
 	destinationId: string,
 	destinationData: Partial<Destination>,
 ) => {
+	const { accessKey, secretAccessKey, ...rest } = destinationData;
 	const result = await db
 		.update(destinations)
 		.set({
-			...destinationData,
+			...rest,
+			// Blank credential fields mean "keep existing" — an update that doesn't
+			// resend the S3 keys (e.g. changing only the name/region) must not wipe
+			// them and silently break every backup to this destination.
+			...(accessKey ? { accessKey } : {}),
+			...(secretAccessKey ? { secretAccessKey } : {}),
 		})
 		.where(
 			and(

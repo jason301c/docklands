@@ -121,6 +121,10 @@ export const backupVolume = async (
 		echo "Stopping application to 0 replicas"
 		ACTUAL_REPLICAS=$(docker service inspect ${volumeBackup.application?.appName} --format "{{.Spec.Mode.Replicated.Replicas}}")
 		echo "Actual replicas: $ACTUAL_REPLICAS"
+		# Always restore replicas on exit so a failed backup never leaves the
+		# service scaled to zero. The explicit restore below brings it back sooner
+		# on success; this trap is the safety net for the failure path.
+		trap 'docker service update --replicas=$ACTUAL_REPLICAS --with-registry-auth ${volumeBackup.application?.appName} || true' EXIT
 		docker service update --replicas=0 ${volumeBackup.application?.appName}
         ${backupCommand}
 		echo "Starting application to $ACTUAL_REPLICAS replicas"
@@ -141,6 +145,8 @@ export const backupVolume = async (
 			echo "Service name: ${compose.appName}_${volumeBackup.serviceName}"
             ACTUAL_REPLICAS=$(docker service inspect ${compose.appName}_${volumeBackup.serviceName} --format "{{.Spec.Mode.Replicated.Replicas}}")
             echo "Actual replicas: $ACTUAL_REPLICAS"
+            # Restore replicas on exit so a failed backup can't leave it at zero.
+            trap 'docker service update --replicas=$ACTUAL_REPLICAS --with-registry-auth ${compose.appName}_${volumeBackup.serviceName} || true' EXIT
             docker service update --replicas=0 ${compose.appName}_${volumeBackup.serviceName}`;
 
 			startCommand = `
@@ -150,6 +156,8 @@ export const backupVolume = async (
 			stopCommand = `
 			echo "Stopping compose container"
             ID=$(docker ps -q --filter "label=com.docker.compose.workspace=${compose.appName}" --filter "label=com.docker.compose.service=${volumeBackup.serviceName}")
+            # Restart the container on exit so a failed backup can't leave it stopped.
+            trap 'docker start $ID || true' EXIT
             docker stop $ID`;
 
 			startCommand = `
