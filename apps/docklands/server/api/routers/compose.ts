@@ -941,6 +941,13 @@ export const composeRouter = createTRPCRouter({
 					await removeDomainById(domain.domainId);
 				}
 
+				// Re-importing re-runs detection, so clear the previously-detected
+				// service_database rows first — otherwise each re-import appends
+				// duplicates (stale backup targets + connection-variable sources).
+				await db
+					.delete(serviceDatabase)
+					.where(eq(serviceDatabase.composeId, input.composeId));
+
 				const serverIp = await getTemplateServerIp(
 					compose.runtimeWorkerId || undefined,
 				);
