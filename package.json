@@ -15,6 +15,7 @@
 		"typecheck": "bun --filter docklands typecheck",
 		"test": "bun --filter docklands test",
 		"test:ci": "bun run check:bundler && bun --filter docklands test:ci",
+		"test:coverage": "bun --filter docklands test:coverage",
 		"format-and-lint": "bun --filter docklands format-and-lint",
 		"format-and-lint:fix": "bun --filter docklands format-and-lint:fix",
 		"check:bundler": "bun tools/check-bundler.mjs",
