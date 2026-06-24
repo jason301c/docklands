@@ -35,24 +35,17 @@ import {
 } from "@/components/shared/form";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
-import {
-	DATABASE_ENGINE_KEYS,
-	databaseEngineSupportsBackup,
-} from "@/shared/database-engines";
+import { BACKUP_DATABASE_ENGINE_KEYS } from "@/shared/database-engines";
 import { cn } from "@/shared/utils";
 import { ScheduleFormField } from "../../application/schedules/handle-schedules";
 import { ENGINE_LABELS } from "../general/engine-labels";
+import {
+	composeBackupMetadataEngineShape,
+	refineComposeBackupMetadata,
+} from "./backup-metadata";
+import { ComposeCredentialFields } from "./compose-credential-fields";
 
 const logger = createClientLogger("database-backup");
-
-/**
- * Engines that support a logical (dump-based) backup, derived from the engine
- * registry so this list cannot drift from the backend. Resolves to
- * postgres/mysql/mariadb/mongo (redis/libsql have no dump command).
- */
-const BACKUP_DATABASE_ENGINES = DATABASE_ENGINE_KEYS.filter((key) =>
-	databaseEngineSupportsBackup(key),
-);
 
 import {
 	Command,
@@ -85,32 +78,7 @@ const Schema = z
 			.enum(["postgres", "mariadb", "mysql", "mongo", "web-server", "libsql"])
 			.optional(),
 		backupType: z.enum(["database", "compose"]),
-		metadata: z
-			.object({
-				postgres: z
-					.object({
-						databaseUser: z.string(),
-					})
-					.optional(),
-				mariadb: z
-					.object({
-						databaseUser: z.string(),
-						databasePassword: z.string(),
-					})
-					.optional(),
-				mongo: z
-					.object({
-						databaseUser: z.string(),
-						databasePassword: z.string(),
-					})
-					.optional(),
-				mysql: z
-					.object({
-						databaseRootPassword: z.string(),
-					})
-					.optional(),
-			})
-			.optional(),
+		metadata: z.object(composeBackupMetadataEngineShape).optional(),
 	})
 	.superRefine((data, ctx) => {
 		if (data.backupType === "compose" && !data.databaseType) {
@@ -129,54 +97,8 @@ const Schema = z
 			});
 		}
 
-		if (data.backupType === "compose" && data.databaseType) {
-			if (data.databaseType === "postgres") {
-				if (!data.metadata?.postgres?.databaseUser) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database user is required for PostgreSQL",
-						path: ["metadata", "postgres", "databaseUser"],
-					});
-				}
-			} else if (data.databaseType === "mariadb") {
-				if (!data.metadata?.mariadb?.databaseUser) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database user is required for MariaDB",
-						path: ["metadata", "mariadb", "databaseUser"],
-					});
-				}
-				if (!data.metadata?.mariadb?.databasePassword) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database password is required for MariaDB",
-						path: ["metadata", "mariadb", "databasePassword"],
-					});
-				}
-			} else if (data.databaseType === "mongo") {
-				if (!data.metadata?.mongo?.databaseUser) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database user is required for MongoDB",
-						path: ["metadata", "mongo", "databaseUser"],
-					});
-				}
-				if (!data.metadata?.mongo?.databasePassword) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database password is required for MongoDB",
-						path: ["metadata", "mongo", "databasePassword"],
-					});
-				}
-			} else if (data.databaseType === "mysql") {
-				if (!data.metadata?.mysql?.databaseRootPassword) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Root password is required for MySQL",
-						path: ["metadata", "mysql", "databaseRootPassword"],
-					});
-				}
-			}
+		if (data.backupType === "compose") {
+			refineComposeBackupMetadata(data.databaseType, data.metadata, ctx);
 		}
 	});
 
@@ -373,7 +295,7 @@ export const HandleBackup = ({
 											>
 												<></>
 												<>
-													{BACKUP_DATABASE_ENGINES.map((engine) => (
+													{BACKUP_DATABASE_ENGINE_KEYS.map((engine) => (
 														<Select.Option key={engine} value={engine}>
 															{ENGINE_LABELS[engine]}
 														</Select.Option>
@@ -653,113 +575,13 @@ export const HandleBackup = ({
 								)}
 							/>
 							{backupType === "compose" && (
-								<>
-									{form.watch("databaseType") === "postgres" && (
-										<FormField
-											control={form.control}
-											name="metadata.postgres.databaseUser"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Database User</FormLabel>
-													<FormControl>
-														<Input placeholder="postgres" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									)}
-
-									{form.watch("databaseType") === "mariadb" && (
-										<>
-											<FormField
-												control={form.control}
-												name="metadata.mariadb.databaseUser"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Database User</FormLabel>
-														<FormControl>
-															<Input placeholder="mariadb" {...field} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="metadata.mariadb.databasePassword"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Database Password</FormLabel>
-														<FormControl>
-															<Input
-																type="password"
-																placeholder="••••••••"
-																{...field}
-															/>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-										</>
-									)}
-
-									{form.watch("databaseType") === "mongo" && (
-										<>
-											<FormField
-												control={form.control}
-												name="metadata.mongo.databaseUser"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Database User</FormLabel>
-														<FormControl>
-															<Input placeholder="mongo" {...field} />
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="metadata.mongo.databasePassword"
-												render={({ field }) => (
-													<FormItem>
-														<FormLabel>Database Password</FormLabel>
-														<FormControl>
-															<Input
-																type="password"
-																placeholder="••••••••"
-																{...field}
-															/>
-														</FormControl>
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-										</>
-									)}
-
-									{form.watch("databaseType") === "mysql" && (
-										<FormField
-											control={form.control}
-											name="metadata.mysql.databaseRootPassword"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Root Password</FormLabel>
-													<FormControl>
-														<Input
-															type="password"
-															placeholder="••••••••"
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									)}
-								</>
+								<ComposeCredentialFields
+									databaseType={form.watch("databaseType")}
+									control={form.control}
+									placeholder={(engine, field) =>
+										field.isPassword ? "••••••••" : engine
+									}
+								/>
 							)}
 						</div>
 						<div>

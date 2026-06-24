@@ -46,9 +46,16 @@ import {
 } from "@/components/shared/form";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
+import { BACKUP_DATABASE_ENGINE_KEYS } from "@/shared/database-engines";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
 import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
+import { ENGINE_LABELS } from "../general/engine-labels";
+import {
+	composeBackupMetadataEngineShape,
+	refineComposeBackupMetadata,
+} from "./backup-metadata";
+import { ComposeCredentialFields } from "./compose-credential-fields";
 
 type DatabaseType =
 	| Exclude<ServiceType, "application" | "redis">
@@ -78,28 +85,7 @@ const RestoreBackupSchema = z
 		backupType: z.enum(["database", "compose"]).default("database"),
 		metadata: z
 			.object({
-				postgres: z
-					.object({
-						databaseUser: z.string(),
-					})
-					.optional(),
-				mariadb: z
-					.object({
-						databaseUser: z.string(),
-						databasePassword: z.string(),
-					})
-					.optional(),
-				mongo: z
-					.object({
-						databaseUser: z.string(),
-						databasePassword: z.string(),
-					})
-					.optional(),
-				mysql: z
-					.object({
-						databaseRootPassword: z.string(),
-					})
-					.optional(),
+				...composeBackupMetadataEngineShape,
 				serviceName: z.string().optional(),
 			})
 			.optional(),
@@ -121,54 +107,8 @@ const RestoreBackupSchema = z
 			});
 		}
 
-		if (data.backupType === "compose" && data.databaseType) {
-			if (data.databaseType === "postgres") {
-				if (!data.metadata?.postgres?.databaseUser) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database user is required for PostgreSQL",
-						path: ["metadata", "postgres", "databaseUser"],
-					});
-				}
-			} else if (data.databaseType === "mariadb") {
-				if (!data.metadata?.mariadb?.databaseUser) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database user is required for MariaDB",
-						path: ["metadata", "mariadb", "databaseUser"],
-					});
-				}
-				if (!data.metadata?.mariadb?.databasePassword) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database password is required for MariaDB",
-						path: ["metadata", "mariadb", "databasePassword"],
-					});
-				}
-			} else if (data.databaseType === "mongo") {
-				if (!data.metadata?.mongo?.databaseUser) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database user is required for MongoDB",
-						path: ["metadata", "mongo", "databaseUser"],
-					});
-				}
-				if (!data.metadata?.mongo?.databasePassword) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Database password is required for MongoDB",
-						path: ["metadata", "mongo", "databasePassword"],
-					});
-				}
-			} else if (data.databaseType === "mysql") {
-				if (!data.metadata?.mysql?.databaseRootPassword) {
-					ctx.addIssue({
-						code: z.ZodIssueCode.custom,
-						message: "Root password is required for MySQL",
-						path: ["metadata", "mysql", "databaseRootPassword"],
-					});
-				}
-			}
+		if (data.backupType === "compose") {
+			refineComposeBackupMetadata(data.databaseType, data.metadata, ctx);
 		}
 	});
 
@@ -547,12 +487,11 @@ export const RestoreBackup = ({
 											>
 												<></>
 												<>
-													<Select.Option value="postgres">
-														PostgreSQL
-													</Select.Option>
-													<Select.Option value="mariadb">MariaDB</Select.Option>
-													<Select.Option value="mongo">MongoDB</Select.Option>
-													<Select.Option value="mysql">MySQL</Select.Option>
+													{BACKUP_DATABASE_ENGINE_KEYS.map((engine) => (
+														<Select.Option key={engine} value={engine}>
+															{ENGINE_LABELS[engine]}
+														</Select.Option>
+													))}
 												</>
 											</Select>
 											<FormMessage />
@@ -660,117 +599,17 @@ export const RestoreBackup = ({
 									)}
 								/>
 
-								{currentDatabaseType === "postgres" && (
-									<FormField
-										control={form.control}
-										name="metadata.postgres.databaseUser"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Database User</FormLabel>
-												<FormControl>
-													<Input placeholder="Enter database user" {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								)}
-
-								{currentDatabaseType === "mariadb" && (
-									<>
-										<FormField
-											control={form.control}
-											name="metadata.mariadb.databaseUser"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Database User</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="Enter database user"
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="metadata.mariadb.databasePassword"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Database Password</FormLabel>
-													<FormControl>
-														<Input
-															type="password"
-															placeholder="Enter database password"
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</>
-								)}
-
-								{currentDatabaseType === "mongo" && (
-									<>
-										<FormField
-											control={form.control}
-											name="metadata.mongo.databaseUser"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Database User</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="Enter database user"
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="metadata.mongo.databasePassword"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Database Password</FormLabel>
-													<FormControl>
-														<Input
-															type="password"
-															placeholder="Enter database password"
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</>
-								)}
-
-								{currentDatabaseType === "mysql" && (
-									<FormField
-										control={form.control}
-										name="metadata.mysql.databaseRootPassword"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Root Password</FormLabel>
-												<FormControl>
-													<Input
-														type="password"
-														placeholder="Enter root password"
-														{...field}
-													/>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								)}
+								<ComposeCredentialFields
+									databaseType={currentDatabaseType}
+									control={form.control}
+									placeholder={(_engine, field) =>
+										field.name === "databaseRootPassword"
+											? "Enter root password"
+											: field.isPassword
+												? "Enter database password"
+												: "Enter database user"
+									}
+								/>
 							</>
 						)}
 
