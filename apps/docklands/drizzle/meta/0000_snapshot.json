@@ -1,5 +1,5 @@
 {
-  "id": "7ed232c6-60b4-4365-b7b4-679c130dcc22",
+  "id": "3f7bf4f9-a547-434d-a6de-aaee2148b7b2",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -434,125 +434,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "is_default": {
-          "name": "is_default",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canCreateWorkspaces": {
-          "name": "canCreateWorkspaces",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canAccessToSSHKeys": {
-          "name": "canAccessToSSHKeys",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canCreateServices": {
-          "name": "canCreateServices",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canDeleteWorkspaces": {
-          "name": "canDeleteWorkspaces",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canDeleteServices": {
-          "name": "canDeleteServices",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canAccessToDocker": {
-          "name": "canAccessToDocker",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canAccessToAPI": {
-          "name": "canAccessToAPI",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canAccessToGitProviders": {
-          "name": "canAccessToGitProviders",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canAccessToTraefikFiles": {
-          "name": "canAccessToTraefikFiles",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canDeleteEnvironments": {
-          "name": "canDeleteEnvironments",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "canCreateEnvironments": {
-          "name": "canCreateEnvironments",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "accessedWorkspaces": {
-          "name": "accessedWorkspaces",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
-        },
-        "accessedEnvironments": {
-          "name": "accessedEnvironments",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
-        },
-        "accesedServices": {
-          "name": "accesedServices",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
-        },
-        "accessedGitProviders": {
-          "name": "accessedGitProviders",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
-        },
-        "accessedRuntimeWorkers": {
-          "name": "accessedRuntimeWorkers",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "ARRAY[]::text[]"
         }
       },
       "indexes": {},
@@ -973,6 +854,13 @@
           "primaryKey": false,
           "notNull": false,
           "default": 3
+        },
+        "previewExpirationDays": {
+          "name": "previewExpirationDays",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
         },
         "isPreviewDeploymentsActive": {
           "name": "isPreviewDeploymentsActive",
@@ -1489,7 +1377,38 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "application_environmentId_idx": {
+          "name": "application_environmentId_idx",
+          "columns": [
+            {
+              "expression": "environmentId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "application_runtimeWorkerId_idx": {
+          "name": "application_runtimeWorkerId_idx",
+          "columns": [
+            {
+              "expression": "runtimeWorkerId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "application_customGitSSHKeyId_ssh-key_sshKeyId_fk": {
           "name": "application_customGitSSHKeyId_ssh-key_sshKeyId_fk",
@@ -1881,32 +1800,14 @@
           "primaryKey": false,
           "notNull": false
         },
-        "postgresId": {
-          "name": "postgresId",
+        "databaseId": {
+          "name": "databaseId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         },
-        "mariadbId": {
-          "name": "mariadbId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "mysqlId": {
-          "name": "mysqlId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "mongoId": {
-          "name": "mongoId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "libsqlId": {
-          "name": "libsqlId",
+        "serviceDatabaseId": {
+          "name": "serviceDatabaseId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1952,67 +1853,28 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "backup_postgresId_postgres_postgresId_fk": {
-          "name": "backup_postgresId_postgres_postgresId_fk",
+        "backup_databaseId_database_databaseId_fk": {
+          "name": "backup_databaseId_database_databaseId_fk",
           "tableFrom": "backup",
-          "tableTo": "postgres",
+          "tableTo": "database",
           "columnsFrom": [
-            "postgresId"
+            "databaseId"
           ],
           "columnsTo": [
-            "postgresId"
+            "databaseId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "backup_mariadbId_mariadb_mariadbId_fk": {
-          "name": "backup_mariadbId_mariadb_mariadbId_fk",
+        "backup_serviceDatabaseId_service_database_serviceDatabaseId_fk": {
+          "name": "backup_serviceDatabaseId_service_database_serviceDatabaseId_fk",
           "tableFrom": "backup",
-          "tableTo": "mariadb",
+          "tableTo": "service_database",
           "columnsFrom": [
-            "mariadbId"
+            "serviceDatabaseId"
           ],
           "columnsTo": [
-            "mariadbId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "backup_mysqlId_mysql_mysqlId_fk": {
-          "name": "backup_mysqlId_mysql_mysqlId_fk",
-          "tableFrom": "backup",
-          "tableTo": "mysql",
-          "columnsFrom": [
-            "mysqlId"
-          ],
-          "columnsTo": [
-            "mysqlId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "backup_mongoId_mongo_mongoId_fk": {
-          "name": "backup_mongoId_mongo_mongoId_fk",
-          "tableFrom": "backup",
-          "tableTo": "mongo",
-          "columnsFrom": [
-            "mongoId"
-          ],
-          "columnsTo": [
-            "mongoId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "backup_libsqlId_libsql_libsqlId_fk": {
-          "name": "backup_libsqlId_libsql_libsqlId_fk",
-          "tableFrom": "backup",
-          "tableTo": "libsql",
-          "columnsFrom": [
-            "libsqlId"
-          ],
-          "columnsTo": [
-            "libsqlId"
+            "serviceDatabaseId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -2495,7 +2357,38 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "compose_environmentId_idx": {
+          "name": "compose_environmentId_idx",
+          "columns": [
+            {
+              "expression": "environmentId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "compose_runtimeWorkerId_idx": {
+          "name": "compose_runtimeWorkerId_idx",
+          "columns": [
+            {
+              "expression": "runtimeWorkerId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "compose_customGitSSHKeyId_ssh-key_sshKeyId_fk": {
           "name": "compose_customGitSSHKeyId_ssh-key_sshKeyId_fk",
@@ -2590,7 +2483,284 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "compose_appName_unique": {
+          "name": "compose_appName_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "appName"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.database": {
+      "name": "database",
+      "schema": "",
+      "columns": {
+        "databaseId": {
+          "name": "databaseId",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "engine": {
+          "name": "engine",
+          "type": "databaseEngine",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "appName": {
+          "name": "appName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "config": {
+          "name": "config",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dockerImage": {
+          "name": "dockerImage",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "command": {
+          "name": "command",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "args": {
+          "name": "args",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "env": {
+          "name": "env",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "memoryReservation": {
+          "name": "memoryReservation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "externalPort": {
+          "name": "externalPort",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "memoryLimit": {
+          "name": "memoryLimit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cpuReservation": {
+          "name": "cpuReservation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cpuLimit": {
+          "name": "cpuLimit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "applicationStatus": {
+          "name": "applicationStatus",
+          "type": "applicationStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'idle'"
+        },
+        "healthCheckSwarm": {
+          "name": "healthCheckSwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "restartPolicySwarm": {
+          "name": "restartPolicySwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "placementSwarm": {
+          "name": "placementSwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updateConfigSwarm": {
+          "name": "updateConfigSwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rollbackConfigSwarm": {
+          "name": "rollbackConfigSwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "modeSwarm": {
+          "name": "modeSwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "labelsSwarm": {
+          "name": "labelsSwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "networkSwarm": {
+          "name": "networkSwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stopGracePeriodSwarm": {
+          "name": "stopGracePeriodSwarm",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "endpointSpecSwarm": {
+          "name": "endpointSpecSwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ulimitsSwarm": {
+          "name": "ulimitsSwarm",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "replicas": {
+          "name": "replicas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "environmentId": {
+          "name": "environmentId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "database_environmentId_idx": {
+          "name": "database_environmentId_idx",
+          "columns": [
+            {
+              "expression": "environmentId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "database_runtimeWorkerId_idx": {
+          "name": "database_runtimeWorkerId_idx",
+          "columns": [
+            {
+              "expression": "runtimeWorkerId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "database_environmentId_environment_environmentId_fk": {
+          "name": "database_environmentId_environment_environmentId_fk",
+          "tableFrom": "database",
+          "tableTo": "environment",
+          "columnsFrom": [
+            "environmentId"
+          ],
+          "columnsTo": [
+            "environmentId"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "database_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
+          "name": "database_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
+          "tableFrom": "database",
+          "tableTo": "runtimeWorker",
+          "columnsFrom": [
+            "runtimeWorkerId"
+          ],
+          "columnsTo": [
+            "runtimeWorkerId"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "database_appName_unique": {
+          "name": "database_appName_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "appName"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -2723,7 +2893,65 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "deployment_applicationId_createdAt_idx": {
+          "name": "deployment_applicationId_createdAt_idx",
+          "columns": [
+            {
+              "expression": "applicationId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "createdAt",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "deployment_composeId_createdAt_idx": {
+          "name": "deployment_composeId_createdAt_idx",
+          "columns": [
+            {
+              "expression": "composeId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "createdAt",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "deployment_runtimeWorkerId_idx": {
+          "name": "deployment_runtimeWorkerId_idx",
+          "columns": [
+            {
+              "expression": "runtimeWorkerId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "deployment_applicationId_application_applicationId_fk": {
           "name": "deployment_applicationId_application_applicationId_fk",
@@ -3066,7 +3294,53 @@
           "default": "ARRAY[]::text[]"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "domain_applicationId_idx": {
+          "name": "domain_applicationId_idx",
+          "columns": [
+            {
+              "expression": "applicationId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "domain_composeId_idx": {
+          "name": "domain_composeId_idx",
+          "columns": [
+            {
+              "expression": "composeId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "domain_previewDeploymentId_idx": {
+          "name": "domain_previewDeploymentId_idx",
+          "columns": [
+            {
+              "expression": "previewDeploymentId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "domain_composeId_compose_composeId_fk": {
           "name": "domain_composeId_compose_composeId_fk",
@@ -3163,7 +3437,23 @@
           "default": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "environment_workspaceId_idx": {
+          "name": "environment_workspaceId_idx",
+          "columns": [
+            {
+              "expression": "workspaceId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "environment_workspaceId_workspace_workspaceId_fk": {
           "name": "environment_workspaceId_workspace_workspaceId_fk",
@@ -3546,245 +3836,103 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.libsql": {
-      "name": "libsql",
+    "public.member_resource_access": {
+      "name": "member_resource_access",
       "schema": "",
       "columns": {
-        "libsqlId": {
-          "name": "libsqlId",
+        "id": {
+          "name": "id",
           "type": "text",
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "member_id": {
+          "name": "member_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "appName": {
-          "name": "appName",
+        "organization_id": {
+          "name": "organization_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "databaseUser": {
-          "name": "databaseUser",
+        "resource_type": {
+          "name": "resource_type",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "databasePassword": {
-          "name": "databasePassword",
+        "resource_id": {
+          "name": "resource_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "sqldNode": {
-          "name": "sqldNode",
-          "type": "sqldNode",
-          "typeSchema": "public",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
-          "default": "'primary'"
-        },
-        "sqldPrimaryUrl": {
-          "name": "sqldPrimaryUrl",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "enableNamespaces": {
-          "name": "enableNamespaces",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "dockerImage": {
-          "name": "dockerImage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "command": {
-          "name": "command",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "env": {
-          "name": "env",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryReservation": {
-          "name": "memoryReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryLimit": {
-          "name": "memoryLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuReservation": {
-          "name": "cpuReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuLimit": {
-          "name": "cpuLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "externalPort": {
-          "name": "externalPort",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "externalGRPCPort": {
-          "name": "externalGRPCPort",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "externalAdminPort": {
-          "name": "externalAdminPort",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "applicationStatus": {
-          "name": "applicationStatus",
-          "type": "applicationStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'idle'"
-        },
-        "healthCheckSwarm": {
-          "name": "healthCheckSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "restartPolicySwarm": {
-          "name": "restartPolicySwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "placementSwarm": {
-          "name": "placementSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updateConfigSwarm": {
-          "name": "updateConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rollbackConfigSwarm": {
-          "name": "rollbackConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "modeSwarm": {
-          "name": "modeSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "labelsSwarm": {
-          "name": "labelsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "networkSwarm": {
-          "name": "networkSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stopGracePeriodSwarm": {
-          "name": "stopGracePeriodSwarm",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "endpointSpecSwarm": {
-          "name": "endpointSpecSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "replicas": {
-          "name": "replicas",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "environmentId": {
-          "name": "environmentId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "runtimeWorkerId": {
-          "name": "runtimeWorkerId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
+          "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "memberResourceAccess_memberId_idx": {
+          "name": "memberResourceAccess_memberId_idx",
+          "columns": [
+            {
+              "expression": "member_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "memberResourceAccess_organizationId_idx": {
+          "name": "memberResourceAccess_organizationId_idx",
+          "columns": [
+            {
+              "expression": "organization_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "libsql_environmentId_environment_environmentId_fk": {
-          "name": "libsql_environmentId_environment_environmentId_fk",
-          "tableFrom": "libsql",
-          "tableTo": "environment",
+        "member_resource_access_member_id_member_id_fk": {
+          "name": "member_resource_access_member_id_member_id_fk",
+          "tableFrom": "member_resource_access",
+          "tableTo": "member",
           "columnsFrom": [
-            "environmentId"
+            "member_id"
           ],
           "columnsTo": [
-            "environmentId"
+            "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "libsql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
-          "name": "libsql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
-          "tableFrom": "libsql",
-          "tableTo": "runtimeWorker",
+        "member_resource_access_organization_id_organization_id_fk": {
+          "name": "member_resource_access_organization_id_organization_id_fk",
+          "tableFrom": "member_resource_access",
+          "tableTo": "organization",
           "columnsFrom": [
-            "runtimeWorkerId"
+            "organization_id"
           ],
           "columnsTo": [
-            "runtimeWorkerId"
+            "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -3792,505 +3940,13 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "libsql_appName_unique": {
-          "name": "libsql_appName_unique",
+        "memberResourceAccess_member_resource_unique": {
+          "name": "memberResourceAccess_member_resource_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "appName"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.mariadb": {
-      "name": "mariadb",
-      "schema": "",
-      "columns": {
-        "mariadbId": {
-          "name": "mariadbId",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "appName": {
-          "name": "appName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "databaseName": {
-          "name": "databaseName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "databaseUser": {
-          "name": "databaseUser",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "databasePassword": {
-          "name": "databasePassword",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rootPassword": {
-          "name": "rootPassword",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dockerImage": {
-          "name": "dockerImage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "command": {
-          "name": "command",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "args": {
-          "name": "args",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "env": {
-          "name": "env",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryReservation": {
-          "name": "memoryReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryLimit": {
-          "name": "memoryLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuReservation": {
-          "name": "cpuReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuLimit": {
-          "name": "cpuLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "externalPort": {
-          "name": "externalPort",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "applicationStatus": {
-          "name": "applicationStatus",
-          "type": "applicationStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'idle'"
-        },
-        "healthCheckSwarm": {
-          "name": "healthCheckSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "restartPolicySwarm": {
-          "name": "restartPolicySwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "placementSwarm": {
-          "name": "placementSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updateConfigSwarm": {
-          "name": "updateConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rollbackConfigSwarm": {
-          "name": "rollbackConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "modeSwarm": {
-          "name": "modeSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "labelsSwarm": {
-          "name": "labelsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "networkSwarm": {
-          "name": "networkSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stopGracePeriodSwarm": {
-          "name": "stopGracePeriodSwarm",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "endpointSpecSwarm": {
-          "name": "endpointSpecSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ulimitsSwarm": {
-          "name": "ulimitsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "replicas": {
-          "name": "replicas",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "environmentId": {
-          "name": "environmentId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "runtimeWorkerId": {
-          "name": "runtimeWorkerId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "mariadb_environmentId_environment_environmentId_fk": {
-          "name": "mariadb_environmentId_environment_environmentId_fk",
-          "tableFrom": "mariadb",
-          "tableTo": "environment",
-          "columnsFrom": [
-            "environmentId"
-          ],
-          "columnsTo": [
-            "environmentId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "mariadb_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
-          "name": "mariadb_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
-          "tableFrom": "mariadb",
-          "tableTo": "runtimeWorker",
-          "columnsFrom": [
-            "runtimeWorkerId"
-          ],
-          "columnsTo": [
-            "runtimeWorkerId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "mariadb_appName_unique": {
-          "name": "mariadb_appName_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "appName"
-          ]
-        }
-      },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.mongo": {
-      "name": "mongo",
-      "schema": "",
-      "columns": {
-        "mongoId": {
-          "name": "mongoId",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "appName": {
-          "name": "appName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "databaseUser": {
-          "name": "databaseUser",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "databasePassword": {
-          "name": "databasePassword",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dockerImage": {
-          "name": "dockerImage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'mongo:8'"
-        },
-        "command": {
-          "name": "command",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "args": {
-          "name": "args",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "env": {
-          "name": "env",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryReservation": {
-          "name": "memoryReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryLimit": {
-          "name": "memoryLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuReservation": {
-          "name": "cpuReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuLimit": {
-          "name": "cpuLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "externalPort": {
-          "name": "externalPort",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "applicationStatus": {
-          "name": "applicationStatus",
-          "type": "applicationStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'idle'"
-        },
-        "healthCheckSwarm": {
-          "name": "healthCheckSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "restartPolicySwarm": {
-          "name": "restartPolicySwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "placementSwarm": {
-          "name": "placementSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updateConfigSwarm": {
-          "name": "updateConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rollbackConfigSwarm": {
-          "name": "rollbackConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "modeSwarm": {
-          "name": "modeSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "labelsSwarm": {
-          "name": "labelsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "networkSwarm": {
-          "name": "networkSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stopGracePeriodSwarm": {
-          "name": "stopGracePeriodSwarm",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "endpointSpecSwarm": {
-          "name": "endpointSpecSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ulimitsSwarm": {
-          "name": "ulimitsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "replicas": {
-          "name": "replicas",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "environmentId": {
-          "name": "environmentId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "runtimeWorkerId": {
-          "name": "runtimeWorkerId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "replicaSets": {
-          "name": "replicaSets",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": false,
-          "default": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "mongo_environmentId_environment_environmentId_fk": {
-          "name": "mongo_environmentId_environment_environmentId_fk",
-          "tableFrom": "mongo",
-          "tableTo": "environment",
-          "columnsFrom": [
-            "environmentId"
-          ],
-          "columnsTo": [
-            "environmentId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "mongo_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
-          "name": "mongo_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
-          "tableFrom": "mongo",
-          "tableTo": "runtimeWorker",
-          "columnsFrom": [
-            "runtimeWorkerId"
-          ],
-          "columnsTo": [
-            "runtimeWorkerId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "mongo_appName_unique": {
-          "name": "mongo_appName_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "appName"
+            "member_id",
+            "resource_type",
+            "resource_id"
           ]
         }
       },
@@ -4365,44 +4021,60 @@
           "primaryKey": false,
           "notNull": false
         },
-        "libsqlId": {
-          "name": "libsqlId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "mariadbId": {
-          "name": "mariadbId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "mongoId": {
-          "name": "mongoId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "mysqlId": {
-          "name": "mysqlId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "postgresId": {
-          "name": "postgresId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "redisId": {
-          "name": "redisId",
+        "databaseId": {
+          "name": "databaseId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "mount_applicationId_idx": {
+          "name": "mount_applicationId_idx",
+          "columns": [
+            {
+              "expression": "applicationId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "mount_composeId_idx": {
+          "name": "mount_composeId_idx",
+          "columns": [
+            {
+              "expression": "composeId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "mount_databaseId_idx": {
+          "name": "mount_databaseId_idx",
+          "columns": [
+            {
+              "expression": "databaseId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "mount_applicationId_application_applicationId_fk": {
           "name": "mount_applicationId_application_applicationId_fk",
@@ -4430,80 +4102,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "mount_libsqlId_libsql_libsqlId_fk": {
-          "name": "mount_libsqlId_libsql_libsqlId_fk",
+        "mount_databaseId_database_databaseId_fk": {
+          "name": "mount_databaseId_database_databaseId_fk",
           "tableFrom": "mount",
-          "tableTo": "libsql",
+          "tableTo": "database",
           "columnsFrom": [
-            "libsqlId"
+            "databaseId"
           ],
           "columnsTo": [
-            "libsqlId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "mount_mariadbId_mariadb_mariadbId_fk": {
-          "name": "mount_mariadbId_mariadb_mariadbId_fk",
-          "tableFrom": "mount",
-          "tableTo": "mariadb",
-          "columnsFrom": [
-            "mariadbId"
-          ],
-          "columnsTo": [
-            "mariadbId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "mount_mongoId_mongo_mongoId_fk": {
-          "name": "mount_mongoId_mongo_mongoId_fk",
-          "tableFrom": "mount",
-          "tableTo": "mongo",
-          "columnsFrom": [
-            "mongoId"
-          ],
-          "columnsTo": [
-            "mongoId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "mount_mysqlId_mysql_mysqlId_fk": {
-          "name": "mount_mysqlId_mysql_mysqlId_fk",
-          "tableFrom": "mount",
-          "tableTo": "mysql",
-          "columnsFrom": [
-            "mysqlId"
-          ],
-          "columnsTo": [
-            "mysqlId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "mount_postgresId_postgres_postgresId_fk": {
-          "name": "mount_postgresId_postgres_postgresId_fk",
-          "tableFrom": "mount",
-          "tableTo": "postgres",
-          "columnsFrom": [
-            "postgresId"
-          ],
-          "columnsTo": [
-            "postgresId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "mount_redisId_redis_redisId_fk": {
-          "name": "mount_redisId_redis_redisId_fk",
-          "tableFrom": "mount",
-          "tableTo": "redis",
-          "columnsFrom": [
-            "redisId"
-          ],
-          "columnsTo": [
-            "redisId"
+            "databaseId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -4511,255 +4118,6 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.mysql": {
-      "name": "mysql",
-      "schema": "",
-      "columns": {
-        "mysqlId": {
-          "name": "mysqlId",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "appName": {
-          "name": "appName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "databaseName": {
-          "name": "databaseName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "databaseUser": {
-          "name": "databaseUser",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "databasePassword": {
-          "name": "databasePassword",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "rootPassword": {
-          "name": "rootPassword",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dockerImage": {
-          "name": "dockerImage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "command": {
-          "name": "command",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "args": {
-          "name": "args",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "env": {
-          "name": "env",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryReservation": {
-          "name": "memoryReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryLimit": {
-          "name": "memoryLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuReservation": {
-          "name": "cpuReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuLimit": {
-          "name": "cpuLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "externalPort": {
-          "name": "externalPort",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "applicationStatus": {
-          "name": "applicationStatus",
-          "type": "applicationStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'idle'"
-        },
-        "healthCheckSwarm": {
-          "name": "healthCheckSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "restartPolicySwarm": {
-          "name": "restartPolicySwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "placementSwarm": {
-          "name": "placementSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updateConfigSwarm": {
-          "name": "updateConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rollbackConfigSwarm": {
-          "name": "rollbackConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "modeSwarm": {
-          "name": "modeSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "labelsSwarm": {
-          "name": "labelsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "networkSwarm": {
-          "name": "networkSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stopGracePeriodSwarm": {
-          "name": "stopGracePeriodSwarm",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "endpointSpecSwarm": {
-          "name": "endpointSpecSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ulimitsSwarm": {
-          "name": "ulimitsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "replicas": {
-          "name": "replicas",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "environmentId": {
-          "name": "environmentId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "runtimeWorkerId": {
-          "name": "runtimeWorkerId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "mysql_environmentId_environment_environmentId_fk": {
-          "name": "mysql_environmentId_environment_environmentId_fk",
-          "tableFrom": "mysql",
-          "tableTo": "environment",
-          "columnsFrom": [
-            "environmentId"
-          ],
-          "columnsTo": [
-            "environmentId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "mysql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
-          "name": "mysql_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
-          "tableFrom": "mysql",
-          "tableTo": "runtimeWorker",
-          "columnsFrom": [
-            "runtimeWorkerId"
-          ],
-          "columnsTo": [
-            "runtimeWorkerId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "mysql_appName_unique": {
-          "name": "mysql_appName_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "appName"
-          ]
-        }
-      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -5711,7 +5069,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "port_applicationId_idx": {
+          "name": "port_applicationId_idx",
+          "columns": [
+            {
+              "expression": "applicationId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "port_applicationId_application_applicationId_fk": {
           "name": "port_applicationId_application_applicationId_fk",
@@ -5729,249 +5103,6 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.postgres": {
-      "name": "postgres",
-      "schema": "",
-      "columns": {
-        "postgresId": {
-          "name": "postgresId",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "appName": {
-          "name": "appName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "databaseName": {
-          "name": "databaseName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "databaseUser": {
-          "name": "databaseUser",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "databasePassword": {
-          "name": "databasePassword",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "dockerImage": {
-          "name": "dockerImage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "command": {
-          "name": "command",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "args": {
-          "name": "args",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "env": {
-          "name": "env",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryReservation": {
-          "name": "memoryReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "externalPort": {
-          "name": "externalPort",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryLimit": {
-          "name": "memoryLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuReservation": {
-          "name": "cpuReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuLimit": {
-          "name": "cpuLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "applicationStatus": {
-          "name": "applicationStatus",
-          "type": "applicationStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'idle'"
-        },
-        "healthCheckSwarm": {
-          "name": "healthCheckSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "restartPolicySwarm": {
-          "name": "restartPolicySwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "placementSwarm": {
-          "name": "placementSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updateConfigSwarm": {
-          "name": "updateConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rollbackConfigSwarm": {
-          "name": "rollbackConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "modeSwarm": {
-          "name": "modeSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "labelsSwarm": {
-          "name": "labelsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "networkSwarm": {
-          "name": "networkSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stopGracePeriodSwarm": {
-          "name": "stopGracePeriodSwarm",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "endpointSpecSwarm": {
-          "name": "endpointSpecSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ulimitsSwarm": {
-          "name": "ulimitsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "replicas": {
-          "name": "replicas",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "environmentId": {
-          "name": "environmentId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "runtimeWorkerId": {
-          "name": "runtimeWorkerId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "postgres_environmentId_environment_environmentId_fk": {
-          "name": "postgres_environmentId_environment_environmentId_fk",
-          "tableFrom": "postgres",
-          "tableTo": "environment",
-          "columnsFrom": [
-            "environmentId"
-          ],
-          "columnsTo": [
-            "environmentId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "postgres_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
-          "name": "postgres_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
-          "tableFrom": "postgres",
-          "tableTo": "runtimeWorker",
-          "columnsFrom": [
-            "runtimeWorkerId"
-          ],
-          "columnsTo": [
-            "runtimeWorkerId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "postgres_appName_unique": {
-          "name": "postgres_appName_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "appName"
-          ]
-        }
-      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -6104,151 +5235,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.runtimeWorker": {
-      "name": "runtimeWorker",
-      "schema": "",
-      "columns": {
-        "runtimeWorkerId": {
-          "name": "runtimeWorkerId",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ipAddress": {
-          "name": "ipAddress",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "port": {
-          "name": "port",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "username": {
-          "name": "username",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'root'"
-        },
-        "appName": {
-          "name": "appName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "enableDockerCleanup": {
-          "name": "enableDockerCleanup",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "buildsConcurrency": {
-          "name": "buildsConcurrency",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "organizationId": {
-          "name": "organizationId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "runtimeWorkerStatus": {
-          "name": "runtimeWorkerStatus",
-          "type": "runtimeWorkerStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'active'"
-        },
-        "runtimeWorkerType": {
-          "name": "runtimeWorkerType",
-          "type": "runtimeWorkerType",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'deploy'"
-        },
-        "command": {
-          "name": "command",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "sshKeyId": {
-          "name": "sshKeyId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "metricsConfig": {
-          "name": "metricsConfig",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{\"runtimeWorker\":{\"type\":\"Remote\",\"refreshRate\":60,\"port\":4500,\"token\":\"\",\"urlCallback\":\"\",\"cronJob\":\"\",\"retentionDays\":2,\"thresholds\":{\"cpu\":0,\"memory\":0}},\"containers\":{\"refreshRate\":60,\"services\":{\"include\":[],\"exclude\":[]}}}'::jsonb"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "runtimeWorker_organizationId_organization_id_fk": {
-          "name": "runtimeWorker_organizationId_organization_id_fk",
-          "tableFrom": "runtimeWorker",
-          "tableTo": "organization",
-          "columnsFrom": [
-            "organizationId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "runtimeWorker_sshKeyId_ssh-key_sshKeyId_fk": {
-          "name": "runtimeWorker_sshKeyId_ssh-key_sshKeyId_fk",
-          "tableFrom": "runtimeWorker",
-          "tableTo": "ssh-key",
-          "columnsFrom": [
-            "sshKeyId"
-          ],
-          "columnsTo": [
-            "sshKeyId"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.redirect": {
       "name": "redirect",
       "schema": "",
@@ -6315,237 +5301,6 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.redis": {
-      "name": "redis",
-      "schema": "",
-      "columns": {
-        "redisId": {
-          "name": "redisId",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "appName": {
-          "name": "appName",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "password": {
-          "name": "password",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "dockerImage": {
-          "name": "dockerImage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "command": {
-          "name": "command",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "args": {
-          "name": "args",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "env": {
-          "name": "env",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryReservation": {
-          "name": "memoryReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "memoryLimit": {
-          "name": "memoryLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuReservation": {
-          "name": "cpuReservation",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpuLimit": {
-          "name": "cpuLimit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "externalPort": {
-          "name": "externalPort",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "applicationStatus": {
-          "name": "applicationStatus",
-          "type": "applicationStatus",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'idle'"
-        },
-        "healthCheckSwarm": {
-          "name": "healthCheckSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "restartPolicySwarm": {
-          "name": "restartPolicySwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "placementSwarm": {
-          "name": "placementSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "updateConfigSwarm": {
-          "name": "updateConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rollbackConfigSwarm": {
-          "name": "rollbackConfigSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "modeSwarm": {
-          "name": "modeSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "labelsSwarm": {
-          "name": "labelsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "networkSwarm": {
-          "name": "networkSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "stopGracePeriodSwarm": {
-          "name": "stopGracePeriodSwarm",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "endpointSpecSwarm": {
-          "name": "endpointSpecSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ulimitsSwarm": {
-          "name": "ulimitsSwarm",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "replicas": {
-          "name": "replicas",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "environmentId": {
-          "name": "environmentId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "runtimeWorkerId": {
-          "name": "runtimeWorkerId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "redis_environmentId_environment_environmentId_fk": {
-          "name": "redis_environmentId_environment_environmentId_fk",
-          "tableFrom": "redis",
-          "tableTo": "environment",
-          "columnsFrom": [
-            "environmentId"
-          ],
-          "columnsTo": [
-            "environmentId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "redis_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk": {
-          "name": "redis_runtimeWorkerId_runtimeWorker_runtimeWorkerId_fk",
-          "tableFrom": "redis",
-          "tableTo": "runtimeWorker",
-          "columnsFrom": [
-            "runtimeWorkerId"
-          ],
-          "columnsTo": [
-            "runtimeWorkerId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "redis_appName_unique": {
-          "name": "redis_appName_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "appName"
-          ]
-        }
-      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -6688,6 +5443,151 @@
             "deploymentId"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.runtimeWorker": {
+      "name": "runtimeWorker",
+      "schema": "",
+      "columns": {
+        "runtimeWorkerId": {
+          "name": "runtimeWorkerId",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ipAddress": {
+          "name": "ipAddress",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "port": {
+          "name": "port",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'root'"
+        },
+        "appName": {
+          "name": "appName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enableDockerCleanup": {
+          "name": "enableDockerCleanup",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "buildsConcurrency": {
+          "name": "buildsConcurrency",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "organizationId": {
+          "name": "organizationId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "runtimeWorkerStatus": {
+          "name": "runtimeWorkerStatus",
+          "type": "runtimeWorkerStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
+        "runtimeWorkerType": {
+          "name": "runtimeWorkerType",
+          "type": "runtimeWorkerType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'deploy'"
+        },
+        "command": {
+          "name": "command",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "sshKeyId": {
+          "name": "sshKeyId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metricsConfig": {
+          "name": "metricsConfig",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{\"runtimeWorker\":{\"type\":\"Remote\",\"refreshRate\":60,\"port\":4500,\"token\":\"\",\"urlCallback\":\"\",\"cronJob\":\"\",\"retentionDays\":2,\"thresholds\":{\"cpu\":0,\"memory\":0}},\"containers\":{\"refreshRate\":60,\"services\":{\"include\":[],\"exclude\":[]}}}'::jsonb"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "runtimeWorker_organizationId_organization_id_fk": {
+          "name": "runtimeWorker_organizationId_organization_id_fk",
+          "tableFrom": "runtimeWorker",
+          "tableTo": "organization",
+          "columnsFrom": [
+            "organizationId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "runtimeWorker_sshKeyId_ssh-key_sshKeyId_fk": {
+          "name": "runtimeWorker_sshKeyId_ssh-key_sshKeyId_fk",
+          "tableFrom": "runtimeWorker",
+          "tableTo": "ssh-key",
+          "columnsFrom": [
+            "sshKeyId"
+          ],
+          "columnsTo": [
+            "sshKeyId"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -6932,6 +5832,83 @@
           ]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.service_database": {
+      "name": "service_database",
+      "schema": "",
+      "columns": {
+        "serviceDatabaseId": {
+          "name": "serviceDatabaseId",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "composeId": {
+          "name": "composeId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "serviceName": {
+          "name": "serviceName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "engine": {
+          "name": "engine",
+          "type": "databaseEngine",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "config": {
+          "name": "config",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "managed": {
+          "name": "managed",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'true'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "service_database_composeId_compose_composeId_fk": {
+          "name": "service_database_composeId_compose_composeId_fk",
+          "tableFrom": "service_database",
+          "tableTo": "compose",
+          "columnsFrom": [
+            "composeId"
+          ],
+          "columnsTo": [
+            "composeId"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -7475,38 +6452,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "postgresId": {
-          "name": "postgresId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "mariadbId": {
-          "name": "mariadbId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "mongoId": {
-          "name": "mongoId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "mysqlId": {
-          "name": "mysqlId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "redisId": {
-          "name": "redisId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "libsqlId": {
-          "name": "libsqlId",
+        "databaseId": {
+          "name": "databaseId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -7545,80 +6492,15 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "volume_backup_postgresId_postgres_postgresId_fk": {
-          "name": "volume_backup_postgresId_postgres_postgresId_fk",
+        "volume_backup_databaseId_database_databaseId_fk": {
+          "name": "volume_backup_databaseId_database_databaseId_fk",
           "tableFrom": "volume_backup",
-          "tableTo": "postgres",
+          "tableTo": "database",
           "columnsFrom": [
-            "postgresId"
+            "databaseId"
           ],
           "columnsTo": [
-            "postgresId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "volume_backup_mariadbId_mariadb_mariadbId_fk": {
-          "name": "volume_backup_mariadbId_mariadb_mariadbId_fk",
-          "tableFrom": "volume_backup",
-          "tableTo": "mariadb",
-          "columnsFrom": [
-            "mariadbId"
-          ],
-          "columnsTo": [
-            "mariadbId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "volume_backup_mongoId_mongo_mongoId_fk": {
-          "name": "volume_backup_mongoId_mongo_mongoId_fk",
-          "tableFrom": "volume_backup",
-          "tableTo": "mongo",
-          "columnsFrom": [
-            "mongoId"
-          ],
-          "columnsTo": [
-            "mongoId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "volume_backup_mysqlId_mysql_mysqlId_fk": {
-          "name": "volume_backup_mysqlId_mysql_mysqlId_fk",
-          "tableFrom": "volume_backup",
-          "tableTo": "mysql",
-          "columnsFrom": [
-            "mysqlId"
-          ],
-          "columnsTo": [
-            "mysqlId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "volume_backup_redisId_redis_redisId_fk": {
-          "name": "volume_backup_redisId_redis_redisId_fk",
-          "tableFrom": "volume_backup",
-          "tableTo": "redis",
-          "columnsFrom": [
-            "redisId"
-          ],
-          "columnsTo": [
-            "redisId"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "volume_backup_libsqlId_libsql_libsqlId_fk": {
-          "name": "volume_backup_libsqlId_libsql_libsqlId_fk",
-          "tableFrom": "volume_backup",
-          "tableTo": "libsql",
-          "columnsFrom": [
-            "libsqlId"
-          ],
-          "columnsTo": [
-            "libsqlId"
+            "databaseId"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -7695,12 +6577,6 @@
         },
         "letsEncryptEmail": {
           "name": "letsEncryptEmail",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "sshPrivateKey": {
-          "name": "sshPrivateKey",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -8110,6 +6986,18 @@
         "raw"
       ]
     },
+    "public.databaseEngine": {
+      "name": "databaseEngine",
+      "schema": "public",
+      "values": [
+        "postgres",
+        "mysql",
+        "mariadb",
+        "mongo",
+        "redis",
+        "libsql"
+      ]
+    },
     "public.deploymentStatus": {
       "name": "deploymentStatus",
       "schema": "public",
@@ -8205,6 +7093,14 @@
         "host"
       ]
     },
+    "public.RegistryType": {
+      "name": "RegistryType",
+      "schema": "public",
+      "values": [
+        "selfHosted",
+        "cloud"
+      ]
+    },
     "public.runtimeWorkerStatus": {
       "name": "runtimeWorkerStatus",
       "schema": "public",
@@ -8219,14 +7115,6 @@
       "values": [
         "deploy",
         "build"
-      ]
-    },
-    "public.RegistryType": {
-      "name": "RegistryType",
-      "schema": "public",
-      "values": [
-        "selfHosted",
-        "cloud"
       ]
     },
     "public.scheduleType": {

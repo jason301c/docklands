@@ -1,3 +1,0 @@
-ALTER TABLE "backup" ADD COLUMN "serviceDatabaseId" text;--> statement-breakpoint
-ALTER TABLE "service_database" ADD COLUMN "config" json NOT NULL;--> statement-breakpoint
-ALTER TABLE "backup" ADD CONSTRAINT "backup_serviceDatabaseId_service_database_serviceDatabaseId_fk" FOREIGN KEY ("serviceDatabaseId") REFERENCES "public"."service_database"("serviceDatabaseId") ON DELETE cascade ON UPDATE no action;

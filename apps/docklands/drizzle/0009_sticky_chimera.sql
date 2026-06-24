@@ -1,1 +1,0 @@
-ALTER TABLE "webServerSettings" DROP COLUMN "sshPrivateKey";

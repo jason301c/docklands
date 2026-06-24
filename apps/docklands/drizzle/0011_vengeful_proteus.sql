@@ -1,1 +1,0 @@
-ALTER TABLE "compose" ADD CONSTRAINT "compose_appName_unique" UNIQUE("appName");
