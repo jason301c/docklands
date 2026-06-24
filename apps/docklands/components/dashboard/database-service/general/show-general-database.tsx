@@ -102,7 +102,6 @@ export const ShowGeneralDatabase = ({ databaseId }: Props) => {
 													</p>
 												</>
 											}
-											className="z-[60]"
 											asChild
 										>
 											<div className="flex items-center">
@@ -145,7 +144,6 @@ export const ShowGeneralDatabase = ({ databaseId }: Props) => {
 													</p>
 												</>
 											}
-											className="z-[60]"
 											asChild
 										>
 											<div className="flex items-center">
@@ -190,7 +188,6 @@ export const ShowGeneralDatabase = ({ databaseId }: Props) => {
 														</p>
 													</>
 												}
-												className="z-[60]"
 												asChild
 											>
 												<div className="flex items-center">
@@ -231,7 +228,6 @@ export const ShowGeneralDatabase = ({ databaseId }: Props) => {
 														</p>
 													</>
 												}
-												className="z-[60]"
 												asChild
 											>
 												<div className="flex items-center">
@@ -257,7 +253,6 @@ export const ShowGeneralDatabase = ({ databaseId }: Props) => {
 											<p>Open a terminal to the {engineLabel} container</p>
 										</>
 									}
-									className="z-[60]"
 									asChild
 								>
 									<div className="flex items-center">

@@ -80,7 +80,6 @@ export const ComposeActions = ({ composeId }: Props) => {
 										</p>
 									</>
 								}
-								className="z-[60]"
 								asChild
 							>
 								<div className="flex items-center">
@@ -121,7 +120,6 @@ export const ComposeActions = ({ composeId }: Props) => {
 										<p>Reload the compose without rebuilding it</p>
 									</>
 								}
-								className="z-[60]"
 								asChild
 							>
 								<div className="flex items-center">
@@ -166,7 +164,6 @@ export const ComposeActions = ({ composeId }: Props) => {
 											</p>
 										</>
 									}
-									className="z-[60]"
 									asChild
 								>
 									<div className="flex items-center">
@@ -205,7 +202,6 @@ export const ComposeActions = ({ composeId }: Props) => {
 											<p>Stop the currently running compose</p>
 										</>
 									}
-									className="z-[60]"
 									asChild
 								>
 									<div className="flex items-center">

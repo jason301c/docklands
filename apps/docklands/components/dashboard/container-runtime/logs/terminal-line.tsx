@@ -70,7 +70,7 @@ export function TerminalLine({ log, noTimestamp, searchTerm }: LogLineProps) {
 							</p>
 						</>
 					}
-					className="bg-kumo-elevated border-kumo-hairline z-[99999]"
+					className="bg-kumo-elevated border-kumo-hairline"
 					asChild
 				>
 					{square}
@@ -96,8 +96,6 @@ export function TerminalLine({ log, noTimestamp, searchTerm }: LogLineProps) {
 		>
 			{" "}
 			<div className="flex items-start gap-x-2">
-				{/* Icon to expand the log item maybe implement a collapsible later */}
-				{/* <Square className="size-4 text-muted-foreground opacity-0 group-hover/logitem:opacity-100 transition-opacity" /> */}
 				{tooltip(color, rawTimestamp)}
 				{!noTimestamp && (
 					<span className="select-none pl-2 text-kumo-subtle w-full sm:w-40 flex-shrink-0">

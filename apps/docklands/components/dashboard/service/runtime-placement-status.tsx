@@ -63,7 +63,7 @@ export const RuntimePlacementStatus = ({
 								Settings to run this service.
 							</span>
 						}
-						className="z-[999] w-[300px]"
+						className="w-[300px]"
 						align="start"
 						side="top"
 						asChild

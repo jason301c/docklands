@@ -9,6 +9,15 @@
 		--terminal-paste: rgba(0, 0, 0, 0.2);
 		--overlay: rgba(0, 0, 0, 0.2);
 
+		/* Stacking scale for app-owned overlays. Kumo's own portalled overlays
+		   (Dialog, Tooltip, DropdownMenu, …) manage their stacking internally;
+		   use these only for layers we render ourselves. */
+		--z-popover: 50;
+		--z-overlay: 60;
+		--z-dialog: 70;
+		--z-tooltip: 80;
+		--z-toast: 90;
+
 		--chart-1: var(--color-kumo-brand);
 		--chart-2: var(--color-kumo-success);
 		--chart-3: var(--color-kumo-info);

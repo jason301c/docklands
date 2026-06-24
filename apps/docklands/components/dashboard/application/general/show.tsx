@@ -103,7 +103,6 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 												</p>
 											</>
 										}
-										className="z-[60]"
 										asChild
 									>
 										<div className="flex items-center">
@@ -145,7 +144,6 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 												<p>Reload the application without rebuilding it</p>
 											</>
 										}
-										className="z-[60]"
 										asChild
 									>
 										<div className="flex items-center">
@@ -189,7 +187,6 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 												</p>
 											</>
 										}
-										className="z-[60]"
 										asChild
 									>
 										<div className="flex items-center">
@@ -234,7 +231,6 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 												</p>
 											</>
 										}
-										className="z-[60]"
 										asChild
 									>
 										<div className="flex items-center">
@@ -273,7 +269,6 @@ export const ShowGeneralApplication = ({ applicationId }: Props) => {
 												<p>Stop the currently running application</p>
 											</>
 										}
-										className="z-[60]"
 										asChild
 									>
 										<div className="flex items-center">

@@ -519,11 +519,11 @@ export const AddUserPermissions = ({ userId }: Props) => {
 																														className={`w-1.5 h-1.5 rounded-full ${
 																															service.type ===
 																															"application"
-																																? "bg-green-500"
+																																? "bg-kumo-success"
 																																: service.type ===
 																																		"compose"
-																																	? "bg-purple-500"
-																																	: "bg-orange-500"
+																																	? "bg-kumo-info"
+																																	: "bg-kumo-warning"
 																														}`}
 																													/>
 																													<FormLabel className="text-sm text-kumo-subtle cursor-pointer">
