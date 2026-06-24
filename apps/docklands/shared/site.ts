@@ -21,7 +21,6 @@ export const siteConfig = {
 	links: {
 		github: `https://github.com/${GITHUB_SLUG}`,
 		docs: "https://docs.docklands.sh",
-		support: "https://discord.gg/2tBnJ3jDJc",
 	},
 	/** Published container image used for self-update checks (env-overridable). */
 	dockerImage: GITHUB_SLUG,

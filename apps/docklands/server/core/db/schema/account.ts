@@ -30,7 +30,6 @@ export const account = pgTable("account", {
 	refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
 	scope: text("scope"),
 	password: text("password"),
-	is2FAEnabled: boolean("is2FAEnabled").notNull().default(false),
 	createdAt: timestamp("created_at").notNull(),
 	updatedAt: timestamp("updated_at").notNull(),
 	resetPasswordToken: text("resetPasswordToken"),

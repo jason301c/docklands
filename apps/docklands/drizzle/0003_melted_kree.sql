@@ -1,0 +1,1 @@
+ALTER TABLE "account" DROP COLUMN "is2FAEnabled";

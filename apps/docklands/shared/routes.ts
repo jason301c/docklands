@@ -10,7 +10,6 @@ import type { WorkspaceServiceType } from "@/shared/workspace-graph";
 export const DOCS_URL = siteConfig.links.docs;
 export const GITHUB_REPO_URL = siteConfig.links.github;
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`;
-export const SUPPORT_URL = siteConfig.links.support;
 
 export type WorkspaceEnvironmentRoute = {
 	workspaceId: string;

@@ -5,7 +5,6 @@ import {
 	BlocksIcon,
 	BookIcon,
 	Boxes,
-	CircleHelp,
 	Clock,
 	Database,
 	Forward,
@@ -25,7 +24,7 @@ import {
 } from "lucide-react";
 import type { ComponentType } from "react";
 import type { RouterOutputs } from "@/client/api/trpc";
-import { DOCS_URL, SUPPORT_URL } from "@/shared/routes";
+import { DOCS_URL } from "@/shared/routes";
 
 export type AuthQueryOutput = RouterOutputs["user"]["get"];
 export type PermissionsOutput = RouterOutputs["user"]["getPermissions"];
@@ -238,11 +237,6 @@ export const DASHBOARD_MENU: Menu = {
 			name: "Documentation",
 			url: DOCS_URL,
 			icon: BookIcon,
-		},
-		{
-			name: "Support",
-			url: SUPPORT_URL,
-			icon: CircleHelp,
 		},
 	],
 };
