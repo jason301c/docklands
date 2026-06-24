@@ -1,18 +1,38 @@
+import os from "node:os";
 import { createLogger } from "@/server/core/lib/logger";
 import { docker } from "../constants";
 
 const logger = createLogger("setup:swarm-network");
+
+// The address remote worker nodes use to reach this manager. Hardcoding
+// loopback meant remote workers could never join (the headline multi-machine
+// feature was broken). Honor an explicit override, else pick the first
+// non-internal IPv4, else fall back to loopback for single-node/local installs.
+const resolveAdvertiseAddr = (): string => {
+	if (process.env.SWARM_ADVERTISE_ADDR) {
+		return process.env.SWARM_ADVERTISE_ADDR;
+	}
+	for (const iface of Object.values(os.networkInterfaces())) {
+		for (const addr of iface ?? []) {
+			if (addr.family === "IPv4" && !addr.internal) {
+				return addr.address;
+			}
+		}
+	}
+	return "127.0.0.1";
+};
 
 export const initializeSwarm = async () => {
 	const swarmInitialized = await dockerSwarmInitialized();
 	if (swarmInitialized) {
 		logger.info("Swarm is already initialized");
 	} else {
+		const advertiseAddr = resolveAdvertiseAddr();
 		await docker.swarmInit({
-			AdvertiseAddr: "127.0.0.1",
+			AdvertiseAddr: advertiseAddr,
 			ListenAddr: "0.0.0.0",
 		});
-		logger.info("Swarm initialized");
+		logger.info({ advertiseAddr }, "Swarm initialized");
 	}
 };
 

@@ -53,14 +53,15 @@ export const getNixpacksCommand = (application: ApplicationNested) => {
 
 		const copySource = `${buildContainerId}:/app/${publishDirectory}${isDirectory ? "/." : ""}`;
 		bashCommand += `
+	# Always remove the temporary extraction container on exit (success, copy
+	# failure, or the build being killed) so failed builds don't leak containers.
+	trap 'docker rm -f ${buildContainerId} >/dev/null 2>&1 || true' EXIT
 	docker create --name ${buildContainerId} ${quote([appName])}
 	mkdir -p ${quote([localPath])}
 	docker cp ${quote([copySource])} ${quote([localPath])} || {
-		docker rm ${buildContainerId}
 		echo ${quote([`❌ Copying ${publishDirectory} to ${localPath} failed`])} ;
 		exit 1;
 	}
-	docker rm ${buildContainerId}
 	${getStaticCommand(application)}
 				`;
 	}
