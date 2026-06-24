@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
-import { ServiceLogsModal } from "@/components/dashboard/container-runtime/logs/service-logs-modal";
+import { ServiceLogsModal } from "@/components/dashboard/shared/service-logs-modal";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";

@@ -2,13 +2,13 @@ import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import { ShowContainerConfig } from "@/components/dashboard/shared/container/show-container-config";
+import { ShowContainerMounts } from "@/components/dashboard/shared/container/show-container-mounts";
+import { ShowContainerNetworks } from "@/components/dashboard/shared/container/show-container-networks";
+import { DockerTerminalModal } from "@/components/dashboard/shared/terminal/docker-terminal-modal";
 import { DropdownMenu } from "@/components/shared/dropdown";
-import { ShowContainerConfig } from "../config/show-container-config";
 import { ShowDockerModalLogs } from "../logs/show-docker-modal-logs";
-import { ShowContainerMounts } from "../mounts/show-container-mounts";
-import { ShowContainerNetworks } from "../networks/show-container-networks";
 import { RemoveContainerDialog } from "../remove/remove-container";
-import { DockerTerminalModal } from "../terminal/docker-terminal-modal";
 import { UploadFileModal } from "../upload/upload-file-modal";
 import type { Container } from "./show-containers";
 

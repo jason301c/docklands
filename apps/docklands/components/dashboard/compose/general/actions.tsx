@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
-import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
+import { ServiceTerminalModal } from "@/components/dashboard/shared/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { workspaceServicePath } from "@/shared/routes";

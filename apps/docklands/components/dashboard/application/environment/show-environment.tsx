@@ -8,6 +8,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
+import type { ServiceType } from "@/components/dashboard/shared/show-resources";
 import { CodeEditor } from "@/components/shared/code-editor";
 import {
 	Form,
@@ -18,7 +19,6 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 import { Toggle } from "@/components/shared/toggle";
-import type { ServiceType } from "../advanced/show-resources";
 
 const addEnvironmentSchema = z.object({
 	environment: z.string(),

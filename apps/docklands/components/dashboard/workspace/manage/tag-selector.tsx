@@ -1,7 +1,7 @@
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Combobox } from "@cloudflare/kumo/components/combobox";
 import { Check } from "lucide-react";
-import { HandleTag } from "@/components/dashboard/settings/tags/handle-tag";
+import { HandleTag } from "@/components/dashboard/shared/handle-tag";
 import { TagBadge } from "@/components/shared/tag-badge";
 import { cn } from "@/shared/utils";
 

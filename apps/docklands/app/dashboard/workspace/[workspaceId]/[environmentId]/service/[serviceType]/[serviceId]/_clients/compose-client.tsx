@@ -8,7 +8,6 @@ import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { ShowImport } from "@/components/dashboard/application/advanced/import/show-import";
-import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
 import { ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
@@ -29,6 +28,7 @@ import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,
 } from "@/components/dashboard/service/runtime-placement-status";
+import { ShowVolumes } from "@/components/dashboard/shared/show-volumes";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { workspaceServicePath } from "@/shared/routes";

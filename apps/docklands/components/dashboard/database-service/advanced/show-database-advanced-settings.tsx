@@ -1,6 +1,6 @@
-import { ShowResources } from "@/components/dashboard/application/advanced/show-resources";
-import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowCustomCommand } from "@/components/dashboard/database-service/advanced/show-custom-command";
+import { ShowResources } from "@/components/dashboard/shared/show-resources";
+import { ShowVolumes } from "@/components/dashboard/shared/show-volumes";
 import { ShowClusterSettings } from "../../application/advanced/cluster/show-cluster-settings";
 import { RebuildDatabase } from "./rebuild-database";
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import type { ServiceType } from "@/components/dashboard/shared/show-resources";
 import {
 	MariadbIcon,
 	MongodbIcon,
@@ -16,7 +17,6 @@ import { DialogAction } from "@/components/shared/dialog-action";
 import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
-import type { ServiceType } from "../../application/advanced/show-resources";
 import { ShowDeploymentsModal } from "../../application/deployments/show-deployments-modal";
 import { HandleBackup } from "./handle-backup";
 import { RestoreBackup } from "./restore-backup";

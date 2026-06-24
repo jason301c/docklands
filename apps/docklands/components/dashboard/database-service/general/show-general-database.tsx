@@ -9,7 +9,7 @@ import { createClientLogger } from "@/client/lib/logger";
 
 const logger = createClientLogger("database-service");
 
-import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
+import { ServiceTerminalModal } from "@/components/dashboard/shared/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
 import { type LogLine, parseLogs } from "@/components/shared/logs/utils";

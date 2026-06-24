@@ -13,8 +13,6 @@ import { ShowPorts } from "@/components/dashboard/application/advanced/ports/sho
 import { ShowRedirects } from "@/components/dashboard/application/advanced/redirects/show-redirects";
 import { ShowSecurity } from "@/components/dashboard/application/advanced/security/show-security";
 import { ShowBuildWorker } from "@/components/dashboard/application/advanced/show-build-worker";
-import { ShowResources } from "@/components/dashboard/application/advanced/show-resources";
-import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
 import { ShowApplicationEnvironment } from "@/components/dashboard/application/environment/show";
@@ -31,6 +29,8 @@ import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,
 } from "@/components/dashboard/service/runtime-placement-status";
+import { ShowResources } from "@/components/dashboard/shared/show-resources";
+import { ShowVolumes } from "@/components/dashboard/shared/show-volumes";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { workspaceServicePath } from "@/shared/routes";

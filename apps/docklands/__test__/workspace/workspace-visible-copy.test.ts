@@ -56,7 +56,7 @@ describe("workspace visible product copy", () => {
 			"components/dashboard/settings/tags/tag-manager.tsx",
 		);
 		const tagDialog = workspaceSource(
-			"components/dashboard/settings/tags/handle-tag.tsx",
+			"components/dashboard/shared/handle-tag.tsx",
 		);
 		const permissions = workspaceSource(
 			"components/dashboard/settings/users/add-permissions.tsx",

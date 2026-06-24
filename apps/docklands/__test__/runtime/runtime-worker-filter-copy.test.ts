@@ -67,7 +67,7 @@ describe("runtime worker filter copy", () => {
 	it("emits runtime-worker query params for websocket clients", () => {
 		const websocketClients = [
 			"components/dashboard/settings/runtime/terminal/runtime-terminal.tsx",
-			"components/dashboard/container-runtime/terminal/docker-terminal.tsx",
+			"components/dashboard/shared/terminal/docker-terminal.tsx",
 			"components/dashboard/container-runtime/logs/docker-logs-id.tsx",
 			"components/dashboard/application/deployments/show-deployment.tsx",
 		];

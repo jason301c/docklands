@@ -8,8 +8,8 @@ import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { ErrorState, LoadingState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
-import type { ServiceType } from "../show-resources";
 import { AddVolumes } from "./add-volumes";
+import type { ServiceType } from "./show-resources";
 import { UpdateVolume } from "./update-volume";
 
 const logger = createClientLogger("application");

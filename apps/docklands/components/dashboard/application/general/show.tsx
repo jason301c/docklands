@@ -16,7 +16,7 @@ import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { ShowBuildChooseForm } from "@/components/dashboard/application/build/show";
 import { ShowProviderForm } from "@/components/dashboard/application/general/generic/show";
-import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
+import { ServiceTerminalModal } from "@/components/dashboard/shared/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
 import { workspaceServicePath } from "@/shared/routes";

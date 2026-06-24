@@ -4,7 +4,7 @@ import { CodeIcon, GitBranch, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
-import { UnauthorizedGitProvider } from "@/components/dashboard/application/general/generic/unauthorized-git-provider";
+import { UnauthorizedGitProvider } from "@/components/dashboard/shared/unauthorized-git-provider";
 import {
 	BitbucketIcon,
 	GiteaIcon,

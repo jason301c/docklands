@@ -8,6 +8,7 @@ import { SaveDockerProvider } from "@/components/dashboard/application/general/g
 import { SaveGitProvider } from "@/components/dashboard/application/general/generic/save-git-provider";
 import { SaveGiteaProvider } from "@/components/dashboard/application/general/generic/save-gitea-provider";
 import { SaveGithubProvider } from "@/components/dashboard/application/general/generic/save-github-provider";
+import { UnauthorizedGitProvider } from "@/components/dashboard/shared/unauthorized-git-provider";
 import {
 	BitbucketIcon,
 	DockerIcon,
@@ -20,7 +21,6 @@ import { toast } from "@/components/shared/toast";
 import { SaveBitbucketProvider } from "./save-bitbucket-provider";
 import { SaveDragNDrop } from "./save-drag-n-drop";
 import { SaveGitlabProvider } from "./save-gitlab-provider";
-import { UnauthorizedGitProvider } from "./unauthorized-git-provider";
 
 type TabState =
 	| "github"

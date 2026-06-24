@@ -21,6 +21,7 @@ import { Select } from "@/components/shared/select";
 
 const logger = createClientLogger("database-backup");
 
+import type { ServiceType } from "@/components/dashboard/shared/show-resources";
 import {
 	Command,
 	CommandGroup,
@@ -41,7 +42,6 @@ import { toast } from "@/components/shared/toast";
 import { BACKUP_DATABASE_ENGINE_KEYS } from "@/shared/database-engines";
 import { formatBytes } from "@/shared/format-bytes";
 import { cn } from "@/shared/utils";
-import type { ServiceType } from "../../application/advanced/show-resources";
 import {
 	ComposeServicePicker,
 	useComposeServices,

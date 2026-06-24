@@ -5,12 +5,12 @@ import { TagIcon, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
+import { HandleTag } from "@/components/dashboard/shared/handle-tag";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { SectionCard } from "@/components/shared/section-card";
 import { EmptyState, QueryState } from "@/components/shared/states";
 import { TagBadge } from "@/components/shared/tag-badge";
 import { toast } from "@/components/shared/toast";
-import { HandleTag } from "./handle-tag";
 
 const logger = createClientLogger("tags");
 
