@@ -10,27 +10,6 @@ import {
 	user,
 } from "@/server/core/db/schema";
 
-export const updateOrganization = async ({
-	organizationId,
-	name,
-	logo,
-}: {
-	organizationId: string;
-	name: string;
-	logo?: string;
-}) => {
-	const result = await db
-		.update(organization)
-		.set({
-			name,
-			logo,
-		})
-		.where(eq(organization.id, organizationId))
-		.returning();
-
-	return result[0];
-};
-
 /**
  * When assigning a non-builtin role, verify the custom role actually exists in
  * the org. Shared by `inviteMember` and `updateMemberRole`. The two callers used

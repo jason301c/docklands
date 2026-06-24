@@ -64,9 +64,6 @@ describe("workspace visible product copy", () => {
 		const runtimeWorker = workspaceSource(
 			"components/dashboard/settings/runtime/handle-runtime-worker.tsx",
 		);
-		const organization = workspaceSource(
-			"components/dashboard/organization/handle-organization.tsx",
-		);
 		const sshKeys = workspaceSource(
 			"components/dashboard/settings/ssh-keys/handle-ssh-keys.tsx",
 		);
@@ -84,7 +81,6 @@ describe("workspace visible product copy", () => {
 			tagDialog,
 			permissions,
 			runtimeWorker,
-			organization,
 			sshKeys,
 			clusterEmptyState,
 		]) {

@@ -33,7 +33,6 @@ import {
 	type NavItem,
 } from "@/shared/dashboard-nav";
 import { cn } from "@/shared/utils";
-import { EditInstance } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
 import { Logo } from "../shared/logo";
 import { ModeToggle } from "../shared/mode-toggle";
@@ -50,7 +49,6 @@ function LogoWrapper() {
 
 function SidebarLogo() {
 	const { state } = useSidebar();
-	const { isOwnerOrAdmin: canEditInstance } = useCurrentUser();
 	const { isMobile } = useSidebar();
 	const isCollapsed = state === "collapsed" && !isMobile;
 	const { data: activeOrganization, isLoading } =
@@ -114,7 +112,6 @@ function SidebarLogo() {
 						)}
 					>
 						<ModeToggle variant="ghost" />
-						{canEditInstance && <EditInstance />}
 						<DropdownMenu>
 							<DropdownMenu.Trigger
 								render={

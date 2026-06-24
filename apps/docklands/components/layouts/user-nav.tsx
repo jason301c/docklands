@@ -17,13 +17,7 @@ import { getFallbackAvatarInitials } from "@/shared/utils";
 // permission gates are resolved from DASHBOARD_MENU via `navShortcutsForUrls`,
 // so this list can never drift from the sidebar's single source of truth (the
 // audit found a parallel hardcoded list here with an ungated host-metrics item).
-const USER_NAV_SHORTCUT_ROUTES = [
-	"/dashboard/settings/profile",
-	"/dashboard/workspace",
-	"/dashboard/host-metrics",
-	"/dashboard/proxy-files",
-	"/dashboard/container-runtime",
-];
+const USER_NAV_SHORTCUT_ROUTES = ["/dashboard/settings/profile"];
 
 export const UserNav = () => {
 	const router = useRouter();
@@ -73,15 +67,6 @@ export const UserNav = () => {
 				align="end"
 				sideOffset={4}
 			>
-				<div className="px-2 py-1.5">
-					<DropdownMenu.Group>
-						<DropdownMenu.Label>My Account</DropdownMenu.Label>
-					</DropdownMenu.Group>
-					<span className="text-xs font-normal text-kumo-subtle">
-						{data?.user?.email}
-					</span>
-				</div>
-				<DropdownMenu.Separator />
 				<DropdownMenu.Group>
 					{shortcuts.map((item) => (
 						<DropdownMenu.Item

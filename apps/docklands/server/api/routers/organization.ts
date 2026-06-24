@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { audit } from "@/server/api/utils/audit";
 import {
@@ -7,7 +6,6 @@ import {
 	inviteMember,
 	removeInvitation,
 	updateMemberRole,
-	updateOrganization,
 } from "@/server/core/services/organization";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 
@@ -15,39 +13,9 @@ import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 // created when the first user registers (see `server/core/lib/auth.ts`). There
 // is no way to create, switch, or delete organizations — the org is the
 // instance's identity and the container for its members, roles, and invitations.
-// This router only exposes reading the active org, editing its name/logo, and
-// managing its members and invitations.
+// This router only exposes reading the active org and managing its members and
+// invitations.
 export const organizationRouter = createTRPCRouter({
-	update: withPermission("organization", "update")
-		.input(
-			z.object({
-				name: z.string().min(1, "Name is required"),
-				logo: z.string().optional(),
-			}),
-		)
-		.mutation(async ({ ctx, input }) => {
-			const organizationId = ctx.session.activeOrganizationId;
-			if (!organizationId) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "No active organization",
-				});
-			}
-
-			const result = await updateOrganization({
-				organizationId,
-				name: input.name,
-				logo: input.logo,
-			});
-
-			await audit(ctx, {
-				action: "update",
-				resourceType: "organization",
-				resourceId: organizationId,
-				resourceName: input.name,
-			});
-			return result;
-		}),
 	inviteMember: withPermission("member", "create")
 		.input(
 			z.object({
