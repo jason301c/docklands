@@ -43,6 +43,13 @@
       "when": 1782310108967,
       "tag": "0005_pink_stepford_cuckoos",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1782327133234,
+      "tag": "0006_bouncy_veda",
+      "breakpoints": true
     }
   ]
 }

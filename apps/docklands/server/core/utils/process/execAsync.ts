@@ -4,6 +4,7 @@ import { Client } from "ssh2";
 import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { ExecError } from "./ExecError";
+import { createHostVerifier } from "./ssh-host-key";
 
 const logger = createLogger("process");
 
@@ -254,6 +255,8 @@ export const execAsyncRemote = async (
 				port: runtimeWorker.port,
 				username: runtimeWorker.username,
 				privateKey: runtimeWorker.sshKey?.privateKey,
+				// Pin/verify the worker's SSH host key (trust-on-first-use).
+				hostVerifier: createHostVerifier(runtimeWorker),
 				// SSH handshake timeout (ms). Generous enough for slow remote
 				// workers, but not the old effectively-infinite ~100s.
 				timeout: 30000,

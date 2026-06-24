@@ -7,6 +7,7 @@ import { createLogger } from "@/server/core/lib/logger";
 import { readValidDirectory } from "@/server/core/runtime/host";
 import type { Application } from "@/server/core/services/application";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
+import { createHostVerifier } from "@/server/core/utils/process/ssh-host-key";
 import {
 	recreateDirectory,
 	recreateDirectoryRemote,
@@ -149,6 +150,7 @@ const getSFTPConnection = async (
 				port: runtimeWorker.port,
 				username: runtimeWorker.username,
 				privateKey: runtimeWorker.sshKey?.privateKey,
+				hostVerifier: createHostVerifier(runtimeWorker),
 			});
 	});
 };

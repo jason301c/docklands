@@ -3,6 +3,7 @@ import slug from "slugify";
 import { Client } from "ssh2";
 import { paths } from "@/server/core/constants/paths";
 import { createLogger } from "@/server/core/lib/logger";
+import { createHostVerifier } from "@/server/core/utils/process/ssh-host-key";
 
 const logger = createLogger("setup:worker-setup");
 
@@ -319,6 +320,7 @@ const installRequirements = async (
 				port: runtimeWorker.port,
 				username: runtimeWorker.username,
 				privateKey: runtimeWorker.sshKey?.privateKey,
+				hostVerifier: createHostVerifier(runtimeWorker),
 			});
 	});
 };

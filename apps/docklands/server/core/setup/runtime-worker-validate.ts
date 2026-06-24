@@ -1,5 +1,6 @@
 import { Client } from "ssh2";
 import { createLogger } from "@/server/core/lib/logger";
+import { createHostVerifier } from "@/server/core/utils/process/ssh-host-key";
 import { findRuntimeWorkerById } from "../services/runtime-worker";
 
 const logger = createLogger("setup:worker-validate");
@@ -193,6 +194,7 @@ export const runtimeWorkerValidate = async (runtimeWorkerId: string) => {
 				port: runtimeWorker.port,
 				username: runtimeWorker.username,
 				privateKey: runtimeWorker.sshKey?.privateKey,
+				hostVerifier: createHostVerifier(runtimeWorker),
 			});
 	});
 };

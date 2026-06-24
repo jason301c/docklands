@@ -57,6 +57,10 @@ export const runtimeWorkers = pgTable("runtimeWorker", {
 	sshKeyId: text("sshKeyId").references(() => sshKeys.sshKeyId, {
 		onDelete: "set null",
 	}),
+	// SSH host public key (base64), pinned on the first successful connection
+	// (trust-on-first-use). Later connections verify the worker still presents the
+	// same key, so a man-in-the-middle swapping the host key is refused.
+	hostKey: text("hostKey"),
 	metricsConfig: jsonb("metricsConfig")
 		.$type<{
 			runtimeWorker: {

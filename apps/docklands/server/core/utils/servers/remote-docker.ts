@@ -2,6 +2,7 @@ import Dockerode from "dockerode";
 import { docker } from "@/server/core/constants/docker";
 import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
+import { createHostVerifier } from "@/server/core/utils/process/ssh-host-key";
 
 const logger = createLogger("docker");
 
@@ -24,6 +25,9 @@ export const getRemoteDocker = async (runtimeWorkerId?: string | null) => {
 		protocol: "ssh",
 		sshOptions: {
 			privateKey: runtimeWorker.sshKey?.privateKey,
+			// Pin/verify the worker's SSH host key (trust-on-first-use). dockerode
+			// forwards sshOptions to ssh2's connect config.
+			hostVerifier: createHostVerifier(runtimeWorker),
 		},
 	});
 

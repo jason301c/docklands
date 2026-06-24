@@ -1,0 +1,1 @@
+ALTER TABLE "runtimeWorker" ADD COLUMN "hostKey" text;
