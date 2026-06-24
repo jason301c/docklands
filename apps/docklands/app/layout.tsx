@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 			suppressHydrationWarning
 		>
 			<head>
-				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: pre-hydration theme script to avoid FOUC */}
+				{/* Pre-hydration theme script to avoid FOUC. */}
 				<script dangerouslySetInnerHTML={{ __html: themeScript }} />
 			</head>
 			<body className="flex min-h-full w-full flex-col font-sans">

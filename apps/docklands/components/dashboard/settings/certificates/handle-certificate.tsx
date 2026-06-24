@@ -57,7 +57,7 @@ export const HandleCertificate = ({ certificateId }: Props) => {
 	const createMutation = api.certificates.create.useMutation();
 	const updateMutation = api.certificates.update.useMutation();
 	const mutation = certificateId ? updateMutation : createMutation;
-	const { mutateAsync, isError, error, isPending } = mutation;
+	const { isError, error, isPending } = mutation;
 
 	const form = useForm<HandleCertificateForm>({
 		defaultValues: {

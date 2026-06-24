@@ -13,7 +13,6 @@ export const AddGithubProvider = () => {
 	const { data: activeOrganization } = api.organization.active.useQuery();
 
 	const { data: session } = api.user.session.useQuery();
-	const { data } = api.user.get.useQuery();
 	// Prefer the configured app URL over the browsing origin so the manifest's
 	// callback/webhook URLs are reachable even when set up from localhost.
 	const url = useUrl();

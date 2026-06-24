@@ -43,7 +43,7 @@
 				"noUnsafeOptionalChaining": "off",
 				"noUnusedImports": "error",
 				"noUnusedFunctionParameters": "error",
-				"noUnusedVariables": "off",
+				"noUnusedVariables": "error",
 				"useHookAtTopLevel": "error"
 			},
 			"style": {

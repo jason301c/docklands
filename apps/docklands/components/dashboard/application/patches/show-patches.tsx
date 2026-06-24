@@ -20,7 +20,7 @@ interface Props {
 }
 
 export const ShowPatches = ({ id, type }: Props) => {
-	const [selectedFile, setSelectedFile] = useState<string | null>(null);
+	const [_selectedFile, setSelectedFile] = useState<string | null>(null);
 	const [repoPath, setRepoPath] = useState<string | null>(null);
 	const [isLoadingRepo, setIsLoadingRepo] = useState(false);
 

@@ -143,12 +143,12 @@ export const AdvancedEnvironmentSelector = ({
 					router.push(workspaceOverviewPath);
 				}
 			}
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to delete environment");
 		}
 	};
 
-	const handleDuplicateEnvironment = async (environment: Environment) => {
+	const _handleDuplicateEnvironment = async (environment: Environment) => {
 		try {
 			const result = await duplicateEnvironment.mutateAsync({
 				environmentId: environment.environmentId,
@@ -166,7 +166,7 @@ export const AdvancedEnvironmentSelector = ({
 					environmentId: result.environmentId,
 				}),
 			);
-		} catch (error) {
+		} catch (_error) {
 			toast.error("Failed to duplicate environment");
 		}
 	};

@@ -36,7 +36,9 @@ type DirectoryEntry = {
 export const PatchEditor = ({ id, type, repoPath, onClose }: Props) => {
 	const [selectedFile, setSelectedFile] = useState<string | null>(null);
 	const [fileContent, setFileContent] = useState<string>("");
-	const [createFolderPath, setCreateFolderPath] = useState<string | null>(null);
+	const [_createFolderPath, setCreateFolderPath] = useState<string | null>(
+		null,
+	);
 	const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
 		new Set(),
 	);

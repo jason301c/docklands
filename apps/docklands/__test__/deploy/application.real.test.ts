@@ -152,7 +152,7 @@ async function cleanupDocker(appName: string) {
 		await execAsync(`docker stop ${appName} 2>/dev/null || true`);
 		await execAsync(`docker rm ${appName} 2>/dev/null || true`);
 		await execAsync(`docker rmi ${appName} 2>/dev/null || true`);
-	} catch (error) {
+	} catch (_error) {
 		console.log("Docker cleanup completed");
 	}
 }

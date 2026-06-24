@@ -347,7 +347,7 @@ describe("unzipDrop using real zip files", () => {
 			await unzipDrop(file, baseApp);
 			const files = await fs.readdir(outputPath, { withFileTypes: true });
 			expect(files.some((f) => f.name === "test.txt")).toBe(true);
-		} catch (err) {
+		} catch (_err) {
 		} finally {
 		}
 	});

@@ -98,7 +98,7 @@ const menuItems: MenuItem[] = [
 	},
 ];
 
-const hasStopGracePeriodSwarm = (
+const _hasStopGracePeriodSwarm = (
 	value: unknown,
 ): value is { stopGracePeriodSwarm: number | string | null } =>
 	typeof value === "object" &&

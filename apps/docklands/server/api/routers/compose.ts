@@ -326,7 +326,7 @@ export const composeRouter = createTRPCRouter({
 				});
 			}
 
-			const result = await db
+			const _result = await db
 				.delete(composeTable)
 				.where(eq(composeTable.composeId, input.composeId))
 				.returning();

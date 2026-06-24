@@ -123,11 +123,6 @@ export type ApplicationWithGitea = InferResultType<
 
 export type ComposeWithGitea = InferResultType<"compose", { gitea: true }>;
 
-type GiteaClone = (ApplicationWithGitea | ComposeWithGitea) & {
-	runtimeWorkerId: string | null;
-	type?: "application" | "compose";
-};
-
 interface CloneGiteaRepository {
 	appName: string;
 	giteaBranch: string | null;

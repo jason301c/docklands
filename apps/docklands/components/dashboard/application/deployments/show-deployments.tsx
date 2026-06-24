@@ -454,7 +454,7 @@ export const ShowDeployments = ({
 															deploymentId: deployment.deploymentId,
 														});
 														toast.success("Build record deleted successfully");
-													} catch (error) {
+													} catch (_error) {
 														toast.error("Error deleting build record");
 													}
 												}}

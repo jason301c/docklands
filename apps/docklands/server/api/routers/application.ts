@@ -240,7 +240,7 @@ export const applicationRouter = createTRPCRouter({
 				});
 			}
 
-			const result = await db
+			const _result = await db
 				.delete(applications)
 				.where(eq(applications.applicationId, input.applicationId))
 				.returning();

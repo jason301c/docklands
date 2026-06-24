@@ -215,13 +215,13 @@ export const patchRouter = createTRPCRouter({
 			await checkServicePermissionAndAccess(ctx, input.id, {
 				service: ["read"],
 			});
-			let runtimeWorkerId: string | null = null;
+			let _runtimeWorkerId: string | null = null;
 			if (input.type === "application") {
 				const app = await findApplicationById(input.id);
-				runtimeWorkerId = app.runtimeWorkerId;
+				_runtimeWorkerId = app.runtimeWorkerId;
 			} else {
 				const compose = await findComposeById(input.id);
-				runtimeWorkerId = compose.runtimeWorkerId;
+				_runtimeWorkerId = compose.runtimeWorkerId;
 			}
 			const existingPatch = await findPatchByFilePath(
 				input.filePath,

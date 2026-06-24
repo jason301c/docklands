@@ -199,7 +199,7 @@ export const extractCommonName = (certData: string): string | null => {
 				oid[2] === 0x03
 			) {
 				// Next should be the string value
-				const strType = der[offset++];
+				const _strType = der[offset++];
 				const strLen = readLength(offset);
 				const cnBytes = der.slice(strLen.offset, strLen.offset + strLen.length);
 				return new TextDecoder().decode(cnBytes);
