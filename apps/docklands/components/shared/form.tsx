@@ -202,6 +202,14 @@ const FormControl = React.forwardRef<
 			return labelledChildren;
 		}
 
+		// A bare Fragment (`<></>`) accepts only `key`/`ref`/`children` — cloning
+		// the control props (`id`, `aria-*`, `className`) onto it is a React error.
+		// Render it untouched rather than crashing; it carries no focusable control
+		// to label anyway.
+		if (children.type === React.Fragment) {
+			return children;
+		}
+
 		const childProps = children.props as {
 			className?: string;
 			onCheckedChange?: unknown;

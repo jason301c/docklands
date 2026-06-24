@@ -221,23 +221,20 @@ export const AddInvitation = () => {
 								return (
 									<FormItem>
 										<FormLabel>Invite Method</FormLabel>
-										<Select
-											aria-label="Invite method"
-											onValueChange={field.onChange}
-											defaultValue={field.value}
-										>
-											<FormControl>
-												<></>
-											</FormControl>
-											<>
+										<FormControl>
+											<Select
+												aria-label="Invite method"
+												onValueChange={field.onChange}
+												defaultValue={field.value}
+											>
 												<Select.Option value="invitation">
 													Invitation Link
 												</Select.Option>
 												<Select.Option value="credentials">
 													Initial Credentials
 												</Select.Option>
-											</>
-										</Select>
+											</Select>
+										</FormControl>
 										<FormDescription>
 											Choose between invitation link flow or direct credentials
 											provisioning
@@ -274,15 +271,12 @@ export const AddInvitation = () => {
 								return (
 									<FormItem>
 										<FormLabel>Role</FormLabel>
-										<Select
-											aria-label="Invitation role"
-											onValueChange={field.onChange}
-											defaultValue={field.value}
-										>
-											<FormControl>
-												<></>
-											</FormControl>
-											<>
+										<FormControl>
+											<Select
+												aria-label="Invitation role"
+												onValueChange={field.onChange}
+												defaultValue={field.value}
+											>
 												<Select.Option value="member">Member</Select.Option>
 												<Select.Option value="admin">Admin</Select.Option>
 												{customRoles?.map((role) => (
@@ -290,8 +284,8 @@ export const AddInvitation = () => {
 														{role.role}
 													</Select.Option>
 												))}
-											</>
-										</Select>
+											</Select>
+										</FormControl>
 										<FormDescription>
 											Select the role for the new user
 										</FormDescription>
@@ -302,7 +296,7 @@ export const AddInvitation = () => {
 						/>
 
 						{mode === "credentials" && (
-							<>
+							<div className="grid gap-4 sm:grid-cols-2">
 								<FormField
 									control={form.control}
 									name="password"
@@ -345,7 +339,7 @@ export const AddInvitation = () => {
 										);
 									}}
 								/>
-							</>
+							</div>
 						)}
 
 						<Dialog.Footer className="w-full justify-start">
