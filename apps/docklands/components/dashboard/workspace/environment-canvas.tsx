@@ -99,6 +99,7 @@ import {
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
+import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { ErrorState } from "@/components/shared/states";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
@@ -899,103 +900,13 @@ export const EnvironmentCanvas = ({
 		{ value: "connections", label: "Connections" },
 	];
 
-	useEffect(() => {
-		if (
-			drawerTab === "previews" &&
-			selectedServiceModel?.type !== "application"
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "deployments" &&
-			(!selectedServiceModel ||
-				!deploymentServiceTypes.has(selectedServiceModel.type) ||
-				!permissions?.deployment.read)
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "domains" &&
-			(!selectedServiceModel ||
-				!deploymentServiceTypes.has(selectedServiceModel.type) ||
-				!permissions?.domain.read)
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "logs" &&
-			(!selectedServiceModel?.appName || !permissions?.logs.read)
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "terminal" &&
-			(!selectedServiceModel?.appName || !permissions?.service.read)
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "schedules" &&
-			(!selectedServiceModel ||
-				!deploymentServiceTypes.has(selectedServiceModel.type) ||
-				!permissions?.schedule.read)
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "backups" &&
-			(!selectedServiceModel ||
-				(selectedServiceModel.type !== "compose" &&
-					!getDatabaseBackupType(selectedServiceModel)))
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "credentials" &&
-			(!selectedServiceModel || !hasDatabaseCredentials(selectedServiceModel))
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "resources" &&
-			(!selectedServiceModel ||
-				(!permissions?.service.create && !permissions?.volume.read))
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "volume-backups" &&
-			(!selectedServiceModel ||
-				!deploymentServiceTypes.has(selectedServiceModel.type) ||
-				!permissions?.volumeBackup.read)
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "containers" &&
-			(selectedServiceModel?.type !== "compose" || !permissions?.service.read)
-		) {
-			setDrawerTab("overview");
-		}
-		if (
-			drawerTab === "metrics" &&
-			(!selectedServiceModel?.appName || !permissions?.monitoring.read)
-		) {
-			setDrawerTab("overview");
-		}
-	}, [
-		drawerTab,
-		permissions?.deployment.read,
-		permissions?.domain.read,
-		permissions?.logs.read,
-		permissions?.monitoring.read,
-		permissions?.schedule.read,
-		permissions?.service.read,
-		permissions?.service.create,
-		permissions?.volume.read,
-		permissions?.volumeBackup.read,
-		selectedServiceModel,
-	]);
+	// The visible `drawerTabs` list already encodes every per-service and
+	// permission visibility rule, so derive the active tab by clamping to a valid
+	// one. This replaces a 13-dependency effect that imperatively reset the tab to
+	// "overview" after the fact (which re-ran on every drag/permission change).
+	const activeDrawerTab = drawerTabs.some((tab) => tab.value === drawerTab)
+		? drawerTab
+		: "overview";
 
 	const hasCanvasFilters =
 		searchQuery.trim().length > 0 ||
@@ -3500,7 +3411,7 @@ export const EnvironmentCanvas = ({
 
 					<div className="border-b px-5 py-3">
 						<Tabs
-							value={drawerTab}
+							value={activeDrawerTab}
 							onValueChange={(value) =>
 								value !== null && setDrawerTab(value as typeof drawerTab)
 							}
@@ -3509,444 +3420,459 @@ export const EnvironmentCanvas = ({
 					</div>
 
 					<div className="min-h-0 flex-1 overflow-auto p-5">
-						{drawerTab === "overview" && (
-							<div className="space-y-5">
-								<div className="grid grid-cols-2 gap-3">
-									<Button
-										variant="outline"
-										onClick={() =>
-											runServiceAction(selectedServiceModel, "start")
-										}
-									>
-										<Play className="size-4" />
-										Start
-									</Button>
-									<Button
-										variant="outline"
-										onClick={() =>
-											runServiceAction(selectedServiceModel, "stop")
-										}
-									>
-										<X className="size-4" />
-										Stop
-									</Button>
-									<Button
-										className="col-span-2"
-										onClick={() =>
-											runServiceAction(selectedServiceModel, "deploy")
-										}
-									>
-										<RefreshCw className="size-4" />
-										Deploy
-									</Button>
-								</div>
-
-								<LayerCard className="bg-kumo-fill/20">
-									<div className="space-y-3">
-										<div className="flex items-center justify-between">
-											<span className="text-sm font-medium">Runtime</span>
-											<Badge>{selectedServiceModel.status || "idle"}</Badge>
-										</div>
-										<div className="grid gap-2 text-sm text-kumo-subtle">
-											<div className="flex items-center justify-between gap-4">
-												<span>Network</span>
-												<span className="truncate">Private runtime</span>
-											</div>
-											<div className="flex items-center justify-between gap-4">
-												<span>Type</span>
-												<span>
-													{serviceTypeLabels[selectedServiceModel.type]}
-												</span>
-											</div>
-											<div className="flex items-center justify-between gap-4">
-												<span>Last deployment</span>
-												<span className="truncate">
-													{formatLastDeployment(
-														selectedServiceModel.lastDeployAt,
-													)}
-												</span>
-											</div>
-										</div>
-									</div>
-								</LayerCard>
-
-								<div className="flex flex-wrap gap-2">
-									<Button
-										variant="outline"
-										onClick={() =>
-											startConnectionFromService(selectedServiceModel)
-										}
-									>
-										<Cable className="size-4" />
-										Connect
-									</Button>
-									<Link
-										href={getServiceSettingsHref(
-											workspaceId,
-											environmentId,
-											selectedServiceModel,
-										)}
-									>
-										<Button variant="outline">
-											<ExternalLink className="size-4" />
-											Full settings
+						<ErrorBoundary resetKey={activeDrawerTab} name="service-drawer-tab">
+							{activeDrawerTab === "overview" && (
+								<div className="space-y-5">
+									<div className="grid grid-cols-2 gap-3">
+										<Button
+											variant="outline"
+											onClick={() =>
+												runServiceAction(selectedServiceModel, "start")
+											}
+										>
+											<Play className="size-4" />
+											Start
 										</Button>
-									</Link>
-									{selectedServiceModel.appName &&
-										permissions?.service.read && (
-											<ServiceTerminalButton service={selectedServiceModel} />
-										)}
-									<DeleteService
-										id={selectedServiceModel.id}
-										type={selectedServiceModel.type}
-									/>
-								</div>
-							</div>
-						)}
-
-						{drawerTab === "variables" && (
-							<div className="space-y-3">
-								<LayerCard className="bg-kumo-fill/20">
-									<div className="space-y-4">
-										<div>
-											<p className="text-sm font-medium">Variable graph</p>
-											<p className="text-xs text-kumo-subtle">
-												Workspace variables are inherited with{" "}
-												<code>{"{{workspace.KEY}}"}</code>. Incoming service
-												links can sync generated connection variables into this
-												service.
-											</p>
-										</div>
-
-										<div className="grid gap-3">
-											<div className="rounded-md border bg-kumo-canvas/60 p-3">
-												<div className="flex items-center justify-between gap-3">
-													<span className="text-sm font-medium">
-														Workspace scope
-													</span>
-													<Badge>
-														{permissions?.envVars.read
-															? `${projectVariableKeys.length} ${projectVariableKeys.length === 1 ? "key" : "keys"}`
-															: "Restricted"}
-													</Badge>
-												</div>
-												{permissions?.envVars.read &&
-													(projectVariableKeys.length > 0 ? (
-														<div className="mt-3 flex flex-wrap gap-1.5">
-															{projectVariableKeys.map((key) => (
-																<Badge key={key}>{key}</Badge>
-															))}
-														</div>
-													) : (
-														<p className="mt-3 text-xs text-kumo-subtle">
-															No workspace variables defined.
-														</p>
-													))}
-												{!permissions?.envVars.read && (
-													<p className="mt-3 text-xs text-kumo-subtle">
-														You need variable read access to see inherited keys.
-													</p>
-												)}
-											</div>
-
-											<div className="rounded-md border bg-kumo-canvas/60 p-3">
-												<div className="flex items-center justify-between gap-3">
-													<span className="text-sm font-medium">
-														Incoming links
-													</span>
-													<Badge>
-														{selectedIncomingConnections.length}{" "}
-														{selectedIncomingConnections.length === 1
-															? "source"
-															: "sources"}
-													</Badge>
-												</div>
-												{selectedIncomingConnections.length === 0 ? (
-													<p className="mt-3 text-xs text-kumo-subtle">
-														No linked services are generating variables for this
-														service.
-													</p>
-												) : (
-													<div className="mt-3 space-y-3">
-														{selectedIncomingConnections.map((connection) => {
-															const source = servicesByKey.get(
-																getWorkspaceServiceKey(
-																	connection.sourceServiceType,
-																	connection.sourceServiceId,
-																),
-															);
-
-															return (
-																<ConnectionVariableFlowCard
-																	key={connection.connectionId}
-																	connection={connection}
-																	source={source}
-																	target={selectedServiceModel}
-																	variablePreviewEnabled={
-																		!!permissions?.envVars.read
-																	}
-																/>
-															);
-														})}
-													</div>
-												)}
-											</div>
-										</div>
+										<Button
+											variant="outline"
+											onClick={() =>
+												runServiceAction(selectedServiceModel, "stop")
+											}
+										>
+											<X className="size-4" />
+											Stop
+										</Button>
+										<Button
+											className="col-span-2"
+											onClick={() =>
+												runServiceAction(selectedServiceModel, "deploy")
+											}
+										>
+											<RefreshCw className="size-4" />
+											Deploy
+										</Button>
 									</div>
-								</LayerCard>
-								{selectedServiceModel.type === "application" ? (
-									<ShowApplicationEnvironment
-										applicationId={selectedServiceModel.id}
-									/>
-								) : (
-									<ShowServiceEnvironment
-										id={selectedServiceModel.id}
-										type={selectedServiceModel.type}
-									/>
-								)}
-							</div>
-						)}
 
-						{drawerTab === "deployments" &&
-							(selectedServiceModel.type === "application" ||
-								selectedServiceModel.type === "compose") && (
-								<ShowDeployments
-									id={selectedServiceModel.id}
-									type={selectedServiceModel.type}
-									runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
-									refreshToken={selectedServiceModel.refreshToken || ""}
-								/>
-							)}
+									<LayerCard className="bg-kumo-fill/20">
+										<div className="space-y-3">
+											<div className="flex items-center justify-between">
+												<span className="text-sm font-medium">Runtime</span>
+												<Badge>{selectedServiceModel.status || "idle"}</Badge>
+											</div>
+											<div className="grid gap-2 text-sm text-kumo-subtle">
+												<div className="flex items-center justify-between gap-4">
+													<span>Network</span>
+													<span className="truncate">Private runtime</span>
+												</div>
+												<div className="flex items-center justify-between gap-4">
+													<span>Type</span>
+													<span>
+														{serviceTypeLabels[selectedServiceModel.type]}
+													</span>
+												</div>
+												<div className="flex items-center justify-between gap-4">
+													<span>Last deployment</span>
+													<span className="truncate">
+														{formatLastDeployment(
+															selectedServiceModel.lastDeployAt,
+														)}
+													</span>
+												</div>
+											</div>
+										</div>
+									</LayerCard>
 
-						{drawerTab === "domains" &&
-							(selectedServiceModel.type === "application" ||
-								selectedServiceModel.type === "compose") && (
-								<ShowDomains
-									id={selectedServiceModel.id}
-									type={selectedServiceModel.type}
-								/>
-							)}
-
-						{drawerTab === "previews" &&
-							selectedServiceModel.type === "application" && (
-								<ShowPreviewDeployments
-									applicationId={selectedServiceModel.id}
-								/>
-							)}
-
-						{drawerTab === "schedules" &&
-							(selectedServiceModel.type === "application" ||
-								selectedServiceModel.type === "compose") && (
-								<ShowSchedules
-									id={selectedServiceModel.id}
-									scheduleType={selectedServiceModel.type}
-								/>
-							)}
-
-						{drawerTab === "backups" && (
-							<>
-								{selectedServiceModel.type === "compose" ? (
-									<ShowBackups
-										id={selectedServiceModel.id}
-										backupType="compose"
-									/>
-								) : (
-									getDatabaseBackupType(selectedServiceModel) && (
-										<ShowBackups
+									<div className="flex flex-wrap gap-2">
+										<Button
+											variant="outline"
+											onClick={() =>
+												startConnectionFromService(selectedServiceModel)
+											}
+										>
+											<Cable className="size-4" />
+											Connect
+										</Button>
+										<Link
+											href={getServiceSettingsHref(
+												workspaceId,
+												environmentId,
+												selectedServiceModel,
+											)}
+										>
+											<Button variant="outline">
+												<ExternalLink className="size-4" />
+												Full settings
+											</Button>
+										</Link>
+										{selectedServiceModel.appName &&
+											permissions?.service.read && (
+												<ServiceTerminalButton service={selectedServiceModel} />
+											)}
+										<DeleteService
 											id={selectedServiceModel.id}
-											databaseType={getDatabaseBackupType(selectedServiceModel)}
-											backupType="database"
+											type={selectedServiceModel.type}
 										/>
-									)
-								)}
-							</>
-						)}
-
-						{drawerTab === "credentials" &&
-							hasDatabaseCredentials(selectedServiceModel) && (
-								<DatabaseCredentials service={selectedServiceModel} />
+									</div>
+								</div>
 							)}
 
-						{drawerTab === "resources" && (
-							<div className="space-y-4">
-								{selectedServiceModel.type !== "compose" &&
-									permissions?.service.create && (
-										<ShowResources
+							{activeDrawerTab === "variables" && (
+								<div className="space-y-3">
+									<LayerCard className="bg-kumo-fill/20">
+										<div className="space-y-4">
+											<div>
+												<p className="text-sm font-medium">Variable graph</p>
+												<p className="text-xs text-kumo-subtle">
+													Workspace variables are inherited with{" "}
+													<code>{"{{workspace.KEY}}"}</code>. Incoming service
+													links can sync generated connection variables into
+													this service.
+												</p>
+											</div>
+
+											<div className="grid gap-3">
+												<div className="rounded-md border bg-kumo-canvas/60 p-3">
+													<div className="flex items-center justify-between gap-3">
+														<span className="text-sm font-medium">
+															Workspace scope
+														</span>
+														<Badge>
+															{permissions?.envVars.read
+																? `${projectVariableKeys.length} ${projectVariableKeys.length === 1 ? "key" : "keys"}`
+																: "Restricted"}
+														</Badge>
+													</div>
+													{permissions?.envVars.read &&
+														(projectVariableKeys.length > 0 ? (
+															<div className="mt-3 flex flex-wrap gap-1.5">
+																{projectVariableKeys.map((key) => (
+																	<Badge key={key}>{key}</Badge>
+																))}
+															</div>
+														) : (
+															<p className="mt-3 text-xs text-kumo-subtle">
+																No workspace variables defined.
+															</p>
+														))}
+													{!permissions?.envVars.read && (
+														<p className="mt-3 text-xs text-kumo-subtle">
+															You need variable read access to see inherited
+															keys.
+														</p>
+													)}
+												</div>
+
+												<div className="rounded-md border bg-kumo-canvas/60 p-3">
+													<div className="flex items-center justify-between gap-3">
+														<span className="text-sm font-medium">
+															Incoming links
+														</span>
+														<Badge>
+															{selectedIncomingConnections.length}{" "}
+															{selectedIncomingConnections.length === 1
+																? "source"
+																: "sources"}
+														</Badge>
+													</div>
+													{selectedIncomingConnections.length === 0 ? (
+														<p className="mt-3 text-xs text-kumo-subtle">
+															No linked services are generating variables for
+															this service.
+														</p>
+													) : (
+														<div className="mt-3 space-y-3">
+															{selectedIncomingConnections.map((connection) => {
+																const source = servicesByKey.get(
+																	getWorkspaceServiceKey(
+																		connection.sourceServiceType,
+																		connection.sourceServiceId,
+																	),
+																);
+
+																return (
+																	<ConnectionVariableFlowCard
+																		key={connection.connectionId}
+																		connection={connection}
+																		source={source}
+																		target={selectedServiceModel}
+																		variablePreviewEnabled={
+																			!!permissions?.envVars.read
+																		}
+																	/>
+																);
+															})}
+														</div>
+													)}
+												</div>
+											</div>
+										</div>
+									</LayerCard>
+									{selectedServiceModel.type === "application" ? (
+										<ShowApplicationEnvironment
+											applicationId={selectedServiceModel.id}
+										/>
+									) : (
+										<ShowServiceEnvironment
 											id={selectedServiceModel.id}
 											type={selectedServiceModel.type}
 										/>
 									)}
-								<ShowVolumes
-									id={selectedServiceModel.id}
-									type={selectedServiceModel.type}
-								/>
-								{selectedServiceModel.type === "application" &&
-									permissions?.service.create && (
-										<ShowPorts applicationId={selectedServiceModel.id} />
-									)}
-							</div>
-						)}
-
-						{drawerTab === "volume-backups" &&
-							(selectedServiceModel.type === "application" ||
-								selectedServiceModel.type === "compose") && (
-								<ShowVolumeBackups
-									id={selectedServiceModel.id}
-									type={selectedServiceModel.type}
-									runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
-								/>
+								</div>
 							)}
 
-						{drawerTab === "logs" && selectedServiceModel.appName && (
-							<div className="space-y-3">
-								{selectedServiceModel.type === "compose" ? (
-									selectedServiceModel.composeType === "stack" ? (
-										<ShowDockerLogsStack
-											runtimeWorkerId={
-												selectedServiceModel.runtimeWorkerId || ""
-											}
-											appName={selectedServiceModel.appName}
-										/>
-									) : (
-										<ShowDockerLogsCompose
-											runtimeWorkerId={
-												selectedServiceModel.runtimeWorkerId || ""
-											}
-											appName={selectedServiceModel.appName}
-											appType={
-												selectedServiceModel.composeType || "docker-compose"
-											}
-										/>
-									)
-								) : (
-									<ShowDockerLogs
+							{activeDrawerTab === "deployments" &&
+								(selectedServiceModel.type === "application" ||
+									selectedServiceModel.type === "compose") && (
+									<ShowDeployments
+										id={selectedServiceModel.id}
+										type={selectedServiceModel.type}
 										runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
-										appName={selectedServiceModel.appName}
+										refreshToken={selectedServiceModel.refreshToken || ""}
 									/>
 								)}
-							</div>
-						)}
 
-						{drawerTab === "terminal" && selectedServiceModel.appName && (
-							<LayerCard className="bg-kumo-fill/20">
-								<div className="flex items-center justify-between gap-4">
-									<div className="min-w-0">
-										<h3 className="font-medium">Container Terminal</h3>
-										<p className="truncate text-sm text-kumo-subtle">
-											{selectedServiceModel.appName}
-										</p>
-									</div>
-									<ServiceTerminalButton service={selectedServiceModel} />
-								</div>
-							</LayerCard>
-						)}
+							{activeDrawerTab === "domains" &&
+								(selectedServiceModel.type === "application" ||
+									selectedServiceModel.type === "compose") && (
+									<ShowDomains
+										id={selectedServiceModel.id}
+										type={selectedServiceModel.type}
+									/>
+								)}
 
-						{drawerTab === "containers" &&
-							selectedServiceModel.type === "compose" &&
-							selectedServiceModel.appName && (
-								<ShowComposeContainers
-									runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
-									appName={selectedServiceModel.appName}
-									appType={selectedServiceModel.composeType || "docker-compose"}
-								/>
+							{activeDrawerTab === "previews" &&
+								selectedServiceModel.type === "application" && (
+									<ShowPreviewDeployments
+										applicationId={selectedServiceModel.id}
+									/>
+								)}
+
+							{activeDrawerTab === "schedules" &&
+								(selectedServiceModel.type === "application" ||
+									selectedServiceModel.type === "compose") && (
+									<ShowSchedules
+										id={selectedServiceModel.id}
+										scheduleType={selectedServiceModel.type}
+									/>
+								)}
+
+							{activeDrawerTab === "backups" && (
+								<>
+									{selectedServiceModel.type === "compose" ? (
+										<ShowBackups
+											id={selectedServiceModel.id}
+											backupType="compose"
+										/>
+									) : (
+										getDatabaseBackupType(selectedServiceModel) && (
+											<ShowBackups
+												id={selectedServiceModel.id}
+												databaseType={getDatabaseBackupType(
+													selectedServiceModel,
+												)}
+												backupType="database"
+											/>
+										)
+									)}
+								</>
 							)}
 
-						{drawerTab === "metrics" && selectedServiceModel.appName && (
-							<div className="space-y-3">
-								{selectedServiceModel.type === "compose" ? (
-									<ComposeMonitoring
+							{activeDrawerTab === "credentials" &&
+								hasDatabaseCredentials(selectedServiceModel) && (
+									<DatabaseCredentials service={selectedServiceModel} />
+								)}
+
+							{activeDrawerTab === "resources" && (
+								<div className="space-y-4">
+									{selectedServiceModel.type !== "compose" &&
+										permissions?.service.create && (
+											<ShowResources
+												id={selectedServiceModel.id}
+												type={selectedServiceModel.type}
+											/>
+										)}
+									<ShowVolumes
+										id={selectedServiceModel.id}
+										type={selectedServiceModel.type}
+									/>
+									{selectedServiceModel.type === "application" &&
+										permissions?.service.create && (
+											<ShowPorts applicationId={selectedServiceModel.id} />
+										)}
+								</div>
+							)}
+
+							{activeDrawerTab === "volume-backups" &&
+								(selectedServiceModel.type === "application" ||
+									selectedServiceModel.type === "compose") && (
+									<ShowVolumeBackups
+										id={selectedServiceModel.id}
+										type={selectedServiceModel.type}
+										runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
+									/>
+								)}
+
+							{activeDrawerTab === "logs" && selectedServiceModel.appName && (
+								<div className="space-y-3">
+									{selectedServiceModel.type === "compose" ? (
+										selectedServiceModel.composeType === "stack" ? (
+											<ShowDockerLogsStack
+												runtimeWorkerId={
+													selectedServiceModel.runtimeWorkerId || ""
+												}
+												appName={selectedServiceModel.appName}
+											/>
+										) : (
+											<ShowDockerLogsCompose
+												runtimeWorkerId={
+													selectedServiceModel.runtimeWorkerId || ""
+												}
+												appName={selectedServiceModel.appName}
+												appType={
+													selectedServiceModel.composeType || "docker-compose"
+												}
+											/>
+										)
+									) : (
+										<ShowDockerLogs
+											runtimeWorkerId={
+												selectedServiceModel.runtimeWorkerId || ""
+											}
+											appName={selectedServiceModel.appName}
+										/>
+									)}
+								</div>
+							)}
+
+							{activeDrawerTab === "terminal" &&
+								selectedServiceModel.appName && (
+									<LayerCard className="bg-kumo-fill/20">
+										<div className="flex items-center justify-between gap-4">
+											<div className="min-w-0">
+												<h3 className="font-medium">Container Terminal</h3>
+												<p className="truncate text-sm text-kumo-subtle">
+													{selectedServiceModel.appName}
+												</p>
+											</div>
+											<ServiceTerminalButton service={selectedServiceModel} />
+										</div>
+									</LayerCard>
+								)}
+
+							{activeDrawerTab === "containers" &&
+								selectedServiceModel.type === "compose" &&
+								selectedServiceModel.appName && (
+									<ShowComposeContainers
 										runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
 										appName={selectedServiceModel.appName}
 										appType={
 											selectedServiceModel.composeType || "docker-compose"
 										}
 									/>
-								) : (
-									<ContainerMonitoring appName={selectedServiceModel.appName} />
 								)}
-							</div>
-						)}
 
-						{drawerTab === "connections" && (
-							<div className="space-y-3">
-								<div className="flex items-start justify-between gap-3">
-									<div className="min-w-0">
-										<p className="text-sm font-medium">Service graph</p>
-										<p className="text-xs text-kumo-subtle">
-											Incoming database links can sync generated variables into
-											this service.
-										</p>
-									</div>
-									<Button
-										variant="outline"
-										loading={syncConnectionVariables.isPending}
-										disabled={
-											!permissions?.envVars.write ||
-											selectedIncomingConnections.length === 0
-										}
-										onClick={() => void syncVariablesForSelectedService()}
-									>
-										<RefreshCw className="size-4" />
-										Sync vars
-									</Button>
-								</div>
-								{selectedConnections.length === 0 ? (
-									<div className="rounded-lg border border-dashed p-6 text-center text-sm text-kumo-subtle">
-										No connections yet. Use Connect, then select another service
-										on the canvas.
-									</div>
-								) : (
-									selectedConnections.map((connection) => {
-										const source = servicesByKey.get(
-											getWorkspaceServiceKey(
-												connection.sourceServiceType,
-												connection.sourceServiceId,
-											),
-										);
-										const target = servicesByKey.get(
-											getWorkspaceServiceKey(
-												connection.targetServiceType,
-												connection.targetServiceId,
-											),
-										);
-
-										return (
-											<ConnectionVariableFlowCard
-												key={connection.connectionId}
-												connection={connection}
-												source={source}
-												target={target}
-												variablePreviewEnabled={!!permissions?.envVars.read}
-												actions={
-													<>
-														<Button
-															variant="outline"
-															disabled={!permissions?.envVars.write}
-															onClick={() =>
-																applyVariablesForConnection(connection)
-															}
-														>
-															<SquareTerminal className="size-4" />
-															Apply vars
-														</Button>
-														<Button
-															aria-label="Remove connection"
-															variant="ghost"
-															shape="square"
-															onClick={() =>
-																removeSelectedConnection(connection)
-															}
-														>
-															<Trash2 className="size-4" />
-														</Button>
-													</>
+							{activeDrawerTab === "metrics" &&
+								selectedServiceModel.appName && (
+									<div className="space-y-3">
+										{selectedServiceModel.type === "compose" ? (
+											<ComposeMonitoring
+												runtimeWorkerId={
+													selectedServiceModel.runtimeWorkerId || ""
+												}
+												appName={selectedServiceModel.appName}
+												appType={
+													selectedServiceModel.composeType || "docker-compose"
 												}
 											/>
-										);
-									})
+										) : (
+											<ContainerMonitoring
+												appName={selectedServiceModel.appName}
+											/>
+										)}
+									</div>
 								)}
-							</div>
-						)}
+
+							{activeDrawerTab === "connections" && (
+								<div className="space-y-3">
+									<div className="flex items-start justify-between gap-3">
+										<div className="min-w-0">
+											<p className="text-sm font-medium">Service graph</p>
+											<p className="text-xs text-kumo-subtle">
+												Incoming database links can sync generated variables
+												into this service.
+											</p>
+										</div>
+										<Button
+											variant="outline"
+											loading={syncConnectionVariables.isPending}
+											disabled={
+												!permissions?.envVars.write ||
+												selectedIncomingConnections.length === 0
+											}
+											onClick={() => void syncVariablesForSelectedService()}
+										>
+											<RefreshCw className="size-4" />
+											Sync vars
+										</Button>
+									</div>
+									{selectedConnections.length === 0 ? (
+										<div className="rounded-lg border border-dashed p-6 text-center text-sm text-kumo-subtle">
+											No connections yet. Use Connect, then select another
+											service on the canvas.
+										</div>
+									) : (
+										selectedConnections.map((connection) => {
+											const source = servicesByKey.get(
+												getWorkspaceServiceKey(
+													connection.sourceServiceType,
+													connection.sourceServiceId,
+												),
+											);
+											const target = servicesByKey.get(
+												getWorkspaceServiceKey(
+													connection.targetServiceType,
+													connection.targetServiceId,
+												),
+											);
+
+											return (
+												<ConnectionVariableFlowCard
+													key={connection.connectionId}
+													connection={connection}
+													source={source}
+													target={target}
+													variablePreviewEnabled={!!permissions?.envVars.read}
+													actions={
+														<>
+															<Button
+																variant="outline"
+																disabled={!permissions?.envVars.write}
+																onClick={() =>
+																	applyVariablesForConnection(connection)
+																}
+															>
+																<SquareTerminal className="size-4" />
+																Apply vars
+															</Button>
+															<Button
+																aria-label="Remove connection"
+																variant="ghost"
+																shape="square"
+																onClick={() =>
+																	removeSelectedConnection(connection)
+																}
+															>
+																<Trash2 className="size-4" />
+															</Button>
+														</>
+													}
+												/>
+											);
+										})
+									)}
+								</div>
+							)}
+						</ErrorBoundary>
 					</div>
 				</aside>
 			)}
