@@ -37,6 +37,7 @@ import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DropdownMenu } from "@/components/shared/dropdown";
+import { ErrorState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
 import { createColumns } from "./columns";
 import { DnsHelperModal } from "./dns-helper-modal";
@@ -120,6 +121,8 @@ export const ShowDomains = ({ id, type }: Props) => {
 		data,
 		refetch,
 		isLoading: isLoadingDomains,
+		isError: isDomainsError,
+		error: domainsError,
 	} = isApplication ? byApplicationIdQuery : byComposeIdQuery;
 
 	const { mutateAsync: validateDomain } =
@@ -249,7 +252,14 @@ export const ShowDomains = ({ id, type }: Props) => {
 					</div>
 				</div>
 				<div className="flex w-full flex-row gap-4">
-					{isLoadingDomains ? (
+					{isDomainsError ? (
+						<ErrorState
+							error={domainsError}
+							title="Failed to load domains"
+							onRetry={() => refetch()}
+							className="min-h-[40vh]"
+						/>
+					) : isLoadingDomains ? (
 						<div className="flex w-full flex-row gap-4 min-h-[40vh] justify-center items-center">
 							<Loader2 className="size-5 animate-spin text-kumo-subtle" />
 							<span className="text-base text-kumo-subtle">

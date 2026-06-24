@@ -5,6 +5,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { QueryState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
 import { HandlePorts } from "./handle-ports";
 
@@ -15,12 +16,13 @@ interface Props {
 }
 
 export const ShowPorts = ({ applicationId }: Props) => {
-	const { data, refetch } = api.application.one.useQuery(
+	const applicationQuery = api.application.one.useQuery(
 		{
 			applicationId,
 		},
 		{ enabled: !!applicationId },
 	);
+	const { data, refetch } = applicationQuery;
 
 	const { mutateAsync: deletePort, isPending: isRemoving } =
 		api.port.delete.useMutation();
@@ -38,90 +40,99 @@ export const ShowPorts = ({ applicationId }: Props) => {
 				)}
 			</div>
 			<div className="flex flex-col gap-4">
-				{data?.ports.length === 0 ? (
-					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
-						<Rss className="size-8 text-kumo-subtle" />
-						<span className="text-base text-kumo-subtle">
-							No ports configured
-						</span>
-						<HandlePorts applicationId={applicationId}>Add Port</HandlePorts>
-					</div>
-				) : (
-					<div className="flex flex-col pt-2 gap-4">
-						<AlertBlock type="info">
-							Run a build after adding, editing, or deleting ports to apply the
-							changes.
-						</AlertBlock>
-						<div className="flex flex-col gap-6">
-							{data?.ports.map((port) => (
-								<div key={port.portId}>
-									<div className="flex w-full flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-10 border rounded-lg p-4">
-										<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 flex-col gap-4 sm:gap-8">
-											<div className="flex flex-col gap-1">
-												<span className="font-medium">Published Port</span>
-												<span className="text-sm text-kumo-subtle">
-													{port.publishedPort}
-												</span>
+				<QueryState
+					query={applicationQuery}
+					isEmpty={(data) => data.ports.length === 0}
+					empty={
+						<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
+							<Rss className="size-8 text-kumo-subtle" />
+							<span className="text-base text-kumo-subtle">
+								No ports configured
+							</span>
+							<HandlePorts applicationId={applicationId}>Add Port</HandlePorts>
+						</div>
+					}
+					errorTitle="Failed to load ports"
+				>
+					{(data) => (
+						<div className="flex flex-col pt-2 gap-4">
+							<AlertBlock type="info">
+								Run a build after adding, editing, or deleting ports to apply
+								the changes.
+							</AlertBlock>
+							<div className="flex flex-col gap-6">
+								{data.ports.map((port) => (
+									<div key={port.portId}>
+										<div className="flex w-full flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-10 border rounded-lg p-4">
+											<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 flex-col gap-4 sm:gap-8">
+												<div className="flex flex-col gap-1">
+													<span className="font-medium">Published Port</span>
+													<span className="text-sm text-kumo-subtle">
+														{port.publishedPort}
+													</span>
+												</div>
+												<div className="flex flex-col gap-1">
+													<span className="font-medium">
+														Published Port Mode
+													</span>
+													<span className="text-sm text-kumo-subtle">
+														{port?.publishMode?.toUpperCase()}
+													</span>
+												</div>
+												<div className="flex flex-col gap-1">
+													<span className="font-medium">Target Port</span>
+													<span className="text-sm text-kumo-subtle">
+														{port.targetPort}
+													</span>
+												</div>
+												<div className="flex flex-col gap-1">
+													<span className="font-medium">Protocol</span>
+													<span className="text-sm text-kumo-subtle">
+														{port.protocol.toUpperCase()}
+													</span>
+												</div>
 											</div>
-											<div className="flex flex-col gap-1">
-												<span className="font-medium">Published Port Mode</span>
-												<span className="text-sm text-kumo-subtle">
-													{port?.publishMode?.toUpperCase()}
-												</span>
-											</div>
-											<div className="flex flex-col gap-1">
-												<span className="font-medium">Target Port</span>
-												<span className="text-sm text-kumo-subtle">
-													{port.targetPort}
-												</span>
-											</div>
-											<div className="flex flex-col gap-1">
-												<span className="font-medium">Protocol</span>
-												<span className="text-sm text-kumo-subtle">
-													{port.protocol.toUpperCase()}
-												</span>
-											</div>
-										</div>
-										<div className="flex flex-row gap-4">
-											<HandlePorts
-												applicationId={applicationId}
-												portId={port.portId}
-											/>
-											<DialogAction
-												title="Delete Port"
-												description="Are you sure you want to delete this port?"
-												type="destructive"
-												onClick={async () => {
-													await deletePort({
-														portId: port.portId,
-													})
-														.then(() => {
-															refetch();
-															toast.success("Port deleted successfully");
+											<div className="flex flex-row gap-4">
+												<HandlePorts
+													applicationId={applicationId}
+													portId={port.portId}
+												/>
+												<DialogAction
+													title="Delete Port"
+													description="Are you sure you want to delete this port?"
+													type="destructive"
+													onClick={async () => {
+														await deletePort({
+															portId: port.portId,
 														})
-														.catch((err) => {
-															logger.error("Failed to delete port", err);
-															toast.error("Error deleting port");
-														});
-												}}
-											>
-												<Button
-													aria-label="Delete port"
-													variant="ghost"
-													shape="square"
-													className="group hover:bg-kumo-danger/10 "
-													loading={isRemoving}
+															.then(() => {
+																refetch();
+																toast.success("Port deleted successfully");
+															})
+															.catch((err) => {
+																logger.error("Failed to delete port", err);
+																toast.error("Error deleting port");
+															});
+													}}
 												>
-													<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
-												</Button>
-											</DialogAction>
+													<Button
+														aria-label="Delete port"
+														variant="ghost"
+														shape="square"
+														className="group hover:bg-kumo-danger/10 "
+														loading={isRemoving}
+													>
+														<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
+													</Button>
+												</DialogAction>
+											</div>
 										</div>
 									</div>
-								</div>
-							))}
+								))}
+							</div>
 						</div>
-					</div>
-				)}
+					)}
+				</QueryState>
 			</div>
 		</LayerCard>
 	);

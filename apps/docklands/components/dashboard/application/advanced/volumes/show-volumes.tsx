@@ -6,6 +6,7 @@ import { usePermissions } from "@/client/hooks/use-permissions";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { ErrorState, LoadingState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
 import type { ServiceType } from "../show-resources";
 import { AddVolumes } from "./add-volumes";
@@ -38,11 +39,12 @@ export const ShowVolumes = ({ id, type }: Props) => {
 		{ databaseId: id },
 		{ enabled: !!id && !isApplication && !isCompose },
 	);
-	const { data, refetch } = isApplication
+	const query = isApplication
 		? applicationQuery
 		: isCompose
 			? composeQuery
 			: databaseQuery;
+	const { data, refetch, isPending, isError, error } = query;
 	const { mutateAsync: deleteVolume, isPending: isRemoving } =
 		api.mounts.remove.useMutation();
 
@@ -66,7 +68,15 @@ export const ShowVolumes = ({ id, type }: Props) => {
 				)}
 			</div>
 			<div className="flex flex-col gap-4">
-				{data?.mounts.length === 0 ? (
+				{isError ? (
+					<ErrorState
+						error={error}
+						title="Failed to load volumes"
+						onRetry={() => refetch()}
+					/>
+				) : isPending ? (
+					<LoadingState />
+				) : data?.mounts.length === 0 ? (
 					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
 						<Package className="size-8 text-kumo-subtle" />
 						<span className="text-base text-kumo-subtle">

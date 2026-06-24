@@ -12,6 +12,7 @@ import { ShowContainerNetworks } from "@/components/dashboard/container-runtime/
 import { DockerTerminalModal } from "@/components/dashboard/container-runtime/terminal/docker-terminal-modal";
 import { Dialog } from "@/components/shared/dialog";
 import { DropdownMenu } from "@/components/shared/dropdown";
+import { QueryState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
 
 const DockerLogsId = dynamic(
@@ -35,17 +36,17 @@ export const ShowComposeContainers = ({
 	appType,
 	runtimeWorkerId,
 }: Props) => {
-	const { data, isPending, refetch } =
-		api.docker.getContainersByAppNameMatch.useQuery(
-			{
-				appName,
-				appType,
-				runtimeWorkerId,
-			},
-			{
-				enabled: !!appName,
-			},
-		);
+	const containersQuery = api.docker.getContainersByAppNameMatch.useQuery(
+		{
+			appName,
+			appType,
+			runtimeWorkerId,
+		},
+		{
+			enabled: !!appName,
+		},
+	);
+	const { isPending, refetch } = containersQuery;
 
 	return (
 		<LayerCard className="bg-kumo-canvas">
@@ -68,41 +69,44 @@ export const ShowComposeContainers = ({
 				</Button>
 			</div>
 			<div>
-				{isPending ? (
-					<div className="flex items-center justify-center h-[20vh]">
-						<Loader2 className="animate-spin h-6 w-6 text-kumo-subtle" />
-					</div>
-				) : !data || data.length === 0 ? (
-					<div className="flex items-center justify-center h-[20vh]">
-						<span className="text-kumo-subtle">
-							No containers found. Run a build to see containers here.
-						</span>
-					</div>
-				) : (
-					<div className="rounded-md border">
-						<Table>
-							<Table.Header>
-								<Table.Row>
-									<Table.Head>Name</Table.Head>
-									<Table.Head>State</Table.Head>
-									<Table.Head>Status</Table.Head>
-									<Table.Head>Container ID</Table.Head>
-									<Table.Head className="text-right" />
-								</Table.Row>
-							</Table.Header>
-							<Table.Body>
-								{data.map((container) => (
-									<ContainerRow
-										key={container.containerId}
-										container={container}
-										runtimeWorkerId={runtimeWorkerId}
-										onActionComplete={() => refetch()}
-									/>
-								))}
-							</Table.Body>
-						</Table>
-					</div>
-				)}
+				<QueryState
+					query={containersQuery}
+					isEmpty={(data) => data.length === 0}
+					empty={
+						<div className="flex items-center justify-center h-[20vh]">
+							<span className="text-kumo-subtle">
+								No containers found. Run a build to see containers here.
+							</span>
+						</div>
+					}
+					errorTitle="Failed to load containers"
+				>
+					{(data) => (
+						<div className="rounded-md border">
+							<Table>
+								<Table.Header>
+									<Table.Row>
+										<Table.Head>Name</Table.Head>
+										<Table.Head>State</Table.Head>
+										<Table.Head>Status</Table.Head>
+										<Table.Head>Container ID</Table.Head>
+										<Table.Head className="text-right" />
+									</Table.Row>
+								</Table.Header>
+								<Table.Body>
+									{data.map((container) => (
+										<ContainerRow
+											key={container.containerId}
+											container={container}
+											runtimeWorkerId={runtimeWorkerId}
+											onActionComplete={() => refetch()}
+										/>
+									))}
+								</Table.Body>
+							</Table>
+						</div>
+					)}
+				</QueryState>
 			</div>
 		</LayerCard>
 	);

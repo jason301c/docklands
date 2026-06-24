@@ -16,6 +16,7 @@ import {
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
 import { SectionCard } from "@/components/shared/section-card";
+import { QueryState } from "@/components/shared/states";
 import { ShowServiceDatabaseBackups } from "./show-service-database-backups";
 
 type ServiceDatabaseEngine =
@@ -63,14 +64,23 @@ const ConnectionVariables = ({
 }: {
 	serviceDatabaseId: string;
 }) => {
-	const { data, isLoading } = api.serviceDatabase.connectionInfo.useQuery(
-		{ serviceDatabaseId },
-		{ enabled: !!serviceDatabaseId },
-	);
+	const { data, isLoading, isError } =
+		api.serviceDatabase.connectionInfo.useQuery(
+			{ serviceDatabaseId },
+			{ enabled: !!serviceDatabaseId },
+		);
 
 	if (isLoading) {
 		return (
 			<p className="text-sm text-kumo-subtle">Loading connection variables…</p>
+		);
+	}
+
+	if (isError) {
+		return (
+			<p className="text-sm text-kumo-danger">
+				Failed to load connection variables.
+			</p>
 		);
 	}
 
@@ -184,7 +194,7 @@ interface Props {
 }
 
 export const ShowServiceDatabases = ({ composeId }: Props) => {
-	const { data: databases } = api.serviceDatabase.byCompose.useQuery(
+	const databasesQuery = api.serviceDatabase.byCompose.useQuery(
 		{ composeId },
 		{ enabled: !!composeId },
 	);
@@ -193,28 +203,33 @@ export const ShowServiceDatabases = ({ composeId }: Props) => {
 		{ enabled: !!composeId },
 	);
 
-	if (!databases || databases.length === 0) {
-		return (
-			<LayerCard className="bg-kumo-canvas">
-				<div className="flex flex-col items-center gap-3 py-10 justify-center">
-					<DatabaseZap className="size-8 text-kumo-subtle" />
-					<span className="text-base text-kumo-subtle text-center">
-						No databases detected in this stack.
-					</span>
-				</div>
-			</LayerCard>
-		);
-	}
-
 	return (
-		<SectionCard title="Detected Databases" contentClassName="space-y-4">
-			{databases.map((database) => (
-				<ServiceDatabaseCard
-					key={database.serviceDatabaseId}
-					database={database}
-					runtimeWorkerId={compose?.runtimeWorkerId || undefined}
-				/>
-			))}
-		</SectionCard>
+		<QueryState
+			query={databasesQuery}
+			isEmpty={(databases) => databases.length === 0}
+			errorTitle="Failed to load detected databases"
+			empty={
+				<LayerCard className="bg-kumo-canvas">
+					<div className="flex flex-col items-center gap-3 py-10 justify-center">
+						<DatabaseZap className="size-8 text-kumo-subtle" />
+						<span className="text-base text-kumo-subtle text-center">
+							No databases detected in this stack.
+						</span>
+					</div>
+				</LayerCard>
+			}
+		>
+			{(databases) => (
+				<SectionCard title="Detected Databases" contentClassName="space-y-4">
+					{databases.map((database) => (
+						<ServiceDatabaseCard
+							key={database.serviceDatabaseId}
+							database={database}
+							runtimeWorkerId={compose?.runtimeWorkerId || undefined}
+						/>
+					))}
+				</SectionCard>
+			)}
+		</QueryState>
 	);
 };

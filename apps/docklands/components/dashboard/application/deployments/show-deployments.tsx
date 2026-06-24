@@ -19,6 +19,7 @@ import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { ErrorState } from "@/components/shared/states";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
 import { ShowRollbackSettings } from "../rollbacks/show-rollback-settings";
@@ -59,19 +60,25 @@ export const ShowDeployments = ({
 	const [activeLog, setActiveLog] = useState<
 		RouterOutputs["deployment"]["allByType"][number] | null
 	>(null);
-	const { data: deployments, isPending: isLoadingDeployments } =
-		api.deployment.allByType.useQuery(
-			{
-				id,
-				type,
-			},
-			{
-				enabled: !!id,
-				// Only poll while a build is in flight; stop once all are terminal.
-				refetchInterval: (query) =>
-					query.state.data?.some((d) => d.status === "running") ? 1000 : false,
-			},
-		);
+	const deploymentsQuery = api.deployment.allByType.useQuery(
+		{
+			id,
+			type,
+		},
+		{
+			enabled: !!id,
+			// Only poll while a build is in flight; stop once all are terminal.
+			refetchInterval: (query) =>
+				query.state.data?.some((d) => d.status === "running") ? 1000 : false,
+		},
+	);
+	const {
+		data: deployments,
+		isPending: isLoadingDeployments,
+		isError: isDeploymentsError,
+		error: deploymentsError,
+		refetch: refetchDeployments,
+	} = deploymentsQuery;
 
 	const utils = api.useUtils();
 	const { mutateAsync: rollback, isPending: isRollingBack } =
@@ -168,7 +175,13 @@ export const ShowDeployments = ({
 					</div>
 				)}
 
-				{isLoadingDeployments ? (
+				{isDeploymentsError ? (
+					<ErrorState
+						error={deploymentsError}
+						title="Failed to load deployments"
+						onRetry={() => refetchDeployments()}
+					/>
+				) : isLoadingDeployments ? (
 					<div className="flex w-full flex-row items-center justify-center gap-3 pt-10 min-h-[25vh]">
 						<Loader2 className="size-6 text-kumo-subtle animate-spin" />
 						<span className="text-base text-kumo-subtle">

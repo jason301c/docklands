@@ -7,6 +7,7 @@ import { LockKeyhole, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { QueryState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
 import { HandleSecurity } from "./handle-security";
 
@@ -17,12 +18,13 @@ interface Props {
 }
 
 export const ShowSecurity = ({ applicationId }: Props) => {
-	const { data, refetch } = api.application.one.useQuery(
+	const applicationQuery = api.application.one.useQuery(
 		{
 			applicationId,
 		},
 		{ enabled: !!applicationId },
 	);
+	const { data, refetch } = applicationQuery;
 
 	const { mutateAsync: deleteSecurity, isPending: isRemoving } =
 		api.security.delete.useMutation();
@@ -43,83 +45,90 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 				)}
 			</div>
 			<div className="flex flex-col gap-4">
-				{data?.security.length === 0 ? (
-					<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
-						<LockKeyhole className="size-8 text-kumo-subtle" />
-						<span className="text-base text-kumo-subtle">
-							No security configured
-						</span>
-						<HandleSecurity applicationId={applicationId}>
-							Add Security
-						</HandleSecurity>
-					</div>
-				) : (
-					<div className="flex flex-col pt-2">
-						<div className="flex flex-col gap-6 ">
-							{data?.security.map((security) => (
-								<div key={security.securityId}>
-									<div className="flex w-full flex-col md:flex-row justify-between md:items-center gap-4 md:gap-10 border rounded-lg p-4">
-										<div className="grid grid-cols-1 md:grid-cols-2 flex-col gap-4 md:gap-8">
-											<div className="flex flex-col gap-2">
-												<Label>Username</Label>
-												<Input
-													aria-label="Security username"
-													disabled
-													value={security.username}
-												/>
+				<QueryState
+					query={applicationQuery}
+					isEmpty={(data) => data.security.length === 0}
+					empty={
+						<div className="flex w-full flex-col items-center justify-center gap-3 pt-10">
+							<LockKeyhole className="size-8 text-kumo-subtle" />
+							<span className="text-base text-kumo-subtle">
+								No security configured
+							</span>
+							<HandleSecurity applicationId={applicationId}>
+								Add Security
+							</HandleSecurity>
+						</div>
+					}
+					errorTitle="Failed to load security rules"
+				>
+					{(data) => (
+						<div className="flex flex-col pt-2">
+							<div className="flex flex-col gap-6 ">
+								{data.security.map((security) => (
+									<div key={security.securityId}>
+										<div className="flex w-full flex-col md:flex-row justify-between md:items-center gap-4 md:gap-10 border rounded-lg p-4">
+											<div className="grid grid-cols-1 md:grid-cols-2 flex-col gap-4 md:gap-8">
+												<div className="flex flex-col gap-2">
+													<Label>Username</Label>
+													<Input
+														aria-label="Security username"
+														disabled
+														value={security.username}
+													/>
+												</div>
+												<div className="flex flex-col gap-2">
+													<Label>Password</Label>
+													<SensitiveInput
+														aria-label="Security password"
+														value={security.password}
+														readOnly
+													/>
+												</div>
 											</div>
-											<div className="flex flex-col gap-2">
-												<Label>Password</Label>
-												<SensitiveInput
-													aria-label="Security password"
-													value={security.password}
-													readOnly
+											<div className="flex flex-row gap-2">
+												<HandleSecurity
+													securityId={security.securityId}
+													applicationId={applicationId}
 												/>
-											</div>
-										</div>
-										<div className="flex flex-row gap-2">
-											<HandleSecurity
-												securityId={security.securityId}
-												applicationId={applicationId}
-											/>
-											<DialogAction
-												title="Delete Security"
-												description="Are you sure you want to delete this security?"
-												type="destructive"
-												onClick={async () => {
-													await deleteSecurity({
-														securityId: security.securityId,
-													})
-														.then(() => {
-															refetch();
-															utils.application.readTraefikConfig.invalidate({
-																applicationId,
-															});
-															toast.success("Security deleted successfully");
+												<DialogAction
+													title="Delete Security"
+													description="Are you sure you want to delete this security?"
+													type="destructive"
+													onClick={async () => {
+														await deleteSecurity({
+															securityId: security.securityId,
 														})
-														.catch((err) => {
-															logger.error("Failed to delete security", err);
-															toast.error("Error deleting security");
-														});
-												}}
-											>
-												<Button
-													aria-label="Delete security rule"
-													variant="ghost"
-													shape="square"
-													className="group hover:bg-kumo-danger/10"
-													loading={isRemoving}
+															.then(() => {
+																refetch();
+																utils.application.readTraefikConfig.invalidate({
+																	applicationId,
+																});
+																toast.success("Security deleted successfully");
+															})
+															.catch((err) => {
+																logger.error("Failed to delete security", err);
+																toast.error("Error deleting security");
+															});
+													}}
 												>
-													<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
-												</Button>
-											</DialogAction>
+													<Button
+														aria-label="Delete security rule"
+														variant="ghost"
+														shape="square"
+														className="group hover:bg-kumo-danger/10"
+														loading={isRemoving}
+													>
+														<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
+													</Button>
+												</DialogAction>
+											</div>
 										</div>
 									</div>
-								</div>
-							))}
+								))}
+							</div>
 						</div>
-					</div>
-				)}
+					)}
+				</QueryState>
 			</div>
 		</LayerCard>
 	);
