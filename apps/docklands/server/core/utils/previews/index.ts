@@ -1,8 +1,11 @@
 import { and, isNotNull, lt } from "drizzle-orm";
 import { scheduleJob } from "node-schedule";
 import { previewDeployments } from "@/server/core/db/schema";
+import { createLogger } from "@/server/core/lib/logger";
 import { removePreviewDeployment } from "@/server/core/services/preview-deployment";
 import { db } from "../../db/index";
+
+const logger = createLogger("preview-cleanup");
 
 // Hourly. Preview `expiresAt` is an ISO-8601 string, which sorts
 // lexicographically the same as chronologically, so a string `lt` comparison
@@ -27,8 +30,9 @@ export const reapExpiredPreviewDeployments = async () => {
 		try {
 			await removePreviewDeployment(preview.previewDeploymentId);
 		} catch (error) {
-			console.log(
-				`Error reaping expired preview ${preview.previewDeploymentId}: ${error}`,
+			logger.warn(
+				{ err: error, previewDeploymentId: preview.previewDeploymentId },
+				"Failed to reap expired preview deployment",
 			);
 		}
 	}
@@ -37,15 +41,15 @@ export const reapExpiredPreviewDeployments = async () => {
 };
 
 export const initPreviewCleanupCron = () => {
-	console.log("Setting up preview deployment cleanup cron job....");
+	logger.info("Setting up preview deployment cleanup cron job");
 	scheduleJob("preview-cleanup", PREVIEW_CLEANUP_CRON, async () => {
 		try {
 			const reaped = await reapExpiredPreviewDeployments();
 			if (reaped > 0) {
-				console.log(`Reaped ${reaped} expired preview deployment(s)`);
+				logger.info({ reaped }, "Reaped expired preview deployments");
 			}
 		} catch (error) {
-			console.log(`Error in preview cleanup cron: ${error}`);
+			logger.error({ err: error }, "Error in preview cleanup cron");
 		}
 	});
 };

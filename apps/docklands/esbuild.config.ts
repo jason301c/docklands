@@ -5,8 +5,12 @@ const result = dotenv.config({ path: ".env.production" });
 
 function prepareDefine(config: DotenvParseOutput | undefined) {
 	const define = {};
-	// @ts-expect-error
-	for (const [key, value] of Object.entries(config)) {
+	// `.env.production` is optional (it doesn't exist in the Docker build), so
+	// guard against an undefined parse result — otherwise Object.entries throws.
+	// When absent, `define` is empty and all env reads stay runtime-resolved.
+	// Do NOT put real secrets in `.env.production`: anything here is inlined into
+	// the bundle (except DATABASE_URL).
+	for (const [key, value] of Object.entries(config ?? {})) {
 		// Skip DATABASE_URL to allow runtime environment variable override
 		if (key === "DATABASE_URL") {
 			continue;

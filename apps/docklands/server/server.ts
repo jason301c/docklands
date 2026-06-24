@@ -88,16 +88,29 @@ void app.prepare().then(async () => {
 		runtimeWorker.listen(PORT, HOST);
 		logger.info({ host: HOST, port: PORT }, "server listening");
 		if (process.env.NODE_ENV === "production") {
-			createDefaultMiddlewares();
-			await initializeNetwork();
+			// Each bootstrap step is independently guarded: a failure in one
+			// (tunnels, cron, network, …) must not abort the rest — most importantly
+			// it must not prevent the deployment worker (below) from starting, or the
+			// instance would report healthy yet be unable to deploy.
+			const bootStep = async (step: string, fn: () => unknown) => {
+				try {
+					await fn();
+				} catch (err) {
+					logger.error({ err, step }, "bootstrap step failed (continuing)");
+				}
+			};
+			await bootStep("middlewares", () => createDefaultMiddlewares());
+			await bootStep("network", () => initializeNetwork());
 			// Restore any Cloudflare Tunnels (managed cloudflared) after the
 			// overlay network exists. Best-effort per tunnel.
-			await ensureTunnelRunning();
-			await initCronJobs();
-			await initCancelDeployments();
-			await initVolumeBackupsCronJobs();
-			initPreviewCleanupCron();
-			await sendDocklandsRestartNotifications();
+			await bootStep("tunnels", () => ensureTunnelRunning());
+			await bootStep("cron", () => initCronJobs());
+			await bootStep("cancel-deployments", () => initCancelDeployments());
+			await bootStep("volume-backups", () => initVolumeBackupsCronJobs());
+			await bootStep("preview-cleanup", () => initPreviewCleanupCron());
+			await bootStep("restart-notifications", () =>
+				sendDocklandsRestartNotifications(),
+			);
 		}
 		logger.info("starting deployment worker");
 		const { startDeploymentWorker } = await import("./queues/queueSetup");
