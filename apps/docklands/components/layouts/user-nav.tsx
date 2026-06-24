@@ -11,9 +11,20 @@ import {
 	AvatarImage,
 } from "@/components/shared/avatar";
 import { ModeToggle } from "@/components/shared/mode-toggle";
+import { navShortcutsForUrls } from "@/shared/dashboard-nav";
 import { getFallbackAvatarInitials } from "@/shared/utils";
 
-const _AUTO_CHECK_UPDATES_INTERVAL_MINUTES = 7;
+// Quick-access routes surfaced in the account dropdown. The routes, labels, and
+// permission gates are resolved from DASHBOARD_MENU via `navShortcutsForUrls`,
+// so this list can never drift from the sidebar's single source of truth (the
+// audit found a parallel hardcoded list here with an ungated host-metrics item).
+const USER_NAV_SHORTCUT_ROUTES = [
+	"/dashboard/settings/profile",
+	"/dashboard/workspace",
+	"/dashboard/host-metrics",
+	"/dashboard/proxy-files",
+	"/dashboard/container-runtime",
+];
 
 export const UserNav = () => {
 	const router = useRouter();
@@ -24,7 +35,10 @@ export const UserNav = () => {
 		data?.user?.email ||
 		"User";
 
-	// const { mutateAsync } = api.auth.logout.useMutation();
+	const shortcuts = navShortcutsForUrls(USER_NAV_SHORTCUT_ROUTES, {
+		auth: data,
+		permissions,
+	});
 
 	return (
 		<DropdownMenu>
@@ -73,50 +87,17 @@ export const UserNav = () => {
 				</div>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Group>
-					<DropdownMenu.Item
-						className="cursor-pointer"
-						onClick={() => {
-							router.push("/dashboard/settings/profile");
-						}}
-					>
-						Profile
-					</DropdownMenu.Item>
-					<DropdownMenu.Item
-						className="cursor-pointer"
-						onClick={() => {
-							router.push("/dashboard/workspace");
-						}}
-					>
-						Workspace
-					</DropdownMenu.Item>
-					<DropdownMenu.Item
-						className="cursor-pointer"
-						onClick={() => {
-							router.push("/dashboard/host-metrics");
-						}}
-					>
-						Host metrics
-					</DropdownMenu.Item>
-					{permissions?.traefikFiles.read && (
+					{shortcuts.map((item) => (
 						<DropdownMenu.Item
+							key={item.url}
 							className="cursor-pointer"
 							onClick={() => {
-								router.push("/dashboard/proxy-files");
+								router.push(item.url);
 							}}
 						>
-							Proxy files
+							{item.title}
 						</DropdownMenu.Item>
-					)}
-					{permissions?.docker.read && (
-						<DropdownMenu.Item
-							className="cursor-pointer"
-							onClick={() => {
-								router.push("/dashboard/container-runtime");
-							}}
-						>
-							Container runtime
-						</DropdownMenu.Item>
-					)}
+					))}
 				</DropdownMenu.Group>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Item
@@ -125,9 +106,6 @@ export const UserNav = () => {
 						await authClient.signOut().then(() => {
 							router.push("/");
 						});
-						// await mutateAsync().then(() => {
-						// 	router.push("/");
-						// });
 					}}
 				>
 					Log out

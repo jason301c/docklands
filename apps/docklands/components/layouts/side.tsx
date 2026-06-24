@@ -36,8 +36,9 @@ import {
 	type ExternalLink,
 	findActiveNavItem,
 	isActiveRoute,
+	type NavItem,
 } from "@/shared/dashboard-nav";
-import { isWorkspaceDetailPath } from "@/shared/routes";
+import { isWorkspaceDetailPath, workspaceOverviewPath } from "@/shared/routes";
 import { cn } from "@/shared/utils";
 import { EditInstance } from "../dashboard/organization/handle-organization";
 import { DialogAction } from "../shared/dialog-action";
@@ -219,8 +220,98 @@ function MobileCloser() {
 	return null;
 }
 
+/**
+ * Renders one nav group's items (single links and collapsible groups). Shared
+ * by the "Canvas" and "Control Plane" groups, which previously duplicated this
+ * exact Collapsible/SidebarMenuButton/SidebarMenuSub composition verbatim.
+ */
+function NavMenuItems({
+	items,
+	pathname,
+}: {
+	items: NavItem[];
+	pathname: string;
+}) {
+	return items.map((item) => {
+		const isSingle = item.isSingle !== false;
+		const isActive = isSingle
+			? isActiveRoute({ itemUrl: item.url, pathname })
+			: item.items.some((subItem) =>
+					isActiveRoute({ itemUrl: subItem.url, pathname }),
+				);
+
+		return (
+			<SidebarMenuItem key={item.title}>
+				{isSingle ? (
+					<SidebarMenuButton
+						href={item.url}
+						tooltip={item.title}
+						active={isActive}
+						icon={item.icon}
+						className={cn(isActive && "bg-kumo-fill")}
+					>
+						<span>{item.title}</span>
+					</SidebarMenuButton>
+				) : (
+					<Collapsible.Root
+						defaultOpen={isActive}
+						className="group/collapsible"
+					>
+						<Collapsible.Trigger
+							render={
+								<SidebarMenuButton
+									tooltip={item.title}
+									active={isActive}
+									icon={item.icon}
+								>
+									<span>{item.title}</span>
+									{item.items?.length && (
+										<ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+									)}
+								</SidebarMenuButton>
+							}
+						/>
+						<Collapsible.Panel>
+							<SidebarMenuSub>
+								{item.items?.map((subItem) => {
+									const subActive = isActiveRoute({
+										itemUrl: subItem.url,
+										pathname,
+									});
+
+									return (
+										<SidebarMenuSubItem key={subItem.title}>
+											<SidebarMenuSubButton
+												href={subItem.url}
+												active={subActive}
+												className={cn(subActive && "bg-kumo-fill")}
+											>
+												{subItem.icon && (
+													<span className="mr-2">
+														<subItem.icon
+															className={cn(
+																"h-4 w-4 text-kumo-subtle",
+																subActive && "text-kumo-brand",
+															)}
+														/>
+													</span>
+												)}
+												<span>{subItem.title}</span>
+											</SidebarMenuSubButton>
+										</SidebarMenuSubItem>
+									);
+								})}
+							</SidebarMenuSub>
+						</Collapsible.Panel>
+					</Collapsible.Root>
+				)}
+			</SidebarMenuItem>
+		);
+	});
+}
+
 export default function Page({ children }: Props) {
-	const [defaultOpen, setDefaultOpen] = useState<boolean | undefined>(
+	const [sidebarOpen, setSidebarOpen] = useState<boolean | undefined>(
 		undefined,
 	);
 	const [isLoaded, setIsLoaded] = useState(false);
@@ -231,7 +322,7 @@ export default function Page({ children }: Props) {
 			.find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
 			?.split("=")[1];
 
-		setDefaultOpen(cookieValue === undefined ? true : cookieValue === "true");
+		setSidebarOpen(cookieValue === undefined ? true : cookieValue === "true");
 		setIsLoaded(true);
 	}, []);
 
@@ -259,18 +350,17 @@ export default function Page({ children }: Props) {
 	const isSettingsPath = pathname.startsWith("/dashboard/settings");
 
 	if (!isLoaded) {
-		return <div className="w-full h-screen bg-kumo-canvas" />; // Placeholder mientras se carga
+		return <div className="w-full h-screen bg-kumo-canvas" />; // Placeholder while the persisted sidebar state loads
 	}
 
 	return (
 		<SidebarProvider
-			defaultOpen={defaultOpen}
-			open={defaultOpen}
+			open={sidebarOpen}
 			collapsible="icon"
 			variant="sidebar"
 			className="h-svh min-h-svh"
 			onOpenChange={(open) => {
-				setDefaultOpen(open);
+				setSidebarOpen(open);
 
 				// biome-ignore lint/suspicious/noDocumentCookie: this sets the cookie to keep the sidebar state.
 				document.cookie = `${SIDEBAR_COOKIE_NAME}=${open}`;
@@ -285,174 +375,19 @@ export default function Page({ children }: Props) {
 			<MobileCloser />
 			<Sidebar className="h-svh min-h-svh" contentClassName="h-svh min-h-svh">
 				<SidebarHeader>
-					{/* <SidebarMenuButton
-						className="group-data-[collapsible=icon]:!p-0"
-						size="lg"
-					> */}
 					<LogoWrapper />
-					{/* </SidebarMenuButton> */}
 				</SidebarHeader>
 				<SidebarContent>
 					<SidebarGroup>
 						<SidebarGroupLabel>Canvas</SidebarGroupLabel>
 						<SidebarMenu>
-							{filteredHome.map((item) => {
-								const isSingle = item.isSingle !== false;
-								const isActive = isSingle
-									? isActiveRoute({ itemUrl: item.url, pathname })
-									: item.items.some((item) =>
-											isActiveRoute({ itemUrl: item.url, pathname }),
-										);
-
-								return (
-									<SidebarMenuItem key={item.title}>
-										{isSingle ? (
-											<SidebarMenuButton
-												href={item.url}
-												tooltip={item.title}
-												active={isActive}
-												icon={item.icon}
-												className={cn(isActive && "bg-kumo-fill")}
-											>
-												<span>{item.title}</span>
-											</SidebarMenuButton>
-										) : (
-											<Collapsible.Root
-												defaultOpen={isActive}
-												className="group/collapsible"
-											>
-												<Collapsible.Trigger
-													render={
-														<SidebarMenuButton
-															tooltip={item.title}
-															active={isActive}
-															icon={item.icon}
-														>
-															<span>{item.title}</span>
-															{item.items?.length && (
-																<ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-															)}
-														</SidebarMenuButton>
-													}
-												/>
-												<Collapsible.Panel>
-													<SidebarMenuSub>
-														{item.items?.map((subItem) => {
-															const subActive = isActiveRoute({
-																itemUrl: subItem.url,
-																pathname,
-															});
-
-															return (
-																<SidebarMenuSubItem key={subItem.title}>
-																	<SidebarMenuSubButton
-																		href={subItem.url}
-																		active={subActive}
-																		className={cn(subActive && "bg-kumo-fill")}
-																	>
-																		{subItem.icon && (
-																			<span className="mr-2">
-																				<subItem.icon
-																					className={cn(
-																						"h-4 w-4 text-kumo-subtle",
-																						subActive && "text-kumo-brand",
-																					)}
-																				/>
-																			</span>
-																		)}
-																		<span>{subItem.title}</span>
-																	</SidebarMenuSubButton>
-																</SidebarMenuSubItem>
-															);
-														})}
-													</SidebarMenuSub>
-												</Collapsible.Panel>
-											</Collapsible.Root>
-										)}
-									</SidebarMenuItem>
-								);
-							})}
+							<NavMenuItems items={filteredHome} pathname={pathname} />
 						</SidebarMenu>
 					</SidebarGroup>
 					<SidebarGroup>
 						<SidebarGroupLabel>Control Plane</SidebarGroupLabel>
 						<SidebarMenu className="gap-1">
-							{filteredSettings.map((item) => {
-								const isSingle = item.isSingle !== false;
-								const isActive = isSingle
-									? isActiveRoute({ itemUrl: item.url, pathname })
-									: item.items.some((item) =>
-											isActiveRoute({ itemUrl: item.url, pathname }),
-										);
-
-								return (
-									<SidebarMenuItem key={item.title}>
-										{isSingle ? (
-											<SidebarMenuButton
-												href={item.url}
-												tooltip={item.title}
-												active={isActive}
-												icon={item.icon}
-												className={cn(isActive && "bg-kumo-fill")}
-											>
-												<span>{item.title}</span>
-											</SidebarMenuButton>
-										) : (
-											<Collapsible.Root
-												defaultOpen={isActive}
-												className="group/collapsible"
-											>
-												<Collapsible.Trigger
-													render={
-														<SidebarMenuButton
-															tooltip={item.title}
-															active={isActive}
-															icon={item.icon}
-														>
-															<span>{item.title}</span>
-															{item.items?.length && (
-																<ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-															)}
-														</SidebarMenuButton>
-													}
-												/>
-												<Collapsible.Panel>
-													<SidebarMenuSub>
-														{item.items?.map((subItem) => {
-															const subActive = isActiveRoute({
-																itemUrl: subItem.url,
-																pathname,
-															});
-
-															return (
-																<SidebarMenuSubItem key={subItem.title}>
-																	<SidebarMenuSubButton
-																		href={subItem.url}
-																		active={subActive}
-																		className={cn(subActive && "bg-kumo-fill")}
-																	>
-																		{subItem.icon && (
-																			<span className="mr-2">
-																				<subItem.icon
-																					className={cn(
-																						"h-4 w-4 text-kumo-subtle",
-																						subActive && "text-kumo-brand",
-																					)}
-																				/>
-																			</span>
-																		)}
-																		<span>{subItem.title}</span>
-																	</SidebarMenuSubButton>
-																</SidebarMenuSubItem>
-															);
-														})}
-													</SidebarMenuSub>
-												</Collapsible.Panel>
-											</Collapsible.Root>
-										)}
-									</SidebarMenuItem>
-								);
-							})}
+							<NavMenuItems items={filteredSettings} pathname={pathname} />
 						</SidebarMenu>
 					</SidebarGroup>
 					<SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -499,9 +434,17 @@ export default function Page({ children }: Props) {
 								<SidebarTrigger className="-ml-1" />
 								<Separator orientation="vertical" className="mr-2 h-4" />
 								<Breadcrumbs>
-									<Breadcrumbs.Link href={activeItem?.url || "/"}>
-										{activeItem?.title}
+									<Breadcrumbs.Link href={workspaceOverviewPath}>
+										Dashboard
 									</Breadcrumbs.Link>
+									{activeItem && (
+										<>
+											<Breadcrumbs.Separator />
+											<Breadcrumbs.Current>
+												{activeItem.title}
+											</Breadcrumbs.Current>
+										</>
+									)}
 								</Breadcrumbs>
 							</div>
 							<TimeBadge />
