@@ -29,6 +29,7 @@ vi.mock("@/server/core/db", () => {
 
 	return {
 		db: {
+			execute: vi.fn(() => Promise.resolve([])),
 			select: vi.fn(() => chain),
 			insert: vi.fn(() => ({
 				values: () => ({ returning: () => Promise.resolve([{}]) }),

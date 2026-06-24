@@ -3,8 +3,8 @@ import { GET as healthGet } from "@/app/api/health/route";
 import { POST as githubProviderWebhookPost } from "@/app/api/providers/github/webhook/route";
 
 describe("App Router route handlers", () => {
-	it("returns the health payload", async () => {
-		const response = healthGet();
+	it("returns ok when the database is reachable", async () => {
+		const response = await healthGet();
 
 		expect(response.status).toBe(200);
 		expect(await response.json()).toEqual({ ok: true });
