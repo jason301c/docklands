@@ -171,7 +171,7 @@ export const HandleWorkspace = ({ workspaceId }: Props) => {
 						</DropdownMenu.Item>
 					) : (
 						((
-							<Button>
+							<Button variant="primary">
 								<PlusIcon className="h-4 w-4" />
 								Create workspace
 							</Button>

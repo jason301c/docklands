@@ -11,6 +11,13 @@ interface SectionCardProps
 	icon?: ComponentType<{ className?: string }>;
 	/** Optional trailing header actions, right-aligned on wide viewports. */
 	actions?: ReactNode;
+	/**
+	 * Title scale. `"sm"` (default) is the standard section heading; `"lg"` is a
+	 * larger page heading and renders in the Fraunces display serif automatically.
+	 */
+	size?: "sm" | "lg";
+	/** Force the Fraunces display serif even at `"sm"` size (`"lg"` is always serif). */
+	serif?: boolean;
 	/** Extra classes for the body region below the header divider. */
 	contentClassName?: string;
 	children?: ReactNode;
@@ -42,24 +49,33 @@ interface SectionCardProps
  *
  * Defaults merge via tailwind-merge, so a call site can still override — e.g.
  * `contentClassName="space-y-6"` for body rhythm, or `className="gap-0"`.
+ *
+ * It defaults to `flex-1` so a section that is the sole child of the dashboard
+ * layout's full-height column stretches to fill the page; in a content-height
+ * wrapper (multiple stacked sections) this is a no-op. Pass `className="grow-0"`
+ * to opt out.
  */
 export function SectionCard({
 	title,
 	description,
 	icon,
 	actions,
+	size,
+	serif,
 	children,
 	className,
 	contentClassName,
 	...props
 }: SectionCardProps) {
 	return (
-		<PageSection className={cn("gap-4", className)} {...props}>
+		<PageSection className={cn("flex-1 gap-4", className)} {...props}>
 			<PageHeader
 				title={title}
 				description={description}
 				icon={icon}
 				actions={actions}
+				size={size}
+				serif={serif}
 				className="border-b border-kumo-hairline pb-4"
 			/>
 			{children != null ? (

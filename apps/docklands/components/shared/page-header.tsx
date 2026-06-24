@@ -8,6 +8,13 @@ interface PageHeaderProps {
 	icon?: ComponentType<{ className?: string }>;
 	/** Optional trailing actions, right-aligned on wide viewports. */
 	actions?: ReactNode;
+	/**
+	 * Title scale. `"sm"` (default) is the standard section heading; `"lg"` is a
+	 * larger page heading and renders in the Fraunces display serif automatically.
+	 */
+	size?: "sm" | "lg";
+	/** Force the Fraunces display serif even at `"sm"` size (`"lg"` is always serif). */
+	serif?: boolean;
 	className?: string;
 }
 
@@ -21,8 +28,11 @@ export function PageHeader({
 	description,
 	icon: Icon,
 	actions,
+	size = "sm",
+	serif,
 	className,
 }: PageHeaderProps) {
+	const isSerif = serif || size === "lg";
 	return (
 		<div
 			className={cn(
@@ -31,7 +41,13 @@ export function PageHeader({
 			)}
 		>
 			<div className="space-y-1">
-				<h3 className="flex items-center gap-2 text-xl font-semibold">
+				<h3
+					className={cn(
+						"flex items-center gap-2 font-semibold",
+						size === "lg" ? "text-3xl tracking-tight" : "text-xl",
+						isSerif && "font-display",
+					)}
+				>
 					{Icon ? <Icon className="size-5 text-kumo-subtle" /> : null}
 					{title}
 				</h3>

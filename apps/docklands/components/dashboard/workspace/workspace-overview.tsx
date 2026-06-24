@@ -1,7 +1,12 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import {
-	AlertTriangle,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import {
+	Ban,
 	BookIcon,
 	ChevronDown,
 	CircuitBoard,
@@ -10,15 +15,14 @@ import {
 	GlobeIcon,
 	LayoutGrid,
 	List,
-	MoreHorizontalIcon,
+	Pencil,
 	Rocket,
-	TrashIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
-import { createClientLogger } from "@/client/lib/logger";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { HandleWorkspace } from "@/components/dashboard/workspace/manage/handle-workspace";
 import {
 	LibsqlIcon,
@@ -28,13 +32,9 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
-import { Dialog } from "@/components/shared/dialog";
 import { SectionCard } from "@/components/shared/section-card";
-import { toast } from "@/components/shared/toast";
 import { workspaceEnvironmentPath } from "@/shared/routes";
 import { cn } from "@/shared/utils";
-
-const logger = createClientLogger("workspace");
 
 type ServiceStatus = "idle" | "running" | "done" | "error";
 
@@ -157,38 +157,242 @@ function ServicePreview({ services }: { services: CardService[] }) {
 	);
 }
 
-function statusDotClass(online: number, total: number, hasError: boolean) {
-	if (total === 0) return "bg-kumo-subtle/40";
-	if (hasError) return "bg-kumo-danger";
-	if (online === 0) return "bg-kumo-subtle/40";
-	if (online === total) return "bg-kumo-success";
-	return "bg-kumo-warning";
+function servicesLabel(online: number, total: number) {
+	if (total === 0) return "No services";
+	return `${online}/${total} ${total === 1 ? "service" : "services"} online`;
+}
+
+// Preset accent colors a user can apply to a workspace card.
+const WORKSPACE_COLORS = [
+	{ name: "Red", value: "#ef4444" },
+	{ name: "Orange", value: "#f97316" },
+	{ name: "Amber", value: "#f59e0b" },
+	{ name: "Lime", value: "#84cc16" },
+	{ name: "Green", value: "#22c55e" },
+	{ name: "Teal", value: "#14b8a6" },
+	{ name: "Sky", value: "#0ea5e9" },
+	{ name: "Blue", value: "#3b82f6" },
+	{ name: "Violet", value: "#8b5cf6" },
+	{ name: "Pink", value: "#ec4899" },
+] as const;
+
+// A workspace's accent color shows as a crisp stripe down the card/row's left
+// edge — a clean color cue that keeps the card content fully neutral.
+function AccentStripe({ color }: { color: string | null | undefined }) {
+	if (!color) return null;
+	return (
+		<span
+			aria-hidden
+			className="absolute inset-y-0 left-0 w-1"
+			style={{ backgroundColor: color }}
+		/>
+	);
+}
+
+// Inline workspace rename state, shared by the grid card and the list row so the
+// title field (left) and the rename pencil (right) stay in sync.
+function useWorkspaceRename(workspace: Workspace) {
+	const utils = api.useUtils();
+	const [editing, setEditing] = useState(false);
+	const [value, setValue] = useState(workspace.name);
+
+	const mutation = api.workspaces.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Workspace renamed",
+			errorMessage: "Failed to rename workspace",
+			loggerScope: "workspace",
+			invalidate: () => utils.workspaces.all.invalidate(),
+			onSuccess: () => setEditing(false),
+		}),
+	);
+
+	const start = () => {
+		setValue(workspace.name);
+		setEditing(true);
+	};
+	const cancel = () => {
+		setEditing(false);
+		setValue(workspace.name);
+	};
+	const submit = () => {
+		const name = value.trim();
+		if (!name || name === workspace.name) {
+			cancel();
+			return;
+		}
+		mutation.mutate({ workspaceId: workspace.workspaceId, name });
+	};
+
+	return {
+		editing,
+		value,
+		setValue,
+		start,
+		cancel,
+		submit,
+		isPending: mutation.isPending,
+	};
+}
+
+type WorkspaceRename = ReturnType<typeof useWorkspaceRename>;
+
+// The workspace title: an inline input while renaming, otherwise a link.
+function WorkspaceTitleField({
+	workspace,
+	href,
+	rename,
+}: {
+	workspace: Workspace;
+	href: string | null;
+	rename: WorkspaceRename;
+}) {
+	if (rename.editing) {
+		return (
+			<input
+				// biome-ignore lint/a11y/noAutofocus: inline rename should focus immediately
+				autoFocus
+				aria-label="Workspace name"
+				value={rename.value}
+				disabled={rename.isPending}
+				onChange={(event) => rename.setValue(event.target.value)}
+				onBlur={rename.submit}
+				onKeyDown={(event) => {
+					if (event.key === "Enter") {
+						event.preventDefault();
+						rename.submit();
+					} else if (event.key === "Escape") {
+						event.preventDefault();
+						rename.cancel();
+					}
+				}}
+				className="min-w-0 flex-1 rounded-md border border-kumo-line bg-kumo-base px-2 py-1 text-sm font-semibold outline-none focus:border-kumo-focus"
+			/>
+		);
+	}
+
+	if (href) {
+		return (
+			<Link
+				href={href}
+				className="truncate text-sm font-semibold hover:underline"
+			>
+				{workspace.name}
+			</Link>
+		);
+	}
+	return (
+		<span className="truncate text-sm font-semibold">{workspace.name}</span>
+	);
+}
+
+function RenameButton({ rename }: { rename: WorkspaceRename }) {
+	return (
+		<button
+			type="button"
+			aria-label="Rename workspace"
+			onClick={rename.start}
+			className="flex size-6 shrink-0 items-center justify-center rounded-md text-kumo-subtle transition-colors hover:bg-kumo-fill hover:text-kumo-default"
+		>
+			<Pencil className="size-3.5" />
+		</button>
+	);
+}
+
+// Per-workspace accent color picker: a swatch trigger opening a preset palette.
+function WorkspaceColorPicker({ workspace }: { workspace: Workspace }) {
+	const utils = api.useUtils();
+	const [open, setOpen] = useState(false);
+	const current = workspace.color ?? null;
+
+	const update = api.workspaces.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Workspace color updated",
+			errorMessage: "Failed to update workspace color",
+			loggerScope: "workspace",
+			invalidate: () => utils.workspaces.all.invalidate(),
+		}),
+	);
+
+	const choose = (color: string | null) => {
+		setOpen(false);
+		if (color === current) return;
+		update.mutate({ workspaceId: workspace.workspaceId, color });
+	};
+
+	return (
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger
+				render={
+					<button
+						type="button"
+						aria-label="Workspace color"
+						className="flex size-6 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-kumo-fill"
+					>
+						<span
+							className={cn(
+								"size-4 rounded-full border border-black/10",
+								!current && "bg-kumo-fill",
+							)}
+							style={current ? { backgroundColor: current } : undefined}
+						/>
+					</button>
+				}
+			/>
+			<PopoverContent className="w-auto p-2" align="end">
+				<div className="grid grid-cols-5 gap-1.5">
+					<button
+						type="button"
+						aria-label="Default color"
+						title="Default"
+						onClick={() => choose(null)}
+						className={cn(
+							"flex size-7 items-center justify-center rounded-full border border-kumo-line text-kumo-subtle hover:bg-kumo-fill",
+							current === null && "ring-2 ring-kumo-focus ring-offset-1",
+						)}
+					>
+						<Ban className="size-3.5" />
+					</button>
+					{WORKSPACE_COLORS.map((color) => (
+						<button
+							key={color.value}
+							type="button"
+							aria-label={color.name}
+							title={color.name}
+							onClick={() => choose(color.value)}
+							className={cn(
+								"size-7 rounded-full border border-black/10",
+								current === color.value &&
+									"ring-2 ring-kumo-focus ring-offset-1",
+							)}
+							style={{ backgroundColor: color.value }}
+						/>
+					))}
+				</div>
+			</PopoverContent>
+		</Popover>
+	);
 }
 
 function ProjectFooter({
-	environmentName,
+	environmentCount,
 	online,
 	total,
 	hasError,
 }: {
-	environmentName: string;
+	environmentCount: number;
 	online: number;
 	total: number;
 	hasError: boolean;
 }) {
 	return (
-		<div className="flex items-center gap-2 px-5 py-3 text-xs text-kumo-subtle">
-			<span
-				className={cn(
-					"size-2 shrink-0 rounded-full",
-					statusDotClass(online, total, hasError),
-				)}
-				aria-hidden
-			/>
-			<span className="truncate">{environmentName}</span>
-			<span aria-hidden>·</span>
+		<div className="flex items-center gap-1.5 text-xs text-kumo-subtle">
 			<span className="whitespace-nowrap">
-				{online}/{total} {total === 1 ? "service" : "services"} online
+				{environmentCount}{" "}
+				{environmentCount === 1 ? "environment" : "environments"}
+			</span>
+			<span aria-hidden>·</span>
+			<span className={cn("whitespace-nowrap", hasError && "text-kumo-danger")}>
+				{servicesLabel(online, total)}
 			</span>
 		</div>
 	);
@@ -252,103 +456,6 @@ function FirstRunWorkspacePanel({
 	);
 }
 
-// Per-workspace management (rename/tags/delete). It hangs off each card/row so
-// the overview stays the single workspace surface.
-function WorkspaceRowActions({
-	workspaceId,
-	serviceCount,
-}: {
-	workspaceId: string;
-	serviceCount: number;
-}) {
-	const utils = api.useUtils();
-	const { permissions } = usePermissions();
-	const { mutateAsync } = api.workspaces.remove.useMutation();
-	const emptyServices = serviceCount === 0;
-
-	return (
-		<DropdownMenu>
-			<DropdownMenu.Trigger
-				render={
-					(
-						<Button
-							aria-label="Workspace actions"
-							variant="ghost"
-							shape="square"
-						>
-							<MoreHorizontalIcon className="size-5" />
-						</Button>
-					) as never
-				}
-			/>
-			<DropdownMenu.Content
-				className="w-[200px] space-y-2 overflow-y-auto max-h-[280px]"
-				onClick={(e) => e.stopPropagation()}
-			>
-				<DropdownMenu.Group>
-					<DropdownMenu.Label className="font-normal">
-						Actions
-					</DropdownMenu.Label>
-				</DropdownMenu.Group>
-				<div onClick={(e) => e.stopPropagation()}>
-					<HandleWorkspace workspaceId={workspaceId} />
-				</div>
-				{permissions?.workspace.delete && (
-					<div onClick={(e) => e.stopPropagation()}>
-						<Dialog.Root role="alertdialog">
-							<Dialog.Trigger className="w-full">
-								<DropdownMenu.Item
-									className="w-full cursor-pointer space-x-3"
-									onSelect={(e) => e.preventDefault()}
-								>
-									<TrashIcon className="size-4" />
-									<span>Delete</span>
-								</DropdownMenu.Item>
-							</Dialog.Trigger>
-							<Dialog>
-								<Dialog.Header>
-									<Dialog.Title>Delete workspace?</Dialog.Title>
-									{!emptyServices ? (
-										<div className="flex flex-row gap-4 rounded-lg bg-kumo-warning-tint p-2">
-											<AlertTriangle className="text-kumo-warning" />
-											<span className="text-sm text-kumo-warning">
-												Delete services first.
-											</span>
-										</div>
-									) : (
-										<Dialog.Description>
-											This action cannot be undone
-										</Dialog.Description>
-									)}
-								</Dialog.Header>
-								<Dialog.Footer>
-									<Dialog.Close>Cancel</Dialog.Close>
-									<Dialog.Close
-										disabled={!emptyServices}
-										onClick={async () => {
-											try {
-												await mutateAsync({ workspaceId });
-												toast.success("Workspace deleted");
-											} catch (err) {
-												logger.error("Error deleting workspace", err);
-												toast.error("Error deleting this workspace");
-											} finally {
-												await utils.workspaces.all.invalidate();
-											}
-										}}
-									>
-										Delete
-									</Dialog.Close>
-								</Dialog.Footer>
-							</Dialog>
-						</Dialog.Root>
-					</div>
-				)}
-			</DropdownMenu.Content>
-		</DropdownMenu>
-	);
-}
-
 type SortKey = "recent" | "name";
 type ViewMode = "grid" | "list";
 
@@ -360,14 +467,29 @@ const sortOptions: { value: SortKey; label: string }[] = [
 type ProjectEntry = {
 	workspace: Workspace;
 	environment: WorkspaceEnvironment | undefined;
+	environmentCount: number;
 	services: CardService[];
 	online: number;
 	total: number;
 	hasError: boolean;
 };
 
-function ProjectCard({ entry }: { entry: ProjectEntry }) {
-	const { workspace, environment, services, online, total, hasError } = entry;
+function ProjectCard({
+	entry,
+	canManage,
+}: {
+	entry: ProjectEntry;
+	canManage: boolean;
+}) {
+	const {
+		workspace,
+		environment,
+		environmentCount,
+		services,
+		online,
+		total,
+		hasError,
+	} = entry;
 	const href = environment
 		? workspaceEnvironmentPath({
 				workspaceId: workspace.workspaceId,
@@ -375,93 +497,105 @@ function ProjectCard({ entry }: { entry: ProjectEntry }) {
 			})
 		: null;
 
-	const body = (
+	const rename = useWorkspaceRename(workspace);
+
+	const navBody = (
 		<>
-			<div className="flex items-start gap-2 px-5 pt-4 pb-3">
-				<h3 className="min-w-0 flex-1 truncate pr-1 text-sm font-semibold">
-					{workspace.name}
-				</h3>
-			</div>
-			<div className="flex flex-1 flex-col px-5 pb-2">
-				<ServicePreview services={services} />
-			</div>
+			<ServicePreview services={services} />
 			<ProjectFooter
-				environmentName={environment?.name ?? "No environment"}
+				environmentCount={environmentCount}
 				online={online}
 				total={total}
 				hasError={hasError}
 			/>
 		</>
 	);
+	const navClassName = "flex flex-1 flex-col gap-4";
 
 	return (
-		<div className="group relative flex flex-col overflow-hidden rounded-xl border bg-kumo-canvas transition-colors hover:border-kumo-line">
+		<div className="group relative flex flex-col gap-4 overflow-hidden rounded-xl border bg-kumo-canvas p-5 transition-colors hover:border-kumo-line">
+			<AccentStripe color={workspace.color} />
+			<div className="flex items-center gap-2">
+				<div className="flex min-w-0 flex-1">
+					<WorkspaceTitleField
+						workspace={workspace}
+						href={href}
+						rename={rename}
+					/>
+				</div>
+				{canManage && (
+					<div className="flex shrink-0 items-center gap-0.5">
+						<RenameButton rename={rename} />
+						<WorkspaceColorPicker workspace={workspace} />
+					</div>
+				)}
+			</div>
 			{href ? (
-				<Link href={href} className="flex flex-1 flex-col">
-					{body}
+				<Link href={href} className={navClassName}>
+					{navBody}
 				</Link>
 			) : (
-				<div className="flex flex-1 flex-col">{body}</div>
+				<div className={navClassName}>{navBody}</div>
 			)}
-			<div className="absolute right-2 top-2">
-				<WorkspaceRowActions
-					workspaceId={workspace.workspaceId}
-					serviceCount={total}
-				/>
-			</div>
 		</div>
 	);
 }
 
-function ProjectRow({ entry }: { entry: ProjectEntry }) {
-	const { workspace, environment, online, total, hasError } = entry;
+function ProjectRow({
+	entry,
+	canManage,
+}: {
+	entry: ProjectEntry;
+	canManage: boolean;
+}) {
+	const { workspace, environment, environmentCount, online, total, hasError } =
+		entry;
 	const href = environment
 		? workspaceEnvironmentPath({
 				workspaceId: workspace.workspaceId,
 				environmentId: environment.environmentId,
 			})
 		: null;
+	const rename = useWorkspaceRename(workspace);
 
-	const body = (
-		<>
-			<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
-				<BookIcon className="size-4 text-kumo-subtle" />
-			</span>
-			<div className="flex min-w-0 flex-1 flex-col">
-				<span className="truncate text-sm">{workspace.name}</span>
-				<span className="flex items-center gap-2 truncate text-xs text-kumo-subtle">
-					<span
-						className={cn(
-							"size-2 shrink-0 rounded-full",
-							statusDotClass(online, total, hasError),
-						)}
-						aria-hidden
-					/>
-					{environment?.name ?? "No environment"} · {online}/{total}{" "}
-					{total === 1 ? "service" : "services"} online
-				</span>
-			</div>
-		</>
+	const iconBox = (
+		<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
+			<BookIcon className="size-4 text-kumo-subtle" />
+		</span>
 	);
 
 	return (
-		<li className="flex items-center gap-2 rounded-lg border bg-kumo-canvas pr-2 transition-colors hover:border-kumo-line">
+		<li className="group relative flex items-center gap-4 overflow-hidden rounded-lg border bg-kumo-canvas px-4 py-3 transition-colors hover:border-kumo-line">
+			<AccentStripe color={workspace.color} />
 			{href ? (
-				<Link
-					href={href}
-					className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3"
-				>
-					{body}
+				<Link href={href} className="shrink-0">
+					{iconBox}
 				</Link>
 			) : (
-				<div className="flex min-w-0 flex-1 items-center gap-4 px-4 py-3">
-					{body}
+				iconBox
+			)}
+			<div className="flex min-w-0 flex-1 flex-col">
+				<div className="flex min-w-0">
+					<WorkspaceTitleField
+						workspace={workspace}
+						href={href}
+						rename={rename}
+					/>
+				</div>
+				<span className="truncate text-xs text-kumo-subtle">
+					{environmentCount}{" "}
+					{environmentCount === 1 ? "environment" : "environments"} ·{" "}
+					<span className={cn(hasError && "text-kumo-danger")}>
+						{servicesLabel(online, total)}
+					</span>
+				</span>
+			</div>
+			{canManage && (
+				<div className="flex shrink-0 items-center gap-0.5">
+					<RenameButton rename={rename} />
+					<WorkspaceColorPicker workspace={workspace} />
 				</div>
 			)}
-			<WorkspaceRowActions
-				workspaceId={workspace.workspaceId}
-				serviceCount={total}
-			/>
 		</li>
 	);
 }
@@ -484,6 +618,7 @@ export const WorkspaceOverview = () => {
 			return {
 				workspace,
 				environment: pickEnvironment(workspace),
+				environmentCount: workspace.environments.length,
 				services,
 				online,
 				total: services.length,
@@ -511,9 +646,9 @@ export const WorkspaceOverview = () => {
 
 	return (
 		<SectionCard
-			icon={LayoutGrid}
 			title="Workspaces"
-			description="Your project workspaces and the services running in each."
+			size="lg"
+			className="bg-kumo-base"
 			actions={canCreateWorkspaces ? <HandleWorkspace /> : undefined}
 			contentClassName="space-y-5"
 		>
@@ -588,13 +723,21 @@ export const WorkspaceOverview = () => {
 					) : view === "grid" ? (
 						<div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
 							{projects.map((entry) => (
-								<ProjectCard key={entry.workspace.workspaceId} entry={entry} />
+								<ProjectCard
+									key={entry.workspace.workspaceId}
+									entry={entry}
+									canManage={canCreateWorkspaces}
+								/>
 							))}
 						</div>
 					) : (
 						<ul className="flex flex-col gap-2">
 							{projects.map((entry) => (
-								<ProjectRow key={entry.workspace.workspaceId} entry={entry} />
+								<ProjectRow
+									key={entry.workspace.workspaceId}
+									entry={entry}
+									canManage={canCreateWorkspaces}
+								/>
 							))}
 						</ul>
 					)}
