@@ -15,8 +15,10 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-
-const DATABASE_PASSWORD_REGEX = /^[a-zA-Z0-9@#%^&*()_+\-=[\]{}|;:,.<>?~`]*$/;
+import {
+	DATABASE_PASSWORD_MESSAGE,
+	DATABASE_PASSWORD_REGEX,
+} from "@/shared/validation/database-password";
 
 const updatePasswordSchema = z
 	.object({
@@ -24,8 +26,7 @@ const updatePasswordSchema = z
 			.string()
 			.min(1, "Password is required")
 			.regex(DATABASE_PASSWORD_REGEX, {
-				message:
-					"Password contains invalid characters. Please avoid: $ ! ' \" \\ / and space characters",
+				message: DATABASE_PASSWORD_MESSAGE,
 			}),
 		confirmPassword: z.string().min(1, "Please confirm the password"),
 	})

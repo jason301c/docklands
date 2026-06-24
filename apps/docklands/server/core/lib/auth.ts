@@ -46,6 +46,12 @@ const resolveBaseURL = (): string | undefined => {
 	return undefined;
 };
 
+// When the instance is served over HTTPS (BETTER_AUTH_URL is https://…), mark
+// cookies Secure so the session can't ride a downgraded plain-HTTP request.
+// Plain-HTTP LAN/IP installs (no Secure) keep working because the base URL is
+// http there.
+const isHttpsBaseURL = (resolveBaseURL() ?? "").startsWith("https://");
+
 const { handler, api } = betterAuth({
 	baseURL: resolveBaseURL(),
 	database: drizzleAdapter(db, {
@@ -67,14 +73,14 @@ const { handler, api } = betterAuth({
 		window: 60,
 		max: 60,
 	},
-	// Self-hosted installs are commonly reached over plain HTTP on a LAN/IP, so
-	// cookies are not forced to Secure. Tightening this for HTTPS-behind-a-domain
-	// is a separate decision.
+	// Plain-HTTP LAN/IP installs can't use Secure cookies; HTTPS installs do (see
+	// isHttpsBaseURL). This keeps IP-only setups working while hardening the
+	// common behind-a-domain-over-HTTPS deployment against cookie downgrade.
 	advanced: {
-		useSecureCookies: false,
+		useSecureCookies: isHttpsBaseURL,
 		defaultCookieAttributes: {
 			sameSite: "lax",
-			secure: false,
+			secure: isHttpsBaseURL,
 			httpOnly: true,
 			path: "/",
 		},

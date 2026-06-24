@@ -15,6 +15,27 @@ const configuredBuildCpus = Number.parseInt(
 );
 const buildCpus = configuredBuildCpus > 0 ? configuredBuildCpus : 4;
 
+// Content-Security-Policy. Kept deliberately permissive for scripts/styles
+// (Next injects inline bootstrap scripts and Tailwind/Kumo inject styles, and we
+// run no nonce pipeline) so it can't white-screen the app, while adding the
+// restrictions the app was missing beyond frame-ancestors: default-src,
+// object-src, base-uri, form-action, and scoped img/connect. `unsafe-eval` is
+// dev-only (Turbopack needs it). `img-src https:` allows remote service icons;
+// `connect-src ws:/wss:` allows the log/terminal/stats WebSockets.
+const isDev = process.env.NODE_ENV !== "production";
+const contentSecurityPolicy = [
+	"default-src 'self'",
+	`script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+	"style-src 'self' 'unsafe-inline'",
+	"img-src 'self' data: blob: https:",
+	"font-src 'self' data:",
+	"connect-src 'self' ws: wss:",
+	"frame-ancestors 'none'",
+	"base-uri 'self'",
+	"form-action 'self'",
+	"object-src 'none'",
+].join("; ");
+
 /** @type {import("next").NextConfig} */
 const nextConfig = {
 	reactStrictMode: true,
@@ -44,7 +65,7 @@ const nextConfig = {
 					},
 					{
 						key: "Content-Security-Policy",
-						value: "frame-ancestors 'none'",
+						value: contentSecurityPolicy,
 					},
 					{
 						key: "X-Content-Type-Options",
