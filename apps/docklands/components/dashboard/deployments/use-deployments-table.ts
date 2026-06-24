@@ -56,6 +56,9 @@ export function useDeploymentsTable() {
 			sortDir,
 			limit: pageSize,
 			offset: pageIndex * pageSize,
+			// The history feed is the durable record of finished deployments;
+			// in-flight work lives in its own pinned band (`activeQuery` below).
+			excludeRunning: true,
 		},
 		{
 			// Keep the previous page visible while the next one loads (no flicker).
@@ -65,6 +68,26 @@ export function useDeploymentsTable() {
 				(q.state.data?.counts.active ?? 0) > 0 ? 5000 : 30000,
 		},
 	);
+
+	// Currently-running deployments, pinned above the history feed and polled on
+	// their own steady cadence so freshly-queued work appears within seconds even
+	// when the history feed is on its idle heartbeat.
+	const activeQuery = api.deployment.allCentralizedPaged.useQuery(
+		{
+			status: "running",
+			type,
+			sortBy: "createdAt",
+			sortDir: "desc",
+			limit: 25,
+			offset: 0,
+		},
+		{
+			placeholderData: keepPreviousData,
+			refetchInterval: (q) =>
+				(q.state.data?.rows.length ?? 0) > 0 ? 3000 : 10000,
+		},
+	);
+	const activeRows = activeQuery.data?.rows ?? [];
 
 	const counts = query.data?.counts ?? {
 		active: 0,
@@ -108,6 +131,9 @@ export function useDeploymentsTable() {
 		total,
 		counts,
 		latestCreatedAt,
+		// in-flight band
+		activeQuery,
+		activeRows,
 		// filters
 		searchInput,
 		setSearchInput,

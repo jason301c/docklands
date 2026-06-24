@@ -36,6 +36,7 @@ export const deploymentRouter = createTRPCRouter({
 				sortDir: z.enum(["asc", "desc"]).default("desc"),
 				limit: z.number().int().min(1).max(100).default(25),
 				offset: z.number().int().min(0).default(0),
+				excludeRunning: z.boolean().default(false),
 			}),
 		)
 		.query(async ({ ctx, input }) => {

@@ -10,6 +10,7 @@ import {
 	ilike,
 	inArray,
 	isNotNull,
+	ne,
 	or,
 	sql,
 } from "drizzle-orm";
@@ -892,6 +893,12 @@ export interface FindDeploymentsCentralizedPagedParams {
 	sortDir?: "asc" | "desc";
 	limit: number;
 	offset: number;
+	/**
+	 * Drop currently-running deployments from the page (not the counts). The
+	 * unified Deployments view pins in-flight work in its own live band, so the
+	 * paged history feed below it is the durable record of finished deployments.
+	 */
+	excludeRunning?: boolean;
 }
 
 export interface DeploymentCentralizedCounts {
@@ -1014,6 +1021,9 @@ export const findDeploymentsCentralizedPaged = async (
 	const filterConditions = [accessibleWhere];
 	if (params.status && params.status !== "all") {
 		filterConditions.push(eq(deployments.status, params.status));
+	}
+	if (params.excludeRunning) {
+		filterConditions.push(ne(deployments.status, "running"));
 	}
 	if (params.type === "application") {
 		filterConditions.push(isNotNull(deployments.applicationId));

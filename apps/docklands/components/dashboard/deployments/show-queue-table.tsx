@@ -100,7 +100,7 @@ function QueueMetricCard({
 }
 
 export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
-	const { embedded: _embedded = false } = props;
+	const { embedded = false } = props;
 	const { data: queueList, isLoading } = api.deployment.queueList.useQuery(
 		undefined,
 		{
@@ -140,32 +140,34 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 				</div>
 			) : (
 				<>
-					<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-						<QueueMetricCard
-							label="Active"
-							value={queueStats.active}
-							detail="Workers currently processing deployment jobs."
-							icon={<Activity className="size-4" />}
-						/>
-						<QueueMetricCard
-							label="Waiting"
-							value={queueStats.waiting}
-							detail="Jobs queued, delayed, or paused before execution."
-							icon={<TimerReset className="size-4" />}
-						/>
-						<QueueMetricCard
-							label="Failed"
-							value={queueStats.failed}
-							detail="Queue jobs that failed before completion."
-							icon={<AlertCircle className="size-4" />}
-						/>
-						<QueueMetricCard
-							label="Latest"
-							value={formatRelativeTs(queueStats.latest?.timestamp)}
-							detail={`${queueStats.total} total jobs in queue history`}
-							icon={<Clock className="size-4" />}
-						/>
-					</div>
+					{!embedded && (
+						<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+							<QueueMetricCard
+								label="Active"
+								value={queueStats.active}
+								detail="Workers currently processing deployment jobs."
+								icon={<Activity className="size-4" />}
+							/>
+							<QueueMetricCard
+								label="Waiting"
+								value={queueStats.waiting}
+								detail="Jobs queued, delayed, or paused before execution."
+								icon={<TimerReset className="size-4" />}
+							/>
+							<QueueMetricCard
+								label="Failed"
+								value={queueStats.failed}
+								detail="Queue jobs that failed before completion."
+								icon={<AlertCircle className="size-4" />}
+							/>
+							<QueueMetricCard
+								label="Latest"
+								value={formatRelativeTs(queueStats.latest?.timestamp)}
+								detail={`${queueStats.total} total jobs in queue history`}
+								icon={<Clock className="size-4" />}
+							/>
+						</div>
+					)}
 
 					<div className="rounded-md border overflow-x-auto">
 						<Table>

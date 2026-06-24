@@ -19,7 +19,7 @@ import {
 	ExternalLink,
 	Rocket,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { Select } from "@/components/shared/select";
 import {
@@ -32,6 +32,7 @@ import { DeploymentDetailDrawer } from "./deployment-detail-drawer";
 import {
 	type DeploymentRow,
 	formatDeploymentDuration,
+	formatDurationSeconds,
 	getDeploymentTrigger,
 	getServiceInfo,
 	statusDotClass,
@@ -145,6 +146,83 @@ function StatusCell({ status }: { status: string }) {
 	);
 }
 
+/** A duration that ticks every second while a deployment is in flight. */
+function LiveElapsed({ startedAt }: { startedAt: string | null }) {
+	const [now, setNow] = useState(() => Date.now());
+	useEffect(() => {
+		const id = setInterval(() => setNow(Date.now()), 1000);
+		return () => clearInterval(id);
+	}, []);
+	if (!startedAt) return <span className="tabular-nums">starting…</span>;
+	const seconds = Math.max(
+		0,
+		Math.floor((now - new Date(startedAt).getTime()) / 1000),
+	);
+	return <span className="tabular-nums">{formatDurationSeconds(seconds)}</span>;
+}
+
+/**
+ * Pinned band of currently-running deployments. Lives above the history feed so
+ * "what's happening now" is always the first thing on the page; collapses to
+ * nothing when nothing is in flight.
+ */
+function InFlightBand({
+	rows,
+	onSelect,
+}: {
+	rows: DeploymentRow[];
+	onSelect: (row: DeploymentRow) => void;
+}) {
+	if (rows.length === 0) return null;
+	return (
+		<div className="overflow-hidden rounded-md border border-kumo-warning/40 bg-kumo-warning/5">
+			<div className="flex items-center gap-2 border-b border-kumo-warning/30 px-4 py-2.5">
+				<span className="relative flex size-2">
+					<span className="absolute inline-flex size-full animate-ping rounded-full bg-kumo-warning opacity-75" />
+					<span className="relative inline-flex size-2 rounded-full bg-kumo-warning" />
+				</span>
+				<span className="text-sm font-medium">In flight</span>
+				<Badge variant="warning">{rows.length}</Badge>
+			</div>
+			<ul className="divide-y divide-kumo-line/60">
+				{rows.map((row) => {
+					const info = getServiceInfo(row);
+					const trigger = getDeploymentTrigger(row);
+					return (
+						<li key={row.deploymentId}>
+							<button
+								type="button"
+								onClick={() => onSelect(row)}
+								className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-kumo-warning/10"
+							>
+								{info?.type === "Compose" ? (
+									<Boxes className="size-4 shrink-0 text-kumo-subtle" />
+								) : (
+									<Rocket className="size-4 shrink-0 text-kumo-subtle" />
+								)}
+								<div className="flex min-w-0 flex-1 flex-col">
+									<span className="truncate text-sm font-medium">
+										{info?.name ?? "Unknown service"}
+									</span>
+									<span className="truncate text-xs text-kumo-subtle">
+										{info
+											? `${info.workspaceName} · ${info.environmentName}`
+											: "—"}
+									</span>
+								</div>
+								<Badge variant={trigger.variant}>{trigger.label}</Badge>
+								<span className="w-16 shrink-0 text-right text-sm text-kumo-subtle">
+									<LiveElapsed startedAt={row.startedAt} />
+								</span>
+							</button>
+						</li>
+					);
+				})}
+			</ul>
+		</div>
+	);
+}
+
 export function ShowDeploymentsTable() {
 	const t = useDeploymentsTable();
 	const [selected, setSelected] = useState<DeploymentRow | null>(null);
@@ -158,10 +236,8 @@ export function ShowDeploymentsTable() {
 				<StatCard
 					label="Active"
 					value={t.counts.active}
-					detail="Deployments currently moving through the worker."
+					detail="Deployments in flight right now — pinned below."
 					icon={<Activity className="size-4" />}
-					active={t.status === "running"}
-					onClick={() => t.toggleStatus("running")}
 				/>
 				<StatCard
 					label="Succeeded"
@@ -213,7 +289,6 @@ export function ShowDeploymentsTable() {
 					<></>
 					<>
 						<Select.Option value="all">All statuses</Select.Option>
-						<Select.Option value="running">Running</Select.Option>
 						<Select.Option value="done">Succeeded</Select.Option>
 						<Select.Option value="error">Failed</Select.Option>
 						<Select.Option value="cancelled">Cancelled</Select.Option>
@@ -241,6 +316,8 @@ export function ShowDeploymentsTable() {
 				)}
 			</div>
 
+			<InFlightBand rows={t.activeRows} onSelect={setSelected} />
+
 			{t.query.isError ? (
 				<ErrorState
 					error={t.query.error}
@@ -255,12 +332,16 @@ export function ShowDeploymentsTable() {
 					title={
 						t.hasFilters
 							? "No deployments match your filters"
-							: "No deployments yet"
+							: t.activeRows.length > 0
+								? "No finished deployments yet"
+								: "No deployments yet"
 					}
 					description={
 						t.hasFilters
 							? "Try a different search or clear the filters."
-							: "Deployment records from applications and compose will appear here."
+							: t.activeRows.length > 0
+								? "Deployments currently in flight are pinned above; finished records will land here."
+								: "Deployment records from applications and compose will appear here."
 					}
 					action={
 						t.hasFilters ? (
