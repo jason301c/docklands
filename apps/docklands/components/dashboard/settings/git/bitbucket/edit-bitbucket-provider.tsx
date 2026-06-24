@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { createClientLogger } from "@/client/lib/logger";
 import { BitbucketIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
@@ -52,7 +53,21 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
-	const { mutateAsync, error, isError } = api.bitbucket.update.useMutation();
+	const {
+		mutate,
+		error,
+		isError,
+		isPending: isUpdating,
+	} = api.bitbucket.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Bitbucket updated successfully",
+			errorMessage: "Error updating Bitbucket",
+			loggerScope: "git-providers",
+			toastError: false,
+			invalidate: () => utils.gitProvider.getAll.invalidate(),
+			onSuccess: () => setIsOpen(false),
+		}),
+	);
 	const { mutateAsync: testConnection, isPending } =
 		api.bitbucket.testConnection.useMutation();
 	const form = useForm<Schema>({
@@ -80,8 +95,8 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 		});
 	}, [form, isOpen, bitbucket]);
 
-	const onSubmit = async (data: Schema) => {
-		await mutateAsync({
+	const onSubmit = (data: Schema) => {
+		mutate({
 			bitbucketId,
 			gitProviderId: bitbucket?.gitProviderId || "",
 			bitbucketUsername: data.username,
@@ -89,16 +104,7 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 			bitbucketWorkspaceName: data.workspaceName || "",
 			name: data.name || "",
 			apiToken: data.apiToken || "",
-		})
-			.then(async () => {
-				await utils.gitProvider.getAll.invalidate();
-				toast.success("Bitbucket updated successfully");
-				setIsOpen(false);
-			})
-			.catch((err) => {
-				logger.error("Error updating bitbucket provider", err);
-				toast.error("Error updating Bitbucket");
-			});
+		});
 	};
 
 	return (
@@ -251,7 +257,7 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 									>
 										Test Connection
 									</Button>
-									<Button type="submit" loading={form.formState.isSubmitting}>
+									<Button type="submit" loading={isUpdating}>
 										Update
 									</Button>
 								</div>

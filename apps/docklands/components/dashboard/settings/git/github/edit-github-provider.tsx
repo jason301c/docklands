@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { createClientLogger } from "@/client/lib/logger";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
@@ -48,7 +49,21 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 	);
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
-	const { mutateAsync, error, isError } = api.github.update.useMutation();
+	const {
+		mutate,
+		error,
+		isError,
+		isPending: isUpdating,
+	} = api.github.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Github updated successfully",
+			errorMessage: "Error updating Github",
+			loggerScope: "git-providers",
+			toastError: false,
+			invalidate: () => utils.gitProvider.getAll.invalidate(),
+			onSuccess: () => setIsOpen(false),
+		}),
+	);
 	const { mutateAsync: testConnection, isPending } =
 		api.github.testConnection.useMutation();
 	const form = useForm<Schema>({
@@ -66,22 +81,13 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 		});
 	}, [form, isOpen]);
 
-	const onSubmit = async (data: Schema) => {
-		await mutateAsync({
+	const onSubmit = (data: Schema) => {
+		mutate({
 			githubId,
 			name: data.name || "",
 			gitProviderId: github?.gitProviderId || "",
 			githubAppName: data.appName || "",
-		})
-			.then(async () => {
-				await utils.gitProvider.getAll.invalidate();
-				toast.success("Github updated successfully");
-				setIsOpen(false);
-			})
-			.catch((err) => {
-				logger.error("Error updating github provider", err);
-				toast.error("Error updating Github");
-			});
+		});
 	};
 
 	return (
@@ -170,7 +176,7 @@ export const EditGithubProvider = ({ githubId }: Props) => {
 									>
 										Test Connection
 									</Button>
-									<Button type="submit" loading={form.formState.isSubmitting}>
+									<Button type="submit" loading={isUpdating}>
 										Update
 									</Button>
 								</div>

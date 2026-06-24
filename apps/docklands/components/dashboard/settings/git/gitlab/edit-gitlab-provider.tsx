@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { createClientLogger } from "@/client/lib/logger";
 import { GitlabIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
@@ -54,7 +55,24 @@ export const EditGitlabProvider = ({ gitlabId }: Props) => {
 	);
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
-	const { mutateAsync, error, isError } = api.gitlab.update.useMutation();
+	const {
+		mutate,
+		error,
+		isError,
+		isPending: isUpdating,
+	} = api.gitlab.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Gitlab updated successfully",
+			errorMessage: "Error updating Gitlab",
+			loggerScope: "git-providers",
+			toastError: false,
+			invalidate: () => utils.gitProvider.getAll.invalidate(),
+			onSuccess: () => {
+				setIsOpen(false);
+				refetch();
+			},
+		}),
+	);
 	const { mutateAsync: testConnection, isPending } =
 		api.gitlab.testConnection.useMutation();
 	const form = useForm({
@@ -78,25 +96,15 @@ export const EditGitlabProvider = ({ gitlabId }: Props) => {
 		});
 	}, [form, isOpen]);
 
-	const onSubmit = async (data: Schema) => {
-		await mutateAsync({
+	const onSubmit = (data: Schema) => {
+		mutate({
 			gitlabId,
 			gitProviderId: gitlab?.gitProviderId || "",
 			groupName: data.groupName || "",
 			name: data.name || "",
 			gitlabUrl: data.gitlabUrl || "",
 			gitlabInternalUrl: data.gitlabInternalUrl ?? null,
-		})
-			.then(async () => {
-				await utils.gitProvider.getAll.invalidate();
-				toast.success("Gitlab updated successfully");
-				setIsOpen(false);
-				refetch();
-			})
-			.catch((err) => {
-				logger.error("Error updating gitlab provider", err);
-				toast.error("Error updating Gitlab");
-			});
+		});
 	};
 
 	return (
@@ -225,7 +233,7 @@ export const EditGitlabProvider = ({ gitlabId }: Props) => {
 									>
 										Test Connection
 									</Button>
-									<Button type="submit" loading={form.formState.isSubmitting}>
+									<Button type="submit" loading={isUpdating}>
 										Update
 									</Button>
 								</div>

@@ -13,6 +13,7 @@ import {
 	getGiteaOAuthUrl,
 } from "@/client/git/gitea";
 import { useUrl } from "@/client/hooks/use-url";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { GiteaIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -52,13 +53,50 @@ const Schema = z.object({
 type Schema = z.infer<typeof Schema>;
 
 export const AddGiteaProvider = () => {
+	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
 
 	const urlObj = useUrl();
 	const baseUrl =
 		typeof urlObj === "string" ? urlObj : (urlObj as any)?.url || "";
 
-	const { mutateAsync, error, isError } = api.gitea.create.useMutation();
+	const { mutate, error, isError, isPending } = api.gitea.create.useMutation(
+		crudMutationOptions({
+			errorMessage: "Error configuring Gitea",
+			loggerScope: "git-providers",
+			toastError: false,
+			invalidate: () => utils.gitProvider.getAll.invalidate(),
+			onSuccess: (data, variables) => {
+				const result = data as unknown as GiteaProviderResponse;
+
+				// Check if we have a giteaId from the response
+				if (!result?.giteaId) {
+					toast.error("Failed to get Gitea ID from response");
+					return;
+				}
+
+				// Generate OAuth URL using the shared utility
+				const authUrl = getGiteaOAuthUrl(
+					result.giteaId,
+					variables.clientId ?? "",
+					variables.giteaUrl ?? "",
+					baseUrl,
+				);
+
+				// Open the Gitea OAuth URL
+				if (authUrl !== "#") {
+					window.open(authUrl, "_blank");
+				} else {
+					toast.error("Configuration Incomplete", {
+						description: "Please fill in Client ID and Gitea URL first.",
+					});
+				}
+
+				toast.success("Gitea provider created successfully");
+				setIsOpen(false);
+			},
+		}),
+	);
 	const webhookUrl = `${baseUrl}/api/providers/gitea/callback`;
 
 	const form = useForm({
@@ -86,51 +124,16 @@ export const AddGiteaProvider = () => {
 		});
 	}, [form, webhookUrl, isOpen]);
 
-	const onSubmit = async (data: Schema) => {
-		try {
-			// Send the form data to create the Gitea provider
-			const result = (await mutateAsync({
-				clientId: data.clientId,
-				clientSecret: data.clientSecret,
-				name: data.name,
-				redirectUri: data.redirectUri,
-				giteaUrl: data.giteaUrl,
-				giteaInternalUrl: data.giteaInternalUrl || undefined,
-				organizationName: data.organizationName,
-			})) as unknown as GiteaProviderResponse;
-
-			// Check if we have a giteaId from the response
-			if (!result?.giteaId) {
-				toast.error("Failed to get Gitea ID from response");
-				return;
-			}
-
-			// Generate OAuth URL using the shared utility
-			const authUrl = getGiteaOAuthUrl(
-				result.giteaId,
-				data.clientId,
-				data.giteaUrl,
-				baseUrl,
-			);
-
-			// Open the Gitea OAuth URL
-			if (authUrl !== "#") {
-				window.open(authUrl, "_blank");
-			} else {
-				toast.error("Configuration Incomplete", {
-					description: "Please fill in Client ID and Gitea URL first.",
-				});
-			}
-
-			toast.success("Gitea provider created successfully");
-			setIsOpen(false);
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				toast.error(`Error configuring Gitea: ${error.message}`);
-			} else {
-				toast.error("An unknown error occurred.");
-			}
-		}
+	const onSubmit = (data: Schema) => {
+		mutate({
+			clientId: data.clientId,
+			clientSecret: data.clientSecret,
+			name: data.name,
+			redirectUri: data.redirectUri,
+			giteaUrl: data.giteaUrl,
+			giteaInternalUrl: data.giteaInternalUrl || undefined,
+			organizationName: data.organizationName,
+		});
 	};
 
 	return (
@@ -301,9 +304,7 @@ export const AddGiteaProvider = () => {
 									)}
 								/>
 
-								<Button loading={form.formState.isSubmitting}>
-									Configure Gitea App
-								</Button>
+								<Button loading={isPending}>Configure Gitea App</Button>
 							</div>
 						</div>
 					</form>

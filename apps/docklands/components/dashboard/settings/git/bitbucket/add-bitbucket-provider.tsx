@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { createClientLogger } from "@/client/lib/logger";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { BitbucketIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -19,7 +19,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { toast } from "@/components/shared/toast";
 
 const Schema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),
@@ -31,12 +30,20 @@ const Schema = z.object({
 
 type Schema = z.infer<typeof Schema>;
 
-const logger = createClientLogger("git-providers");
-
 export const AddBitbucketProvider = () => {
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
-	const { mutateAsync, error, isError } = api.bitbucket.create.useMutation();
+	const { mutate, error, isError, isPending } =
+		api.bitbucket.create.useMutation(
+			crudMutationOptions({
+				successMessage: "Bitbucket configured successfully",
+				errorMessage: "Error configuring Bitbucket",
+				loggerScope: "git-providers",
+				toastError: false,
+				invalidate: () => utils.gitProvider.getAll.invalidate(),
+				onSuccess: () => setIsOpen(false),
+			}),
+		);
 	const { data: auth } = api.user.get.useQuery();
 	const form = useForm<Schema>({
 		defaultValues: {
@@ -56,24 +63,15 @@ export const AddBitbucketProvider = () => {
 		});
 	}, [form, isOpen]);
 
-	const onSubmit = async (data: Schema) => {
-		await mutateAsync({
+	const onSubmit = (data: Schema) => {
+		mutate({
 			bitbucketUsername: data.username,
 			apiToken: data.apiToken,
 			bitbucketWorkspaceName: data.workspaceName || "",
 			authId: auth?.id || "",
 			name: data.name || "",
 			bitbucketEmail: data.email || "",
-		})
-			.then(async () => {
-				await utils.gitProvider.getAll.invalidate();
-				toast.success("Bitbucket configured successfully");
-				setIsOpen(false);
-			})
-			.catch((err) => {
-				logger.error("Error creating bitbucket provider", err);
-				toast.error("Error configuring Bitbucket");
-			});
+		});
 	};
 
 	return (
@@ -223,9 +221,7 @@ export const AddBitbucketProvider = () => {
 									)}
 								/>
 
-								<Button loading={form.formState.isSubmitting}>
-									Configure Bitbucket
-								</Button>
+								<Button loading={isPending}>Configure Bitbucket</Button>
 							</div>
 						</div>
 					</form>

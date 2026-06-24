@@ -10,7 +10,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { getGiteaOAuthUrl } from "@/client/git/gitea";
 import { useUrl } from "@/client/hooks/use-url";
-import { createClientLogger } from "@/client/lib/logger";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import {
 	Form,
 	FormControl,
@@ -37,8 +37,6 @@ interface Props {
 	giteaId: string;
 }
 
-const logger = createClientLogger("git-providers");
-
 export const EditGiteaProvider = ({ giteaId }: Props) => {
 	const router = useRouter();
 	const pathname = usePathname();
@@ -50,7 +48,18 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 		isLoading,
 		refetch,
 	} = api.gitea.one.useQuery({ giteaId });
-	const { mutateAsync, isPending: isUpdating } = api.gitea.update.useMutation();
+	const { mutate, isPending: isUpdating } = api.gitea.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Gitea provider updated successfully",
+			errorMessage: "Error updating Gitea provider",
+			loggerScope: "git-providers",
+			invalidate: () => utils.gitProvider.getAll.invalidate(),
+			onSuccess: async () => {
+				await refetch();
+				setOpen(false);
+			},
+		}),
+	);
 	const { mutateAsync: testConnection, isPending: isTesting } =
 		api.gitea.testConnection.useMutation();
 	const url = useUrl();
@@ -101,8 +110,8 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 		}
 	}, [gitea, form]);
 
-	const onSubmit = async (values: z.infer<typeof formSchema>) => {
-		await mutateAsync({
+	const onSubmit = (values: z.infer<typeof formSchema>) => {
+		mutate({
 			giteaId: giteaId,
 			gitProviderId: gitea?.gitProvider?.gitProviderId || "",
 			name: values.name,
@@ -110,17 +119,7 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 			giteaInternalUrl: values.giteaInternalUrl ?? null,
 			clientId: values.clientId,
 			clientSecret: values.clientSecret,
-		})
-			.then(async () => {
-				await utils.gitProvider.getAll.invalidate();
-				toast.success("Gitea provider updated successfully");
-				await refetch();
-				setOpen(false);
-			})
-			.catch((err) => {
-				logger.error("Error updating gitea provider", err);
-				toast.error("Error updating Gitea provider");
-			});
+		});
 	};
 
 	const handleTestConnection = async () => {
