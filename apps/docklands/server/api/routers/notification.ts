@@ -50,32 +50,10 @@ import {
 	runtimeWorkers,
 } from "@/server/core/db/schema";
 import {
-	createCustomNotification,
-	createDiscordNotification,
-	createEmailNotification,
-	createGotifyNotification,
-	createLarkNotification,
-	createMattermostNotification,
-	createNtfyNotification,
-	createPushoverNotification,
-	createResendNotification,
-	createSlackNotification,
-	createTeamsNotification,
-	createTelegramNotification,
+	createNotification,
 	findNotificationById,
 	removeNotificationById,
-	updateCustomNotification,
-	updateDiscordNotification,
-	updateEmailNotification,
-	updateGotifyNotification,
-	updateLarkNotification,
-	updateMattermostNotification,
-	updateNtfyNotification,
-	updatePushoverNotification,
-	updateResendNotification,
-	updateSlackNotification,
-	updateTeamsNotification,
-	updateTelegramNotification,
+	updateNotification,
 } from "@/server/core/services/notification";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { sendServerThresholdNotifications } from "@/server/core/utils/notifications/server-threshold";
@@ -99,7 +77,11 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateSlack)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createSlackNotification(input, ctx.session.activeOrganizationId);
+				await createNotification(
+					"slack",
+					input,
+					ctx.session.activeOrganizationId,
+				);
 				await audit(ctx, {
 					action: "create",
 					resourceType: "notification",
@@ -124,7 +106,7 @@ export const notificationRouter = createTRPCRouter({
 						message: "You are not authorized to update this notification",
 					});
 				}
-				const result = await updateSlackNotification({
+				const result = await updateNotification("slack", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -160,7 +142,8 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateTelegram)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createTelegramNotification(
+				await createNotification(
+					"telegram",
 					input,
 					ctx.session.activeOrganizationId,
 				);
@@ -189,7 +172,7 @@ export const notificationRouter = createTRPCRouter({
 						message: "You are not authorized to update this notification",
 					});
 				}
-				const result = await updateTelegramNotification({
+				const result = await updateNotification("telegram", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -226,7 +209,8 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateDiscord)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createDiscordNotification(
+				await createNotification(
+					"discord",
 					input,
 					ctx.session.activeOrganizationId,
 				);
@@ -255,7 +239,7 @@ export const notificationRouter = createTRPCRouter({
 						message: "You are not authorized to update this notification",
 					});
 				}
-				const result = await updateDiscordNotification({
+				const result = await updateNotification("discord", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -301,7 +285,11 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateEmail)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createEmailNotification(input, ctx.session.activeOrganizationId);
+				await createNotification(
+					"email",
+					input,
+					ctx.session.activeOrganizationId,
+				);
 				await audit(ctx, {
 					action: "create",
 					resourceType: "notification",
@@ -326,7 +314,7 @@ export const notificationRouter = createTRPCRouter({
 						message: "You are not authorized to update this notification",
 					});
 				}
-				const result = await updateEmailNotification({
+				const result = await updateNotification("email", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -367,7 +355,11 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateResend)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createResendNotification(input, ctx.session.activeOrganizationId);
+				await createNotification(
+					"resend",
+					input,
+					ctx.session.activeOrganizationId,
+				);
 				await audit(ctx, {
 					action: "create",
 					resourceType: "notification",
@@ -392,7 +384,7 @@ export const notificationRouter = createTRPCRouter({
 						message: "You are not authorized to update this notification",
 					});
 				}
-				const result = await updateResendNotification({
+				const result = await updateNotification("resend", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -554,7 +546,11 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateGotify)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createGotifyNotification(input, ctx.session.activeOrganizationId);
+				await createNotification(
+					"gotify",
+					input,
+					ctx.session.activeOrganizationId,
+				);
 				await audit(ctx, {
 					action: "create",
 					resourceType: "notification",
@@ -573,7 +569,7 @@ export const notificationRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const notification = await findNotificationById(input.notificationId);
-				const result = await updateGotifyNotification({
+				const result = await updateNotification("gotify", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -610,7 +606,11 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateNtfy)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createNtfyNotification(input, ctx.session.activeOrganizationId);
+				await createNotification(
+					"ntfy",
+					input,
+					ctx.session.activeOrganizationId,
+				);
 				await audit(ctx, {
 					action: "create",
 					resourceType: "notification",
@@ -629,7 +629,7 @@ export const notificationRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const notification = await findNotificationById(input.notificationId);
-				const result = await updateNtfyNotification({
+				const result = await updateNotification("ntfy", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -671,7 +671,8 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateMattermost)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createMattermostNotification(
+				await createNotification(
+					"mattermost",
 					input,
 					ctx.session.activeOrganizationId,
 				);
@@ -693,7 +694,7 @@ export const notificationRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const notification = await findNotificationById(input.notificationId);
-				const result = await updateMattermostNotification({
+				const result = await updateNotification("mattermost", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -730,7 +731,11 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateCustom)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createCustomNotification(input, ctx.session.activeOrganizationId);
+				await createNotification(
+					"custom",
+					input,
+					ctx.session.activeOrganizationId,
+				);
 				await audit(ctx, {
 					action: "create",
 					resourceType: "notification",
@@ -755,7 +760,7 @@ export const notificationRouter = createTRPCRouter({
 						message: "You are not authorized to update this notification",
 					});
 				}
-				const result = await updateCustomNotification({
+				const result = await updateNotification("custom", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -792,7 +797,11 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateLark)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createLarkNotification(input, ctx.session.activeOrganizationId);
+				await createNotification(
+					"lark",
+					input,
+					ctx.session.activeOrganizationId,
+				);
 				await audit(ctx, {
 					action: "create",
 					resourceType: "notification",
@@ -811,7 +820,7 @@ export const notificationRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const notification = await findNotificationById(input.notificationId);
-				const result = await updateLarkNotification({
+				const result = await updateNotification("lark", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -849,7 +858,11 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreateTeams)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createTeamsNotification(input, ctx.session.activeOrganizationId);
+				await createNotification(
+					"teams",
+					input,
+					ctx.session.activeOrganizationId,
+				);
 				await audit(ctx, {
 					action: "create",
 					resourceType: "notification",
@@ -868,7 +881,7 @@ export const notificationRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const notification = await findNotificationById(input.notificationId);
-				const result = await updateTeamsNotification({
+				const result = await updateNotification("teams", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
@@ -904,7 +917,8 @@ export const notificationRouter = createTRPCRouter({
 		.input(apiCreatePushover)
 		.mutation(async ({ input, ctx }) => {
 			try {
-				await createPushoverNotification(
+				await createNotification(
+					"pushover",
 					input,
 					ctx.session.activeOrganizationId,
 				);
@@ -926,7 +940,7 @@ export const notificationRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const notification = await findNotificationById(input.notificationId);
-				const result = await updatePushoverNotification({
+				const result = await updateNotification("pushover", {
 					...input,
 					organizationId: ctx.session.activeOrganizationId,
 				});
