@@ -149,15 +149,12 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Rollback Registry</FormLabel>
-										<Select
-											aria-label="Rollback registry"
-											onValueChange={field.onChange}
-											value={field.value || "none"}
-										>
-											<FormControl>
-												<></>
-											</FormControl>
-											<>
+										<FormControl>
+											<Select
+												aria-label="Rollback registry"
+												onValueChange={field.onChange}
+												value={field.value || "none"}
+											>
 												<Select.Group>
 													<Select.Option value="none">
 														<span className="flex items-center gap-2">
@@ -176,8 +173,8 @@ export const ShowRollbackSettings = ({ applicationId, children }: Props) => {
 														Registries ({registries?.length || 0})
 													</Select.GroupLabel>
 												</Select.Group>
-											</>
-										</Select>
+											</Select>
+										</FormControl>
 										{!registries || registries.length === 0 ? (
 											<FormDescription className="text-kumo-warning">
 												No registries available. Please{" "}

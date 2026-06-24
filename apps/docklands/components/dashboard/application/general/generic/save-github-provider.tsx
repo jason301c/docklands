@@ -378,20 +378,17 @@ export const SaveGithubProvider = ({ applicationId }: Props) => {
 									</Tooltip>
 								</TooltipProvider>
 							</div>
-							<Select
-								aria-label="GitHub trigger type"
-								onValueChange={field.onChange}
-								defaultValue={field.value}
-								value={field.value}
-							>
-								<FormControl>
-									<></>
-								</FormControl>
-								<>
+							<FormControl>
+								<Select
+									aria-label="GitHub trigger type"
+									onValueChange={field.onChange}
+									defaultValue={field.value}
+									value={field.value}
+								>
 									<Select.Option value="push">On Push</Select.Option>
 									<Select.Option value="tag">On Tag</Select.Option>
-								</>
-							</Select>
+								</Select>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}

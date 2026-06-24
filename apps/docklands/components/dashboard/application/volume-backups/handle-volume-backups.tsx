@@ -294,15 +294,12 @@ export const HandleVolumeBackups = ({
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Destination</FormLabel>
-									<Select
-										aria-label="Volume backup destination"
-										onValueChange={field.onChange}
-										defaultValue={field.value}
-									>
-										<FormControl>
-											<></>
-										</FormControl>
-										<>
+									<FormControl>
+										<Select
+											aria-label="Volume backup destination"
+											onValueChange={field.onChange}
+											defaultValue={field.value}
+										>
 											{destinations?.map((destination) => (
 												<Select.Option
 													key={destination.destinationId}
@@ -311,8 +308,8 @@ export const HandleVolumeBackups = ({
 													{destination.name}
 												</Select.Option>
 											))}
-										</>
-									</Select>
+										</Select>
+									</FormControl>
 									<FormDescription>
 										Choose the backup destination where files will be stored
 									</FormDescription>
@@ -351,15 +348,12 @@ export const HandleVolumeBackups = ({
 										render={({ field }) => (
 											<FormItem>
 												<FormLabel>Volumes</FormLabel>
-												<Select
-													aria-label="Volume to back up"
-													onValueChange={field.onChange}
-													defaultValue={field.value || ""}
-												>
-													<FormControl>
-														<></>
-													</FormControl>
-													<>
+												<FormControl>
+													<Select
+														aria-label="Volume to back up"
+														onValueChange={field.onChange}
+														defaultValue={field.value || ""}
+													>
 														{mountsByService?.map((volume) => (
 															<Select.Option
 																key={volume.Name}
@@ -368,8 +362,8 @@ export const HandleVolumeBackups = ({
 																{volume.Name}
 															</Select.Option>
 														))}
-													</>
-												</Select>
+													</Select>
+												</FormControl>
 												<FormDescription>
 													Choose the volume to backup. If you do not see the
 													volume here, you can type the volume name manually
@@ -388,15 +382,12 @@ export const HandleVolumeBackups = ({
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Volumes</FormLabel>
-										<Select
-											aria-label="Volume to restore"
-											onValueChange={field.onChange}
-											defaultValue={field.value || ""}
-										>
-											<FormControl>
-												<></>
-											</FormControl>
-											<>
+										<FormControl>
+											<Select
+												aria-label="Volume to restore"
+												onValueChange={field.onChange}
+												defaultValue={field.value || ""}
+											>
 												{mounts?.map((mount) => (
 													<Select.Option
 														key={mount.Name}
@@ -405,8 +396,8 @@ export const HandleVolumeBackups = ({
 														{mount.Name}
 													</Select.Option>
 												))}
-											</>
-										</Select>
+											</Select>
+										</FormControl>
 										<FormDescription>
 											Choose the volume to backup. If you do not see the volume
 											here, you can type the volume name manually

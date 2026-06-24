@@ -84,19 +84,16 @@ export const EndpointSpecForm = ({ id, type }: EndpointSpecFormProps) => {
 						<FormItem>
 							<FormLabel>Mode</FormLabel>
 							<FormDescription>Endpoint mode (vip or dnsrr)</FormDescription>
-							<Select
-								aria-label="Endpoint mode"
-								onValueChange={field.onChange}
-								value={field.value}
-							>
-								<FormControl>
-									<></>
-								</FormControl>
-								<>
+							<FormControl>
+								<Select
+									aria-label="Endpoint mode"
+									onValueChange={field.onChange}
+									value={field.value}
+								>
 									<Select.Option value="vip">VIP (Virtual IP)</Select.Option>
 									<Select.Option value="dnsrr">DNS Round Robin</Select.Option>
-								</>
-							</Select>
+								</Select>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}

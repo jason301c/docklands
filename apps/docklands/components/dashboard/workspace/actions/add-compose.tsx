@@ -198,21 +198,18 @@ export const AddCompose = ({
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Compose Type</FormLabel>
-									<Select
-										aria-label="Compose type"
-										onValueChange={field.onChange}
-										defaultValue={field.value}
-									>
-										<FormControl>
-											<></>
-										</FormControl>
-										<>
+									<FormControl>
+										<Select
+											aria-label="Compose type"
+											onValueChange={field.onChange}
+											defaultValue={field.value}
+										>
 											<Select.Option value="docker-compose">
 												Docker Compose
 											</Select.Option>
 											<Select.Option value="stack">Stack</Select.Option>
-										</>
-									</Select>
+										</Select>
+									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}

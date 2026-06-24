@@ -194,16 +194,12 @@ export const ComposeServicePicker = <TFieldValues extends FieldValues>({
 				<FormItem className="w-full">
 					<FormLabel>Service Name</FormLabel>
 					<div className="flex gap-2">
-						<Select
-							aria-label={ariaLabel}
-							onValueChange={field.onChange}
-							{...bindProps(field)}
-						>
-							<FormControl>
-								<></>
-							</FormControl>
-
-							<>
+						<FormControl>
+							<Select
+								aria-label={ariaLabel}
+								onValueChange={field.onChange}
+								{...bindProps(field)}
+							>
 								{services?.map((service, index) => (
 									<Select.Option value={service} key={`${service}-${index}`}>
 										{service}
@@ -214,8 +210,8 @@ export const ComposeServicePicker = <TFieldValues extends FieldValues>({
 										Empty
 									</Select.Option>
 								)}
-							</>
-						</Select>
+							</Select>
+						</FormControl>
 						<ComposeCacheToggle
 							cacheType={cacheType}
 							setCacheType={setCacheType}

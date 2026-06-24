@@ -359,16 +359,12 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																	/>
 																</FormControl>
 															) : (
-																<Select
-																	aria-label="Domain service"
-																	onValueChange={field.onChange}
-																	defaultValue={field.value || ""}
-																>
-																	<FormControl>
-																		<></>
-																	</FormControl>
-
-																	<>
+																<FormControl>
+																	<Select
+																		aria-label="Domain service"
+																		onValueChange={field.onChange}
+																		defaultValue={field.value || ""}
+																	>
 																		{services?.map((service, index) => (
 																			<Select.Option
 																				value={service}
@@ -380,8 +376,8 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																		<Select.Option value="none" disabled>
 																			Empty
 																		</Select.Option>
-																	</>
-																</Select>
+																	</Select>
+																</FormControl>
 															)}
 															{!isManualInput && (
 																<>
@@ -743,24 +739,21 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 															custom ACME resolver defined in your Traefik
 															static config.
 														</FormDescription>
-														<Select
-															aria-label="Certificate provider"
-															onValueChange={(value) => {
-																if (value === null) return;
-																field.onChange(value);
-																if (value !== "custom") {
-																	form.setValue(
-																		"customCertResolver",
-																		undefined,
-																	);
-																}
-															}}
-															value={field.value}
-														>
-															<FormControl>
-																<></>
-															</FormControl>
-															<>
+														<FormControl>
+															<Select
+																aria-label="Certificate provider"
+																onValueChange={(value) => {
+																	if (value === null) return;
+																	field.onChange(value);
+																	if (value !== "custom") {
+																		form.setValue(
+																			"customCertResolver",
+																			undefined,
+																		);
+																	}
+																}}
+																value={field.value}
+															>
 																<Select.Option value={"none"}>
 																	None (or your own uploaded certificate)
 																</Select.Option>
@@ -770,8 +763,8 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 																<Select.Option value={"custom"}>
 																	Custom ACME resolver
 																</Select.Option>
-															</>
-														</Select>
+															</Select>
+														</FormControl>
 														<FormMessage />
 													</FormItem>
 												);

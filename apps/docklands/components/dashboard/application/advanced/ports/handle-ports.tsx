@@ -175,21 +175,18 @@ export const HandlePorts = ({
 									return (
 										<FormItem className="md:col-span-2">
 											<FormLabel>Published Port Mode</FormLabel>
-											<Select
-												aria-label="Published port mode"
-												onValueChange={field.onChange}
-												value={field.value}
-											>
-												<FormControl>
-													<></>
-												</FormControl>
-												<>
+											<FormControl>
+												<Select
+													aria-label="Published port mode"
+													onValueChange={field.onChange}
+													value={field.value}
+												>
 													<Select.Option value={"ingress"}>
 														Ingress
 													</Select.Option>
 													<Select.Option value={"host"}>Host</Select.Option>
-												</>
-											</Select>
+												</Select>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									);
@@ -231,19 +228,16 @@ export const HandlePorts = ({
 									return (
 										<FormItem className="md:col-span-2">
 											<FormLabel>Protocol</FormLabel>
-											<Select
-												aria-label="Port protocol"
-												onValueChange={field.onChange}
-												value={field.value}
-											>
-												<FormControl>
-													<></>
-												</FormControl>
-												<>
+											<FormControl>
+												<Select
+													aria-label="Port protocol"
+													onValueChange={field.onChange}
+													value={field.value}
+												>
 													<Select.Option value={"tcp"}>TCP</Select.Option>
 													<Select.Option value={"udp"}>UDP</Select.Option>
-												</>
-											</Select>
+												</Select>
+											</FormControl>
 											<FormMessage />
 										</FormItem>
 									);

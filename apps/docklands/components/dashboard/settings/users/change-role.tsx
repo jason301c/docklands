@@ -111,15 +111,12 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Role</FormLabel>
-									<Select
-										aria-label="User role"
-										onValueChange={field.onChange}
-										defaultValue={field.value}
-									>
-										<FormControl>
-											<></>
-										</FormControl>
-										<>
+									<FormControl>
+										<Select
+											aria-label="User role"
+											onValueChange={field.onChange}
+											defaultValue={field.value}
+										>
 											<Select.Option value="admin">Admin</Select.Option>
 											<Select.Option value="member">Member</Select.Option>
 											{customRoles?.map((customRole) => (
@@ -130,8 +127,8 @@ export const ChangeRole = ({ memberId, currentRole, userEmail }: Props) => {
 													{customRole.role}
 												</Select.Option>
 											))}
-										</>
-									</Select>
+										</Select>
+									</FormControl>
 									<FormDescription>
 										<strong>Admin:</strong> Can manage users and settings.
 										<br />

@@ -123,20 +123,17 @@ export const UpdateConfigForm = ({ id, type }: UpdateConfigFormProps) => {
 						<FormItem>
 							<FormLabel>Failure Action</FormLabel>
 							<FormDescription>Action on update failure</FormDescription>
-							<Select
-								aria-label="Update failure action"
-								onValueChange={field.onChange}
-								value={field.value}
-							>
-								<FormControl>
-									<></>
-								</FormControl>
-								<>
+							<FormControl>
+								<Select
+									aria-label="Update failure action"
+									onValueChange={field.onChange}
+									value={field.value}
+								>
 									<Select.Option value="pause">Pause</Select.Option>
 									<Select.Option value="continue">Continue</Select.Option>
 									<Select.Option value="rollback">Rollback</Select.Option>
-								</>
-							</Select>
+								</Select>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}
@@ -183,19 +180,16 @@ export const UpdateConfigForm = ({ id, type }: UpdateConfigFormProps) => {
 						<FormItem>
 							<FormLabel>Order</FormLabel>
 							<FormDescription>Update order strategy</FormDescription>
-							<Select
-								aria-label="Update order"
-								onValueChange={field.onChange}
-								value={field.value}
-							>
-								<FormControl>
-									<></>
-								</FormControl>
-								<>
+							<FormControl>
+								<Select
+									aria-label="Update order"
+									onValueChange={field.onChange}
+									value={field.value}
+								>
 									<Select.Option value="stop-first">Stop First</Select.Option>
 									<Select.Option value="start-first">Start First</Select.Option>
-								</>
-							</Select>
+								</Select>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}

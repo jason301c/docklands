@@ -188,21 +188,18 @@ export const IngressDomain = () => {
 								return (
 									<FormItem className="col-span-2">
 										<FormLabel>Certificate Provider</FormLabel>
-										<Select
-											aria-label="Ingress certificate provider"
-											onValueChange={field.onChange}
-											value={field.value}
-										>
-											<FormControl>
-												<></>
-											</FormControl>
-											<>
+										<FormControl>
+											<Select
+												aria-label="Ingress certificate provider"
+												onValueChange={field.onChange}
+												value={field.value}
+											>
 												<Select.Option value={"none"}>None</Select.Option>
 												<Select.Option value={"letsencrypt"}>
 													Let's Encrypt
 												</Select.Option>
-											</>
-										</Select>
+											</Select>
+										</FormControl>
 										<FormMessage />
 									</FormItem>
 								);

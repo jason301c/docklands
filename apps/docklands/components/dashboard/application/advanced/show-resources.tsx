@@ -390,15 +390,12 @@ export const ShowResources = ({ id, type }: Props) => {
 												render={({ field }) => (
 													<FormItem className="flex-1">
 														<FormLabel className="text-xs">Type</FormLabel>
-														<Select
-															aria-label="Ulimit type"
-															onValueChange={field.onChange}
-															value={field.value}
-														>
-															<FormControl>
-																<></>
-															</FormControl>
-															<>
+														<FormControl>
+															<Select
+																aria-label="Ulimit type"
+																onValueChange={field.onChange}
+																value={field.value}
+															>
 																{ULIMIT_PRESETS.map((preset) => (
 																	<Select.Option
 																		key={preset.value}
@@ -407,8 +404,8 @@ export const ShowResources = ({ id, type }: Props) => {
 																		{preset.label}
 																	</Select.Option>
 																))}
-															</>
-														</Select>
+															</Select>
+														</FormControl>
 														<FormMessage />
 													</FormItem>
 												)}

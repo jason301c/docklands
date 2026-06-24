@@ -104,27 +104,24 @@ export const SaveGitProviderForm = ({
 							render={({ field }) => (
 								<FormItem className="md:col-span-2 flex flex-col">
 									<FormLabel>{accountLabel}</FormLabel>
-									<Select
-										aria-label={accountAriaLabel}
-										onValueChange={(value) => {
-											if (value === null) return;
-											field.onChange(value);
-											onAccountChange(value);
-										}}
-										defaultValue={field.value}
-										value={field.value}
-									>
-										<FormControl>
-											<></>
-										</FormControl>
-										<>
+									<FormControl>
+										<Select
+											aria-label={accountAriaLabel}
+											onValueChange={(value) => {
+												if (value === null) return;
+												field.onChange(value);
+												onAccountChange(value);
+											}}
+											defaultValue={field.value}
+											value={field.value}
+										>
 											{accounts?.map((account) => (
 												<Select.Option key={account.id} value={account.id}>
 													{account.name}
 												</Select.Option>
 											))}
-										</>
-									</Select>
+										</Select>
+									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}

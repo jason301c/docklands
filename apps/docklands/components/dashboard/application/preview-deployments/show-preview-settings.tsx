@@ -358,16 +358,12 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 											render={({ field }) => (
 												<FormItem>
 													<FormLabel>Certificate Provider</FormLabel>
-													<Select
-														aria-label="Preview certificate provider"
-														onValueChange={field.onChange}
-														defaultValue={field.value || ""}
-													>
-														<FormControl>
-															<></>
-														</FormControl>
-
-														<>
+													<FormControl>
+														<Select
+															aria-label="Preview certificate provider"
+															onValueChange={field.onChange}
+															defaultValue={field.value || ""}
+														>
 															<Select.Option value="none">None</Select.Option>
 															<Select.Option value={"letsencrypt"}>
 																Let's Encrypt
@@ -375,8 +371,8 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 															<Select.Option value={"custom"}>
 																Custom
 															</Select.Option>
-														</>
-													</Select>
+														</Select>
+													</FormControl>
 													<FormMessage />
 												</FormItem>
 											)}

@@ -61,27 +61,24 @@ export const ScheduleFormField = <TFieldValues extends FieldValues>({
 						</TooltipProvider>
 					</FormLabel>
 					<div className="flex flex-col gap-2">
-						<Select
-							aria-label="Cadence preset"
-							value={selectedOption}
-							onValueChange={(value) => {
-								if (value === null) return;
-								setSelectedOption(value);
-								field.onChange(value === "custom" ? "" : value);
-							}}
-						>
-							<FormControl>
-								<></>
-							</FormControl>
-							<>
+						<FormControl>
+							<Select
+								aria-label="Cadence preset"
+								value={selectedOption}
+								onValueChange={(value) => {
+									if (value === null) return;
+									setSelectedOption(value);
+									field.onChange(value === "custom" ? "" : value);
+								}}
+							>
 								{commonCronExpressions.map((expr) => (
 									<Select.Option key={expr.value} value={expr.value}>
 										{expr.label}
 										{expr.value !== "custom" && ` (${expr.value})`}
 									</Select.Option>
 								))}
-							</>
-						</Select>
+							</Select>
+						</FormControl>
 						<div className="relative">
 							<FormControl>
 								<Input

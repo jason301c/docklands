@@ -118,19 +118,16 @@ export const ModeForm = ({ id, type }: ModeFormProps) => {
 							<FormDescription>
 								Choose between replicated or global service mode
 							</FormDescription>
-							<Select
-								aria-label="Service mode"
-								onValueChange={field.onChange}
-								value={field.value}
-							>
-								<FormControl>
-									<></>
-								</FormControl>
-								<>
+							<FormControl>
+								<Select
+									aria-label="Service mode"
+									onValueChange={field.onChange}
+									value={field.value}
+								>
 									<Select.Option value="Replicated">Replicated</Select.Option>
 									<Select.Option value="Global">Global</Select.Option>
-								</>
-							</Select>
+								</Select>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}

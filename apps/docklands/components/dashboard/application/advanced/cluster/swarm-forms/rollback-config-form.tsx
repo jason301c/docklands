@@ -115,19 +115,16 @@ export const RollbackConfigForm = ({ id, type }: RollbackConfigFormProps) => {
 						<FormItem>
 							<FormLabel>Failure Action</FormLabel>
 							<FormDescription>Action on rollback failure</FormDescription>
-							<Select
-								aria-label="Rollback failure action"
-								onValueChange={field.onChange}
-								value={field.value}
-							>
-								<FormControl>
-									<></>
-								</FormControl>
-								<>
+							<FormControl>
+								<Select
+									aria-label="Rollback failure action"
+									onValueChange={field.onChange}
+									value={field.value}
+								>
 									<Select.Option value="pause">Pause</Select.Option>
 									<Select.Option value="continue">Continue</Select.Option>
-								</>
-							</Select>
+								</Select>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}
@@ -174,19 +171,16 @@ export const RollbackConfigForm = ({ id, type }: RollbackConfigFormProps) => {
 						<FormItem>
 							<FormLabel>Order</FormLabel>
 							<FormDescription>Rollback order strategy</FormDescription>
-							<Select
-								aria-label="Rollback order"
-								onValueChange={field.onChange}
-								value={field.value}
-							>
-								<FormControl>
-									<></>
-								</FormControl>
-								<>
+							<FormControl>
+								<Select
+									aria-label="Rollback order"
+									onValueChange={field.onChange}
+									value={field.value}
+								>
 									<Select.Option value="stop-first">Stop First</Select.Option>
 									<Select.Option value="start-first">Start First</Select.Option>
-								</>
-							</Select>
+								</Select>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}

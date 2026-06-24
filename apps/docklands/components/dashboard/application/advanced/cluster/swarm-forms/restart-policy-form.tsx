@@ -95,20 +95,17 @@ export const RestartPolicyForm = ({ id, type }: RestartPolicyFormProps) => {
 						<FormItem>
 							<FormLabel>Condition</FormLabel>
 							<FormDescription>When to restart the container</FormDescription>
-							<Select
-								aria-label="Restart condition"
-								onValueChange={field.onChange}
-								value={field.value}
-							>
-								<FormControl>
-									<></>
-								</FormControl>
-								<>
+							<FormControl>
+								<Select
+									aria-label="Restart condition"
+									onValueChange={field.onChange}
+									value={field.value}
+								>
 									<Select.Option value="none">None</Select.Option>
 									<Select.Option value="on-failure">On Failure</Select.Option>
 									<Select.Option value="any">Any</Select.Option>
-								</>
-							</Select>
+								</Select>
+							</FormControl>
 							<FormMessage />
 						</FormItem>
 					)}

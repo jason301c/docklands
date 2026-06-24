@@ -279,19 +279,14 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 												defaultValue={field.value}
 												value={field.value}
 											>
-												<FormControl>
-													<></>
-												</FormControl>
-												<>
-													{S3_PROVIDERS.map((s3Provider) => (
-														<Select.Option
-															key={s3Provider.key}
-															value={s3Provider.key}
-														>
-															{s3Provider.name}
-														</Select.Option>
-													))}
-												</>
+												{S3_PROVIDERS.map((s3Provider) => (
+													<Select.Option
+														key={s3Provider.key}
+														value={s3Provider.key}
+													>
+														{s3Provider.name}
+													</Select.Option>
+												))}
 											</Select>
 										</FormControl>
 										<FormMessage />
