@@ -125,6 +125,7 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [cacheType, setCacheType] = useState<CacheType>("cache");
 	const [isManualInput, setIsManualInput] = useState(false);
+	const [middlewareDraft, setMiddlewareDraft] = useState("");
 
 	const utils = api.useUtils();
 	const { data, refetch } = api.domain.one.useQuery(
@@ -854,17 +855,18 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 												<div className="flex gap-2">
 													<Input
 														placeholder="e.g., rate-limit@file, auth@file"
+														value={middlewareDraft}
+														onChange={(e) => setMiddlewareDraft(e.target.value)}
 														onKeyDown={(e) => {
 															if (e.key === "Enter") {
 																e.preventDefault();
-																const input = e.currentTarget;
-																const value = input.value.trim();
+																const value = middlewareDraft.trim();
 																if (value && !field.value?.includes(value)) {
 																	form.setValue("middlewares", [
 																		...(field.value || []),
 																		value,
 																	]);
-																	input.value = "";
+																	setMiddlewareDraft("");
 																}
 															}
 														}}
@@ -873,16 +875,13 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 														type="button"
 														variant="secondary"
 														onClick={() => {
-															const input = document.querySelector(
-																'input[placeholder="e.g., rate-limit@file, auth@file"]',
-															) as HTMLInputElement;
-															const value = input.value.trim();
+															const value = middlewareDraft.trim();
 															if (value && !field.value?.includes(value)) {
 																form.setValue("middlewares", [
 																	...(field.value || []),
 																	value,
 																]);
-																input.value = "";
+																setMiddlewareDraft("");
 															}
 														}}
 													>

@@ -65,6 +65,7 @@ interface Props {
 export const ShowPreviewSettings = ({ applicationId }: Props) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isEnabled, setIsEnabled] = useState(false);
+	const [labelDraft, setLabelDraft] = useState("");
 	const { mutateAsync: updateApplication, isPending } =
 		api.application.update.useMutation();
 
@@ -116,7 +117,7 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 	}, [data]);
 
 	const onSubmit = async (formData: Schema) => {
-		updateApplication({
+		await updateApplication({
 			previewEnv: formData.env,
 			previewBuildArgs: formData.buildArgs,
 			previewBuildSecrets: formData.buildSecrets,
@@ -261,17 +262,18 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 													<FormControl>
 														<Input
 															placeholder="Enter a label (e.g. enhancements, needs-review)"
+															value={labelDraft}
+															onChange={(e) => setLabelDraft(e.target.value)}
 															onKeyDown={(e) => {
 																if (e.key === "Enter") {
 																	e.preventDefault();
-																	const input = e.currentTarget;
-																	const label = input.value.trim();
+																	const label = labelDraft.trim();
 																	if (label) {
 																		field.onChange([
 																			...(field.value || []),
 																			label,
 																		]);
-																		input.value = "";
+																		setLabelDraft("");
 																	}
 																}
 															}}
@@ -283,13 +285,10 @@ export const ShowPreviewSettings = ({ applicationId }: Props) => {
 														variant="outline"
 														shape="square"
 														onClick={() => {
-															const input = document.querySelector(
-																'input[placeholder*="Enter a label"]',
-															) as HTMLInputElement;
-															const label = input.value.trim();
+															const label = labelDraft.trim();
 															if (label) {
 																field.onChange([...(field.value || []), label]);
-																input.value = "";
+																setLabelDraft("");
 															}
 														}}
 													>

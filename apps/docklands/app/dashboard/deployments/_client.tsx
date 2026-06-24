@@ -3,10 +3,12 @@
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { Rocket } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { ShowDeploymentsTable } from "@/components/dashboard/deployments/show-deployments-table";
 import { ShowDeploymentQueueTable } from "@/components/dashboard/deployments/show-queue-table";
 import { PageHeader } from "@/components/shared/page-header";
 import { PageSection } from "@/components/shared/page-section";
+import { LoadingState } from "@/components/shared/states";
 
 const TAB_VALUES = ["history", "queue"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
@@ -63,4 +65,12 @@ function DeploymentsPage() {
 	);
 }
 
-export default DeploymentsPage;
+// `useSearchParams` requires a Suspense boundary above it; self-contain it here
+// so the route no longer relies on the blanket `force-dynamic` to stay valid.
+export default function DeploymentsRoute() {
+	return (
+		<Suspense fallback={<LoadingState />}>
+			<DeploymentsPage />
+		</Suspense>
+	);
+}
