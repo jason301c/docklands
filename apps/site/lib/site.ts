@@ -19,6 +19,8 @@ export const siteConfig = {
 				? "http://localhost:4321"
 				: "https://docs.docklands.sh",
 	},
-	// Replace with the real one-line installer once it exists.
-	install: "curl -sSL https://get.docklands.sh | sh",
+	// No hosted one-line installer (get.docklands.sh) exists yet, so this is the
+	// honest real path: clone the repo and follow the README quickstart. Swap in a
+	// `curl … | sh` one-liner here once such an installer is actually published.
+	install: "git clone https://github.com/jason301c/docklands.git",
 } as const;

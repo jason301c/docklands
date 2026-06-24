@@ -128,9 +128,12 @@ export function ScreenshotGallery() {
 							<span className="size-2.5 rounded-full bg-kumo-line" />
 						</div>
 
-						{/* Blank screenshot placeholder with a loading shimmer, plus the
-						 * auto-rotate timer sitting just under the chrome. */}
-						<div className="relative aspect-[16/9] overflow-hidden bg-white">
+						{/* Screenshot placeholder with a loading shimmer + the auto-rotate
+						 * timer under the chrome. Real captures aren't published yet, so an
+						 * honest "preview coming soon" label is shown rather than a blank
+						 * panel that reads as broken. Replace with an <Image /> per folder
+						 * once captures exist. */}
+						<div className="relative flex aspect-[16/9] items-center justify-center overflow-hidden bg-white">
 							{autoplay && (
 								<span
 									key={activeId}
@@ -146,6 +149,14 @@ export function ScreenshotGallery() {
 										"linear-gradient(90deg, transparent, rgba(15, 15, 20, 0.06), transparent)",
 								}}
 							/>
+							<div className="relative z-10 px-6 text-center">
+								<p className="font-medium text-kumo-default text-sm">
+									{active.label} preview coming soon
+								</p>
+								<p className="mt-1 text-kumo-subtle text-xs">
+									Try it now from the GitHub repo
+								</p>
+							</div>
 						</div>
 					</div>
 				</div>
