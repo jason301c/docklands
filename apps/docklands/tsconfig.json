@@ -48,6 +48,7 @@
 		"docklands",
 		"config",
 		"dist",
+		"coverage",
 		"server/core/openapi/**/*.js"
 	]
 }

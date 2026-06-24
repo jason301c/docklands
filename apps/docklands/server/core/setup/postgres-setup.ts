@@ -5,18 +5,49 @@ import { pullImage } from "../utils/docker/utils";
 
 const logger = createLogger("setup:postgres");
 
+// Derive the bundled Postgres credentials from the app's own DATABASE_URL rather
+// than a hardcoded source-visible password (R4): the container then always uses
+// exactly the credentials the app connects with, and there is no shared secret
+// baked into the repo. (postgres only honors POSTGRES_PASSWORD on first-init of an
+// empty data volume, so this changes nothing for an existing volume; for a fresh
+// one it adopts whatever the operator set in DATABASE_URL.)
+const resolveBundledPostgresCredentials = () => {
+	const databaseUrl = process.env.DATABASE_URL;
+	if (!databaseUrl) {
+		throw new Error(
+			"DATABASE_URL must be set to provision the bundled Postgres container.",
+		);
+	}
+	let url: URL;
+	try {
+		url = new URL(databaseUrl);
+	} catch {
+		throw new Error("DATABASE_URL is not a valid connection URL.");
+	}
+	const user = decodeURIComponent(url.username) || "docklands";
+	const password = decodeURIComponent(url.password);
+	const database = url.pathname.replace(/^\//, "") || "docklands";
+	if (!password) {
+		throw new Error(
+			"DATABASE_URL must include a password to provision the bundled Postgres.",
+		);
+	}
+	return { user, password, database };
+};
+
 export const initializePostgres = async () => {
 	const imageName = "postgres:16";
 	const containerName = "docklands-postgres";
+	const { user, password, database } = resolveBundledPostgresCredentials();
 	const settings: CreateServiceOptions = {
 		Name: containerName,
 		TaskTemplate: {
 			ContainerSpec: {
 				Image: imageName,
 				Env: [
-					"POSTGRES_USER=docklands",
-					"POSTGRES_DB=docklands",
-					"POSTGRES_PASSWORD=amukds4wi9001583845717ad2",
+					`POSTGRES_USER=${user}`,
+					`POSTGRES_DB=${database}`,
+					`POSTGRES_PASSWORD=${password}`,
 				],
 				Mounts: [
 					{
