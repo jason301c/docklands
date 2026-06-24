@@ -4,7 +4,12 @@ import { Client } from "ssh2";
 import { createLogger } from "@/server/core/lib/logger";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { ExecError } from "./ExecError";
+import { redactSecrets } from "./redactSecrets";
 import { createHostVerifier } from "./ssh-host-key";
+
+// Cap a remote command so a wedged build can't hang its queue group forever. An
+// hour is generous for real builds while still bounding the failure mode.
+const REMOTE_COMMAND_TIMEOUT_MS = 60 * 60 * 1000;
 
 const logger = createLogger("process");
 
@@ -78,17 +83,15 @@ export const execAsyncStream = (
 		childProcess.stdout?.on("data", (data: Buffer | string) => {
 			const stringData = data.toString();
 			stdoutComplete += stringData;
-			if (onData) {
-				onData(stringData);
-			}
+			// Redact secrets in the live stream; the raw accumulator feeds ExecError,
+			// which redacts at its own boundary.
+			onData?.(redactSecrets(stringData));
 		});
 
 		childProcess.stderr?.on("data", (data: Buffer | string) => {
 			const stringData = data.toString();
 			stderrComplete += stringData;
-			if (onData) {
-				onData(stringData);
-			}
+			onData?.(redactSecrets(stringData));
 		});
 
 		childProcess.on("error", (error) => {
@@ -155,6 +158,7 @@ export const execAsyncRemote = async (
 	runtimeWorkerId: string | null,
 	command: string,
 	onData?: (data: string) => void,
+	timeoutMs: number = REMOTE_COMMAND_TIMEOUT_MS,
 ): Promise<{ stdout: string; stderr: string }> => {
 	if (!runtimeWorkerId) return { stdout: "", stderr: "" };
 	const runtimeWorker = await findRuntimeWorkerById(runtimeWorkerId);
@@ -163,55 +167,87 @@ export const execAsyncRemote = async (
 
 	let stdout = "";
 	let stderr = "";
+	// Redact secrets in the live stream before it reaches the deployment log /
+	// WebSocket; raw output is still kept in stdout/stderr for ExecError, which
+	// redacts at its own boundary.
+	const emit = (data: string) => onData?.(redactSecrets(data));
 	return new Promise((resolve, reject) => {
 		const conn = new Client();
+		// Settle exactly once and always tear down the connection + timer, so a
+		// timeout, error, and close can't double-resolve or leak the socket/timer.
+		let settled = false;
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		const settle = (action: () => void) => {
+			if (settled) return;
+			settled = true;
+			if (timer) clearTimeout(timer);
+			conn.end();
+			action();
+		};
+		timer = setTimeout(() => {
+			settle(() =>
+				reject(
+					new ExecError(`Remote command timed out after ${timeoutMs}ms`, {
+						command,
+						stdout,
+						stderr,
+						runtimeWorkerId,
+					}),
+				),
+			);
+		}, timeoutMs);
 
 		conn
 			.once("ready", () => {
 				conn.exec(command, (err, stream) => {
 					if (err) {
-						onData?.(err.message);
-						reject(
-							new ExecError(`Remote command execution failed: ${err.message}`, {
-								command,
-								runtimeWorkerId,
-								originalError: err,
-							}),
+						emit(err.message);
+						settle(() =>
+							reject(
+								new ExecError(
+									`Remote command execution failed: ${err.message}`,
+									{
+										command,
+										runtimeWorkerId,
+										originalError: err,
+									},
+								),
+							),
 						);
 						return;
 					}
 					stream
 						.on("close", (code: number, _signal: string) => {
-							conn.end();
 							if (code === 0) {
-								resolve({ stdout, stderr });
+								settle(() => resolve({ stdout, stderr }));
 							} else {
-								reject(
-									new ExecError(
-										`Remote command failed with exit code ${code}`,
-										{
-											command,
-											stdout,
-											stderr,
-											exitCode: code,
-											runtimeWorkerId,
-										},
+								settle(() =>
+									reject(
+										new ExecError(
+											`Remote command failed with exit code ${code}`,
+											{
+												command,
+												stdout,
+												stderr,
+												exitCode: code,
+												runtimeWorkerId,
+											},
+										),
 									),
 								);
 							}
 						})
 						.on("data", (data: string) => {
 							stdout += data.toString();
-							onData?.(data.toString());
+							emit(data.toString());
 						})
 						.stderr.on("data", (data) => {
 							stderr += data.toString();
-							onData?.(data.toString());
+							emit(data.toString());
 						});
 				});
 			})
 			.on("error", (err) => {
-				conn.end();
 				if (err.level === "client-authentication") {
 					const technicalDetail = `Error: ${err.message} ${err.level}`;
 					const friendlyMessage = [
@@ -227,26 +263,30 @@ export const execAsyncRemote = async (
 						"  • Try generating a new SSH key in Docklands and add only the public key to the runtimeWorker, then try again.",
 						"  • Make sure to follow the instructions on the Setup Server Button on the SSH Keys tab and then click on deployments tab and check the logs for more details.",
 					].join("\n");
-					onData?.(friendlyMessage);
-					reject(
-						new ExecError(
-							`Authentication failed: Invalid SSH private key. ${friendlyMessage}`,
-							{
-								command,
-								runtimeWorkerId,
-								originalError: err,
-							},
+					emit(friendlyMessage);
+					settle(() =>
+						reject(
+							new ExecError(
+								`Authentication failed: Invalid SSH private key. ${friendlyMessage}`,
+								{
+									command,
+									runtimeWorkerId,
+									originalError: err,
+								},
+							),
 						),
 					);
 				} else {
 					const errorMsg = `SSH connection error: ${err.message}`;
-					onData?.(errorMsg);
-					reject(
-						new ExecError(errorMsg, {
-							command,
-							runtimeWorkerId,
-							originalError: err,
-						}),
+					emit(errorMsg);
+					settle(() =>
+						reject(
+							new ExecError(errorMsg, {
+								command,
+								runtimeWorkerId,
+								originalError: err,
+							}),
+						),
 					);
 				}
 			})
