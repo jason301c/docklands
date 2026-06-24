@@ -53,7 +53,7 @@ export const apiCreateSshKey = createSchema
 		publicKey: true,
 		organizationId: true,
 	})
-	.merge(sshKeyCreate.pick({ privateKey: true }));
+	.extend(sshKeyCreate.pick({ privateKey: true }).shape);
 
 export const apiFindOneSshKey = z.object({
 	sshKeyId: z.string().min(1),
@@ -74,10 +74,10 @@ export const apiUpdateSshKey = createSchema
 		lastUsedAt: true,
 	})
 	.partial()
-	.merge(
+	.extend(
 		createSchema
 			.pick({
 				sshKeyId: true,
 			})
-			.required(),
+			.required().shape,
 	);

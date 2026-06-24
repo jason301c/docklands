@@ -458,7 +458,9 @@ export const apiSaveBuildType = createSchema
 		railpackVersion: true,
 	})
 	.required()
-	.merge(createSchema.pick({ publishDirectory: true, isStaticSpa: true }));
+	.extend(
+		createSchema.pick({ publishDirectory: true, isStaticSpa: true }).shape,
+	);
 
 const branchField = z
 	.string()
@@ -479,7 +481,9 @@ export const apiSaveGithubProvider = createSchema
 		triggerType: z.enum(["push", "tag"]).default("push"),
 	})
 	.required()
-	.merge(createSchema.pick({ enableSubmodules: true, watchPaths: true }));
+	.extend(
+		createSchema.pick({ enableSubmodules: true, watchPaths: true }).shape,
+	);
 
 export const apiSaveGitlabProvider = createSchema
 	.pick({
@@ -493,7 +497,9 @@ export const apiSaveGitlabProvider = createSchema
 	})
 	.required()
 	.extend({ gitlabBranch: branchField })
-	.merge(createSchema.pick({ enableSubmodules: true, watchPaths: true }));
+	.extend(
+		createSchema.pick({ enableSubmodules: true, watchPaths: true }).shape,
+	);
 
 export const apiSaveBitbucketProvider = createSchema
 	.pick({
@@ -506,7 +512,9 @@ export const apiSaveBitbucketProvider = createSchema
 	})
 	.required()
 	.extend({ bitbucketBranch: branchField })
-	.merge(createSchema.pick({ enableSubmodules: true, watchPaths: true }));
+	.extend(
+		createSchema.pick({ enableSubmodules: true, watchPaths: true }).shape,
+	);
 
 export const apiSaveGiteaProvider = createSchema
 	.pick({
@@ -518,7 +526,9 @@ export const apiSaveGiteaProvider = createSchema
 	})
 	.required()
 	.extend({ giteaBranch: branchField })
-	.merge(createSchema.pick({ enableSubmodules: true, watchPaths: true }));
+	.extend(
+		createSchema.pick({ enableSubmodules: true, watchPaths: true }).shape,
+	);
 
 export const apiSaveDockerProvider = createSchema
 	.pick({
@@ -540,11 +550,11 @@ export const apiSaveGitProvider = createSchema
 	})
 	.required()
 	.extend({ customGitBranch: branchField })
-	.merge(
+	.extend(
 		createSchema.pick({
 			customGitSSHKeyId: true,
 			enableSubmodules: true,
-		}),
+		}).shape,
 	);
 
 export const apiSaveEnvironmentVariables = createSchema
