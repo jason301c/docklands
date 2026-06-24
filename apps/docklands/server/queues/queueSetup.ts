@@ -121,28 +121,29 @@ export const cleanAllDeploymentQueue = async () => {
 export const killDockerBuild = async (
 	type: "application" | "compose",
 	runtimeWorkerId: string | null,
+	appName?: string,
 ) => {
 	try {
-		if (type === "application") {
-			const command = `pkill -2 -f "docker build"`;
+		// Scope the kill to this service's build by matching its appName (the image
+		// is tagged `<appName>:latest`, so the build's `docker build`/`buildx`/
+		// `compose` process carries it). Without the scope the old global
+		// `pkill -f "docker build"` killed EVERY concurrent build on the worker,
+		// not just the one being cancelled. appName is validated (no shell/regex
+		// metachars), so it's safe to interpolate. Fall back to the global match
+		// only if no appName is available.
+		const buildVerb =
+			type === "application" ? "docker build" : "docker compose";
+		const pattern = appName ? `${buildVerb}.*${appName}` : buildVerb;
+		const command = `pkill -2 -f "${pattern}"`;
 
-			if (runtimeWorkerId) {
-				await execAsyncRemote(runtimeWorkerId, command);
-			} else {
-				await execAsync(command);
-			}
-		} else if (type === "compose") {
-			const command = `pkill -2 -f "docker compose"`;
-
-			if (runtimeWorkerId) {
-				await execAsyncRemote(runtimeWorkerId, command);
-			} else {
-				await execAsync(command);
-			}
+		if (runtimeWorkerId) {
+			await execAsyncRemote(runtimeWorkerId, command);
+		} else {
+			await execAsync(command);
 		}
 	} catch (error) {
 		logger.error(
-			{ err: error, type, runtimeWorkerId },
+			{ err: error, type, runtimeWorkerId, appName },
 			"kill docker build failed",
 		);
 	}

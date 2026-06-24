@@ -775,7 +775,11 @@ export const applicationRouter = createTRPCRouter({
 				deployment: ["cancel"],
 			});
 			const application = await findApplicationById(input.applicationId);
-			await killDockerBuild("application", application.runtimeWorkerId);
+			await killDockerBuild(
+				"application",
+				application.runtimeWorkerId,
+				application.appName,
+			);
 			await audit(ctx, {
 				action: "stop",
 				resourceType: "application",
