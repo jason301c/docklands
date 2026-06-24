@@ -100,6 +100,7 @@ import {
 } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
+import { ErrorState } from "@/components/shared/states";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
 import { parseEnvironmentVariables } from "@/shared/env-string";
@@ -2635,6 +2636,20 @@ export const EnvironmentCanvas = ({
 				<Loader2 className="size-4 animate-spin" />
 				<span>Loading workspace...</span>
 			</div>
+		);
+	}
+
+	// Distinguish a genuine load failure (auth loss / 500 / network) from a
+	// real "not found". Without this an errored query silently rendered the
+	// not-found copy, telling the user the workspace does not exist.
+	if (workspaceQuery.isError) {
+		return (
+			<ErrorState
+				className="min-h-[70vh]"
+				title="Failed to load this environment"
+				error={workspaceQuery.error}
+				onRetry={() => workspaceQuery.refetch()}
+			/>
 		);
 	}
 

@@ -1,6 +1,11 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+	MutationCache,
+	QueryCache,
+	QueryClient,
+	QueryClientProvider,
+} from "@tanstack/react-query";
 import {
 	createWSClient,
 	httpBatchLink,
@@ -11,6 +16,7 @@ import {
 import { useState } from "react";
 import superjson from "superjson";
 import { api } from "@/client/api/trpc";
+import { handleGlobalError, shouldRetry } from "@/client/lib/trpc-error";
 
 const getBaseUrl = () => {
 	if (typeof window !== "undefined") return "";
@@ -31,9 +37,23 @@ let wsClientSingleton: ReturnType<typeof createWSClient> | undefined;
 
 const makeQueryClient = () =>
 	new QueryClient({
+		// Global resilience layer: every failed query/mutation is classified,
+		// logged, and surfaced (auth loss → login, forbidden/generic → toast) in
+		// one place, so no call site needs bespoke error handling for a failure
+		// to be visible. See `client/lib/trpc-error.ts`.
+		queryCache: new QueryCache({
+			onError: (error) => handleGlobalError(error, "query"),
+		}),
+		mutationCache: new MutationCache({
+			onError: (error, _vars, _ctx, mutation) =>
+				handleGlobalError(error, "mutation", {
+					toastGeneric: mutation.meta?.globalErrorToast === true,
+				}),
+		}),
 		defaultOptions: {
 			queries: {
 				refetchOnWindowFocus: false,
+				retry: shouldRetry,
 			},
 		},
 	});
