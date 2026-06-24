@@ -2,6 +2,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { SensitiveInput } from "@cloudflare/kumo/components/sensitive-input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -19,7 +20,6 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
-import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import {
 	asLibsql,
 	asMongo,
@@ -214,7 +214,11 @@ export const ShowExternalDatabaseCredentials = ({ databaseId }: Props) => {
 									<div className="grid w-full gap-8">
 										<div className="flex flex-col gap-3">
 											<Label>External Host</Label>
-											<ToggleVisibilityInput value={connectionUrl} disabled />
+											<SensitiveInput
+												aria-label="External host"
+												value={connectionUrl}
+												readOnly
+											/>
 										</div>
 									</div>
 								)}

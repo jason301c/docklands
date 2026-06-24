@@ -2,12 +2,12 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { SensitiveInput } from "@cloudflare/kumo/components/sensitive-input";
 import { LockKeyhole, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { toast } from "@/components/shared/toast";
-import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import { HandleSecurity } from "./handle-security";
 
 const logger = createClientLogger("application");
@@ -70,9 +70,10 @@ export const ShowSecurity = ({ applicationId }: Props) => {
 											</div>
 											<div className="flex flex-col gap-2">
 												<Label>Password</Label>
-												<ToggleVisibilityInput
+												<SensitiveInput
+													aria-label="Security password"
 													value={security.password}
-													disabled
+													readOnly
 												/>
 											</div>
 										</div>

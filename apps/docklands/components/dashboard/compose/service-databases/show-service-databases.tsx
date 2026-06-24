@@ -3,6 +3,7 @@ import { Collapsible } from "@cloudflare/kumo/components/collapsible";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { SensitiveInput } from "@cloudflare/kumo/components/sensitive-input";
 import { ChevronDown, ChevronRight, Database, DatabaseZap } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
@@ -14,7 +15,6 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
-import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import { ShowServiceDatabaseBackups } from "./show-service-database-backups";
 
 type ServiceDatabaseEngine =
@@ -87,9 +87,9 @@ const ConnectionVariables = ({
 				<div className="flex flex-col gap-2" key={variable.key}>
 					<Label>{variable.key}</Label>
 					{isSensitiveKey(variable.key) ? (
-						<ToggleVisibilityInput
+						<SensitiveInput
 							aria-label={variable.key}
-							disabled
+							readOnly
 							value={variable.value}
 						/>
 					) : (

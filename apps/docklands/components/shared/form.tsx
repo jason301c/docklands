@@ -107,9 +107,9 @@ const formControlComponentNames = new Set([
 	"NumberInputWithSteps",
 	"RadioGroup",
 	"Select",
+	"SensitiveInput",
 	"Switch",
 	"Textarea",
-	"ToggleVisibilityInput",
 ]);
 
 const formControlDomElements = new Set([

@@ -2,9 +2,9 @@ import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
+import { SensitiveInput } from "@cloudflare/kumo/components/sensitive-input";
 import { api } from "@/client/api/trpc";
 import { toast } from "@/components/shared/toast";
-import { ToggleVisibilityInput } from "@/components/shared/toggle-visibility-input";
 import {
 	asLibsql,
 	asMongo,
@@ -29,7 +29,7 @@ export const ShowInternalDatabaseCredentials = ({ databaseId }: Props) => {
 
 	const PasswordControl = ({ password }: { password?: string }) => (
 		<div className="flex flex-row gap-2 items-center">
-			<ToggleVisibilityInput value={password} disabled />
+			<SensitiveInput aria-label="Password" value={password ?? ""} readOnly />
 			<UpdateDatabasePassword
 				onUpdatePassword={async (newPassword) => {
 					await changePassword({
@@ -77,8 +77,9 @@ export const ShowInternalDatabaseCredentials = ({ databaseId }: Props) => {
 						</div>
 						<div className="flex flex-col gap-2">
 							<Label>Internal Connection URL </Label>
-							<ToggleVisibilityInput
-								disabled
+							<SensitiveInput
+								aria-label="Internal connection URL"
+								readOnly
 								value={`postgresql://${c.databaseUser}:${c.databasePassword}@${appName}:5432/${c.databaseName}`}
 							/>
 						</div>
@@ -110,8 +111,9 @@ export const ShowInternalDatabaseCredentials = ({ databaseId }: Props) => {
 						<div className="flex flex-col gap-2">
 							<Label>Root Password</Label>
 							<div className="flex flex-row gap-2 items-center">
-								<ToggleVisibilityInput
-									disabled
+								<SensitiveInput
+									aria-label="Root password"
+									readOnly
 									value={c.databaseRootPassword}
 								/>
 							</div>
@@ -126,8 +128,9 @@ export const ShowInternalDatabaseCredentials = ({ databaseId }: Props) => {
 						</div>
 						<div className="flex flex-col gap-2 md:col-span-2">
 							<Label>Internal Connection URL </Label>
-							<ToggleVisibilityInput
-								disabled
+							<SensitiveInput
+								aria-label="Internal connection URL"
+								readOnly
 								value={`${protocol}://${c.databaseUser}:${c.databasePassword}@${appName}:3306/${c.databaseName}`}
 							/>
 						</div>
@@ -156,8 +159,9 @@ export const ShowInternalDatabaseCredentials = ({ databaseId }: Props) => {
 						</div>
 						<div className="flex flex-col gap-2 md:col-span-2">
 							<Label>Internal Connection URL </Label>
-							<ToggleVisibilityInput
-								disabled
+							<SensitiveInput
+								aria-label="Internal connection URL"
+								readOnly
 								value={`mongodb://${c.databaseUser}:${c.databasePassword}@${appName}:27017/?authSource=admin${c.replicaSets ? "" : "&directConnection=true"}`}
 							/>
 						</div>
@@ -186,8 +190,9 @@ export const ShowInternalDatabaseCredentials = ({ databaseId }: Props) => {
 						</div>
 						<div className="flex flex-col gap-2 md:col-span-2">
 							<Label>Internal Connection URL </Label>
-							<ToggleVisibilityInput
-								disabled
+							<SensitiveInput
+								aria-label="Internal connection URL"
+								readOnly
 								value={`redis://default:${c.databasePassword}@${appName}:6379`}
 							/>
 						</div>
@@ -218,7 +223,11 @@ export const ShowInternalDatabaseCredentials = ({ databaseId }: Props) => {
 						<div className="flex flex-col gap-2">
 							<Label>Password</Label>
 							<div className="flex flex-row gap-4">
-								<ToggleVisibilityInput disabled value={c.databasePassword} />
+								<SensitiveInput
+									aria-label="Password"
+									readOnly
+									value={c.databasePassword}
+								/>
 							</div>
 						</div>
 						<div className="flex flex-row gap-2">
@@ -262,14 +271,19 @@ export const ShowInternalDatabaseCredentials = ({ databaseId }: Props) => {
 						</div>
 						<div className="flex flex-col gap-2 md:col-span-2">
 							<Label>Internal Connection URL </Label>
-							<ToggleVisibilityInput
-								disabled
+							<SensitiveInput
+								aria-label="Internal connection URL"
+								readOnly
 								value={`http://${appName}:8080`}
 							/>
 						</div>
 						<div className="flex flex-col gap-2 md:col-span-2">
 							<Label>Auth Token</Label>
-							<ToggleVisibilityInput disabled value={c.databasePassword} />
+							<SensitiveInput
+								aria-label="Auth token"
+								readOnly
+								value={c.databasePassword}
+							/>
 						</div>
 					</>
 				);
