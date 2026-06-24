@@ -32,9 +32,10 @@ export function Hero() {
 						Star on GitHub
 					</LinkButton>
 					<LinkButton
-						href="#get-started"
+						href={siteConfig.links.docs}
 						variant="primary"
 						size="base"
+						external
 						className="h-9 px-3.5"
 					>
 						Get started

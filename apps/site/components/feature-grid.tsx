@@ -1,3 +1,5 @@
+"use client";
+
 import type { Icon } from "@phosphor-icons/react";
 import {
 	ArchiveIcon,
@@ -9,6 +11,7 @@ import {
 	HardDrivesIcon,
 	ShieldCheckIcon,
 } from "@phosphor-icons/react/dist/ssr";
+import type { CSSProperties, PointerEvent } from "react";
 
 type Feature = {
 	icon: Icon;
@@ -67,13 +70,22 @@ const FEATURES: Feature[] = [
 	},
 ];
 
+// Track the pointer within a card so its spotlight (--mx/--my, read by the
+// `.card-spotlight` radial gradient in globals.css) follows the cursor.
+function handlePointerMove(event: PointerEvent<HTMLDivElement>) {
+	const el = event.currentTarget;
+	const rect = el.getBoundingClientRect();
+	el.style.setProperty("--mx", `${event.clientX - rect.left}px`);
+	el.style.setProperty("--my", `${event.clientY - rect.top}px`);
+}
+
 export function FeatureGrid() {
 	return (
 		<section
 			id="features"
 			className="mx-auto w-full max-w-7xl scroll-mt-20 px-6 py-24"
 		>
-			<div className="max-w-2xl">
+			<div className="reveal-up max-w-2xl">
 				<h2 className="font-display font-semibold text-3xl text-kumo-strong tracking-tight sm:text-4xl">
 					Everything a deploy needs
 				</h2>
@@ -83,20 +95,29 @@ export function FeatureGrid() {
 			</div>
 
 			<div className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-kumo-hairline bg-kumo-hairline sm:grid-cols-2 lg:grid-cols-4">
-				{FEATURES.map((feature) => {
+				{FEATURES.map((feature, index) => {
 					const Glyph = feature.icon;
 					return (
 						<div
 							key={feature.title}
-							className="group flex flex-col gap-4 bg-kumo-canvas p-8 transition-colors hover:bg-kumo-base"
+							onPointerMove={handlePointerMove}
+							// `--reveal-col` staggers the scroll-reveal into a per-row
+							// diagonal cascade (see `.reveal-fade` in globals.css).
+							style={{ "--reveal-col": index % 4 } as CSSProperties}
+							className="reveal-fade group relative flex flex-col gap-4 bg-kumo-canvas p-8 transition-colors duration-300 hover:bg-kumo-base"
 						>
-							<span className="flex size-11 items-center justify-center rounded-xl bg-kumo-brand/10 text-kumo-brand transition-colors group-hover:bg-kumo-brand/20">
+							{/* Cursor-following iris glow; below the content but above the card. */}
+							<span
+								aria-hidden
+								className="card-spotlight pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+							/>
+							<span className="relative flex size-11 items-center justify-center rounded-xl bg-kumo-brand/10 text-kumo-brand transition-[background-color,transform] duration-300 group-hover:-translate-y-0.5 group-hover:bg-kumo-brand/20">
 								<Glyph size={22} weight="duotone" />
 							</span>
-							<h3 className="font-medium text-kumo-strong text-lg">
+							<h3 className="relative font-medium text-kumo-strong text-lg">
 								{feature.title}
 							</h3>
-							<p className="text-kumo-subtle text-sm leading-relaxed">
+							<p className="relative text-kumo-subtle text-sm leading-relaxed">
 								{feature.description}
 							</p>
 						</div>

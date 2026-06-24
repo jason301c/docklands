@@ -73,7 +73,7 @@ export function ScreenshotGallery() {
 			id="showcase"
 			className="mx-auto w-full max-w-7xl scroll-mt-20 px-6 pt-24"
 		>
-			<div className="max-w-2xl">
+			<div className="reveal-up max-w-2xl">
 				<h2 className="font-display font-semibold text-3xl text-kumo-strong tracking-tight sm:text-4xl">
 					See Docklands in action
 				</h2>
@@ -83,7 +83,7 @@ export function ScreenshotGallery() {
 				</p>
 			</div>
 
-			<div className="mt-12">
+			<div className="reveal-up mt-12">
 				{/* Folder tabs stacked horizontally; the active one reads as "open". */}
 				<div className="flex gap-1.5 overflow-x-auto pb-px">
 					{FOLDERS.map((folder) => {
@@ -116,7 +116,7 @@ export function ScreenshotGallery() {
 				<div className="relative">
 					<div
 						aria-hidden
-						className="-z-10 -inset-6 pointer-events-none absolute opacity-25 blur-2xl sm:-inset-10"
+						className="-z-10 -inset-6 animate-gradient-pan pointer-events-none absolute opacity-25 blur-2xl sm:-inset-10"
 						style={{ backgroundImage: "var(--gradient-brand)" }}
 					/>
 

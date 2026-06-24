@@ -114,32 +114,152 @@
 	/* Clip the signature gradient to text. Apply to a span inside a heading. */
 	.text-gradient {
 		background-image: var(--gradient-brand);
+		/* Oversized so the gradient has room to drift (see `gradient-pan`). */
+		background-size: 180% 180%;
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		color: transparent;
 	}
 
-	/* The hero's rotating word: fade and rise on each swap. The span is keyed in
-	 * React so React remounts it, re-running this animation every cycle. */
-	@keyframes word-in {
-		from {
+	/* The hero's rotating word, in two phases (see components/rotating-word.tsx).
+	 *
+	 * Charge: the outgoing word gathers energy — it brightens and blooms a soft
+	 * iris glow while staying readable, then accelerates into a bright blur and
+	 * fades out, as if discharging. Eased in so the burst happens at the end. */
+	@keyframes word-charge {
+		0% {
+			filter: blur(0) brightness(1);
+			opacity: 1;
+			transform: scale(1);
+		}
+		45% {
+			filter: blur(0.4px) brightness(1.5)
+				drop-shadow(0 0 12px rgba(139, 107, 255, 0.45));
+			opacity: 1;
+			transform: scale(1.015);
+		}
+		100% {
+			filter: blur(16px) brightness(2);
 			opacity: 0;
-			transform: translateY(0.5em);
+			transform: scale(1.05);
+		}
+	}
+
+	.animate-word-charge {
+		animation:
+			word-charge 0.5s cubic-bezier(0.7, 0, 0.84, 0) both,
+			gradient-pan 9s ease-in-out infinite alternate;
+	}
+
+	/* Resolve: the incoming word condenses out of the blur — it arrives bright and
+	 * heavily blurred, sharpens past focus, then settles. Keyed in React so it
+	 * remounts and re-runs on every swap. */
+	@keyframes word-resolve {
+		0% {
+			filter: blur(16px) brightness(1.7);
+			opacity: 0;
+			transform: scale(1.05);
+		}
+		55% {
+			filter: blur(1.5px) brightness(1.2);
+			opacity: 1;
+			transform: scale(0.996);
+		}
+		100% {
+			filter: blur(0) brightness(1);
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	.animate-word-resolve {
+		animation:
+			word-resolve 0.6s cubic-bezier(0.16, 1, 0.3, 1) both,
+			gradient-pan 9s ease-in-out infinite alternate;
+	}
+
+	/* Living gradient: a slow, seamless drift of the signature gradient. It needs a
+	 * background larger than its box (above / `.animate-gradient-pan`) so there is
+	 * room to travel; `alternate` reverses each pass so the non-repeating gradient
+	 * never reveals a hard seam. Shared by the hero word, the CTA card, and the
+	 * gallery glow so every gradient surface breathes in step. */
+	@keyframes gradient-pan {
+		from {
+			background-position: 0% 50%;
 		}
 		to {
-			opacity: 1;
-			transform: translateY(0);
+			background-position: 100% 50%;
 		}
 	}
 
-	.animate-word-in {
-		animation: word-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+	.animate-gradient-pan {
+		background-size: 180% 180%;
+		animation: gradient-pan 12s ease-in-out infinite alternate;
 	}
 
+	/* Feature-card spotlight: a soft iris glow that tracks the pointer. The card
+	 * sets --mx/--my on pointermove (feature-grid.tsx); the span fades in on hover. */
+	.card-spotlight {
+		background: radial-gradient(
+			16rem circle at var(--mx, 50%) var(--my, 50%),
+			color-mix(in oklab, var(--color-kumo-brand) 20%, transparent),
+			transparent 70%
+		);
+	}
+
+	/* Reduced motion: collapse the word phases and the gradient drift to a plain,
+	 * static state. The React timers still advance, so the word keeps rotating. */
 	@media (prefers-reduced-motion: reduce) {
-		.animate-word-in {
+		.animate-word-charge,
+		.animate-word-resolve,
+		.animate-gradient-pan {
 			animation: none;
+		}
+	}
+
+	/* Scroll reveal: standalone blocks rise and un-blur as they enter the viewport
+	 * (`reveal-up`), while feature cards fade in a per-row diagonal cascade keyed by
+	 * --reveal-col (`reveal-fade`, opacity-only so the hairline mosaic never breaks).
+	 *
+	 * Built on CSS scroll-driven animations and gated behind @supports so that
+	 * browsers without view-timeline support — and anyone with reduced motion — get
+	 * everything fully visible. Content is never trapped in the hidden start frame. */
+	@media (prefers-reduced-motion: no-preference) {
+		@supports (animation-timeline: view()) {
+			@keyframes reveal-up {
+				from {
+					opacity: 0;
+					transform: translateY(1.75rem);
+					filter: blur(3px);
+				}
+				to {
+					opacity: 1;
+					transform: translateY(0);
+					filter: blur(0);
+				}
+			}
+
+			@keyframes reveal-fade {
+				from {
+					opacity: 0;
+				}
+				to {
+					opacity: 1;
+				}
+			}
+
+			.reveal-up {
+				animation: reveal-up linear both;
+				animation-timeline: view();
+				animation-range: entry 4% cover 36%;
+			}
+
+			.reveal-fade {
+				animation: reveal-fade linear both;
+				animation-timeline: view();
+				animation-range: entry calc(2% + var(--reveal-col, 0) * 5%) cover 34%;
+			}
 		}
 	}
 
