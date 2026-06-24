@@ -1,0 +1,67 @@
+# Docker image build smoke test.
+#
+# Building the production image exercises a path the main CI gates don't: the
+# multi-stage Dockerfile, the workspace-root build context, native-addon
+# compilation, and the esbuild/Next production build inside the image. It's slow
+# and network-heavy (the image installs Docker CLI, rclone, nixpacks, etc.), so
+# it runs ONLY when build-affecting files change — not on every PR.
+#
+# It builds without pushing (no registry credentials, no `--load`): a failed
+# `docker build` fails the job, which is the whole point — catch Dockerfile /
+# lockfile / build breakage before it reaches a release.
+name: Docker build
+
+on:
+  push:
+    branches: [canary, main]
+    paths:
+      - "apps/docklands/Dockerfile"
+      - "apps/docklands/package.json"
+      - "apps/docklands/esbuild.config.ts"
+      - "bun.lock"
+      - "tools/docker/**"
+      - ".github/workflows/docker-build.yml"
+  pull_request:
+    branches: [canary, main]
+    paths:
+      - "apps/docklands/Dockerfile"
+      - "apps/docklands/package.json"
+      - "apps/docklands/esbuild.config.ts"
+      - "bun.lock"
+      - "tools/docker/**"
+      - ".github/workflows/docker-build.yml"
+
+concurrency:
+  group: docker-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-image:
+    name: Build production image
+    runs-on: ubuntu-latest
+    # The image build (native addons + Next/esbuild build inside the image) is
+    # the long pole; cap generously so a hang fails fast.
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build with the workspace root as context against the app Dockerfile (the
+      # Dockerfile expects the Bun workspace root so the lockfile installs
+      # consistently). No push / no load — building is the smoke test. GitHub
+      # Actions cache keeps repeat builds reasonable.
+      - name: Build image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/docklands/Dockerfile
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
