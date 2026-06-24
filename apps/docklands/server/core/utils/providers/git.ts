@@ -99,20 +99,6 @@ const isHttpOrHttps = (url: string): boolean => {
 	return regex.test(url);
 };
 
-// const addHostToKnownHosts = async (repositoryURL: string) => {
-// 	const { SSH_PATH } = paths();
-// 	const { domain, port } = sanitizeRepoPathSSH(repositoryURL);
-// 	const knownHostsPath = path.join(SSH_PATH, "known_hosts");
-
-// 	const command = `ssh-keyscan -p ${port} ${domain} >> ${knownHostsPath}`;
-// 	try {
-// 		await execAsync(command);
-// 	} catch (error) {
-// 		console.error(`Error adding host to known_hosts: ${error}`);
-// 		throw error;
-// 	}
-// };
-
 const addHostToKnownHostsCommand = (repositoryURL: string) => {
 	const { SSH_PATH } = paths(true);
 	const { domain, port } = sanitizeRepoPathSSH(repositoryURL);

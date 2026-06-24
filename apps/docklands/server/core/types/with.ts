@@ -38,9 +38,3 @@ type ZodObj<T extends AnyObj> = {
 	[key in keyof T]: z.ZodType<T[key]>;
 };
 const _zObject = <T extends AnyObj>(arg: ZodObj<T>) => z.object(arg);
-
-// const goodDogScheme = zObject<UserWithPosts>({
-//   //   prueba: schema.selectDatabaseSchema,
-//   // domain: z.string(),
-//   // domainId: z.string(),
-// });
