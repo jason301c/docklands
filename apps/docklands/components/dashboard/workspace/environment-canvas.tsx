@@ -2,10 +2,7 @@
 
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
-import { Input } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
@@ -83,6 +80,15 @@ import { AddImport } from "@/components/dashboard/workspace/actions/add-import";
 import { AddTemplate } from "@/components/dashboard/workspace/actions/add-template";
 import { AdvancedEnvironmentSelector } from "@/components/dashboard/workspace/actions/advanced-environment-selector";
 import { EnvironmentVariables } from "@/components/dashboard/workspace/actions/environment-variables";
+import { BulkDeleteDialog } from "@/components/dashboard/workspace/canvas/bulk-delete-dialog";
+import {
+	CommandBarDialog,
+	type CommandGroup,
+	type CommandItem,
+} from "@/components/dashboard/workspace/canvas/command-bar-dialog";
+import { serviceTypeLabels } from "@/components/dashboard/workspace/canvas/constants";
+import { DuplicateServicesDialog } from "@/components/dashboard/workspace/canvas/duplicate-services-dialog";
+import { MoveServicesDialog } from "@/components/dashboard/workspace/canvas/move-services-dialog";
 import { WorkspaceVariables } from "@/components/dashboard/workspace/manage/workspace-variables";
 import {
 	LibsqlIcon,
@@ -136,23 +142,6 @@ type DragState = {
 	moved: boolean;
 };
 
-type CommandGroup =
-	| "Create"
-	| "Environments"
-	| "Services"
-	| "Actions"
-	| "System";
-
-type CommandItem = {
-	id: string;
-	group: CommandGroup;
-	label: string;
-	detail: string;
-	search: string;
-	icon: ReactNode;
-	run: () => void;
-};
-
 type CreateServiceDialog =
 	| "application"
 	| "database"
@@ -202,17 +191,6 @@ const databaseCredentialServiceTypes = new Set<WorkspaceServiceType>([
 	"postgres",
 	"redis",
 ]);
-
-const serviceTypeLabels: Record<WorkspaceServiceType, string> = {
-	application: "Application",
-	compose: "Compose",
-	libsql: "LibSQL",
-	mariadb: "MariaDB",
-	mongo: "MongoDB",
-	mysql: "MySQL",
-	postgres: "PostgreSQL",
-	redis: "Redis",
-};
 
 const serviceKindFilterOptions: { value: ServiceKindFilter; label: string }[] =
 	[
@@ -3960,7 +3938,7 @@ export const EnvironmentCanvas = ({
 				</aside>
 			)}
 
-			<Dialog.Root
+			<MoveServicesDialog
 				open={isMoveDialogOpen}
 				onOpenChange={(open) => {
 					if (open) {
@@ -3969,88 +3947,19 @@ export const EnvironmentCanvas = ({
 					}
 					resetMoveDialog();
 				}}
-			>
-				<Dialog className="sm:max-w-lg">
-					<div>
-						<Dialog.Title>Move Services</Dialog.Title>
-						<Dialog.Description>
-							Move {selectedBulkServices.length} selected service
-							{selectedBulkServices.length === 1 ? "" : "s"} to another
-							environment.
-						</Dialog.Description>
-					</div>
+				selectedBulkServices={selectedBulkServices}
+				allWorkspaces={allWorkspaces}
+				selectedTargetProject={selectedTargetProject}
+				setSelectedTargetProject={setSelectedTargetProject}
+				selectedTargetEnvironment={selectedTargetEnvironment}
+				setSelectedTargetEnvironment={setSelectedTargetEnvironment}
+				targetEnvironments={targetEnvironments}
+				resetMoveDialog={resetMoveDialog}
+				runBulkMove={runBulkMove}
+				isBulkActionLoading={isBulkActionLoading}
+			/>
 
-					<div className="space-y-4">
-						<div className="space-y-2">
-							<p className="text-sm font-medium">Workspace</p>
-							<Select
-								aria-label="Target workspace"
-								value={selectedTargetProject}
-								onValueChange={(value) => {
-									if (value === null) return;
-									setSelectedTargetProject(value as string);
-									setSelectedTargetEnvironment("");
-								}}
-							>
-								{allWorkspaces?.map((workspace) => (
-									<Select.Option
-										key={workspace.workspaceId}
-										value={workspace.workspaceId}
-									>
-										{workspace.name}
-									</Select.Option>
-								))}
-							</Select>
-						</div>
-
-						<div className="space-y-2">
-							<p className="text-sm font-medium">Environment</p>
-							<Select
-								aria-label="Target environment"
-								value={selectedTargetEnvironment}
-								onValueChange={(value) => {
-									if (value !== null) {
-										setSelectedTargetEnvironment(value as string);
-									}
-								}}
-							>
-								{targetEnvironments.map((environment) => (
-									<Select.Option
-										key={environment.environmentId}
-										value={environment.environmentId}
-									>
-										{environment.name}
-									</Select.Option>
-								))}
-							</Select>
-							{selectedTargetProject && targetEnvironments.length === 0 && (
-								<p className="text-xs text-kumo-subtle">
-									This workspace has no other environments.
-								</p>
-							)}
-						</div>
-					</div>
-
-					<div className="flex justify-end gap-2">
-						<Button variant="outline" onClick={resetMoveDialog}>
-							Cancel
-						</Button>
-						<Button
-							onClick={() => void runBulkMove()}
-							loading={isBulkActionLoading}
-							disabled={
-								selectedBulkServices.length === 0 ||
-								!selectedTargetProject ||
-								!selectedTargetEnvironment
-							}
-						>
-							Move services
-						</Button>
-					</div>
-				</Dialog>
-			</Dialog.Root>
-
-			<Dialog.Root
+			<BulkDeleteDialog
 				open={isBulkDeleteDialogOpen}
 				onOpenChange={(open) => {
 					if (open) {
@@ -4059,74 +3968,16 @@ export const EnvironmentCanvas = ({
 					}
 					resetBulkDeleteDialog();
 				}}
-			>
-				<Dialog className="sm:max-w-lg">
-					<div>
-						<Dialog.Title>Delete Services</Dialog.Title>
-						<Dialog.Description>
-							Delete {selectedBulkServices.length} selected service
-							{selectedBulkServices.length === 1 ? "" : "s"}. This cannot be
-							undone.
-						</Dialog.Description>
-					</div>
+				selectedBulkServices={selectedBulkServices}
+				selectedBulkRunningServices={selectedBulkRunningServices}
+				deleteComposeVolumes={deleteComposeVolumes}
+				setDeleteComposeVolumes={setDeleteComposeVolumes}
+				resetBulkDeleteDialog={resetBulkDeleteDialog}
+				runBulkDelete={runBulkDelete}
+				isBulkActionLoading={isBulkActionLoading}
+			/>
 
-					<div className="space-y-4 text-sm">
-						{selectedBulkRunningServices.length > 0 ? (
-							<div className="rounded-md border border-kumo-danger/30 bg-kumo-danger/10 p-3 text-kumo-danger">
-								Stop {selectedBulkRunningServices.length} running service
-								{selectedBulkRunningServices.length === 1 ? "" : "s"} before
-								deleting.
-							</div>
-						) : (
-							<div className="rounded-md border bg-kumo-fill/30 p-3">
-								{selectedBulkServices.map((service) => (
-									<div
-										key={getWorkspaceServiceKey(service.type, service.id)}
-										className="flex items-center justify-between gap-3 py-1"
-									>
-										<span className="truncate">{service.name}</span>
-										<Badge>{serviceTypeLabels[service.type]}</Badge>
-									</div>
-								))}
-							</div>
-						)}
-
-						{selectedBulkServices.some(
-							(service) => service.type === "compose",
-						) && (
-							<div className="flex items-center gap-2">
-								<Checkbox
-									aria-label="Delete compose volumes too"
-									checked={deleteComposeVolumes}
-									onCheckedChange={(checked) =>
-										setDeleteComposeVolumes(checked === true)
-									}
-								/>
-								<span>Delete compose volumes too</span>
-							</div>
-						)}
-					</div>
-
-					<div className="flex justify-end gap-2">
-						<Button variant="outline" onClick={resetBulkDeleteDialog}>
-							Cancel
-						</Button>
-						<Button
-							variant="destructive"
-							onClick={() => void runBulkDelete()}
-							loading={isBulkActionLoading}
-							disabled={
-								selectedBulkServices.length === 0 ||
-								selectedBulkRunningServices.length > 0
-							}
-						>
-							Delete services
-						</Button>
-					</div>
-				</Dialog>
-			</Dialog.Root>
-
-			<Dialog.Root
+			<DuplicateServicesDialog
 				open={isDuplicateDialogOpen}
 				onOpenChange={(open) => {
 					if (open) {
@@ -4135,225 +3986,35 @@ export const EnvironmentCanvas = ({
 					}
 					resetDuplicateDialog();
 				}}
-			>
-				<Dialog className="sm:max-w-lg">
-					<div>
-						<Dialog.Title>Duplicate Services</Dialog.Title>
-						<Dialog.Description>
-							Duplicate {selectedBulkServices.length} selected service
-							{selectedBulkServices.length === 1 ? "" : "s"}.
-						</Dialog.Description>
-					</div>
+				selectedBulkServices={selectedBulkServices}
+				allWorkspaces={allWorkspaces}
+				duplicateMode={duplicateMode}
+				setDuplicateMode={setDuplicateMode}
+				duplicateName={duplicateName}
+				setDuplicateName={setDuplicateName}
+				duplicateDescription={duplicateDescription}
+				setDuplicateDescription={setDuplicateDescription}
+				duplicateTargetProject={duplicateTargetProject}
+				setDuplicateTargetProject={setDuplicateTargetProject}
+				duplicateTargetEnvironment={duplicateTargetEnvironment}
+				setDuplicateTargetEnvironment={setDuplicateTargetEnvironment}
+				duplicateProjectEnvironments={duplicateProjectEnvironments}
+				resetDuplicateDialog={resetDuplicateDialog}
+				runBulkDuplicate={runBulkDuplicate}
+				isDuplicatePending={duplicateProject.isPending}
+			/>
 
-					<div className="space-y-4">
-						<div className="grid grid-cols-2 gap-2">
-							<Button
-								variant={
-									duplicateMode === "new-workspace" ? "primary" : "outline"
-								}
-								onClick={() => {
-									setDuplicateMode("new-workspace");
-									setDuplicateTargetProject("");
-									setDuplicateTargetEnvironment("");
-								}}
-							>
-								New workspace
-							</Button>
-							<Button
-								variant={
-									duplicateMode === "existing-environment"
-										? "primary"
-										: "outline"
-								}
-								onClick={() => setDuplicateMode("existing-environment")}
-							>
-								Environment
-							</Button>
-						</div>
-
-						{duplicateMode === "new-workspace" ? (
-							<div className="space-y-3">
-								<div className="space-y-2">
-									<label
-										className="text-sm font-medium"
-										htmlFor="duplicate-workspace-name"
-									>
-										Workspace name
-									</label>
-									<Input
-										aria-label="Workspace name"
-										id="duplicate-workspace-name"
-										value={duplicateName}
-										onChange={(event) => setDuplicateName(event.target.value)}
-										placeholder="New workspace"
-									/>
-								</div>
-								<div className="space-y-2">
-									<label
-										className="text-sm font-medium"
-										htmlFor="duplicate-workspace-description"
-									>
-										Description
-									</label>
-									<Input
-										aria-label="Workspace description"
-										id="duplicate-workspace-description"
-										value={duplicateDescription}
-										onChange={(event) =>
-											setDuplicateDescription(event.target.value)
-										}
-										placeholder="Optional"
-									/>
-								</div>
-							</div>
-						) : (
-							<div className="space-y-3">
-								<div className="space-y-2">
-									<p className="text-sm font-medium">Workspace</p>
-									<Select
-										aria-label="Target workspace"
-										value={duplicateTargetProject}
-										onValueChange={(value) => {
-											if (value === null) return;
-											setDuplicateTargetProject(value as string);
-											setDuplicateTargetEnvironment("");
-										}}
-									>
-										{allWorkspaces?.map((workspace) => (
-											<Select.Option
-												key={workspace.workspaceId}
-												value={workspace.workspaceId}
-											>
-												{workspace.name}
-											</Select.Option>
-										))}
-									</Select>
-								</div>
-								<div className="space-y-2">
-									<p className="text-sm font-medium">Environment</p>
-									<Select
-										aria-label="Target environment"
-										value={duplicateTargetEnvironment}
-										onValueChange={(value) => {
-											if (value !== null) {
-												setDuplicateTargetEnvironment(value as string);
-											}
-										}}
-									>
-										{duplicateProjectEnvironments?.map((environment) => (
-											<Select.Option
-												key={environment.environmentId}
-												value={environment.environmentId}
-											>
-												{environment.name}
-											</Select.Option>
-										))}
-									</Select>
-								</div>
-							</div>
-						)}
-
-						<div className="rounded-md border bg-kumo-fill/30 p-3 text-sm">
-							{selectedBulkServices.map((service) => (
-								<div
-									key={getWorkspaceServiceKey(service.type, service.id)}
-									className="flex items-center justify-between gap-3 py-1"
-								>
-									<span className="truncate">{service.name}</span>
-									<Badge>{serviceTypeLabels[service.type]}</Badge>
-								</div>
-							))}
-						</div>
-					</div>
-
-					<div className="flex justify-end gap-2">
-						<Button variant="outline" onClick={resetDuplicateDialog}>
-							Cancel
-						</Button>
-						<Button
-							onClick={() => void runBulkDuplicate()}
-							loading={duplicateProject.isPending}
-							disabled={
-								selectedBulkServices.length === 0 ||
-								(duplicateMode === "new-workspace" && !duplicateName.trim()) ||
-								(duplicateMode === "existing-environment" &&
-									!duplicateTargetEnvironment)
-							}
-						>
-							Duplicate services
-						</Button>
-					</div>
-				</Dialog>
-			</Dialog.Root>
-
-			<Dialog.Root
+			<CommandBarDialog
 				open={commandOpen}
 				onOpenChange={(open) => {
 					setCommandOpen(open);
 					if (!open) setCommandQuery("");
 				}}
-			>
-				<Dialog className="sm:max-w-2xl">
-					<div>
-						<Dialog.Title>Command Bar</Dialog.Title>
-					</div>
-					<div className="relative">
-						<FocusShortcutInput
-							autoFocus
-							placeholder="Search commands..."
-							value={commandQuery}
-							onChange={(event) => setCommandQuery(event.target.value)}
-							className="pr-9"
-						/>
-						<Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-kumo-subtle" />
-					</div>
-					<div className="max-h-[22rem] space-y-2 overflow-auto">
-						{filteredCommandItems.length === 0 ? (
-							<div className="rounded-lg border border-dashed p-5 text-center text-sm text-kumo-subtle">
-								No commands found.
-							</div>
-						) : (
-							commandGroups.map((group) => {
-								const items = filteredCommandItems.filter(
-									(item) => item.group === group,
-								);
-								if (items.length === 0) return null;
-
-								return (
-									<div key={group} className="space-y-1">
-										<div className="px-1 text-xs font-medium uppercase text-kumo-subtle">
-											{group}
-										</div>
-										{items.map((item) => (
-											<button
-												key={item.id}
-												type="button"
-												className="flex w-full items-center justify-between gap-3 rounded-md border bg-kumo-canvas px-3 py-2 text-left hover:bg-kumo-fill/40"
-												onClick={item.run}
-											>
-												<span className="flex min-w-0 items-center gap-3">
-													<span className="flex size-8 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
-														{item.icon}
-													</span>
-													<span className="min-w-0">
-														<span className="block truncate text-sm font-medium">
-															{item.label}
-														</span>
-														<span className="block truncate text-xs text-kumo-subtle">
-															{item.detail}
-														</span>
-													</span>
-												</span>
-												<ArrowRight className="size-4 shrink-0 text-kumo-subtle" />
-											</button>
-										))}
-									</div>
-								);
-							})
-						)}
-					</div>
-				</Dialog>
-			</Dialog.Root>
+				commandQuery={commandQuery}
+				setCommandQuery={setCommandQuery}
+				filteredCommandItems={filteredCommandItems}
+				commandGroups={commandGroups}
+			/>
 
 			{permissions?.service.create && workspace && (
 				<>
