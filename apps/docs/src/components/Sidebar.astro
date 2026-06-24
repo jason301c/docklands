@@ -1,4 +1,5 @@
 ---
+import config from "virtual:starlight/user-config";
 /*
  * Left-rail layout. On desktop, Starlight's top bar is removed (see docs.css) and
  * the brand, theme toggle, search, and a "Support us on GitHub" chip live here at
@@ -6,10 +7,9 @@
  * inside the slide-out menu (opened with the floating menu button).
  */
 import { Icon } from "@astrojs/starlight/components";
-import Default from "@astrojs/starlight/components/Sidebar.astro";
 import Search from "@astrojs/starlight/components/Search.astro";
+import Default from "@astrojs/starlight/components/Sidebar.astro";
 import SiteTitle from "@astrojs/starlight/components/SiteTitle.astro";
-import config from "virtual:starlight/user-config";
 import ThemeToggle from "./ThemeToggle.astro";
 
 const shouldRenderSearch =
