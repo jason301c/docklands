@@ -4,13 +4,7 @@ import { Input } from "@cloudflare/kumo/components/input";
 import { Radio } from "@cloudflare/kumo/components/radio";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import {
-	AlertTriangle,
-	Mail,
-	PenBoxIcon,
-	PlusIcon,
-	Trash2,
-} from "lucide-react";
+import { AlertTriangle, Mail, PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -38,6 +32,20 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+import {
+	CustomFields,
+	DiscordFields,
+	EmailFields,
+	GotifyFields,
+	LarkFields,
+	MattermostFields,
+	NtfyFields,
+	PushoverFields,
+	ResendFields,
+	SlackFields,
+	TeamsFields,
+	TelegramFields,
+} from "./provider-fields";
 
 const logger = createClientLogger("notifications");
 
@@ -229,6 +237,11 @@ export const notificationsMap = {
 };
 
 export type NotificationSchema = z.infer<typeof notificationSchema>;
+// The form's field values are the schema *input* (defaulted booleans are
+// optional pre-parse); the resolver transforms them into `NotificationSchema`.
+// The extracted provider field-sets type their `control` against these so it
+// matches `form.control` exactly (see `provider-fields/types.ts`).
+export type NotificationFormInput = z.input<typeof notificationSchema>;
 
 interface Props {
 	notificationId?: string;
@@ -584,190 +597,214 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 		pushover: pushoverMutation,
 	};
 
-	const onSubmit = async (data: NotificationSchema) => {
-		const {
-			appBuildError,
-			appDeploy,
-			docklandsRestart,
-			databaseBackup,
-			docklandsBackup,
-			volumeBackup,
-			dockerCleanup,
-			serverThreshold,
-		} = data;
-		let promise: Promise<unknown> | null = null;
-		if (data.type === "slack") {
-			promise = slackMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				webhookUrl: data.webhookUrl,
-				channel: data.channel,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
+	// Per-provider submit dispatch. Each entry builds the EXACT payload its
+	// original if/else branch sent and calls the matching create/update mutation
+	// (already resolved above into the `*Mutation` handles). `data` is the
+	// discriminated-union member for that `type`, so the per-provider fields are
+	// available without re-narrowing. Note the deliberate quirks preserved from
+	// the original branches: gotify and ntfy omit `serverThreshold`; mattermost
+	// coerces empty channel/username to `undefined`; telegram/ntfy coerce
+	// optional tokens to `""`; custom flattens the headers array to a record;
+	// pushover only sends retry/expire for emergency priority (2). Pushover's
+	// pre-submit guard can't live in a payload builder, so it stays special-cased
+	// in `onSubmit` below.
+	const submitDispatch: Record<
+		NotificationSchema["type"],
+		(data: NotificationSchema) => Promise<unknown>
+	> = {
+		slack: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "slack" }>;
+			return slackMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				webhookUrl: d.webhookUrl,
+				channel: d.channel,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
 				slackId: notification?.slackId || "",
 				notificationId: notificationId || "",
-				serverThreshold: serverThreshold,
+				serverThreshold: d.serverThreshold,
 			});
-		} else if (data.type === "telegram") {
-			promise = telegramMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				botToken: data.botToken,
-				messageThreadId: data.messageThreadId || "",
-				chatId: data.chatId,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
+		},
+		telegram: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "telegram" }>;
+			return telegramMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				botToken: d.botToken,
+				messageThreadId: d.messageThreadId || "",
+				chatId: d.chatId,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
 				notificationId: notificationId || "",
 				telegramId: notification?.telegramId || "",
-				serverThreshold: serverThreshold,
+				serverThreshold: d.serverThreshold,
 			});
-		} else if (data.type === "discord") {
-			promise = discordMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				webhookUrl: data.webhookUrl,
-				decoration: data.decoration,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
+		},
+		discord: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "discord" }>;
+			return discordMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				webhookUrl: d.webhookUrl,
+				decoration: d.decoration,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
 				notificationId: notificationId || "",
 				discordId: notification?.discordId || "",
-				serverThreshold: serverThreshold,
+				serverThreshold: d.serverThreshold,
 			});
-		} else if (data.type === "email") {
-			promise = emailMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				smtpServer: data.smtpServer,
-				smtpPort: data.smtpPort,
-				username: data.username,
-				password: data.password,
-				fromAddress: data.fromAddress,
-				toAddresses: data.toAddresses,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
+		},
+		email: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "email" }>;
+			return emailMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				smtpServer: d.smtpServer,
+				smtpPort: d.smtpPort,
+				username: d.username,
+				password: d.password,
+				fromAddress: d.fromAddress,
+				toAddresses: d.toAddresses,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
 				notificationId: notificationId || "",
 				emailId: notification?.emailId || "",
-				serverThreshold: serverThreshold,
+				serverThreshold: d.serverThreshold,
 			});
-		} else if (data.type === "resend") {
-			promise = resendMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				apiKey: data.apiKey,
-				fromAddress: data.fromAddress,
-				toAddresses: data.toAddresses,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
+		},
+		resend: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "resend" }>;
+			return resendMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				apiKey: d.apiKey,
+				fromAddress: d.fromAddress,
+				toAddresses: d.toAddresses,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
 				notificationId: notificationId || "",
 				resendId: notification?.resendId || "",
-				serverThreshold: serverThreshold,
+				serverThreshold: d.serverThreshold,
 			});
-		} else if (data.type === "gotify") {
-			promise = gotifyMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				serverUrl: data.serverUrl,
-				appToken: data.appToken,
-				priority: data.priority,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
-				decoration: data.decoration,
+		},
+		gotify: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "gotify" }>;
+			return gotifyMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				serverUrl: d.serverUrl,
+				appToken: d.appToken,
+				priority: d.priority,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
+				decoration: d.decoration,
 				notificationId: notificationId || "",
 				gotifyId: notification?.gotifyId || "",
 			});
-		} else if (data.type === "ntfy") {
-			promise = ntfyMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				serverUrl: data.serverUrl,
-				accessToken: data.accessToken || "",
-				topic: data.topic,
-				priority: data.priority,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
+		},
+		ntfy: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "ntfy" }>;
+			return ntfyMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				serverUrl: d.serverUrl,
+				accessToken: d.accessToken || "",
+				topic: d.topic,
+				priority: d.priority,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
 				notificationId: notificationId || "",
 				ntfyId: notification?.ntfyId || "",
 			});
-		} else if (data.type === "mattermost") {
-			promise = mattermostMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				webhookUrl: data.webhookUrl,
-				channel: data.channel || undefined,
-				username: data.username || undefined,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
+		},
+		mattermost: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "mattermost" }>;
+			return mattermostMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				webhookUrl: d.webhookUrl,
+				channel: d.channel || undefined,
+				username: d.username || undefined,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
 				notificationId: notificationId || "",
 				mattermostId: notification?.mattermostId || "",
-				serverThreshold: serverThreshold,
+				serverThreshold: d.serverThreshold,
 			});
-		} else if (data.type === "lark") {
-			promise = larkMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				webhookUrl: data.webhookUrl,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
+		},
+		lark: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "lark" }>;
+			return larkMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				webhookUrl: d.webhookUrl,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
 				notificationId: notificationId || "",
 				larkId: notification?.larkId || "",
-				serverThreshold: serverThreshold,
+				serverThreshold: d.serverThreshold,
 			});
-		} else if (data.type === "teams") {
-			promise = teamsMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				webhookUrl: data.webhookUrl,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
+		},
+		teams: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "teams" }>;
+			return teamsMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				webhookUrl: d.webhookUrl,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
 				notificationId: notificationId || "",
 				teamsId: notification?.teamsId || "",
-				serverThreshold: serverThreshold,
+				serverThreshold: d.serverThreshold,
 			});
-		} else if (data.type === "custom") {
+		},
+		custom: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "custom" }>;
 			// Convert headers array to object
 			const headersRecord =
-				data.headers && data.headers.length > 0
-					? data.headers.reduce(
+				d.headers && d.headers.length > 0
+					? d.headers.reduce(
 							(acc, { key, value }) => {
 								if (key.trim()) acc[key] = value;
 								return acc;
@@ -776,45 +813,56 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 						)
 					: undefined;
 
-			promise = customMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				endpoint: data.endpoint,
+			return customMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				endpoint: d.endpoint,
 				headers: headersRecord,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
-				serverThreshold: serverThreshold,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
+				serverThreshold: d.serverThreshold,
 				notificationId: notificationId || "",
 				customId: notification?.customId || "",
 			});
-		} else if (data.type === "pushover") {
-			if (data.priority === 2 && (data.retry == null || data.expire == null)) {
-				toast.error("Retry and expire are required for emergency priority (2)");
-				return;
-			}
-			promise = pushoverMutation.mutateAsync({
-				appBuildError: appBuildError,
-				appDeploy: appDeploy,
-				docklandsRestart: docklandsRestart,
-				databaseBackup: databaseBackup,
-				docklandsBackup: docklandsBackup,
-				volumeBackup: volumeBackup,
-				userKey: data.userKey,
-				apiToken: data.apiToken,
-				priority: data.priority,
-				retry: data.priority === 2 ? data.retry : undefined,
-				expire: data.priority === 2 ? data.expire : undefined,
-				name: data.name,
-				dockerCleanup: dockerCleanup,
-				serverThreshold: serverThreshold,
+		},
+		pushover: (data) => {
+			const d = data as Extract<NotificationSchema, { type: "pushover" }>;
+			return pushoverMutation.mutateAsync({
+				appBuildError: d.appBuildError,
+				appDeploy: d.appDeploy,
+				docklandsRestart: d.docklandsRestart,
+				databaseBackup: d.databaseBackup,
+				docklandsBackup: d.docklandsBackup,
+				volumeBackup: d.volumeBackup,
+				userKey: d.userKey,
+				apiToken: d.apiToken,
+				priority: d.priority,
+				retry: d.priority === 2 ? d.retry : undefined,
+				expire: d.priority === 2 ? d.expire : undefined,
+				name: d.name,
+				dockerCleanup: d.dockerCleanup,
+				serverThreshold: d.serverThreshold,
 				notificationId: notificationId || "",
 				pushoverId: notification?.pushoverId || "",
 			});
+		},
+	};
+
+	const onSubmit = async (data: NotificationSchema) => {
+		if (
+			data.type === "pushover" &&
+			data.priority === 2 &&
+			(data.retry == null || data.expire == null)
+		) {
+			toast.error("Retry and expire are required for emergency priority (2)");
+			return;
 		}
+
+		const promise = submitDispatch[data.type](data);
 
 		if (promise) {
 			await promise
@@ -951,883 +999,61 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 									)}
 								/>
 
-								{type === "slack" && (
-									<>
-										<FormField
-											control={form.control}
-											name="webhookUrl"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Webhook URL</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
-															{...field}
-														/>
-													</FormControl>
-
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<FormField
-											control={form.control}
-											name="channel"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Channel</FormLabel>
-													<FormControl>
-														<Input placeholder="Channel" {...field} />
-													</FormControl>
-
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</>
-								)}
+								{type === "slack" && <SlackFields control={form.control} />}
 
 								{type === "telegram" && (
-									<>
-										<FormField
-											control={form.control}
-											name="botToken"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Bot Token</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="6660491268:AAFMGmajZOVewpMNZCgJr5H7cpXpoZPgvXw"
-															{...field}
-														/>
-													</FormControl>
-
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<FormField
-											control={form.control}
-											name="chatId"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Chat ID</FormLabel>
-													<FormControl>
-														<Input placeholder="431231869" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<FormField
-											control={form.control}
-											name="messageThreadId"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Message Thread ID</FormLabel>
-													<FormControl>
-														<Input placeholder="11" {...field} />
-													</FormControl>
-
-													<FormMessage />
-													<FormDescription>
-														Optional. Use it when you want to send notifications
-														to a specific topic in a group.
-													</FormDescription>
-												</FormItem>
-											)}
-										/>
-									</>
+									<TelegramFields control={form.control} />
 								)}
 
-								{type === "discord" && (
-									<>
-										<FormField
-											control={form.control}
-											name="webhookUrl"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Webhook URL</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="https://discord.com/api/webhooks/123456789/ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-															{...field}
-														/>
-													</FormControl>
-
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<FormField
-											control={form.control}
-											name="decoration"
-											defaultValue={true}
-											render={({ field }) => (
-												<FormItem className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-													<div className="space-y-0.5">
-														<FormLabel>Decoration</FormLabel>
-														<FormDescription>
-															Decorate the notification with emojis.
-														</FormDescription>
-													</div>
-													<FormControl>
-														<Switch
-															checked={field.value}
-															onCheckedChange={field.onChange}
-														/>
-													</FormControl>
-												</FormItem>
-											)}
-										/>
-									</>
-								)}
+								{type === "discord" && <DiscordFields control={form.control} />}
 
 								{type === "email" && (
-									<>
-										<div className="flex md:flex-row flex-col gap-2 w-full">
-											<FormField
-												control={form.control}
-												name="smtpServer"
-												render={({ field }) => (
-													<FormItem className="w-full">
-														<FormLabel>SMTP Server</FormLabel>
-														<FormControl>
-															<Input placeholder="smtp.gmail.com" {...field} />
-														</FormControl>
-
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-											<FormField
-												control={form.control}
-												name="smtpPort"
-												render={({ field }) => (
-													<FormItem className="w-full">
-														<FormLabel>SMTP Port</FormLabel>
-														<FormControl>
-															<Input
-																placeholder="587"
-																{...field}
-																onChange={(e) => {
-																	const value = e.target.value;
-																	if (value === "") {
-																		field.onChange(undefined);
-																	} else {
-																		const port = Number.parseInt(value, 10);
-																		if (port > 0 && port < 65536) {
-																			field.onChange(port);
-																		}
-																	}
-																}}
-																value={field.value || ""}
-																type="number"
-															/>
-														</FormControl>
-
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-										</div>
-
-										<div className="flex md:flex-row flex-col gap-2 w-full">
-											<FormField
-												control={form.control}
-												name="username"
-												render={({ field }) => (
-													<FormItem className="w-full">
-														<FormLabel>Username</FormLabel>
-														<FormControl>
-															<Input placeholder="username" {...field} />
-														</FormControl>
-
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-
-											<FormField
-												control={form.control}
-												name="password"
-												render={({ field }) => (
-													<FormItem className="w-full">
-														<FormLabel>Password</FormLabel>
-														<FormControl>
-															<Input
-																type="password"
-																placeholder="******************"
-																{...field}
-															/>
-														</FormControl>
-
-														<FormMessage />
-													</FormItem>
-												)}
-											/>
-										</div>
-
-										<FormField
-											control={form.control}
-											name="fromAddress"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>From Address</FormLabel>
-													<FormControl>
-														<Input placeholder="from@example.com" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<div className="flex flex-col gap-2 pt-2">
-											<FormLabel>To Addresses</FormLabel>
-
-											{fields.map((field, index) => (
-												<div
-													key={field.id}
-													className="flex flex-row gap-2 w-full"
-												>
-													<FormField
-														control={form.control}
-														name={`toAddresses.${index}`}
-														render={({ field }) => (
-															<FormItem className="w-full">
-																<FormControl>
-																	<Input
-																		placeholder="email@example.com"
-																		className="w-full"
-																		{...field}
-																	/>
-																</FormControl>
-
-																<FormMessage />
-															</FormItem>
-														)}
-													/>
-													<Button
-														variant="outline"
-														type="button"
-														onClick={() => {
-															remove(index);
-														}}
-													>
-														Remove
-													</Button>
-												</div>
-											))}
-											{type === "email" &&
-												"toAddresses" in form.formState.errors && (
-													<div className="text-sm font-medium text-kumo-danger">
-														{form.formState?.errors?.toAddresses?.root?.message}
-													</div>
-												)}
-										</div>
-
-										<Button
-											variant="outline"
-											type="button"
-											onClick={() => {
-												append("");
-											}}
-										>
-											Add
-										</Button>
-									</>
+									<EmailFields
+										control={form.control}
+										form={form}
+										type={type}
+										fields={fields}
+										append={append}
+										remove={remove}
+									/>
 								)}
 
 								{type === "resend" && (
-									<>
-										<FormField
-											control={form.control}
-											name="apiKey"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>API Key</FormLabel>
-													<FormControl>
-														<Input
-															type="password"
-															placeholder="re_********"
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<FormField
-											control={form.control}
-											name="fromAddress"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>From Address</FormLabel>
-													<FormControl>
-														<Input placeholder="from@example.com" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<div className="flex flex-col gap-2 pt-2">
-											<FormLabel>To Addresses</FormLabel>
-
-											{fields.map((field, index) => (
-												<div
-													key={field.id}
-													className="flex flex-row gap-2 w-full"
-												>
-													<FormField
-														control={form.control}
-														name={`toAddresses.${index}`}
-														render={({ field }) => (
-															<FormItem className="w-full">
-																<FormControl>
-																	<Input
-																		placeholder="email@example.com"
-																		className="w-full"
-																		{...field}
-																	/>
-																</FormControl>
-
-																<FormMessage />
-															</FormItem>
-														)}
-													/>
-													<Button
-														variant="outline"
-														type="button"
-														onClick={() => {
-															remove(index);
-														}}
-													>
-														Remove
-													</Button>
-												</div>
-											))}
-											{type === "resend" &&
-												"toAddresses" in form.formState.errors && (
-													<div className="text-sm font-medium text-kumo-danger">
-														{form.formState?.errors?.toAddresses?.root?.message}
-													</div>
-												)}
-										</div>
-
-										<Button
-											variant="outline"
-											type="button"
-											onClick={() => {
-												append("");
-											}}
-										>
-											Add
-										</Button>
-									</>
+									<ResendFields
+										control={form.control}
+										form={form}
+										type={type}
+										fields={fields}
+										append={append}
+										remove={remove}
+									/>
 								)}
 
-								{type === "gotify" && (
-									<>
-										<FormField
-											control={form.control}
-											name="serverUrl"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Server URL</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="https://gotify.example.com"
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="appToken"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>App Token</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="AzxcvbnmKjhgfdsa..."
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="priority"
-											defaultValue={5}
-											render={({ field }) => (
-												<FormItem className="w-full">
-													<FormLabel>Priority</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="5"
-															{...field}
-															onChange={(e) => {
-																const value = e.target.value;
-																if (value) {
-																	const port = Number.parseInt(value, 10);
-																	if (port > 0 && port < 10) {
-																		field.onChange(port);
-																	}
-																}
-															}}
-															type="number"
-														/>
-													</FormControl>
-													<FormDescription>
-														Message priority (1-10, default: 5)
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="decoration"
-											defaultValue={true}
-											render={({ field }) => (
-												<FormItem className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
-													<div className="space-y-0.5">
-														<FormLabel>Decoration</FormLabel>
-														<FormDescription>
-															Decorate the notification with emojis.
-														</FormDescription>
-													</div>
-													<FormControl>
-														<Switch
-															checked={field.value}
-															onCheckedChange={field.onChange}
-														/>
-													</FormControl>
-												</FormItem>
-											)}
-										/>
-									</>
-								)}
+								{type === "gotify" && <GotifyFields control={form.control} />}
 
-								{type === "ntfy" && (
-									<>
-										<FormField
-											control={form.control}
-											name="serverUrl"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Server URL</FormLabel>
-													<FormControl>
-														<Input placeholder="https://ntfy.sh" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="topic"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Topic</FormLabel>
-													<FormControl>
-														<Input placeholder="builds" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="accessToken"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Access Token</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="AzxcvbnmKjhgfdsa..."
-															{...field}
-															value={field.value ?? ""}
-														/>
-													</FormControl>
-													<FormDescription>
-														Optional. Leave blank for public topics.
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="priority"
-											defaultValue={3}
-											render={({ field }) => (
-												<FormItem className="w-full">
-													<FormLabel>Priority</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="3"
-															{...field}
-															onChange={(e) => {
-																const value = e.target.value;
-																if (value) {
-																	const port = Number.parseInt(value, 10);
-																	if (port > 0 && port <= 5) {
-																		field.onChange(port);
-																	}
-																}
-															}}
-															type="number"
-														/>
-													</FormControl>
-													<FormDescription>
-														Message priority (1-5, default: 3)
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</>
-								)}
+								{type === "ntfy" && <NtfyFields control={form.control} />}
 
 								{type === "mattermost" && (
-									<>
-										<FormField
-											control={form.control}
-											name="webhookUrl"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Webhook URL</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="https://your-mattermost.com/hooks/xxx-generatedkey-xxx"
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<FormField
-											control={form.control}
-											name="channel"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Channel</FormLabel>
-													<FormControl>
-														<Input placeholder="builds" {...field} />
-													</FormControl>
-													<FormDescription>
-														Optional. Channel to post to (without #).
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<FormField
-											control={form.control}
-											name="username"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Username</FormLabel>
-													<FormControl>
-														<Input placeholder="Docklands" {...field} />
-													</FormControl>
-													<FormDescription>
-														Optional. Display name for the webhook.
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</>
+									<MattermostFields control={form.control} />
 								)}
 
 								{type === "custom" && (
-									<div className="space-y-4">
-										<FormField
-											control={form.control}
-											name="endpoint"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Webhook URL</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="https://api.example.com/webhook"
-															{...field}
-														/>
-													</FormControl>
-													<FormDescription>
-														The URL where POST requests will be sent with
-														notification data.
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<div className="space-y-3">
-											<div>
-												<FormLabel>Headers</FormLabel>
-												<FormDescription>
-													Optional. Custom headers for your POST request (e.g.,
-													Authorization, Content-Type).
-												</FormDescription>
-											</div>
-
-											<div className="space-y-2">
-												{headerFields.map((field, index) => (
-													<div
-														key={field.id}
-														className="flex items-center gap-2 p-2 border rounded-md bg-kumo-fill/50"
-													>
-														<FormField
-															control={form.control}
-															name={`headers.${index}.key` as never}
-															render={({ field }) => (
-																<FormItem className="flex-1">
-																	<FormControl>
-																		<Input placeholder="Key" {...field} />
-																	</FormControl>
-																</FormItem>
-															)}
-														/>
-														<FormField
-															control={form.control}
-															name={`headers.${index}.value` as never}
-															render={({ field }) => (
-																<FormItem className="flex-[2]">
-																	<FormControl>
-																		<Input placeholder="Value" {...field} />
-																	</FormControl>
-																</FormItem>
-															)}
-														/>
-														<Button
-															type="button"
-															variant="ghost"
-															size="sm"
-															onClick={() => removeHeader(index)}
-															className="text-kumo-danger hover:text-kumo-danger hover:bg-kumo-danger-tint"
-														>
-															<Trash2 className="h-4 w-4" />
-														</Button>
-													</div>
-												))}
-											</div>
-
-											<Button
-												type="button"
-												variant="outline"
-												size="sm"
-												onClick={() => appendHeader({ key: "", value: "" })}
-												className="w-full"
-											>
-												<PlusIcon className="h-4 w-4 mr-2" />
-												Add header
-											</Button>
-										</div>
-									</div>
+									<CustomFields
+										control={form.control}
+										headerFields={headerFields}
+										appendHeader={appendHeader}
+										removeHeader={removeHeader}
+									/>
 								)}
 
-								{type === "lark" && (
-									<>
-										<FormField
-											control={form.control}
-											name="webhookUrl"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Webhook URL</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="https://open.larksuite.com/open-apis/bot/v2/hook/xxxxxxxxxxxxxxxxxxxxxxxx"
-															{...field}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</>
-								)}
+								{type === "lark" && <LarkFields control={form.control} />}
 
-								{type === "teams" && (
-									<>
-										<FormField
-											control={form.control}
-											name="webhookUrl"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Webhook URL</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="https://xxx.webhook.office.com/webhookb2/..."
-															{...field}
-														/>
-													</FormControl>
-													<FormDescription>
-														Incoming Webhook URL from a Teams channel. Add an
-														Incoming Webhook in your channel settings to get the
-														URL.
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</>
-								)}
+								{type === "teams" && <TeamsFields control={form.control} />}
 								{type === "pushover" && (
-									<>
-										<FormField
-											control={form.control}
-											name="userKey"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>User Key</FormLabel>
-													<FormControl>
-														<Input placeholder="ub3de9kl2q..." {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="apiToken"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>API Token</FormLabel>
-													<FormControl>
-														<Input placeholder="a3d9k2q7m4..." {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="priority"
-											defaultValue={0}
-											render={({ field }) => (
-												<FormItem className="w-full">
-													<FormLabel>Priority</FormLabel>
-													<FormControl>
-														<Input
-															placeholder="0"
-															value={field.value ?? 0}
-															onChange={(e) => {
-																const value = e.target.value;
-																if (value === "" || value === "-") {
-																	field.onChange(0);
-																} else {
-																	const priority = Number.parseInt(value, 10);
-																	if (
-																		!Number.isNaN(priority) &&
-																		priority >= -2 &&
-																		priority <= 2
-																	) {
-																		field.onChange(priority);
-																	}
-																}
-															}}
-															type="number"
-															min={-2}
-															max={2}
-														/>
-													</FormControl>
-													<FormDescription>
-														Message priority (-2 to 2, default: 0, emergency: 2)
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										{form.watch("priority") === 2 && (
-											<>
-												<FormField
-													control={form.control}
-													name="retry"
-													render={({ field }) => (
-														<FormItem className="w-full">
-															<FormLabel>Retry (seconds)</FormLabel>
-															<FormControl>
-																<Input
-																	placeholder="30"
-																	{...field}
-																	value={field.value ?? ""}
-																	onChange={(e) => {
-																		const value = e.target.value;
-																		if (value === "") {
-																			field.onChange(undefined);
-																		} else {
-																			const retry = Number.parseInt(value, 10);
-																			if (!Number.isNaN(retry)) {
-																				field.onChange(retry);
-																			}
-																		}
-																	}}
-																	type="number"
-																	min={30}
-																/>
-															</FormControl>
-															<FormDescription>
-																How often (in seconds) to retry. Minimum 30
-																seconds.
-															</FormDescription>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-												<FormField
-													control={form.control}
-													name="expire"
-													render={({ field }) => (
-														<FormItem className="w-full">
-															<FormLabel>Expire (seconds)</FormLabel>
-															<FormControl>
-																<Input
-																	placeholder="3600"
-																	{...field}
-																	value={field.value ?? ""}
-																	onChange={(e) => {
-																		const value = e.target.value;
-																		if (value === "") {
-																			field.onChange(undefined);
-																		} else {
-																			const expire = Number.parseInt(value, 10);
-																			if (!Number.isNaN(expire)) {
-																				field.onChange(expire);
-																			}
-																		}
-																	}}
-																	type="number"
-																	min={1}
-																	max={10800}
-																/>
-															</FormControl>
-															<FormDescription>
-																How long to keep retrying (max 10800 seconds / 3
-																hours).
-															</FormDescription>
-															<FormMessage />
-														</FormItem>
-													)}
-												/>
-											</>
-										)}
-									</>
+									<PushoverFields
+										control={form.control}
+										priority={form.watch("priority")}
+									/>
 								)}
 							</div>
 						</div>
