@@ -42,7 +42,7 @@ export const dockerRouter = createTRPCRouter({
 			return await getContainers(input.runtimeWorkerId);
 		}),
 
-	restartContainer: withPermission("docker", "read")
+	restartContainer: withPermission("docker", "write")
 		.input(
 			z.object({
 				containerId: z
@@ -72,7 +72,7 @@ export const dockerRouter = createTRPCRouter({
 			});
 		}),
 
-	startContainer: withPermission("docker", "read")
+	startContainer: withPermission("docker", "write")
 		.input(
 			z.object({
 				containerId: z
@@ -102,7 +102,7 @@ export const dockerRouter = createTRPCRouter({
 			});
 		}),
 
-	stopContainer: withPermission("docker", "read")
+	stopContainer: withPermission("docker", "write")
 		.input(
 			z.object({
 				containerId: z
@@ -132,7 +132,7 @@ export const dockerRouter = createTRPCRouter({
 			});
 		}),
 
-	killContainer: withPermission("docker", "read")
+	killContainer: withPermission("docker", "write")
 		.input(
 			z.object({
 				containerId: z
@@ -162,7 +162,7 @@ export const dockerRouter = createTRPCRouter({
 			});
 		}),
 
-	removeContainer: withPermission("docker", "read")
+	removeContainer: withPermission("docker", "write")
 		.input(
 			z.object({
 				containerId: z
@@ -316,7 +316,7 @@ export const dockerRouter = createTRPCRouter({
 			);
 		}),
 
-	uploadFileToContainer: withPermission("docker", "read")
+	uploadFileToContainer: withPermission("docker", "write")
 		.input(uploadFileToContainerSchema)
 		.mutation(async ({ input, ctx }) => {
 			if (input.runtimeWorkerId) {
