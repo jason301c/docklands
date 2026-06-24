@@ -6,9 +6,9 @@ import copy from "copy-to-clipboard";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createClientLogger } from "@/client/lib/logger";
+import { TerminalLine } from "@/components/shared/logs/terminal-line";
+import { type LogLine, parseLogs } from "@/components/shared/logs/utils";
 import { toast } from "@/components/shared/toast";
-import { TerminalLine } from "../../container-runtime/logs/terminal-line";
-import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
 
 const logger = createClientLogger("deployment-logs");
 

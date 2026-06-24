@@ -17,11 +17,15 @@ import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("docker-logs");
 
+import { TerminalLine } from "@/components/shared/logs/terminal-line";
+import {
+	getLogType,
+	type LogLine,
+	parseLogs,
+} from "@/components/shared/logs/utils";
 import { LineCountFilter } from "./line-count-filter";
 import { SinceLogsFilter, type TimeFilter } from "./since-logs-filter";
 import { StatusLogsFilter } from "./status-logs-filter";
-import { TerminalLine } from "./terminal-line";
-import { getLogType, type LogLine, parseLogs } from "./utils";
 
 interface Props {
 	containerId: string;

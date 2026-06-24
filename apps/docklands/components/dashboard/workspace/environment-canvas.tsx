@@ -64,7 +64,6 @@ import { ShowPreviewDeployments } from "@/components/dashboard/application/previ
 import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
 import { ShowVolumeBackups } from "@/components/dashboard/application/volume-backups/show-volume-backups";
 import { ShowComposeContainers } from "@/components/dashboard/compose/containers/show-compose-containers";
-import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
 import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
@@ -73,6 +72,7 @@ import { ShowExternalDatabaseCredentials } from "@/components/dashboard/database
 import { ShowInternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-internal-database-credentials";
 import { ComposeMonitoring } from "@/components/dashboard/metrics/container/show-compose-monitoring";
 import { ContainerMonitoring } from "@/components/dashboard/metrics/container/show-container-monitoring";
+import { DeleteService } from "@/components/dashboard/service/delete-service";
 import { AddApplication } from "@/components/dashboard/workspace/actions/add-application";
 import { AddCompose } from "@/components/dashboard/workspace/actions/add-compose";
 import { AddDatabase } from "@/components/dashboard/workspace/actions/add-database";

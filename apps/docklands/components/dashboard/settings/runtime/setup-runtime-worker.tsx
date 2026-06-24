@@ -17,8 +17,8 @@ import { DOCS_URL } from "@/shared/routes";
 
 const logger = createClientLogger("runtime-worker");
 
+import { type LogLine, parseLogs } from "@/components/shared/logs/utils";
 import { ShowDeployment } from "../../application/deployments/show-deployment";
-import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
 import { EditScript } from "./edit-script";
 import { GPUSupport } from "./gpu-support";
 import { SecurityAudit } from "./security-audit";

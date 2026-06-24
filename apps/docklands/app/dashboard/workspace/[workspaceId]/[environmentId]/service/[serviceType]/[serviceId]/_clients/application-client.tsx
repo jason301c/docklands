@@ -26,8 +26,8 @@ import { ShowPreviewDeployments } from "@/components/dashboard/application/previ
 import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
 import { UpdateApplication } from "@/components/dashboard/application/update-application";
 import { ShowVolumeBackups } from "@/components/dashboard/application/volume-backups/show-volume-backups";
-import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ContainerMonitoring } from "@/components/dashboard/metrics/container/show-container-monitoring";
+import { DeleteService } from "@/components/dashboard/service/delete-service";
 import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,

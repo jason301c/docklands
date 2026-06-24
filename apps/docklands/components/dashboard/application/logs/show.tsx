@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
+import { badgeStateColor } from "@/components/shared/badge-state-color";
 
 export const DockerLogs = dynamic(
 	() =>
@@ -17,22 +18,6 @@ export const DockerLogs = dynamic(
 		ssr: false,
 	},
 );
-
-export const badgeStateColor = (state: string) => {
-	switch (state) {
-		case "running":
-		case "ready":
-			return "green";
-		case "exited":
-		case "shutdown":
-			return "red";
-		case "accepted":
-		case "created":
-			return "blue";
-		default:
-			return "secondary";
-	}
-};
 
 interface Props {
 	appName: string;

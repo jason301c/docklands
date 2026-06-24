@@ -5,7 +5,6 @@ import { Label } from "@cloudflare/kumo/components/label";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { parse, stringify, YAMLParseError } from "yaml";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
@@ -21,6 +20,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+import { validateAndFormatYAML } from "@/shared/yaml";
 
 const logger = createClientLogger("application");
 
@@ -33,27 +33,6 @@ type UpdateIngressConfig = z.infer<typeof UpdateIngressConfigSchema>;
 interface Props {
 	applicationId: string;
 }
-
-export const validateAndFormatYAML = (yamlText: string) => {
-	try {
-		const obj = parse(yamlText);
-		const formattedYaml = stringify(obj, { indent: 4 });
-		return { valid: true, formattedYaml, error: null };
-	} catch (error) {
-		if (error instanceof YAMLParseError) {
-			return {
-				valid: false,
-				formattedYaml: yamlText,
-				error: error.message,
-			};
-		}
-		return {
-			valid: false,
-			formattedYaml: yamlText,
-			error: "An unexpected error occurred while processing the YAML.",
-		};
-	}
-};
 
 export const UpdateIngressConfig = ({ applicationId }: Props) => {
 	const { permissions } = usePermissions();

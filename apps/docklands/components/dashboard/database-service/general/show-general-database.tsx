@@ -12,8 +12,8 @@ const logger = createClientLogger("database-service");
 import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/terminal/service-terminal-modal";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
+import { type LogLine, parseLogs } from "@/components/shared/logs/utils";
 import { toast } from "@/components/shared/toast";
-import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
 import { ENGINE_LABELS } from "./engine-labels";
 
 interface Props {

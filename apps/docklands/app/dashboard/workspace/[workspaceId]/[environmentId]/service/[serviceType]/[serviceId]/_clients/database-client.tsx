@@ -8,7 +8,6 @@ import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
-import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/database-service/advanced/show-database-advanced-settings";
 import { ShowBackups } from "@/components/dashboard/database-service/backups/show-backups";
 import { ShowExternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-external-database-credentials";
@@ -16,6 +15,7 @@ import { ShowGeneralDatabase } from "@/components/dashboard/database-service/gen
 import { ShowInternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-internal-database-credentials";
 import { UpdateDatabase } from "@/components/dashboard/database-service/update-database";
 import { ContainerMonitoring } from "@/components/dashboard/metrics/container/show-container-monitoring";
+import { DeleteService } from "@/components/dashboard/service/delete-service";
 import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,

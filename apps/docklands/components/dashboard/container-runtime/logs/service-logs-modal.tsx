@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { badgeStateColor } from "../../application/logs/show";
+import { badgeStateColor } from "@/components/shared/badge-state-color";
 
 export const DockerLogsId = dynamic(
 	() =>

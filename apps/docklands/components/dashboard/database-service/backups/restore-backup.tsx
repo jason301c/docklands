@@ -35,12 +35,13 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { type LogLine, parseLogs } from "@/components/shared/logs/utils";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { toast } from "@/components/shared/toast";
 import { BACKUP_DATABASE_ENGINE_KEYS } from "@/shared/database-engines";
+import { formatBytes } from "@/shared/format-bytes";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
-import { type LogLine, parseLogs } from "../../container-runtime/logs/utils";
 import {
 	ComposeServicePicker,
 	useComposeServices,
@@ -107,14 +108,6 @@ const RestoreBackupSchema = z
 			refineComposeBackupMetadata(data.databaseType, data.metadata, ctx);
 		}
 	});
-
-export const formatBytes = (bytes: number): string => {
-	if (bytes === 0) return "0 Bytes";
-	const k = 1024;
-	const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-	const i = Math.floor(Math.log(bytes) / Math.log(k));
-	return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
-};
 
 export const RestoreBackup = ({
 	id,

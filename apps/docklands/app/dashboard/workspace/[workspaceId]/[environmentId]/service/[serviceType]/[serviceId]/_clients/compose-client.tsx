@@ -18,7 +18,6 @@ import { ShowVolumeBackups } from "@/components/dashboard/application/volume-bac
 import { AddCommandCompose } from "@/components/dashboard/compose/advanced/add-command";
 import { IsolatedDeploymentTab } from "@/components/dashboard/compose/advanced/add-isolation";
 import { ShowComposeContainers } from "@/components/dashboard/compose/containers/show-compose-containers";
-import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowGeneralCompose } from "@/components/dashboard/compose/general/show";
 import { ShowDockerLogsCompose } from "@/components/dashboard/compose/logs/show";
 import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-stack";
@@ -26,6 +25,7 @@ import { ShowServiceDatabases } from "@/components/dashboard/compose/service-dat
 import { UpdateCompose } from "@/components/dashboard/compose/update-compose";
 import { ShowBackups } from "@/components/dashboard/database-service/backups/show-backups";
 import { ComposeMonitoring } from "@/components/dashboard/metrics/container/show-compose-monitoring";
+import { DeleteService } from "@/components/dashboard/service/delete-service";
 import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,

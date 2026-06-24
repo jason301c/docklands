@@ -1,8 +1,8 @@
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { TerminalLine } from "../dashboard/container-runtime/logs/terminal-line";
-import type { LogLine } from "../dashboard/container-runtime/logs/utils";
+import { TerminalLine } from "./logs/terminal-line";
+import type { LogLine } from "./logs/utils";
 
 interface Props {
 	isOpen: boolean;

@@ -35,11 +35,11 @@ import {
 } from "@/components/shared/command";
 import { ScrollArea } from "@/components/shared/scroll-area";
 import { Separator } from "@/components/shared/separator";
-import type { ServiceType } from "@/server/core/db/schema";
 import {
 	workspaceEnvironmentPath,
 	workspaceServicePath,
 } from "@/shared/routes";
+import type { WorkspaceServiceType as ServiceType } from "@/shared/workspace-graph";
 
 type WorkspaceItem = RouterOutputs["workspaces"]["all"][number];
 type WorkspaceEnvironment = WorkspaceItem["environments"][number];

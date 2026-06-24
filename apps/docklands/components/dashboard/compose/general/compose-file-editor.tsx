@@ -15,7 +15,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
-import { validateAndFormatYAML } from "../../application/advanced/ingress/update-ingress-config";
+import { validateAndFormatYAML } from "@/shared/yaml";
 
 const logger = createClientLogger("compose");
 

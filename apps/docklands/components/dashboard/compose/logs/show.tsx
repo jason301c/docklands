@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { badgeStateColor } from "@/components/dashboard/application/logs/show";
+import { badgeStateColor } from "@/components/shared/badge-state-color";
 
 export const DockerLogs = dynamic(
 	() =>
