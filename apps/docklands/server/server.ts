@@ -11,6 +11,7 @@ import {
 	createDefaultTraefikConfig,
 } from "@/server/core/setup/traefik-setup";
 import { initCronJobs } from "@/server/core/utils/backups/index";
+import { initTunnelHealthCron } from "@/server/core/utils/cloudflare/tunnel-health";
 import { sendDocklandsRestartNotifications } from "@/server/core/utils/notifications/docklands-restart";
 import { initPreviewCleanupCron } from "@/server/core/utils/previews/index";
 import { initCancelDeployments } from "@/server/core/utils/startup/cancel-deployments";
@@ -104,6 +105,7 @@ void app.prepare().then(async () => {
 			// Restore any Cloudflare Tunnels (managed cloudflared) after the
 			// overlay network exists. Best-effort per tunnel.
 			await bootStep("tunnels", () => ensureTunnelRunning());
+			await bootStep("tunnel-health", () => initTunnelHealthCron());
 			await bootStep("cron", () => initCronJobs());
 			await bootStep("cancel-deployments", () => initCancelDeployments());
 			await bootStep("volume-backups", () => initVolumeBackupsCronJobs());

@@ -109,6 +109,35 @@ export const startCloudflared = async (
 	}
 };
 
+/**
+ * Whether the managed cloudflared is currently running. Mirrors how it's started
+ * (a Swarm service in production, a standalone container in development): healthy
+ * means at least one task/container is in the running state. Any inspect failure
+ * (missing service/container, unreachable worker) reads as not-running.
+ */
+export const isCloudflaredHealthy = async (
+	runtimeWorkerId?: string,
+): Promise<boolean> => {
+	const docker = await getRemoteDocker(runtimeWorkerId);
+	if (process.env.NODE_ENV === "production") {
+		try {
+			await docker.getService(CONTAINER_NAME).inspect();
+			const tasks = await docker.listTasks({
+				filters: { service: [CONTAINER_NAME] },
+			});
+			return tasks.some((task) => task.Status?.State === "running");
+		} catch {
+			return false;
+		}
+	}
+	try {
+		const info = await docker.getContainer(CONTAINER_NAME).inspect();
+		return info.State?.Running === true;
+	} catch {
+		return false;
+	}
+};
+
 /** Stop and remove the managed cloudflared (service or container). */
 export const stopCloudflared = async (runtimeWorkerId?: string) => {
 	const docker = await getRemoteDocker(runtimeWorkerId);

@@ -2,8 +2,10 @@ import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { domains, tunnels } from "@/server/core/db/schema";
+import type { TunnelStatus } from "@/server/core/db/schema/cloudflare";
 import { createLogger } from "@/server/core/lib/logger";
 import {
+	isCloudflaredHealthy,
 	startCloudflared,
 	stopCloudflared,
 } from "@/server/core/setup/cloudflared-setup";
@@ -107,6 +109,36 @@ export const ensureTunnelRunning = async (): Promise<void> => {
 				{ err, tunnelId: tunnel.tunnelId },
 				"Failed to start cloudflared for tunnel",
 			);
+		}
+	}
+};
+
+/**
+ * Refresh each stored tunnel's `status` by checking whether its managed
+ * cloudflared is actually running. Without this the column stayed "unknown"
+ * forever; a periodic cron (and the cloudflare settings UI) calls it so operators
+ * can see when a tunnel is down. Best-effort and idempotent — only writes on
+ * change.
+ */
+export const checkTunnelHealth = async (): Promise<void> => {
+	const allTunnels = await db.query.tunnels.findMany();
+	for (const tunnel of allTunnels) {
+		let status: TunnelStatus = "unknown";
+		try {
+			status = (await isCloudflaredHealthy(tunnel.runtimeWorkerId ?? undefined))
+				? "healthy"
+				: "down";
+		} catch (err) {
+			logger.warn(
+				{ err, tunnelId: tunnel.tunnelId },
+				"Tunnel health check failed",
+			);
+		}
+		if (status !== tunnel.status) {
+			await db
+				.update(tunnels)
+				.set({ status })
+				.where(eq(tunnels.tunnelId, tunnel.tunnelId));
 		}
 	}
 };
