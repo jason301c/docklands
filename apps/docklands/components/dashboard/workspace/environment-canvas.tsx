@@ -102,6 +102,7 @@ import {
 	type ServiceFlowNode,
 	ServiceNode,
 	type ServiceNodeData,
+	serviceStatusMeta,
 	WorkspaceServiceIcon,
 } from "@/components/dashboard/workspace/canvas/service-node";
 import { WorkspaceVariables } from "@/components/dashboard/workspace/manage/workspace-variables";
@@ -119,7 +120,6 @@ import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
 import { Select } from "@/components/shared/select";
 import { ErrorState } from "@/components/shared/states";
-import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
 import { parseEnvironmentVariables } from "@/shared/env-string";
 import {
@@ -2981,42 +2981,95 @@ export const EnvironmentCanvas = ({
 
 			{selectedServiceModel && (
 				<aside className="fixed bottom-0 right-0 top-0 z-50 flex w-full max-w-xl flex-col border-l bg-kumo-canvas shadow-xl">
-					<div className="flex items-start justify-between gap-4 border-b p-5">
-						<div className="flex min-w-0 gap-3">
-							<div className="flex size-11 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/40">
-								<WorkspaceServiceIcon service={selectedServiceModel} />
-							</div>
-							<div className="min-w-0">
-								<div className="flex items-center gap-2">
-									<h2 className="truncate text-lg font-semibold">
+					<div className="flex flex-col gap-4 border-b p-5">
+						<div className="flex items-start justify-between gap-3">
+							<div className="flex min-w-0 items-start gap-3">
+								<div className="flex size-11 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/40">
+									<WorkspaceServiceIcon service={selectedServiceModel} />
+								</div>
+								<div className="min-w-0 space-y-1.5">
+									<h2 className="truncate text-lg font-semibold leading-tight">
 										{selectedServiceModel.name}
 									</h2>
-									<StatusTooltip
-										status={selectedServiceModel.status ?? undefined}
-									/>
+									{(() => {
+										const statusMeta = serviceStatusMeta(
+											selectedServiceModel.status,
+										);
+										const subtitle =
+											selectedServiceModel.primaryDomain ??
+											serviceTypeLabels[selectedServiceModel.type];
+										return (
+											<div className="flex min-w-0 items-center gap-2 text-sm text-kumo-subtle">
+												<span className="flex shrink-0 items-center gap-1.5 text-kumo-default">
+													<span
+														className={cn(
+															"size-2 shrink-0 rounded-full",
+															statusMeta.dotClass,
+															statusMeta.pulse && "animate-pulse",
+														)}
+														aria-hidden="true"
+													/>
+													{statusMeta.label}
+												</span>
+												<span
+													className="shrink-0 text-kumo-subtle/60"
+													aria-hidden="true"
+												>
+													·
+												</span>
+												<span className="truncate">{subtitle}</span>
+											</div>
+										);
+									})()}
 								</div>
-								<p className="text-sm text-kumo-subtle">
-									{serviceTypeLabels[selectedServiceModel.type]}
-								</p>
+							</div>
+							<div className="flex shrink-0 items-center gap-1.5">
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() =>
+										runServiceAction(selectedServiceModel, "deploy")
+									}
+								>
+									<RefreshCw className="size-4" />
+									Deploy
+								</Button>
+								<Link
+									href={getServiceSettingsHref(
+										workspaceId,
+										environmentId,
+										selectedServiceModel,
+									)}
+								>
+									<Button
+										aria-label="Open full settings"
+										variant="ghost"
+										shape="square"
+									>
+										<Settings2 className="size-4" />
+									</Button>
+								</Link>
+								<Button
+									aria-label="Close service panel"
+									variant="ghost"
+									shape="square"
+									onClick={closeSelectedService}
+								>
+									<X className="size-4" />
+								</Button>
 							</div>
 						</div>
-						<Button
-							aria-label="Close service panel"
-							variant="ghost"
-							shape="square"
-							onClick={closeSelectedService}
-						>
-							<X className="size-4" />
-						</Button>
-					</div>
 
-					<div className="border-b px-5 py-3">
 						<Tabs
+							variant="underline"
+							size="sm"
 							value={activeDrawerTab}
 							onValueChange={(value) =>
 								value !== null && setDrawerTab(value as typeof drawerTab)
 							}
 							tabs={drawerTabs}
+							className="-mx-1 -mb-1 overflow-x-auto"
+							listClassName="px-1"
 						/>
 					</div>
 
