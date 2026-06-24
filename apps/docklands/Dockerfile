@@ -47,6 +47,16 @@ ENV NODE_ENV=production
 
 RUN apt-get update && apt-get install -y curl unzip zip apache2-utils iproute2 rsync git-lfs && git lfs install && rm -rf /var/lib/apt/lists/*
 
+# postgresql-client (v17, from the PGDG apt repo) provides pg_dump/pg_restore for
+# the pre-migration backup (migrate-db) and the web-server backup/restore. v17 is
+# >= the bundled postgres:16 and dumps older/equal servers; an older client can't
+# dump a newer server, which is why we pull it from PGDG rather than Debian.
+RUN apt-get update && apt-get install -y curl ca-certificates gnupg \
+    && install -d /usr/share/postgresql-common/pgdg \
+    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+    && echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(. /etc/os-release && echo $VERSION_CODENAME)-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && apt-get update && apt-get install -y postgresql-client-17 && rm -rf /var/lib/apt/lists/*
+
 # Copy only the necessary files
 COPY --from=prod-deps /usr/src/app/package.json ./package.json
 COPY --from=prod-deps /usr/src/app/bun.lock ./bun.lock
