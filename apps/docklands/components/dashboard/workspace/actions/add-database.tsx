@@ -408,7 +408,7 @@ export const AddDatabase = ({
 					</DropdownMenu.Item>
 				</Dialog.Trigger>
 			)}
-			<Dialog className="md:max-h-[90vh]  sm:max-w-2xl">
+			<Dialog className="sm:max-w-2xl">
 				<Dialog.Header>
 					<Dialog.Title>Create Database</Dialog.Title>
 				</Dialog.Header>

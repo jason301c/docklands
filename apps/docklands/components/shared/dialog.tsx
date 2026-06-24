@@ -36,10 +36,23 @@ import { cn } from "@/shared/utils";
  * Every default merges via tailwind-merge, so a call site can still override —
  * e.g. `<Dialog className="p-0">` for full-bleed content (logs, terminals), or
  * `<Dialog.Footer className="justify-start">` to left-align actions.
+ *
+ * Kumo's content panel is `fixed`, vertically centered (`-translate-y-1/2`),
+ * and `overflow-hidden` with no height cap — so a dialog taller than the
+ * viewport is clipped at the top and bottom with no way to reach the rest. We
+ * cap the panel to the viewport (`max-h-[calc(100dvh-2rem)]`) and let it scroll
+ * vertically (`overflow-y-auto` wins over Kumo's `overflow-hidden` on the y axis
+ * via tailwind-merge), so oversized dialogs scroll instead of clipping. A call
+ * site can still override `max-h-*`/`overflow-*` for full-bleed content.
  */
 
 function DialogContent({ className, ...props }: DialogProps) {
-	return <KumoDialog className={cn("p-6", className)} {...props} />;
+	return (
+		<KumoDialog
+			className={cn("max-h-[calc(100dvh-2rem)] overflow-y-auto p-6", className)}
+			{...props}
+		/>
+	);
 }
 
 function DialogTitle({ className, ...props }: DialogTitleProps) {
