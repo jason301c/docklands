@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const baseline = readFileSync(
 	fileURLToPath(
-		new URL("../../drizzle/0000_docklands_baseline.sql", import.meta.url),
+		new URL("../../drizzle/0000_stale_annihilus.sql", import.meta.url),
 	),
 	"utf8",
 );
