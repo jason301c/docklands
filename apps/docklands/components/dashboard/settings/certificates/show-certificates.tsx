@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@cloudflare/kumo/components/button";
 import {
 	AlertCircle,

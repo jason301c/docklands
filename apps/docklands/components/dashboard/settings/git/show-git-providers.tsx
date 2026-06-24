@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button, buttonVariants } from "@cloudflare/kumo/components/button";
 import { Switch } from "@cloudflare/kumo/components/switch";

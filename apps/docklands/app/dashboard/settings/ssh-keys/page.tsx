@@ -1,7 +1,11 @@
+import { ShowSshKeys } from "@/components/dashboard/settings/ssh-keys/show-ssh-keys";
 import { requirePermission } from "@/server/web/app-auth";
-import ClientPage from "./_client";
 
 export default async function Page() {
 	await requirePermission("sshKeys", "read", "/");
-	return <ClientPage />;
+	return (
+		<div className="flex flex-col gap-4 w-full">
+			<ShowSshKeys />
+		</div>
+	);
 }

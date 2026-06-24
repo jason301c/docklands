@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@cloudflare/kumo/components/button";
 import { formatDistanceToNow } from "date-fns";
 import { KeyRound, Loader2, Trash2 } from "lucide-react";

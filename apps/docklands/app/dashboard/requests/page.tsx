@@ -1,7 +1,7 @@
+import { ShowRequests } from "@/components/dashboard/requests/show-requests";
 import { requireSelfHosted } from "@/server/web/app-auth";
-import ClientPage from "./_client";
 
 export default function Page() {
 	requireSelfHosted();
-	return <ClientPage />;
+	return <ShowRequests />;
 }

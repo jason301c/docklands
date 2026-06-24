@@ -1,7 +1,11 @@
+import { ShowImageRegistry } from "@/components/dashboard/settings/image-registry/show-image-registry";
 import { requireAdmin } from "@/server/web/app-auth";
-import ClientPage from "./_client";
 
 export default async function Page() {
 	await requireAdmin();
-	return <ClientPage />;
+	return (
+		<div className="flex flex-col gap-4 w-full">
+			<ShowImageRegistry />
+		</div>
+	);
 }

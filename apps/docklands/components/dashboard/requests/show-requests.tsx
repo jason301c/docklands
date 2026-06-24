@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@cloudflare/kumo/components/button";
 import { DatePicker } from "@cloudflare/kumo/components/date-picker";
 import { Input } from "@cloudflare/kumo/components/input";

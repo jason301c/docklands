@@ -1,3 +1,5 @@
+"use client";
+
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { createClientLogger } from "@/client/lib/logger";
 

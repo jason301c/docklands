@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@cloudflare/kumo/components/button";
 import { Database, FolderUp, Loader2, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";

@@ -1,7 +1,11 @@
+import { ShowAuditLog } from "@/components/dashboard/settings/audit-log/show-audit-log";
 import { requirePermission } from "@/server/web/app-auth";
-import ClientPage from "./_client";
 
 export default async function Page() {
 	await requirePermission("auditLog", "read", "/");
-	return <ClientPage />;
+	return (
+		<div className="flex flex-col gap-4 w-full">
+			<ShowAuditLog />
+		</div>
+	);
 }

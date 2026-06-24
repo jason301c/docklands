@@ -1,7 +1,11 @@
+import { TagManager } from "@/components/dashboard/settings/tags/tag-manager";
 import { requirePermission } from "@/server/web/app-auth";
-import ClientPage from "./_client";
 
 export default async function Page() {
 	await requirePermission("tag", "read", "/");
-	return <ClientPage />;
+	return (
+		<div className="flex flex-col gap-4 w-full">
+			<TagManager />
+		</div>
+	);
 }
