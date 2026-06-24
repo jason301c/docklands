@@ -21,6 +21,7 @@ const config = {
 		extend: {
 			fontFamily: {
 				sans: ["var(--font-inter)", ...defaultTheme.fontFamily.sans],
+				display: ["var(--font-fraunces)", ...defaultTheme.fontFamily.serif],
 			},
 			screens: {
 				"3xl": "1920px",

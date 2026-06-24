@@ -1,4 +1,5 @@
 import "@fontsource-variable/inter/index.css";
+import "@fontsource-variable/fraunces/index.css";
 import "./globals.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";

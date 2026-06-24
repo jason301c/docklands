@@ -3,9 +3,71 @@
 @source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
 @config "../tailwind.config.ts";
 
+/*
+ * Docklands premium theme - a near-monochrome "ink" system with a single
+ * electric-iris accent, defined for BOTH light and dark via `light-dark()`.
+ * Every token carries (lightValue, darkValue), so switching is just a matter of
+ * `color-scheme`: the app offers a real light/dark/system toggle (ThemeProvider
+ * flips `data-mode`, which sets `color-scheme`). Shared verbatim with the
+ * marketing site (apps/site) and docs (apps/docs) so all three surfaces match.
+ *
+ * Scoped to `[data-theme="kumo"]` (an attribute selector) so it outranks Kumo's
+ * `:root` `@theme` defaults regardless of layer order. The signature is the
+ * restraint plus the gradient accent (`.text-gradient`), not a colored chrome.
+ */
+[data-theme="kumo"] {
+	/* Surfaces, lightest → deepest in their own mode */
+	--color-kumo-canvas: light-dark(#fbfbfc, #0a0a0c); /* page background */
+	--color-kumo-base: light-dark(#ffffff, #131316); /* cards / popovers */
+	--color-kumo-elevated: light-dark(#ffffff, #1a1a1f);
+	--color-kumo-control: light-dark(#ffffff, #131316); /* inputs */
+	--color-kumo-recessed: light-dark(#f4f4f6, #0f0f12); /* inset wells */
+	--color-kumo-overlay: light-dark(#ffffff, #1a1a1f);
+	--color-kumo-tint: light-dark(#f4f4f6, #161619);
+	--color-kumo-contrast: light-dark(#111114, #f4f4f6); /* inverse surface */
+
+	/* Filled chips / hovers / interactive neutrals */
+	--color-kumo-fill: light-dark(#f1f1f3, #1b1b20);
+	--color-kumo-fill-hover: light-dark(#e8e8ec, #232329);
+	--color-kumo-interact: light-dark(#d8d8de, #2d2d34);
+
+	/* Lines */
+	--color-kumo-hairline: light-dark(#e6e6ea, #252529);
+	--color-kumo-line: light-dark(#d4d4da, #34343b);
+
+	/* Brand (electric iris) + focus. Deep enough for white button text in both. */
+	--color-kumo-brand: light-dark(#6450e6, #6f5cf2);
+	--color-kumo-brand-hover: light-dark(#5641d4, #7e6dff);
+	--color-kumo-focus: light-dark(#6450e6, #6f5cf2);
+
+	/* Text */
+	--text-color-kumo-default: light-dark(#2a2a30, #d7d7de);
+	--text-color-kumo-strong: light-dark(#0d0d12, #f5f5f8);
+	--text-color-kumo-subtle: light-dark(#6a6a74, #8a8a95);
+	--text-color-kumo-inactive: light-dark(#a9a9b2, #56565f);
+	--text-color-kumo-placeholder: light-dark(#9a9aa3, #6b6b75);
+	--text-color-kumo-inverse: light-dark(#fbfbfc, #0a0a0c);
+	--text-color-kumo-link: light-dark(#5a46dc, #9d90ff);
+	--text-color-kumo-brand: light-dark(#5a46dc, #9d90ff);
+}
+
 @layer base {
 	:root {
 		--font-inter: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+		--font-fraunces: "Fraunces Variable", ui-serif, Georgia, serif;
+		/* A brand-tinted *surface* (not the saturated accent): a near-black with a
+		 * violet cast for large fills. The accent itself stays for small intense
+		 * moments (buttons, the gradient word, CTAs). */
+		--surface-brand: light-dark(#f5f3fc, #120d26);
+		/* The signature accent: blue → iris → violet → pink → amber. */
+		--gradient-brand: linear-gradient(
+			100deg,
+			#4f8bff 0%,
+			#8b6bff 28%,
+			#c95cff 52%,
+			#ff5c9c 76%,
+			#ff8a3d 100%
+		);
 		--terminal-paste: rgba(0, 0, 0, 0.2);
 		--overlay: rgba(0, 0, 0, 0.2);
 
@@ -53,13 +115,25 @@
 	}
 
 	::-webkit-scrollbar-thumb {
-		background: var(--color-kumo-hairline);
+		background: var(--color-kumo-line);
 		border-radius: 0.3125rem;
 	}
 
 	* {
 		scrollbar-width: thin;
-		scrollbar-color: var(--color-kumo-hairline) transparent;
+		scrollbar-color: var(--color-kumo-line) transparent;
+	}
+}
+
+@layer utilities {
+	/* Clip the signature gradient to text. Apply to a span inside a heading. */
+	.text-gradient {
+		background-image: var(--gradient-brand);
+		background-size: 180% 180%;
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
 	}
 }
 
