@@ -1,13 +1,17 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
+import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import copy from "copy-to-clipboard";
+import { format } from "date-fns";
 import {
 	ChevronDown,
 	ChevronUp,
 	Clock,
 	Copy,
+	Eye,
 	Loader2,
+	MoreHorizontal,
 	RefreshCcw,
 	RocketIcon,
 	Settings,
@@ -16,12 +20,17 @@ import {
 import React, { useEffect, useMemo, useState } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import {
+	formatLastDeployment,
+	serviceStatusMeta,
+} from "@/components/dashboard/workspace/canvas/service-node";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { DropdownMenu } from "@/components/shared/dropdown";
 import { ErrorState } from "@/components/shared/states";
-import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";
+import { cn } from "@/shared/utils";
+import type { WorkspaceServiceStatus } from "@/shared/workspace-graph";
 import { ShowRollbackSettings } from "../rollbacks/show-rollback-settings";
 import { CancelQueues } from "./cancel-queues";
 import { ClearDeployments } from "./clear-deployments";
@@ -51,15 +60,25 @@ export const formatDuration = (seconds: number) => {
 	return `${minutes}m ${remainingSeconds}s`;
 };
 
+type Deployment = RouterOutputs["deployment"]["allByType"][number];
+
+/**
+ * The canvas-status helper is typed for the workspace service union
+ * (`idle | running | done | error`). Deployments add a terminal `cancelled`
+ * status, which has no dedicated swatch and intentionally falls through to the
+ * muted "default" branch — so reuse the same color/label mapping by widening the
+ * cast rather than maintaining a parallel table here.
+ */
+const deploymentStatusMeta = (status: Deployment["status"]) =>
+	serviceStatusMeta(status as WorkspaceServiceStatus | null | undefined);
+
 export const ShowDeployments = ({
 	id,
 	type,
 	refreshToken,
 	runtimeWorkerId,
 }: Props) => {
-	const [activeLog, setActiveLog] = useState<
-		RouterOutputs["deployment"]["allByType"][number] | null
-	>(null);
+	const [activeLog, setActiveLog] = useState<Deployment | null>(null);
 	const deploymentsQuery = api.deployment.allByType.useQuery(
 		{
 			id,
@@ -196,7 +215,7 @@ export const ShowDeployments = ({
 						</span>
 					</div>
 				) : (
-					<div className="flex flex-col gap-4">
+					<div className="flex flex-col gap-2.5">
 						{deployments?.map((deployment, index) => {
 							const titleText = deployment?.title?.trim() || "";
 							const needsTruncation = titleText.length > MAX_DESCRIPTION_LENGTH;
@@ -205,27 +224,79 @@ export const ShowDeployments = ({
 							);
 							const canDelete =
 								deployment.status === "done" || deployment.status === "error";
+							const canRollback =
+								Boolean(deployment?.rollback) &&
+								deployment.status === "done" &&
+								type === "application";
+							const canKill =
+								Boolean(deployment.pid) && deployment.status === "running";
+							const isLive = deployment.status === "running";
+							const statusMeta = deploymentStatusMeta(deployment.status);
+							const durationSeconds =
+								deployment.startedAt && deployment.finishedAt
+									? Math.floor(
+											(new Date(deployment.finishedAt).getTime() -
+												new Date(deployment.startedAt).getTime()) /
+												1000,
+										)
+									: null;
 
 							return (
 								<div
 									key={deployment.deploymentId}
-									className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+									className={cn(
+										"group/row relative flex flex-col gap-3 overflow-hidden rounded-lg border bg-kumo-canvas/60 p-4 transition hover:bg-kumo-canvas sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+										isLive && "border-kumo-brand/40 bg-kumo-brand/5",
+									)}
 								>
-									<div className="flex flex-1 flex-col min-w-0">
-										<span className="flex items-center gap-4 font-medium capitalize text-kumo-default">
-											{index + 1}. {deployment.status}
-											<StatusTooltip
-												status={deployment?.status}
-												className="size-2.5"
-											/>
-										</span>
+									{/* Live accent rail for the in-flight deployment. */}
+									{isLive && (
+										<span
+											aria-hidden="true"
+											className="absolute inset-y-0 left-0 w-0.5 animate-pulse bg-kumo-brand"
+										/>
+									)}
 
-										<div className="flex flex-col gap-1">
-											<span className="break-words text-sm text-kumo-subtle whitespace-pre-wrap">
-												{isExpanded || !needsTruncation
-													? titleText
-													: truncateDescription(titleText)}
-											</span>
+									<div className="flex min-w-0 flex-1 items-start gap-3">
+										<div className="flex flex-col items-center pt-1">
+											<span
+												className={cn(
+													"size-2.5 shrink-0 rounded-full",
+													statusMeta.dotClass,
+													statusMeta.pulse && "animate-pulse",
+												)}
+											/>
+										</div>
+										<div className="flex min-w-0 flex-1 flex-col gap-1">
+											<div className="flex flex-wrap items-center gap-2">
+												<span className="text-xs font-medium tabular-nums text-kumo-subtle">
+													#{index + 1}
+												</span>
+												<span
+													className={cn(
+														"text-sm font-medium",
+														isLive ? "text-kumo-brand" : "text-kumo-default",
+													)}
+												>
+													{statusMeta.label}
+												</span>
+												{isLive && (
+													<Badge
+														variant="outline"
+														className="border-kumo-brand/40 text-[10px] text-kumo-brand"
+													>
+														Live
+													</Badge>
+												)}
+											</div>
+
+											{titleText && (
+												<span className="break-words text-sm text-kumo-default whitespace-pre-wrap">
+													{isExpanded || !needsTruncation
+														? titleText
+														: truncateDescription(titleText)}
+												</span>
+											)}
 											{needsTruncation && (
 												<button
 													type="button"
@@ -238,7 +309,7 @@ export const ShowDeployments = ({
 														}
 														setExpandedDescriptions(next);
 													}}
-													className="flex items-center gap-1 text-xs text-kumo-subtle hover:text-kumo-default transition-colors w-fit mt-1 cursor-pointer"
+													className="flex w-fit items-center gap-1 text-xs text-kumo-subtle transition-colors hover:text-kumo-default cursor-pointer"
 													aria-label={
 														isExpanded
 															? "Collapse commit message"
@@ -258,189 +329,216 @@ export const ShowDeployments = ({
 													)}
 												</button>
 											)}
-											{/* Hash (from description) - shown in compact form */}
-											{deployment.description?.trim() && (
-												<span className="text-xs text-kumo-subtle font-mono">
-													{deployment.description}
-												</span>
-											)}
+
+											<div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-kumo-subtle">
+												<TooltipProvider delay={0}>
+													<Tooltip
+														content={format(
+															new Date(deployment.createdAt),
+															"PPpp",
+														)}
+													>
+														<span className="cursor-default">
+															{formatLastDeployment(deployment.createdAt)}
+														</span>
+													</Tooltip>
+												</TooltipProvider>
+												{durationSeconds !== null && (
+													<span className="flex items-center gap-1">
+														<Clock className="size-3" />
+														{formatDuration(durationSeconds)}
+													</span>
+												)}
+												{/* Hash (from description) - shown in compact mono form */}
+												{deployment.description?.trim() && (
+													<span className="font-mono">
+														{deployment.description}
+													</span>
+												)}
+											</div>
 										</div>
 									</div>
-									<div className="flex w-full flex-col items-start gap-2 sm:w-auto sm:max-w-[300px] sm:items-end sm:justify-start">
-										<div className="text-sm capitalize text-kumo-subtle flex flex-wrap items-center gap-2">
-											<DateTooltip date={deployment.createdAt} />
-											{deployment.startedAt && deployment.finishedAt && (
-												<Badge
-													variant="outline"
-													className="text-[10px] gap-1 flex items-center"
-												>
-													<Clock className="size-3" />
-													{formatDuration(
-														Math.floor(
-															(new Date(deployment.finishedAt).getTime() -
-																new Date(deployment.startedAt).getTime()) /
-																1000,
-														),
-													)}
-												</Badge>
-											)}
-										</div>
 
-										<div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
-											{deployment.pid && deployment.status === "running" && (
-												<DialogAction
-													title="Kill Process"
-													description="Are you sure you want to kill the process?"
-													type="default"
-													onClick={async () => {
-														await killProcess({
-															deploymentId: deployment.deploymentId,
+									{/* Row actions: quiet by default, revealed on hover/focus on
+									    desktop and always visible on touch. Destructive actions keep
+									    their confirmation dialogs; the overflow menu only holds safe,
+									    non-confirm extras (no dialog nested inside a menu item). */}
+									<div className="flex w-full shrink-0 flex-wrap items-center gap-2 transition-opacity sm:w-auto sm:justify-end sm:opacity-0 sm:group-hover/row:opacity-100 sm:group-focus-within/row:opacity-100">
+										{canKill && (
+											<DialogAction
+												title="Kill Process"
+												description="Are you sure you want to kill the process?"
+												type="default"
+												onClick={async () => {
+													await killProcess({
+														deploymentId: deployment.deploymentId,
+													})
+														.then(() => {
+															toast.success("Process killed successfully");
 														})
-															.then(() => {
-																toast.success("Process killed successfully");
-															})
-															.catch((err) => {
-																logger.error("Failed to kill process", err);
-																toast.error("Error killing process");
-															});
-													}}
-												>
-													<Button
-														variant="destructive"
-														size="sm"
-														loading={isKillingProcess}
-														className="w-full sm:w-auto"
-													>
-														Kill Process
-													</Button>
-												</DialogAction>
-											)}
-											<Button
-												onClick={() => {
-													setActiveLog(deployment);
+														.catch((err) => {
+															logger.error("Failed to kill process", err);
+															toast.error("Error killing process");
+														});
 												}}
-												className="w-full sm:w-auto"
 											>
-												View
-											</Button>
+												<Button
+													variant="destructive"
+													size="sm"
+													loading={isKillingProcess}
+												>
+													Kill Process
+												</Button>
+											</DialogAction>
+										)}
 
-											{canDelete && (
-												<DialogAction
-													title="Delete Build Record"
-													description="Are you sure you want to delete this build record? This action cannot be undone."
-													type="default"
-													onClick={async () => {
-														try {
-															await removeDeployment({
-																deploymentId: deployment.deploymentId,
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => {
+												setActiveLog(deployment);
+											}}
+										>
+											<Eye className="size-4" />
+											View
+										</Button>
+
+										{canRollback && (
+											<DialogAction
+												title="Rollback to this build"
+												description={
+													<div className="flex flex-col gap-3">
+														<p>
+															Are you sure you want to rollback to this build?
+														</p>
+														<AlertBlock type="info" className="text-sm">
+															Please wait a few seconds while the image is
+															pulled from the registry. Your application should
+															be running shortly.
+														</AlertBlock>
+													</div>
+												}
+												type="default"
+												onClick={async () => {
+													await rollback({
+														rollbackId: deployment.rollback.rollbackId,
+													})
+														.then(() => {
+															toast.success("Rollback initiated successfully");
+														})
+														.catch((err) => {
+															logger.error("Failed to initiate rollback", err);
+															toast.error("Error initiating rollback");
+														});
+												}}
+											>
+												<Button
+													variant="secondary"
+													size="sm"
+													loading={isRollingBack}
+												>
+													<RefreshCcw className="size-4 text-kumo-brand" />
+													Rollback
+												</Button>
+											</DialogAction>
+										)}
+
+										{canDelete && (
+											<DialogAction
+												title="Delete Build Record"
+												description="Are you sure you want to delete this build record? This action cannot be undone."
+												type="default"
+												onClick={async () => {
+													try {
+														await removeDeployment({
+															deploymentId: deployment.deploymentId,
+														});
+														toast.success("Build record deleted successfully");
+													} catch (error) {
+														toast.error("Error deleting build record");
+													}
+												}}
+											>
+												<Button
+													variant="destructive"
+													size="sm"
+													loading={isRemovingDeployment}
+												>
+													Delete
+													<Trash2 className="size-4" />
+												</Button>
+											</DialogAction>
+										)}
+
+										{canRollback && (
+											<DialogAction
+												title="Delete rollback"
+												description="Are you sure you want to delete this rollback? This removes the stored snapshot and its container image and cannot be undone."
+												type="default"
+												onClick={async () => {
+													await deleteRollback({
+														rollbackId: deployment.rollback.rollbackId,
+													})
+														.then(async () => {
+															toast.success("Rollback deleted");
+															await utils.deployment.allByType.invalidate({
+																id,
+																type,
 															});
-															toast.success(
-																"Build record deleted successfully",
-															);
-														} catch (error) {
-															toast.error("Error deleting build record");
-														}
+														})
+														.catch((err) => {
+															logger.error("Failed to delete rollback", err);
+															toast.error("Error deleting rollback");
+														});
+												}}
+											>
+												<Button
+													variant="destructive"
+													size="sm"
+													loading={isDeletingRollback}
+												>
+													Delete rollback
+													<Trash2 className="size-4" />
+												</Button>
+											</DialogAction>
+										)}
+
+										<DropdownMenu>
+											<DropdownMenu.Trigger
+												render={
+													<Button
+														aria-label="More deployment actions"
+														variant="ghost"
+														size="sm"
+														shape="square"
+													>
+														<MoreHorizontal className="size-4" />
+													</Button>
+												}
+											/>
+											<DropdownMenu.Content align="end">
+												<DropdownMenu.Group>
+													<DropdownMenu.Label>Deployment</DropdownMenu.Label>
+												</DropdownMenu.Group>
+												<DropdownMenu.Item
+													icon={Eye}
+													onClick={() => {
+														setActiveLog(deployment);
 													}}
 												>
-													<Button
-														variant="destructive"
-														size="sm"
-														loading={isRemovingDeployment}
-													>
-														Delete
-														<Trash2 className="size-4" />
-													</Button>
-												</DialogAction>
-											)}
-
-											{deployment?.rollback &&
-												deployment.status === "done" &&
-												type === "application" && (
-													<DialogAction
-														title="Rollback to this build"
-														description={
-															<div className="flex flex-col gap-3">
-																<p>
-																	Are you sure you want to rollback to this
-																	build?
-																</p>
-																<AlertBlock type="info" className="text-sm">
-																	Please wait a few seconds while the image is
-																	pulled from the registry. Your application
-																	should be running shortly.
-																</AlertBlock>
-															</div>
-														}
-														type="default"
-														onClick={async () => {
-															await rollback({
-																rollbackId: deployment.rollback.rollbackId,
-															})
-																.then(() => {
-																	toast.success(
-																		"Rollback initiated successfully",
-																	);
-																})
-																.catch((err) => {
-																	logger.error(
-																		"Failed to initiate rollback",
-																		err,
-																	);
-																	toast.error("Error initiating rollback");
-																});
-														}}
-													>
-														<Button
-															variant="secondary"
-															size="sm"
-															loading={isRollingBack}
-															className="w-full sm:w-auto"
-														>
-															<RefreshCcw className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
-															Rollback
-														</Button>
-													</DialogAction>
-												)}
-
-											{deployment?.rollback &&
-												deployment.status === "done" &&
-												type === "application" && (
-													<DialogAction
-														title="Delete rollback"
-														description="Are you sure you want to delete this rollback? This removes the stored snapshot and its container image and cannot be undone."
-														type="default"
-														onClick={async () => {
-															await deleteRollback({
-																rollbackId: deployment.rollback.rollbackId,
-															})
-																.then(async () => {
-																	toast.success("Rollback deleted");
-																	await utils.deployment.allByType.invalidate({
-																		id,
-																		type,
-																	});
-																})
-																.catch((err) => {
-																	logger.error(
-																		"Failed to delete rollback",
-																		err,
-																	);
-																	toast.error("Error deleting rollback");
-																});
-														}}
-													>
-														<Button
-															variant="destructive"
-															size="sm"
-															loading={isDeletingRollback}
-															className="w-full sm:w-auto"
-														>
-															Delete rollback
-															<Trash2 className="size-4" />
-														</Button>
-													</DialogAction>
-												)}
-										</div>
+													View logs
+												</DropdownMenu.Item>
+												<DropdownMenu.Item
+													icon={Copy}
+													onClick={() => {
+														copy(deployment.deploymentId);
+														toast.success("Copied to clipboard.");
+													}}
+												>
+													Copy deployment ID
+												</DropdownMenu.Item>
+											</DropdownMenu.Content>
+										</DropdownMenu>
 									</div>
 								</div>
 							);
