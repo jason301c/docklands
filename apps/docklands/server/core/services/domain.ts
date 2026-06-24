@@ -6,6 +6,7 @@ import type { z } from "zod";
 import { detectCDNProvider } from "@/server/core/constants/cdn";
 import { db } from "@/server/core/db";
 import { orThrowNotFound } from "@/server/core/db/find-or-throw";
+import { createLogger } from "@/server/core/lib/logger";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { generateRandomDomain } from "@/server/core/templates";
 import { manageDomain } from "@/server/core/utils/traefik/domain";
@@ -14,6 +15,8 @@ import { findApplicationById } from "./application";
 import { findZoneForHost, requireCloudflareIntegration } from "./cloudflare";
 import { findRuntimeWorkerById } from "./runtime-worker";
 import { attachDomainToTunnel, detachDomainFromTunnel } from "./tunnel";
+
+const logger = createLogger("domain");
 
 export type Domain = typeof domains.$inferSelect;
 
@@ -144,16 +147,68 @@ export const updateDomainById = async (
 	domainId: string,
 	domainData: Partial<Domain>,
 ) => {
+	const existing = await findDomainById(domainId);
+	const newHost = (domainData.host ?? existing.host)?.trim();
+	const newMode = domainData.ingressMode ?? existing.ingressMode;
+
+	// Tunnel mode (whether switching to it or changing host while in it) requires
+	// a connected Cloudflare zone that owns the host — fail fast before mutating.
+	if (newMode === "tunnel") {
+		const integration = await requireCloudflareIntegration();
+		if (!findZoneForHost(integration.zones, newHost ?? "")) {
+			throw new TRPCError({
+				code: "BAD_REQUEST",
+				message: `${newHost} is not within a domain connected to Cloudflare.`,
+			});
+		}
+	}
+
+	const switchingToPublic =
+		existing.ingressMode === "tunnel" && newMode === "public";
+
 	const domain = await db
 		.update(domains)
 		.set({
 			...domainData,
-			...(domainData.host && { host: domainData.host.trim() }),
+			...(domainData.host && { host: newHost }),
+			// Tunnel terminates TLS at the edge → no local certificate.
+			...(newMode === "tunnel" ? { certificateType: "none" } : {}),
+			// Leaving tunnel mode: drop the now-stale tunnel linkage.
+			...(switchingToPublic ? { tunnelId: null, cfDnsRecordId: null } : {}),
 		})
 		.where(eq(domains.domainId, domainId))
-		.returning();
+		.returning()
+		.then((rows) => rows[0]);
 
-	return domain[0];
+	if (!domain) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: "Error updating domain",
+		});
+	}
+
+	// Reconcile the tunnel DNS record for host/mode changes. Without this, editing
+	// a tunnel domain's host left the old CNAME in place and traffic silently
+	// stopped. Network calls, so outside any transaction and best-effort.
+	const wasTunnel = existing.ingressMode === "tunnel";
+	const isTunnel = domain.ingressMode === "tunnel";
+	const hostChanged = existing.host !== domain.host;
+	try {
+		if (wasTunnel && (!isTunnel || hostChanged)) {
+			// detach uses existing.cfDnsRecordId (the record for the OLD host).
+			await detachDomainFromTunnel(existing);
+		}
+		if (isTunnel && (!wasTunnel || hostChanged)) {
+			await attachDomainToTunnel(domain);
+		}
+	} catch (err) {
+		logger.warn(
+			{ err, domainId },
+			"Failed to reconcile tunnel DNS on domain update",
+		);
+	}
+
+	return domain;
 };
 
 export const removeDomainById = async (domainId: string) => {

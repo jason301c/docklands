@@ -145,5 +145,6 @@ export const apiUpdateDomain = createSchema
 		internalPath: true,
 		stripPath: true,
 		middlewares: true,
+		ingressMode: true,
 	})
 	.merge(createSchema.pick({ domainId: true }).required());

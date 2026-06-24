@@ -721,11 +721,21 @@ export const workspaceRouter = createTRPCRouter({
 								});
 
 								for (const domain of domains) {
-									const { domainId, ...rest } = domain;
+									// Drop the tunnel linkage when copying: a duplicate can't share
+									// the source's host (and therefore its CNAME), so copy the domain
+									// as public — the user re-points it to a new host afterwards.
+									const {
+										domainId,
+										cfDnsRecordId,
+										tunnelId,
+										ingressMode,
+										...rest
+									} = domain;
 									await createDomain({
 										...rest,
 										applicationId: newApplication.applicationId,
 										domainType: "application",
+										ingressMode: "public",
 									});
 								}
 
@@ -807,11 +817,20 @@ export const workspaceRouter = createTRPCRouter({
 								}
 
 								for (const domain of domains) {
-									const { domainId, ...rest } = domain;
+									// Copy as public (see the application branch): a duplicate can't
+									// reuse the source's tunnel CNAME for the same host.
+									const {
+										domainId,
+										cfDnsRecordId,
+										tunnelId,
+										ingressMode,
+										...rest
+									} = domain;
 									await createDomain({
 										...rest,
 										composeId: newCompose.composeId,
 										domainType: "compose",
+										ingressMode: "public",
 									});
 								}
 
