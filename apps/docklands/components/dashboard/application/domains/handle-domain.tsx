@@ -25,6 +25,7 @@ import {
 } from "@/components/shared/form";
 import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
+import { classifyServerIp } from "@/shared/validation/server-ip";
 
 const logger = createClientLogger("domains");
 
@@ -229,6 +230,17 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 	// HTTPS/cert options don't apply.
 	const tlsAtEdge = showIngressMode && ingressMode === "tunnel";
 
+	// Public ("classic") ingress needs a publicly-routable server IP to be
+	// reachable from the internet. Warn (don't block — a private IP is valid for
+	// LAN-only setups) when public mode is effective but the configured server IP
+	// is missing/loopback/private, and nudge toward the Cloudflare Tunnel.
+	const { data: webServerSettings } =
+		api.settings.getWebServerSettings.useQuery(undefined, { retry: false });
+	const willBePublicIngress = ingressMode !== "tunnel";
+	const publicIngressUnreachable =
+		willBePublicIngress &&
+		classifyServerIp(webServerSettings?.serverIp) !== "public";
+
 	// Default new domains to the tunnel when Cloudflare is connected.
 	useEffect(() => {
 		if (showIngressMode && !form.getValues("ingressMode")) {
@@ -343,6 +355,21 @@ export const AddDomain = ({ id, type, domainId = "", children }: Props) => {
 					<AlertBlock type="info" className="mb-4">
 						Whenever you make changes to domains, remember to redeploy your
 						compose to apply the changes.
+					</AlertBlock>
+				)}
+
+				{publicIngressUnreachable && (
+					<AlertBlock type="warning" className="mb-4">
+						This server has no public IP configured, so a public domain may be
+						unreachable from the internet. Expose it with a{" "}
+						<Link href="/dashboard/settings/cloudflare" className="underline">
+							Cloudflare Tunnel
+						</Link>{" "}
+						(no public IP, ports, or DNS needed), or set your public IP under{" "}
+						<Link href="/dashboard/settings/ingress" className="underline">
+							Settings → Ingress
+						</Link>
+						.
 					</AlertBlock>
 				)}
 
