@@ -318,8 +318,6 @@ export default function Page({ children }: Props) {
 		permissions,
 	});
 
-	const isSettingsPath = pathname.startsWith("/dashboard/settings");
-
 	return (
 		<SidebarProvider
 			collapsible="none"
@@ -378,14 +376,7 @@ export default function Page({ children }: Props) {
 			</Sidebar>
 			<main className="flex h-svh min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-kumo-canvas">
 				<div className="flex w-full flex-1 flex-col p-4">
-					<div
-						className={cn(
-							"flex w-full flex-1 flex-col",
-							isSettingsPath && "mx-auto max-w-5xl",
-						)}
-					>
-						{children}
-					</div>
+					<div className="flex w-full flex-1 flex-col">{children}</div>
 				</div>
 			</main>
 		</SidebarProvider>
