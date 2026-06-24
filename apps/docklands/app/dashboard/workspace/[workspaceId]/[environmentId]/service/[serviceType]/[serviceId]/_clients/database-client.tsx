@@ -15,7 +15,7 @@ import { ShowExternalDatabaseCredentials } from "@/components/dashboard/database
 import { ShowGeneralDatabase } from "@/components/dashboard/database-service/general/show-general-database";
 import { ShowInternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-internal-database-credentials";
 import { UpdateDatabase } from "@/components/dashboard/database-service/update-database";
-import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
+import { ContainerMonitoring } from "@/components/dashboard/metrics/container/show-container-monitoring";
 import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,
@@ -222,9 +222,7 @@ const DatabaseClient = (props: {
 									<div>
 										<div className="pt-2.5">
 											<div className="flex flex-col gap-4 border rounded-lg p-6">
-												<ContainerFreeMonitoring
-													appName={data?.appName || ""}
-												/>
+												<ContainerMonitoring appName={data?.appName || ""} />
 											</div>
 										</div>
 									</div>

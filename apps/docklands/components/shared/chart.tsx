@@ -1,3 +1,13 @@
+/**
+ * Charting primitives for Docklands, built on recharts.
+ *
+ * We deliberately keep recharts rather than migrating to Kumo's ECharts-based
+ * chart. recharts is mature, MIT-licensed (so Apache-2.0-compatible), and
+ * already in the bundle; every consumer here is a simple area/line timeseries or
+ * the single request-distribution chart. A Kumo/ECharts migration would be
+ * high-risk for these few call sites with little reward and a worse bundle
+ * delta, so it is deferred until there's a concrete need.
+ */
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 import { cn } from "@/shared/utils";

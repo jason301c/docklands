@@ -25,7 +25,7 @@ import { ShowDockerLogsStack } from "@/components/dashboard/compose/logs/show-st
 import { ShowServiceDatabases } from "@/components/dashboard/compose/service-databases/show-service-databases";
 import { UpdateCompose } from "@/components/dashboard/compose/update-compose";
 import { ShowBackups } from "@/components/dashboard/database-service/backups/show-backups";
-import { ComposeFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-compose-monitoring";
+import { ComposeMonitoring } from "@/components/dashboard/metrics/container/show-compose-monitoring";
 import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,
@@ -254,7 +254,7 @@ const Service = (props: {
 									<div>
 										<div className="pt-2.5">
 											<div className="flex flex-col border rounded-lg ">
-												<ComposeFreeMonitoring
+												<ComposeMonitoring
 													runtimeWorkerId={data?.runtimeWorkerId || ""}
 													appName={data?.appName || ""}
 													appType={data?.composeType || "docker-compose"}

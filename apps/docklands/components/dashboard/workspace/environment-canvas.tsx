@@ -71,8 +71,8 @@ import { ServiceTerminalModal } from "@/components/dashboard/container-runtime/t
 import { ShowBackups } from "@/components/dashboard/database-service/backups/show-backups";
 import { ShowExternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-external-database-credentials";
 import { ShowInternalDatabaseCredentials } from "@/components/dashboard/database-service/general/show-internal-database-credentials";
-import { ComposeFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-compose-monitoring";
-import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
+import { ComposeMonitoring } from "@/components/dashboard/metrics/container/show-compose-monitoring";
+import { ContainerMonitoring } from "@/components/dashboard/metrics/container/show-container-monitoring";
 import { AddApplication } from "@/components/dashboard/workspace/actions/add-application";
 import { AddCompose } from "@/components/dashboard/workspace/actions/add-compose";
 import { AddDatabase } from "@/components/dashboard/workspace/actions/add-database";
@@ -3854,7 +3854,7 @@ export const EnvironmentCanvas = ({
 						{drawerTab === "metrics" && selectedServiceModel.appName && (
 							<div className="space-y-3">
 								{selectedServiceModel.type === "compose" ? (
-									<ComposeFreeMonitoring
+									<ComposeMonitoring
 										runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
 										appName={selectedServiceModel.appName}
 										appType={
@@ -3862,9 +3862,7 @@ export const EnvironmentCanvas = ({
 										}
 									/>
 								) : (
-									<ContainerFreeMonitoring
-										appName={selectedServiceModel.appName}
-									/>
+									<ContainerMonitoring appName={selectedServiceModel.appName} />
 								)}
 							</div>
 						)}

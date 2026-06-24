@@ -8,12 +8,8 @@ const logger = createClientLogger("metrics");
 import { Meter } from "@cloudflare/kumo/components/meter";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { DockerBlockChart } from "./docker-block-chart";
-import { DockerCpuChart } from "./docker-cpu-chart";
-import { DockerDiskChart } from "./docker-disk-chart";
+import { AreaMetricChart } from "./area-metric-chart";
 import { DockerDiskUsageChart } from "./docker-disk-usage-chart";
-import { DockerMemoryChart } from "./docker-memory-chart";
-import { DockerNetworkChart } from "./docker-network-chart";
 
 const defaultData = {
 	cpu: {
@@ -121,7 +117,7 @@ export const convertMemoryToBytes = (
 	}
 };
 
-export const ContainerFreeMonitoring = ({
+export const ContainerMonitoring = ({
 	appName,
 	appType = "application",
 }: Props) => {
@@ -237,7 +233,21 @@ export const ContainerFreeMonitoring = ({
 								)}
 								className="w-[100%]"
 							/>
-							<DockerCpuChart accumulativeData={accumulativeData.cpu} />
+							<AreaMetricChart
+								data={accumulativeData.cpu.map((item) => ({
+									time: item.time,
+									usage: item.value.toString().split("%")[0],
+								}))}
+								series={[
+									{
+										key: "usage",
+										label: "CPU Usage",
+										color: "var(--chart-1)",
+									},
+								]}
+								valueFormatter={(value) => `${value}%`}
+								yDomain={[0, 100]}
+							/>
 						</div>
 					</div>
 				</LayerCard>
@@ -262,13 +272,34 @@ export const ContainerFreeMonitoring = ({
 								}
 								className="w-[100%]"
 							/>
-							<DockerMemoryChart
-								accumulativeData={accumulativeData.memory}
-								memoryLimitGB={
-									// @ts-expect-error
-									convertMemoryToBytes(currentData.memory.value.total) /
-									1024 ** 3
-								}
+							<AreaMetricChart
+								data={accumulativeData.memory.map((item) => ({
+									time: item.time,
+									// item.value.used is a formatted string (e.g. "1.5GiB") at
+									// runtime despite the numeric type on DockerStats.
+									usage: (
+										convertMemoryToBytes(item.value.used as unknown as string) /
+										1024 ** 3
+									).toFixed(2),
+								}))}
+								series={[
+									{
+										key: "usage",
+										label: "Memory (GB)",
+										color: "var(--chart-2)",
+										tooltipLabel: "Memory",
+									},
+								]}
+								valueFormatter={(value) => `${value} GB`}
+								yDomain={[
+									0,
+									+(
+										convertMemoryToBytes(
+											currentData.memory.value.total as unknown as string,
+										) /
+										1024 ** 3
+									).toFixed(2),
+								]}
 							/>
 						</div>
 					</div>
@@ -289,9 +320,22 @@ export const ContainerFreeMonitoring = ({
 									value={currentData.disk.value.diskUsedPercentage}
 									className="w-[100%]"
 								/>
-								<DockerDiskChart
-									accumulativeData={accumulativeData.disk}
-									diskTotal={currentData.disk.value.diskTotal}
+								<AreaMetricChart
+									data={accumulativeData.disk.map((item) => ({
+										time: item.time,
+										usedGb: +item.value.diskUsage,
+									}))}
+									series={[
+										{
+											key: "usedGb",
+											label: "Used (GB)",
+											color: "var(--chart-3)",
+											tooltipLabel: "Used",
+										},
+									]}
+									valueFormatter={(value) => `${value} GB`}
+									yDomain={[0, currentData.disk.value.diskTotal]}
+									hideLegend
 								/>
 							</div>
 						</div>
@@ -317,7 +361,29 @@ export const ContainerFreeMonitoring = ({
 							<span className="text-sm text-kumo-subtle">
 								{`Read:  ${currentData.block.value.readMb}  / Write: ${currentData.block.value.writeMb} `}
 							</span>
-							<DockerBlockChart accumulativeData={accumulativeData.block} />
+							<AreaMetricChart
+								data={accumulativeData.block.map((item) => ({
+									time: item.time,
+									readMb: item.value.readMb,
+									writeMb: item.value.writeMb,
+								}))}
+								series={[
+									{
+										key: "readMb",
+										label: "Read (MB)",
+										color: "var(--chart-1)",
+										tooltipLabel: "Read",
+									},
+									{
+										key: "writeMb",
+										label: "Write (MB)",
+										color: "var(--chart-2)",
+										tooltipLabel: "Write",
+									},
+								]}
+								valueFormatter={(value) => `${value} MB`}
+								formatYAxis={false}
+							/>
 						</div>
 					</div>
 				</LayerCard>
@@ -330,7 +396,29 @@ export const ContainerFreeMonitoring = ({
 							<span className="text-sm text-kumo-subtle">
 								{`In MB: ${currentData.network.value.inputMb}  / Out MB: ${currentData.network.value.outputMb} `}
 							</span>
-							<DockerNetworkChart accumulativeData={accumulativeData.network} />
+							<AreaMetricChart
+								data={accumulativeData.network.map((item) => ({
+									time: item.time,
+									inMB: item.value.inputMb,
+									outMB: item.value.outputMb,
+								}))}
+								series={[
+									{
+										key: "inMB",
+										label: "In (MB)",
+										color: "var(--chart-1)",
+										tooltipLabel: "In",
+									},
+									{
+										key: "outMB",
+										label: "Out (MB)",
+										color: "var(--chart-2)",
+										tooltipLabel: "Out",
+									},
+								]}
+								valueFormatter={(value) => `${value} MB`}
+								formatYAxis={false}
+							/>
 						</div>
 					</div>
 				</LayerCard>

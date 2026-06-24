@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { badgeStateColor } from "@/components/dashboard/application/logs/show";
 import { toast } from "@/components/shared/toast";
-import { ContainerFreeMonitoring } from "./show-free-container-monitoring";
+import { ContainerMonitoring } from "./show-container-monitoring";
 
 interface Props {
 	appName: string;
@@ -15,7 +15,7 @@ interface Props {
 	appType: "stack" | "docker-compose";
 }
 
-export const ComposeFreeMonitoring = ({
+export const ComposeMonitoring = ({
 	appName,
 	appType = "stack",
 	runtimeWorkerId,
@@ -108,7 +108,7 @@ export const ComposeFreeMonitoring = ({
 						Restart
 					</Button>
 				</div>
-				<ContainerFreeMonitoring
+				<ContainerMonitoring
 					appName={containerAppName || ""}
 					appType={appType}
 				/>

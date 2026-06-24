@@ -27,7 +27,7 @@ import { ShowSchedules } from "@/components/dashboard/application/schedules/show
 import { UpdateApplication } from "@/components/dashboard/application/update-application";
 import { ShowVolumeBackups } from "@/components/dashboard/application/volume-backups/show-volume-backups";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
-import { ContainerFreeMonitoring } from "@/components/dashboard/metrics/free/container/show-free-container-monitoring";
+import { ContainerMonitoring } from "@/components/dashboard/metrics/container/show-container-monitoring";
 import {
 	RuntimePlacementStatus,
 	RuntimeWorkerInactiveState,
@@ -212,9 +212,7 @@ const Service = (props: {
 										<div className="pt-2.5">
 											<div className="flex flex-col gap-4 border rounded-lg p-6">
 												<div>
-													<ContainerFreeMonitoring
-														appName={data?.appName || ""}
-													/>
+													<ContainerMonitoring appName={data?.appName || ""} />
 												</div>
 											</div>
 										</div>
