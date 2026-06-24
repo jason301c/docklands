@@ -37,6 +37,16 @@ export default defineConfig({
 			// Shared "feel": Kumo tokens + Starlight variable mapping. No coupling
 			// to apps/docklands — both apps just import the Kumo package directly.
 			customCss: ["./src/styles/docs.css"],
+			// Left-rail layout: the top bar is removed and its contents move into
+			// the sidebar (Sidebar.astro); the Auto/Light/Dark select becomes a
+			// sun/moon toggle (ThemeToggle.astro). Header + MobileMenuFooter render
+			// nothing — the rail owns the brand, search, social, and theme controls.
+			components: {
+				Header: "./src/components/Empty.astro",
+				MobileMenuFooter: "./src/components/Empty.astro",
+				Sidebar: "./src/components/Sidebar.astro",
+				ThemeSelect: "./src/components/ThemeToggle.astro",
+			},
 			plugins: [starlightLlmsTxt()],
 			head: [
 				{

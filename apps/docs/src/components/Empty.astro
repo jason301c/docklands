@@ -1,0 +1,13 @@
+---
+/*
+ * Renders nothing. Used to override Starlight's `Header` (the top bar is removed
+ * — its brand, search, social, and theme controls live in the left rail; see
+ * Sidebar.astro) and `MobileMenuFooter` (the rail already provides social + theme
+ * inside the mobile menu, so the default footer would duplicate them).
+ *
+ * Removing the header outright — rather than hiding it — matters: Starlight's
+ * search script wires up the FIRST `button[data-open-modal]` in the DOM (the
+ * ⌘K hint and shortcut), so a hidden duplicate header search would steal them
+ * from the rail.
+ */
+---

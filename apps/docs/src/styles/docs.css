@@ -2,21 +2,26 @@
  * Shared "feel", not shared code.
  *
  * The docs site is a standalone Astro/Starlight app and is intentionally NOT
- * coupled to apps/docklands. To make it *feel* like the control plane, we pull
- * in the Kumo design tokens directly from the same third-party package the app
- * uses (@cloudflare/kumo, pinned to the app's version), then map Starlight's own
- * `--sl-color-*` variables onto those Kumo tokens.
+ * coupled to apps/docklands or apps/site. To make it mirror the marketing site
+ * 1:1, we pull the Kumo design tokens directly from the same third-party package
+ * the other apps use (@cloudflare/kumo, pinned to the app's version) and then
+ * OVERRIDE them with the exact same Docklands premium "ink" palette + signature
+ * gradient that apps/site/app/globals.css defines. Starlight's own `--sl-color-*`
+ * variables are then mapped onto those tokens.
  *
- * Only the *tokens* are imported here (theme-kumo.css), not Kumo's component
- * CSS or React runtime — a docs site needs the palette, not the widgets.
+ * Only the *tokens* are imported (theme-kumo.css), not Kumo's component CSS or
+ * React runtime — a docs site needs the palette, not the widgets.
  *
  * Fonts match the marketing site: Inter (body) + Fraunces (display headings),
  * both self-hosted via @fontsource-variable/*.
  *
- * Light/dark switching: Starlight toggles `data-theme` on <html>; Kumo tokens
- * key off `data-mode`. astro.config.mjs injects a small head script that mirrors
- * one onto the other, so the variables below resolve to the right shade in both
- * themes without per-theme overrides.
+ * Theme switching: Starlight toggles `data-theme` on <html>; the Kumo tokens we
+ * override below are `light-dark()` pairs, so they resolve via `color-scheme`,
+ * which we bind to Starlight's `data-theme`. (The `data-mode` bridge in
+ * astro.config.mjs still flips any Kumo tokens we don't override here — badges,
+ * status colors — so those stay in sync too.) Dark is the marketing site's only
+ * mode and therefore the 1:1 reference; light reuses the same palette's light
+ * values for readers who toggle it.
  */
 
 @import "@cloudflare/kumo/styles/theme-kumo";
@@ -24,16 +29,78 @@
 @import "@fontsource-variable/fraunces";
 
 /*
+ * Docklands premium "ink" palette — ported 1:1 from apps/site/app/globals.css.
+ * A near-monochrome ink system with a single electric-iris accent. Declared
+ * UNLAYERED so it outranks Kumo's `@layer base` defaults regardless of
+ * specificity; each token is a `light-dark()` pair resolved by `color-scheme`.
+ */
+:root {
+	/* Starlight defaults to dark; bind color-scheme so light-dark() resolves dark.
+	 * The `:root[data-theme="light"]` rule below flips it when the reader toggles. */
+	color-scheme: dark;
+
+	/* Surfaces, lightest → deepest in their own mode */
+	--color-kumo-canvas: light-dark(#fbfbfc, #0a0a0c); /* page background */
+	--color-kumo-base: light-dark(#ffffff, #131316); /* cards / nav / sidebar */
+	--color-kumo-elevated: light-dark(#ffffff, #1a1a1f);
+	--color-kumo-control: light-dark(#ffffff, #131316); /* inputs */
+	--color-kumo-recessed: light-dark(#f4f4f6, #0f0f12); /* inset wells */
+	--color-kumo-overlay: light-dark(#ffffff, #1a1a1f);
+	--color-kumo-tint: light-dark(#f4f4f6, #161619);
+	--color-kumo-contrast: light-dark(#111114, #f4f4f6); /* inverse surface */
+
+	/* Filled chips / hovers / interactive neutrals */
+	--color-kumo-fill: light-dark(#f1f1f3, #1b1b20);
+	--color-kumo-fill-hover: light-dark(#e8e8ec, #232329);
+	--color-kumo-interact: light-dark(#d8d8de, #2d2d34);
+
+	/* Lines */
+	--color-kumo-hairline: light-dark(#e6e6ea, #252529);
+	--color-kumo-line: light-dark(#d4d4da, #34343b);
+
+	/* Brand (electric iris) + focus */
+	--color-kumo-brand: light-dark(#6450e6, #6f5cf2);
+	--color-kumo-brand-hover: light-dark(#5641d4, #7e6dff);
+	--color-kumo-focus: light-dark(#6450e6, #6f5cf2);
+
+	/* Text */
+	--text-color-kumo-default: light-dark(#2a2a30, #d7d7de);
+	--text-color-kumo-strong: light-dark(#0d0d12, #f5f5f8);
+	--text-color-kumo-subtle: light-dark(#6a6a74, #8a8a95);
+	--text-color-kumo-inactive: light-dark(#a9a9b2, #56565f);
+	--text-color-kumo-placeholder: light-dark(#9a9aa3, #6b6b75);
+	--text-color-kumo-inverse: light-dark(#fbfbfc, #0a0a0c);
+	--text-color-kumo-link: light-dark(#5a46dc, #9d90ff);
+	--text-color-kumo-brand: light-dark(#5a46dc, #9d90ff);
+
+	/* The signature accent: a brand-tinted near-black surface, plus the
+	 * blue → iris → violet → pink → amber gradient. */
+	--surface-brand: light-dark(#f5f3fc, #120d26);
+	--gradient-brand: linear-gradient(
+		100deg,
+		#4f8bff 0%,
+		#8b6bff 28%,
+		#c95cff 52%,
+		#ff5c9c 76%,
+		#ff8a3d 100%
+	);
+}
+
+/* Reader toggled light: flip color-scheme so the light-dark() pairs resolve light. */
+:root[data-theme="light"] {
+	color-scheme: light;
+}
+
+/*
  * Map Starlight semantics -> Kumo tokens. Applied at `:root` (Starlight's dark
- * default) and at `:root[data-theme="light"]` (Starlight's light override) so
- * our mapping wins in both modes; the Kumo tokens themselves carry the actual
- * light/dark values via the data-mode bridge.
+ * default) and at `:root[data-theme="light"]`; the Kumo tokens above carry the
+ * actual per-mode values, so no per-theme duplication is needed here.
  */
 :root,
 :root[data-theme="light"] {
 	--sl-font: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-	--docs-font-display: "Fraunces Variable", ui-serif, Georgia, Cambria,
-		"Times New Roman", serif;
+	--docs-font-display:
+		"Fraunces Variable", ui-serif, Georgia, Cambria, "Times New Roman", serif;
 
 	/* Surfaces */
 	--sl-color-bg: var(--color-kumo-canvas);
@@ -68,11 +135,213 @@
 
 /*
  * Fraunces (display) for headings + the brand title; Inter stays the body font.
- * Mirrors the marketing site's Inter-body / Fraunces-display split.
+ * `tracking-tight` mirrors the marketing site's headings.
  */
 .site-title,
 .content-panel h1,
 .sl-markdown-content :is(h1, h2, h3, h4) {
 	font-family: var(--docs-font-display);
 	font-optical-sizing: auto;
+	letter-spacing: -0.02em;
+}
+
+/*
+ * The signature gradient, clipped to text — the marketing site's `.text-gradient`.
+ * Available as a utility for any MDX that wants the brand gradient on a word.
+ */
+.text-gradient {
+	background-image: var(--gradient-brand);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	color: transparent;
+}
+
+/* Thin, ink-toned scrollbars, matching the marketing site. */
+::-webkit-scrollbar {
+	width: 0.3125rem;
+	height: 0.3125rem;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--color-kumo-line);
+	border-radius: 0.3125rem;
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--color-kumo-line) transparent;
+}
+
+/*
+ * Left-rail layout (desktop ≥ 50rem): drop Starlight's top bar and move the
+ * brand, search, social links, and theme toggle into the sidebar (see
+ * src/components/Sidebar.astro). Mobile keeps the default top bar for its menu.
+ *
+ * `--sl-nav-height` is kept as a small value rather than 0 so the sidebar, main
+ * content, and right-hand "On this page" TOC all keep a uniform top inset (they
+ * each offset by it) — only the bar itself is hidden.
+ */
+/* The top bar is gone (Header renders nothing); collapse its empty wrapper so it
+ * leaves no border/space. On mobile, --sl-nav-height stays at its default so the
+ * floating menu button keeps its band; on desktop it goes to 0 (below). */
+.header {
+	display: none;
+}
+
+@media (min-width: 50rem) {
+	:root {
+		/* No top bar on desktop — remove its reserved space so content sits at the
+		 * top. The sidebar, main column, and TOC all offset by this together. */
+		--sl-nav-height: 0rem;
+		/* Use much more of the viewport width for content (Starlight default 45rem). */
+		--sl-content-width: 70rem;
+	}
+
+	/* Trim the sidebar's default top padding so the brand sits near the top. Let it
+	 * size to its content (not height:100%, which clips the scroll) and add bottom
+	 * padding so the last nav items scroll fully to the bottom. */
+	.sidebar-content {
+		height: auto;
+		min-height: 100%;
+		padding-top: 0.25rem;
+		padding-bottom: 2rem;
+	}
+
+	/* Roomier sidebar: taller rows and more breathing room between groups. */
+	#starlight__sidebar a,
+	#starlight__sidebar summary {
+		padding-block: 0.5rem;
+	}
+
+	#starlight__sidebar .top-level > li + li {
+		margin-top: 1.25rem;
+	}
+}
+
+/* Let the right-hand "On this page" TOC blend into the page — drop its divider,
+ * and nudge it down so it lines up with the content instead of the top edge. */
+.right-sidebar {
+	border-inline-start: 0;
+	background-color: transparent;
+}
+
+.right-sidebar-panel {
+	padding-top: 2.5rem;
+}
+
+/* Pinned rail header: brand row + full-width search, above the scrolling nav. */
+.rail-top {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding-bottom: 0.75rem;
+	background-color: var(--sl-color-bg-sidebar);
+	border-bottom: 1px solid var(--sl-color-hairline);
+}
+
+.rail-brand {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	min-width: 0;
+}
+
+/*
+ * SiteTitle derives its logo height from --sl-nav-height (0 in the rail) and uses
+ * the wide --sl-nav-gap between the logo and name — which collapses the logo and
+ * over-indents "Docklands". Pin an explicit logo height + tighter gap, and match
+ * the marketing brand's size/weight so docs ↔ site read the same.
+ */
+.rail-brand .site-title {
+	gap: 0.5rem;
+	font-size: 1.25rem;
+}
+
+.rail-brand .site-title img {
+	height: 1.6rem;
+}
+
+.rail-actions {
+	display: flex;
+	flex-shrink: 0;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.rail-search {
+	display: block;
+}
+
+.rail-search button {
+	width: 100%;
+}
+
+/* "Support us on GitHub" chip — its own row beneath search. */
+.rail-github {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 0.5rem;
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--sl-color-hairline);
+	border-radius: 0.5rem;
+	background-color: var(--color-kumo-fill);
+	color: var(--sl-color-white);
+	font-size: var(--sl-text-sm);
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.rail-github:hover {
+	background-color: var(--color-kumo-fill-hover);
+}
+
+.rail-github svg {
+	font-size: 1rem;
+}
+
+/*
+ * Theme toggle: one sun/moon icon button (replaces the Auto/Light/Dark select).
+ * The icon tracks the active theme — sun while dark (click → light), moon while
+ * light (click → dark). Default (no data-theme yet) shows the sun, matching the
+ * dark default.
+ */
+starlight-theme-toggle button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: 0;
+	border-radius: 0.5rem;
+	background: transparent;
+	color: var(--sl-color-gray-2);
+	cursor: pointer;
+}
+
+starlight-theme-toggle button:hover {
+	color: var(--sl-color-white);
+	background-color: var(--color-kumo-fill);
+}
+
+.theme-toggle-icon {
+	display: none;
+	font-size: 1.125rem;
+}
+
+:root:not([data-theme="light"]) .theme-toggle-sun {
+	display: inline-block;
+}
+
+:root[data-theme="light"] .theme-toggle-moon {
+	display: inline-block;
 }

@@ -1,0 +1,43 @@
+---
+/*
+ * A single sun/moon button that toggles light/dark, replacing Starlight's
+ * Auto/Light/Dark `<select>` (registered as the `ThemeSelect` override in
+ * astro.config.mjs). It reuses Starlight's localStorage key so the choice
+ * persists and is honored by Starlight's pre-paint ThemeProvider on reload; the
+ * visible icon follows `data-theme` via CSS in src/styles/docs.css.
+ */
+import { Icon } from "@astrojs/starlight/components";
+---
+
+<starlight-theme-toggle>
+	<button
+		type="button"
+		aria-label="Toggle light and dark theme"
+		title="Toggle theme"
+	>
+		<Icon name="sun" class="theme-toggle-icon theme-toggle-sun" />
+		<Icon name="moon" class="theme-toggle-icon theme-toggle-moon" />
+	</button>
+</starlight-theme-toggle>
+
+<script>
+	const STORAGE_KEY = "starlight-theme";
+
+	class StarlightThemeToggle extends HTMLElement {
+		constructor() {
+			super();
+			this.querySelector("button")?.addEventListener("click", () => {
+				const root = document.documentElement;
+				const next = root.dataset.theme === "light" ? "dark" : "light";
+				root.dataset.theme = next;
+				try {
+					localStorage.setItem(STORAGE_KEY, next);
+				} catch {
+					// localStorage can be unavailable (private mode); the theme still applies.
+				}
+			});
+		}
+	}
+
+	customElements.define("starlight-theme-toggle", StarlightThemeToggle);
+</script>

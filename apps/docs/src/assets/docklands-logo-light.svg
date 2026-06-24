@@ -1,6 +1,6 @@
 <svg viewBox="0 0 512 512" width="512" height="512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Docklands">
-  <!-- Docklands logo — white ink, shown on the docs dark theme. Three stacked containers; brand-blue top = deploying container. -->
+  <!-- Docklands logo — white ink, shown on the docs dark theme. Three stacked containers; iris top = deploying container. -->
   <rect x="116" y="316" width="280" height="76" rx="20" fill="#FFFFFF"/>
   <rect x="116" y="222" width="280" height="76" rx="20" fill="#FFFFFF"/>
-  <rect x="116" y="128" width="280" height="76" rx="20" fill="#2F6BFF"/>
+  <rect x="116" y="128" width="280" height="76" rx="20" fill="#6D5CF5"/>
 </svg>

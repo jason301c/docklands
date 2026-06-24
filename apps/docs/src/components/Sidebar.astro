@@ -1,0 +1,44 @@
+---
+/*
+ * Left-rail layout. On desktop, Starlight's top bar is removed (see docs.css) and
+ * the brand, theme toggle, search, and a "Support us on GitHub" chip live here at
+ * the top of the sidebar, above the scrolling nav. On mobile the same rail rides
+ * inside the slide-out menu (opened with the floating menu button).
+ */
+import { Icon } from "@astrojs/starlight/components";
+import Default from "@astrojs/starlight/components/Sidebar.astro";
+import Search from "@astrojs/starlight/components/Search.astro";
+import SiteTitle from "@astrojs/starlight/components/SiteTitle.astro";
+import config from "virtual:starlight/user-config";
+import ThemeToggle from "./ThemeToggle.astro";
+
+const shouldRenderSearch =
+	config.pagefind ||
+	config.components.Search !== "@astrojs/starlight/components/Search.astro";
+const github = config.social?.find((s) => s.icon === "github");
+---
+
+<div class="rail-top sl-flex">
+	<div class="rail-brand">
+		<SiteTitle />
+		<div class="rail-actions">
+			<ThemeToggle />
+		</div>
+	</div>
+	{shouldRenderSearch && <Search class="rail-search" />}
+	{
+		github && (
+			<a
+				class="rail-github"
+				href={github.href}
+				target="_blank"
+				rel="me noreferrer"
+			>
+				<Icon name="github" />
+				<span>Star us on GitHub</span>
+			</a>
+		)
+	}
+</div>
+
+<Default />
