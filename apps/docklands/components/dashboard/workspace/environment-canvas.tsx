@@ -3,7 +3,6 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Tabs } from "@cloudflare/kumo/components/tabs";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -101,6 +100,7 @@ import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { DropdownMenu } from "@/components/shared/dropdown";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { FocusShortcutInput } from "@/components/shared/focus-shortcut-input";
+import { Select } from "@/components/shared/select";
 import { ErrorState } from "@/components/shared/states";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
 import { toast } from "@/components/shared/toast";

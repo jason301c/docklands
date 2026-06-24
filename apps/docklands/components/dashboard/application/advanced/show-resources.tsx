@@ -1,7 +1,6 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { InfoIcon, Plus, Trash2 } from "lucide-react";
@@ -23,6 +22,7 @@ import {
 	createConverter,
 	NumberInputWithSteps,
 } from "@/components/shared/number-input";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("application");

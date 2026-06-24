@@ -4,7 +4,6 @@ import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Input } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Radio } from "@cloudflare/kumo/components/radio";
-import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Cog } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -22,6 +21,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 import { DOCS_URL } from "@/shared/routes";
 

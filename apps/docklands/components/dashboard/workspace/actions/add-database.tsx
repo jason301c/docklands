@@ -1,7 +1,6 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
 import { Radio } from "@cloudflare/kumo/components/radio";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -29,6 +28,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";

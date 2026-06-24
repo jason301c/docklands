@@ -1,7 +1,6 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { ArrowRightLeft, Plus, Trash2 } from "lucide-react";
 import type React from "react";
@@ -21,6 +20,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { ScrollArea } from "@/components/shared/scroll-area";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 
 interface Props {

@@ -3,7 +3,6 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button, LinkButton } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Table } from "@cloudflare/kumo/components/table";
 import {
 	flexRender,
@@ -26,6 +25,7 @@ import {
 	Rocket,
 } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
+import { Select } from "@/components/shared/select";
 import {
 	createDeploymentsColumns,
 	getServiceInfo,

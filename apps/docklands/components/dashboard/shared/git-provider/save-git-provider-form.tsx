@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import type { ReactNode } from "react";
 import type { UseFormReturn } from "react-hook-form";
@@ -12,6 +11,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { Select } from "@/components/shared/select";
 
 /**
  * Shared chrome for the per-provider git-source save forms (application +

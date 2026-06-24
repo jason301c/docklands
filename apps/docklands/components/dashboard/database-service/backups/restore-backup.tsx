@@ -6,7 +6,6 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@cloudflare/kumo/components/popover";
-import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import debounce from "lodash/debounce";
@@ -18,6 +17,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { Dialog } from "@/components/shared/dialog";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
+import { Select } from "@/components/shared/select";
 
 const logger = createClientLogger("database-backup");
 

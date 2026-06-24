@@ -3,35 +3,26 @@ import { ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
-import { usePermissions } from "@/client/hooks/use-permissions";
 import {
 	Avatar,
 	AvatarFallback,
 	AvatarImage,
 } from "@/components/shared/avatar";
 import { DropdownMenu } from "@/components/shared/dropdown";
-import { navShortcutsForUrls } from "@/shared/dashboard-nav";
 import { getFallbackAvatarInitials } from "@/shared/utils";
 
-// Quick-access routes surfaced in the account dropdown. The routes, labels, and
-// permission gates are resolved from DASHBOARD_MENU via `navShortcutsForUrls`,
-// so this list can never drift from the sidebar's single source of truth (the
-// audit found a parallel hardcoded list here with an ungated host-metrics item).
-const USER_NAV_SHORTCUT_ROUTES = ["/dashboard/settings/profile"];
+// The account page intentionally lives only in this account dropdown, not the
+// sidebar nav. It is the signed-in user's own (ungated) profile, so it is
+// rendered directly here rather than resolved from DASHBOARD_MENU.
+const PROFILE_URL = "/dashboard/settings/profile";
 
 export const UserNav = () => {
 	const router = useRouter();
 	const { data } = api.user.get.useQuery();
-	const { permissions } = usePermissions();
 	const userName =
 		`${data?.user?.firstName ?? ""} ${data?.user?.lastName ?? ""}`.trim() ||
 		data?.user?.email ||
 		"User";
-
-	const shortcuts = navShortcutsForUrls(USER_NAV_SHORTCUT_ROUTES, {
-		auth: data,
-		permissions,
-	});
 
 	return (
 		<DropdownMenu>
@@ -68,16 +59,9 @@ export const UserNav = () => {
 				sideOffset={4}
 			>
 				<DropdownMenu.Group>
-					{shortcuts.map((item) => (
-						<DropdownMenu.Item
-							key={item.url}
-							onClick={() => {
-								router.push(item.url);
-							}}
-						>
-							{item.title}
-						</DropdownMenu.Item>
-					))}
+					<DropdownMenu.Item onClick={() => router.push(PROFILE_URL)}>
+						Profile
+					</DropdownMenu.Item>
 				</DropdownMenu.Group>
 				<DropdownMenu.Separator />
 				<DropdownMenu.Item

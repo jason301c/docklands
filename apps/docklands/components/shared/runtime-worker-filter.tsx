@@ -1,10 +1,10 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Label } from "@cloudflare/kumo/components/label";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Loader2, ServerIcon } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Fragment, type ReactNode } from "react";
 import { api } from "@/client/api/trpc";
+import { Select } from "@/components/shared/select";
 
 const LOCAL_RUNTIME_WORKER = "docklands-local-runtime";
 

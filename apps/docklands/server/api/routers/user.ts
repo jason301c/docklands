@@ -52,19 +52,10 @@ const logger = createLogger("trpc");
 
 const apiCreateApiKey = z.object({
 	name: z.string().min(1),
-	prefix: z.string().optional(),
 	expiresIn: z.number().optional(),
 	metadata: z.object({
 		organizationId: z.string(),
 	}),
-	// Rate limiting
-	rateLimitEnabled: z.boolean().optional(),
-	rateLimitTimeWindow: z.number().optional(),
-	rateLimitMax: z.number().optional(),
-	// Request limiting
-	remaining: z.number().optional(),
-	refillAmount: z.number().optional(),
-	refillInterval: z.number().optional(),
 });
 
 export const userRouter = createTRPCRouter({

@@ -1,9 +1,9 @@
 import { Label } from "@cloudflare/kumo/components/label";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { HelpCircle } from "lucide-react";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { FormField, FormItem, FormMessage } from "@/components/shared/form";
+import { Select } from "@/components/shared/select";
 
 type RuntimeWorkerOption = {
 	runtimeWorkerId: string;

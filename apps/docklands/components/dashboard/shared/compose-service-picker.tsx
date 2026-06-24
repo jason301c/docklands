@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { DatabaseZap, RefreshCw } from "lucide-react";
 import { useState } from "react";
@@ -17,6 +16,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { Select } from "@/components/shared/select";
 import type { CacheType } from "../application/domains/handle-domain";
 
 /**

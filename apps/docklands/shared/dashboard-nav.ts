@@ -21,7 +21,6 @@ import {
 	Server,
 	ShieldCheck,
 	Tags,
-	User,
 	Users,
 } from "lucide-react";
 import type { ComponentType } from "react";
@@ -98,12 +97,6 @@ export const DASHBOARD_MENU: Menu = {
 			url: "/dashboard/settings/ingress",
 			icon: Activity,
 			isEnabled: ({ permissions }) => !!permissions?.organization.update,
-		},
-		{
-			isSingle: true,
-			title: "Profile",
-			url: "/dashboard/settings/profile",
-			icon: User,
 		},
 		{
 			isSingle: true,
@@ -253,36 +246,6 @@ export const DASHBOARD_MENU: Menu = {
 		},
 	],
 };
-
-/** Flatten a nav list to its leaf items, inlining nested group children. */
-export function flattenNavItems(items: NavItem[]): SingleNavItem[] {
-	return items.flatMap((item) =>
-		item.isSingle === false ? item.items : [item],
-	);
-}
-
-const ALL_NAV_ITEMS: SingleNavItem[] = [
-	...flattenNavItems(DASHBOARD_MENU.home),
-	...flattenNavItems(DASHBOARD_MENU.settings),
-];
-
-/**
- * Resolve a set of route URLs to their canonical, permission-gated nav items,
- * preserving the requested order. This is the single source the account
- * dropdown (`user-nav.tsx`) derives its shortcut list from, so routes, labels,
- * and permission gates can never drift from `DASHBOARD_MENU`.
- */
-export function navShortcutsForUrls(
-	urls: string[],
-	opts: EnabledOpts,
-): SingleNavItem[] {
-	const isEnabled = (item: SingleNavItem) =>
-		!item.isEnabled || item.isEnabled(opts);
-	return urls
-		.map((url) => ALL_NAV_ITEMS.find((item) => item.url === url))
-		.filter((item): item is SingleNavItem => Boolean(item))
-		.filter(isEnabled);
-}
 
 export function createMenuForAuthUser(opts: {
 	auth?: AuthQueryOutput;

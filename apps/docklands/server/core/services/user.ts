@@ -129,30 +129,16 @@ export const createApiKey = async (
 	userId: string,
 	input: {
 		name: string;
-		prefix?: string;
 		expiresIn?: number;
 		metadata: {
 			organizationId: string;
 		};
-		rateLimitEnabled?: boolean;
-		rateLimitTimeWindow?: number;
-		rateLimitMax?: number;
-		remaining?: number;
-		refillAmount?: number;
-		refillInterval?: number;
 	},
 ) => {
 	const result = await auth.createApiKey({
 		body: {
 			name: input.name,
 			expiresIn: input.expiresIn,
-			prefix: input.prefix,
-			rateLimitEnabled: input.rateLimitEnabled,
-			rateLimitTimeWindow: input.rateLimitTimeWindow,
-			rateLimitMax: input.rateLimitMax,
-			remaining: input.remaining,
-			refillAmount: input.refillAmount,
-			refillInterval: input.refillInterval,
 			userId,
 		},
 	});

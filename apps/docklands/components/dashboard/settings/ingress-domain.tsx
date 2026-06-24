@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { useEffect } from "react";
@@ -10,6 +9,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { SectionCard } from "@/components/shared/section-card";
+import { Select } from "@/components/shared/select";
 
 const logger = createClientLogger("ingress-domain");
 

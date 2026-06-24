@@ -1,7 +1,6 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -22,6 +21,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 import { VALID_BRANCH_REGEX } from "@/shared/git-branch-validation";
 

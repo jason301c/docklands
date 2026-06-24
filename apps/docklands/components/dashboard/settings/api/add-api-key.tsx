@@ -1,7 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import copy from "copy-to-clipboard";
 import { useState } from "react";
@@ -13,55 +11,29 @@ import { Dialog } from "@/components/shared/dialog";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 
 const formSchema = z.object({
 	name: z.string().min(1, "Name is required"),
-	prefix: z.string().optional(),
-	expiresIn: z.number().nullable(),
-	// Rate limiting fields
-	rateLimitEnabled: z.boolean().optional(),
-	rateLimitTimeWindow: z.number().nullable(),
-	rateLimitMax: z.number().nullable(),
-	// Request limiting fields
-	remaining: z.number().nullable().optional(),
-	refillAmount: z.number().nullable().optional(),
-	refillInterval: z.number().nullable().optional(),
+	// Seconds until the key expires; 0 means it never expires.
+	expiresIn: z.number(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
+const DAY = 60 * 60 * 24;
+
 const EXPIRATION_OPTIONS = [
 	{ label: "Never", value: "0" },
-	{ label: "1 day", value: String(60 * 60 * 24) },
-	{ label: "7 days", value: String(60 * 60 * 24 * 7) },
-	{ label: "30 days", value: String(60 * 60 * 24 * 30) },
-	{ label: "90 days", value: String(60 * 60 * 24 * 90) },
-	{ label: "1 year", value: String(60 * 60 * 24 * 365) },
-];
-
-const TIME_WINDOW_OPTIONS = [
-	{ label: "1 minute", value: String(60 * 1000) },
-	{ label: "5 minutes", value: String(5 * 60 * 1000) },
-	{ label: "15 minutes", value: String(15 * 60 * 1000) },
-	{ label: "30 minutes", value: String(30 * 60 * 1000) },
-	{ label: "1 hour", value: String(60 * 60 * 1000) },
-	{ label: "1 day", value: String(24 * 60 * 60 * 1000) },
-];
-
-const REFILL_INTERVAL_OPTIONS = [
-	{ label: "1 hour", value: String(60 * 60 * 1000) },
-	{ label: "6 hours", value: String(6 * 60 * 60 * 1000) },
-	{ label: "12 hours", value: String(12 * 60 * 60 * 1000) },
-	{ label: "1 day", value: String(24 * 60 * 60 * 1000) },
-	{ label: "7 days", value: String(7 * 24 * 60 * 60 * 1000) },
-	{ label: "30 days", value: String(30 * 24 * 60 * 60 * 1000) },
+	{ label: "30 days", value: String(DAY * 30) },
+	{ label: "90 days", value: String(DAY * 90) },
+	{ label: "1 year", value: String(DAY * 365) },
 ];
 
 export const AddApiKey = () => {
@@ -72,10 +44,15 @@ export const AddApiKey = () => {
 	// Single-tenant: API keys are scoped to the one organization this instance
 	// has, so there is no organization to pick — we resolve it automatically.
 	const { data: organization } = api.organization.active.useQuery();
+
+	const form = useForm<FormValues>({
+		resolver: zodResolver(formSchema),
+		defaultValues: { name: "", expiresIn: 0 },
+	});
+
 	const createApiKey = api.user.createApiKey.useMutation({
 		onSuccess: (data) => {
 			if (!data) return;
-
 			setNewApiKey(data.key);
 			setOpen(false);
 			setShowSuccessModal(true);
@@ -87,24 +64,7 @@ export const AddApiKey = () => {
 		},
 	});
 
-	const form = useForm<FormValues>({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			name: "",
-			prefix: "",
-			expiresIn: null,
-			rateLimitEnabled: false,
-			rateLimitTimeWindow: null,
-			rateLimitMax: null,
-			remaining: null,
-			refillAmount: null,
-			refillInterval: null,
-		},
-	});
-
-	const rateLimitEnabled = form.watch("rateLimitEnabled");
-
-	const onSubmit = async (values: FormValues) => {
+	const onSubmit = (values: FormValues) => {
 		if (!organization) {
 			toast.error("No active organization");
 			return;
@@ -112,18 +72,7 @@ export const AddApiKey = () => {
 		createApiKey.mutate({
 			name: values.name,
 			expiresIn: values.expiresIn || undefined,
-			prefix: values.prefix || undefined,
-			metadata: {
-				organizationId: organization.id,
-			},
-			// Rate limiting
-			rateLimitEnabled: values.rateLimitEnabled,
-			rateLimitTimeWindow: values.rateLimitTimeWindow || undefined,
-			rateLimitMax: values.rateLimitMax || undefined,
-			// Request limiting
-			remaining: values.remaining || undefined,
-			refillAmount: values.refillAmount || undefined,
-			refillInterval: values.refillInterval || undefined,
+			metadata: { organizationId: organization.id },
 		});
 	};
 
@@ -131,12 +80,12 @@ export const AddApiKey = () => {
 		<>
 			<Dialog.Root open={open} onOpenChange={setOpen}>
 				<Dialog.Trigger render={<Button>Generate New Key</Button>} />
-				<Dialog className="sm:max-w-xl max-h-[90vh]">
+				<Dialog className="sm:max-w-md">
 					<Dialog.Header>
-						<Dialog.Title>Generate API Key</Dialog.Title>
+						<Dialog.Title>Generate API key</Dialog.Title>
 						<Dialog.Description>
-							Create a new API key for accessing the API. You can set an
-							expiration date and a custom prefix for better organization.
+							Name the key so you can recognize it later, then choose how long
+							it stays valid.
 						</Dialog.Description>
 					</Dialog.Header>
 					<Form {...form}>
@@ -148,20 +97,7 @@ export const AddApiKey = () => {
 									<FormItem>
 										<FormLabel>Name</FormLabel>
 										<FormControl>
-											<Input placeholder="My API Key" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="prefix"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Prefix</FormLabel>
-										<FormControl>
-											<Input placeholder="my_app" {...field} />
+											<Input placeholder="e.g. CI deploy bot" {...field} />
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -175,220 +111,18 @@ export const AddApiKey = () => {
 										<FormLabel>Expiration</FormLabel>
 										<Select
 											aria-label="API key expiration"
-											value={field.value?.toString() || "0"}
-											onValueChange={(value) => {
-												if (value === null) return;
-												field.onChange(Number.parseInt(value, 10));
-											}}
-										>
-											<FormControl>
-												<></>
-											</FormControl>
-											<>
-												{EXPIRATION_OPTIONS.map((option) => (
-													<Select.Option
-														key={option.value}
-														value={option.value}
-													>
-														{option.label}
-													</Select.Option>
-												))}
-											</>
-										</Select>
+											value={String(field.value ?? 0)}
+											onValueChange={(value) =>
+												field.onChange(
+													value ? Number.parseInt(String(value), 10) : 0,
+												)
+											}
+											items={EXPIRATION_OPTIONS}
+										/>
 										<FormMessage />
 									</FormItem>
 								)}
 							/>
-							{/* Rate Limiting Section */}
-							<div className="space-y-4 rounded-lg border p-4">
-								<h3 className="text-lg font-medium">Rate Limiting</h3>
-								<FormField
-									control={form.control}
-									name="rateLimitEnabled"
-									render={({ field }) => (
-										<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-											<div className="space-y-0.5">
-												<FormLabel>Enable Rate Limiting</FormLabel>
-												<FormDescription>
-													Limit the number of requests within a time window
-												</FormDescription>
-											</div>
-											<FormControl>
-												<Switch
-													checked={field.value}
-													onCheckedChange={field.onChange}
-												/>
-											</FormControl>
-										</FormItem>
-									)}
-								/>
-
-								{rateLimitEnabled && (
-									<>
-										<FormField
-											control={form.control}
-											name="rateLimitTimeWindow"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Time Window</FormLabel>
-													<Select
-														aria-label="Rate limit time window"
-														value={field.value?.toString()}
-														onValueChange={(value) => {
-															if (value === null) return;
-															field.onChange(Number.parseInt(value, 10));
-														}}
-													>
-														<FormControl>
-															<></>
-														</FormControl>
-														<>
-															{TIME_WINDOW_OPTIONS.map((option) => (
-																<Select.Option
-																	key={option.value}
-																	value={option.value}
-																>
-																	{option.label}
-																</Select.Option>
-															))}
-														</>
-													</Select>
-													<FormDescription>
-														The duration in which requests are counted
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="rateLimitMax"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Maximum Requests</FormLabel>
-													<FormControl>
-														<Input
-															type="number"
-															placeholder="100"
-															value={field.value?.toString() ?? ""}
-															onChange={(e) =>
-																field.onChange(
-																	e.target.value
-																		? Number.parseInt(e.target.value, 10)
-																		: null,
-																)
-															}
-														/>
-													</FormControl>
-													<FormDescription>
-														Maximum number of requests allowed within the time
-														window
-													</FormDescription>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</>
-								)}
-							</div>
-
-							{/* Request Limiting Section */}
-							<div className="space-y-4 rounded-lg border p-4">
-								<h3 className="text-lg font-medium">Request Limiting</h3>
-								<FormField
-									control={form.control}
-									name="remaining"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Total Request Limit</FormLabel>
-											<FormControl>
-												<Input
-													type="number"
-													placeholder="Leave empty for unlimited"
-													value={field.value?.toString() ?? ""}
-													onChange={(e) =>
-														field.onChange(
-															e.target.value
-																? Number.parseInt(e.target.value, 10)
-																: null,
-														)
-													}
-												/>
-											</FormControl>
-											<FormDescription>
-												Total number of requests allowed (leave empty for
-												unlimited)
-											</FormDescription>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<FormField
-									control={form.control}
-									name="refillAmount"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Refill Amount</FormLabel>
-											<FormControl>
-												<Input
-													type="number"
-													placeholder="Amount to refill"
-													value={field.value?.toString() ?? ""}
-													onChange={(e) =>
-														field.onChange(
-															e.target.value
-																? Number.parseInt(e.target.value, 10)
-																: null,
-														)
-													}
-												/>
-											</FormControl>
-											<FormDescription>
-												Number of requests to add on each refill
-											</FormDescription>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<FormField
-									control={form.control}
-									name="refillInterval"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Refill Interval</FormLabel>
-											<Select
-												aria-label="Request refill interval"
-												value={field.value?.toString()}
-												onValueChange={(value) => {
-													if (value === null) return;
-													field.onChange(Number.parseInt(value, 10));
-												}}
-											>
-												<FormControl>
-													<></>
-												</FormControl>
-												<>
-													{REFILL_INTERVAL_OPTIONS.map((option) => (
-														<Select.Option
-															key={option.value}
-															value={option.value}
-														>
-															{option.label}
-														</Select.Option>
-													))}
-												</>
-											</Select>
-											<FormDescription>
-												How often to refill the request limit
-											</FormDescription>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-
 							<Dialog.Footer>
 								<Button
 									type="button"
@@ -397,7 +131,9 @@ export const AddApiKey = () => {
 								>
 									Cancel
 								</Button>
-								<Button type="submit">Generate</Button>
+								<Button type="submit" loading={createApiKey.isPending}>
+									Generate
+								</Button>
 							</Dialog.Footer>
 						</form>
 					</Form>

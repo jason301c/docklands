@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Label } from "@cloudflare/kumo/components/label";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Loader2 } from "lucide-react";
 import dynamic from "next/dynamic";
 import type React from "react";
@@ -8,6 +7,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { badgeStateColor } from "@/components/shared/badge-state-color";
 import { Dialog } from "@/components/shared/dialog";
+import { Select } from "@/components/shared/select";
 
 export const DockerLogsId = dynamic(
 	() =>

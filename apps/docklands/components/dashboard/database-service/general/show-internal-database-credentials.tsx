@@ -1,9 +1,9 @@
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Select } from "@cloudflare/kumo/components/select";
 import { SensitiveInput } from "@cloudflare/kumo/components/sensitive-input";
 import { api } from "@/client/api/trpc";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 import {
 	asLibsql,

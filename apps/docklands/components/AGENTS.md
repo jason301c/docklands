@@ -97,7 +97,10 @@ vs. a token form) or different fields/validation should stay distinct — a loss
 ## Permissions & navigation
 
 - `shared/dashboard-nav.ts` (`DASHBOARD_MENU`) is the single source of truth for
-  routes, labels, and permission gates. Derive any secondary nav surface from it
-  (see `navShortcutsForUrls`); don't maintain a parallel hardcoded list.
+  routes, labels, and permission gates. Derive any secondary nav surface that
+  mirrors the sidebar from it (e.g. via `findActiveNavItem`); don't maintain a
+  parallel hardcoded copy of sidebar entries. The lone exception is the account
+  dropdown's own **Profile** link (`user-nav.tsx`): the account page is
+  deliberately kept out of the sidebar, so it is rendered directly there.
 - Read permissions through `usePermissions()` — `permissions?.<resource>.<action>`
   or the typed `can(resource, action)` (typos fail at compile time).

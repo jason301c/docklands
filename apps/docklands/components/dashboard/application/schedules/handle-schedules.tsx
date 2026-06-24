@@ -5,7 +5,6 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@cloudflare/kumo/components/popover";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -39,6 +38,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { ScrollArea } from "@/components/shared/scroll-area";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import {

@@ -377,7 +377,7 @@ export default function Page({ children }: Props) {
 				</SidebarFooter>
 			</Sidebar>
 			<main className="flex h-svh min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-kumo-canvas">
-				<div className="flex w-full flex-1 flex-col px-4 pb-8 pt-4">
+				<div className="flex w-full flex-1 flex-col p-4">
 					<div
 						className={cn(
 							"flex w-full flex-1 flex-col",

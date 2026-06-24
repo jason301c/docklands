@@ -1,9 +1,9 @@
 "use client";
 
 import { Button } from "@cloudflare/kumo/components/button";
-import { Select } from "@cloudflare/kumo/components/select";
 import type { RouterOutputs } from "@/client/api/trpc";
 import { Dialog } from "@/components/shared/dialog";
+import { Select } from "@/components/shared/select";
 import type { WorkspaceService } from "@/shared/workspace-graph";
 
 type Workspace = RouterOutputs["workspaces"]["all"][number];

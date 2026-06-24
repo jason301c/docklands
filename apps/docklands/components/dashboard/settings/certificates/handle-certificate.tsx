@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { HelpCircle, PlusIcon, SquarePen } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -18,6 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("certificates");

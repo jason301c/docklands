@@ -1,11 +1,11 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Label } from "@cloudflare/kumo/components/label";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
 import { badgeStateColor } from "@/components/shared/badge-state-color";
+import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
 import { ContainerMonitoring } from "./show-container-monitoring";
 

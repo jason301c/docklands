@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input, Textarea } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Pencil, PlusIcon } from "lucide-react";
@@ -12,6 +11,7 @@ import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Dialog } from "@/components/shared/dialog";
 import { DropdownMenu } from "@/components/shared/dropdown";
+import { Select } from "@/components/shared/select";
 
 const logger = createClientLogger("runtime-worker");
 

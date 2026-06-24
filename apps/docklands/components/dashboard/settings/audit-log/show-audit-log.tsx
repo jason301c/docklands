@@ -3,13 +3,13 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
 import { Table } from "@cloudflare/kumo/components/table";
 import { format } from "date-fns";
 import { ScrollText } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { SectionCard } from "@/components/shared/section-card";
+import { Select } from "@/components/shared/select";
 import { EmptyState, QueryState } from "@/components/shared/states";
 import { cn } from "@/shared/utils";
 

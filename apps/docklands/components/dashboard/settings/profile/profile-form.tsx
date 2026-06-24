@@ -1,14 +1,22 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Radio } from "@cloudflare/kumo/components/radio";
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Loader2, Palette } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { AlertBlock } from "@/components/shared/alert-block";
-import { Avatar, AvatarFallback } from "@/components/shared/avatar";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
+import {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/components/shared/avatar";
 import {
 	Form,
 	FormControl,
@@ -17,29 +25,17 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { PageSection } from "@/components/shared/page-section";
 import { SectionCard } from "@/components/shared/section-card";
-import { toast } from "@/components/shared/toast";
-import { getAvatarType, isSolidColorAvatar } from "@/shared/avatar-utils";
-import { generateSHA256Hash, getFallbackAvatarInitials } from "@/shared/utils";
-import { Configure2FA } from "./configure-2fa";
-import { Enable2FA } from "./enable-2fa";
+import { isSolidColorAvatar } from "@/shared/avatar-utils";
+import {
+	cn,
+	generateSHA256Hash,
+	getFallbackAvatarInitials,
+} from "@/shared/utils";
+import { Passkeys } from "./passkeys";
 
-const profileSchema = z.object({
-	email: z
-		.string()
-		.email("Please enter a valid email address")
-		.min(1, "Email is required"),
-	password: z.string().nullable(),
-	currentPassword: z.string().nullable(),
-	image: z.string().optional(),
-	firstName: z.string().optional(),
-	lastName: z.string().optional(),
-	allowImpersonation: z.boolean().optional().default(false),
-});
-
-type Profile = z.infer<typeof profileSchema>;
-
-const randomImages = [
+const PRESET_AVATARS = [
 	"/avatars/avatar-1.png",
 	"/avatars/avatar-2.png",
 	"/avatars/avatar-3.png",
@@ -54,351 +50,371 @@ const randomImages = [
 	"/avatars/avatar-12.png",
 ];
 
-export const ProfileForm = () => {
-	const { data, refetch, isPending } = api.user.get.useQuery();
+/** Display name from first/last with an email fallback. */
+function displayName(user?: {
+	firstName?: string | null;
+	lastName?: string | null;
+	email?: string | null;
+}) {
+	const name = `${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim();
+	return name || user?.email || "";
+}
 
-	const {
-		mutateAsync,
-		isPending: isUpdating,
-		isError,
-		error,
-	} = api.user.update.useMutation();
+/**
+ * The account identity banner: a large avatar, the user's name + email, and a
+ * "Change photo" popover that picks (and immediately persists) an avatar from a
+ * default initials option, a custom solid color, or the preset gallery.
+ */
+function AccountIdentity() {
+	const { data } = api.user.get.useQuery();
+	const utils = api.useUtils();
+	const [open, setOpen] = useState(false);
 	const [gravatarHash, setGravatarHash] = useState<string | null>(null);
 	const colorInputRef = useRef<HTMLInputElement>(null);
 
-	const availableAvatars = useMemo(() => {
-		if (gravatarHash === null) return randomImages;
-		return randomImages.concat([
+	const user = data?.user;
+	const current = user?.image ?? "";
+
+	useEffect(() => {
+		if (user?.email) {
+			generateSHA256Hash(user.email).then(setGravatarHash);
+		}
+	}, [user?.email]);
+
+	const choices = useMemo(() => {
+		if (gravatarHash === null) return PRESET_AVATARS;
+		return PRESET_AVATARS.concat([
 			`https://www.gravatar.com/avatar/${gravatarHash}`,
 		]);
 	}, [gravatarHash]);
 
-	const form = useForm({
-		defaultValues: {
-			email: data?.user?.email || "",
-			password: "",
-			image: data?.user?.image || "",
-			currentPassword: "",
-			allowImpersonation: data?.user?.allowImpersonation || false,
-			firstName: data?.user?.firstName || "",
-			lastName: data?.user?.lastName || "",
-		},
+	const update = api.user.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Avatar updated",
+			errorMessage: "Failed to update avatar",
+			loggerScope: "profile",
+			invalidate: () => utils.user.get.invalidate(),
+			onSuccess: () => setOpen(false),
+		}),
+	);
+
+	const choose = (image: string) => {
+		if (image === current) {
+			setOpen(false);
+			return;
+		}
+		update.mutate({ image });
+	};
+
+	const initials = getFallbackAvatarInitials(displayName(user));
+
+	return (
+		<PageSection className="flex-row items-center gap-4 p-5 sm:gap-5">
+			<Avatar className="size-16 border sm:size-20">
+				<AvatarImage src={current || undefined} alt="" />
+				<AvatarFallback className="text-lg">{initials}</AvatarFallback>
+			</Avatar>
+			<div className="flex min-w-0 flex-1 flex-col">
+				<span className="truncate text-base font-semibold">
+					{displayName(user) || "Your account"}
+				</span>
+				<span className="truncate text-sm text-kumo-subtle">{user?.email}</span>
+			</div>
+			<Popover open={open} onOpenChange={setOpen}>
+				<PopoverTrigger
+					render={
+						<Button variant="secondary" loading={update.isPending}>
+							Change photo
+						</Button>
+					}
+				/>
+				<PopoverContent className="w-auto p-3" align="end">
+					<div className="grid grid-cols-6 gap-2">
+						<button
+							type="button"
+							aria-label="Use initials"
+							title="Initials"
+							onClick={() => choose("")}
+							className={cn(
+								"flex size-9 items-center justify-center rounded-full border bg-kumo-fill text-xs font-medium text-kumo-subtle transition-colors hover:border-kumo-brand",
+								current === "" && "ring-2 ring-kumo-focus ring-offset-1",
+							)}
+						>
+							{initials}
+						</button>
+						<button
+							type="button"
+							aria-label="Pick a color"
+							title="Solid color"
+							onClick={() => colorInputRef.current?.click()}
+							className={cn(
+								"flex size-9 items-center justify-center rounded-full border transition-colors hover:border-kumo-brand",
+								isSolidColorAvatar(current) &&
+									"ring-2 ring-kumo-focus ring-offset-1",
+							)}
+							style={{
+								backgroundColor: isSolidColorAvatar(current)
+									? current
+									: undefined,
+							}}
+						>
+							{!isSolidColorAvatar(current) && (
+								<Palette className="size-4 text-kumo-subtle" />
+							)}
+						</button>
+						<input
+							ref={colorInputRef}
+							type="color"
+							aria-hidden
+							tabIndex={-1}
+							className="pointer-events-none absolute size-0 opacity-0"
+							value={current.startsWith("#") ? current : "#6366f1"}
+							onChange={(e) => choose(e.target.value)}
+						/>
+						{choices.map((image) => (
+							<button
+								key={image}
+								type="button"
+								aria-label="Select avatar"
+								onClick={() => choose(image)}
+								className={cn(
+									"size-9 overflow-hidden rounded-full border transition-colors hover:border-kumo-brand",
+									current === image && "ring-2 ring-kumo-focus ring-offset-1",
+								)}
+							>
+								<img src={image} alt="" className="size-full object-cover" />
+							</button>
+						))}
+					</div>
+				</PopoverContent>
+			</Popover>
+		</PageSection>
+	);
+}
+
+const profileSchema = z.object({
+	firstName: z.string().optional(),
+	lastName: z.string().optional(),
+	email: z
+		.string()
+		.email("Please enter a valid email address")
+		.min(1, "Email is required"),
+});
+
+type ProfileValues = z.infer<typeof profileSchema>;
+
+/** The "Profile" card: editable name + email. */
+function ProfileSection() {
+	const { data, isPending } = api.user.get.useQuery();
+	const utils = api.useUtils();
+
+	const form = useForm<ProfileValues>({
+		defaultValues: { firstName: "", lastName: "", email: "" },
 		resolver: zodResolver(profileSchema),
 	});
 
 	useEffect(() => {
-		if (data) {
-			form.reset(
-				{
-					email: data?.user?.email || "",
-					password: form.getValues("password") || "",
-					image: data?.user?.image || "",
-					currentPassword: form.getValues("currentPassword") || "",
-					allowImpersonation: data?.user?.allowImpersonation,
-					firstName: data?.user?.firstName || "",
-					lastName: data?.user?.lastName || "",
-				},
-				{
-					keepValues: true,
-				},
-			);
-			form.setValue("allowImpersonation", data?.user?.allowImpersonation);
-
-			if (data.user.email) {
-				generateSHA256Hash(data.user.email).then((hash) => {
-					setGravatarHash(hash);
-				});
-			}
-		}
-	}, [form, data]);
-
-	const onSubmit = async (values: Profile) => {
-		try {
-			await mutateAsync({
-				email: values.email.toLowerCase(),
-				password: values.password || undefined,
-				image: values.image,
-				currentPassword: values.currentPassword || undefined,
-				allowImpersonation: values.allowImpersonation,
-				firstName: values.firstName || undefined,
-				lastName: values.lastName || undefined,
-			});
-			await refetch();
-			toast.success("Profile Updated");
+		if (data?.user) {
 			form.reset({
-				email: values.email,
-				password: "",
-				image: values.image,
-				currentPassword: "",
-				firstName: values.firstName || "",
-				lastName: values.lastName || "",
+				firstName: data.user.firstName ?? "",
+				lastName: data.user.lastName ?? "",
+				email: data.user.email ?? "",
 			});
-		} catch (error) {
-			toast.error("Error updating the profile");
 		}
-	};
+	}, [data, form]);
+
+	const update = api.user.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Profile updated",
+			errorMessage: "Failed to update profile",
+			loggerScope: "profile",
+			invalidate: () => utils.user.get.invalidate(),
+		}),
+	);
+
+	const onSubmit = (values: ProfileValues) =>
+		update.mutate({
+			email: values.email.toLowerCase(),
+			firstName: values.firstName || undefined,
+			lastName: values.lastName || undefined,
+		});
 
 	return (
-		<SectionCard
-			title="Account"
-			actions={!data?.user.twoFactorEnabled ? <Enable2FA /> : <Configure2FA />}
-			contentClassName="space-y-2"
-		>
-			{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
+		<SectionCard title="Profile" contentClassName="space-y-4">
 			{isPending ? (
-				<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[35vh]">
-					<span>Loading...</span>
-					<Loader2 className="animate-spin size-4" />
-				</div>
+				<LoadingRow />
 			) : (
-				<>
-					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
-							<div className="space-y-4">
-								<FormField
-									control={form.control}
-									name="firstName"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>First Name</FormLabel>
-											<FormControl>
-												<Input placeholder="John" {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="lastName"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Last Name</FormLabel>
-											<FormControl>
-												<Input placeholder="Doe" {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="email"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Email</FormLabel>
-											<FormControl>
-												<Input placeholder="Email" {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="currentPassword"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Current Password</FormLabel>
-											<FormControl>
-												<Input
-													type="password"
-													placeholder="Current Password"
-													{...field}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-								<FormField
-									control={form.control}
-									name="password"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Password</FormLabel>
-											<FormControl>
-												<Input
-													type="password"
-													placeholder="Password"
-													{...field}
-													value={field.value || ""}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-
-								<FormField
-									control={form.control}
-									name="image"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Avatar</FormLabel>
-											<FormControl>
-												<Radio.Group
-													onValueChange={(e) => {
-														if (e === null) return;
-														field.onChange(e);
-													}}
-													defaultValue={getAvatarType(field.value)}
-													value={getAvatarType(field.value)}
-													orientation="horizontal"
-													appearance="card"
-													className="w-full"
-												>
-													<Radio.Legend className="sr-only">
-														Avatar
-													</Radio.Legend>
-													<Radio.Item
-														key="no-avatar"
-														value=""
-														className="p-2"
-														label={
-															<Avatar className="default-avatar h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-transform">
-																<AvatarFallback className="rounded-lg">
-																	{getFallbackAvatarInitials(
-																		`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
-																	)}
-																</AvatarFallback>
-															</Avatar>
-														}
-													/>
-													<Radio.Item
-														key="custom-upload"
-														value="upload"
-														className="p-2"
-														label={
-															<>
-																<div
-																	className="upload-avatar h-12 w-12 rounded-full border border-dashed border-kumo-hairline hover:border-kumo-brand transition-colors flex items-center justify-center bg-kumo-fill/50 hover:bg-kumo-fill overflow-hidden"
-																	onClick={() =>
-																		document
-																			.getElementById("avatar-upload")
-																			?.click()
-																	}
-																>
-																	{field.value?.startsWith("data:") ? (
-																		<img
-																			src={field.value}
-																			alt="Custom avatar"
-																			className="h-full w-full object-cover rounded-full"
-																		/>
-																	) : (
-																		<svg
-																			className="h-5 w-5 text-kumo-subtle"
-																			fill="none"
-																			stroke="currentColor"
-																			viewBox="0 0 24 24"
-																		>
-																			<path
-																				strokeLinecap="round"
-																				strokeLinejoin="round"
-																				strokeWidth={2}
-																				d="M12 4v16m8-8H4"
-																			/>
-																		</svg>
-																	)}
-																</div>
-																<input
-																	id="avatar-upload"
-																	type="file"
-																	accept="image/*"
-																	className="hidden"
-																	onChange={async (e) => {
-																		const file = e.target.files?.[0];
-																		if (file) {
-																			// max file size 2mb
-																			if (file.size > 2 * 1024 * 1024) {
-																				toast.error(
-																					"Image size must be less than 2MB",
-																				);
-																				return;
-																			}
-																			const reader = new FileReader();
-																			reader.onload = (event) => {
-																				const result = event.target
-																					?.result as string;
-																				field.onChange(result);
-																			};
-																			reader.readAsDataURL(file);
-																		}
-																	}}
-																/>
-															</>
-														}
-													/>
-													<Radio.Item
-														key="color-avatar"
-														value="color"
-														className="relative p-2"
-														label={
-															<>
-																<div
-																	className="color-avatar h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-colors flex items-center justify-center overflow-hidden cursor-pointer"
-																	style={{
-																		backgroundColor: isSolidColorAvatar(
-																			field.value,
-																		)
-																			? field.value
-																			: undefined,
-																	}}
-																	onClick={() => colorInputRef.current?.click()}
-																>
-																	{!isSolidColorAvatar(field.value) && (
-																		<Palette className="h-5 w-5 text-kumo-subtle" />
-																	)}
-																</div>
-																<input
-																	ref={colorInputRef}
-																	type="color"
-																	className="absolute opacity-0 pointer-events-none w-12 h-12 top-0 left-0"
-																	value={
-																		field.value?.startsWith("#")
-																			? field.value
-																			: "#6366f1"
-																	}
-																	onChange={field.onChange}
-																/>
-															</>
-														}
-													/>
-													{availableAvatars.map((image) => (
-														<Radio.Item
-															key={image}
-															value={image}
-															className="p-2"
-															label={
-																<>
-																	<img
-																		key={image}
-																		src={image}
-																		alt="avatar"
-																		className="h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-transform"
-																	/>
-																</>
-															}
-														/>
-													))}
-												</Radio.Group>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
-								/>
-							</div>
-
-							<div className="flex items-center justify-end gap-2">
-								<Button type="submit" loading={isUpdating}>
-									Save
-								</Button>
-							</div>
-						</form>
-					</Form>
-				</>
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<div className="grid gap-4 sm:grid-cols-2">
+							<FormField
+								control={form.control}
+								name="firstName"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>First name</FormLabel>
+										<FormControl>
+											<Input placeholder="John" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<FormField
+								control={form.control}
+								name="lastName"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Last name</FormLabel>
+										<FormControl>
+											<Input placeholder="Doe" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+						</div>
+						<FormField
+							control={form.control}
+							name="email"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Email</FormLabel>
+									<FormControl>
+										<Input placeholder="you@example.com" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<div className="flex justify-end">
+							<Button
+								type="submit"
+								loading={update.isPending}
+								disabled={!form.formState.isDirty}
+							>
+								Save changes
+							</Button>
+						</div>
+					</form>
+				</Form>
 			)}
 		</SectionCard>
+	);
+}
+
+const passwordSchema = z
+	.object({
+		currentPassword: z.string().min(1, "Enter your current password"),
+		password: z.string().min(8, "Use at least 8 characters"),
+	})
+	.refine((values) => values.currentPassword !== values.password, {
+		message: "New password must differ from the current one",
+		path: ["password"],
+	});
+
+type PasswordValues = z.infer<typeof passwordSchema>;
+
+/** The "Security" card: password change + passkeys. */
+function SecuritySection() {
+	const utils = api.useUtils();
+
+	const form = useForm<PasswordValues>({
+		defaultValues: { currentPassword: "", password: "" },
+		resolver: zodResolver(passwordSchema),
+	});
+
+	const update = api.user.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Password updated",
+			errorMessage: "Failed to update password",
+			loggerScope: "profile",
+			invalidate: () => utils.user.get.invalidate(),
+			onSuccess: () => form.reset({ currentPassword: "", password: "" }),
+		}),
+	);
+
+	const onSubmit = (values: PasswordValues) =>
+		update.mutate({
+			currentPassword: values.currentPassword,
+			password: values.password,
+		});
+
+	return (
+		<SectionCard title="Security" contentClassName="space-y-6">
+			<Form {...form}>
+				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+					<div className="grid gap-4 sm:grid-cols-2">
+						<FormField
+							control={form.control}
+							name="currentPassword"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Current password</FormLabel>
+									<FormControl>
+										<Input
+											type="password"
+											autoComplete="current-password"
+											placeholder="••••••••"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="password"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>New password</FormLabel>
+									<FormControl>
+										<Input
+											type="password"
+											autoComplete="new-password"
+											placeholder="••••••••"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					</div>
+					<div className="flex justify-end">
+						<Button
+							type="submit"
+							variant="secondary"
+							loading={update.isPending}
+							disabled={!form.formState.isDirty}
+						>
+							Update password
+						</Button>
+					</div>
+				</form>
+			</Form>
+
+			<Passkeys />
+		</SectionCard>
+	);
+}
+
+function LoadingRow() {
+	return (
+		<div className="flex min-h-[20vh] items-center justify-center gap-2 text-sm text-kumo-subtle">
+			<span>Loading...</span>
+			<Loader2 className="size-4 animate-spin" />
+		</div>
+	);
+}
+
+export const ProfileForm = () => {
+	return (
+		<div className="flex flex-col gap-4">
+			<AccountIdentity />
+			<ProfileSection />
+			<SecuritySection />
+		</div>
 	);
 };

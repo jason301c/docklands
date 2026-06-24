@@ -3,9 +3,9 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Select } from "@cloudflare/kumo/components/select";
 import type { RouterOutputs } from "@/client/api/trpc";
 import { Dialog } from "@/components/shared/dialog";
+import { Select } from "@/components/shared/select";
 import {
 	getWorkspaceServiceKey,
 	type WorkspaceService,
