@@ -20,6 +20,7 @@ import {
 } from "@/components/shared/form";
 import { Logo } from "@/components/shared/logo";
 import { toast } from "@/components/shared/toast";
+import { DOCS_URL } from "@/shared/routes";
 
 const registerSchema = z
 	.object({
@@ -204,7 +205,7 @@ const Register = (_props: Props) => {
 			<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
 				<Link
 					className="hover:underline text-kumo-subtle"
-					href="https://github.com/jason301c/docklands"
+					href={DOCS_URL}
 					target="_blank"
 				>
 					Need help?

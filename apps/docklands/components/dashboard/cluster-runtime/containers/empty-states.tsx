@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { DOCS_URL } from "@/shared/routes";
 import type { ContainerInfo } from "./types";
 
 export const DocLinks = () => (
@@ -15,7 +16,7 @@ export const DocLinks = () => (
 		<p className="text-xs font-medium text-kumo-subtle">Helpful resources:</p>
 		<div className="flex flex-wrap gap-x-4 gap-y-1">
 			<a
-				href="https://github.com/jason301c/docklands"
+				href={DOCS_URL}
 				target="_blank"
 				rel="noopener noreferrer"
 				className="text-xs text-kumo-brand underline underline-offset-4 inline-flex items-center gap-1"

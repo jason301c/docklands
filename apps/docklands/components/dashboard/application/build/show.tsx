@@ -23,6 +23,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+import { DOCS_URL } from "@/shared/routes";
 
 const logger = createClientLogger("application");
 
@@ -259,7 +260,7 @@ export const ShowBuildChooseForm = ({ applicationId }: Props) => {
 						(recommended: 4+ GB RAM and 2+ CPU cores). For production
 						environments, please review our{" "}
 						<a
-							href="https://github.com/jason301c/docklands"
+							href={DOCS_URL}
 							target="_blank"
 							rel="noreferrer"
 							className="font-medium underline underline-offset-4"

@@ -5,6 +5,7 @@ import { HelpCircle } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { toast } from "@/components/shared/toast";
+import { DOCS_URL } from "@/shared/routes";
 
 const logger = createClientLogger("runtime-actions");
 
@@ -72,7 +73,7 @@ export const ToggleDockerCleanup = ({ runtimeWorkerId }: Props) => {
 							<p className="mt-1">
 								For custom cleanup strategies, use{" "}
 								<a
-									href="https://github.com/jason301c/docklands"
+									href={DOCS_URL}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="underline text-kumo-brand"

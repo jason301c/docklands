@@ -13,6 +13,7 @@ import { CodeEditor } from "@/components/shared/code-editor";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DrawerLogs } from "@/components/shared/drawer-logs";
 import { toast } from "@/components/shared/toast";
+import { DOCS_URL } from "@/shared/routes";
 
 const logger = createClientLogger("runtime-worker");
 
@@ -185,7 +186,7 @@ export const SetupRuntimeWorker = ({
 											Automatic process
 										</span>
 										<Link
-											href="https://github.com/jason301c/docklands"
+											href={DOCS_URL}
 											target="_blank"
 											className="text-kumo-brand flex flex-row gap-2"
 										>

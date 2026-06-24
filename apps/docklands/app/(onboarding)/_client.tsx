@@ -331,8 +331,7 @@ export default function Home() {
 					<div>
 						<Link
 							className="hover:underline text-kumo-subtle"
-							href="https://github.com/jason301c/docklands"
-							target="_blank"
+							href="/send-reset-password"
 						>
 							Lost your password?
 						</Link>

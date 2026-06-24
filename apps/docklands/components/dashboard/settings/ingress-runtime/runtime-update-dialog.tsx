@@ -18,6 +18,7 @@ import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("runtime-update");
 
+import { GITHUB_RELEASES_URL } from "@/shared/routes";
 import type { IUpdateData } from "@/shared/runtime-update-types";
 import { ApplyRuntimeUpdate } from "./apply-runtime-update";
 import { ToggleAutoCheckUpdates } from "./toggle-auto-check-updates";
@@ -233,7 +234,7 @@ export const RuntimeUpdateDialog = ({
 							<div className="text-kumo-info">
 								We recommend reviewing the{" "}
 								<Link
-									href="https://github.com/jason301c/docklands/releases"
+									href={GITHUB_RELEASES_URL}
 									target="_blank"
 									className="text-kumo-default underline hover:text-kumo-subtle"
 								>
