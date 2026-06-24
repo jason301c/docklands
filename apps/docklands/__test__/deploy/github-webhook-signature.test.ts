@@ -60,20 +60,33 @@ const { handleGithubDeployWebhook } = await import(
 const TEST_SECRET = "s3cr3t-webhook-key";
 const INSTALLATION_ID = 4242;
 
-/** Sign the exact bytes the handler verifies: `JSON.stringify(rawBody)`. */
+/**
+ * Sign the exact request bytes the handler verifies. The handler now reads the
+ * raw request body and verifies the HMAC against those bytes (not a
+ * re-serialized object), so signing must use the same string the request body
+ * carries.
+ */
 const sign = (body: unknown, secret = TEST_SECRET) =>
-	`sha256=${createHmac("sha256", secret)
-		.update(JSON.stringify(body))
-		.digest("hex")}`;
+	signRaw(JSON.stringify(body), secret);
+
+/** Sign an exact raw body string. */
+const signRaw = (rawBody: string, secret = TEST_SECRET) =>
+	`sha256=${createHmac("sha256", secret).update(rawBody).digest("hex")}`;
 
 const makeRequest = (
 	body: unknown,
+	headers: Record<string, string> = {},
+): Request => makeRawRequest(JSON.stringify(body), headers);
+
+/** Build a request whose body is an exact, caller-controlled byte string. */
+const makeRawRequest = (
+	rawBody: string,
 	headers: Record<string, string> = {},
 ): Request =>
 	new Request("http://docklands.test/api/deploy/github", {
 		method: "POST",
 		headers: { "content-type": "application/json", ...headers },
-		body: JSON.stringify(body),
+		body: rawBody,
 	});
 
 beforeEach(() => {
@@ -270,6 +283,59 @@ describe("handleGithubDeployWebhook signature verification", () => {
 		await expect(res.json()).resolves.toEqual({
 			message: "Github Installation not found",
 		});
+		expect(queueAdd).not.toHaveBeenCalled();
+	});
+
+	it("verifies the RAW request bytes, not a re-serialized body", async () => {
+		// A real GitHub payload's wire bytes are NOT reproducible via
+		// `JSON.stringify(JSON.parse(body))`: whitespace, key order, and number
+		// formatting diverge. Craft a body string that round-trips to a DIFFERENT
+		// string (pretty-printed with newlines/indentation) and is signed over its
+		// exact bytes. The handler must verify against these bytes and pass.
+		const rawBody = JSON.stringify(
+			{ installation: { id: INSTALLATION_ID } },
+			null,
+			2,
+		);
+		// Sanity: re-serializing would change the bytes, so the old
+		// `JSON.stringify(rawBody)` code would have computed a different digest and
+		// rejected this legitimate payload.
+		expect(JSON.stringify(JSON.parse(rawBody))).not.toBe(rawBody);
+
+		const res = await handleGithubDeployWebhook(
+			makeRawRequest(rawBody, {
+				"x-hub-signature-256": signRaw(rawBody),
+				"x-github-event": "ping",
+			}),
+		);
+
+		expect(res.status).toBe(200);
+		await expect(res.json()).resolves.toEqual({
+			message: "Ping received, webhook is active",
+		});
+	});
+
+	it("rejects a signature computed over the re-serialized (not raw) bytes", async () => {
+		// The inverse: a signature over `JSON.stringify(JSON.parse(rawBody))` must
+		// be rejected, because that is not what was sent on the wire. This is the
+		// exact failure mode the pre-fix code introduced (verifying the wrong bytes).
+		const rawBody = JSON.stringify(
+			{ installation: { id: INSTALLATION_ID }, ref: "refs/heads/main" },
+			null,
+			2,
+		);
+		const reSerialized = JSON.stringify(JSON.parse(rawBody));
+		expect(reSerialized).not.toBe(rawBody);
+
+		const res = await handleGithubDeployWebhook(
+			makeRawRequest(rawBody, {
+				"x-hub-signature-256": signRaw(reSerialized),
+				"x-github-event": "push",
+			}),
+		);
+
+		expect(res.status).toBe(401);
+		await expect(res.json()).resolves.toEqual({ message: "Unauthorized" });
 		expect(queueAdd).not.toHaveBeenCalled();
 	});
 });

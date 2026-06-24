@@ -18,11 +18,7 @@ import { checkUserRepositoryPermissions } from "@/server/core/utils/providers/gi
 import { shouldDeploy } from "@/server/core/utils/watch-paths/should-deploy";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
-import {
-	jsonResponse,
-	parseRequestBody,
-	requestHeadersToObject,
-} from "@/server/web/request";
+import { jsonResponse, requestHeadersToObject } from "@/server/web/request";
 import {
 	extractCommitMessage,
 	extractHash,
@@ -34,15 +30,27 @@ const logger = createLogger("github-webhook");
 
 export async function handleGithubDeployWebhook(request: Request) {
 	const headers = requestHeadersToObject(request.headers);
-	// The raw parsed body is what signature verification runs against. We never
-	// replace it with a schema-parsed value: zod's `.passthrough()` reorders
-	// keys, which would change the re-stringified bytes and break HMAC
-	// verification for legitimate GitHub payloads.
-	const rawBody = await parseRequestBody(request);
-	// A lenient, typed view of the same body for safe field access. A non-object
-	// payload fails to parse; we substitute an empty object so the handler reaches
-	// the same controlled responses it already returned for a missing/empty body,
-	// rather than introducing a new status code GitHub might choke on.
+	// HMAC verification MUST run against the exact bytes GitHub signed. Read the
+	// request body as raw text and verify against that — never against a
+	// re-serialized value. `JSON.stringify(JSON.parse(body))` is NOT byte-stable
+	// (key order from non-string sources, whitespace, number/unicode formatting
+	// all diverge from GitHub's wire format), so re-serializing would make
+	// verification reject legitimate payloads (and any that happened to match
+	// would be verifying the wrong bytes).
+	const rawBodyText = await request.text();
+	// Parse a typed view of the same bytes for safe field access. A non-object or
+	// invalid payload yields an empty object so the handler reaches the same
+	// controlled responses it already returned for a missing/empty body, rather
+	// than introducing a new status code GitHub might choke on.
+	let rawBody: Record<string, any> = {};
+	try {
+		const parsedJson = rawBodyText ? JSON.parse(rawBodyText) : {};
+		if (parsedJson && typeof parsedJson === "object") {
+			rawBody = parsedJson;
+		}
+	} catch {
+		rawBody = {};
+	}
 	const parsed = githubWebhookBodySchema.safeParse(rawBody);
 	const githubBody = parsed.success ? parsed.data : {};
 	const signature = headers["x-hub-signature-256"];
@@ -73,10 +81,8 @@ export async function handleGithubDeployWebhook(request: Request) {
 		secret: githubResult.githubWebhookSecret,
 	});
 
-	const verified = await webhooks.verify(
-		JSON.stringify(rawBody),
-		signature as string,
-	);
+	// Verify against the raw request bytes, not a re-serialized object.
+	const verified = await webhooks.verify(rawBodyText, signature as string);
 
 	if (!verified) {
 		logger.warn(

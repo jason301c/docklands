@@ -118,6 +118,39 @@ const toPunycode = (host: string): string => {
 	}
 };
 
+// Host/path values are interpolated into Traefik's backtick-quoted matcher
+// syntax (`Host(`<host>`) && PathPrefix(`<path>`)`). A backtick closes the
+// matcher early, so a value containing one — or whitespace/parens — could append
+// extra matchers (e.g. `evil.com`) || HostRegexp(`.+`)`) and turn one router
+// into a catch-all. Traefik provides no way to escape a backtick inside a
+// backtick literal, so the only safe handling is to reject such values. The
+// tRPC/OpenAPI input schema already rejects them, but internal callers
+// (preview-deployment `previewPath`/`previewWildcard`, traefik.me generation)
+// reach this builder without going through that schema, so re-validate here as
+// the last line of defense before the value lands in the generated config.
+const RULE_BREAKING_CHARS = /[`\s()]/;
+
+const assertSafeRuleValue = (kind: "host" | "path", value: string): void => {
+	if (RULE_BREAKING_CHARS.test(value)) {
+		throw new Error(
+			`Refusing to build Traefik rule: ${kind} contains illegal characters`,
+		);
+	}
+};
+
+// Traefik middleware references are plain identifiers (`name` or `name@provider`).
+// Reject anything else so a crafted middleware name can't smuggle YAML or rule
+// metacharacters into the router's `middlewares` list.
+const MIDDLEWARE_NAME_REGEX = /^[A-Za-z0-9_.-]+(@[A-Za-z0-9_.-]+)?$/;
+
+const assertSafeMiddlewareName = (name: string): void => {
+	if (!MIDDLEWARE_NAME_REGEX.test(name)) {
+		throw new Error(
+			"Refusing to build Traefik rule: middleware name contains illegal characters",
+		);
+	}
+};
+
 export const createRouterConfig = async (
 	app: ApplicationNested,
 	domain: Domain,
@@ -136,8 +169,13 @@ export const createRouterConfig = async (
 		customEntrypoint,
 	} = domain;
 	const punycodeHost = toPunycode(host);
+	assertSafeRuleValue("host", punycodeHost);
+	const hasPathPrefix = path !== null && path !== "/";
+	if (hasPathPrefix && path) {
+		assertSafeRuleValue("path", path);
+	}
 	const routerConfig: HttpRouter = {
-		rule: `Host(\`${punycodeHost}\`)${path !== null && path !== "/" ? ` && PathPrefix(\`${path}\`)` : ""}`,
+		rule: `Host(\`${punycodeHost}\`)${hasPathPrefix ? ` && PathPrefix(\`${path}\`)` : ""}`,
 		service: `${appName}-service-${uniqueConfigKey}`,
 		middlewares: [],
 		entryPoints: [entryPoint],
@@ -186,6 +224,9 @@ export const createRouterConfig = async (
 
 		// custom middlewares from domain
 		if (domain.middlewares && domain.middlewares.length > 0) {
+			for (const middlewareName of domain.middlewares) {
+				assertSafeMiddlewareName(middlewareName);
+			}
 			routerConfig.middlewares?.push(...domain.middlewares);
 		}
 	}
