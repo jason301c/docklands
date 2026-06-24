@@ -11,7 +11,7 @@ import { ShowImport } from "@/components/dashboard/application/advanced/import/s
 import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
-import { ShowEnvironment } from "@/components/dashboard/application/environment/show-environment";
+import { ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowPatches } from "@/components/dashboard/application/patches/show-patches";
 import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
 import { ShowVolumeBackups } from "@/components/dashboard/application/volume-backups/show-volume-backups";
@@ -200,7 +200,7 @@ const Service = (props: {
 								{permissions?.envVars.read && tab === "environment" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowEnvironment id={composeId} type="compose" />
+											<ShowServiceEnvironment id={composeId} type="compose" />
 										</div>
 									</div>
 								)}

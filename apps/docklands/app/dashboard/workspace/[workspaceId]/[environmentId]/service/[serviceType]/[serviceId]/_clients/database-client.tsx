@@ -6,7 +6,7 @@ import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { UseKeyboardNav } from "@/client/hooks/use-keyboard-nav";
 import { usePermissions } from "@/client/hooks/use-permissions";
-import { ShowEnvironment } from "@/components/dashboard/application/environment/show-environment";
+import { ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { DeleteService } from "@/components/dashboard/compose/delete-service";
 import { ShowDatabaseAdvancedSettings } from "@/components/dashboard/database-service/advanced/show-database-advanced-settings";
@@ -214,7 +214,7 @@ const DatabaseClient = (props: {
 									data?.engine && (
 										<div>
 											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowEnvironment id={databaseId} type={data.engine} />
+												<ShowServiceEnvironment id={databaseId} type={data.engine} />
 											</div>
 										</div>
 									)}

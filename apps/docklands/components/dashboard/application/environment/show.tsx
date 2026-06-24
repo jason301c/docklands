@@ -34,7 +34,7 @@ interface Props {
 	applicationId: string;
 }
 
-export const ShowEnvironment = ({ applicationId }: Props) => {
+export const ShowApplicationEnvironment = ({ applicationId }: Props) => {
 	const { permissions } = usePermissions();
 	const canWrite = permissions?.envVars.write ?? false;
 	const { mutateAsync, isPending } =

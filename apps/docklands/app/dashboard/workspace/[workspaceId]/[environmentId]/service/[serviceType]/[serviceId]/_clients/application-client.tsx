@@ -17,7 +17,7 @@ import { ShowResources } from "@/components/dashboard/application/advanced/show-
 import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
-import { ShowEnvironment } from "@/components/dashboard/application/environment/show";
+import { ShowApplicationEnvironment } from "@/components/dashboard/application/environment/show";
 import { ShowGeneralApplication } from "@/components/dashboard/application/general/show";
 import { ShowIconSettings } from "@/components/dashboard/application/icon/show-icon-settings";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
@@ -202,7 +202,7 @@ const Service = (props: {
 								{permissions?.envVars.read && tab === "environment" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowEnvironment applicationId={applicationId} />
+											<ShowApplicationEnvironment applicationId={applicationId} />
 										</div>
 									</div>
 								)}

@@ -33,7 +33,7 @@ interface Props {
 	type: Exclude<ServiceType | "compose", "application">;
 }
 
-export const ShowEnvironment = ({ id, type }: Props) => {
+export const ShowServiceEnvironment = ({ id, type }: Props) => {
 	const { permissions } = usePermissions();
 	const canWrite = permissions?.envVars.write ?? false;
 	const isCompose = type === "compose";

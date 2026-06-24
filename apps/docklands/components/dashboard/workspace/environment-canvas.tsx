@@ -57,8 +57,8 @@ import { ShowResources } from "@/components/dashboard/application/advanced/show-
 import { ShowVolumes } from "@/components/dashboard/application/advanced/volumes/show-volumes";
 import { ShowDeployments } from "@/components/dashboard/application/deployments/show-deployments";
 import { ShowDomains } from "@/components/dashboard/application/domains/show-domains";
-import { ShowEnvironment as ShowApplicationEnvironment } from "@/components/dashboard/application/environment/show";
-import { ShowEnvironment as ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
+import { ShowApplicationEnvironment } from "@/components/dashboard/application/environment/show";
+import { ShowServiceEnvironment } from "@/components/dashboard/application/environment/show-environment";
 import { ShowDockerLogs } from "@/components/dashboard/application/logs/show";
 import { ShowPreviewDeployments } from "@/components/dashboard/application/preview-deployments/show-preview-deployments";
 import { ShowSchedules } from "@/components/dashboard/application/schedules/show-schedules";
