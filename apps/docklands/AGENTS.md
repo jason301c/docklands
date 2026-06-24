@@ -214,6 +214,14 @@ the custom-role manager) all hang off `components/dashboard/`.
   callback state, and target resources before mutating deployments or
   credentials, and keep response semantics compatible with external providers
   (small status-code changes can break webhook integrations).
+  - **Provider feature scoping (deliberate).** GitHub is the first-class
+    integration: HMAC-signed webhooks (`github-webhook.ts`, verified against the
+    raw body) and PR **preview deployments**. GitLab/Gitea/Bitbucket are
+    supported for clone + deploy but currently fall back to the **generic
+    refresh-token webhook** (unsigned, token in the URL) and produce **no preview
+    deployments**. This is honest scoping, not an oversight — if you add a
+    provider-specific signed webhook or previews, do it for real (signature
+    verify + the preview lifecycle), don't paper a generic handler over it.
 - `server/queues/` — the in-memory deployment queue: per-runtime-worker
   partitions, per-service serialization, a process-global singleton, and
   concurrency resolved lazily so runtime-setting changes take effect without a
