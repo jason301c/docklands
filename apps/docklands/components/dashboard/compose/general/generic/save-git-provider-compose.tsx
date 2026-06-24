@@ -8,7 +8,7 @@ import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/stand
 import { HelpCircle, KeyRoundIcon, LockIcon, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
@@ -53,6 +53,8 @@ export const SaveGitProviderCompose = ({ composeId }: Props) => {
 	const router = useRouter();
 
 	const { mutateAsync, isPending } = api.compose.update.useMutation();
+
+	const [watchPathDraft, setWatchPathDraft] = useState("");
 
 	const form = useForm({
 		defaultValues: {
@@ -261,15 +263,16 @@ export const SaveGitProviderCompose = ({ composeId }: Props) => {
 									<div className="flex gap-2">
 										<Input
 											placeholder="Enter a path to watch (e.g., src/**, dist/*.js)"
+											value={watchPathDraft}
+											onChange={(e) => setWatchPathDraft(e.target.value)}
 											onKeyDown={(e) => {
 												if (e.key === "Enter") {
 													e.preventDefault();
-													const input = e.currentTarget;
-													const value = input.value.trim();
+													const value = watchPathDraft.trim();
 													if (value) {
 														const newPaths = [...(field.value || []), value];
 														form.setValue("watchPaths", newPaths);
-														input.value = "";
+														setWatchPathDraft("");
 													}
 												}
 											}}
@@ -278,14 +281,11 @@ export const SaveGitProviderCompose = ({ composeId }: Props) => {
 											type="button"
 											variant="secondary"
 											onClick={() => {
-												const input = document.querySelector(
-													'input[placeholder="Enter a path to watch (e.g., src/**, dist/*.js)"]',
-												) as HTMLInputElement;
-												const value = input.value.trim();
+												const value = watchPathDraft.trim();
 												if (value) {
 													const newPaths = [...(field.value || []), value];
 													form.setValue("watchPaths", newPaths);
-													input.value = "";
+													setWatchPathDraft("");
 												}
 											}}
 										>

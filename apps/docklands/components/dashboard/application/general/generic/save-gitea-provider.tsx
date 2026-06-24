@@ -223,7 +223,7 @@ export const SaveGiteaProvider = ({ applicationId }: Props) => {
 										<Button
 											variant="outline"
 											className={cn(
-												"w-full justify-between !bg-input",
+												"w-full justify-between bg-kumo-fill",
 												!field.value && "text-kumo-subtle",
 											)}
 										>
@@ -318,7 +318,7 @@ export const SaveGiteaProvider = ({ applicationId }: Props) => {
 										<Button
 											variant="outline"
 											className={cn(
-												" w-full justify-between !bg-input",
+												" w-full justify-between bg-kumo-fill",
 												!field.value && "text-kumo-subtle",
 											)}
 										>

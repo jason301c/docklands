@@ -84,7 +84,7 @@ export const UnauthorizedGitProvider = ({ service, onDisconnect }: Props) => {
 				repository information below, but cannot modify the configuration.
 			</AlertBlock>
 
-			<LayerCard className="border-dashed border-2 border-muted-foreground/20 bg-transparent">
+			<LayerCard className="border-dashed border-2 border-kumo-line bg-transparent">
 				<div>
 					<h3 className="flex items-center gap-2">
 						{getProviderIcon(service.sourceType)}

@@ -3,6 +3,7 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { HelpCircle, Plus, X } from "lucide-react";
+import { useState } from "react";
 import type { ControllerRenderProps } from "react-hook-form";
 import {
 	FormControl,
@@ -75,8 +76,12 @@ const WatchPathsTooltip = ({
 /** The square outline `Plus` button shared by the "plus" and "plus-hybrid" variants. */
 const PlusAddButton = ({
 	field,
+	draft,
+	onAdded,
 }: {
 	field: ControllerRenderProps<any, "watchPaths">;
+	draft: string;
+	onAdded: () => void;
 }) => (
 	<Button
 		aria-label="Add watch path"
@@ -84,13 +89,10 @@ const PlusAddButton = ({
 		variant="outline"
 		shape="square"
 		onClick={() => {
-			const input = document.querySelector(
-				'input[placeholder*="Enter a path"]',
-			) as HTMLInputElement;
-			const path = input.value.trim();
+			const path = draft.trim();
 			if (path) {
 				field.onChange([...(field.value || []), path]);
-				input.value = "";
+				onAdded();
 			}
 		}}
 	>
@@ -105,6 +107,8 @@ export const WatchPathsField = ({
 	tooltipAsChild,
 	setWatchPaths,
 }: WatchPathsFieldProps) => {
+	const [pathDraft, setPathDraft] = useState("");
+
 	if (variant === "plus") {
 		return (
 			<FormItem className="md:col-span-2">
@@ -138,20 +142,25 @@ export const WatchPathsField = ({
 					<FormControl>
 						<Input
 							placeholder="Enter a path to watch (e.g., src/**, dist/*.js)"
+							value={pathDraft}
+							onChange={(e) => setPathDraft(e.target.value)}
 							onKeyDown={(e) => {
 								if (e.key === "Enter") {
 									e.preventDefault();
-									const input = e.currentTarget;
-									const path = input.value.trim();
+									const path = pathDraft.trim();
 									if (path) {
 										field.onChange([...(field.value || []), path]);
-										input.value = "";
+										setPathDraft("");
 									}
 								}
 							}}
 						/>
 					</FormControl>
-					<PlusAddButton field={field} />
+					<PlusAddButton
+						field={field}
+						draft={pathDraft}
+						onAdded={() => setPathDraft("")}
+					/>
 				</div>
 				<FormMessage />
 			</FormItem>
@@ -188,34 +197,36 @@ export const WatchPathsField = ({
 				<div className="flex gap-2">
 					<Input
 						placeholder="Enter a path to watch (e.g., src/**, dist/*.js)"
+						value={pathDraft}
+						onChange={(e) => setPathDraft(e.target.value)}
 						onKeyDown={(e) => {
 							if (e.key === "Enter") {
 								e.preventDefault();
-								const input = e.currentTarget;
-								const value = input.value.trim();
+								const value = pathDraft.trim();
 								if (value) {
 									const newPaths = [...(field.value || []), value];
 									setWatchPaths(newPaths);
-									input.value = "";
+									setPathDraft("");
 								}
 							}
 						}}
 					/>
 					{variant === "plus-hybrid" ? (
-						<PlusAddButton field={field} />
+						<PlusAddButton
+							field={field}
+							draft={pathDraft}
+							onAdded={() => setPathDraft("")}
+						/>
 					) : (
 						<Button
 							type="button"
 							variant="secondary"
 							onClick={() => {
-								const input = document.querySelector(
-									'input[placeholder="Enter a path to watch (e.g., src/**, dist/*.js)"]',
-								) as HTMLInputElement;
-								const value = input.value.trim();
+								const value = pathDraft.trim();
 								if (value) {
 									const newPaths = [...(field.value || []), value];
 									setWatchPaths(newPaths);
-									input.value = "";
+									setPathDraft("");
 								}
 							}}
 						>
