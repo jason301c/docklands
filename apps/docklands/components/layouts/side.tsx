@@ -327,7 +327,7 @@ export default function Page({ children }: Props) {
 		<SidebarProvider
 			collapsible="none"
 			variant="sidebar"
-			className="h-svh min-h-svh"
+			className="h-svh overflow-hidden"
 			style={
 				{
 					"--sidebar-width": "19.5rem",
@@ -337,7 +337,7 @@ export default function Page({ children }: Props) {
 		>
 			<MobileCloser />
 			<Sidebar className="h-svh min-h-svh" contentClassName="h-svh min-h-svh">
-				<SidebarHeader className="h-auto flex-col items-stretch gap-2 overflow-visible border-b bg-kumo-canvas p-2">
+				<SidebarHeader className="h-auto flex-col items-stretch gap-2 overflow-visible border-b bg-(--sidebar-bg) p-2">
 					<LogoWrapper />
 					{permissions?.organization.update && <RuntimeUpdateButton />}
 				</SidebarHeader>
@@ -371,7 +371,7 @@ export default function Page({ children }: Props) {
 						</SidebarMenu>
 					</SidebarGroup>
 				</SidebarContent>
-				<SidebarFooter className="h-auto flex-col items-stretch overflow-visible border-t bg-kumo-canvas p-2">
+				<SidebarFooter className="h-auto flex-col items-stretch overflow-visible border-t bg-(--sidebar-bg) p-2">
 					<SidebarMenu>
 						<SidebarMenuItem>
 							<UserNav />
@@ -379,7 +379,7 @@ export default function Page({ children }: Props) {
 					</SidebarMenu>
 				</SidebarFooter>
 			</Sidebar>
-			<main className="flex min-h-svh min-w-0 flex-1 flex-col bg-kumo-canvas">
+			<main className="flex h-svh min-h-0 min-w-0 flex-1 flex-col overflow-y-auto bg-kumo-canvas">
 				<div className="flex w-full flex-1 flex-col px-4 pb-8 pt-4">
 					<div
 						className={cn(
