@@ -77,8 +77,7 @@ export const WorkspaceVariables = ({ workspaceId, children }: Props) => {
 			.catch((err) => {
 				logger.error("Error updating workspace variables", err);
 				toast.error("Error updating workspace variables");
-			})
-			.finally(() => {});
+			});
 	};
 
 	// Add keyboard shortcut for Ctrl+S/Cmd+S

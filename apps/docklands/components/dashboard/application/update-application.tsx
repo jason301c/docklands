@@ -79,8 +79,7 @@ export const UpdateApplication = ({ applicationId }: Props) => {
 			.catch((err) => {
 				logger.error("Failed to update the Application", err);
 				toast.error("Error updating the Application");
-			})
-			.finally(() => {});
+			});
 	};
 
 	return (
@@ -91,7 +90,7 @@ export const UpdateApplication = ({ applicationId }: Props) => {
 						aria-label="Edit application"
 						variant="ghost"
 						shape="square"
-						className="group hover:bg-blue-500/10 "
+						className="group hover:bg-kumo-brand/10 "
 					>
 						<PenBoxIcon className="size-3.5  text-kumo-brand group-hover:text-kumo-brand" />
 					</Button>

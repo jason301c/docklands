@@ -89,8 +89,7 @@ export const UpdateDatabase = ({ databaseId }: Props) => {
 			.catch((err) => {
 				logger.error("Error updating Database", err);
 				toast.error("Error updating Database");
-			})
-			.finally(() => {});
+			});
 	};
 
 	return (

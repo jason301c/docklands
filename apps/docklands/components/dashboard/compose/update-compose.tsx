@@ -79,8 +79,7 @@ export const UpdateCompose = ({ composeId }: Props) => {
 			.catch((err) => {
 				logger.error("Failed to update the compose", err);
 				toast.error("Error updating the Compose");
-			})
-			.finally(() => {});
+			});
 	};
 
 	return (

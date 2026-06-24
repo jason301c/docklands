@@ -30,10 +30,7 @@ import {
 } from "@/components/icons/data-tools-icons";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import {
-	workspaceEnvironmentPath,
-	workspaceServicePath,
-} from "@/shared/routes";
+import { workspaceServicePath } from "@/shared/routes";
 import type { WorkspaceVariableSourceType } from "@/shared/workspace-graph";
 
 type TabState =
@@ -86,26 +83,14 @@ const DatabaseClient = (props: {
 	environmentId: string;
 	activeTab: TabState;
 }) => {
-	const [_toggleMonitoring, _setToggleMonitoring] = useState(false);
 	const { databaseId, activeTab } = props;
 	const router = useRouter();
 	const { workspaceId, environmentId } = props;
-	const [tab, setSab] = useState<TabState>(activeTab);
+	const [tab, setTab] = useState<TabState>(activeTab);
 	const { data } = api.database.one.useQuery({ databaseId });
 	const { permissions } = usePermissions();
 
 	const { data: serverIp } = api.settings.getIp.useQuery();
-	const { data: environments } = api.environment.byWorkspaceId.useQuery({
-		workspaceId: data?.environment?.workspaceId || "",
-	});
-	const environmentDropdownItems =
-		environments?.map((env) => ({
-			name: env.name,
-			href: workspaceEnvironmentPath({
-				workspaceId: workspaceId,
-				environmentId: env.environmentId,
-			}),
-		})) || [];
 
 	const EngineIcon = data?.engine ? ENGINE_ICONS[data.engine] : null;
 	const backupEngine =
@@ -164,7 +149,7 @@ const DatabaseClient = (props: {
 									className="w-full overflow-auto"
 									onValueChange={(e) => {
 										if (e === null) return;
-										setSab(e as TabState);
+										setTab(e as TabState);
 										const newPath = workspaceServicePath({
 											workspaceId: workspaceId,
 											environmentId,
@@ -214,7 +199,10 @@ const DatabaseClient = (props: {
 									data?.engine && (
 										<div>
 											<div className="flex flex-col gap-4 pt-2.5">
-												<ShowServiceEnvironment id={databaseId} type={data.engine} />
+												<ShowServiceEnvironment
+													id={databaseId}
+													type={data.engine}
+												/>
 											</div>
 										</div>
 									)}

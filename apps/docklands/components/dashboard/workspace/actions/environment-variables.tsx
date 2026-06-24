@@ -78,8 +78,7 @@ export const EnvironmentVariables = ({ environmentId, children }: Props) => {
 			.catch((err) => {
 				logger.error("Error updating the environment variables", err);
 				toast.error("Error updating the environment variables");
-			})
-			.finally(() => {});
+			});
 	};
 
 	// Add keyboard shortcut for Ctrl+S/Cmd+S

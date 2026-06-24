@@ -34,10 +34,7 @@ import {
 } from "@/components/dashboard/service/runtime-placement-status";
 import { AdvanceBreadcrumb } from "@/components/shared/advance-breadcrumb";
 import { StatusTooltip } from "@/components/shared/status-tooltip";
-import {
-	workspaceEnvironmentPath,
-	workspaceServicePath,
-} from "@/shared/routes";
+import { workspaceServicePath } from "@/shared/routes";
 
 type TabState =
 	| "general"
@@ -59,7 +56,6 @@ const Service = (props: {
 	environmentId: string;
 	activeTab: TabState;
 }) => {
-	const [_toggleMonitoring, _setToggleMonitoring] = useState(false);
 	const { applicationId, activeTab } = props;
 	const router = useRouter();
 	const searchParams = useSearchParams();
@@ -83,17 +79,6 @@ const Service = (props: {
 	const { data: serverIp } = api.settings.getIp.useQuery();
 	const { permissions } = usePermissions();
 
-	const { data: environments } = api.environment.byWorkspaceId.useQuery({
-		workspaceId: data?.environment?.workspace?.workspaceId || "",
-	});
-	const environmentDropdownItems =
-		environments?.map((env) => ({
-			name: env.name,
-			href: workspaceEnvironmentPath({
-				workspaceId: workspaceId,
-				environmentId: env.environmentId,
-			}),
-		})) || [];
 	const serviceTabs = [
 		{ value: "general", label: "General" },
 		permissions?.envVars.read
@@ -202,7 +187,9 @@ const Service = (props: {
 								{permissions?.envVars.read && tab === "environment" && (
 									<div>
 										<div className="flex flex-col gap-4 pt-2.5">
-											<ShowApplicationEnvironment applicationId={applicationId} />
+											<ShowApplicationEnvironment
+												applicationId={applicationId}
+											/>
 										</div>
 									</div>
 								)}

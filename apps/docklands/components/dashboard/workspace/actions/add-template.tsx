@@ -64,9 +64,6 @@ export const AddTemplate = ({
 		null,
 	);
 
-	// Get environment data to extract the backing workspace id.
-	const { data: environment } = api.environment.one.useQuery({ environmentId });
-
 	const {
 		data,
 		isLoading: isLoadingTemplates,

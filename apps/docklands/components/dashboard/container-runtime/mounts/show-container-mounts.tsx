@@ -88,7 +88,7 @@ export const ShowContainerMounts = ({
 											{mount.Mode || "-"}
 										</Table.Cell>
 										<Table.Cell>
-											<Badge variant={mount.RW ? "secondary" : "secondary"}>
+											<Badge variant="secondary">
 												{mount.RW ? "RW" : "RO"}
 											</Badge>
 										</Table.Cell>

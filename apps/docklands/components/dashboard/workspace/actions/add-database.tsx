@@ -36,7 +36,7 @@ import { PlacementFormField } from "./placement-select";
 
 const logger = createClientLogger("workspace");
 
-type DbType = z.infer<typeof mySchema>["type"];
+type DbType = z.infer<typeof AddDatabaseSchema>["type"];
 
 const dockerImageDefaultPlaceholder: Record<DbType, string> = {
 	mongo: "mongo:8",
@@ -79,7 +79,7 @@ const baseDatabaseSchema = z.object({
 	runtimeWorkerId: z.string().nullable(),
 });
 
-const mySchema = z
+const AddDatabaseSchema = z
 	.discriminatedUnion("type", [
 		z
 			.object({
@@ -189,7 +189,7 @@ const databasesMap = {
 	},
 };
 
-type AddDatabase = z.infer<typeof mySchema>;
+type AddDatabase = z.infer<typeof AddDatabaseSchema>;
 
 interface Props {
 	environmentId: string;
@@ -220,9 +220,6 @@ export const AddDatabase = ({
 	const { data: servers } = api.runtimeWorker.withSSHKey.useQuery();
 	const databaseMutation = api.database.create.useMutation();
 
-	// Get environment data to extract the backing workspace id.
-	const { data: environment } = api.environment.one.useQuery({ environmentId });
-
 	const hasServers = servers && servers.length > 0;
 	// Show placement only when there is more than the local runtime to choose.
 	const shouldShowServerDropdown = hasServers;
@@ -239,7 +236,7 @@ export const AddDatabase = ({
 			databaseUser: "",
 			runtimeWorkerId: null,
 		},
-		resolver: zodResolver(mySchema),
+		resolver: zodResolver(AddDatabaseSchema),
 	});
 
 	useEffect(() => {
