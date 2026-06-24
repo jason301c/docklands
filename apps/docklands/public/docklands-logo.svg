@@ -3,9 +3,10 @@
        Three stacked containers; the brand-blue top bar is the "deploying" container. -->
   <style>
     .ink { fill: #171717; }
-    @media (prefers-color-scheme: dark) { .ink { fill: #FFFFFF; } }
+    .brand { fill: #6450E6; }
+    @media (prefers-color-scheme: dark) { .ink { fill: #FFFFFF; } .brand { fill: #6F5CF2; } }
   </style>
   <rect class="ink" x="116" y="316" width="280" height="76" rx="20"/>
   <rect class="ink" x="116" y="222" width="280" height="76" rx="20"/>
-  <rect x="116" y="128" width="280" height="76" rx="20" fill="#2F6BFF"/>
+  <rect class="brand" x="116" y="128" width="280" height="76" rx="20"/>
 </svg>

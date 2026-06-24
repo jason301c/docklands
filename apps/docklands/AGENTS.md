@@ -254,9 +254,20 @@ reason to move code out.
   paths, cleanup.
 - `templates/` — template *logic* (keep template code here, not in a root-level
   `templates/` dir; the app-root `templates/` directory is template *data`).
-- `monitoring/`, `emails/`, `openapi/`, `verification/`, `types/` — Docker stats
-  aggregation; React Email templates (`render`, not `renderAsync`); OpenAPI
-  generation; email/2FA verification; shared backend types.
+- `monitoring/`, `emails/`, `openapi/`, `types/` — Docker stats
+  aggregation; React Email templates (`render`, not `renderAsync`) plus
+  `emails/render.tsx` render helpers; OpenAPI generation; shared backend types.
+
+**Transactional email is consolidated.** There is one path for outbound mail —
+`services/system-email.ts` (`sendSystemEmail` / `isSystemEmailConfigured`). It
+resolves the instance's configured **email notification provider** (SMTP or
+Resend, managed under Settings → Notifications) and is used by password reset,
+email verification, and invitations alike. There is **no env `SMTP_*` path** and
+no per-flow email config — do not reintroduce either. When no provider is
+configured, surfaces stay honest rather than pretending: the reset page says so
+up front, and the invite dialog returns a copyable link instead of claiming an
+email was sent (note: Better Auth still returns success on reset regardless, to
+avoid account enumeration).
 
 ### `tools/` — app-coupled dev scripts
 

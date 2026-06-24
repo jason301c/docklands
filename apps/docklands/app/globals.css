@@ -254,3 +254,14 @@
 .cm-lineWrapping {
 	@apply font-mono;
 }
+
+/*
+ * Kumo renders the toast title at ~15.6px medium, which reads oversized next to
+ * the app's compact body text (our toasts pass a single string, so it lands as
+ * the title). Tone every toast title down to 14px. This rule is intentionally
+ * unlayered so it wins over Tailwind's layered `text-[0.975rem]` utility without
+ * needing `!important`.
+ */
+[data-toast-title] {
+	font-size: 0.875rem;
+}

@@ -1,7 +1,5 @@
 "use client";
 
-import { Button } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,6 +9,13 @@ import { z } from "zod";
 import { authClient } from "@/client/auth/client";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
+	AuthAltAction,
+	AuthHeading,
+	AuthSubmit,
+	authLinkClassName,
+	PasswordInput,
+} from "@/components/shared/auth-screen";
+import {
 	Form,
 	FormControl,
 	FormField,
@@ -18,7 +23,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Logo } from "@/components/shared/logo";
 import { toast } from "@/components/shared/toast";
 
 const loginSchema = z
@@ -91,18 +95,14 @@ export default function Home({ tokenResetPassword }: Props) {
 		setIsLoading(false);
 	};
 	return (
-		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
-			<div className="mb-8 flex flex-col items-center gap-4 text-center">
-				<Link href="/" aria-label="Docklands home">
-					<Logo className="size-12" />
-				</Link>
-				<h1 className="font-semibold text-2xl tracking-tight">
-					Reset Password
-				</h1>
-			</div>
+		<div>
+			<AuthHeading
+				title="Reset password"
+				description="Choose a new password for your account."
+			/>
 
 			{error && (
-				<AlertBlock type="error" className="my-2">
+				<AlertBlock type="error" className="mb-4">
 					{error}
 				</AlertBlock>
 			)}
@@ -113,9 +113,13 @@ export default function Home({ tokenResetPassword }: Props) {
 						name="password"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Password</FormLabel>
+								<FormLabel className="sr-only">New password</FormLabel>
 								<FormControl>
-									<Input type="password" placeholder="Password" {...field} />
+									<PasswordInput
+										placeholder="New password"
+										autoComplete="new-password"
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -126,30 +130,29 @@ export default function Home({ tokenResetPassword }: Props) {
 						name="confirmPassword"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Confirm Password</FormLabel>
+								<FormLabel className="sr-only">Confirm password</FormLabel>
 								<FormControl>
-									<Input type="password" placeholder="Password" {...field} />
+									<PasswordInput
+										placeholder="Confirm password"
+										autoComplete="new-password"
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}
 					/>
 
-					<Button
-						type="submit"
-						loading={isLoading}
-						className="w-full justify-center"
-					>
-						Confirm
-					</Button>
-
-					<div className="text-center text-sm">
-						<Link className="hover:underline text-kumo-subtle" href="/">
-							Sign in
-						</Link>
-					</div>
+					<AuthSubmit loading={isLoading}>Reset password</AuthSubmit>
 				</form>
 			</Form>
-		</section>
+
+			<AuthAltAction>
+				Remembered it?{" "}
+				<Link className={authLinkClassName} href="/">
+					Sign in
+				</Link>
+			</AuthAltAction>
+		</div>
 	);
 }

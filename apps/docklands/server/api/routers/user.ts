@@ -15,6 +15,7 @@ import {
 	session,
 	user,
 } from "@/server/core/db/schema";
+import { renderInvitationEmail } from "@/server/core/emails/render";
 import { createLogger } from "@/server/core/lib/logger";
 import {
 	findOrganizationById,
@@ -22,7 +23,6 @@ import {
 	getUserByToken,
 	removeUserById,
 } from "@/server/core/services/admin";
-import { findNotificationById } from "@/server/core/services/notification";
 import {
 	findMemberByUserId,
 	hasPermission,
@@ -32,15 +32,14 @@ import {
 	syncMemberResourceAccess,
 } from "@/server/core/services/permission";
 import {
+	isSystemEmailConfigured,
+	sendSystemEmail,
+} from "@/server/core/services/system-email";
+import {
 	createApiKey,
 	createOrganizationUserWithCredentials,
 	updateUser,
 } from "@/server/core/services/user";
-import {
-	sendEmailNotification,
-	sendResendNotification,
-} from "@/server/core/utils/notifications/utils";
-import { renderInvitationEmail } from "@/server/core/verification/send-verification-email";
 import {
 	adminProcedure,
 	createTRPCRouter,
@@ -475,25 +474,12 @@ export const userRouter = createTRPCRouter({
 		.input(
 			z.object({
 				invitationId: z.string().min(1),
-				notificationId: z.string().min(1),
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			const notification = await findNotificationById(input.notificationId);
-
-			const email = notification.email;
-			const resend = notification.resend;
-
 			const currentInvitation = await db.query.invitation.findFirst({
 				where: eq(invitation.id, input.invitationId),
 			});
-
-			if (!email && !resend) {
-				throw new TRPCError({
-					code: "NOT_FOUND",
-					message: "Email provider not found",
-				});
-			}
 
 			const host =
 				process.env.NODE_ENV === "development"
@@ -501,11 +487,15 @@ export const userRouter = createTRPCRouter({
 					: await getDocklandsUrl();
 			const inviteLink = `${host}/invitation?token=${input.invitationId}`;
 
-			const organization = await findOrganizationById(
-				ctx.session.activeOrganizationId,
-			);
+			const organizationId = ctx.session.activeOrganizationId;
 
-			try {
+			// The invite is always created; whether it can be *emailed* depends on
+			// the instance having a configured email provider. When it doesn't, we
+			// return the link so the admin can share it manually — no pretending.
+			const emailed = await isSystemEmailConfigured(organizationId);
+
+			if (emailed) {
+				const organization = await findOrganizationById(organizationId);
 				const toEmail = currentInvitation?.email || "";
 				const orgName = organization?.name || "organization";
 				const subject = `You've been invited to join ${orgName} on Docklands`;
@@ -515,23 +505,19 @@ export const userRouter = createTRPCRouter({
 					organizationName: orgName,
 				});
 
-				if (email) {
-					await sendEmailNotification(
-						{ ...email, toAddresses: [toEmail] },
+				try {
+					await sendSystemEmail({
+						organizationId,
+						to: toEmail,
 						subject,
 						html,
-					);
-				} else if (resend) {
-					await sendResendNotification(
-						{ ...resend, toAddresses: [toEmail] },
-						subject,
-						html,
-					);
+					});
+				} catch (error) {
+					logger.error({ err: error }, "invitation email send failed");
+					throw error;
 				}
-			} catch (error) {
-				logger.error({ err: error }, "invitation email send failed");
-				throw error;
 			}
+
 			await audit(ctx, {
 				action: "create",
 				resourceType: "user",
@@ -539,7 +525,7 @@ export const userRouter = createTRPCRouter({
 				resourceName: currentInvitation?.email || "",
 				metadata: { type: "sendInvitation" },
 			});
-			return inviteLink;
+			return { inviteLink, emailed };
 		}),
 
 	getBookmarkedTemplates: protectedProcedure.query(async ({ ctx }) => {

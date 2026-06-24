@@ -1,11 +1,13 @@
 "use client";
 
 import { Button } from "@cloudflare/kumo/components/button";
+import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Label } from "@cloudflare/kumo/components/label";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -15,6 +17,13 @@ import { authClient } from "@/client/auth/client";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
+	AuthHeading,
+	AuthInput,
+	AuthSubmit,
+	authLinkClassName,
+	PasswordInput,
+} from "@/components/shared/auth-screen";
+import {
 	Form,
 	FormControl,
 	FormField,
@@ -23,7 +32,6 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { InputOTP } from "@/components/shared/input-otp";
-import { Logo } from "@/components/shared/logo";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("onboarding");
@@ -31,6 +39,7 @@ const logger = createClientLogger("onboarding");
 const LoginSchema = z.object({
 	email: z.string().email(),
 	password: z.string().min(8),
+	rememberMe: z.boolean(),
 });
 
 const _TwoFactorSchema = z.object({
@@ -54,6 +63,7 @@ export default function Home() {
 		defaultValues: {
 			email: "",
 			password: "",
+			rememberMe: true,
 		},
 	});
 
@@ -63,6 +73,7 @@ export default function Home() {
 			const { data, error } = await authClient.signIn.email({
 				email: values.email,
 				password: values.password,
+				rememberMe: values.rememberMe,
 			});
 
 			if (error) {
@@ -158,186 +169,189 @@ export default function Home() {
 	};
 
 	const loginContent = (
-		<>
-			<Form {...loginForm}>
-				<form
-					onSubmit={loginForm.handleSubmit(onSubmit)}
-					className="space-y-4"
-					id="login-form"
-				>
+		<Form {...loginForm}>
+			<form
+				onSubmit={loginForm.handleSubmit(onSubmit)}
+				className="space-y-4"
+				id="login-form"
+			>
+				<FormField
+					control={loginForm.control}
+					name="email"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="sr-only">Email</FormLabel>
+							<FormControl>
+								<AuthInput
+									placeholder="Email"
+									autoComplete="email"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					control={loginForm.control}
+					name="password"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel className="sr-only">Password</FormLabel>
+							<FormControl>
+								<PasswordInput
+									placeholder="Password"
+									autoComplete="current-password"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<div className="flex items-center justify-between">
 					<FormField
 						control={loginForm.control}
-						name="email"
+						name="rememberMe"
 						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Email</FormLabel>
-								<FormControl>
-									<Input placeholder="john@example.com" {...field} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
+							<Checkbox
+								label="Remember me"
+								controlFirst
+								checked={!!field.value}
+								onCheckedChange={(checked) => field.onChange(checked === true)}
+							/>
 						)}
 					/>
-					<FormField
-						control={loginForm.control}
-						name="password"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Password</FormLabel>
-								<FormControl>
-									<Input
-										type="password"
-										placeholder="Enter your password"
-										{...field}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<Button
-						className="w-full justify-center"
-						type="submit"
-						loading={isLoginLoading}
-					>
-						Login
-					</Button>
-				</form>
-			</Form>
-		</>
+					<Link href="/send-reset-password" className={authLinkClassName}>
+						Forgot password?
+					</Link>
+				</div>
+				<AuthSubmit loading={isLoginLoading}>
+					Sign in
+					<ArrowRight className="size-4" />
+				</AuthSubmit>
+			</form>
+		</Form>
 	);
 
 	return (
-		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
-			<div className="mb-8 flex flex-col items-center gap-4 text-center">
-				<Logo className="size-12" />
-				<h1 className="font-semibold text-2xl tracking-tight">Login</h1>
-			</div>
+		<div>
+			<AuthHeading
+				title={isTwoFactor ? "Two-factor authentication" : "Welcome back"}
+				description={
+					isTwoFactor
+						? "Enter the 6-digit code from your authenticator app."
+						: "Sign in to your Docklands instance."
+				}
+			/>
 			{error && (
-				<AlertBlock type="error" className="my-2">
+				<AlertBlock type="error" className="mb-4">
 					<span>{error}</span>
 				</AlertBlock>
 			)}
-			<div>
-				{!isTwoFactor ? (
-					loginContent
-				) : (
-					<>
-						<form
-							onSubmit={onTwoFactorSubmit}
-							className="space-y-4"
-							id="two-factor-form"
-							autoComplete="on"
-						>
-							<div className="flex flex-col gap-2">
-								<Label htmlFor="totp-code">2FA Code</Label>
-								<InputOTP
-									id="totp-code"
-									name="totp"
-									value={twoFactorCode}
-									onChange={setTwoFactorCode}
-									maxLength={6}
-									placeholder="••••••"
-									pattern={REGEXP_ONLY_DIGITS}
-									autoFocus
-								/>
-								<p>Enter the 6-digit code from your authenticator app</p>
-								<button
-									type="button"
-									onClick={() => setIsBackupCodeModalOpen(true)}
-									className="text-sm text-kumo-subtle hover:underline self-start mt-2"
-								>
-									Lost access to your authenticator app?
-								</button>
+			{!isTwoFactor ? (
+				loginContent
+			) : (
+				<>
+					<form
+						onSubmit={onTwoFactorSubmit}
+						className="space-y-4"
+						id="two-factor-form"
+						autoComplete="on"
+					>
+						<div className="flex flex-col gap-2">
+							<Label htmlFor="totp-code" className="sr-only">
+								2FA Code
+							</Label>
+							<InputOTP
+								id="totp-code"
+								name="totp"
+								value={twoFactorCode}
+								onChange={setTwoFactorCode}
+								maxLength={6}
+								placeholder="••••••"
+								pattern={REGEXP_ONLY_DIGITS}
+								autoFocus
+							/>
+							<button
+								type="button"
+								onClick={() => setIsBackupCodeModalOpen(true)}
+								className="mt-2 self-start text-kumo-subtle text-sm hover:underline"
+							>
+								Lost access to your authenticator app?
+							</button>
+						</div>
+
+						<div className="flex gap-4">
+							<Button
+								variant="outline"
+								size="lg"
+								className="h-11 w-full justify-center rounded-xl"
+								type="button"
+								onClick={() => {
+									setIsTwoFactor(false);
+									setTwoFactorCode("");
+								}}
+							>
+								Back
+							</Button>
+							<AuthSubmit loading={isTwoFactorLoading}>Verify</AuthSubmit>
+						</div>
+					</form>
+
+					<Dialog.Root
+						open={isBackupCodeModalOpen}
+						onOpenChange={setIsBackupCodeModalOpen}
+					>
+						<Dialog>
+							<div>
+								<Dialog.Title>Enter Backup Code</Dialog.Title>
+								<Dialog.Description>
+									Enter one of your backup codes to access your account
+								</Dialog.Description>
 							</div>
 
-							<div className="flex gap-4">
-								<Button
-									variant="outline"
-									className="w-full justify-center"
-									type="button"
-									onClick={() => {
-										setIsTwoFactor(false);
-										setTwoFactorCode("");
-									}}
-								>
-									Back
-								</Button>
-								<Button
-									className="w-full justify-center"
-									type="submit"
-									loading={isTwoFactorLoading}
-								>
-									Verify
-								</Button>
-							</div>
-						</form>
-
-						<Dialog.Root
-							open={isBackupCodeModalOpen}
-							onOpenChange={setIsBackupCodeModalOpen}
-						>
-							<Dialog>
-								<div>
-									<Dialog.Title>Enter Backup Code</Dialog.Title>
-									<Dialog.Description>
-										Enter one of your backup codes to access your account
-									</Dialog.Description>
+							<form onSubmit={onBackupCodeSubmit} className="space-y-4">
+								<div className="flex flex-col gap-2">
+									<Label>Backup Code</Label>
+									<Input
+										aria-label="Backup code"
+										value={backupCode}
+										onChange={(e) => setBackupCode(e.target.value)}
+										placeholder="Enter your backup code"
+										className="font-mono"
+									/>
+									<p>
+										Enter one of the backup codes you received when setting up
+										2FA
+									</p>
 								</div>
 
-								<form onSubmit={onBackupCodeSubmit} className="space-y-4">
-									<div className="flex flex-col gap-2">
-										<Label>Backup Code</Label>
-										<Input
-											aria-label="Backup code"
-											value={backupCode}
-											onChange={(e) => setBackupCode(e.target.value)}
-											placeholder="Enter your backup code"
-											className="font-mono"
-										/>
-										<p>
-											Enter one of the backup codes you received when setting up
-											2FA
-										</p>
-									</div>
-
-									<div className="flex gap-4">
-										<Button
-											variant="outline"
-											className="w-full justify-center"
-											type="button"
-											onClick={() => {
-												setIsBackupCodeModalOpen(false);
-												setBackupCode("");
-											}}
-										>
-											Cancel
-										</Button>
-										<Button
-											className="w-full justify-center"
-											type="submit"
-											loading={isBackupCodeLoading}
-										>
-											Verify
-										</Button>
-									</div>
-								</form>
-							</Dialog>
-						</Dialog.Root>
-					</>
-				)}
-
-				<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
-					<div>
-						<Link
-							className="hover:underline text-kumo-subtle"
-							href="/send-reset-password"
-						>
-							Lost your password?
-						</Link>
-					</div>
-				</div>
-			</div>
-		</section>
+								<div className="flex gap-4">
+									<Button
+										variant="outline"
+										className="w-full justify-center"
+										type="button"
+										onClick={() => {
+											setIsBackupCodeModalOpen(false);
+											setBackupCode("");
+										}}
+									>
+										Cancel
+									</Button>
+									<Button
+										className="w-full justify-center"
+										type="submit"
+										loading={isBackupCodeLoading}
+									>
+										Verify
+									</Button>
+								</div>
+							</form>
+						</Dialog>
+					</Dialog.Root>
+				</>
+			)}
+		</div>
 	);
 }

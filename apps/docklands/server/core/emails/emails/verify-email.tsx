@@ -12,6 +12,7 @@ import {
 	Tailwind,
 	Text,
 } from "@react-email/components";
+import { siteConfig } from "@/shared/site";
 
 export type TemplateProps = {
 	userName: string;
@@ -43,7 +44,7 @@ export const VerifyEmailTemplate = ({
 						{/* Header */}
 						<Section className="bg-[#171717] rounded-t-xl px-[40px] py-[32px] text-center">
 							<Img
-								src="https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/docklands-logo-light.svg"
+								src={siteConfig.assets.logoLight}
 								width="96"
 								height="96"
 								alt="Docklands"
@@ -85,7 +86,7 @@ export const VerifyEmailTemplate = ({
 							<Text className="text-[#a3a3a3] text-[12px] leading-[18px] m-0">
 								This is an automated email from{" "}
 								<Link
-									href="https://github.com/jason301c/docklands"
+									href={siteConfig.links.github}
 									className="text-[#737373] underline"
 								>
 									Docklands

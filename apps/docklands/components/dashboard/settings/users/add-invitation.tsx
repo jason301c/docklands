@@ -1,4 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
+import { ClipboardText } from "@cloudflare/kumo/components/clipboard-text";
 import { Dialog } from "@cloudflare/kumo/components/dialog";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Select } from "@cloudflare/kumo/components/select";
@@ -8,7 +9,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
-import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
 	Form,
@@ -21,8 +21,6 @@ import {
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
 
-const logger = createClientLogger("users");
-
 const addInvitation = z
 	.object({
 		mode: z.enum(["invitation", "credentials"]),
@@ -31,7 +29,6 @@ const addInvitation = z
 			.min(1, "Email is required")
 			.email({ message: "Invalid email" }),
 		role: z.string().min(1, "Role is required"),
-		notificationId: z.string().optional(),
 		password: z.string().optional(),
 		confirmPassword: z.string().optional(),
 	})
@@ -85,13 +82,14 @@ type AddInvitation = z.infer<typeof addInvitation>;
 
 export const AddInvitation = () => {
 	const [open, setOpen] = useState(false);
+	const [inviteLink, setInviteLink] = useState<string | null>(null);
 	const utils = api.useUtils();
-	const { data: emailProviders } =
-		api.notification.getEmailProviders.useQuery();
-	const { mutateAsync: inviteMember, isPending: isInviting } =
+	const { data: emailConfigured } =
+		api.notification.isSystemEmailConfigured.useQuery();
+	const { mutateAsync: inviteMember } =
 		api.organization.inviteMember.useMutation();
 	const { mutateAsync: sendInvitation } = api.user.sendInvitation.useMutation();
-	const { mutateAsync: createUserWithCredentials, isPending: isCreating } =
+	const { mutateAsync: createUserWithCredentials } =
 		api.user.createUserWithCredentials.useMutation();
 	const { data: customRoles } = api.customRole.all.useQuery();
 	const [error, setError] = useState<string | null>(null);
@@ -101,7 +99,6 @@ export const AddInvitation = () => {
 			mode: "invitation",
 			email: "",
 			role: "member",
-			notificationId: "",
 			password: "",
 			confirmPassword: "",
 		},
@@ -126,31 +123,27 @@ export const AddInvitation = () => {
 				});
 				toast.success("User created with initial credentials");
 				setOpen(false);
-			} else {
-				const result = await inviteMember({
-					email: data.email.toLowerCase(),
-					role: data.role,
-				});
+				return;
+			}
 
-				if (data.notificationId) {
-					await sendInvitation({
-						invitationId: result!.id,
-						notificationId: data.notificationId || "",
-					})
-						.then(() => {
-							toast.success("Invitation created and email sent");
-						})
-						.catch((error: unknown) => {
-							logger.error(error);
-							toast.error(
-								error instanceof Error ? error.message : "An error occurred",
-							);
-						});
-				} else {
-					toast.success("Invitation created");
-				}
+			const result = await inviteMember({
+				email: data.email.toLowerCase(),
+				role: data.role,
+			});
+			const { inviteLink: link, emailed } = await sendInvitation({
+				invitationId: result!.id,
+			});
 
+			if (emailed) {
+				toast.success("Invitation created and emailed");
 				setOpen(false);
+			} else {
+				// No email provider configured — surface the link to share manually
+				// instead of pretending an email went out.
+				setInviteLink(link);
+				toast.success(
+					"Invitation created — email isn't configured, share the link manually",
+				);
 			}
 		} catch (error) {
 			const message =
@@ -166,7 +159,16 @@ export const AddInvitation = () => {
 	};
 
 	return (
-		<Dialog.Root open={open} onOpenChange={setOpen}>
+		<Dialog.Root
+			open={open}
+			onOpenChange={(next) => {
+				setOpen(next);
+				if (!next) {
+					setInviteLink(null);
+					setError(null);
+				}
+			}}
+		>
 			<Dialog.Trigger
 				className=""
 				render={
@@ -185,6 +187,26 @@ export const AddInvitation = () => {
 					</Dialog.Description>
 				</div>
 				{error && <AlertBlock type="error">{error}</AlertBlock>}
+
+				{inviteLink ? (
+					<div className="flex flex-col gap-2">
+						<AlertBlock type="success">
+							Invitation created. This instance has no email provider, so share
+							this link with the invitee manually — it expires with the
+							invitation.
+						</AlertBlock>
+						<ClipboardText text={inviteLink} />
+					</div>
+				) : (
+					mode === "invitation" &&
+					emailConfigured === false && (
+						<AlertBlock type="warning">
+							No email provider is configured, so the invitation can't be
+							emailed — you'll get a link to share manually. Add one under
+							Settings → Notifications to send invites automatically.
+						</AlertBlock>
+					)
+				)}
 
 				<Form {...form}>
 					<form
@@ -279,46 +301,6 @@ export const AddInvitation = () => {
 							}}
 						/>
 
-						{mode === "invitation" && (
-							<FormField
-								control={form.control}
-								name="notificationId"
-								render={({ field }) => {
-									return (
-										<FormItem>
-											<FormLabel>Email Provider</FormLabel>
-											<Select
-												aria-label="Invitation email provider"
-												onValueChange={field.onChange}
-												defaultValue={field.value}
-											>
-												<FormControl>
-													<></>
-												</FormControl>
-												<>
-													{emailProviders?.map((provider) => (
-														<Select.Option
-															key={provider.notificationId}
-															value={provider.notificationId}
-														>
-															{provider.name}
-														</Select.Option>
-													))}
-													<Select.Option value="none" disabled>
-														None
-													</Select.Option>
-												</>
-											</Select>
-											<FormDescription>
-												Select the email provider to send the invitation
-											</FormDescription>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-						)}
-
 						{mode === "credentials" && (
 							<>
 								<FormField
@@ -368,7 +350,7 @@ export const AddInvitation = () => {
 
 						<div className="flex w-full flex-row">
 							<Button
-								loading={isInviting || isCreating}
+								loading={form.formState.isSubmitting}
 								form="hook-form-add-invitation"
 								type="submit"
 							>

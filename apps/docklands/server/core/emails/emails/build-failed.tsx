@@ -12,6 +12,7 @@ import {
 	Tailwind,
 	Text,
 } from "@react-email/components";
+import { siteConfig } from "@/shared/site";
 
 export type TemplateProps = {
 	projectName: string;
@@ -27,7 +28,7 @@ export const BuildFailedEmail = ({
 	applicationName = "frontend",
 	applicationType = "application",
 	errorMessage = "Error array.length is not a function",
-	buildLink = "https://github.com/jason301c/docklands",
+	buildLink = siteConfig.links.github,
 	date = "2023-05-01T00:00:00.000Z",
 }: TemplateProps) => {
 	const previewText = `Build failed for ${applicationName}`;
@@ -50,9 +51,7 @@ export const BuildFailedEmail = ({
 					<Container className="border border-solid border-[#e5e5e5] rounded-lg my-[40px] mx-auto p-[20px] max-w-[465px]">
 						<Section className="mt-[32px]">
 							<Img
-								src={
-									"https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/docklands-logo-dark.svg"
-								}
+								src={siteConfig.assets.logoDark}
 								width="72"
 								height="72"
 								alt="Docklands"

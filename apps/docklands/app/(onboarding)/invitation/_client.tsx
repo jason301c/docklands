@@ -1,9 +1,8 @@
 "use client";
 
-import { Button, LinkButton } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
+import { LinkButton } from "@cloudflare/kumo/components/button";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -13,6 +12,13 @@ import { authClient } from "@/client/auth/client";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
+	AuthHeading,
+	AuthInput,
+	AuthSubmit,
+	authSubmitClassName,
+	PasswordInput,
+} from "@/components/shared/auth-screen";
+import {
 	Form,
 	FormControl,
 	FormField,
@@ -20,7 +26,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Logo } from "@/components/shared/logo";
 import { toast } from "@/components/shared/toast";
 
 const logger = createClientLogger("invitation");
@@ -140,19 +145,17 @@ const Invitation = ({ token, invitation, userAlreadyExists }: Props) => {
 	};
 
 	return (
-		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
-			<div className="mb-8 flex flex-col items-center gap-4 text-center">
-				<Link href="/" aria-label="Docklands home">
-					<Logo className="size-12" />
-				</Link>
-				<h1 className="font-semibold text-2xl tracking-tight">Invitation</h1>
-			</div>
+		<div>
+			<AuthHeading
+				title="Accept your invitation"
+				description="Create your account to join this Docklands instance."
+			/>
 			{userAlreadyExists ? (
 				<div className="flex flex-col gap-4">
 					<AlertBlock type="success">
 						<div className="flex flex-col gap-2">
 							<span className="font-medium">Valid Invitation</span>
-							<span className="text-sm text-kumo-success">
+							<span className="text-kumo-success text-sm">
 								We detected that you already have an account with this email.
 								Please sign in to accept the invitation.
 							</span>
@@ -162,23 +165,28 @@ const Invitation = ({ token, invitation, userAlreadyExists }: Props) => {
 					<LinkButton
 						href="/"
 						variant="primary"
-						className="w-full justify-center"
+						size="lg"
+						className={authSubmitClassName}
 					>
-						Sign In
+						Sign in
 					</LinkButton>
 				</div>
 			) : (
-				<>
-					<Form {...form}>
-						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+				<Form {...form}>
+					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+						<div className="grid grid-cols-2 gap-4">
 							<FormField
 								control={form.control}
 								name="name"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>First Name</FormLabel>
+										<FormLabel className="sr-only">First name</FormLabel>
 										<FormControl>
-											<Input placeholder="John" {...field} />
+											<AuthInput
+												placeholder="First name"
+												autoComplete="given-name"
+												{...field}
+											/>
 										</FormControl>
 										<FormMessage />
 									</FormItem>
@@ -189,37 +197,11 @@ const Invitation = ({ token, invitation, userAlreadyExists }: Props) => {
 								name="lastName"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Last Name</FormLabel>
+										<FormLabel className="sr-only">Last name</FormLabel>
 										<FormControl>
-											<Input placeholder="Doe" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="email"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Email</FormLabel>
-										<FormControl>
-											<Input disabled placeholder="Email" {...field} />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-							<FormField
-								control={form.control}
-								name="password"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Password</FormLabel>
-										<FormControl>
-											<Input
-												type="password"
-												placeholder="Password"
+											<AuthInput
+												placeholder="Last name"
+												autoComplete="family-name"
 												{...field}
 											/>
 										</FormControl>
@@ -227,37 +209,62 @@ const Invitation = ({ token, invitation, userAlreadyExists }: Props) => {
 									</FormItem>
 								)}
 							/>
-
-							<FormField
-								control={form.control}
-								name="confirmPassword"
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Confirm Password</FormLabel>
-										<FormControl>
-											<Input
-												type="password"
-												placeholder="Confirm Password"
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
-
-							<Button
-								type="submit"
-								loading={form.formState.isSubmitting}
-								className="w-full justify-center"
-							>
-								Register
-							</Button>
-						</form>
-					</Form>
-				</>
+						</div>
+						<FormField
+							control={form.control}
+							name="email"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="sr-only">Email</FormLabel>
+									<FormControl>
+										<AuthInput disabled placeholder="Email" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="password"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="sr-only">Password</FormLabel>
+									<FormControl>
+										<PasswordInput
+											placeholder="Password"
+											autoComplete="new-password"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="confirmPassword"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="sr-only">Confirm password</FormLabel>
+									<FormControl>
+										<PasswordInput
+											placeholder="Confirm password"
+											autoComplete="new-password"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<AuthSubmit loading={form.formState.isSubmitting}>
+							Create account
+							<ArrowRight className="size-4" />
+						</AuthSubmit>
+					</form>
+				</Form>
 			)}
-		</section>
+		</div>
 	);
 };
 export default Invitation;

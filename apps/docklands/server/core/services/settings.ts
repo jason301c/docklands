@@ -8,6 +8,7 @@ import {
 	execAsyncRemote,
 } from "@/server/core/utils/process/execAsync";
 import type { IUpdateData } from "@/shared/runtime-update-types";
+import { siteConfig } from "@/shared/site";
 import { db } from "../db";
 import { compose } from "../db/schema";
 import {
@@ -18,10 +19,9 @@ import {
 
 const logger = createLogger("settings");
 
-const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || "jason301c/docklands";
+const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || siteConfig.dockerImage;
 const DOCKLANDS_DOCKER_HUB_TAGS_URL =
-	process.env.DOCKLANDS_DOCKER_HUB_TAGS_URL ||
-	"https://hub.docker.com/v2/repositories/jason301c/docklands/tags";
+	process.env.DOCKLANDS_DOCKER_HUB_TAGS_URL || siteConfig.dockerHubTagsUrl;
 
 export const DEFAULT_UPDATE_DATA: IUpdateData = {
 	latestVersion: null,

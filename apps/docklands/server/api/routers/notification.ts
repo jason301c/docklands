@@ -3,6 +3,7 @@ import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
 	createTRPCRouter,
+	protectedProcedure,
 	publicProcedure,
 	withPermission,
 } from "@/server/api/trpc";
@@ -55,6 +56,7 @@ import {
 	removeNotificationById,
 	updateNotification,
 } from "@/server/core/services/notification";
+import { isSystemEmailConfigured } from "@/server/core/services/system-email";
 import { getWebServerSettings } from "@/server/core/services/web-server-settings";
 import { sendServerThresholdNotifications } from "@/server/core/utils/notifications/server-threshold";
 import {
@@ -71,6 +73,7 @@ import {
 	sendTeamsNotification,
 	sendTelegramNotification,
 } from "@/server/core/utils/notifications/utils";
+import { siteConfig } from "@/shared/site";
 
 export const notificationRouter = createTRPCRouter({
 	createSlack: withPermission("notification", "create")
@@ -652,7 +655,7 @@ export const notificationRouter = createTRPCRouter({
 					input,
 					"Test Notification",
 					"",
-					"view, visit Docklands on GitHub, https://github.com/jason301c/docklands, clear=true;",
+					`view, visit Docklands on GitHub, ${siteConfig.links.github}, clear=true;`,
 					"Hi, From Docklands 👋",
 				);
 				return true;
@@ -973,18 +976,9 @@ export const notificationRouter = createTRPCRouter({
 				});
 			}
 		}),
-	getEmailProviders: withPermission("notification", "read").query(
-		async ({ ctx }) => {
-			return await db.query.notifications.findMany({
-				where: eq(
-					notifications.organizationId,
-					ctx.session.activeOrganizationId,
-				),
-				with: {
-					email: true,
-					resend: true,
-				},
-			});
-		},
-	),
+	// Plain protected (not notification:read) so the invite dialog can show an
+	// honest "no email provider" hint to any member who can create invites.
+	isSystemEmailConfigured: protectedProcedure.query(async ({ ctx }) => {
+		return await isSystemEmailConfigured(ctx.session.activeOrganizationId);
+	}),
 });

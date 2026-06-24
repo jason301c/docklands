@@ -9,6 +9,7 @@ import { writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { generateOpenApiDocument } from "@/server/core/openapi/generator/index.mjs";
+import { siteConfig } from "@/shared/site";
 import { appRouter } from "../server/api/root";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -22,7 +23,7 @@ async function generateOpenAPI() {
 			title: "Docklands API",
 			version: "1.0.0",
 			baseUrl: "https://your-docklands-instance.example/api",
-			docsUrl: "https://github.com/jason301c/docklands",
+			docsUrl: siteConfig.links.github,
 			tags: [
 				"admin",
 				"docker",
@@ -71,11 +72,11 @@ async function generateOpenAPI() {
 			version: "1.0.0",
 			contact: {
 				name: "Docklands Team",
-				url: "https://github.com/jason301c/docklands",
+				url: siteConfig.links.github,
 			},
 			license: {
 				name: "Apache 2.0",
-				url: "https://github.com/jason301c/docklands/blob/canary/LICENSE.MD",
+				url: `${siteConfig.links.github}/blob/canary/LICENSE.MD`,
 			},
 		};
 
@@ -103,7 +104,7 @@ async function generateOpenAPI() {
 		// Add external docs
 		openApiDocument.externalDocs = {
 			description: "Full documentation",
-			url: "https://github.com/jason301c/docklands",
+			url: siteConfig.links.github,
 		};
 
 		// Write to this app package root.

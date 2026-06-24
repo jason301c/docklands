@@ -13,6 +13,7 @@ import {
 	Tailwind,
 	Text,
 } from "@react-email/components";
+import { siteConfig } from "@/shared/site";
 
 interface InvitationEmailProps {
 	inviteLink: string;
@@ -46,7 +47,7 @@ export const InvitationEmail = ({
 						{/* Header */}
 						<Section className="bg-[#171717] rounded-t-xl px-[40px] py-[32px] text-center">
 							<Img
-								src="https://raw.githubusercontent.com/jason301c/docklands/refs/heads/canary/apps/docklands/public/docklands-logo-light.svg"
+								src={siteConfig.assets.logoLight}
 								width="96"
 								height="96"
 								alt="Docklands"
@@ -93,7 +94,7 @@ export const InvitationEmail = ({
 								<span className="text-[#737373]">{toEmail}</span>. This invite
 								was sent from{" "}
 								<Link
-									href="https://github.com/jason301c/docklands"
+									href={siteConfig.links.github}
 									className="text-[#737373] underline"
 								>
 									Docklands

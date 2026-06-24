@@ -15,11 +15,11 @@ const logger = createLogger("lib:auth");
 import { getPublicIpWithFallback } from "../runtime/host";
 import { getTrustedOrigins, getUserByToken } from "../services/admin";
 import { createAuditLog } from "../services/audit-log";
+import { sendSystemEmail } from "../services/system-email";
 import {
 	getWebServerSettings,
 	updateWebServerSettings,
 } from "../services/web-server-settings";
-import { sendEmail } from "../verification/send-verification-email";
 import { ac, adminRole, memberRole, ownerRole } from "./access-control";
 import { betterAuthSecret } from "./auth-secret";
 
@@ -119,12 +119,15 @@ const { handler, api } = betterAuth({
 			},
 		},
 		sendResetPassword: async ({ user, url }) => {
-			await sendEmail({
-				email: user.email,
+			// Routes through the instance's configured email provider. If none is
+			// configured this throws `SystemEmailNotConfiguredError`, which Better
+			// Auth swallows (the request still returns success to avoid account
+			// enumeration); the send-reset-password page tells the user up front
+			// when email isn't configured.
+			await sendSystemEmail({
+				to: user.email,
 				subject: "Reset your password",
-				text: `
-				<p>Click the link to reset your password: <a href="${url}">Reset Password</a></p>
-				`,
+				html: `<p>Click the link to reset your password: <a href="${url}">Reset Password</a></p>`,
 			});
 		},
 	},

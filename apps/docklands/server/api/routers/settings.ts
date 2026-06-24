@@ -75,6 +75,7 @@ import {
 } from "@/server/core/utils/traefik/web-server";
 import { assertBuildsConcurrencyAllowed } from "@/server/queues/concurrency";
 import { cleanAllDeploymentQueue } from "@/server/queues/queueSetup";
+import { siteConfig } from "@/shared/site";
 import packageInfo from "../../../package.json";
 import {
 	adminProcedure,
@@ -85,7 +86,7 @@ import {
 
 const logger = createLogger("settings");
 
-const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || "jason301c/docklands";
+const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || siteConfig.dockerImage;
 
 export const settingsRouter = createTRPCRouter({
 	getWebServerSettings: protectedProcedure.query(async () => {

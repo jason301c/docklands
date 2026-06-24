@@ -22,7 +22,7 @@ const KUMO_THEME_BRIDGE = `(() => {
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://docs.docklands.dev",
+	site: "https://docs.docklands.sh",
 	integrations: [
 		starlight({
 			title: "Docklands",

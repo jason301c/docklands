@@ -1,15 +1,19 @@
 "use client";
 
-import { Button } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { AlertTriangle } from "lucide-react";
-import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
+import { AlertBlock } from "@/components/shared/alert-block";
+import {
+	AuthHeading,
+	AuthInput,
+	AuthSubmit,
+	PasswordInput,
+} from "@/components/shared/auth-screen";
 import {
 	Form,
 	FormControl,
@@ -18,9 +22,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Logo } from "@/components/shared/logo";
 import { toast } from "@/components/shared/toast";
-import { DOCS_URL } from "@/shared/routes";
 
 const registerSchema = z
 	.object({
@@ -109,57 +111,66 @@ const Register = (_props: Props) => {
 		}
 	};
 	return (
-		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
-			<div className="mb-8 flex flex-col items-center gap-4 text-center">
-				<Link href="/" aria-label="Docklands home">
-					<Logo className="size-12" />
-				</Link>
-				<h1 className="font-semibold text-2xl tracking-tight">
-					Set up Docklands
-				</h1>
-			</div>
+		<div>
+			<AuthHeading
+				title="Set up Docklands"
+				description="Create the owner account for this instance."
+			/>
 			{isError && (
-				<div className="my-2 flex flex-row items-center gap-2 rounded-lg bg-kumo-danger-tint p-2">
-					<AlertTriangle className="text-kumo-danger" />
-					<span className="text-sm text-kumo-danger">{error}</span>
-				</div>
+				<AlertBlock type="error" className="mb-4">
+					<span>{error}</span>
+				</AlertBlock>
 			)}
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-					<FormField
-						control={form.control}
-						name="name"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>First Name</FormLabel>
-								<FormControl>
-									<Input placeholder="John" {...field} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="lastName"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel>Last Name</FormLabel>
-								<FormControl>
-									<Input placeholder="Doe" {...field} />
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
+					<div className="grid grid-cols-2 gap-4">
+						<FormField
+							control={form.control}
+							name="name"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="sr-only">First name</FormLabel>
+									<FormControl>
+										<AuthInput
+											placeholder="First name"
+											autoComplete="given-name"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="lastName"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel className="sr-only">Last name</FormLabel>
+									<FormControl>
+										<AuthInput
+											placeholder="Last name"
+											autoComplete="family-name"
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+					</div>
 					<FormField
 						control={form.control}
 						name="email"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Email</FormLabel>
+								<FormLabel className="sr-only">Email</FormLabel>
 								<FormControl>
-									<Input placeholder="email@docklands.local" {...field} />
+									<AuthInput
+										placeholder="email@docklands.local"
+										autoComplete="email"
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -170,48 +181,42 @@ const Register = (_props: Props) => {
 						name="password"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Password</FormLabel>
+								<FormLabel className="sr-only">Password</FormLabel>
 								<FormControl>
-									<Input type="password" placeholder="Password" {...field} />
+									<PasswordInput
+										placeholder="Password"
+										autoComplete="new-password"
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}
 					/>
-
 					<FormField
 						control={form.control}
 						name="confirmPassword"
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel>Confirm Password</FormLabel>
+								<FormLabel className="sr-only">Confirm password</FormLabel>
 								<FormControl>
-									<Input type="password" placeholder="Password" {...field} />
+									<PasswordInput
+										placeholder="Confirm password"
+										autoComplete="new-password"
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
 						)}
 					/>
-
-					<Button
-						type="submit"
-						loading={form.formState.isSubmitting}
-						className="w-full justify-center"
-					>
-						Register
-					</Button>
+					<AuthSubmit loading={form.formState.isSubmitting}>
+						Create account
+						<ArrowRight className="size-4" />
+					</AuthSubmit>
 				</form>
 			</Form>
-			<div className="mt-5 flex flex-col items-center justify-center gap-2 text-center text-sm">
-				<Link
-					className="hover:underline text-kumo-subtle"
-					href={DOCS_URL}
-					target="_blank"
-				>
-					Need help?
-				</Link>
-			</div>
-		</section>
+		</div>
 	);
 };
 

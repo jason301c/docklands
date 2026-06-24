@@ -1,15 +1,19 @@
 "use client";
 
-import { Button } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { authClient } from "@/client/auth/client";
 import { AlertBlock } from "@/components/shared/alert-block";
+import {
+	AuthAltAction,
+	AuthHeading,
+	AuthInput,
+	AuthSubmit,
+	authLinkClassName,
+} from "@/components/shared/auth-screen";
 import {
 	Form,
 	FormControl,
@@ -18,7 +22,6 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
-import { Logo } from "@/components/shared/logo";
 import { toast } from "@/components/shared/toast";
 
 const loginSchema = z.object({
@@ -37,20 +40,13 @@ const loginSchema = z.object({
 
 type Login = z.infer<typeof loginSchema>;
 
-type AuthResponse = {
-	is2FAEnabled: boolean;
-	authId: string;
-};
-
-export default function Home() {
-	const [temp, _setTemp] = useState<AuthResponse>({
-		is2FAEnabled: false,
-		authId: "",
-	});
-
+export default function Home({
+	emailConfigured,
+}: {
+	emailConfigured: boolean;
+}) {
 	const [error, setError] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
-	const _router = useRouter();
 	const form = useForm<Login>({
 		defaultValues: {
 			email: "",
@@ -72,29 +68,34 @@ export default function Home() {
 			setError(error.message || "An error occurred");
 			setIsLoading(false);
 		} else {
-			toast.success("Email sent", {
-				duration: 2000,
-			});
+			// Better Auth intentionally returns success even when the address is
+			// unknown (anti-enumeration) and swallows a failed `sendResetPassword`
+			// (e.g. no SMTP configured), so we can't truthfully claim delivery.
+			// Keep the copy neutral; if mail is unconfigured the owner can recover
+			// via the `reset-password` CLI op.
+			toast.success(
+				"If an account exists for that email, a reset link is on its way.",
+			);
 		}
 		setIsLoading(false);
 	};
 	return (
-		<section className="w-full rounded-lg border bg-kumo-canvas p-8 shadow-sm">
-			<div className="mb-8 flex flex-col items-center gap-4 text-center">
-				<Link href="/" aria-label="Docklands home">
-					<Logo />
-				</Link>
-				<h1 className="font-semibold text-2xl tracking-tight">
-					Reset Password
-				</h1>
-			</div>
+		<div>
+			<AuthHeading
+				title="Forgot password?"
+				description={
+					emailConfigured
+						? "Enter your email and we'll send you a reset link."
+						: "Password reset by email isn't available on this instance."
+				}
+			/>
 
 			{error && (
-				<AlertBlock type="error" className="my-2">
+				<AlertBlock type="error" className="mb-4">
 					{error}
 				</AlertBlock>
 			)}
-			{!temp.is2FAEnabled ? (
+			{emailConfigured ? (
 				<Form {...form}>
 					<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 						<FormField
@@ -102,31 +103,37 @@ export default function Home() {
 							name="email"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>Email</FormLabel>
+									<FormLabel className="sr-only">Email</FormLabel>
 									<FormControl>
-										<Input placeholder="Email" maxLength={255} {...field} />
+										<AuthInput
+											placeholder="Email"
+											autoComplete="email"
+											maxLength={255}
+											{...field}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
 							)}
 						/>
 
-						<Button
-							type="submit"
-							loading={isLoading}
-							className="w-full justify-center"
-						>
-							Send Reset Link
-						</Button>
+						<AuthSubmit loading={isLoading}>Send reset link</AuthSubmit>
 					</form>
 				</Form>
-			) : null}
+			) : (
+				<AlertBlock type="warning">
+					No email provider is configured for this instance, so reset links
+					can't be sent. Ask an administrator to add one under Settings →
+					Notifications, or reset your password from the server with the{" "}
+					<code className="font-mono">reset-password</code> CLI.
+				</AlertBlock>
+			)}
 
-			<div className="mt-5 flex justify-center text-center text-sm">
-				<Link className="hover:underline text-kumo-subtle" href="/">
-					Login
+			<AuthAltAction>
+				<Link className={authLinkClassName} href="/">
+					Back to sign in
 				</Link>
-			</div>
-		</section>
+			</AuthAltAction>
+		</div>
 	);
 }

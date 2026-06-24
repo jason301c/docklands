@@ -1,15 +1,16 @@
+import { siteConfig } from "@/shared/site";
 import type { WorkspaceServiceType } from "@/shared/workspace-graph";
 
 /**
- * Canonical external links. Centralized here so the project's docs/source URLs
- * live in one place instead of being copy-pasted (the audit found the personal
- * fork URL hardcoded across ~7 components); rebranding or moving orgs is then a
- * single edit.
+ * Canonical external links, re-exported from the central `siteConfig` so the
+ * project's docs/source URLs live in one place instead of being copy-pasted
+ * (the audit found the personal fork URL hardcoded across ~7 components).
+ * Rebranding or moving orgs is a single edit in `shared/site.ts`.
  */
-export const DOCS_URL = "https://docs.docklands.dev";
-export const GITHUB_REPO_URL = "https://github.com/jason301c/docklands";
+export const DOCS_URL = siteConfig.links.docs;
+export const GITHUB_REPO_URL = siteConfig.links.github;
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`;
-export const SUPPORT_URL = "https://discord.gg/2tBnJ3jDJc";
+export const SUPPORT_URL = siteConfig.links.support;
 
 export type WorkspaceEnvironmentRoute = {
 	workspaceId: string;
