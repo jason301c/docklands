@@ -5,8 +5,8 @@ import { audit } from "@/server/api/utils/audit";
 import { db } from "@/server/core/db";
 import { apiFindAllByType, deployments } from "@/server/core/db/schema";
 import {
-	findAllDeploymentsCentralized,
 	findDeploymentById,
+	findDeploymentsCentralizedPaged,
 	removeDeployment,
 	resolveServicePath,
 	updateDeploymentStatus,
@@ -24,18 +24,27 @@ import { myQueue } from "@/server/queues/queueSetup";
 import { createTRPCRouter, protectedProcedure, withPermission } from "../trpc";
 
 export const deploymentRouter = createTRPCRouter({
-	allCentralized: withPermission("deployment", "read").query(
-		async ({ ctx }) => {
+	allCentralizedPaged: withPermission("deployment", "read")
+		.input(
+			z.object({
+				search: z.string().optional(),
+				status: z
+					.enum(["all", "running", "done", "error", "cancelled"])
+					.default("all"),
+				type: z.enum(["all", "application", "compose"]).default("all"),
+				sortBy: z.enum(["createdAt", "status"]).default("createdAt"),
+				sortDir: z.enum(["asc", "desc"]).default("desc"),
+				limit: z.number().int().min(1).max(100).default(25),
+				offset: z.number().int().min(0).default(0),
+			}),
+		)
+		.query(async ({ ctx, input }) => {
 			const orgId = ctx.session.activeOrganizationId;
 			const accessedServices = !isOwnerOrAdmin(ctx.user.role)
 				? (await findMemberByUserId(ctx.user.id, orgId)).accessedServices
 				: null;
-			if (accessedServices !== null && accessedServices.length === 0) {
-				return [];
-			}
-			return findAllDeploymentsCentralized(orgId, accessedServices);
-		},
-	),
+			return findDeploymentsCentralizedPaged(orgId, accessedServices, input);
+		}),
 
 	queueList: withPermission("deployment", "read").query(async ({ ctx }) => {
 		const orgId = ctx.session.activeOrganizationId;

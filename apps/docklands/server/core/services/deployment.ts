@@ -2,7 +2,17 @@ import { existsSync, promises as fsPromises } from "node:fs";
 import path from "node:path";
 import { TRPCError } from "@trpc/server";
 import { format } from "date-fns";
-import { and, desc, eq, inArray, or, sql } from "drizzle-orm";
+import {
+	and,
+	asc,
+	desc,
+	eq,
+	ilike,
+	inArray,
+	isNotNull,
+	or,
+	sql,
+} from "drizzle-orm";
 import { quote } from "shell-quote";
 import type { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
@@ -859,6 +869,211 @@ export const findAllDeploymentsCentralized = async (
 		orderBy: desc(deployments.createdAt),
 		with: centralizedDeploymentsWith,
 	});
+};
+
+export type CentralizedDeploymentRow = Awaited<
+	ReturnType<typeof findAllDeploymentsCentralized>
+>[number];
+
+export type DeploymentStatusFilter =
+	| "all"
+	| "running"
+	| "done"
+	| "error"
+	| "cancelled";
+export type DeploymentTypeFilter = "all" | "application" | "compose";
+export type DeploymentSortField = "createdAt" | "status";
+
+export interface FindDeploymentsCentralizedPagedParams {
+	search?: string;
+	status?: DeploymentStatusFilter;
+	type?: DeploymentTypeFilter;
+	sortBy?: DeploymentSortField;
+	sortDir?: "asc" | "desc";
+	limit: number;
+	offset: number;
+}
+
+export interface DeploymentCentralizedCounts {
+	active: number;
+	successful: number;
+	failed: number;
+	total: number;
+}
+
+export interface DeploymentsCentralizedPage {
+	rows: CentralizedDeploymentRow[];
+	total: number;
+	counts: DeploymentCentralizedCounts;
+	latestCreatedAt: string | null;
+}
+
+const emptyDeploymentsPage = (): DeploymentsCentralizedPage => ({
+	rows: [],
+	total: 0,
+	counts: { active: 0, successful: 0, failed: 0, total: 0 },
+	latestCreatedAt: null,
+});
+
+async function searchAccessibleServiceIds(
+	column: typeof applications.applicationId | typeof compose.composeId,
+	table: typeof applications | typeof compose,
+	environmentColumn:
+		| typeof applications.environmentId
+		| typeof compose.environmentId,
+	ids: string[],
+	pattern: string,
+): Promise<string[]> {
+	if (ids.length === 0) return [];
+	const rows = await db
+		.select({ id: column })
+		.from(table)
+		.innerJoin(environments, eq(environmentColumn, environments.environmentId))
+		.innerJoin(workspaces, eq(environments.workspaceId, workspaces.workspaceId))
+		.where(
+			and(
+				inArray(column, ids),
+				or(
+					ilike(table.name, pattern),
+					ilike(environments.name, pattern),
+					ilike(workspaces.name, pattern),
+				),
+			),
+		);
+	return rows.map((r) => r.id);
+}
+
+/**
+ * Server-side paginated/filtered/sorted view of the centralized deployment
+ * timeline. Unlike `findAllDeploymentsCentralized` (which returns every row for
+ * the client to slice), this applies search/status/type filters, ordering, and
+ * limit/offset in SQL so the page scales past a handful of services.
+ *
+ * `counts`/`latestCreatedAt` are computed over the full **accessible** set
+ * (ignoring the active filters) so the summary cards stay stable totals and can
+ * act as filter toggles; `total` reflects the filtered result for pagination.
+ */
+export const findDeploymentsCentralizedPaged = async (
+	orgId: string,
+	accessedServices: string[] | null,
+	params: FindDeploymentsCentralizedPagedParams,
+): Promise<DeploymentsCentralizedPage> => {
+	if (accessedServices !== null && accessedServices.length === 0) {
+		return emptyDeploymentsPage();
+	}
+
+	const [appIds, compIds] = await Promise.all([
+		getApplicationIdsInOrg(orgId, accessedServices),
+		getComposeIdsInOrg(orgId, accessedServices),
+	]);
+
+	if (appIds.length === 0 && compIds.length === 0) {
+		return emptyDeploymentsPage();
+	}
+
+	const accessibleConditions = [
+		...(appIds.length > 0 ? [inArray(deployments.applicationId, appIds)] : []),
+		...(compIds.length > 0 ? [inArray(deployments.composeId, compIds)] : []),
+	];
+	const accessibleWhere =
+		accessibleConditions.length === 1
+			? accessibleConditions[0]
+			: or(...accessibleConditions);
+
+	// Counts + latest over the full accessible set (filters not applied).
+	const [statusCountRows, latestRows] = await Promise.all([
+		db
+			.select({
+				status: deployments.status,
+				count: sql<number>`count(*)::int`,
+			})
+			.from(deployments)
+			.where(accessibleWhere)
+			.groupBy(deployments.status),
+		db
+			.select({ latest: sql<string | null>`max(${deployments.createdAt})` })
+			.from(deployments)
+			.where(accessibleWhere),
+	]);
+
+	const counts: DeploymentCentralizedCounts = {
+		active: 0,
+		successful: 0,
+		failed: 0,
+		total: 0,
+	};
+	for (const row of statusCountRows) {
+		counts.total += row.count;
+		if (row.status === "running") counts.active += row.count;
+		else if (row.status === "done") counts.successful += row.count;
+		else if (row.status === "error") counts.failed += row.count;
+	}
+	const latestCreatedAt = latestRows[0]?.latest ?? null;
+
+	// Filtered where for the visible page.
+	const filterConditions = [accessibleWhere];
+	if (params.status && params.status !== "all") {
+		filterConditions.push(eq(deployments.status, params.status));
+	}
+	if (params.type === "application") {
+		filterConditions.push(isNotNull(deployments.applicationId));
+	} else if (params.type === "compose") {
+		filterConditions.push(isNotNull(deployments.composeId));
+	}
+
+	const search = params.search?.trim();
+	if (search) {
+		const pattern = `%${search}%`;
+		const [matchedAppIds, matchedCompIds] = await Promise.all([
+			searchAccessibleServiceIds(
+				applications.applicationId,
+				applications,
+				applications.environmentId,
+				appIds,
+				pattern,
+			),
+			searchAccessibleServiceIds(
+				compose.composeId,
+				compose,
+				compose.environmentId,
+				compIds,
+				pattern,
+			),
+		]);
+		const searchConditions = [
+			...(matchedAppIds.length > 0
+				? [inArray(deployments.applicationId, matchedAppIds)]
+				: []),
+			...(matchedCompIds.length > 0
+				? [inArray(deployments.composeId, matchedCompIds)]
+				: []),
+			ilike(deployments.title, pattern),
+		];
+		filterConditions.push(or(...searchConditions));
+	}
+
+	const filteredWhere = and(...filterConditions);
+
+	const direction = params.sortDir === "asc" ? asc : desc;
+	const sortColumn =
+		params.sortBy === "status" ? deployments.status : deployments.createdAt;
+	const orderBy =
+		params.sortBy === "status"
+			? [direction(deployments.status), desc(deployments.createdAt)]
+			: [direction(sortColumn)];
+
+	const [total, rows] = await Promise.all([
+		db.$count(deployments, filteredWhere),
+		db.query.deployments.findMany({
+			where: filteredWhere,
+			orderBy,
+			limit: params.limit,
+			offset: params.offset,
+			with: centralizedDeploymentsWith,
+		}),
+	]);
+
+	return { rows, total, counts, latestCreatedAt };
 };
 
 export const updateDeployment = async (

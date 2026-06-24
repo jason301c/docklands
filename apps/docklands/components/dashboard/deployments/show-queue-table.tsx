@@ -131,16 +131,8 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 		};
 	}, [queueList]);
 
-	const queueStream = useMemo(
-		() =>
-			[...(queueList ?? [])]
-				.sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0))
-				.slice(0, 5),
-		[queueList],
-	);
-
 	return (
-		<div className="space-y-2 px-0">
+		<div className="space-y-3 px-0">
 			{isLoading ? (
 				<div className="flex gap-4 w-full items-center justify-center min-h-[30vh] text-kumo-subtle">
 					<Loader2 className="size-4 animate-spin" />
@@ -173,73 +165,6 @@ export function ShowDeploymentQueueTable(props: { embedded?: boolean }) {
 							detail={`${queueStats.total} total jobs in queue history`}
 							icon={<Clock className="size-4" />}
 						/>
-					</div>
-
-					<div className="rounded-md border bg-kumo-canvas">
-						<div className="flex items-center justify-between gap-3 border-b px-4 py-3">
-							<div>
-								<p className="text-sm font-medium">Worker queue</p>
-								<p className="text-xs text-kumo-subtle">
-									Most recent deployment jobs observed by the worker.
-								</p>
-							</div>
-							<Badge variant="outline">{queueStats.total} jobs</Badge>
-						</div>
-						{queueStream.length === 0 ? (
-							<div className="flex min-h-32 flex-col items-center justify-center gap-2 text-kumo-subtle">
-								<ListTodo className="size-6" />
-								<p className="text-sm">Queue is empty.</p>
-							</div>
-						) : (
-							<div className="divide-y">
-								{queueStream.map((row) => {
-									const d = row.data as Record<string, unknown>;
-									const appType = d?.applicationType as string | undefined;
-									const pathInfo = row.servicePath;
-									return (
-										<div
-											key={String(row.id)}
-											className="grid gap-3 px-4 py-3 md:grid-cols-[minmax(0,1fr)_auto]"
-										>
-											<div className="min-w-0">
-												<div className="flex flex-wrap items-center gap-2">
-													<p className="truncate text-sm font-medium">
-														{getJobLabel(row)}
-													</p>
-													<Badge
-														variant={stateVariants[row.state] ?? "outline"}
-													>
-														{row.state}
-													</Badge>
-													<Badge variant="outline">
-														{appType ?? row.name ?? "job"}
-													</Badge>
-												</div>
-												<p className="mt-1 truncate text-xs text-kumo-subtle">
-													Job {String(row.id)} · added{" "}
-													{formatRelativeTs(row.timestamp)}
-													{row.failedReason ? ` · ${row.failedReason}` : ""}
-												</p>
-											</div>
-											<div className="flex items-center gap-2 md:justify-end">
-												{pathInfo?.href ? (
-													<LinkButton
-														href={pathInfo.href}
-														variant="ghost"
-														size="sm"
-													>
-														<ArrowRight className="size-4" />
-														Service
-													</LinkButton>
-												) : (
-													<span className="text-xs text-kumo-subtle">—</span>
-												)}
-											</div>
-										</div>
-									);
-								})}
-							</div>
-						)}
 					</div>
 
 					<div className="rounded-md border overflow-x-auto">

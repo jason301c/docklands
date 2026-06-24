@@ -22,10 +22,7 @@ describe("deployment history copy", () => {
 		expect(source).toContain("workspaceName");
 		expect(source).toContain("Workspace");
 		expect(source).toContain(
-			"Latest runtime changes across every workspace and environment.",
-		);
-		expect(source).toContain(
-			'placeholder="Search by name, workspace, environment, or title..."',
+			'placeholder="Search by service, workspace, environment, or title..."',
 		);
 		expect(source).not.toContain("projectName");
 		expect(source).not.toContain("every project and environment");

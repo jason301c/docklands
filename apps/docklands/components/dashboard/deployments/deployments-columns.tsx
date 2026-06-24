@@ -1,25 +1,31 @@
 "use client";
 
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button, LinkButton } from "@cloudflare/kumo/components/button";
-import type { inferRouterOutputs } from "@trpc/server";
-import { ArrowUpDown, Boxes, ExternalLink, Rocket } from "lucide-react";
-import type { AppRouter } from "@/server/api/root";
+import type { RouterOutputs } from "@/client/api/trpc";
 import { workspaceServicePath } from "@/shared/routes";
 
 export type DeploymentRow =
-	inferRouterOutputs<AppRouter>["deployment"]["allCentralized"][number];
+	RouterOutputs["deployment"]["allCentralizedPaged"]["rows"][number];
 
-export const statusVariants: Record<
-	string,
-	| "secondary"
+export type DeploymentStatus = "running" | "done" | "error" | "cancelled";
+
+type BadgeVariant =
 	| "secondary"
 	| "destructive"
 	| "outline"
+	| "neutral"
 	| "warning"
 	| "green"
-	| "red"
-> = {
+	| "red";
+
+/** Human-facing status labels (the raw enum reads oddly, e.g. "done"). */
+export const statusLabel: Record<string, string> = {
+	running: "Running",
+	done: "Succeeded",
+	error: "Failed",
+	cancelled: "Cancelled",
+};
+
+export const statusVariants: Record<string, BadgeVariant> = {
 	running: "warning",
 	done: "green",
 	error: "red",
@@ -73,205 +79,64 @@ export function getServiceInfo(d: DeploymentRow) {
 	return null;
 }
 
-export function createDeploymentsColumns() {
-	return [
-		{
-			id: "serviceName",
-			accessorFn: (row: DeploymentRow) => getServiceInfo(row)?.name ?? "",
-			header: ({
-				column,
-			}: {
-				column: {
-					getIsSorted: () => false | "asc" | "desc";
-					toggleSorting: (asc: boolean) => void;
-				};
-			}) => (
-				<Button
-					variant="ghost"
-					className="-ml-3 h-8"
-					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-				>
-					Service
-					<ArrowUpDown className="ml-2 size-4" />
-				</Button>
-			),
-			cell: ({ row }: { row: { original: DeploymentRow } }) => {
-				const info = getServiceInfo(row.original);
-				if (!info) return <span className="text-kumo-subtle">—</span>;
-				return (
-					<div className="flex items-center gap-2">
-						{info.type === "Application" ? (
-							<Rocket className="size-4 text-kumo-subtle shrink-0" />
-						) : (
-							<Boxes className="size-4 text-kumo-subtle shrink-0" />
-						)}
-						<div className="flex flex-col min-w-0">
-							<span className="font-medium truncate">{info.name}</span>
-							<Badge variant="outline" className="w-fit text-[10px]">
-								{info.type}
-							</Badge>
-						</div>
-					</div>
-				);
-			},
-		},
-		{
-			id: "workspaceName",
-			accessorFn: (row: DeploymentRow) =>
-				getServiceInfo(row)?.workspaceName ?? "",
-			header: ({
-				column,
-			}: {
-				column: {
-					getIsSorted: () => false | "asc" | "desc";
-					toggleSorting: (asc: boolean) => void;
-				};
-			}) => (
-				<Button
-					variant="ghost"
-					className="-ml-3 h-8"
-					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-				>
-					Workspace
-					<ArrowUpDown className="ml-2 size-4" />
-				</Button>
-			),
-			cell: ({ row }: { row: { original: DeploymentRow } }) => {
-				const info = getServiceInfo(row.original);
-				return (
-					<span className="text-kumo-subtle">{info?.workspaceName ?? "—"}</span>
-				);
-			},
-		},
-		{
-			id: "environmentName",
-			accessorFn: (row: DeploymentRow) =>
-				getServiceInfo(row)?.environmentName ?? "",
-			header: ({
-				column,
-			}: {
-				column: {
-					getIsSorted: () => false | "asc" | "desc";
-					toggleSorting: (asc: boolean) => void;
-				};
-			}) => (
-				<Button
-					variant="ghost"
-					className="-ml-3 h-8"
-					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-				>
-					Environment
-					<ArrowUpDown className="ml-2 size-4" />
-				</Button>
-			),
-			cell: ({ row }: { row: { original: DeploymentRow } }) => {
-				const info = getServiceInfo(row.original);
-				return (
-					<span className="text-kumo-subtle">
-						{info?.environmentName ?? "—"}
-					</span>
-				);
-			},
-		},
-		{
-			accessorKey: "title",
-			header: ({
-				column,
-			}: {
-				column: {
-					getIsSorted: () => false | "asc" | "desc";
-					toggleSorting: (asc: boolean) => void;
-				};
-			}) => (
-				<Button
-					variant="ghost"
-					className="-ml-3 h-8"
-					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-				>
-					Title
-					<ArrowUpDown className="ml-2 size-4" />
-				</Button>
-			),
-			cell: ({ row }: { row: { original: DeploymentRow } }) => (
-				<span className="text-sm truncate max-w-[200px] block">
-					{row.original.title || "—"}
-				</span>
-			),
-		},
-		{
-			accessorKey: "status",
-			header: ({
-				column,
-			}: {
-				column: {
-					getIsSorted: () => false | "asc" | "desc";
-					toggleSorting: (asc: boolean) => void;
-				};
-			}) => (
-				<Button
-					variant="ghost"
-					className="-ml-3 h-8"
-					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-				>
-					Status
-					<ArrowUpDown className="ml-2 size-4" />
-				</Button>
-			),
-			cell: ({ row }: { row: { original: DeploymentRow } }) => {
-				const status = row.original.status ?? "running";
-				return (
-					<Badge variant={statusVariants[status] ?? "secondary"}>
-						{status}
-					</Badge>
-				);
-			},
-		},
-		{
-			accessorKey: "createdAt",
-			header: ({
-				column,
-			}: {
-				column: {
-					getIsSorted: () => false | "asc" | "desc";
-					toggleSorting: (asc: boolean) => void;
-				};
-			}) => (
-				<Button
-					variant="ghost"
-					className="-ml-3 h-8"
-					onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-				>
-					Created
-					<ArrowUpDown className="ml-2 size-4" />
-				</Button>
-			),
-			cell: ({ row }: { row: { original: DeploymentRow } }) => (
-				<span className="text-kumo-subtle text-sm whitespace-nowrap">
-					{row.original.createdAt
-						? new Date(row.original.createdAt).toLocaleString()
-						: "—"}
-				</span>
-			),
-		},
-		{
-			header: "",
-			id: "actions",
-			enableSorting: false,
-			cell: ({ row }: { row: { original: DeploymentRow } }) => {
-				const info = getServiceInfo(row.original);
-				if (!info) return null;
-				return (
-					<LinkButton
-						href={info.href}
-						variant="ghost"
-						size="sm"
-						className="gap-1"
-					>
-						<ExternalLink className="size-4" />
-						Open
-					</LinkButton>
-				);
-			},
-		},
-	];
+/** Name of the runtime worker that ran a deployment, if any. */
+export function getDeploymentWorker(d: DeploymentRow): string | null {
+	return (
+		d.application?.runtimeWorker?.name ??
+		d.compose?.runtimeWorker?.name ??
+		d.runtimeWorker?.name ??
+		null
+	);
+}
+
+/**
+ * Classify *why* a deployment exists from its foreign keys. The centralized
+ * timeline only surfaces application/compose deployments, so in practice this is
+ * usually "Deployment" with the occasional "Rollback"; the remaining cases are
+ * covered for completeness and future-proofing.
+ */
+export function getDeploymentTrigger(d: DeploymentRow): {
+	label: string;
+	variant: BadgeVariant;
+} {
+	if (d.rollbackId) return { label: "Rollback", variant: "secondary" };
+	if (d.isPreviewDeployment || d.previewDeploymentId) {
+		return { label: "Preview", variant: "outline" };
+	}
+	if (d.backupId) return { label: "Backup", variant: "outline" };
+	if (d.volumeBackupId) return { label: "Volume backup", variant: "outline" };
+	if (!d.applicationId && !d.composeId && d.runtimeWorkerId) {
+		return { label: "Server", variant: "outline" };
+	}
+	return { label: "Deployment", variant: "neutral" };
+}
+
+/** Whole-second duration between start and finish, or null if not finished. */
+export function deploymentDurationSeconds(
+	startedAt: string | null | undefined,
+	finishedAt: string | null | undefined,
+): number | null {
+	if (!startedAt || !finishedAt) return null;
+	const seconds = Math.floor(
+		(new Date(finishedAt).getTime() - new Date(startedAt).getTime()) / 1000,
+	);
+	return Number.isFinite(seconds) && seconds >= 0 ? seconds : null;
+}
+
+export function formatDurationSeconds(seconds: number): string {
+	if (seconds < 60) return `${seconds}s`;
+	const minutes = Math.floor(seconds / 60);
+	const remSeconds = seconds % 60;
+	if (minutes < 60) return `${minutes}m ${remSeconds}s`;
+	const hours = Math.floor(minutes / 60);
+	const remMinutes = minutes % 60;
+	return `${hours}h ${remMinutes}m`;
+}
+
+export function formatDeploymentDuration(
+	startedAt: string | null | undefined,
+	finishedAt: string | null | undefined,
+): string | null {
+	const seconds = deploymentDurationSeconds(startedAt, finishedAt);
+	return seconds === null ? null : formatDurationSeconds(seconds);
 }

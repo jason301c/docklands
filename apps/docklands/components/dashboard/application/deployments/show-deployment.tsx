@@ -1,16 +1,5 @@
-import { Badge } from "@cloudflare/kumo/components/badge";
-import { Button } from "@cloudflare/kumo/components/button";
-import { Checkbox } from "@cloudflare/kumo/components/checkbox";
-import copy from "copy-to-clipboard";
-import { Check, Copy, Loader2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { createClientLogger } from "@/client/lib/logger";
 import { Dialog } from "@/components/shared/dialog";
-import { TerminalLine } from "@/components/shared/logs/terminal-line";
-import { type LogLine, parseLogs } from "@/components/shared/logs/utils";
-import { toast } from "@/components/shared/toast";
-
-const logger = createClientLogger("deployment-logs");
+import { DeploymentLogStream } from "@/components/shared/logs/deployment-log-stream";
 
 interface Props {
 	logPath: string | null;
@@ -19,6 +8,7 @@ interface Props {
 	runtimeWorkerId?: string;
 	errorMessage?: string;
 }
+
 export const ShowDeployment = ({
 	logPath,
 	open,
@@ -26,196 +16,26 @@ export const ShowDeployment = ({
 	runtimeWorkerId,
 	errorMessage,
 }: Props) => {
-	const [data, setData] = useState("");
-	const [showExtraLogs, setShowExtraLogs] = useState(false);
-	const [filteredLogs, setFilteredLogs] = useState<LogLine[]>([]);
-	const wsRef = useRef<WebSocket | null>(null);
-	const [autoScroll, setAutoScroll] = useState(true);
-	const scrollRef = useRef<HTMLDivElement>(null);
-	const [copied, setCopied] = useState(false);
-
-	const scrollToBottom = () => {
-		if (autoScroll && scrollRef.current) {
-			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-		}
-	};
-
-	const handleScroll = () => {
-		if (!scrollRef.current) return;
-
-		const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-		const isAtBottom = Math.abs(scrollHeight - scrollTop - clientHeight) < 10;
-		setAutoScroll(isAtBottom);
-	};
-
-	useEffect(() => {
-		if (!open || !logPath) return;
-
-		setData("");
-		const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-
-		const wsUrl = `${protocol}//${window.location.host}/listen-deployment?logPath=${logPath}${runtimeWorkerId ? `&runtimeWorkerId=${runtimeWorkerId}` : ""}`;
-		const ws = new WebSocket(wsUrl);
-		wsRef.current = ws; // Store WebSocket instance in ref
-
-		ws.onmessage = (e) => {
-			setData((currentData) => currentData + e.data);
-		};
-
-		ws.onerror = (error) => {
-			logger.error("WebSocket error:", error);
-			toast.warning("Log stream interrupted");
-		};
-
-		ws.onclose = () => {
-			wsRef.current = null; // Clear reference on close
-		};
-
-		return () => {
-			if (wsRef.current?.readyState === WebSocket.OPEN) {
-				ws.close();
-				wsRef.current = null;
-			}
-		};
-	}, [logPath, open, runtimeWorkerId]);
-
-	useEffect(() => {
-		const logs = parseLogs(data);
-		let filteredLogsResult = logs;
-		if (runtimeWorkerId) {
-			let hideSubsequentLogs = false;
-			filteredLogsResult = logs.filter((log) => {
-				if (
-					log.message.includes(
-						"===================================EXTRA LOGS============================================",
-					)
-				) {
-					hideSubsequentLogs = true;
-					return showExtraLogs;
-				}
-				return showExtraLogs ? true : !hideSubsequentLogs;
-			});
-		}
-
-		setFilteredLogs(filteredLogsResult);
-	}, [data, showExtraLogs]);
-
-	useEffect(() => {
-		scrollToBottom();
-
-		if (autoScroll && scrollRef.current) {
-			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-		}
-	}, [filteredLogs, autoScroll]);
-
-	const handleCopy = async () => {
-		const logContent = filteredLogs
-			.map(({ timestamp, message }: LogLine) =>
-				`${timestamp?.toISOString() || ""} ${message}`.trim(),
-			)
-			.join("\n");
-
-		const success = await copy(logContent);
-		if (success) {
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-		}
-	};
-
-	const optionalErrors = parseLogs(errorMessage || "");
-
 	return (
 		<Dialog.Root
 			open={open}
-			onOpenChange={(e) => {
-				onClose();
-				if (!e) {
-					setData("");
-				}
-
-				if (wsRef.current) {
-					if (wsRef.current.readyState === WebSocket.OPEN) {
-						wsRef.current.close();
-					}
-				}
+			onOpenChange={(next) => {
+				if (!next) onClose();
 			}}
 		>
-			<Dialog className={"sm:max-w-5xl"}>
-				<div>
+			<Dialog className="sm:max-w-5xl">
+				<Dialog.Header>
 					<Dialog.Title>Build</Dialog.Title>
-					<Dialog.Description className="flex items-center gap-2">
-						<span className="flex items-center gap-2">
-							See all the details of this build |{" "}
-							<Badge variant="neutral" className="text-xs">
-								{filteredLogs.length} lines
-							</Badge>
-						</span>
-
-						<Button
-							variant="outline"
-							size="sm"
-							className="h-7"
-							onClick={handleCopy}
-							disabled={filteredLogs.length === 0}
-						>
-							{copied ? (
-								<Check className="h-3.5 w-3.5" />
-							) : (
-								<Copy className="h-3.5 w-3.5" />
-							)}
-						</Button>
-
-						{runtimeWorkerId && (
-							<div className="flex items-center space-x-2">
-								<Checkbox
-									checked={showExtraLogs}
-									onCheckedChange={(checked) =>
-										setShowExtraLogs(checked as boolean)
-									}
-								/>
-								<label
-									htmlFor="show-extra-logs"
-									className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								>
-									Show Extra Logs
-								</label>
-							</div>
-						)}
+					<Dialog.Description>
+						See all the details of this build.
 					</Dialog.Description>
-				</div>
-
-				<div
-					ref={scrollRef}
-					onScroll={handleScroll}
-					className="h-[720px] overflow-y-auto space-y-0 border p-4 bg-kumo-base rounded custom-logs-scrollbar"
-				>
-					{" "}
-					{filteredLogs.length > 0 ? (
-						filteredLogs.map((log: LogLine, index: number) => (
-							<TerminalLine
-								key={`${log.rawTimestamp ?? ""}-${index}`}
-								log={log}
-								noTimestamp
-							/>
-						))
-					) : (
-						<>
-							{optionalErrors.length > 0 ? (
-								optionalErrors.map((log: LogLine, index: number) => (
-									<TerminalLine
-										key={`extra-${log.rawTimestamp ?? ""}-${index}`}
-										log={log}
-										noTimestamp
-									/>
-								))
-							) : (
-								<div className="flex justify-center items-center h-full text-kumo-subtle">
-									<Loader2 className="h-6 w-6 animate-spin" />
-								</div>
-							)}
-						</>
-					)}
-				</div>
+				</Dialog.Header>
+				<DeploymentLogStream
+					logPath={logPath}
+					open={open}
+					runtimeWorkerId={runtimeWorkerId}
+					errorMessage={errorMessage}
+				/>
 			</Dialog>
 		</Dialog.Root>
 	);

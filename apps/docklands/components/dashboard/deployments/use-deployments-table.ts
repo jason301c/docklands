@@ -1,115 +1,135 @@
 "use client";
 
-import type {
-	ColumnFiltersState,
-	PaginationState,
-	SortingState,
-} from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { keepPreviousData } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { getServiceInfo } from "./deployments-columns";
 
+export type DeploymentStatusFilter =
+	| "all"
+	| "running"
+	| "done"
+	| "error"
+	| "cancelled";
+export type DeploymentTypeFilter = "all" | "application" | "compose";
+export type DeploymentSortField = "createdAt" | "status";
+
+const PAGE_SIZES = [10, 25, 50, 100] as const;
+
+/** Local debounce so typing in the search box doesn't fire a query per keystroke. */
+function useDebouncedValue<T>(value: T, delay: number): T {
+	const [debounced, setDebounced] = useState(value);
+	useEffect(() => {
+		const id = setTimeout(() => setDebounced(value), delay);
+		return () => clearTimeout(id);
+	}, [value, delay]);
+	return debounced;
+}
+
+/**
+ * Drives the centralized deployments table entirely from the server: search,
+ * status/type filters, sorting, and pagination are all query inputs, so the
+ * browser never holds more than one page. Summary counts come back with each
+ * page (computed over the full accessible set) so the stat cards stay stable
+ * while filters change.
+ */
 export function useDeploymentsTable() {
-	const [sorting, setSorting] = useState<SortingState>([
-		{ id: "createdAt", desc: true },
-	]);
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-	const [globalFilter, setGlobalFilter] = useState("");
-	const [statusFilter, setStatusFilter] = useState<string>("all");
-	const [typeFilter, setTypeFilter] = useState<string>("all");
-	const [pagination, setPagination] = useState<PaginationState>({
-		pageIndex: 0,
-		pageSize: 50,
-	});
+	const [searchInput, setSearchInput] = useState("");
+	const search = useDebouncedValue(searchInput, 300);
+	const [status, setStatus] = useState<DeploymentStatusFilter>("all");
+	const [type, setType] = useState<DeploymentTypeFilter>("all");
+	const [sortBy, setSortBy] = useState<DeploymentSortField>("createdAt");
+	const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+	const [pageIndex, setPageIndex] = useState(0);
+	const [pageSize, setPageSize] = useState<number>(25);
 
-	const { data: deploymentsList, isLoading } =
-		api.deployment.allCentralized.useQuery(undefined, {
-			// Poll fast while a build is active; drop to a slow heartbeat when idle
-			// (instance-wide view, so it must still catch new deployments).
-			refetchInterval: (query) =>
-				query.state.data?.some((d) => d.status === "running") ? 5000 : 30000,
-		});
+	// Any change to the result shape resets us to the first page.
+	useEffect(() => {
+		setPageIndex(0);
+	}, [search, status, type, sortBy, sortDir, pageSize]);
 
-	const filteredData = useMemo(() => {
-		if (!deploymentsList) return [];
-		let list = deploymentsList;
-		if (statusFilter !== "all") {
-			list = list.filter((d) => d.status === statusFilter);
-		}
-		if (typeFilter === "application") {
-			list = list.filter((d) => d.applicationId != null);
-		} else if (typeFilter === "compose") {
-			list = list.filter((d) => d.composeId != null);
-		}
-		if (globalFilter.trim()) {
-			const q = globalFilter.toLowerCase();
-			list = list.filter((d) => {
-				const info = getServiceInfo(d);
-				if (!info) return false;
-				return (
-					info.name.toLowerCase().includes(q) ||
-					info.workspaceName.toLowerCase().includes(q) ||
-					info.environmentName.toLowerCase().includes(q) ||
-					(d.title?.toLowerCase().includes(q) ?? false)
-				);
-			});
-		}
-		return list;
-	}, [deploymentsList, statusFilter, typeFilter, globalFilter]);
-
-	const deploymentStats = useMemo(() => {
-		const list = deploymentsList ?? [];
-		const active = list.filter((deployment) => deployment.status === "running");
-		const failed = list.filter((deployment) => deployment.status === "error");
-		const successful = list.filter(
-			(deployment) => deployment.status === "done",
-		);
-		const latest = [...list].sort(
-			(a, b) =>
-				new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-		)[0];
-
-		return {
-			active: active.length,
-			failed: failed.length,
-			successful: successful.length,
-			total: list.length,
-			latest,
-		};
-	}, [deploymentsList]);
-
-	const recentDeploymentStream = useMemo(
-		() =>
-			[...filteredData]
-				.sort(
-					(a, b) =>
-						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-				)
-				.slice(0, 5),
-		[filteredData],
+	const query = api.deployment.allCentralizedPaged.useQuery(
+		{
+			search: search.trim() || undefined,
+			status,
+			type,
+			sortBy,
+			sortDir,
+			limit: pageSize,
+			offset: pageIndex * pageSize,
+		},
+		{
+			// Keep the previous page visible while the next one loads (no flicker).
+			placeholderData: keepPreviousData,
+			// Poll fast while a deployment is active; slow heartbeat when idle.
+			refetchInterval: (q) =>
+				(q.state.data?.counts.active ?? 0) > 0 ? 5000 : 30000,
+		},
 	);
 
+	const counts = query.data?.counts ?? {
+		active: 0,
+		successful: 0,
+		failed: 0,
+		total: 0,
+	};
+	const total = query.data?.total ?? 0;
+	const rows = query.data?.rows ?? [];
+	const latestCreatedAt = query.data?.latestCreatedAt ?? null;
+
+	/** Toggle sort: same field flips direction, new field starts descending. */
+	const toggleSort = (field: DeploymentSortField) => {
+		if (sortBy === field) {
+			setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+		} else {
+			setSortBy(field);
+			setSortDir("desc");
+		}
+	};
+
+	/** Click a stat card to filter by that status; click the active one to clear. */
+	const toggleStatus = (next: DeploymentStatusFilter) => {
+		setStatus((current) => (current === next ? "all" : next));
+	};
+
+	const clearFilters = () => {
+		setSearchInput("");
+		setStatus("all");
+		setType("all");
+	};
+
+	const hasFilters = search.trim() !== "" || status !== "all" || type !== "all";
+	const pageCount = Math.max(1, Math.ceil(total / pageSize));
+	const canPreviousPage = pageIndex > 0;
+	const canNextPage = (pageIndex + 1) * pageSize < total;
+
 	return {
-		// fetched list + load state
-		deploymentsList,
-		isLoading,
-		// visible rows
-		filteredData,
-		recentDeploymentStream,
-		// derived metric aggregates
-		deploymentStats,
-		// filter/sort/pagination state the UI binds to
-		sorting,
-		setSorting,
-		columnFilters,
-		setColumnFilters,
-		globalFilter,
-		setGlobalFilter,
-		statusFilter,
-		setStatusFilter,
-		typeFilter,
-		setTypeFilter,
-		pagination,
-		setPagination,
+		query,
+		rows,
+		total,
+		counts,
+		latestCreatedAt,
+		// filters
+		searchInput,
+		setSearchInput,
+		status,
+		setStatus,
+		toggleStatus,
+		type,
+		setType,
+		hasFilters,
+		clearFilters,
+		// sorting
+		sortBy,
+		sortDir,
+		toggleSort,
+		// pagination
+		pageIndex,
+		setPageIndex,
+		pageSize,
+		setPageSize,
+		pageCount,
+		canPreviousPage,
+		canNextPage,
+		pageSizes: PAGE_SIZES,
 	};
 }
