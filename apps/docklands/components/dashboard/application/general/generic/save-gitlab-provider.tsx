@@ -1,22 +1,19 @@
-import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
 import {
 	Popover,
 	PopoverContent,
 	PopoverTrigger,
 } from "@cloudflare/kumo/components/popover";
-import { Select } from "@cloudflare/kumo/components/select";
-import { Switch } from "@cloudflare/kumo/components/switch";
-import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
-import { CheckIcon, ChevronsUpDown, HelpCircle, Plus, X } from "lucide-react";
+import { CheckIcon, ChevronsUpDown } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
+import { SaveGitProviderForm } from "@/components/dashboard/shared/git-provider/save-git-provider-form";
+import { WatchPathsField } from "@/components/dashboard/shared/git-provider/watch-paths-field";
 import { GitlabIcon } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import {
@@ -27,7 +24,6 @@ import {
 	CommandItem,
 } from "@/components/shared/command";
 import {
-	Form,
 	FormControl,
 	FormField,
 	FormItem,
@@ -173,363 +169,232 @@ export const SaveGitlabProvider = ({ applicationId }: Props) => {
 	};
 
 	return (
-		<div>
-			<Form {...form}>
-				<form
-					onSubmit={form.handleSubmit(onSubmit)}
-					className="grid w-full gap-4 py-3"
-				>
-					{error && <AlertBlock type="error">{error?.message}</AlertBlock>}
-					<div className="grid md:grid-cols-2 gap-4">
-						<FormField
-							control={form.control}
-							name="gitlabId"
-							render={({ field }) => (
-								<FormItem className="md:col-span-2 flex flex-col">
-									<FormLabel>GitLab Account</FormLabel>
-									<Select
-										aria-label="GitLab account"
-										onValueChange={(value) => {
-											if (value === null) return;
-											field.onChange(value);
-											form.setValue("repository", {
-												owner: "",
-												repo: "",
-												id: null,
-												gitlabPathNamespace: "",
-											});
-											form.setValue("branch", "");
-										}}
-										defaultValue={field.value}
-										value={field.value}
+		<SaveGitProviderForm
+			form={form}
+			onSubmit={form.handleSubmit(onSubmit)}
+			alert={error && <AlertBlock type="error">{error?.message}</AlertBlock>}
+			accountLabel="GitLab Account"
+			accountAriaLabel="GitLab account"
+			accountFieldName="gitlabId"
+			accounts={gitlabProviders?.map((gitlabProvider) => ({
+				id: gitlabProvider.gitlabId,
+				name: gitlabProvider.gitProvider.name,
+			}))}
+			onAccountChange={() => {
+				form.setValue("repository", {
+					owner: "",
+					repo: "",
+					id: null,
+					gitlabPathNamespace: "",
+				});
+				form.setValue("branch", "");
+			}}
+			pathLabel="Build Path"
+			pathPlaceholder="/"
+			pathFieldName="buildPath"
+			isSaving={isSavingGitlabProvider}
+			repositorySelector={
+				<FormField
+					control={form.control}
+					name="repository"
+					render={({ field }) => (
+						<FormItem className="md:col-span-2 flex flex-col">
+							<div className="flex items-center justify-between">
+								<FormLabel>Repository</FormLabel>
+								{field.value.gitlabPathNamespace && (
+									<Link
+										href={`${gitlabUrl}/${field.value.gitlabPathNamespace}`}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex items-center gap-1 text-sm text-kumo-subtle hover:text-kumo-brand"
 									>
-										<FormControl>
-											<></>
-										</FormControl>
-										<>
-											{gitlabProviders?.map((gitlabProvider) => (
-												<Select.Option
-													key={gitlabProvider.gitlabId}
-													value={gitlabProvider.gitlabId}
-												>
-													{gitlabProvider.gitProvider.name}
-												</Select.Option>
-											))}
-										</>
-									</Select>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<FormField
-							control={form.control}
-							name="repository"
-							render={({ field }) => (
-								<FormItem className="md:col-span-2 flex flex-col">
-									<div className="flex items-center justify-between">
-										<FormLabel>Repository</FormLabel>
-										{field.value.gitlabPathNamespace && (
-											<Link
-												href={`${gitlabUrl}/${field.value.gitlabPathNamespace}`}
-												target="_blank"
-												rel="noopener noreferrer"
-												className="flex items-center gap-1 text-sm text-kumo-subtle hover:text-kumo-brand"
-											>
-												<GitlabIcon className="h-4 w-4" />
-												<span>View Repository</span>
-											</Link>
-										)}
-									</div>
-									<Popover>
-										<PopoverTrigger asChild>
-											<FormControl>
-												<Button
-													variant="outline"
-													className={cn(
-														"w-full justify-between !bg-input",
-														!field.value && "text-kumo-subtle",
-													)}
-												>
-													{!field.value.owner
-														? "Select repository"
-														: isLoadingRepositories
-															? "Loading...."
-															: (repositories?.find(
-																	(repo) => repo.name === field.value.repo,
-																)?.name ?? "Select repository")}
-
-													<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-												</Button>
-											</FormControl>
-										</PopoverTrigger>
-										<PopoverContent className="p-0" align="start">
-											<Command items={[]}>
-												<CommandInput
-													placeholder="Search repository..."
-													className="h-9"
-												/>
-												{!gitlabId ? (
-													<span className="py-6 text-center text-sm text-kumo-subtle">
-														Select a GitLab account first
-													</span>
-												) : isLoadingRepositories ? (
-													<span className="py-6 text-center text-sm">
-														Loading Repositories....
-													</span>
-												) : null}
-												<CommandEmpty>No repositories found.</CommandEmpty>
-												<ScrollArea className="h-96">
-													<CommandGroup>
-														{repositories && repositories.length === 0 && (
-															<CommandEmpty>
-																No repositories found.
-															</CommandEmpty>
-														)}
-														{repositories?.map((repo) => {
-															return (
-																<CommandItem
-																	value={repo.url}
-																	key={repo.url}
-																	onSelect={() => {
-																		form.setValue("repository", {
-																			owner: repo.owner.username as string,
-																			repo: repo.name,
-																			id: repo.id,
-																			gitlabPathNamespace: repo.url,
-																		});
-																		form.setValue("branch", "");
-																	}}
-																>
-																	<span className="flex items-center gap-2">
-																		<span>{repo.name}</span>
-																		<span className="text-kumo-subtle text-xs">
-																			{repo.owner.username}
-																		</span>
-																	</span>
-																	<CheckIcon
-																		className={cn(
-																			"ml-auto h-4 w-4",
-																			repo.url ===
-																				field.value.gitlabPathNamespace
-																				? "opacity-100"
-																				: "opacity-0",
-																		)}
-																	/>
-																</CommandItem>
-															);
-														})}
-													</CommandGroup>
-												</ScrollArea>
-											</Command>
-										</PopoverContent>
-									</Popover>
-									{form.formState.errors.repository && (
-										<p className={cn("text-sm font-medium text-kumo-danger")}>
-											Repository is required
-										</p>
-									)}
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="branch"
-							render={({ field }) => (
-								<FormItem className="block w-full">
-									<FormLabel>Branch</FormLabel>
-									<Popover>
-										<PopoverTrigger asChild>
-											<FormControl>
-												<Button
-													variant="outline"
-													className={cn(
-														" w-full justify-between !bg-input",
-														!field.value && "text-kumo-subtle",
-													)}
-												>
-													{status === "pending" && fetchStatus === "fetching"
-														? "Loading...."
-														: field.value
-															? branches?.find(
-																	(branch) => branch.name === field.value,
-																)?.name
-															: "Select branch"}
-													<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-												</Button>
-											</FormControl>
-										</PopoverTrigger>
-										<PopoverContent className="p-0" align="start">
-											<Command items={[]}>
-												<CommandInput
-													placeholder="Search branch..."
-													className="h-9"
-												/>
-												{status === "pending" && fetchStatus === "fetching" && (
-													<span className="py-6 text-center text-sm text-kumo-subtle">
-														Loading Branches....
-													</span>
-												)}
-												{!repository?.owner && (
-													<span className="py-6 text-center text-sm text-kumo-subtle">
-														Select a repository
-													</span>
-												)}
-												<ScrollArea className="h-96">
-													<CommandEmpty>No branch found.</CommandEmpty>
-
-													<CommandGroup>
-														{branches?.map((branch) => (
-															<CommandItem
-																value={branch.name}
-																key={branch.commit.id}
-																onSelect={() => {
-																	form.setValue("branch", branch.name);
-																}}
-															>
-																{branch.name}
-																<CheckIcon
-																	className={cn(
-																		"ml-auto h-4 w-4",
-																		branch.name === field.value
-																			? "opacity-100"
-																			: "opacity-0",
-																	)}
-																/>
-															</CommandItem>
-														))}
-													</CommandGroup>
-												</ScrollArea>
-											</Command>
-										</PopoverContent>
-
-										<FormMessage />
-									</Popover>
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="buildPath"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Build Path</FormLabel>
+										<GitlabIcon className="h-4 w-4" />
+										<span>View Repository</span>
+									</Link>
+								)}
+							</div>
+							<Popover>
+								<PopoverTrigger asChild>
 									<FormControl>
-										<Input placeholder="/" {...field} />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="watchPaths"
-							render={({ field }) => (
-								<FormItem className="md:col-span-2">
-									<div className="flex items-center gap-2">
-										<FormLabel>Watch Paths</FormLabel>
-										<TooltipProvider>
-											<Tooltip
-												content={
-													<>
-														<p>
-															Add paths to watch for changes. When files in
-															these paths change, a new build will be triggered.
-														</p>
-													</>
-												}
-												asChild
-											>
-												<HelpCircle className="size-4 text-kumo-subtle hover:text-kumo-default transition-colors cursor-pointer" />
-											</Tooltip>
-										</TooltipProvider>
-									</div>
-									<div className="flex flex-wrap gap-2 mb-2">
-										{field.value?.map((path, index) => (
-											<Badge
-												key={`${path}-${index}`}
-												variant="secondary"
-												className="flex items-center gap-1"
-											>
-												{path}
-												<X
-													className="size-3 cursor-pointer hover:text-kumo-danger"
-													onClick={() => {
-														const newPaths = [...(field.value || [])];
-														newPaths.splice(index, 1);
-														field.onChange(newPaths);
-													}}
-												/>
-											</Badge>
-										))}
-									</div>
-									<div className="flex gap-2">
-										<FormControl>
-											<Input
-												placeholder="Enter a path to watch (e.g., src/**, dist/*.js)"
-												onKeyDown={(e) => {
-													if (e.key === "Enter") {
-														e.preventDefault();
-														const input = e.currentTarget;
-														const path = input.value.trim();
-														if (path) {
-															field.onChange([...(field.value || []), path]);
-															input.value = "";
-														}
-													}
-												}}
-											/>
-										</FormControl>
 										<Button
-											aria-label="Add watch path"
-											type="button"
 											variant="outline"
-											shape="square"
-											onClick={() => {
-												const input = document.querySelector(
-													'input[placeholder*="Enter a path"]',
-												) as HTMLInputElement;
-												const path = input.value.trim();
-												if (path) {
-													field.onChange([...(field.value || []), path]);
-													input.value = "";
-												}
-											}}
+											className={cn(
+												"w-full justify-between !bg-input",
+												!field.value && "text-kumo-subtle",
+											)}
 										>
-											<Plus className="size-4" />
+											{!field.value.owner
+												? "Select repository"
+												: isLoadingRepositories
+													? "Loading...."
+													: (repositories?.find(
+															(repo) => repo.name === field.value.repo,
+														)?.name ?? "Select repository")}
+
+											<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 										</Button>
-									</div>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="enableSubmodules"
-							render={({ field }) => (
-								<FormItem className="flex items-center space-x-2">
-									<FormControl>
-										<Switch
-											checked={field.value}
-											onCheckedChange={field.onChange}
-										/>
 									</FormControl>
-									<FormLabel className="!mt-0">Enable Submodules</FormLabel>
-								</FormItem>
+								</PopoverTrigger>
+								<PopoverContent className="p-0" align="start">
+									<Command items={[]}>
+										<CommandInput
+											placeholder="Search repository..."
+											className="h-9"
+										/>
+										{!gitlabId ? (
+											<span className="py-6 text-center text-sm text-kumo-subtle">
+												Select a GitLab account first
+											</span>
+										) : isLoadingRepositories ? (
+											<span className="py-6 text-center text-sm">
+												Loading Repositories....
+											</span>
+										) : null}
+										<CommandEmpty>No repositories found.</CommandEmpty>
+										<ScrollArea className="h-96">
+											<CommandGroup>
+												{repositories && repositories.length === 0 && (
+													<CommandEmpty>No repositories found.</CommandEmpty>
+												)}
+												{repositories?.map((repo) => {
+													return (
+														<CommandItem
+															value={repo.url}
+															key={repo.url}
+															onSelect={() => {
+																form.setValue("repository", {
+																	owner: repo.owner.username as string,
+																	repo: repo.name,
+																	id: repo.id,
+																	gitlabPathNamespace: repo.url,
+																});
+																form.setValue("branch", "");
+															}}
+														>
+															<span className="flex items-center gap-2">
+																<span>{repo.name}</span>
+																<span className="text-kumo-subtle text-xs">
+																	{repo.owner.username}
+																</span>
+															</span>
+															<CheckIcon
+																className={cn(
+																	"ml-auto h-4 w-4",
+																	repo.url === field.value.gitlabPathNamespace
+																		? "opacity-100"
+																		: "opacity-0",
+																)}
+															/>
+														</CommandItem>
+													);
+												})}
+											</CommandGroup>
+										</ScrollArea>
+									</Command>
+								</PopoverContent>
+							</Popover>
+							{form.formState.errors.repository && (
+								<p className={cn("text-sm font-medium text-kumo-danger")}>
+									Repository is required
+								</p>
 							)}
+						</FormItem>
+					)}
+				/>
+			}
+			branchSelector={
+				<FormField
+					control={form.control}
+					name="branch"
+					render={({ field }) => (
+						<FormItem className="block w-full">
+							<FormLabel>Branch</FormLabel>
+							<Popover>
+								<PopoverTrigger asChild>
+									<FormControl>
+										<Button
+											variant="outline"
+											className={cn(
+												" w-full justify-between !bg-input",
+												!field.value && "text-kumo-subtle",
+											)}
+										>
+											{status === "pending" && fetchStatus === "fetching"
+												? "Loading...."
+												: field.value
+													? branches?.find(
+															(branch) => branch.name === field.value,
+														)?.name
+													: "Select branch"}
+											<ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+										</Button>
+									</FormControl>
+								</PopoverTrigger>
+								<PopoverContent className="p-0" align="start">
+									<Command items={[]}>
+										<CommandInput
+											placeholder="Search branch..."
+											className="h-9"
+										/>
+										{status === "pending" && fetchStatus === "fetching" && (
+											<span className="py-6 text-center text-sm text-kumo-subtle">
+												Loading Branches....
+											</span>
+										)}
+										{!repository?.owner && (
+											<span className="py-6 text-center text-sm text-kumo-subtle">
+												Select a repository
+											</span>
+										)}
+										<ScrollArea className="h-96">
+											<CommandEmpty>No branch found.</CommandEmpty>
+
+											<CommandGroup>
+												{branches?.map((branch) => (
+													<CommandItem
+														value={branch.name}
+														key={branch.commit.id}
+														onSelect={() => {
+															form.setValue("branch", branch.name);
+														}}
+													>
+														{branch.name}
+														<CheckIcon
+															className={cn(
+																"ml-auto h-4 w-4",
+																branch.name === field.value
+																	? "opacity-100"
+																	: "opacity-0",
+															)}
+														/>
+													</CommandItem>
+												))}
+											</CommandGroup>
+										</ScrollArea>
+									</Command>
+								</PopoverContent>
+
+								<FormMessage />
+							</Popover>
+						</FormItem>
+					)}
+				/>
+			}
+			watchPathsField={
+				<FormField
+					control={form.control}
+					name="watchPaths"
+					render={({ field }) => (
+						<WatchPathsField
+							field={field}
+							variant="plus"
+							tooltipIcon="help-circle"
+							tooltipAsChild={true}
+							setWatchPaths={(paths) => field.onChange(paths)}
 						/>
-					</div>
-					<div className="flex w-full justify-end">
-						<Button
-							loading={isSavingGitlabProvider}
-							type="submit"
-							className="w-fit"
-						>
-							Save
-						</Button>
-					</div>
-				</form>
-			</Form>
-		</div>
+					)}
+				/>
+			}
+		/>
 	);
 };
