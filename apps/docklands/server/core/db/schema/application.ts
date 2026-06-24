@@ -157,7 +157,9 @@ export const applications = pgTable(
 		bitbucketBuildPath: text("bitbucketBuildPath").default("/"),
 		// Docker
 		username: text("username"),
-		password: text("password"),
+		// Encrypted at rest like every other credential (registry pull password).
+		// encryptedText maps to the same `text` column, so this needs no migration.
+		password: encryptedText("password"),
 		dockerImage: text("dockerImage"),
 		registryUrl: text("registryUrl"),
 		// Git

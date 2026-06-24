@@ -5,6 +5,7 @@ import type { BackupSchedule } from "@/server/core/services/backup";
 import { findDatabaseById } from "@/server/core/services/database";
 import type { Destination } from "@/server/core/services/destination";
 import { findServiceDatabaseById } from "@/server/core/services/service-database";
+import { redactSecrets } from "../process/redactSecrets";
 import { keepLatestNBackups } from ".";
 import { runComposeBackup } from "./compose";
 import { runDatabaseBackup } from "./database";
@@ -126,7 +127,7 @@ export const getMongoBackupCommand = (
 	databaseUser: string,
 	databasePassword: string,
 ) => {
-	const script = `set -o pipefail; mongodump -d ${quote([database])} -u ${quote([databaseUser])} -p ${quote([databasePassword])} --archive --authenticationDatabase admin --gzip`;
+	const script = `set -o pipefail; mongodump -d ${quote([database])} -u ${quote([databaseUser])} --password ${quote([databasePassword])} --archive --authenticationDatabase admin --gzip`;
 	return `docker exec -i $CONTAINER_ID bash -c ${quote([script])}`;
 };
 
@@ -265,7 +266,7 @@ export const getBackupCommand = (
 	logger.info(
 		{
 			containerSearch,
-			backupCommand,
+			backupCommand: redactSecrets(backupCommand || ""),
 			rcloneCommand: redactRcloneCredentials(rcloneCommand),
 			logPath,
 		},

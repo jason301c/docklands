@@ -23,6 +23,7 @@ import {
 	getUserByToken,
 	removeUserById,
 } from "@/server/core/services/admin";
+import { assertCustomRoleExists } from "@/server/core/services/organization";
 import {
 	findMemberByUserId,
 	hasPermission,
@@ -452,6 +453,25 @@ export const userRouter = createTRPCRouter({
 					code: "FORBIDDEN",
 					message: "Cannot create a user with the owner role",
 				});
+			}
+
+			// Only the organization owner can mint admins — mirrors updateMemberRole,
+			// where admins may manage members but not other admins. Without this, any
+			// holder of the `member:create` capability could create an admin account.
+			if (input.role === "admin" && ctx.user.role !== "owner") {
+				throw new TRPCError({
+					code: "FORBIDDEN",
+					message: "Only the organization owner can create admin users",
+				});
+			}
+
+			// A non-static role must be a custom role that actually exists in this org.
+			if (input.role !== "admin" && input.role !== "member") {
+				await assertCustomRoleExists(
+					ctx.session.activeOrganizationId,
+					input.role,
+					`Role "${input.role}" not found`,
+				);
 			}
 
 			return await createOrganizationUserWithCredentials({

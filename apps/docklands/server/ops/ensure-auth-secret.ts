@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import {
 	appendFileSync,
+	chmodSync,
 	existsSync,
 	readFileSync,
 	writeFileSync,
@@ -32,7 +33,10 @@ const entry = `${prefix}BETTER_AUTH_SECRET="${secret}"\n`;
 if (existsSync(envPath)) {
 	appendFileSync(envPath, entry);
 } else {
-	writeFileSync(envPath, entry);
+	writeFileSync(envPath, entry, { mode: 0o600 });
 }
+
+// The auth secret signs sessions; keep the .env that holds it non-world-readable.
+chmodSync(envPath, 0o600);
 
 logger.info("Generated BETTER_AUTH_SECRET in .env");

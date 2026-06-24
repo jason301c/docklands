@@ -39,6 +39,33 @@ describe("redactSecrets", () => {
 		expect(redactSecrets(command)).toBe(command);
 	});
 
+	it("redacts a token embedded in a clone URL's userinfo", () => {
+		const token = "ghp_synthetic_token_value_1234567890";
+		const command = `git clone https://oauth2:${token}@github.com/org/repo.git /code`;
+
+		const redacted = redactSecrets(command);
+
+		expect(redacted).not.toContain(token);
+		expect(redacted).toContain("https://[REDACTED]@github.com/org/repo.git");
+	});
+
+	it("redacts database password flags (long and adjacent short form)", () => {
+		expect(redactSecrets("mysqldump --password=s3cr3t db")).not.toContain(
+			"s3cr3t",
+		);
+		expect(redactSecrets("mongodump --password s3cr3t --gzip")).not.toContain(
+			"s3cr3t",
+		);
+		expect(redactSecrets("mariadb -u root -ps3cr3t db")).not.toContain(
+			"s3cr3t",
+		);
+	});
+
+	it("does not mangle non-secret -p flags (mkdir/docker port)", () => {
+		const command = "mkdir -p /backup && docker run -p 8080:80 img";
+		expect(redactSecrets(command)).toBe(command);
+	});
+
 	it("redacts secrets from original exec error output properties", () => {
 		const secret = "c3ludGhldGljLXRlc3Qtbm90LWEtcmVhbC1vdXRwdXQta2V5";
 		const command = `echo "${secret}" | base64 -d > "/etc/docklands/cert.key";`;

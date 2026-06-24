@@ -1,6 +1,7 @@
 import { randomBytes } from "node:crypto";
 import {
 	appendFileSync,
+	chmodSync,
 	existsSync,
 	readFileSync,
 	writeFileSync,
@@ -37,7 +38,12 @@ const entry = `${prefix}DOCKLANDS_ENCRYPTION_KEY="${key}"\n`;
 if (existsSync(envPath)) {
 	appendFileSync(envPath, entry);
 } else {
-	writeFileSync(envPath, entry);
+	writeFileSync(envPath, entry, { mode: 0o600 });
 }
+
+// The encryption key protects every secret stored at rest, so the .env that
+// holds it must not be world-readable. Tighten perms whether we created or
+// appended to it.
+chmodSync(envPath, 0o600);
 
 logger.info("Generated DOCKLANDS_ENCRYPTION_KEY in .env");
