@@ -5,6 +5,7 @@ import { createLogger } from "@/server/core/lib/logger";
 import { shouldDeploy } from "@/server/core/utils/watch-paths/should-deploy";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
+import { checkRateLimit, clientIpFromHeaders } from "@/server/web/rate-limit";
 import {
 	jsonResponse,
 	parseRequestBody,
@@ -26,6 +27,17 @@ export async function handleComposeDeployWebhook(
 	request: Request,
 	refreshToken: string,
 ) {
+	// Unauthenticated webhook — throttle by client IP (see application-webhook).
+	if (
+		!checkRateLimit(
+			`deploy:${clientIpFromHeaders(request.headers)}`,
+			30,
+			60_000,
+		)
+	) {
+		return jsonResponse({ error: "Too many requests" }, 429);
+	}
+
 	const headers = requestHeadersToObject(request.headers);
 	const body = validateDeployWebhookBody(await parseRequestBody(request));
 

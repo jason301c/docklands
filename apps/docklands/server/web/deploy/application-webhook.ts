@@ -7,6 +7,7 @@ import { getBitbucketHeaders } from "@/server/core/utils/providers/bitbucket";
 import { shouldDeploy } from "@/server/core/utils/watch-paths/should-deploy";
 import type { DeploymentJob } from "@/server/queues/queue-types";
 import { myQueue } from "@/server/queues/queueSetup";
+import { checkRateLimit, clientIpFromHeaders } from "@/server/web/rate-limit";
 import {
 	jsonResponse,
 	parseRequestBody,
@@ -59,6 +60,18 @@ export async function handleApplicationDeployWebhook(
 	request: Request,
 	refreshToken: string,
 ) {
+	// The deploy webhook is unauthenticated (auth is the refresh token in the
+	// path), so throttle by client IP to blunt token-guessing / deploy spam.
+	if (
+		!checkRateLimit(
+			`deploy:${clientIpFromHeaders(request.headers)}`,
+			30,
+			60_000,
+		)
+	) {
+		return jsonResponse({ error: "Too many requests" }, 429);
+	}
+
 	const headers = requestHeadersToObject(request.headers);
 	const body = validateDeployWebhookBody(await parseRequestBody(request));
 

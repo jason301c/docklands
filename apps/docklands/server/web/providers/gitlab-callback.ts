@@ -5,6 +5,7 @@ import {
 	jsonResponse,
 	redirectResponse,
 } from "@/server/web/request";
+import { verifyOAuthState } from "./oauth-state";
 
 const logger = createLogger("gitlab-callback");
 
@@ -12,6 +13,7 @@ export async function handleGitlabCallback(request: Request) {
 	const urlParams = new URL(request.url);
 	const code = getQueryParam(urlParams, "code");
 	const gitlabId = getQueryParam(urlParams, "gitlabId");
+	const state = getQueryParam(urlParams, "state");
 
 	if (!code || !gitlabId) {
 		logger.warn(
@@ -19,6 +21,17 @@ export async function handleGitlabCallback(request: Request) {
 			"OAuth callback missing code or gitlabId",
 		);
 		return jsonResponse({ error: "Missing or invalid code" }, 400);
+	}
+
+	// CSRF: the `state` nonce must match the cookie set at authorize time and
+	// encode this same provider id. Rejects login-CSRF / account-stitching.
+	const verifiedId = verifyOAuthState(request, "gitlab", state);
+	if (!verifiedId || verifiedId !== gitlabId) {
+		logger.warn(
+			{ provider: "gitlab", gitlabId },
+			"GitLab OAuth callback failed state verification",
+		);
+		return jsonResponse({ error: "Invalid or expired OAuth state" }, 400);
 	}
 
 	const gitlab = await findGitlabById(gitlabId);

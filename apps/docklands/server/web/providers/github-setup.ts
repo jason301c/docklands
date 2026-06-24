@@ -2,7 +2,8 @@ import { eq } from "drizzle-orm";
 import { Octokit } from "octokit";
 import { db } from "@/server/core/db";
 import { github } from "@/server/core/db/schema";
-import { createGithub } from "@/server/core/services/github";
+import { validateRequestHeaders } from "@/server/core/lib/auth";
+import { createGithub, findGithubById } from "@/server/core/services/github";
 import {
 	getQueryParam,
 	jsonResponse,
@@ -29,18 +30,20 @@ export async function handleGithubProviderSetup(request: Request) {
 	if (!code) {
 		return jsonResponse({ error: "Missing code parameter" }, 400);
 	}
+
+	// This callback creates/binds a Git provider (which holds app credentials), so
+	// it must be authenticated and scoped to the caller's own org — never trust the
+	// organization/user ids carried in `state`. GitHub redirects the user's browser
+	// here, so the session cookie is present.
+	const { user, session } = await validateRequestHeaders(request.headers);
+	if (!user || !session?.activeOrganizationId) {
+		return jsonResponse({ error: "Authentication required" }, 401);
+	}
+
 	const [action, ...rest] = state?.split(":");
-	// For gh_init: rest[0] = organizationId, rest[1] = userId
-	// For gh_setup: rest[0] = githubProviderId
+	// gh_init creates a new provider; gh_setup binds an installation to rest[0].
 
 	if (action === "gh_init") {
-		const organizationId = rest[0];
-		const userId = rest[1] || getQueryParam(url, "userId");
-
-		if (!userId) {
-			return jsonResponse({ error: "Missing userId parameter" }, 400);
-		}
-
 		const octokit = new Octokit({});
 		const { data } = await octokit.request(
 			"POST /app-manifests/{code}/conversions",
@@ -59,16 +62,26 @@ export async function handleGithubProviderSetup(request: Request) {
 				githubWebhookSecret: data.webhook_secret,
 				githubPrivateKey: data.pem,
 			},
-			organizationId as string,
-			userId,
+			// Derived from the authenticated session, not from `state`.
+			session.activeOrganizationId,
+			user.id,
 		);
 	} else if (action === "gh_setup") {
+		const githubId = rest[0];
+		if (!githubId) {
+			return jsonResponse({ error: "Missing provider id" }, 400);
+		}
+		// Only let the caller bind an installation to a provider in their own org.
+		const provider = await findGithubById(githubId);
+		if (provider.gitProvider.organizationId !== session.activeOrganizationId) {
+			return jsonResponse({ error: "Forbidden" }, 403);
+		}
 		await db
 			.update(github)
 			.set({
 				githubInstallationId: installation_id,
 			})
-			.where(eq(github.githubId, rest[0] as string))
+			.where(eq(github.githubId, githubId))
 			.returning();
 	}
 

@@ -49,15 +49,11 @@ export const ShowGitProviders = () => {
 	const { permissions } = usePermissions();
 	const url = useUrl();
 
-	const getGitlabUrl = (
-		clientId: string,
-		gitlabId: string,
-		gitlabUrl: string,
-	) => {
-		const redirectUri = `${url}/api/providers/gitlab/callback?gitlabId=${gitlabId}`;
-		const scope = "api read_user read_repository";
-		const authUrl = `${gitlabUrl}/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scopes=${encodeURIComponent(scope)}`;
-		return authUrl;
+	const getGitlabUrl = (gitlabId: string) => {
+		// Route through the server authorize endpoint so it attaches a CSRF state
+		// nonce + httpOnly cookie that the callback verifies (the URL to GitLab is
+		// built server-side in gitlab-authorize.ts).
+		return `${url}/api/providers/gitlab/authorize?gitlabId=${gitlabId}`;
 	};
 
 	return (
@@ -228,9 +224,7 @@ export const ShowGitProviders = () => {
 															</Badge>
 															<Link
 																href={getGitlabUrl(
-																	gitProvider.gitlab?.applicationId || "",
 																	gitProvider.gitlab?.gitlabId || "",
-																	gitProvider.gitlab?.gitlabUrl || "",
 																)}
 																target="_blank"
 																className={buttonVariants({

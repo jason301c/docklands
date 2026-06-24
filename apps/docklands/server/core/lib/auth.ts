@@ -59,6 +59,14 @@ const { handler, api } = betterAuth({
 		"/verify-email",
 	],
 	secret: betterAuthSecret,
+	// Throttle the auth endpoints (login, password reset, etc.) to blunt online
+	// credential guessing. Better Auth's limiter only covers /api/auth/*; the
+	// in-memory limiter in server/web/rate-limit.ts guards the deploy webhooks.
+	rateLimit: {
+		enabled: true,
+		window: 60,
+		max: 60,
+	},
 	// Self-hosted installs are commonly reached over plain HTTP on a LAN/IP, so
 	// cookies are not forced to Secure. Tightening this for HTTPS-behind-a-domain
 	// is a separate decision.

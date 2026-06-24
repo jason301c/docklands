@@ -2,19 +2,9 @@ import { createLogger } from "@/server/core/lib/logger";
 import { updateGitea } from "@/server/core/services/gitea";
 import { getQueryParam, redirectResponse } from "@/server/web/request";
 import { findGitea, type Gitea, redirectWithError } from "./gitea-helper";
+import { verifyOAuthState } from "./oauth-state";
 
 const logger = createLogger("gitea-callback");
-
-// Helper to parse the state parameter
-const parseState = (state: string): string | null => {
-	try {
-		const stateObj =
-			state.startsWith("{") && state.endsWith("}") ? JSON.parse(state) : {};
-		return stateObj.giteaId || state || null;
-	} catch {
-		return null;
-	}
-};
 
 // Helper to fetch access token from Gitea
 const fetchAccessToken = async (gitea: Gitea, code: string) => {
@@ -53,8 +43,12 @@ export async function handleGiteaCallback(request: Request) {
 		);
 	}
 
-	const giteaId = parseState(state);
-	if (!giteaId) return redirectWithError(request, "Invalid state format");
+	// Verify the CSRF nonce embedded in `state` against the cookie set at
+	// authorize time; this returns the giteaId only for a flow this browser began.
+	const giteaId = verifyOAuthState(request, "gitea", state);
+	if (!giteaId) {
+		return redirectWithError(request, "Invalid or expired OAuth state");
+	}
 
 	const gitea = await findGitea(giteaId);
 	if (!gitea) {
