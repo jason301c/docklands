@@ -8,6 +8,13 @@
       "when": 1782275498688,
       "tag": "0000_stale_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782295189759,
+      "tag": "0001_curly_secret_warriors",
+      "breakpoints": true
     }
   ]
 }

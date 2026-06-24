@@ -71,7 +71,7 @@ export const DASHBOARD_MENU: Menu = {
 	home: [
 		{
 			isSingle: true,
-			title: "Canvas",
+			title: "Workspaces",
 			url: "/dashboard/workspace",
 			icon: House,
 		},

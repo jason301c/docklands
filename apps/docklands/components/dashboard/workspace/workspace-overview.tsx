@@ -1,142 +1,399 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { formatDistanceToNow } from "date-fns";
 import {
-	AlertTriangle,
-	ArrowRight,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from "@cloudflare/kumo/components/popover";
+import {
+	Ban,
 	BookIcon,
+	ChevronDown,
+	CircuitBoard,
+	Database,
 	FolderInput,
-	MoreHorizontalIcon,
+	GlobeIcon,
+	LayoutGrid,
+	List,
+	Pencil,
 	Rocket,
-	TrashIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { usePermissions } from "@/client/hooks/use-permissions";
-import { createClientLogger } from "@/client/lib/logger";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { HandleWorkspace } from "@/components/dashboard/workspace/manage/handle-workspace";
-import { Dialog } from "@/components/shared/dialog";
-import { DropdownMenu } from "@/components/shared/dropdown";
-import { toast } from "@/components/shared/toast";
 import {
-	workspaceEnvironmentPath,
-	workspaceServicePath,
-} from "@/shared/routes";
+	LibsqlIcon,
+	MariadbIcon,
+	MongodbIcon,
+	MysqlIcon,
+	PostgresqlIcon,
+	RedisIcon,
+} from "@/components/icons/data-tools-icons";
+import { DropdownMenu } from "@/components/shared/dropdown";
+import { SectionCard } from "@/components/shared/section-card";
+import { workspaceEnvironmentPath } from "@/shared/routes";
+import { cn } from "@/shared/utils";
 
-const logger = createClientLogger("workspace");
+type ServiceStatus = "idle" | "running" | "done" | "error";
 
-type DeploymentStatus = "idle" | "running" | "done" | "error";
+type Workspace = RouterOutputs["workspaces"]["all"][number];
+type WorkspaceEnvironment = Workspace["environments"][number];
 
-// The six managed-database engines now share one `database` collection.
-const serviceCollections = ["applications", "compose", "database"] as const;
-
-type EnvironmentWithServices = Record<
-	(typeof serviceCollections)[number],
-	unknown[]
->;
-
-const countEnvironmentServices = (environment: EnvironmentWithServices) =>
-	serviceCollections.reduce(
-		(total, collection) => total + environment[collection].length,
-		0,
-	);
-
-const countProjectServices = (workspace: {
-	environments: EnvironmentWithServices[];
-}) =>
-	workspace.environments.reduce(
-		(total, environment) => total + countEnvironmentServices(environment),
-		0,
-	);
-
-const statusDotClass: Record<string, string> = {
-	done: "bg-kumo-success",
-	running: "bg-kumo-warning",
-	error: "bg-kumo-danger",
-	idle: "bg-kumo-subtle/40",
+type CardService = {
+	id: string;
+	kind: "application" | "compose" | "database";
+	engine?: string;
+	status: ServiceStatus;
 };
 
-type CentralizedDeployment =
-	RouterOutputs["deployment"]["allCentralized"][number];
-
-function getServiceInfo(d: CentralizedDeployment) {
-	const app = d.application;
-	const comp = d.compose;
-	if (app?.environment?.workspace && app.environment) {
-		return {
-			name: app.name as string,
-			environment: app.environment.name as string,
-			projectName: app.environment.workspace.name as string,
-			href: workspaceServicePath({
-				workspaceId: app.environment.workspace.workspaceId,
-				environmentId: app.environment.environmentId,
-				serviceType: "application",
-				serviceId: app.applicationId,
-			}),
-		};
+// Flatten every service across a workspace's environments into one icon-ready
+// list, so a workspace card can preview its services the way the canvas does.
+function collectServices(workspace: Workspace): CardService[] {
+	const services: CardService[] = [];
+	for (const environment of workspace.environments) {
+		for (const app of environment.applications) {
+			services.push({
+				id: `app-${app.applicationId}`,
+				kind: "application",
+				status: (app.applicationStatus ?? "idle") as ServiceStatus,
+			});
+		}
+		for (const comp of environment.compose) {
+			services.push({
+				id: `compose-${comp.composeId}`,
+				kind: "compose",
+				status: (comp.composeStatus ?? "idle") as ServiceStatus,
+			});
+		}
+		for (const db of environment.database) {
+			services.push({
+				id: `db-${db.databaseId}`,
+				kind: "database",
+				engine: db.engine,
+				status: (db.applicationStatus ?? "idle") as ServiceStatus,
+			});
+		}
 	}
-	if (comp?.environment?.workspace && comp.environment) {
-		return {
-			name: comp.name as string,
-			environment: comp.environment.name as string,
-			projectName: comp.environment.workspace.name as string,
-			href: workspaceServicePath({
-				workspaceId: comp.environment.workspace.workspaceId,
-				environmentId: comp.environment.environmentId,
-				serviceType: "compose",
-				serviceId: comp.composeId,
-			}),
-		};
-	}
-	return null;
+	return services;
 }
 
-function StatCard({
-	label,
-	value,
-	delta,
-}: {
-	label: string;
-	value: string;
-	delta?: string;
-}) {
+function pickEnvironment(
+	workspace: Workspace,
+): WorkspaceEnvironment | undefined {
 	return (
-		<div className="flex min-h-[140px] flex-col justify-between rounded-lg border bg-kumo-canvas p-5">
-			<span className="text-xs uppercase tracking-wider text-kumo-subtle">
-				{label}
-			</span>
-			<div className="flex flex-col gap-1">
-				<span className="text-3xl font-semibold tracking-tight">{value}</span>
-				{delta && <span className="text-xs text-kumo-subtle">{delta}</span>}
-			</div>
+		workspace.environments.find((environment) => environment.isDefault) ||
+		workspace.environments[0]
+	);
+}
+
+const serviceIconClass = "size-5 text-kumo-subtle";
+
+function ServiceTileIcon({ service }: { service: CardService }) {
+	if (service.kind === "compose")
+		return <CircuitBoard className={serviceIconClass} />;
+	if (service.kind === "application")
+		return <GlobeIcon className={serviceIconClass} />;
+
+	switch (service.engine) {
+		case "postgres":
+			return <PostgresqlIcon className={serviceIconClass} />;
+		case "mysql":
+			return <MysqlIcon className={serviceIconClass} />;
+		case "mariadb":
+			return <MariadbIcon className={serviceIconClass} />;
+		case "mongo":
+			return <MongodbIcon className={serviceIconClass} />;
+		case "redis":
+			return <RedisIcon className={serviceIconClass} />;
+		case "libsql":
+			return <LibsqlIcon className={serviceIconClass} />;
+		default:
+			return <Database className={serviceIconClass} />;
+	}
+}
+
+const MAX_PREVIEW_ICONS = 7;
+
+// The dotted canvas backdrop, matching the project-canvas grid texture.
+const dottedBackground = {
+	backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)",
+	backgroundSize: "16px 16px",
+} as const;
+
+function ServicePreview({ services }: { services: CardService[] }) {
+	const shown = services.slice(0, MAX_PREVIEW_ICONS);
+	const overflow = services.length - shown.length;
+
+	return (
+		<div
+			className="relative flex min-h-[176px] flex-1 items-center justify-center overflow-hidden rounded-lg border bg-kumo-fill/10 px-4 py-6 text-kumo-line/50"
+			style={dottedBackground}
+		>
+			{services.length === 0 ? (
+				<div className="flex flex-col items-center gap-2 text-kumo-subtle">
+					<BookIcon className="size-6 opacity-50" />
+					<span className="text-xs">No services yet</span>
+				</div>
+			) : (
+				<div className="flex max-w-[14rem] flex-wrap items-center justify-center gap-2.5">
+					{shown.map((service) => (
+						<span
+							key={service.id}
+							className="flex size-11 items-center justify-center rounded-lg border bg-kumo-canvas"
+						>
+							<ServiceTileIcon service={service} />
+						</span>
+					))}
+					{overflow > 0 && (
+						<span className="flex size-11 items-center justify-center rounded-lg border bg-kumo-canvas text-xs font-medium text-kumo-subtle">
+							+{overflow}
+						</span>
+					)}
+				</div>
+			)}
 		</div>
 	);
 }
 
-function StatusListCard({
-	label,
-	items,
+function servicesLabel(online: number, total: number) {
+	if (total === 0) return "No services";
+	return `${online}/${total} ${total === 1 ? "service" : "services"} online`;
+}
+
+// Preset accent colors a user can apply to a workspace card.
+const WORKSPACE_COLORS = [
+	{ name: "Red", value: "#ef4444" },
+	{ name: "Orange", value: "#f97316" },
+	{ name: "Amber", value: "#f59e0b" },
+	{ name: "Lime", value: "#84cc16" },
+	{ name: "Green", value: "#22c55e" },
+	{ name: "Teal", value: "#14b8a6" },
+	{ name: "Sky", value: "#0ea5e9" },
+	{ name: "Blue", value: "#3b82f6" },
+	{ name: "Violet", value: "#8b5cf6" },
+	{ name: "Pink", value: "#ec4899" },
+] as const;
+
+// A workspace's accent color shows as a crisp stripe down the card/row's left
+// edge — a clean color cue that keeps the card content fully neutral.
+function AccentStripe({ color }: { color: string | null | undefined }) {
+	if (!color) return null;
+	return (
+		<span
+			aria-hidden
+			className="absolute inset-y-0 left-0 w-1"
+			style={{ backgroundColor: color }}
+		/>
+	);
+}
+
+// Inline workspace rename state, shared by the grid card and the list row so the
+// title field (left) and the rename pencil (right) stay in sync.
+function useWorkspaceRename(workspace: Workspace) {
+	const utils = api.useUtils();
+	const [editing, setEditing] = useState(false);
+	const [value, setValue] = useState(workspace.name);
+
+	const mutation = api.workspaces.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Workspace renamed",
+			errorMessage: "Failed to rename workspace",
+			loggerScope: "workspace",
+			invalidate: () => utils.workspaces.all.invalidate(),
+			onSuccess: () => setEditing(false),
+		}),
+	);
+
+	const start = () => {
+		setValue(workspace.name);
+		setEditing(true);
+	};
+	const cancel = () => {
+		setEditing(false);
+		setValue(workspace.name);
+	};
+	const submit = () => {
+		const name = value.trim();
+		if (!name || name === workspace.name) {
+			cancel();
+			return;
+		}
+		mutation.mutate({ workspaceId: workspace.workspaceId, name });
+	};
+
+	return {
+		editing,
+		value,
+		setValue,
+		start,
+		cancel,
+		submit,
+		isPending: mutation.isPending,
+	};
+}
+
+type WorkspaceRename = ReturnType<typeof useWorkspaceRename>;
+
+// The workspace title: an inline input while renaming, otherwise a link.
+function WorkspaceTitleField({
+	workspace,
+	href,
+	rename,
 }: {
-	label: string;
-	items: { dotClass: string; label: string; count: number }[];
+	workspace: Workspace;
+	href: string | null;
+	rename: WorkspaceRename;
+}) {
+	if (rename.editing) {
+		return (
+			<input
+				// biome-ignore lint/a11y/noAutofocus: inline rename should focus immediately
+				autoFocus
+				aria-label="Workspace name"
+				value={rename.value}
+				disabled={rename.isPending}
+				onChange={(event) => rename.setValue(event.target.value)}
+				onBlur={rename.submit}
+				onKeyDown={(event) => {
+					if (event.key === "Enter") {
+						event.preventDefault();
+						rename.submit();
+					} else if (event.key === "Escape") {
+						event.preventDefault();
+						rename.cancel();
+					}
+				}}
+				className="min-w-0 flex-1 rounded-md border border-kumo-line bg-kumo-base px-2 py-1 text-sm font-semibold outline-none focus:border-kumo-focus"
+			/>
+		);
+	}
+
+	if (href) {
+		return (
+			<Link
+				href={href}
+				className="truncate text-sm font-semibold hover:underline"
+			>
+				{workspace.name}
+			</Link>
+		);
+	}
+	return (
+		<span className="truncate text-sm font-semibold">{workspace.name}</span>
+	);
+}
+
+function RenameButton({ rename }: { rename: WorkspaceRename }) {
+	return (
+		<button
+			type="button"
+			aria-label="Rename workspace"
+			onClick={rename.start}
+			className="flex size-6 shrink-0 items-center justify-center rounded-md text-kumo-subtle transition-colors hover:bg-kumo-fill hover:text-kumo-default"
+		>
+			<Pencil className="size-3.5" />
+		</button>
+	);
+}
+
+// Per-workspace accent color picker: a swatch trigger opening a preset palette.
+function WorkspaceColorPicker({ workspace }: { workspace: Workspace }) {
+	const utils = api.useUtils();
+	const [open, setOpen] = useState(false);
+	const current = workspace.color ?? null;
+
+	const update = api.workspaces.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Workspace color updated",
+			errorMessage: "Failed to update workspace color",
+			loggerScope: "workspace",
+			invalidate: () => utils.workspaces.all.invalidate(),
+		}),
+	);
+
+	const choose = (color: string | null) => {
+		setOpen(false);
+		if (color === current) return;
+		update.mutate({ workspaceId: workspace.workspaceId, color });
+	};
+
+	return (
+		<Popover open={open} onOpenChange={setOpen}>
+			<PopoverTrigger
+				render={
+					<button
+						type="button"
+						aria-label="Workspace color"
+						className="flex size-6 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-kumo-fill"
+					>
+						<span
+							className={cn(
+								"size-4 rounded-full border border-black/10",
+								!current && "bg-kumo-fill",
+							)}
+							style={current ? { backgroundColor: current } : undefined}
+						/>
+					</button>
+				}
+			/>
+			<PopoverContent className="w-auto p-2" align="end">
+				<div className="grid grid-cols-5 gap-1.5">
+					<button
+						type="button"
+						aria-label="Default color"
+						title="Default"
+						onClick={() => choose(null)}
+						className={cn(
+							"flex size-7 items-center justify-center rounded-full border border-kumo-line text-kumo-subtle hover:bg-kumo-fill",
+							current === null && "ring-2 ring-kumo-focus ring-offset-1",
+						)}
+					>
+						<Ban className="size-3.5" />
+					</button>
+					{WORKSPACE_COLORS.map((color) => (
+						<button
+							key={color.value}
+							type="button"
+							aria-label={color.name}
+							title={color.name}
+							onClick={() => choose(color.value)}
+							className={cn(
+								"size-7 rounded-full border border-black/10",
+								current === color.value &&
+									"ring-2 ring-kumo-focus ring-offset-1",
+							)}
+							style={{ backgroundColor: color.value }}
+						/>
+					))}
+				</div>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
+function ProjectFooter({
+	environmentCount,
+	online,
+	total,
+	hasError,
+}: {
+	environmentCount: number;
+	online: number;
+	total: number;
+	hasError: boolean;
 }) {
 	return (
-		<div className="flex min-h-[140px] flex-col gap-3 rounded-lg border bg-kumo-canvas p-5">
-			<span className="text-xs uppercase tracking-wider text-kumo-subtle">
-				{label}
+		<div className="flex items-center gap-1.5 text-xs text-kumo-subtle">
+			<span className="whitespace-nowrap">
+				{environmentCount}{" "}
+				{environmentCount === 1 ? "environment" : "environments"}
 			</span>
-			<ul className="flex flex-col gap-1.5">
-				{items.map((item) => (
-					<li key={item.label} className="flex items-center gap-2.5 text-sm">
-						<span
-							className={`size-2 rounded-full shrink-0 ${item.dotClass}`}
-							aria-hidden
-						/>
-						<span className="font-semibold tabular-nums w-8">{item.count}</span>
-						<span className="text-kumo-subtle">{item.label}</span>
-					</li>
-				))}
-			</ul>
+			<span aria-hidden>·</span>
+			<span className={cn("whitespace-nowrap", hasError && "text-kumo-danger")}>
+				{servicesLabel(online, total)}
+			</span>
 		</div>
 	);
 }
@@ -147,7 +404,7 @@ function FirstRunWorkspacePanel({
 	canCreateWorkspaces: boolean;
 }) {
 	return (
-		<div className="flex min-h-[560px] items-center justify-center rounded-lg border bg-kumo-canvas px-6 py-12">
+		<div className="flex min-h-[480px] items-center justify-center px-6 py-12">
 			<div className="flex w-full max-w-3xl flex-col items-center text-center">
 				<span className="flex size-12 items-center justify-center rounded-lg border bg-kumo-fill/30">
 					<FolderInput className="size-5 text-kumo-subtle" />
@@ -199,417 +456,293 @@ function FirstRunWorkspacePanel({
 	);
 }
 
-// Per-workspace management (rename/tags/delete). This used to live on the
-// separate `?view=workspaces` list; it now hangs off each row in the overview's
-// Workspaces panel so the overview is the single workspace surface.
-function WorkspaceRowActions({
-	workspaceId,
-	serviceCount,
+type SortKey = "recent" | "name";
+type ViewMode = "grid" | "list";
+
+const sortOptions: { value: SortKey; label: string }[] = [
+	{ value: "recent", label: "Recent Activity" },
+	{ value: "name", label: "Name" },
+];
+
+type ProjectEntry = {
+	workspace: Workspace;
+	environment: WorkspaceEnvironment | undefined;
+	environmentCount: number;
+	services: CardService[];
+	online: number;
+	total: number;
+	hasError: boolean;
+};
+
+function ProjectCard({
+	entry,
+	canManage,
 }: {
-	workspaceId: string;
-	serviceCount: number;
+	entry: ProjectEntry;
+	canManage: boolean;
 }) {
-	const utils = api.useUtils();
-	const { permissions } = usePermissions();
-	const { mutateAsync } = api.workspaces.remove.useMutation();
-	const emptyServices = serviceCount === 0;
+	const {
+		workspace,
+		environment,
+		environmentCount,
+		services,
+		online,
+		total,
+		hasError,
+	} = entry;
+	const href = environment
+		? workspaceEnvironmentPath({
+				workspaceId: workspace.workspaceId,
+				environmentId: environment.environmentId,
+			})
+		: null;
+
+	const rename = useWorkspaceRename(workspace);
+
+	const navBody = (
+		<>
+			<ServicePreview services={services} />
+			<ProjectFooter
+				environmentCount={environmentCount}
+				online={online}
+				total={total}
+				hasError={hasError}
+			/>
+		</>
+	);
+	const navClassName = "flex flex-1 flex-col gap-4";
 
 	return (
-		<DropdownMenu>
-			<DropdownMenu.Trigger
-				render={
-					(
-						<Button
-							aria-label="Workspace actions"
-							variant="ghost"
-							shape="square"
-						>
-							<MoreHorizontalIcon className="size-5" />
-						</Button>
-					) as never
-				}
-			/>
-			<DropdownMenu.Content
-				className="w-[200px] space-y-2 overflow-y-auto max-h-[280px]"
-				onClick={(e) => e.stopPropagation()}
-			>
-				<DropdownMenu.Group>
-					<DropdownMenu.Label className="font-normal">
-						Actions
-					</DropdownMenu.Label>
-				</DropdownMenu.Group>
-				<div onClick={(e) => e.stopPropagation()}>
-					<HandleWorkspace workspaceId={workspaceId} />
+		<div className="group relative flex flex-col gap-4 overflow-hidden rounded-xl border bg-kumo-canvas p-5 transition-colors hover:border-kumo-line">
+			<AccentStripe color={workspace.color} />
+			<div className="flex items-center gap-2">
+				<div className="flex min-w-0 flex-1">
+					<WorkspaceTitleField
+						workspace={workspace}
+						href={href}
+						rename={rename}
+					/>
 				</div>
-				{permissions?.workspace.delete && (
-					<div onClick={(e) => e.stopPropagation()}>
-						<Dialog.Root role="alertdialog">
-							<Dialog.Trigger className="w-full">
-								<DropdownMenu.Item
-									className="w-full cursor-pointer space-x-3"
-									onSelect={(e) => e.preventDefault()}
-								>
-									<TrashIcon className="size-4" />
-									<span>Delete</span>
-								</DropdownMenu.Item>
-							</Dialog.Trigger>
-							<Dialog>
-								<Dialog.Header>
-									<Dialog.Title>Delete workspace?</Dialog.Title>
-									{!emptyServices ? (
-										<div className="flex flex-row gap-4 rounded-lg bg-kumo-warning-tint p-2">
-											<AlertTriangle className="text-kumo-warning" />
-											<span className="text-sm text-kumo-warning">
-												Delete services first.
-											</span>
-										</div>
-									) : (
-										<Dialog.Description>
-											This action cannot be undone
-										</Dialog.Description>
-									)}
-								</Dialog.Header>
-								<Dialog.Footer>
-									<Dialog.Close>Cancel</Dialog.Close>
-									<Dialog.Close
-										disabled={!emptyServices}
-										onClick={async () => {
-											try {
-												await mutateAsync({ workspaceId });
-												toast.success("Workspace deleted");
-											} catch (err) {
-												logger.error("Error deleting workspace", err);
-												toast.error("Error deleting this workspace");
-											} finally {
-												await utils.workspaces.all.invalidate();
-											}
-										}}
-									>
-										Delete
-									</Dialog.Close>
-								</Dialog.Footer>
-							</Dialog>
-						</Dialog.Root>
+				{canManage && (
+					<div className="flex shrink-0 items-center gap-0.5">
+						<RenameButton rename={rename} />
+						<WorkspaceColorPicker workspace={workspace} />
 					</div>
 				)}
-			</DropdownMenu.Content>
-		</DropdownMenu>
+			</div>
+			{href ? (
+				<Link href={href} className={navClassName}>
+					{navBody}
+				</Link>
+			) : (
+				<div className={navClassName}>{navBody}</div>
+			)}
+		</div>
+	);
+}
+
+function ProjectRow({
+	entry,
+	canManage,
+}: {
+	entry: ProjectEntry;
+	canManage: boolean;
+}) {
+	const { workspace, environment, environmentCount, online, total, hasError } =
+		entry;
+	const href = environment
+		? workspaceEnvironmentPath({
+				workspaceId: workspace.workspaceId,
+				environmentId: environment.environmentId,
+			})
+		: null;
+	const rename = useWorkspaceRename(workspace);
+
+	const iconBox = (
+		<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
+			<BookIcon className="size-4 text-kumo-subtle" />
+		</span>
+	);
+
+	return (
+		<li className="group relative flex items-center gap-4 overflow-hidden rounded-lg border bg-kumo-canvas px-4 py-3 transition-colors hover:border-kumo-line">
+			<AccentStripe color={workspace.color} />
+			{href ? (
+				<Link href={href} className="shrink-0">
+					{iconBox}
+				</Link>
+			) : (
+				iconBox
+			)}
+			<div className="flex min-w-0 flex-1 flex-col">
+				<div className="flex min-w-0">
+					<WorkspaceTitleField
+						workspace={workspace}
+						href={href}
+						rename={rename}
+					/>
+				</div>
+				<span className="truncate text-xs text-kumo-subtle">
+					{environmentCount}{" "}
+					{environmentCount === 1 ? "environment" : "environments"} ·{" "}
+					<span className={cn(hasError && "text-kumo-danger")}>
+						{servicesLabel(online, total)}
+					</span>
+				</span>
+			</div>
+			{canManage && (
+				<div className="flex shrink-0 items-center gap-0.5">
+					<RenameButton rename={rename} />
+					<WorkspaceColorPicker workspace={workspace} />
+				</div>
+			)}
+		</li>
 	);
 }
 
 export const WorkspaceOverview = () => {
-	const { data: auth } = api.user.get.useQuery();
-	const { data: homeStats } = api.workspaces.homeStats.useQuery();
 	const { data: workspaces } = api.workspaces.all.useQuery();
 	const { permissions } = usePermissions();
 	const canCreateWorkspaces = !!permissions?.workspace.create;
-	const canReadDeployments = !!permissions?.deployment.read;
-	const { data: deployments } = api.deployment.allCentralized.useQuery(
-		undefined,
-		{
-			enabled: canReadDeployments,
-			refetchInterval: 10000,
-		},
-	);
 
-	const firstName = auth?.user?.firstName?.trim();
+	const [sortBy, setSortBy] = useState<SortKey>("recent");
+	const [view, setView] = useState<ViewMode>("grid");
 
-	const totals = homeStats ?? {
-		workspaces: 0,
-		environments: 0,
-		applications: 0,
-		compose: 0,
-		databases: 0,
-		services: 0,
-	};
-	const statusBreakdown = homeStats?.status ?? {
-		running: 0,
-		error: 0,
-		idle: 0,
-	};
-
-	const recentDeployments = useMemo(() => {
-		if (!deployments) return [];
-		return [...deployments]
-			.sort(
-				(a, b) =>
-					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-			)
-			.slice(0, 10);
-	}, [deployments]);
-
-	const deployStats = useMemo(() => {
-		const now = Date.now();
-		const weekMs = 7 * 24 * 60 * 60 * 1000;
-		const lastStart = now - weekMs;
-		const prevStart = now - 2 * weekMs;
-
-		const last: NonNullable<typeof deployments> = [];
-		const prev: NonNullable<typeof deployments> = [];
-		for (const d of deployments ?? []) {
-			const t = new Date(d.createdAt).getTime();
-			if (t >= lastStart) last.push(d);
-			else if (t >= prevStart) prev.push(d);
-		}
-
-		const lastCount = last.length;
-		const prevCount = prev.length;
-		let delta: string | undefined;
-		if (prevCount > 0) {
-			const pct = Math.round(((lastCount - prevCount) / prevCount) * 100);
-			delta = `${pct >= 0 ? "+" : ""}${pct}% vs prev 7d`;
-		} else if (lastCount > 0) {
-			delta = "no prior data";
-		} else {
-			delta = "no activity yet";
-		}
-
-		return { value: String(lastCount), delta };
-	}, [deployments]);
-
-	const recentProjects = useMemo(() => {
+	const projects = useMemo<ProjectEntry[]>(() => {
 		if (!workspaces) return [];
 
-		return [...workspaces]
-			.sort(
-				(a, b) =>
-					new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-			)
-			.slice(0, 6)
-			.map((workspace) => {
-				const environment =
-					workspace.environments.find((item) => item.isDefault) ||
-					workspace.environments[0];
+		const entries = workspaces.map((workspace) => {
+			const services = collectServices(workspace);
+			const online = services.filter((s) => s.status === "running").length;
+			const hasError = services.some((s) => s.status === "error");
+			return {
+				workspace,
+				environment: pickEnvironment(workspace),
+				environmentCount: workspace.environments.length,
+				services,
+				online,
+				total: services.length,
+				hasError,
+			};
+		});
 
-				return {
-					workspace,
-					environment,
-					services: countProjectServices(workspace),
-				};
-			});
-	}, [workspaces]);
+		entries.sort((a, b) => {
+			if (sortBy === "name") {
+				return a.workspace.name.localeCompare(b.workspace.name);
+			}
+			return (
+				new Date(b.workspace.createdAt).getTime() -
+				new Date(a.workspace.createdAt).getTime()
+			);
+		});
 
-	const hasWorkspaceData = workspaces !== undefined || homeStats !== undefined;
-	const showFirstRun =
-		hasWorkspaceData && totals.workspaces === 0 && recentProjects.length === 0;
-	const isDeploymentsLoading = canReadDeployments && deployments === undefined;
-	const isWorkspacesLoading = !hasWorkspaceData;
+		return entries;
+	}, [workspaces, sortBy]);
+
+	const isLoading = workspaces === undefined;
+	const showFirstRun = !isLoading && projects.length === 0;
+	const sortLabel =
+		sortOptions.find((option) => option.value === sortBy)?.label ?? "";
 
 	return (
-		<div className="w-full">
-			<div className="flex min-h-[85vh] flex-col gap-6 rounded-lg border bg-kumo-canvas p-6">
-				<div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-					<h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-						{firstName ? `Welcome back, ${firstName}` : "Welcome back"}
-					</h1>
-					{canCreateWorkspaces && (
-						<div className="flex flex-wrap items-center gap-2">
-							<HandleWorkspace />
-						</div>
-					)}
-				</div>
-
-				{showFirstRun ? (
-					<FirstRunWorkspacePanel canCreateWorkspaces={canCreateWorkspaces} />
-				) : (
-					<>
-						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-							<StatCard
-								label="Workspaces"
-								value={String(totals.workspaces)}
-								delta={`${totals.environments} ${totals.environments === 1 ? "environment" : "environments"}`}
-							/>
-							<StatCard
-								label="Services"
-								value={String(totals.services)}
-								delta={`${totals.applications} apps · ${totals.compose} compose · ${totals.databases} db`}
-							/>
-							<StatCard
-								label="Deployments / 7d"
-								value={deployStats.value}
-								delta={deployStats.delta}
-							/>
-							<StatusListCard
-								label="Status"
-								items={[
-									{
-										dotClass: "bg-kumo-success",
-										label: "running",
-										count: statusBreakdown.running,
-									},
-									{
-										dotClass: "bg-kumo-danger",
-										label: "errored",
-										count: statusBreakdown.error,
-									},
-									{
-										dotClass: "bg-kumo-subtle/40",
-										label: "idle",
-										count: statusBreakdown.idle,
-									},
-								]}
-							/>
-						</div>
-
-						<div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)]">
-							<div className="rounded-lg border bg-kumo-canvas">
-								<div className="flex items-center justify-between px-5 py-4 border-b">
-									<div className="flex items-center gap-2">
-										<Rocket className="size-4 text-kumo-subtle" />
-										<h2 className="text-sm font-semibold">
-											Recent deployments
-										</h2>
-									</div>
-									{canReadDeployments && (
-										<Link
-											href="/dashboard/deployments"
-											className="text-xs text-kumo-subtle hover:text-kumo-default transition-colors"
+		<SectionCard
+			title="Workspaces"
+			size="lg"
+			className="bg-kumo-base"
+			actions={canCreateWorkspaces ? <HandleWorkspace /> : undefined}
+			contentClassName="space-y-5"
+		>
+			{showFirstRun ? (
+				<FirstRunWorkspacePanel canCreateWorkspaces={canCreateWorkspaces} />
+			) : (
+				<>
+					<div className="flex items-center justify-between gap-3">
+						<div className="flex items-center gap-4 text-sm text-kumo-subtle">
+							<span className="flex items-center gap-2">
+								<LayoutGrid className="size-4" />
+								{isLoading
+									? "Loading…"
+									: `${projects.length} ${projects.length === 1 ? "Workspace" : "Workspaces"}`}
+							</span>
+							<span className="hidden h-4 w-px bg-kumo-hairline sm:block" />
+							<DropdownMenu>
+								<DropdownMenu.Trigger
+									render={
+										(
+											<Button variant="ghost" className="gap-1.5">
+												<span className="text-kumo-subtle">Sort By:</span>
+												<span className="font-medium text-kumo-default">
+													{sortLabel}
+												</span>
+												<ChevronDown className="size-4" />
+											</Button>
+										) as never
+									}
+								/>
+								<DropdownMenu.Content className="w-[180px]">
+									{sortOptions.map((option) => (
+										<DropdownMenu.Item
+											key={option.value}
+											className={cn(
+												"cursor-pointer",
+												option.value === sortBy && "font-medium",
+											)}
+											onSelect={() => setSortBy(option.value)}
 										>
-											view all →
-										</Link>
-									)}
-								</div>
-								{!canReadDeployments ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
-										<Rocket className="size-8 opacity-40" />
-										<span>You do not have permission to view deployments.</span>
-									</div>
-								) : isDeploymentsLoading ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
-										<Rocket className="size-8 opacity-40" />
-										<span>Loading deployments...</span>
-									</div>
-								) : recentDeployments.length === 0 ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
-										<Rocket className="size-8 opacity-40" />
-										<span>No recent deployments.</span>
-									</div>
-								) : (
-									<ul className="divide-y">
-										{recentDeployments.map((d) => {
-											const info = getServiceInfo(d);
-											if (!info) return null;
-											const status = (d.status ?? "idle") as DeploymentStatus;
-											return (
-												<li key={d.deploymentId}>
-													<Link
-														href={info.href}
-														className="flex items-center gap-4 px-5 py-4 hover:bg-kumo-fill/40 transition-colors"
-													>
-														<span
-															className={`size-2 rounded-full shrink-0 ${statusDotClass[status] ?? statusDotClass.idle}`}
-															aria-hidden
-														/>
-														<div className="flex flex-col min-w-0 flex-1">
-															<span className="text-sm truncate">
-																{info.name}
-															</span>
-															<span className="text-xs text-kumo-subtle truncate">
-																{info.projectName} · {info.environment}
-															</span>
-														</div>
-														<span className="text-xs text-kumo-subtle w-36 hidden lg:flex items-center justify-end gap-1.5 truncate">
-															<Rocket className="size-3 shrink-0" />
-															<span className="truncate">Runtime</span>
-														</span>
-														<span className="text-xs text-kumo-subtle w-20 text-right hidden sm:inline">
-															{status}
-														</span>
-														<span className="text-xs text-kumo-subtle w-24 text-right hidden md:inline">
-															{formatDistanceToNow(new Date(d.createdAt), {
-																addSuffix: true,
-															})}
-														</span>
-														<span className="text-xs text-kumo-subtle hover:text-kumo-default transition-colors">
-															logs →
-														</span>
-													</Link>
-												</li>
-											);
-										})}
-									</ul>
-								)}
-							</div>
-
-							<div className="rounded-lg border bg-kumo-canvas">
-								<div className="flex items-center gap-2 px-5 py-4 border-b">
-									<FolderInput className="size-4 text-kumo-subtle" />
-									<h2 className="text-sm font-semibold">Workspaces</h2>
-								</div>
-
-								{isWorkspacesLoading ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
-										<FolderInput className="size-8 opacity-40" />
-										<span>Loading workspaces...</span>
-									</div>
-								) : recentProjects.length === 0 ? (
-									<div className="min-h-[400px] flex flex-col items-center justify-center gap-3 text-center text-sm text-kumo-subtle p-10">
-										<FolderInput className="size-8 opacity-40" />
-										<span>No recent workspaces.</span>
-									</div>
-								) : (
-									<ul className="divide-y">
-										{recentProjects.map(
-											({ workspace, environment, services }) => {
-												const href = environment
-													? workspaceEnvironmentPath({
-															workspaceId: workspace.workspaceId,
-															environmentId: environment.environmentId,
-														})
-													: null;
-												const rowBody = (
-													<>
-														<span className="flex size-9 shrink-0 items-center justify-center rounded-md border bg-kumo-fill/30">
-															<BookIcon className="size-4 text-kumo-subtle" />
-														</span>
-														<div className="flex flex-col min-w-0 flex-1">
-															<span className="text-sm truncate">
-																{workspace.name}
-															</span>
-															<span className="text-xs text-kumo-subtle truncate">
-																{environment?.name ?? "No environment"} ·{" "}
-																{services}{" "}
-																{services === 1 ? "service" : "services"}
-															</span>
-														</div>
-														{href && (
-															<ArrowRight className="size-4 shrink-0 text-kumo-subtle" />
-														)}
-													</>
-												);
-
-												return (
-													<li
-														key={workspace.workspaceId}
-														className="flex items-center pr-3 hover:bg-kumo-fill/40 transition-colors"
-													>
-														{href ? (
-															<Link
-																href={href}
-																className="flex flex-1 items-center gap-4 px-5 py-4 min-w-0"
-															>
-																{rowBody}
-															</Link>
-														) : (
-															<div className="flex flex-1 items-center gap-4 px-5 py-4 min-w-0">
-																{rowBody}
-															</div>
-														)}
-														<WorkspaceRowActions
-															workspaceId={workspace.workspaceId}
-															serviceCount={services}
-														/>
-													</li>
-												);
-											},
-										)}
-									</ul>
-								)}
-							</div>
+											{option.label}
+										</DropdownMenu.Item>
+									))}
+								</DropdownMenu.Content>
+							</DropdownMenu>
 						</div>
-					</>
-				)}
-			</div>
-		</div>
+
+						<div className="flex items-center gap-1">
+							<Button
+								aria-label="Grid view"
+								variant={view === "grid" ? "secondary" : "ghost"}
+								shape="square"
+								onClick={() => setView("grid")}
+							>
+								<LayoutGrid className="size-4" />
+							</Button>
+							<Button
+								aria-label="List view"
+								variant={view === "list" ? "secondary" : "ghost"}
+								shape="square"
+								onClick={() => setView("list")}
+							>
+								<List className="size-4" />
+							</Button>
+						</div>
+					</div>
+
+					{isLoading ? (
+						<div className="flex min-h-[40vh] items-center justify-center text-sm text-kumo-subtle">
+							Loading workspaces…
+						</div>
+					) : view === "grid" ? (
+						<div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+							{projects.map((entry) => (
+								<ProjectCard
+									key={entry.workspace.workspaceId}
+									entry={entry}
+									canManage={canCreateWorkspaces}
+								/>
+							))}
+						</div>
+					) : (
+						<ul className="flex flex-col gap-2">
+							{projects.map((entry) => (
+								<ProjectRow
+									key={entry.workspace.workspaceId}
+									entry={entry}
+									canManage={canCreateWorkspaces}
+								/>
+							))}
+						</ul>
+					)}
+				</>
+			)}
+		</SectionCard>
 	);
 };

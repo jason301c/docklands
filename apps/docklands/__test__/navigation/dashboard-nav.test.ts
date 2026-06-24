@@ -41,7 +41,7 @@ describe("dashboard nav", () => {
 		});
 
 		expect(menuTitles(menu)).toEqual({
-			home: ["Canvas", "Deployments", "Automations"],
+			home: ["Workspaces", "Deployments", "Automations"],
 			settings: [
 				"Ingress",
 				"Profile",

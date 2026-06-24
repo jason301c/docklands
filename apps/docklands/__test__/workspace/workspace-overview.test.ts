@@ -20,8 +20,7 @@ describe("workspace overview first-run state", () => {
 		expect(source).toContain("Start from a workspace canvas");
 		expect(source).toContain("Create the first workspace");
 		expect(source).toContain("showFirstRun");
-		expect(source).toContain("totals.workspaces === 0");
-		expect(source).toContain("recentProjects.length === 0");
+		expect(source).toContain("projects.length === 0");
 		expect(source).toContain("<HandleWorkspace />");
 		expect(source).not.toContain("No workspaces yet.");
 		expect(source).not.toContain("No deployments yet.");
