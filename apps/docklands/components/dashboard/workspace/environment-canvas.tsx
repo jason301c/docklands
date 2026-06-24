@@ -87,6 +87,15 @@ import {
 import { ConnectionVariableFlowCard } from "@/components/dashboard/workspace/canvas/connection-cards";
 import { serviceTypeLabels } from "@/components/dashboard/workspace/canvas/constants";
 import { DuplicateServicesDialog } from "@/components/dashboard/workspace/canvas/duplicate-services-dialog";
+import {
+	GroupDialog,
+	type GroupDialogState,
+} from "@/components/dashboard/workspace/canvas/group-dialog";
+import {
+	type GroupFlowNode,
+	GroupNode,
+	type GroupNodeData,
+} from "@/components/dashboard/workspace/canvas/group-node";
 import { MoveServicesDialog } from "@/components/dashboard/workspace/canvas/move-services-dialog";
 import {
 	databaseCredentialServiceTypes,
@@ -155,7 +164,10 @@ import {
 const logger = createClientLogger("workspace-canvas");
 
 // Stable reference so React Flow doesn't re-register node types each render.
-const CANVAS_NODE_TYPES = { service: ServiceNode };
+const CANVAS_NODE_TYPES = { service: ServiceNode, group: GroupNode };
+
+// React Flow renders both service cards and group regions on one canvas.
+type CanvasFlowNode = ServiceFlowNode | GroupFlowNode;
 
 export const EnvironmentCanvas = ({
 	workspaceId,
@@ -212,6 +224,7 @@ export const EnvironmentCanvas = ({
 		| "connections"
 	>("overview");
 	const [isSelectionMode, setIsSelectionMode] = useState(false);
+	const [groupDialog, setGroupDialog] = useState<GroupDialogState | null>(null);
 	const [selectedBulkKeys, setSelectedBulkKeys] = useState<string[]>([]);
 	const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
 	const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
@@ -255,6 +268,10 @@ export const EnvironmentCanvas = ({
 		);
 
 	const updateNode = api.workspaceGraph.updateNode.useMutation();
+	const updateGroup = api.workspaceGraph.updateGroup.useMutation();
+	const removeGroup = api.workspaceGraph.removeGroup.useMutation();
+	const assignServiceGroup =
+		api.workspaceGraph.assignServiceGroup.useMutation();
 	const connect = api.workspaceGraph.connect.useMutation();
 	const removeConnection = api.workspaceGraph.removeConnection.useMutation();
 	const applyConnectionVariables =
@@ -604,6 +621,15 @@ export const EnvironmentCanvas = ({
 	);
 
 	const connections = workspace?.connections ?? [];
+	const groups = useMemo(() => workspace?.groups ?? [], [workspace?.groups]);
+	const groupMemberCounts = useMemo(() => {
+		const counts = new Map<string, number>();
+		for (const service of services) {
+			if (!service.groupId) continue;
+			counts.set(service.groupId, (counts.get(service.groupId) ?? 0) + 1);
+		}
+		return counts;
+	}, [services]);
 	const serviceLinkCounts = useMemo(() => {
 		const counts = new Map<string, number>();
 		for (const connection of connections) {
@@ -740,26 +766,24 @@ export const EnvironmentCanvas = ({
 
 	// React Flow owns drag interaction; we mirror its position changes into the
 	// canonical `nodes` state so edges, groups, and persistence stay in sync.
-	const onNodesChange = useCallback(
-		(changes: NodeChange<ServiceFlowNode>[]) => {
-			setNodes((current) => {
-				let next = current;
-				for (const change of changes) {
-					if (change.type !== "position" || !change.position) continue;
-					const movedKey = change.id;
-					const position = change.position;
-					next = next.map((node) =>
-						getWorkspaceServiceKey(node.serviceType, node.serviceId) ===
-						movedKey
-							? { ...node, x: position.x, y: position.y }
-							: node,
-					);
-				}
-				return next;
-			});
-		},
-		[],
-	);
+	// Group nodes carry a `group:` id that never matches a service key, so their
+	// position changes fall through here and persist via `onNodeDragStop` instead.
+	const onNodesChange = useCallback((changes: NodeChange<CanvasFlowNode>[]) => {
+		setNodes((current) => {
+			let next = current;
+			for (const change of changes) {
+				if (change.type !== "position" || !change.position) continue;
+				const movedKey = change.id;
+				const position = change.position;
+				next = next.map((node) =>
+					getWorkspaceServiceKey(node.serviceType, node.serviceId) === movedKey
+						? { ...node, x: position.x, y: position.y }
+						: node,
+				);
+			}
+			return next;
+		});
+	}, []);
 
 	// Persist a node's final position once a drag settles. The pending guard keeps
 	// an in-flight refetch from snapping the card back before our save lands.
@@ -783,6 +807,90 @@ export const EnvironmentCanvas = ({
 		},
 		[nodesByKey, persistNode],
 	);
+
+	// Persist a group's position once its drag settles (mirrors service drag).
+	const persistGroupPosition = useCallback(
+		(groupId: string, x: number, y: number) => {
+			void updateGroup
+				.mutateAsync({ groupId, x: Math.round(x), y: Math.round(y) })
+				.then(() =>
+					utils.workspaceGraph.byEnvironment.invalidate({ environmentId }),
+				)
+				.catch((error) => {
+					logger.error("Could not save group position", error);
+					toast.error(
+						`Could not save group position: ${error instanceof Error ? error.message : "Unknown error"}`,
+					);
+				});
+		},
+		[environmentId, updateGroup, utils.workspaceGraph.byEnvironment],
+	);
+
+	// Persist a group's geometry once a resize settles.
+	const persistGroupGeometry = useCallback(
+		(
+			groupId: string,
+			geometry: { x: number; y: number; width: number; height: number },
+		) => {
+			void updateGroup
+				.mutateAsync({ groupId, ...geometry })
+				.then(() =>
+					utils.workspaceGraph.byEnvironment.invalidate({ environmentId }),
+				)
+				.catch((error) => {
+					logger.error("Could not resize group", error);
+					toast.error(
+						`Could not resize group: ${error instanceof Error ? error.message : "Unknown error"}`,
+					);
+				});
+		},
+		[environmentId, updateGroup, utils.workspaceGraph.byEnvironment],
+	);
+
+	const deleteGroup = useCallback(
+		(groupId: string) => {
+			void removeGroup
+				.mutateAsync({ groupId })
+				.then(() =>
+					utils.workspaceGraph.byEnvironment.invalidate({ environmentId }),
+				)
+				.then(() => toast.success("Group deleted"))
+				.catch((error) => {
+					logger.error("Could not delete group", error);
+					toast.error(
+						`Could not delete group: ${error instanceof Error ? error.message : "Unknown error"}`,
+					);
+				});
+		},
+		[environmentId, removeGroup, utils.workspaceGraph.byEnvironment],
+	);
+
+	const editGroup = useCallback(
+		(groupId: string) => {
+			const group = groups.find((candidate) => candidate.groupId === groupId);
+			if (group) setGroupDialog({ mode: "edit", group });
+		},
+		[groups],
+	);
+
+	const assignSelectedServiceToGroup = async (groupId: string | null) => {
+		if (!selectedServiceModel) return;
+		try {
+			await assignServiceGroup.mutateAsync({
+				environmentId,
+				serviceId: selectedServiceModel.id,
+				serviceType: selectedServiceModel.type,
+				groupId,
+			});
+			await utils.workspaceGraph.byEnvironment.invalidate({ environmentId });
+			toast.success(groupId ? "Service added to group" : "Service ungrouped");
+		} catch (error) {
+			logger.error("Could not update group membership", error);
+			toast.error(
+				`Could not update group membership: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+		}
+	};
 
 	const startConnectionFromService = (service: WorkspaceService) => {
 		setConnectSource({
@@ -1919,6 +2027,22 @@ export const EnvironmentCanvas = ({
 				},
 			];
 		}),
+		...(permissions?.service.create
+			? [
+					{
+						id: "workspace:new-group",
+						group: "Create" as const,
+						label: "New group",
+						detail: "Add a named region to organize services",
+						search: "new group region container organize label color section",
+						icon: <Folder className="size-5 text-kumo-subtle" />,
+						run: () => {
+							setCommandOpen(false);
+							setGroupDialog({ mode: "create" });
+						},
+					},
+				]
+			: []),
 		...(services.length > 0
 			? [
 					{
@@ -2037,7 +2161,52 @@ export const EnvironmentCanvas = ({
 		"System",
 	];
 
-	const rfNodes = useMemo<ServiceFlowNode[]>(
+	const canManageCanvas = !!permissions?.service.create;
+
+	// Group regions render behind the service cards as their own React Flow nodes.
+	// They are draggable/resizable only when the user can manage the canvas and
+	// not while bulk-selecting or wiring a connection.
+	const rfGroupNodes = useMemo<GroupFlowNode[]>(
+		() =>
+			groups.map((group) => {
+				const data: GroupNodeData = {
+					groupId: group.groupId,
+					name: group.name,
+					color: group.color,
+					memberCount: groupMemberCounts.get(group.groupId) ?? 0,
+					canManage: canManageCanvas,
+					onEdit: editGroup,
+					onDelete: deleteGroup,
+					onResizeEnd: persistGroupGeometry,
+				};
+				return {
+					id: `group:${group.groupId}`,
+					type: "group" as const,
+					position: { x: group.x, y: group.y },
+					width: group.width,
+					height: group.height,
+					// Behind the service cards; services use the default (higher) z.
+					zIndex: 0,
+					draggable: canManageCanvas && !isSelectionMode && !connectSource,
+					selectable: canManageCanvas,
+					// A group must never intercept connect drags meant for service cards.
+					connectable: false,
+					data,
+				};
+			}),
+		[
+			groups,
+			groupMemberCounts,
+			canManageCanvas,
+			editGroup,
+			deleteGroup,
+			persistGroupGeometry,
+			isSelectionMode,
+			connectSource,
+		],
+	);
+
+	const rfServiceNodes = useMemo<ServiceFlowNode[]>(
 		() =>
 			nodes.flatMap((node) => {
 				const key = getWorkspaceServiceKey(node.serviceType, node.serviceId);
@@ -2066,6 +2235,8 @@ export const EnvironmentCanvas = ({
 						position: { x: node.x, y: node.y },
 						width: node.width,
 						height: node.height,
+						// Above the group regions so cards stay interactive.
+						zIndex: 1,
 						draggable: !isSelectionMode,
 						data,
 					},
@@ -2081,6 +2252,13 @@ export const EnvironmentCanvas = ({
 			selectedService,
 			isSelectionMode,
 		],
+	);
+
+	// Groups first so they paint behind the service cards; React Flow also honors
+	// the explicit zIndex above.
+	const rfNodes = useMemo<CanvasFlowNode[]>(
+		() => [...rfGroupNodes, ...rfServiceNodes],
+		[rfGroupNodes, rfServiceNodes],
 	);
 
 	const rfEdges = useMemo<Edge[]>(
@@ -2216,6 +2394,16 @@ export const EnvironmentCanvas = ({
 								? `Selecting${selectedBulkServices.length ? ` (${selectedBulkServices.length})` : ""}`
 								: "Select"}
 						</Button>
+
+						{canManageCanvas && (
+							<Button
+								variant="outline"
+								onClick={() => setGroupDialog({ mode: "create" })}
+							>
+								<Folder className="size-4" />
+								New group
+							</Button>
+						)}
 
 						<Button
 							aria-label="Command menu"
@@ -2602,12 +2790,23 @@ export const EnvironmentCanvas = ({
 							nodeTypes={CANVAS_NODE_TYPES}
 							onNodesChange={onNodesChange}
 							onConnect={onConnect}
-							onNodeClick={(_, node) =>
-								void selectOrConnectService(node.data.service)
-							}
-							onNodeDragStop={(_, node) =>
-								persistNodePosition(node.id, node.position.x, node.position.y)
-							}
+							onNodeClick={(_, node) => {
+								// Group regions are background containers; clicking one only
+								// selects it for drag/resize, it never opens a service panel.
+								if (node.type === "group") return;
+								void selectOrConnectService(node.data.service);
+							}}
+							onNodeDragStop={(_, node) => {
+								if (node.type === "group") {
+									persistGroupPosition(
+										node.data.groupId,
+										node.position.x,
+										node.position.y,
+									);
+									return;
+								}
+								persistNodePosition(node.id, node.position.x, node.position.y);
+							}}
 							onPaneClick={() => {
 								if (connectSource) setConnectSource(null);
 							}}
@@ -2865,6 +3064,60 @@ export const EnvironmentCanvas = ({
 											</div>
 										</div>
 									</LayerCard>
+
+									{canManageCanvas && (
+										<LayerCard className="bg-kumo-fill/20">
+											<div className="space-y-3">
+												<div className="flex items-center justify-between gap-3">
+													<span className="text-sm font-medium">Group</span>
+													{selectedServiceModel.groupId && (
+														<Badge>
+															{groups.find(
+																(group) =>
+																	group.groupId ===
+																	selectedServiceModel.groupId,
+															)?.name ?? "Group"}
+														</Badge>
+													)}
+												</div>
+												<p className="text-xs text-kumo-subtle">
+													Place this service in a named canvas region. Grouping
+													is a visual label; it does not move the service.
+												</p>
+												<Select
+													aria-label="Service group"
+													value={selectedServiceModel.groupId ?? "__none__"}
+													disabled={
+														groups.length === 0 || assignServiceGroup.isPending
+													}
+													onValueChange={(value) => {
+														if (value === null) return;
+														void assignSelectedServiceToGroup(
+															value === "__none__" ? null : (value as string),
+														);
+													}}
+												>
+													<Select.Option value="__none__">
+														No group
+													</Select.Option>
+													{groups.map((group) => (
+														<Select.Option
+															key={group.groupId}
+															value={group.groupId}
+														>
+															{group.name}
+														</Select.Option>
+													))}
+												</Select>
+												{groups.length === 0 && (
+													<p className="text-xs text-kumo-subtle">
+														No groups yet. Use “New group” on the toolbar to
+														create one.
+													</p>
+												)}
+											</div>
+										</LayerCard>
+									)}
 
 									<div className="flex flex-wrap gap-2">
 										<Button
@@ -3328,6 +3581,14 @@ export const EnvironmentCanvas = ({
 				setCommandQuery={setCommandQuery}
 				filteredCommandItems={filteredCommandItems}
 				commandGroups={commandGroups}
+			/>
+
+			<GroupDialog
+				state={groupDialog}
+				environmentId={environmentId}
+				onOpenChange={(open) => {
+					if (!open) setGroupDialog(null);
+				}}
 			/>
 
 			{permissions?.service.create && workspace && (

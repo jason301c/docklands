@@ -1,10 +1,15 @@
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { audit } from "@/server/api/utils/audit";
 import {
+	apiAssignWorkspaceServiceGroup,
 	apiCreateWorkspaceConnection,
+	apiCreateWorkspaceGroup,
 	apiFindWorkspace,
 	apiRemoveWorkspaceConnection,
+	apiRemoveWorkspaceGroup,
 	apiSyncWorkspaceServiceConnectionVariables,
+	apiUpdateWorkspaceGroup,
 	apiUpdateWorkspaceNode,
 	apiWorkspaceConnectionVariables,
 } from "@/server/core/db/schema";
@@ -26,6 +31,13 @@ import {
 	syncWorkspaceConnectionVariablesForService,
 	upsertWorkspaceNode,
 } from "@/server/core/services/workspace-graph";
+import {
+	assignWorkspaceServiceGroup,
+	createWorkspaceGroup,
+	findWorkspaceGroupById,
+	removeWorkspaceGroup,
+	updateWorkspaceGroup,
+} from "@/server/core/services/workspace-group";
 
 type WorkspaceProcedureContext = {
 	user: {
@@ -249,5 +261,116 @@ export const workspaceGraphRouter = createTRPCRouter({
 			);
 
 			return syncWorkspaceConnectionVariablesForService(input);
+		}),
+
+	createGroup: protectedProcedure
+		.input(apiCreateWorkspaceGroup)
+		.mutation(async ({ input, ctx }) => {
+			await checkEnvironmentAccess(ctx, input.environmentId, "create");
+			const environment = await findEnvironmentById(input.environmentId);
+			assertEnvironmentBelongsToActiveOrganization(
+				environment,
+				ctx.session.activeOrganizationId,
+			);
+
+			const group = await createWorkspaceGroup(input);
+
+			await audit(ctx, {
+				action: "create",
+				// Groups are environment-scoped canvas layout metadata; the audit
+				// log has no dedicated "group" resource type, so they record under
+				// the owning environment.
+				resourceType: "environment",
+				resourceId: group.groupId,
+				resourceName: group.name,
+				metadata: {
+					environmentId: input.environmentId,
+					kind: "workspaceGroup",
+				},
+			});
+
+			return group;
+		}),
+
+	updateGroup: protectedProcedure
+		.input(apiUpdateWorkspaceGroup)
+		.mutation(async ({ input, ctx }) => {
+			const group = await findWorkspaceGroupById(input.groupId);
+			// Reuse the read gate to verify the group's environment is in this org
+			// and the caller can access it before mutating.
+			await getAuthorizedEnvironment(ctx, group.environmentId);
+
+			const updated = await updateWorkspaceGroup(input);
+
+			// A drag/resize sends only x/y/width/height; only audit deliberate
+			// rename/recolor edits to keep the log meaningful (not every nudge).
+			if (input.name !== undefined || input.color !== undefined) {
+				await audit(ctx, {
+					action: "update",
+					resourceType: "environment",
+					resourceId: updated.groupId,
+					resourceName: updated.name,
+					metadata: {
+						environmentId: group.environmentId,
+						kind: "workspaceGroup",
+					},
+				});
+			}
+
+			return updated;
+		}),
+
+	removeGroup: protectedProcedure
+		.input(apiRemoveWorkspaceGroup)
+		.mutation(async ({ input, ctx }) => {
+			const group = await findWorkspaceGroupById(input.groupId);
+			await getAuthorizedEnvironment(ctx, group.environmentId);
+
+			const removed = await removeWorkspaceGroup(input.groupId);
+
+			await audit(ctx, {
+				action: "delete",
+				resourceType: "environment",
+				resourceId: group.groupId,
+				resourceName: group.name,
+				metadata: {
+					environmentId: group.environmentId,
+					kind: "workspaceGroup",
+				},
+			});
+
+			return removed;
+		}),
+
+	assignServiceGroup: protectedProcedure
+		.input(apiAssignWorkspaceServiceGroup)
+		.mutation(async ({ input, ctx }) => {
+			const environment = await getAuthorizedEnvironment(
+				ctx,
+				input.environmentId,
+			);
+			assertWorkspaceServiceExists(
+				environment,
+				input.serviceType,
+				input.serviceId,
+			);
+
+			// Reject membership in a group that belongs to another environment.
+			if (input.groupId) {
+				const group = await findWorkspaceGroupById(input.groupId);
+				if (group.environmentId !== input.environmentId) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: "Group does not belong to this environment",
+					});
+				}
+			}
+
+			return assignWorkspaceServiceGroup({
+				environmentId: input.environmentId,
+				serviceType: input.serviceType,
+				serviceId: input.serviceId,
+				groupId: input.groupId,
+			});
 		}),
 });

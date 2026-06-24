@@ -50,7 +50,29 @@ export type WorkspaceService = {
 	runtimeWorkerName?: string | null;
 	/** Replica count for application/compose when the column exists; null for databases or when absent. */
 	replicas?: number | null;
+	/** Membership in a named canvas group, or null when the service is ungrouped. */
+	groupId?: string | null;
 };
+
+/**
+ * A named, colored container region on the canvas. A group is its own
+ * positioned/sized node rendered *behind* the service cards; services belong to
+ * it via membership (`WorkspaceService.groupId`) rather than React-Flow
+ * parent/child relative positioning, so grouping never moves a service node.
+ */
+export type WorkspaceGroup = {
+	groupId: string;
+	environmentId: string;
+	name: string;
+	color: string | null;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+};
+
+export const WORKSPACE_GROUP_DEFAULT_WIDTH = 420;
+export const WORKSPACE_GROUP_DEFAULT_HEIGHT = 320;
 
 export type WorkspaceNodePosition = {
 	x: number;
@@ -62,6 +84,7 @@ export type WorkspaceNodePosition = {
 export type WorkspaceNode = WorkspaceNodePosition & {
 	serviceId: string;
 	serviceType: WorkspaceServiceType;
+	groupId?: string | null;
 };
 
 export type WorkspaceConnectionLike = {
@@ -87,6 +110,7 @@ export type WorkspaceTopologyCounts = {
 export type PersistedWorkspaceNode = Partial<WorkspaceNodePosition> & {
 	serviceId: string;
 	serviceType: WorkspaceServiceType;
+	groupId?: string | null;
 };
 
 export const WORKSPACE_NODE_WIDTH = 280;
@@ -299,6 +323,9 @@ const toWorkspaceService = (
 		volumes: getNamedVolumes(record),
 		runtimeWorkerName: getRuntimeWorkerName(record),
 		replicas: getReplicas(record),
+		// Membership is layout metadata, so it is overlaid from the layout rows in
+		// `getEnvironmentWorkspace`; the bare service record carries no group.
+		groupId: null,
 	};
 };
 
@@ -399,6 +426,7 @@ export const resolveWorkspaceNodes = (
 			y: persisted?.y ?? fallback.y,
 			width: persisted?.width ?? fallback.width,
 			height: persisted?.height ?? fallback.height,
+			groupId: persisted?.groupId ?? null,
 		};
 	});
 };

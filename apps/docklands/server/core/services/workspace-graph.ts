@@ -11,6 +11,7 @@ import {
 	compose,
 	database,
 	workspaceServiceConnections,
+	workspaceServiceGroups,
 	workspaceServiceLayouts,
 } from "@/server/core/db/schema";
 import { logger } from "@/server/core/lib/logger";
@@ -71,7 +72,7 @@ export const getEnvironmentWorkspace = async (environment: Environment) => {
 		);
 	}
 
-	const [layouts, rawConnections] = await Promise.all([
+	const [layouts, rawConnections, groups] = await Promise.all([
 		db.query.workspaceServiceLayouts.findMany({
 			where: eq(
 				workspaceServiceLayouts.environmentId,
@@ -84,9 +85,32 @@ export const getEnvironmentWorkspace = async (environment: Environment) => {
 				environment.environmentId,
 			),
 		}),
+		db.query.workspaceServiceGroups.findMany({
+			where: eq(
+				workspaceServiceGroups.environmentId,
+				environment.environmentId,
+			),
+		}),
 	]);
 
 	const nodes = resolveWorkspaceNodes(services, layouts);
+
+	// Overlay each service's group membership (stored on its layout row) onto the
+	// flat service list so the canvas can tint/enclose members without a join.
+	const groupIdByServiceKey = new Map(
+		layouts.map((layout) => [
+			getWorkspaceServiceKey(layout.serviceType, layout.serviceId),
+			layout.groupId,
+		]),
+	);
+	const validGroupIds = new Set(groups.map((group) => group.groupId));
+	for (const service of services) {
+		const groupId = groupIdByServiceKey.get(
+			getWorkspaceServiceKey(service.type, service.id),
+		);
+		service.groupId = groupId && validGroupIds.has(groupId) ? groupId : null;
+	}
+
 	const connections = rawConnections.filter(
 		(connection) =>
 			serviceKeys.has(
@@ -109,6 +133,7 @@ export const getEnvironmentWorkspace = async (environment: Environment) => {
 		services,
 		nodes,
 		connections,
+		groups,
 	};
 };
 
