@@ -1,10 +1,50 @@
+import { randomBytes } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
+	decodeEncryptionKey,
 	decryptSecret,
+	decryptSecretWithKey,
 	encryptSecret,
+	encryptSecretWithKey,
 	resolveEncryptionKey,
 } from "@/server/core/crypto/secret-box";
 import { encryptedJson, encryptedText } from "@/server/core/db/encrypted";
+
+describe("key rotation (encrypt/decrypt with explicit keys)", () => {
+	const keyA = randomBytes(32);
+	const keyB = randomBytes(32);
+
+	it("round-trips under an explicit key", () => {
+		const enc = encryptSecretWithKey("rotate-me", keyA);
+		expect(decryptSecretWithKey(enc, keyA)).toBe("rotate-me");
+	});
+
+	it("fails to decrypt with the wrong key", () => {
+		const enc = encryptSecretWithKey("rotate-me", keyA);
+		expect(() => decryptSecretWithKey(enc, keyB)).toThrow();
+	});
+
+	it("re-encrypts old→new and the value decrypts only under the new key", () => {
+		const original = JSON.stringify({ databasePassword: "p@ss", n: 1 });
+		const underA = encryptSecretWithKey(original, keyA);
+		// Rotation: decrypt with old, re-encrypt with new.
+		const underB = encryptSecretWithKey(
+			decryptSecretWithKey(underA, keyA),
+			keyB,
+		);
+		expect(decryptSecretWithKey(underB, keyB)).toBe(original);
+		expect(() => decryptSecretWithKey(underB, keyA)).toThrow();
+	});
+
+	it("decodeEncryptionKey rejects a wrong-length key", () => {
+		expect(() =>
+			decodeEncryptionKey(randomBytes(16).toString("base64")),
+		).toThrow();
+		expect(() =>
+			decodeEncryptionKey(randomBytes(32).toString("base64")),
+		).not.toThrow();
+	});
+});
 
 describe("secret-box", () => {
 	it("round-trips a value", () => {

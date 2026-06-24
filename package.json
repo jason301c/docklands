@@ -22,6 +22,7 @@
 		"check:baseui": "bun --filter docklands check:baseui",
 		"generate:openapi": "bun --filter docklands generate:openapi",
 		"reset-password": "bun --filter docklands reset-password",
+		"rotate-encryption-key": "bun --filter docklands rotate-encryption-key",
 		"migration:generate": "cd apps/docklands && bun run migration:generate",
 		"migration:run": "bun --filter docklands migration:run",
 		"migration:up": "cd apps/docklands && bun run migration:up",

@@ -89,11 +89,19 @@ export const resetEncryptionKeyCache = () => {
 	cachedKey = null;
 };
 
-const isEncrypted = (value: string): boolean => value.startsWith(`${VERSION}:`);
+export const isEncrypted = (value: string): boolean =>
+	value.startsWith(`${VERSION}:`);
 
-export const encryptSecret = (plaintext: string): string => {
+/** Decode a base64 key string into a validated 32-byte Buffer (for rotation). */
+export const decodeEncryptionKey = (raw: string): Buffer => decodeKey(raw);
+
+/** Encrypt with an explicit key (key rotation re-encrypts under the new key). */
+export const encryptSecretWithKey = (
+	plaintext: string,
+	key: Buffer,
+): string => {
 	const iv = randomBytes(IV_BYTES);
-	const cipher = createCipheriv(ALGORITHM, getKey(), iv);
+	const cipher = createCipheriv(ALGORITHM, key, iv);
 	const ciphertext = Buffer.concat([
 		cipher.update(plaintext, "utf8"),
 		cipher.final(),
@@ -107,9 +115,8 @@ export const encryptSecret = (plaintext: string): string => {
 	].join(":");
 };
 
-export const decryptSecret = (stored: string): string => {
-	// Anything not in our versioned envelope is treated as already-plaintext.
-	// This keeps reads safe across the rollout and for externally-seeded rows.
+/** Decrypt with an explicit key. Non-envelope values are treated as plaintext. */
+export const decryptSecretWithKey = (stored: string, key: Buffer): string => {
 	if (!isEncrypted(stored)) {
 		return stored;
 	}
@@ -122,7 +129,7 @@ export const decryptSecret = (stored: string): string => {
 	const [, ivB64, tagB64, ctB64] = parts as [string, string, string, string];
 	const decipher = createDecipheriv(
 		ALGORITHM,
-		getKey(),
+		key,
 		Buffer.from(ivB64, "base64"),
 	);
 	decipher.setAuthTag(Buffer.from(tagB64, "base64"));
@@ -131,3 +138,11 @@ export const decryptSecret = (stored: string): string => {
 		decipher.final(),
 	]).toString("utf8");
 };
+
+export const encryptSecret = (plaintext: string): string =>
+	encryptSecretWithKey(plaintext, getKey());
+
+export const decryptSecret = (stored: string): string =>
+	// Anything not in our versioned envelope is treated as already-plaintext.
+	// This keeps reads safe across the rollout and for externally-seeded rows.
+	decryptSecretWithKey(stored, getKey());
