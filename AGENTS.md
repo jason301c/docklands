@@ -191,8 +191,16 @@ mount the Docker socket.
 
 ## Workspace Commands
 
-Root scripts proxy into the app via `bun --filter docklands`. You can run them
-from the repo root or use the app-local scripts from `apps/docklands/`.
+Every script a human invokes is reachable from the repo root. Control-plane
+scripts proxy into `apps/docklands` via `bun --filter docklands`; the docs and
+site apps are reachable under the `docs:` and `site:` prefixes (`bun --filter
+docs` / `bun --filter site`). The root `package.json` is the full, authoritative
+list — keep it grouped (docklands lifecycle/quality, db, `docs:*`, `site:*`,
+`docker:*`) and add a root proxy whenever an app gains a human-invoked script.
+Pure internal sub-steps stay app-local only (e.g. `build-server`/`build-next`,
+which `build` chains, and `wait-for-postgres*`, which `setup` and the Dockerfile
+call from `apps/docklands`); do not re-add root proxies for them. You can also
+run any script app-local from inside the app directory.
 
 ```sh
 bun install --frozen-lockfile     # install workspace deps
@@ -206,7 +214,14 @@ bun run migration:run             # apply migrations
 bun run setup                     # full local bootstrap (Swarm/Traefik/Postgres/migrations)
 bun run docker:build              # build the app Docker image
 bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in
+bun run docs:dev                  # Astro docs site (apps/docs)
+bun run site:dev                  # Next marketing site (apps/site)
 ```
+
+Environment files live with the app, never at the repo root: copy
+`apps/docklands/.env.example` to `apps/docklands/.env`. Scripts load it via
+`-r dotenv/config` with the working directory set to `apps/docklands` (that is
+what `--filter docklands` does), so a root-level `.env` would be ignored.
 
 ## Local Documentation
 
