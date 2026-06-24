@@ -66,7 +66,11 @@ const createApplication = (
 describe("mechanizeDockerContainer", () => {
 	beforeEach(() => {
 		inspectMock.mockReset();
-		inspectMock.mockRejectedValue(new Error("service not found"));
+		// A missing swarm service surfaces as a 404 from dockerode; that's the only
+		// case that should fall through to createService.
+		inspectMock.mockRejectedValue(
+			Object.assign(new Error("service not found"), { statusCode: 404 }),
+		);
 		getServiceMock.mockClear();
 		createServiceMock.mockClear();
 		getRemoteDockerMock.mockClear();
@@ -157,5 +161,19 @@ describe("mechanizeDockerContainer", () => {
 		}
 		const [settings] = call;
 		expect(settings.TaskTemplate?.ContainerSpec).not.toHaveProperty("Ulimits");
+	});
+
+	it("propagates a non-404 inspect error instead of attempting create", async () => {
+		// A daemon/transient error (not "service absent") must not be swallowed
+		// into a create — that would 409 or mask the real failure.
+		inspectMock.mockRejectedValue(
+			Object.assign(new Error("daemon unreachable"), { statusCode: 500 }),
+		);
+		const application = createApplication();
+
+		await expect(mechanizeDockerContainer(application)).rejects.toThrow(
+			"daemon unreachable",
+		);
+		expect(createServiceMock).not.toHaveBeenCalled();
 	});
 });
