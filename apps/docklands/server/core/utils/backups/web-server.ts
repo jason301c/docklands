@@ -1,8 +1,10 @@
 import { createWriteStream } from "node:fs";
-import { mkdtemp, rm, stat } from "node:fs/promises";
+import { mkdtemp, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { paths } from "@/server/core/constants/paths";
+import { resolveEncryptionKey } from "@/server/core/crypto/secret-box";
+import { resolveBetterAuthSecret } from "@/server/core/lib/auth-secret";
 import { createLogger } from "@/server/core/lib/logger";
 import type { BackupSchedule } from "@/server/core/services/backup";
 import {
@@ -87,9 +89,33 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 
 			writeStream.write("Copied filesystem to temp directory\n");
 
+			// Capture the secrets the dump can't restore without. The DB dump holds
+			// every secret encrypted at rest with DOCKLANDS_ENCRYPTION_KEY, so a
+			// restore onto a fresh instance is useless without the same key; the auth
+			// secret is bundled too so existing sessions/passkeys survive a restore.
+			// This makes the archive as sensitive as the key itself — the backup log
+			// and docs warn operators to keep the destination private. Never log the
+			// values themselves.
+			const secretsLines = [
+				`DOCKLANDS_ENCRYPTION_KEY=${resolveEncryptionKey()}`,
+			];
+			try {
+				secretsLines.push(`BETTER_AUTH_SECRET=${resolveBetterAuthSecret()}`);
+			} catch {
+				// Auth secret is best-effort; the encryption key is the critical one.
+			}
+			await writeFile(
+				join(tempDir, "docklands-secrets.env"),
+				`${secretsLines.join("\n")}\n`,
+				{ mode: 0o600 },
+			);
+			writeStream.write(
+				"Captured encryption key + auth secret for restore — this archive now contains secrets, keep the destination private 🔐\n",
+			);
+
 			await execAsync(
-				// Zip all .sql files since we created more than one
-				`cd ${tempDir} && zip -r ${backupFileName} *.sql filesystem/ > /dev/null 2>&1`,
+				// Zip the dump(s), the restore secrets, and the filesystem snapshot.
+				`cd ${tempDir} && zip -r ${backupFileName} *.sql docklands-secrets.env filesystem/ > /dev/null 2>&1`,
 			);
 
 			writeStream.write("Zipped database and filesystem\n");

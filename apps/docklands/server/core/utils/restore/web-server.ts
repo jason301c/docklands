@@ -1,7 +1,8 @@
-import { mkdtemp } from "node:fs/promises";
+import { mkdtemp, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { paths } from "@/server/core/constants/paths";
+import { resolveEncryptionKey } from "@/server/core/crypto/secret-box";
 import { createLogger } from "@/server/core/lib/logger";
 import type { Destination } from "@/server/core/services/destination";
 import { getS3CredentialEnv, getS3Credentials } from "../backups/utils";
@@ -49,6 +50,43 @@ export const restoreWebServerBackup = async (
 			// Extract backup
 			emit("Extracting backup...");
 			await execAsync(`cd ${tempDir} && unzip ${backupFile} > /dev/null 2>&1`);
+
+			// The archive bundles the encryption key the dump's secrets were sealed
+			// with. If this instance's key differs, the restored secrets won't
+			// decrypt — warn loudly (without ever revealing the key) so the operator
+			// reconciles DOCKLANDS_ENCRYPTION_KEY before relying on the data.
+			const secretsPath = `${tempDir}/docklands-secrets.env`;
+			const { stdout: hasSecrets } = await execAsync(
+				`ls ${secretsPath} || true`,
+			);
+			if (hasSecrets.includes("docklands-secrets.env")) {
+				try {
+					const contents = await readFile(secretsPath, "utf8");
+					const prefix = "DOCKLANDS_ENCRYPTION_KEY=";
+					const backedUpKey = contents
+						.split("\n")
+						.find((line) => line.startsWith(prefix))
+						?.slice(prefix.length)
+						.trim();
+					let currentKey: string | undefined;
+					try {
+						currentKey = resolveEncryptionKey();
+					} catch {
+						currentKey = undefined;
+					}
+					if (backedUpKey && currentKey && backedUpKey === currentKey) {
+						emit(
+							"Encryption key matches the backup — restored secrets will decrypt ✅",
+						);
+					} else {
+						emit(
+							"⚠️  This backup was sealed with a DIFFERENT DOCKLANDS_ENCRYPTION_KEY than this instance. Set DOCKLANDS_ENCRYPTION_KEY to the value in the backup's docklands-secrets.env and restart, or restored secrets (tokens, keys, passwords) will fail to decrypt.",
+						);
+					}
+				} catch {
+					// Best-effort guidance only.
+				}
+			}
 
 			// Restore filesystem first
 			emit("Restoring filesystem...");

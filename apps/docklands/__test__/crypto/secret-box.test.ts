@@ -69,9 +69,12 @@ describe("encrypted column types", () => {
 	});
 
 	it("honors the encryptedJson contract (encrypt(JSON) / parse(decrypt))", () => {
-		const value = { databasePassword: "pw", n: 5 };
+		// Use a distinctive hyphenated marker: hyphens never appear in the standard
+		// base64 envelope, so this can't false-fail the way a 2-char substring
+		// ("pw") could when it coincidentally shows up in random base64.
+		const value = { databasePassword: "super-secret-db-password", n: 5 };
 		const stored = encryptSecret(JSON.stringify(value));
-		expect(stored).not.toContain("pw");
+		expect(stored).not.toContain("super-secret-db-password");
 		expect(JSON.parse(decryptSecret(stored))).toEqual(value);
 	});
 });
