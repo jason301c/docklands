@@ -308,6 +308,32 @@ export const reloadDockerResource = async (
 			command = `docker service update --force ${resourceName}`;
 		}
 	} else if (resourceType === "standalone") {
+		// Self-update of a standalone `docker run` control plane: `docker restart`
+		// keeps the OLD image, so it would silently NOT update. The container also
+		// can't safely recreate itself (it would have to kill itself mid-update and
+		// reconstruct its own run args). Pull the new image so it's staged, then
+		// surface clear guidance that an operator must recreate the container —
+		// rather than reporting a successful "update" that changed nothing.
+		if (resourceName === "docklands") {
+			const currentImageTag = getDocklandsImageTag();
+			let imageTag = version;
+			if (currentImageTag === "canary" || currentImageTag === "feature") {
+				imageTag = currentImageTag;
+			}
+			const pull = `docker pull ${DOCKLANDS_IMAGE}:${imageTag}`;
+			if (runtimeWorkerId) {
+				await execAsyncRemote(runtimeWorkerId, pull);
+			} else {
+				await execAsync(pull);
+			}
+			throw new Error(
+				`Pulled ${DOCKLANDS_IMAGE}:${imageTag}. This is a standalone (docker run) ` +
+					"install, which can't update itself in place — recreate the container to " +
+					"finish: re-run your install command, or `docker rm -f docklands` then your " +
+					"original `docker run …`. (A swarm-service install updates in place.)",
+			);
+		}
+		// Non-self resources: a restart is the intended reload.
 		command = `docker restart ${resourceName}`;
 	} else {
 		throw new Error("Resource type not found");
