@@ -59,8 +59,13 @@ Docklands is a single Node process that serves both the UI and the backend:
   replaced six near-identical per-engine stacks; the upstream Dokploy per-engine
   model is gone.
 - **Better Auth + custom RBAC.** Better Auth handles identity, sessions, orgs,
-  2FA, and API keys; Docklands layers organization roles, custom roles, and
-  per-resource access on top.
+  WebAuthn passkeys, and API keys; Docklands layers organization roles, custom
+  roles, and per-resource access on top. There is no TOTP/2FA path — it was
+  removed in favor of passkeys (`@better-auth/passkey`), so there is no
+  `two_factor` table, no `user.twoFactorEnabled`, and no 2FA reset/secret-migrate
+  ops entrypoints. Passkeys are host-bound: the relying-party id derives from
+  `BETTER_AUTH_URL`'s hostname (or dev localhost), and WebAuthn rejects bare IPs,
+  so IP-only installs must set a real hostname before relying on passkeys.
 - **Self-hosted only — single tenant, one organization per instance.** This is
   software you install on your own VM/Mac, not a hosted multi-tenant PaaS. There
   is no "cloud" mode: the upstream `IS_CLOUD` flag and every cloud-only branch
@@ -151,7 +156,7 @@ the custom-role manager) all hang off `components/dashboard/`.
   Query with superjson, `httpBatchLink` for queries, `httpLink` split out for
   FormData uploads, a WS client for log subscriptions; theme provider).
 - `client/auth/` configures the Better Auth browser client only
-  (organization, two-factor, API-key, admin plugins).
+  (organization, passkey, API-key, admin plugins).
 - `client/hooks/` holds reusable browser hooks; if a hook needs backend data it
   calls through the typed tRPC client.
 
@@ -197,8 +202,8 @@ the custom-role manager) all hang off `components/dashboard/`.
   restrict host-terminal access to owner/admin, and validate container ids,
   tail/since values, search strings, and shells against the existing allowlists.
 - `server/ops/` — runtime/admin entrypoints bundled into `dist` (DB migration,
-  setup, wait-for-postgres, reset-password, reset-2fa, ensure/migrate
-  auth-secret). Keep imports server-only and startup-safe; never log secrets,
+  setup, wait-for-postgres, reset-password, ensure auth-secret/encryption-key).
+  Keep imports server-only and startup-safe; never log secrets,
   tokens, keys, database URLs, or generated passwords unless the command exists
   to reveal them. When adding an entrypoint, update `package.json`,
   `esbuild.config.ts`, and docs together.
@@ -233,7 +238,7 @@ reason to move code out.
   (`detection.ts`): the single source of truth for the six managed engines
   (postgres/mysql/mariadb/mongo/redis/libsql). See "Managed databases" below.
 - `lib/` — `auth.ts` (Better Auth setup: Drizzle adapter, organization/admin/
-  two-factor/api-key plugins, trusted origins, request validators for Fetch and
+  passkey/api-key plugins, trusted origins, request validators for Fetch and
   Node WS), `access-control.ts` (the canonical permission `statements`: resources
   × actions, and the static role definitions), `auth-secret.ts`, `logger.ts`.
 - `utils/` — security-sensitive infrastructure helpers. Prefer structured
@@ -339,7 +344,7 @@ Authorization has three layers; preserve least privilege, auditability, and
 organization scoping in every change.
 
 1. **Identity (Better Auth)** — users, sessions, the single organization,
-   members, 2FA, and API keys, via the Drizzle adapter
+   members, passkeys, and API keys, via the Drizzle adapter
    (`server/core/lib/auth.ts`). There is one organization per instance (see the
    single-tenant note above), so every member, role, invitation, and
    `organizationId`-scoped resource belongs to that one org. The `organization`

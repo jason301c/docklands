@@ -1,10 +1,11 @@
 import type { IncomingMessage } from "node:http";
 import { apiKey } from "@better-auth/api-key";
+import { passkey } from "@better-auth/passkey";
 import * as bcrypt from "bcrypt";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
-import { organization, twoFactor } from "better-auth/plugins";
+import { organization } from "better-auth/plugins";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "../db";
 import * as schema from "../db/schema";
@@ -318,7 +319,16 @@ const { handler, api } = betterAuth({
 			enableMetadata: true,
 			references: "user",
 		}),
-		twoFactor(),
+		// WebAuthn passkeys. The relying-party id (rpID) is bound to the host the
+		// user registers from: it derives from BETTER_AUTH_URL's hostname when set,
+		// otherwise from the dev localhost base URL. The expected origin is read
+		// from the incoming request, so multi-host installs keep working as long as
+		// the rpID matches the registrable domain of that origin. WebAuthn does not
+		// allow bare IP addresses as an rpID, so IP-only installs should set
+		// BETTER_AUTH_URL to a real hostname before relying on passkeys.
+		passkey({
+			rpName: "Docklands",
+		}),
 		organization({
 			ac,
 			roles: {
@@ -418,7 +428,6 @@ export const validateRequestHeaders = async (headers: Headers) => {
 					image: userFromDb.image,
 					createdAt: userFromDb.createdAt,
 					updatedAt: userFromDb.updatedAt,
-					twoFactorEnabled: userFromDb.twoFactorEnabled,
 					role: member?.role || "member",
 					ownerId: member?.organization.ownerId || apiKeyRecord.user.id,
 				},

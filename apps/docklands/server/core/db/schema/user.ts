@@ -10,7 +10,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { paths } from "@/server/core/constants/paths";
-import { account, apikey, organization } from "./account";
+import { account, apikey, organization, passkey } from "./account";
 import { backups } from "./backups";
 import { schedules } from "./schedule";
 import { workspaces } from "./workspace";
@@ -41,7 +41,6 @@ export const user = pgTable("user", {
 		.$defaultFn(() => new Date().toISOString()),
 	createdAt: timestamp("created_at").defaultNow(),
 	// Auth
-	twoFactorEnabled: boolean("two_factor_enabled"),
 	email: text("email").notNull().unique(),
 	emailVerified: boolean("email_verified").notNull(),
 	image: text("image"),
@@ -69,6 +68,7 @@ export const usersRelations = relations(user, ({ one, many }) => ({
 	organizations: many(organization),
 	workspaces: many(workspaces),
 	apiKeys: many(apikey),
+	passkeys: many(passkey),
 	backups: many(backups),
 	schedules: many(schedules),
 }));

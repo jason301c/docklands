@@ -5,6 +5,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@cloudflare/kumo/components/popover";
+import { SensitiveInput } from "@cloudflare/kumo/components/sensitive-input";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { Loader2, Palette } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -344,54 +345,63 @@ function SecuritySection() {
 		<SectionCard title="Security" contentClassName="space-y-6">
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-					<div className="grid gap-4 sm:grid-cols-2">
-						<FormField
-							control={form.control}
-							name="currentPassword"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Current password</FormLabel>
-									<FormControl>
-										<Input
-											type="password"
-											autoComplete="current-password"
-											placeholder="••••••••"
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name="password"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>New password</FormLabel>
-									<FormControl>
-										<Input
-											type="password"
-											autoComplete="new-password"
-											placeholder="••••••••"
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</div>
-					<div className="flex justify-end">
-						<Button
-							type="submit"
-							variant="secondary"
-							loading={update.isPending}
-							disabled={!form.formState.isDirty}
-						>
-							Update password
-						</Button>
-					</div>
+					<FormField
+						control={form.control}
+						name="currentPassword"
+						render={({ field, fieldState }) => (
+							<FormItem>
+								<FormLabel>Current password</FormLabel>
+								<FormControl>
+									<SensitiveInput
+										autoComplete="current-password"
+										placeholder="Current password"
+										variant={fieldState.error ? "error" : "default"}
+										value={field.value}
+										onValueChange={field.onChange}
+										onBlur={field.onBlur}
+										name={field.name}
+										ref={field.ref}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name="password"
+						render={({ field, fieldState }) => (
+							<FormItem>
+								<FormLabel>New password</FormLabel>
+								<div className="flex items-start gap-2">
+									<div className="min-w-0 flex-1">
+										<FormControl>
+											<SensitiveInput
+												autoComplete="new-password"
+												placeholder="New password"
+												variant={fieldState.error ? "error" : "default"}
+												value={field.value}
+												onValueChange={field.onChange}
+												onBlur={field.onBlur}
+												name={field.name}
+												ref={field.ref}
+											/>
+										</FormControl>
+										<FormMessage />
+									</div>
+									{field.value.length > 0 && (
+										<Button
+											type="submit"
+											loading={update.isPending}
+											disabled={!form.formState.isDirty}
+										>
+											Update password
+										</Button>
+									)}
+								</div>
+							</FormItem>
+						)}
+					/>
 				</form>
 			</Form>
 

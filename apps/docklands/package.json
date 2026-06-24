@@ -13,8 +13,6 @@
 		"wait-for-postgres": "node -r dotenv/config dist/wait-for-postgres.mjs",
 		"wait-for-postgres-dev": "tsx -r dotenv/config server/ops/wait-for-postgres.ts",
 		"reset-password": "node -r dotenv/config dist/reset-password.mjs",
-		"reset-2fa": "node -r dotenv/config dist/reset-2fa.mjs",
-		"migrate-auth-secret": "node -r dotenv/config dist/migrate-auth-secret.mjs",
 		"dev": "tsx -r dotenv/config ./server/server.ts  --project tsconfig.server.json ",
 		"migration:generate": "drizzle-kit generate --config ./server/core/db/drizzle.config.ts",
 		"migration:run": "tsx -r dotenv/config server/ops/migrate-db.ts",
@@ -37,6 +35,7 @@
 	},
 	"dependencies": {
 		"@better-auth/api-key": "1.6.20",
+		"@better-auth/passkey": "1.6.20",
 		"@cloudflare/kumo": "^2.5.2",
 		"@codemirror/autocomplete": "^6.20.3",
 		"@codemirror/lang-css": "^6.3.1",

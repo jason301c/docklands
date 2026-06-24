@@ -16,7 +16,6 @@ import {
 	CheckIcon,
 	ChevronsUpDown,
 	Copy,
-	Fingerprint,
 	Key,
 	Server,
 	Settings2,
@@ -380,34 +379,6 @@ export const ImpersonationBar = () => {
 													{format(new Date(data.createdAt), "MMM d, yyyy")}
 												</span>
 											)}
-											<Tooltip
-												content={<>Two-Factor Authentication Status</>}
-												asChild
-											>
-												<span className="flex items-center gap-1 cursor-default">
-													<Fingerprint
-														className={cn(
-															"h-3 w-3",
-															data?.user?.twoFactorEnabled
-																? "text-kumo-success"
-																: "text-kumo-subtle",
-														)}
-													/>
-													<Badge
-														variant={
-															data?.user?.twoFactorEnabled
-																? "green"
-																: "secondary"
-														}
-														className="text-[10px] px-1 py-0"
-													>
-														2FA{" "}
-														{data?.user?.twoFactorEnabled
-															? "Enabled"
-															: "Disabled"}
-													</Badge>
-												</span>
-											</Tooltip>
 										</div>
 									</div>
 								</div>

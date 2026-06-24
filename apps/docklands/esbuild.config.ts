@@ -27,8 +27,6 @@ try {
 				"migrate-db": "server/ops/migrate-db.ts",
 				"wait-for-postgres": "server/ops/wait-for-postgres.ts",
 				"reset-password": "server/ops/reset-password.ts",
-				"reset-2fa": "server/ops/reset-2fa.ts",
-				"migrate-auth-secret": "server/ops/migrate-auth-secret.ts",
 			},
 			bundle: true,
 			platform: "node",

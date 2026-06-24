@@ -169,15 +169,6 @@ export const invitationRelations = relations(invitation, ({ one }) => ({
 	}),
 }));
 
-export const twoFactor = pgTable("two_factor", {
-	id: text("id").primaryKey(),
-	secret: text("secret").notNull(),
-	backupCodes: text("backup_codes").notNull(),
-	userId: text("user_id")
-		.notNull()
-		.references(() => user.id, { onDelete: "cascade" }),
-});
-
 export const apikey = pgTable("apikey", {
 	id: text("id").primaryKey(),
 	name: text("name"),
@@ -208,6 +199,42 @@ export const apikey = pgTable("apikey", {
 export const apikeyRelations = relations(apikey, ({ one }) => ({
 	user: one(user, {
 		fields: [apikey.referenceId],
+		references: [user.id],
+	}),
+}));
+
+// WebAuthn passkeys (Better Auth `@better-auth/passkey` plugin). The drizzle
+// *property* names (publicKey, credentialID, deviceType, backedUp, …) must match
+// the plugin's field keys so the Drizzle adapter can read/write them; the SQL
+// column names follow the repo's snake_case convention.
+export const passkey = pgTable(
+	"passkey",
+	{
+		id: text("id")
+			.primaryKey()
+			.$defaultFn(() => nanoid()),
+		name: text("name"),
+		publicKey: text("public_key").notNull(),
+		userId: text("user_id")
+			.notNull()
+			.references(() => user.id, { onDelete: "cascade" }),
+		credentialID: text("credential_id").notNull(),
+		counter: integer("counter").notNull(),
+		deviceType: text("device_type").notNull(),
+		backedUp: boolean("backed_up").notNull(),
+		transports: text("transports"),
+		createdAt: timestamp("created_at").$defaultFn(() => new Date()),
+		aaguid: text("aaguid"),
+	},
+	(table) => [
+		index("passkey_user_id_idx").on(table.userId),
+		index("passkey_credential_id_idx").on(table.credentialID),
+	],
+);
+
+export const passkeyRelations = relations(passkey, ({ one }) => ({
+	user: one(user, {
+		fields: [passkey.userId],
 		references: [user.id],
 	}),
 }));

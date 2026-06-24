@@ -43,8 +43,6 @@ export const ShowUsers = () => {
 								<Table.Row>
 									<Table.Head className="w-[100px]">Email</Table.Head>
 									<Table.Head className="text-center">Role</Table.Head>
-									<Table.Head className="text-center">2FA</Table.Head>
-
 									<Table.Head className="text-center">Created At</Table.Head>
 									<Table.Head className="text-right">Actions</Table.Head>
 								</Table.Row>
@@ -108,9 +106,6 @@ export const ShowUsers = () => {
 												</Badge>
 											</Table.Cell>
 											<Table.Cell className="text-center">
-												{member.user.twoFactorEnabled ? "Enabled" : "Disabled"}
-											</Table.Cell>
-											<Table.Cell className="text-center">
 												<span className="text-sm text-kumo-subtle">
 													{format(new Date(member.createdAt), "PPpp")}
 												</span>
@@ -150,7 +145,7 @@ export const ShowUsers = () => {
 															{canDelete && (
 																<DialogAction
 																	title="Delete User"
-																	description="This permanently deletes the user account and everything tied to it — sessions, API keys, 2FA, credentials, and all organization memberships. It cannot be undone. Continue?"
+																	description="This permanently deletes the user account and everything tied to it — sessions, API keys, passkeys, credentials, and all organization memberships. It cannot be undone. Continue?"
 																	type="destructive"
 																	onClick={async () => {
 																		await mutateAsync({

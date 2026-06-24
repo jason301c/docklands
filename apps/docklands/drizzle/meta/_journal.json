@@ -15,6 +15,13 @@
       "when": 1782295189759,
       "tag": "0001_curly_secret_warriors",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782299528598,
+      "tag": "0002_serious_blacklash",
+      "breakpoints": true
     }
   ]
 }

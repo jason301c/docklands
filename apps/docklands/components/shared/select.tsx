@@ -3,10 +3,9 @@
 import { Select as KumoSelect } from "@cloudflare/kumo/components/select";
 import { Children, isValidElement, type ReactNode } from "react";
 
-type SelectProps<
-	T,
-	M extends boolean | undefined = false,
-> = Parameters<typeof KumoSelect<T, M>>[0];
+type SelectProps<T, M extends boolean | undefined = false> = Parameters<
+	typeof KumoSelect<T, M>
+>[0];
 
 type DerivedItem = { label: ReactNode; value: unknown };
 

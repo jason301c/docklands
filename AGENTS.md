@@ -133,7 +133,7 @@ Key versions in `apps/docklands` after the dependency refresh:
 - Biome 2
 - tRPC 11
 - Drizzle ORM + Drizzle Zod, on PostgreSQL (`postgres.js`)
-- Better Auth (organization, admin, two-factor, API-key plugins)
+- Better Auth (organization, admin, passkey, API-key plugins)
 - Cloudflare Kumo (`@cloudflare/kumo`) as the UI component library
 - Vitest 4
 - Zod 4
@@ -307,6 +307,17 @@ bun --filter docklands check:baseui
   and commit both the SQL and the matching `apps/docklands/drizzle/meta`
   snapshot/journal updates. Do not hand-edit generated snapshots unless you are
   deliberately repairing a generated migration.
+- **`migration:generate` needs a real TTY.** When a diff both creates and drops
+  tables/columns (common here, since we drop/recreate freely), drizzle-kit shows
+  an interactive "is this created or renamed?" prompt. The root scripts
+  `migration:generate`, `migration:up`, and `migration:drop` therefore run the
+  app-local command **directly** (`cd apps/docklands && bun run …`) instead of via
+  `bun --filter`, because `--filter` prefixes child output and strips the TTY,
+  which makes drizzle-kit abort with "Interactive prompts require a TTY terminal".
+  Run these from an interactive shell, not a piped/non-TTY context, and answer the
+  create-vs-rename prompt explicitly. Agents in a non-TTY harness cannot answer the
+  prompt — split the change into a drop-only diff and a create-only diff (each is
+  unambiguous and needs no prompt), or have a human run the combined generate.
 
 ## Branding
 
