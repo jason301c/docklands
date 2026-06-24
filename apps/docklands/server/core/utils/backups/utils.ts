@@ -1,4 +1,5 @@
 import { scheduledJobs, scheduleJob } from "node-schedule";
+import { quote } from "shell-quote";
 import { logger } from "@/server/core/lib/logger";
 import type { BackupSchedule } from "@/server/core/services/backup";
 import { findDatabaseById } from "@/server/core/services/database";
@@ -58,14 +59,14 @@ export const normalizeS3Path = (prefix: string) => {
 export const getS3Credentials = (destination: Destination) => {
 	const { region, endpoint, provider } = destination;
 	const rcloneFlags = [
-		`--s3-region="${region}"`,
-		`--s3-endpoint="${endpoint}"`,
+		`--s3-region=${quote([region ?? ""])}`,
+		`--s3-endpoint=${quote([endpoint ?? ""])}`,
 		"--s3-no-check-bucket",
 		"--s3-force-path-style",
 	];
 
 	if (provider) {
-		rcloneFlags.unshift(`--s3-provider="${provider}"`);
+		rcloneFlags.unshift(`--s3-provider=${quote([provider])}`);
 	}
 
 	if (destination.additionalFlags?.length) {
@@ -79,22 +80,28 @@ export const getS3Credentials = (destination: Destination) => {
  * S3 credentials as an env-var prefix for an rclone command, e.g.
  * `RCLONE_S3_ACCESS_KEY_ID='…' RCLONE_S3_SECRET_ACCESS_KEY='…'`. rclone reads
  * these for on-the-fly `:s3:` remotes, so the secrets live in the rclone
- * process environment instead of its argv (not visible via `ps`). Single-quoted
- * because S3 keys are base64-ish and never contain a single quote.
+ * process environment instead of its argv (not visible via `ps`). shell-quote
+ * escapes the values so a key containing shell metacharacters can't break out.
  */
 export const getS3CredentialEnv = (destination: Destination): string => {
 	const { accessKey, secretAccessKey } = destination;
 	return (
-		`RCLONE_S3_ACCESS_KEY_ID='${accessKey}' ` +
-		`RCLONE_S3_SECRET_ACCESS_KEY='${secretAccessKey}'`
+		`RCLONE_S3_ACCESS_KEY_ID=${quote([accessKey ?? ""])} ` +
+		`RCLONE_S3_SECRET_ACCESS_KEY=${quote([secretAccessKey ?? ""])}`
 	);
 };
 
+// Backup commands run as `docker exec … bash -c <script>`. The dump script is
+// built with one level of shell-quote (so the db name/user/password are safe
+// for the inner bash), then the whole script is shell-quoted again as the single
+// `bash -c` argument (safe for the outer sh that execAsync runs). This two-level
+// quoting is why a value containing a quote/`;`/`|` can no longer break out.
 export const getPostgresBackupCommand = (
 	database: string,
 	databaseUser: string,
 ) => {
-	return `docker exec -i $CONTAINER_ID bash -c "set -o pipefail; pg_dump -Fc --no-acl --no-owner -h localhost -U ${databaseUser} --no-password '${database}' | gzip"`;
+	const script = `set -o pipefail; pg_dump -Fc --no-acl --no-owner -h localhost -U ${quote([databaseUser])} --no-password ${quote([database])} | gzip`;
+	return `docker exec -i $CONTAINER_ID bash -c ${quote([script])}`;
 };
 
 export const getMariadbBackupCommand = (
@@ -102,14 +109,16 @@ export const getMariadbBackupCommand = (
 	databaseUser: string,
 	databasePassword: string,
 ) => {
-	return `docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mariadb-dump --user='${databaseUser}' --password='${databasePassword}' --single-transaction --quick --databases ${database} | gzip"`;
+	const script = `set -o pipefail; mariadb-dump --user=${quote([databaseUser])} --password=${quote([databasePassword])} --single-transaction --quick --databases ${quote([database])} | gzip`;
+	return `docker exec -i $CONTAINER_ID bash -c ${quote([script])}`;
 };
 
 export const getMysqlBackupCommand = (
 	database: string,
 	databasePassword: string,
 ) => {
-	return `docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mysqldump --default-character-set=utf8mb4 -u 'root' --password='${databasePassword}' --single-transaction --no-tablespaces --quick '${database}' | gzip"`;
+	const script = `set -o pipefail; mysqldump --default-character-set=utf8mb4 -u root --password=${quote([databasePassword])} --single-transaction --no-tablespaces --quick ${quote([database])} | gzip`;
+	return `docker exec -i $CONTAINER_ID bash -c ${quote([script])}`;
 };
 
 export const getMongoBackupCommand = (
@@ -117,11 +126,12 @@ export const getMongoBackupCommand = (
 	databaseUser: string,
 	databasePassword: string,
 ) => {
-	return `docker exec -i $CONTAINER_ID bash -c "set -o pipefail; mongodump -d '${database}' -u '${databaseUser}' -p '${databasePassword}' --archive --authenticationDatabase admin --gzip"`;
+	const script = `set -o pipefail; mongodump -d ${quote([database])} -u ${quote([databaseUser])} -p ${quote([databasePassword])} --archive --authenticationDatabase admin --gzip`;
+	return `docker exec -i $CONTAINER_ID bash -c ${quote([script])}`;
 };
 
 export const getServiceContainerCommand = (appName: string) => {
-	return `docker ps -q --filter "status=running" --filter "label=com.docker.swarm.service.name=${appName}" | head -n 1`;
+	return `docker ps -q --filter status=running --filter label=com.docker.swarm.service.name=${quote([appName])} | head -n 1`;
 };
 
 export const getComposeContainerCommand = (
@@ -130,9 +140,9 @@ export const getComposeContainerCommand = (
 	composeType: "stack" | "docker-compose" | undefined,
 ) => {
 	if (composeType === "stack") {
-		return `docker ps -q --filter "status=running" --filter "label=com.docker.stack.namespace=${appName}" --filter "label=com.docker.swarm.service.name=${appName}_${serviceName}" | head -n 1`;
+		return `docker ps -q --filter status=running --filter label=com.docker.stack.namespace=${quote([appName])} --filter label=com.docker.swarm.service.name=${quote([`${appName}_${serviceName}`])} | head -n 1`;
 	}
-	return `docker ps -q --filter "status=running" --filter "label=com.docker.compose.workspace=${appName}" --filter "label=com.docker.compose.service=${serviceName}" | head -n 1`;
+	return `docker ps -q --filter status=running --filter label=com.docker.compose.workspace=${quote([appName])} --filter label=com.docker.compose.service=${quote([serviceName])} | head -n 1`;
 };
 
 // Container search + dump command builders for COMPOSE backups. Managed

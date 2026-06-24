@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { nanoid } from "nanoid";
+import { quote } from "shell-quote";
 import {
 	encodeBase64,
 	parseEnvironmentKeyValuePair,
@@ -62,7 +63,9 @@ export const getRailpackCommand = (application: ApplicationNested) => {
 				]
 			: []),
 		"--build-arg",
-		`BUILDKIT_SYNTAX=ghcr.io/railwayapp/railpack-frontend:v${application.railpackVersion}`,
+		quote([
+			`BUILDKIT_SYNTAX=ghcr.io/railwayapp/railpack-frontend:v${application.railpackVersion}`,
+		]),
 		"-f",
 		`${buildAppDirectory}/railpack-plan.json`,
 		"--output",
@@ -95,7 +98,7 @@ export const getRailpackCommand = (application: ApplicationNested) => {
 
 # Ensure we have a builder with containerd (isolated per build)
 
-export RAILPACK_VERSION=${application.railpackVersion}
+export RAILPACK_VERSION=${quote([application.railpackVersion ?? ""])}
 bash -c "$(curl -fsSL https://railpack.com/install.sh)"
 docker buildx create --name ${builderName} --driver docker-container || true
 

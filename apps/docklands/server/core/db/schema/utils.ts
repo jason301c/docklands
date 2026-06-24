@@ -6,11 +6,16 @@ const alphabet = "abcdefghijklmnopqrstuvwxyz123456789";
 
 const customNanoid = customAlphabet(alphabet, 6);
 
-/** App name: letters, numbers, dots, underscores, hyphens only (no spaces). Safe for shell/Docker. */
-export const APP_NAME_REGEX = /^[a-zA-Z0-9._-]+$/;
+/**
+ * App name: letters, numbers, dots, underscores, hyphens only (no spaces), and
+ * never a `..` sequence. appName is joined into on-disk paths (and `rm -rf`'d),
+ * so disallowing `..` prevents a crafted name from escaping its app directory.
+ * The negative lookahead rejects any value containing `..`.
+ */
+export const APP_NAME_REGEX = /^(?!.*\.\.)[a-zA-Z0-9._-]+$/;
 
 export const APP_NAME_MESSAGE =
-	"App name can only contain letters, numbers, dots, underscores and hyphens";
+	"App name can only contain letters, numbers, dots, underscores and hyphens (no '..')";
 
 /**
  * Database password: blocks shell-dangerous characters. The password is

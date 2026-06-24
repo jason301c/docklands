@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { quote } from "shell-quote";
 import { paths } from "@/server/core/constants/paths";
 import type { Compose } from "@/server/core/services/compose";
 import { encodeBase64 } from "../docker/utils";
@@ -10,9 +11,9 @@ export const getCreateComposeFileCommand = (compose: Compose) => {
 	const filePath = join(outputPath, "docker-compose.yml");
 	const encodedContent = encodeBase64(composeFile);
 	const bashCommand = `
-		rm -rf ${outputPath};
-		mkdir -p ${outputPath};
-		echo "${encodedContent}" | base64 -d > "${filePath}";
+		rm -rf ${quote([outputPath])};
+		mkdir -p ${quote([outputPath])};
+		echo "${encodedContent}" | base64 -d > ${quote([filePath])};
 		echo "File 'docker-compose.yml' created: ✅";
 	`;
 	return bashCommand;

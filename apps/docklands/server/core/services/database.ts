@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { eq, getTableColumns } from "drizzle-orm";
+import { quote } from "shell-quote";
 import type { z } from "zod";
 import {
 	type DatabaseEngineKey,
@@ -160,7 +161,7 @@ export const deployDatabase = async (
 		if (service.runtimeWorkerId) {
 			await execAsyncRemote(
 				service.runtimeWorkerId,
-				`docker pull ${service.dockerImage}`,
+				`docker pull ${quote([service.dockerImage])}`,
 				onData,
 			);
 		} else {

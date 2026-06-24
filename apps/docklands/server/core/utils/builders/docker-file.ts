@@ -1,3 +1,4 @@
+import { quote } from "shell-quote";
 import {
 	encodeBase64,
 	getEnvironmentVariablesObject,
@@ -32,10 +33,17 @@ export const getDockerCommand = (application: ApplicationNested) => {
 		const dockerContextPath =
 			getDockerContextPath(application) || defaultContextPath;
 
-		const commandArgs = ["build", "-t", image, "-f", dockerFilePath, "."];
+		const commandArgs = [
+			"build",
+			"-t",
+			quote([image]),
+			"-f",
+			quote([dockerFilePath]),
+			".",
+		];
 
 		if (dockerBuildStage) {
-			commandArgs.push("--target", dockerBuildStage);
+			commandArgs.push("--target", quote([dockerBuildStage]));
 		}
 
 		if (cleanCache) {
@@ -93,8 +101,8 @@ export const getDockerCommand = (application: ApplicationNested) => {
 
 		command += `
 echo "Building ${appName}" ;
-cd ${dockerContextPath} || {
-  echo "❌ The path ${dockerContextPath} does not exist" ;
+cd ${quote([dockerContextPath])} || {
+  echo ${quote([`❌ The path ${dockerContextPath} does not exist`])} ;
   exit 1;
 }
 

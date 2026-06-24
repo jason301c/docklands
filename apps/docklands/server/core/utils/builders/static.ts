@@ -53,7 +53,9 @@ export const getStaticCommand = (application: ApplicationNested) => {
 			"FROM nginx:alpine",
 			"WORKDIR /usr/share/nginx/html/",
 			isStaticSpa ? "COPY nginx.conf /etc/nginx/nginx.conf" : "",
-			`COPY ${publishDirectory || "."} .`,
+			// JSON/exec form so a crafted publishDirectory (spaces, newlines) can't
+			// break out of the COPY instruction or inject extra Dockerfile lines.
+			`COPY [${JSON.stringify(publishDirectory || ".")}, "."]`,
 			'CMD ["nginx", "-g", "daemon off;"]',
 		].join("\n"),
 	);

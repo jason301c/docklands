@@ -1,13 +1,19 @@
+import { quote } from "shell-quote";
 import {
 	getComposeContainerCommand,
 	getServiceContainerCommand,
 } from "../backups/utils";
 
+// Like the backup commands, each restore runs as `docker exec … sh -c <script>`.
+// The script is shell-quoted once (db name/user/password safe for the inner sh),
+// then the whole script is quoted again as the single `sh -c` argument — so a
+// value containing a quote/`;`/`|` cannot break out at either level.
 export const getPostgresRestoreCommand = (
 	database: string,
 	databaseUser: string,
 ) => {
-	return `docker exec -i $CONTAINER_ID sh -c "pg_restore -U '${databaseUser}' -d ${database} -O --clean --if-exists"`;
+	const script = `pg_restore -U ${quote([databaseUser])} -d ${quote([database])} -O --clean --if-exists`;
+	return `docker exec -i $CONTAINER_ID sh -c ${quote([script])}`;
 };
 
 export const getMariadbRestoreCommand = (
@@ -15,14 +21,16 @@ export const getMariadbRestoreCommand = (
 	databaseUser: string,
 	databasePassword: string,
 ) => {
-	return `docker exec -i $CONTAINER_ID sh -c "mariadb -u '${databaseUser}' -p'${databasePassword}' ${database}"`;
+	const script = `mariadb -u ${quote([databaseUser])} -p${quote([databasePassword])} ${quote([database])}`;
+	return `docker exec -i $CONTAINER_ID sh -c ${quote([script])}`;
 };
 
 export const getMysqlRestoreCommand = (
 	database: string,
 	databasePassword: string,
 ) => {
-	return `docker exec -i $CONTAINER_ID sh -c "mysql -u root -p'${databasePassword}' ${database}"`;
+	const script = `mysql -u root -p${quote([databasePassword])} ${quote([database])}`;
+	return `docker exec -i $CONTAINER_ID sh -c ${quote([script])}`;
 };
 
 export const getMongoRestoreCommand = (
@@ -30,7 +38,8 @@ export const getMongoRestoreCommand = (
 	databaseUser: string,
 	databasePassword: string,
 ) => {
-	return `docker exec -i $CONTAINER_ID sh -c "mongorestore --username '${databaseUser}' --password '${databasePassword}' --authenticationDatabase admin --db ${database} --archive --drop"`;
+	const script = `mongorestore --username ${quote([databaseUser])} --password ${quote([databasePassword])} --authenticationDatabase admin --db ${quote([database])} --archive --drop`;
+	return `docker exec -i $CONTAINER_ID sh -c ${quote([script])}`;
 };
 
 export const getComposeSearchCommand = (
@@ -88,8 +97,8 @@ rm -rf ${tempDir} && \
 mkdir -p ${tempDir} && \
 ${rcloneCommand} ${tempDir} && \
 cd ${tempDir} && \
-gunzip -f "${fileName}" && \
-${restoreCommand} < "${decompressedName}" && \
+gunzip -f ${quote([fileName])} && \
+${restoreCommand} < ${quote([decompressedName])} && \
 rm -rf ${tempDir}
 	`;
 };

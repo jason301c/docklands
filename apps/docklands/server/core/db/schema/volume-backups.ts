@@ -9,6 +9,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { dockerNameField, s3PrefixField } from "@/shared/validation/shell-safe";
 import { applications } from "./application";
 import { compose } from "./compose";
 import { database } from "./database";
@@ -80,9 +81,17 @@ export const volumeBackupsRelations = relations(
 	}),
 );
 
-export const createVolumeBackupSchema = createInsertSchema(volumeBackups).omit({
-	volumeBackupId: true,
-});
+export const createVolumeBackupSchema = createInsertSchema(volumeBackups)
+	.omit({
+		volumeBackupId: true,
+	})
+	// These get interpolated into docker/rclone backup commands — constrain them
+	// to shell-safe charsets at the boundary (see shared/validation/shell-safe).
+	.extend({
+		volumeName: dockerNameField,
+		serviceName: dockerNameField.nullish(),
+		prefix: s3PrefixField,
+	});
 
 export const updateVolumeBackupSchema = createVolumeBackupSchema.extend({
 	volumeBackupId: z.string().min(1),

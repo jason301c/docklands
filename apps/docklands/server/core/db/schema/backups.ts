@@ -11,6 +11,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { dockerNameField, s3PrefixField } from "@/shared/validation/shell-safe";
 import { generateAppName } from ".";
 import { compose } from "./compose";
 import { database } from "./database";
@@ -115,7 +116,9 @@ const createSchema = createInsertSchema(backups, {
 	backupId: z.string(),
 	destinationId: z.string(),
 	enabled: z.boolean().nullish(),
-	prefix: z.string().min(1),
+	// prefix lands in the rclone `:s3:` path and serviceName in docker label
+	// filters — constrain both to shell-safe charsets at the boundary.
+	prefix: s3PrefixField.min(1),
 	database: z.string().min(1),
 	schedule: z.string(),
 	keepLatestCount: z.number().nullish(),
@@ -130,7 +133,7 @@ const createSchema = createInsertSchema(backups, {
 	databaseId: z.string().nullish(),
 	serviceDatabaseId: z.string().nullish(),
 	composeId: z.string().nullish(),
-	serviceName: z.string().nullish(),
+	serviceName: dockerNameField.nullish(),
 	userId: z.string().nullish(),
 	metadata: z.any().nullish(),
 });

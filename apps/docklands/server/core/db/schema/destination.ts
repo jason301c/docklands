@@ -3,6 +3,7 @@ import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import { s3BucketField } from "@/shared/validation/shell-safe";
 import {
 	ADDITIONAL_FLAG_ERROR,
 	ADDITIONAL_FLAG_REGEX,
@@ -47,7 +48,8 @@ const createSchema = createInsertSchema(destinations, {
 	name: z.string().min(1),
 	provider: z.string(),
 	accessKey: z.string(),
-	bucket: z.string(),
+	// Interpolated into the rclone `:s3:<bucket>/…` remote — keep it shell-safe.
+	bucket: s3BucketField,
 	endpoint: z.string(),
 	secretAccessKey: z.string(),
 	region: z.string(),

@@ -55,9 +55,9 @@ export const cloneGitRepository = async ({
 		}
 		command += addHostToKnownHostsCommand(customGitUrl);
 	}
-	command += `rm -rf ${outputPath};`;
-	command += `mkdir -p ${outputPath};`;
-	command += `echo "Cloning Repo Custom ${customGitUrl} to ${outputPath}: ✅";`;
+	command += `rm -rf ${quote([outputPath])};`;
+	command += `mkdir -p ${quote([outputPath])};`;
+	command += `echo ${quote([`Cloning Repo Custom ${customGitUrl} to ${outputPath}: ✅`])};`;
 
 	if (customGitSSHKeyId) {
 		await updateSSHKeyById({
@@ -83,8 +83,8 @@ export const cloneGitRepository = async ({
 		command += `export GIT_SSH_COMMAND="${gitSshCommand}";`;
 		cleanupKey = `rm -f "$DOCKLANDS_SSH_KEY";`;
 	}
-	command += `if ! git clone --branch ${quote([customGitBranch ?? ""])} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} --progress ${customGitUrl} ${outputPath}; then
-				echo "❌ [ERROR] Fail to clone the repository ${customGitUrl}";
+	command += `if ! git clone --branch ${quote([customGitBranch ?? ""])} --depth 1 ${enableSubmodules ? "--recurse-submodules" : ""} --progress ${quote([customGitUrl])} ${quote([outputPath])}; then
+				echo ${quote([`❌ [ERROR] Fail to clone the repository ${customGitUrl}`])};
 				${cleanupKey}
 				exit 1;
 			fi
@@ -121,7 +121,7 @@ const addHostToKnownHostsCommand = (repositoryURL: string) => {
 	// ssh-keyscan is best-effort: some Git hosts (e.g. Hugging Face) never answer
 	// it, and its exit code must not abort the clone under `set -e`. The clone's
 	// own host-key check (StrictHostKeyChecking=accept-new) is the real boundary.
-	return `ssh-keyscan -p ${port} ${domain} >> ${knownHostsPath} || true;`;
+	return `ssh-keyscan -p ${port} ${quote([domain ?? ""])} >> ${quote([knownHostsPath])} || true;`;
 };
 const sanitizeRepoPathSSH = (input: string) => {
 	const SSH_PATH_RE = new RegExp(
@@ -179,7 +179,7 @@ export const getGitCommitInfo = async ({
 		hash: "",
 	};
 	try {
-		const gitCommand = `git -C ${outputPath} log -1 --pretty=format:"%H---DELIMITER---%B"`;
+		const gitCommand = `git -C ${quote([outputPath])} log -1 --pretty=format:"%H---DELIMITER---%B"`;
 		if (runtimeWorkerId) {
 			const { stdout } = await execAsyncRemote(runtimeWorkerId, gitCommand);
 			stdoutResult = stdout.trim();
