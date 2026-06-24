@@ -15,6 +15,7 @@ import {
 	PostgresqlIcon,
 	RedisIcon,
 } from "@/components/icons/data-tools-icons";
+import { SectionCard } from "@/components/shared/section-card";
 import { ShowServiceDatabaseBackups } from "./show-service-database-backups";
 
 type ServiceDatabaseEngine =
@@ -206,17 +207,12 @@ export const ShowServiceDatabases = ({ composeId }: Props) => {
 	}
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex flex-col gap-0.5">
-				<h3 className="text-xl font-semibold flex items-center gap-2">
-					<DatabaseZap className="size-6 text-kumo-subtle" />
-					Detected Databases
-				</h3>
-				<p className="text-sm text-kumo-subtle">
-					Databases discovered inside this compose stack. Their connection
-					variables and backups are managed by Docklands.
-				</p>
-			</div>
+		<SectionCard
+			icon={DatabaseZap}
+			title="Detected Databases"
+			description="Databases discovered inside this compose stack. Their connection variables and backups are managed by Docklands."
+			contentClassName="space-y-4"
+		>
 			{databases.map((database) => (
 				<ServiceDatabaseCard
 					key={database.serviceDatabaseId}
@@ -224,6 +220,6 @@ export const ShowServiceDatabases = ({ composeId }: Props) => {
 					runtimeWorkerId={compose?.runtimeWorkerId || undefined}
 				/>
 			))}
-		</div>
+		</SectionCard>
 	);
 };

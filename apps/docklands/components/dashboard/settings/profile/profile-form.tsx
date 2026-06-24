@@ -17,6 +17,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/shared/form";
+import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { getAvatarType, isSolidColorAvatar } from "@/shared/avatar-utils";
 import { generateSHA256Hash, getFallbackAvatarInitials } from "@/shared/utils";
@@ -138,283 +139,268 @@ export const ProfileForm = () => {
 	};
 
 	return (
-		<div className="w-full">
-			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
-				<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
-					<div>
-						<h3 className="text-xl font-semibold flex items-center gap-2">
-							<User className="size-6 text-kumo-subtle self-center" />
-							Account
-						</h3>
-						<p>Change the details of your profile here.</p>
-					</div>
-
-					{!data?.user.twoFactorEnabled ? <Enable2FA /> : <Configure2FA />}
+		<SectionCard
+			icon={User}
+			title="Account"
+			description="Change the details of your profile here."
+			actions={!data?.user.twoFactorEnabled ? <Enable2FA /> : <Configure2FA />}
+			contentClassName="space-y-2"
+		>
+			{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
+			{isPending ? (
+				<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[35vh]">
+					<span>Loading...</span>
+					<Loader2 className="animate-spin size-4" />
 				</div>
+			) : (
+				<>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+							<div className="space-y-4">
+								<FormField
+									control={form.control}
+									name="firstName"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>First Name</FormLabel>
+											<FormControl>
+												<Input placeholder="John" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="lastName"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Last Name</FormLabel>
+											<FormControl>
+												<Input placeholder="Doe" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="email"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Email</FormLabel>
+											<FormControl>
+												<Input placeholder="Email" {...field} />
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="currentPassword"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Current Password</FormLabel>
+											<FormControl>
+												<Input
+													type="password"
+													placeholder="Current Password"
+													{...field}
+													value={field.value || ""}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+								<FormField
+									control={form.control}
+									name="password"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Password</FormLabel>
+											<FormControl>
+												<Input
+													type="password"
+													placeholder="Password"
+													{...field}
+													value={field.value || ""}
+												/>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
 
-				<div className="space-y-2 py-8 border-t">
-					{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
-					{isPending ? (
-						<div className="flex flex-row gap-2 items-center justify-center text-sm text-kumo-subtle min-h-[35vh]">
-							<span>Loading...</span>
-							<Loader2 className="animate-spin size-4" />
-						</div>
-					) : (
-						<>
-							<Form {...form}>
-								<form
-									onSubmit={form.handleSubmit(onSubmit)}
-									className="grid gap-4"
-								>
-									<div className="space-y-4">
-										<FormField
-											control={form.control}
-											name="firstName"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>First Name</FormLabel>
-													<FormControl>
-														<Input placeholder="John" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="lastName"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Last Name</FormLabel>
-													<FormControl>
-														<Input placeholder="Doe" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="email"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Email</FormLabel>
-													<FormControl>
-														<Input placeholder="Email" {...field} />
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="currentPassword"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Current Password</FormLabel>
-													<FormControl>
-														<Input
-															type="password"
-															placeholder="Current Password"
-															{...field}
-															value={field.value || ""}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-										<FormField
-											control={form.control}
-											name="password"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Password</FormLabel>
-													<FormControl>
-														<Input
-															type="password"
-															placeholder="Password"
-															{...field}
-															value={field.value || ""}
-														/>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-
-										<FormField
-											control={form.control}
-											name="image"
-											render={({ field }) => (
-												<FormItem>
-													<FormLabel>Avatar</FormLabel>
-													<FormControl>
-														<Radio.Group
-															onValueChange={(e) => {
-																if (e === null) return;
-																field.onChange(e);
-															}}
-															defaultValue={getAvatarType(field.value)}
-															value={getAvatarType(field.value)}
-															orientation="horizontal"
-															appearance="card"
-															className="w-full"
-														>
-															<Radio.Legend className="sr-only">
-																Avatar
-															</Radio.Legend>
-															<Radio.Item
-																key="no-avatar"
-																value=""
-																className="p-2"
-																label={
-																	<Avatar className="default-avatar h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-transform">
-																		<AvatarFallback className="rounded-lg">
-																			{getFallbackAvatarInitials(
-																				`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
-																			)}
-																		</AvatarFallback>
-																	</Avatar>
-																}
-															/>
-															<Radio.Item
-																key="custom-upload"
-																value="upload"
-																className="p-2"
-																label={
-																	<>
-																		<div
-																			className="upload-avatar h-12 w-12 rounded-full border border-dashed border-kumo-hairline hover:border-kumo-brand transition-colors flex items-center justify-center bg-kumo-fill/50 hover:bg-kumo-fill overflow-hidden"
-																			onClick={() =>
-																				document
-																					.getElementById("avatar-upload")
-																					?.click()
-																			}
-																		>
-																			{field.value?.startsWith("data:") ? (
-																				<img
-																					src={field.value}
-																					alt="Custom avatar"
-																					className="h-full w-full object-cover rounded-full"
-																				/>
-																			) : (
-																				<svg
-																					className="h-5 w-5 text-kumo-subtle"
-																					fill="none"
-																					stroke="currentColor"
-																					viewBox="0 0 24 24"
-																				>
-																					<path
-																						strokeLinecap="round"
-																						strokeLinejoin="round"
-																						strokeWidth={2}
-																						d="M12 4v16m8-8H4"
-																					/>
-																				</svg>
-																			)}
-																		</div>
-																		<input
-																			id="avatar-upload"
-																			type="file"
-																			accept="image/*"
-																			className="hidden"
-																			onChange={async (e) => {
-																				const file = e.target.files?.[0];
-																				if (file) {
-																					// max file size 2mb
-																					if (file.size > 2 * 1024 * 1024) {
-																						toast.error(
-																							"Image size must be less than 2MB",
-																						);
-																						return;
-																					}
-																					const reader = new FileReader();
-																					reader.onload = (event) => {
-																						const result = event.target
-																							?.result as string;
-																						field.onChange(result);
-																					};
-																					reader.readAsDataURL(file);
-																				}
-																			}}
-																		/>
-																	</>
-																}
-															/>
-															<Radio.Item
-																key="color-avatar"
-																value="color"
-																className="relative p-2"
-																label={
-																	<>
-																		<div
-																			className="color-avatar h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-colors flex items-center justify-center overflow-hidden cursor-pointer"
-																			style={{
-																				backgroundColor: isSolidColorAvatar(
-																					field.value,
-																				)
-																					? field.value
-																					: undefined,
-																			}}
-																			onClick={() =>
-																				colorInputRef.current?.click()
-																			}
-																		>
-																			{!isSolidColorAvatar(field.value) && (
-																				<Palette className="h-5 w-5 text-kumo-subtle" />
-																			)}
-																		</div>
-																		<input
-																			ref={colorInputRef}
-																			type="color"
-																			className="absolute opacity-0 pointer-events-none w-12 h-12 top-0 left-0"
-																			value={
-																				field.value?.startsWith("#")
-																					? field.value
-																					: "#6366f1"
-																			}
-																			onChange={field.onChange}
-																		/>
-																	</>
-																}
-															/>
-															{availableAvatars.map((image) => (
-																<Radio.Item
-																	key={image}
-																	value={image}
-																	className="p-2"
-																	label={
-																		<>
-																			<img
-																				key={image}
-																				src={image}
-																				alt="avatar"
-																				className="h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-transform"
-																			/>
-																		</>
+								<FormField
+									control={form.control}
+									name="image"
+									render={({ field }) => (
+										<FormItem>
+											<FormLabel>Avatar</FormLabel>
+											<FormControl>
+												<Radio.Group
+													onValueChange={(e) => {
+														if (e === null) return;
+														field.onChange(e);
+													}}
+													defaultValue={getAvatarType(field.value)}
+													value={getAvatarType(field.value)}
+													orientation="horizontal"
+													appearance="card"
+													className="w-full"
+												>
+													<Radio.Legend className="sr-only">
+														Avatar
+													</Radio.Legend>
+													<Radio.Item
+														key="no-avatar"
+														value=""
+														className="p-2"
+														label={
+															<Avatar className="default-avatar h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-transform">
+																<AvatarFallback className="rounded-lg">
+																	{getFallbackAvatarInitials(
+																		`${data?.user?.firstName} ${data?.user?.lastName}`.trim(),
+																	)}
+																</AvatarFallback>
+															</Avatar>
+														}
+													/>
+													<Radio.Item
+														key="custom-upload"
+														value="upload"
+														className="p-2"
+														label={
+															<>
+																<div
+																	className="upload-avatar h-12 w-12 rounded-full border border-dashed border-kumo-hairline hover:border-kumo-brand transition-colors flex items-center justify-center bg-kumo-fill/50 hover:bg-kumo-fill overflow-hidden"
+																	onClick={() =>
+																		document
+																			.getElementById("avatar-upload")
+																			?.click()
 																	}
+																>
+																	{field.value?.startsWith("data:") ? (
+																		<img
+																			src={field.value}
+																			alt="Custom avatar"
+																			className="h-full w-full object-cover rounded-full"
+																		/>
+																	) : (
+																		<svg
+																			className="h-5 w-5 text-kumo-subtle"
+																			fill="none"
+																			stroke="currentColor"
+																			viewBox="0 0 24 24"
+																		>
+																			<path
+																				strokeLinecap="round"
+																				strokeLinejoin="round"
+																				strokeWidth={2}
+																				d="M12 4v16m8-8H4"
+																			/>
+																		</svg>
+																	)}
+																</div>
+																<input
+																	id="avatar-upload"
+																	type="file"
+																	accept="image/*"
+																	className="hidden"
+																	onChange={async (e) => {
+																		const file = e.target.files?.[0];
+																		if (file) {
+																			// max file size 2mb
+																			if (file.size > 2 * 1024 * 1024) {
+																				toast.error(
+																					"Image size must be less than 2MB",
+																				);
+																				return;
+																			}
+																			const reader = new FileReader();
+																			reader.onload = (event) => {
+																				const result = event.target
+																					?.result as string;
+																				field.onChange(result);
+																			};
+																			reader.readAsDataURL(file);
+																		}
+																	}}
 																/>
-															))}
-														</Radio.Group>
-													</FormControl>
-													<FormMessage />
-												</FormItem>
-											)}
-										/>
-									</div>
+															</>
+														}
+													/>
+													<Radio.Item
+														key="color-avatar"
+														value="color"
+														className="relative p-2"
+														label={
+															<>
+																<div
+																	className="color-avatar h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-colors flex items-center justify-center overflow-hidden cursor-pointer"
+																	style={{
+																		backgroundColor: isSolidColorAvatar(
+																			field.value,
+																		)
+																			? field.value
+																			: undefined,
+																	}}
+																	onClick={() => colorInputRef.current?.click()}
+																>
+																	{!isSolidColorAvatar(field.value) && (
+																		<Palette className="h-5 w-5 text-kumo-subtle" />
+																	)}
+																</div>
+																<input
+																	ref={colorInputRef}
+																	type="color"
+																	className="absolute opacity-0 pointer-events-none w-12 h-12 top-0 left-0"
+																	value={
+																		field.value?.startsWith("#")
+																			? field.value
+																			: "#6366f1"
+																	}
+																	onChange={field.onChange}
+																/>
+															</>
+														}
+													/>
+													{availableAvatars.map((image) => (
+														<Radio.Item
+															key={image}
+															value={image}
+															className="p-2"
+															label={
+																<>
+																	<img
+																		key={image}
+																		src={image}
+																		alt="avatar"
+																		className="h-12 w-12 rounded-full border hover:p-px hover:border-kumo-brand transition-transform"
+																	/>
+																</>
+															}
+														/>
+													))}
+												</Radio.Group>
+											</FormControl>
+											<FormMessage />
+										</FormItem>
+									)}
+								/>
+							</div>
 
-									<div className="flex items-center justify-end gap-2">
-										<Button type="submit" loading={isUpdating}>
-											Save
-										</Button>
-									</div>
-								</form>
-							</Form>
-						</>
-					)}
-				</div>
-			</div>
-		</div>
+							<div className="flex items-center justify-end gap-2">
+								<Button type="submit" loading={isUpdating}>
+									Save
+								</Button>
+							</div>
+						</form>
+					</Form>
+				</>
+			)}
+		</SectionCard>
 	);
 };

@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { ScrollText } from "lucide-react";
 import { useState } from "react";
 import { api } from "@/client/api/trpc";
+import { SectionCard } from "@/components/shared/section-card";
 import { EmptyState, QueryState } from "@/components/shared/states";
 import { cn } from "@/shared/utils";
 
@@ -122,157 +123,146 @@ export const ShowAuditLog = () => {
 	};
 
 	return (
-		<div className="w-full">
-			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
-				<div className="flex flex-row items-start justify-between gap-4">
-					<div>
-						<h3 className="text-xl font-semibold flex items-center gap-2">
-							<ScrollText className="size-6 text-kumo-subtle self-center" />
-							Audit Log
-						</h3>
-						<p>Who did what across this instance.</p>
-					</div>
-				</div>
+		<SectionCard
+			icon={ScrollText}
+			title="Audit Log"
+			description="Who did what across this instance."
+			contentClassName="space-y-6"
+		>
+			<div className="flex flex-wrap items-center gap-2">
+				<Input
+					aria-label="Filter audit log by resource name"
+					placeholder="Filter by resource name..."
+					value={resourceName}
+					onChange={(event) =>
+						onFilterChange(() => setResourceName(event.target.value))
+					}
+					className="md:max-w-xs"
+				/>
+				<Select
+					aria-label="Filter by action"
+					value={action}
+					onValueChange={(value) =>
+						onFilterChange(() => setAction(String(value)))
+					}
+					className="md:max-w-[180px]"
+				>
+					<Select.Option value={ALL}>All actions</Select.Option>
+					{ACTIONS.map((value) => (
+						<Select.Option key={value} value={value}>
+							{value}
+						</Select.Option>
+					))}
+				</Select>
+				<Select
+					aria-label="Filter by resource type"
+					value={resourceType}
+					onValueChange={(value) =>
+						onFilterChange(() => setResourceType(String(value)))
+					}
+					className="md:max-w-[200px]"
+				>
+					<Select.Option value={ALL}>All resource types</Select.Option>
+					{RESOURCE_TYPES.map((value) => (
+						<Select.Option key={value} value={value}>
+							{value}
+						</Select.Option>
+					))}
+				</Select>
+			</div>
 
-				<div className="flex flex-wrap items-center gap-2 pt-6">
-					<Input
-						aria-label="Filter audit log by resource name"
-						placeholder="Filter by resource name..."
-						value={resourceName}
-						onChange={(event) =>
-							onFilterChange(() => setResourceName(event.target.value))
-						}
-						className="md:max-w-xs"
+			<QueryState
+				query={auditLogQuery}
+				isEmpty={(data) => data.logs.length === 0}
+				empty={
+					<EmptyState
+						icon={ScrollText}
+						title="No audit entries match the current filters."
 					/>
-					<Select
-						aria-label="Filter by action"
-						value={action}
-						onValueChange={(value) =>
-							onFilterChange(() => setAction(String(value)))
-						}
-						className="md:max-w-[180px]"
-					>
-						<Select.Option value={ALL}>All actions</Select.Option>
-						{ACTIONS.map((value) => (
-							<Select.Option key={value} value={value}>
-								{value}
-							</Select.Option>
-						))}
-					</Select>
-					<Select
-						aria-label="Filter by resource type"
-						value={resourceType}
-						onValueChange={(value) =>
-							onFilterChange(() => setResourceType(String(value)))
-						}
-						className="md:max-w-[200px]"
-					>
-						<Select.Option value={ALL}>All resource types</Select.Option>
-						{RESOURCE_TYPES.map((value) => (
-							<Select.Option key={value} value={value}>
-								{value}
-							</Select.Option>
-						))}
-					</Select>
-				</div>
-
-				<div className="space-y-2 py-8">
-					<QueryState
-						query={auditLogQuery}
-						isEmpty={(data) => data.logs.length === 0}
-						empty={
-							<EmptyState
-								icon={ScrollText}
-								title="No audit entries match the current filters."
-							/>
-						}
-					>
-						{(data) => (
-							<div className="rounded-md border overflow-auto">
-								<Table>
-									<Table.Header>
-										<Table.Row>
-											<Table.Head>When</Table.Head>
-											<Table.Head>User</Table.Head>
-											<Table.Head>Action</Table.Head>
-											<Table.Head>Resource</Table.Head>
-											<Table.Head>Details</Table.Head>
-										</Table.Row>
-									</Table.Header>
-									<Table.Body>
-										{data.logs.map((log) => (
-											<Table.Row key={log.id}>
-												<Table.Cell className="whitespace-nowrap text-sm">
-													{format(new Date(log.createdAt), "PPp")}
-												</Table.Cell>
-												<Table.Cell>
-													<div className="flex flex-col">
-														<span className="text-sm">{log.userEmail}</span>
-														<span className="text-xs text-kumo-subtle">
-															{log.userRole}
-														</span>
-													</div>
-												</Table.Cell>
-												<Table.Cell>
-													<Badge variant={actionVariant(log.action)}>
-														{log.action}
-													</Badge>
-												</Table.Cell>
-												<Table.Cell>
-													<div className="flex flex-col">
-														<span className="text-xs text-kumo-subtle">
-															{log.resourceType}
-														</span>
-														{log.resourceName && (
-															<span className="text-sm break-words">
-																{log.resourceName}
-															</span>
-														)}
-													</div>
-												</Table.Cell>
-												<Table.Cell
-													className={cn(
-														"max-w-md align-top text-xs text-kumo-subtle",
-														log.metadata && "whitespace-pre-wrap break-words",
-													)}
-												>
-													{log.metadata ?? "—"}
-												</Table.Cell>
-											</Table.Row>
-										))}
-									</Table.Body>
-								</Table>
-							</div>
-						)}
-					</QueryState>
-				</div>
-
-				<div className="flex items-center justify-end gap-4 border-t pt-4">
-					<span className="text-kumo-subtle text-sm">
-						{rangeStart}–{rangeEnd} of {total}
-					</span>
-					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="sm"
-							disabled={!canPrev}
-							onClick={() =>
-								setOffset((value) => Math.max(value - PAGE_SIZE, 0))
-							}
-						>
-							Previous
-						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							disabled={!canNext}
-							onClick={() => setOffset((value) => value + PAGE_SIZE)}
-						>
-							Next
-						</Button>
+				}
+			>
+				{(data) => (
+					<div className="rounded-md border overflow-auto">
+						<Table>
+							<Table.Header>
+								<Table.Row>
+									<Table.Head>When</Table.Head>
+									<Table.Head>User</Table.Head>
+									<Table.Head>Action</Table.Head>
+									<Table.Head>Resource</Table.Head>
+									<Table.Head>Details</Table.Head>
+								</Table.Row>
+							</Table.Header>
+							<Table.Body>
+								{data.logs.map((log) => (
+									<Table.Row key={log.id}>
+										<Table.Cell className="whitespace-nowrap text-sm">
+											{format(new Date(log.createdAt), "PPp")}
+										</Table.Cell>
+										<Table.Cell>
+											<div className="flex flex-col">
+												<span className="text-sm">{log.userEmail}</span>
+												<span className="text-xs text-kumo-subtle">
+													{log.userRole}
+												</span>
+											</div>
+										</Table.Cell>
+										<Table.Cell>
+											<Badge variant={actionVariant(log.action)}>
+												{log.action}
+											</Badge>
+										</Table.Cell>
+										<Table.Cell>
+											<div className="flex flex-col">
+												<span className="text-xs text-kumo-subtle">
+													{log.resourceType}
+												</span>
+												{log.resourceName && (
+													<span className="text-sm break-words">
+														{log.resourceName}
+													</span>
+												)}
+											</div>
+										</Table.Cell>
+										<Table.Cell
+											className={cn(
+												"max-w-md align-top text-xs text-kumo-subtle",
+												log.metadata && "whitespace-pre-wrap break-words",
+											)}
+										>
+											{log.metadata ?? "—"}
+										</Table.Cell>
+									</Table.Row>
+								))}
+							</Table.Body>
+						</Table>
 					</div>
+				)}
+			</QueryState>
+
+			<div className="flex items-center justify-end gap-4 border-t pt-4">
+				<span className="text-kumo-subtle text-sm">
+					{rangeStart}–{rangeEnd} of {total}
+				</span>
+				<div className="flex gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={!canPrev}
+						onClick={() => setOffset((value) => Math.max(value - PAGE_SIZE, 0))}
+					>
+						Previous
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						disabled={!canNext}
+						onClick={() => setOffset((value) => value + PAGE_SIZE)}
+					>
+						Next
+					</Button>
 				</div>
 			</div>
-		</div>
+		</SectionCard>
 	);
 };

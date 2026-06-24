@@ -7,6 +7,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { Dialog } from "@/components/shared/dialog";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { SectionCard } from "@/components/shared/section-card";
 import { EmptyState, QueryState } from "@/components/shared/states";
 import { toast } from "@/components/shared/toast";
 
@@ -97,105 +98,90 @@ export const RoleManager = () => {
 		api.customRole.remove.useMutation();
 
 	return (
-		<div className="w-full">
-			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
-				<div>
-					<h3 className="text-xl font-semibold flex items-center gap-2">
-						<ShieldCheck className="size-6 text-kumo-subtle self-center" />
-						Roles
-					</h3>
-					<p>
-						Define custom roles with specific capabilities, then assign them to
-						members. The built-in owner, admin, and member roles cannot be
-						edited.
-					</p>
-				</div>
-				<div className="space-y-2 py-8 border-t">
-					<QueryState
-						query={rolesQuery}
-						isEmpty={(roles) => roles.length === 0}
-						empty={
-							<EmptyState
-								icon={ShieldCheck}
-								title="No custom roles yet. Create a role to grant members capabilities beyond the read-only default."
-								action={<HandleRole />}
-							/>
-						}
-					>
-						{(roles) => (
-							<div className="flex flex-col gap-4 min-h-[25vh]">
-								<div className="flex flex-col gap-4 rounded-lg">
-									{roles.map((role) => (
-										<div
-											key={role.role}
-											className="flex items-center justify-between bg-kumo-elevated p-1 w-full rounded-lg"
-										>
-											<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border w-full">
-												<div className="flex flex-col gap-1">
-													<span className="text-sm font-medium">
-														{role.role}
-													</span>
-													<div className="flex items-center gap-1 text-xs text-kumo-subtle">
-														<span>
-															{permissionCount(role.permissions)} permission
-															{permissionCount(role.permissions) === 1
-																? ""
-																: "s"}
-														</span>
-														<span>·</span>
-														<RoleMembersDialog
-															roleName={role.role}
-															memberCount={role.memberCount}
-														/>
-													</div>
-												</div>
-												<div className="flex flex-row gap-1 items-center">
-													<HandleRole
-														role={{
-															role: role.role,
-															permissions: role.permissions,
-														}}
-													/>
-													<DialogAction
-														title="Delete role"
-														description={`Are you sure you want to delete "${role.role}"? Members with this role will be reset to the base member role. This action cannot be undone.`}
-														type="destructive"
-														onClick={async () => {
-															await removeRole({ roleName: role.role })
-																.then(async () => {
-																	await utils.customRole.all.invalidate();
-																	toast.success("Role deleted successfully");
-																})
-																.catch((err) => {
-																	logger.error(err);
-																	toast.error("Error deleting role");
-																});
-														}}
-													>
-														<Button
-															aria-label="Delete role"
-															variant="ghost"
-															shape="square"
-															className="group hover:bg-kumo-danger/10"
-															loading={isRemoving}
-														>
-															<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
-														</Button>
-													</DialogAction>
-												</div>
+		<SectionCard
+			icon={ShieldCheck}
+			title="Roles"
+			description="Define custom roles with specific capabilities, then assign them to members. The built-in owner, admin, and member roles cannot be edited."
+		>
+			<QueryState
+				query={rolesQuery}
+				isEmpty={(roles) => roles.length === 0}
+				empty={
+					<EmptyState
+						icon={ShieldCheck}
+						title="No custom roles yet. Create a role to grant members capabilities beyond the read-only default."
+						action={<HandleRole />}
+					/>
+				}
+			>
+				{(roles) => (
+					<div className="flex flex-col gap-4 min-h-[25vh]">
+						<div className="flex flex-col gap-4 rounded-lg">
+							{roles.map((role) => (
+								<div
+									key={role.role}
+									className="flex items-center justify-between bg-kumo-elevated p-1 w-full rounded-lg"
+								>
+									<div className="flex items-center justify-between p-3.5 rounded-lg bg-kumo-canvas border w-full">
+										<div className="flex flex-col gap-1">
+											<span className="text-sm font-medium">{role.role}</span>
+											<div className="flex items-center gap-1 text-xs text-kumo-subtle">
+												<span>
+													{permissionCount(role.permissions)} permission
+													{permissionCount(role.permissions) === 1 ? "" : "s"}
+												</span>
+												<span>·</span>
+												<RoleMembersDialog
+													roleName={role.role}
+													memberCount={role.memberCount}
+												/>
 											</div>
 										</div>
-									))}
+										<div className="flex flex-row gap-1 items-center">
+											<HandleRole
+												role={{
+													role: role.role,
+													permissions: role.permissions,
+												}}
+											/>
+											<DialogAction
+												title="Delete role"
+												description={`Are you sure you want to delete "${role.role}"? Members with this role will be reset to the base member role. This action cannot be undone.`}
+												type="destructive"
+												onClick={async () => {
+													await removeRole({ roleName: role.role })
+														.then(async () => {
+															await utils.customRole.all.invalidate();
+															toast.success("Role deleted successfully");
+														})
+														.catch((err) => {
+															logger.error(err);
+															toast.error("Error deleting role");
+														});
+												}}
+											>
+												<Button
+													aria-label="Delete role"
+													variant="ghost"
+													shape="square"
+													className="group hover:bg-kumo-danger/10"
+													loading={isRemoving}
+												>
+													<Trash2 className="size-4 text-kumo-brand group-hover:text-kumo-danger" />
+												</Button>
+											</DialogAction>
+										</div>
+									</div>
 								</div>
+							))}
+						</div>
 
-								<div className="flex flex-row gap-2 flex-wrap w-full justify-end mr-4">
-									<HandleRole />
-								</div>
-							</div>
-						)}
-					</QueryState>
-				</div>
-			</div>
-		</div>
+						<div className="flex flex-row gap-2 flex-wrap w-full justify-end mr-4">
+							<HandleRole />
+						</div>
+					</div>
+				)}
+			</QueryState>
+		</SectionCard>
 	);
 };

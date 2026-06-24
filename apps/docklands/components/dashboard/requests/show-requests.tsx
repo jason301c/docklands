@@ -23,6 +23,7 @@ import { api, type RouterOutputs } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { RequestDistributionChart } from "./request-distribution-chart";
 import { RequestsTable } from "./requests-table";
@@ -84,179 +85,166 @@ export const ShowRequests = () => {
 	}, [logCleanupStatus]);
 
 	return (
-		<>
-			<div className="w-full">
-				<div className="mx-auto w-full max-w-8xl rounded-lg border bg-kumo-canvas p-6">
-					<div className="">
-						<h3 className="text-xl font-semibold flex items-center gap-2">
-							<ArrowDownUp className="size-6 text-kumo-subtle self-center" />
-							Requests
-						</h3>
-						<p>See incoming requests handled by the ingress runtime.</p>
-
-						{shouldShowWarning && (
-							<AlertBlock type="warning">
-								When you activate request logs, reload the ingress runtime to
-								apply the changes. You can reload it in{" "}
-								<Link
-									href="/dashboard/settings/ingress"
-									className="text-kumo-brand"
-								>
-									Settings
-								</Link>
-							</AlertBlock>
-						)}
-					</div>
-					<div className="space-y-2 py-8 border-t">
-						<div className="flex w-full gap-4 justify-end items-center">
-							<div className="flex-1 flex items-center gap-4">
-								<div className="flex items-center gap-2">
-									<Label htmlFor="cron" className="min-w-32">
-										Log Cleanup Schedule
-									</Label>
-									<TooltipProvider>
-										<Tooltip
-											content={
-												<>
-													<p className="max-w-80">
-														At the scheduled time, the cleanup job will keep
-														only the last 1000 entries in the access log file
-														and signal ingress to reopen its log files. The
-														default schedule is daily at midnight (0 0 * * *).
-													</p>
-												</>
-											}
-										>
-											<InfoIcon className="size-4 text-kumo-subtle" />
-										</Tooltip>
-									</TooltipProvider>
-								</div>
-								<div className="flex-1 flex gap-4">
-									<Input
-										aria-label="Cron expression"
-										id="cron"
-										placeholder="0 0 * * *"
-										value={cronExpression || ""}
-										onChange={(e) => setCronExpression(e.target.value)}
-										className="max-w-60"
-										required
-									/>
-									<Button
-										variant="outline"
-										onClick={async () => {
-											if (!cronExpression?.trim()) {
-												toast.error("Please enter a valid cron expression");
-												return;
-											}
-											try {
-												await updateLogCleanup({
-													cronExpression: cronExpression,
-												});
-												toast.success("Log cleanup schedule updated");
-											} catch (error) {
-												toast.error(
-													`Failed to update log cleanup schedule: ${error instanceof Error ? error.message : "Unknown error"}`,
-												);
-											}
-										}}
-									>
-										Update Schedule
-									</Button>
-								</div>
-							</div>
-							<DialogAction
-								title={isActive ? "Deactivate Requests" : "Activate Requests"}
-								description="You will also need to reload the ingress runtime to apply the changes"
-								type={isActive ? "destructive" : "secondary"}
-								onClick={async () => {
-									await toggleRequests({ enable: !isActive })
-										.then(() => {
-											refetch();
-											toast.success(
-												`Requests ${isActive ? "deactivated" : "activated"}`,
-											);
-										})
-										.catch((err) => {
-											logger.error("Error fetching requests", err);
-											toast.error(err.message);
-										});
-								}}
+		<SectionCard
+			icon={ArrowDownUp}
+			title="Requests"
+			description="See incoming requests handled by the ingress runtime."
+			className="mx-auto max-w-8xl"
+			contentClassName="space-y-2"
+		>
+			{shouldShowWarning && (
+				<AlertBlock type="warning">
+					When you activate request logs, reload the ingress runtime to apply
+					the changes. You can reload it in{" "}
+					<Link href="/dashboard/settings/ingress" className="text-kumo-brand">
+						Settings
+					</Link>
+				</AlertBlock>
+			)}
+			<div className="flex w-full gap-4 justify-end items-center">
+				<div className="flex-1 flex items-center gap-4">
+					<div className="flex items-center gap-2">
+						<Label htmlFor="cron" className="min-w-32">
+							Log Cleanup Schedule
+						</Label>
+						<TooltipProvider>
+							<Tooltip
+								content={
+									<>
+										<p className="max-w-80">
+											At the scheduled time, the cleanup job will keep only the
+											last 1000 entries in the access log file and signal
+											ingress to reopen its log files. The default schedule is
+											daily at midnight (0 0 * * *).
+										</p>
+									</>
+								}
 							>
-								<Button>{isActive ? "Deactivate" : "Activate"}</Button>
-							</DialogAction>
-						</div>
-
-						{isActive ? (
-							<>
-								<div className="flex justify-end mb-4 gap-2">
-									<Button
-										variant="outline"
-										onClick={() => setDateRange(getDefaultDateRange())}
-										className="px-3"
-									>
-										Reset to Last 3 Days
-									</Button>
-									<Popover>
-										<PopoverTrigger asChild>
-											<Button
-												variant="outline"
-												className="w-[300px] justify-start text-left font-normal"
-											>
-												<CalendarIcon className="mr-2 h-4 w-4" />
-												{dateRange.from ? (
-													dateRange.to ? (
-														<>
-															{format(dateRange.from, "LLL dd, y")} -{" "}
-															{format(dateRange.to, "LLL dd, y")}
-														</>
-													) : (
-														format(dateRange.from, "LLL dd, y")
-													)
-												) : (
-													<span>Pick a date range</span>
-												)}
-											</Button>
-										</PopoverTrigger>
-										<PopoverContent className="w-auto p-3" align="end">
-											<DatePicker
-												mode="range"
-												defaultMonth={dateRange.from}
-												selected={{
-													from: dateRange.from,
-													to: dateRange.to,
-												}}
-												onChange={(range) => {
-													setDateRange({
-														from: range?.from,
-														to: range?.to,
-													});
-												}}
-												numberOfMonths={2}
-											/>
-										</PopoverContent>
-									</Popover>
-								</div>
-								<RequestDistributionChart dateRange={dateRange} />
-								<RequestsTable dateRange={dateRange} />
-							</>
-						) : (
-							<div className="flex flex-col items-center justify-center py-12 gap-4 text-kumo-subtle">
-								<AlertCircle className="size-12 text-kumo-subtle/50" />
-								<div className="text-center space-y-2">
-									<h3 className="text-lg font-medium">
-										Requests are not activated
-									</h3>
-									<p className="text-sm max-w-md">
-										Activate requests to see incoming traffic statistics and
-										monitor your application's usage. After activation, you'll
-										need to reload ingress for the changes to take effect.
-									</p>
-								</div>
-							</div>
-						)}
+								<InfoIcon className="size-4 text-kumo-subtle" />
+							</Tooltip>
+						</TooltipProvider>
+					</div>
+					<div className="flex-1 flex gap-4">
+						<Input
+							aria-label="Cron expression"
+							id="cron"
+							placeholder="0 0 * * *"
+							value={cronExpression || ""}
+							onChange={(e) => setCronExpression(e.target.value)}
+							className="max-w-60"
+							required
+						/>
+						<Button
+							variant="outline"
+							onClick={async () => {
+								if (!cronExpression?.trim()) {
+									toast.error("Please enter a valid cron expression");
+									return;
+								}
+								try {
+									await updateLogCleanup({
+										cronExpression: cronExpression,
+									});
+									toast.success("Log cleanup schedule updated");
+								} catch (error) {
+									toast.error(
+										`Failed to update log cleanup schedule: ${error instanceof Error ? error.message : "Unknown error"}`,
+									);
+								}
+							}}
+						>
+							Update Schedule
+						</Button>
 					</div>
 				</div>
+				<DialogAction
+					title={isActive ? "Deactivate Requests" : "Activate Requests"}
+					description="You will also need to reload the ingress runtime to apply the changes"
+					type={isActive ? "destructive" : "secondary"}
+					onClick={async () => {
+						await toggleRequests({ enable: !isActive })
+							.then(() => {
+								refetch();
+								toast.success(
+									`Requests ${isActive ? "deactivated" : "activated"}`,
+								);
+							})
+							.catch((err) => {
+								logger.error("Error fetching requests", err);
+								toast.error(err.message);
+							});
+					}}
+				>
+					<Button>{isActive ? "Deactivate" : "Activate"}</Button>
+				</DialogAction>
 			</div>
-		</>
+
+			{isActive ? (
+				<>
+					<div className="flex justify-end mb-4 gap-2">
+						<Button
+							variant="outline"
+							onClick={() => setDateRange(getDefaultDateRange())}
+							className="px-3"
+						>
+							Reset to Last 3 Days
+						</Button>
+						<Popover>
+							<PopoverTrigger asChild>
+								<Button
+									variant="outline"
+									className="w-[300px] justify-start text-left font-normal"
+								>
+									<CalendarIcon className="mr-2 h-4 w-4" />
+									{dateRange.from ? (
+										dateRange.to ? (
+											<>
+												{format(dateRange.from, "LLL dd, y")} -{" "}
+												{format(dateRange.to, "LLL dd, y")}
+											</>
+										) : (
+											format(dateRange.from, "LLL dd, y")
+										)
+									) : (
+										<span>Pick a date range</span>
+									)}
+								</Button>
+							</PopoverTrigger>
+							<PopoverContent className="w-auto p-3" align="end">
+								<DatePicker
+									mode="range"
+									defaultMonth={dateRange.from}
+									selected={{
+										from: dateRange.from,
+										to: dateRange.to,
+									}}
+									onChange={(range) => {
+										setDateRange({
+											from: range?.from,
+											to: range?.to,
+										});
+									}}
+									numberOfMonths={2}
+								/>
+							</PopoverContent>
+						</Popover>
+					</div>
+					<RequestDistributionChart dateRange={dateRange} />
+					<RequestsTable dateRange={dateRange} />
+				</>
+			) : (
+				<div className="flex flex-col items-center justify-center py-12 gap-4 text-kumo-subtle">
+					<AlertCircle className="size-12 text-kumo-subtle/50" />
+					<div className="text-center space-y-2">
+						<h3 className="text-lg font-medium">Requests are not activated</h3>
+						<p className="text-sm max-w-md">
+							Activate requests to see incoming traffic statistics and monitor
+							your application's usage. After activation, you'll need to reload
+							ingress for the changes to take effect.
+						</p>
+					</div>
+				</div>
+			)}
+		</SectionCard>
 	);
 };

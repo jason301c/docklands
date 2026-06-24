@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Clock, KeyIcon, Tag, Trash2 } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { AddApiKey } from "./add-api-key";
 
@@ -13,105 +14,95 @@ export const ShowApiKeys = () => {
 		api.user.deleteApiKey.useMutation();
 
 	return (
-		<div className="w-full">
-			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
-				<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
-					<div>
-						<h3 className="text-xl font-semibold flex items-center gap-2">
-							<KeyIcon className="size-5" />
-							API/CLI Keys
-						</h3>
-						<p>Generate and manage API keys to access the API/CLI</p>
-					</div>
-				</div>
-				<div className="space-y-6">
-					<div className="flex flex-col gap-4">
-						{data?.user.apiKeys && data.user.apiKeys.length > 0 ? (
-							data.user.apiKeys.map((apiKey) => (
-								<div
-									key={apiKey.id}
-									className="flex flex-col gap-2 p-4 border rounded-lg"
-								>
-									<div className="flex justify-between items-start">
-										<div className="flex flex-col gap-1">
-											<span className="font-medium">{apiKey.name}</span>
-											<div className="flex flex-wrap gap-2 items-center text-sm text-kumo-subtle">
-												<span className="flex items-center gap-1">
-													<Clock className="size-3.5" />
-													Created{" "}
-													{formatDistanceToNow(new Date(apiKey.createdAt))} ago
-												</span>
-												{apiKey.prefix && (
-													<Badge
-														variant="secondary"
-														className="flex items-center gap-1"
-													>
-														<Tag className="size-3.5" />
-														{apiKey.prefix}
-													</Badge>
-												)}
-												{apiKey.expiresAt && (
-													<Badge
-														variant="outline"
-														className="flex items-center gap-1"
-													>
-														<Clock className="size-3.5" />
-														Expires in{" "}
-														{formatDistanceToNow(
-															new Date(apiKey.expiresAt),
-														)}{" "}
-													</Badge>
-												)}
-											</div>
-										</div>
-										<DialogAction
-											title="Delete API Key"
-											description="Are you sure you want to delete this API key? This action cannot be undone."
-											type="destructive"
-											onClick={async () => {
-												try {
-													await deleteApiKey({
-														apiKeyId: apiKey.id,
-													});
-													await refetch();
-													toast.success("API key deleted successfully");
-												} catch (error) {
-													toast.error(
-														error instanceof Error
-															? error.message
-															: "Error deleting API key",
-													);
-												}
-											}}
-										>
-											<Button
-												aria-label={`Delete API key ${apiKey.name}`}
-												variant="ghost"
-												shape="square"
-												loading={isLoadingDelete}
+		<SectionCard
+			icon={KeyIcon}
+			title="API/CLI Keys"
+			description="Generate and manage API keys to access the API/CLI"
+			contentClassName="space-y-6"
+		>
+			<div className="flex flex-col gap-4">
+				{data?.user.apiKeys && data.user.apiKeys.length > 0 ? (
+					data.user.apiKeys.map((apiKey) => (
+						<div
+							key={apiKey.id}
+							className="flex flex-col gap-2 p-4 border rounded-lg"
+						>
+							<div className="flex justify-between items-start">
+								<div className="flex flex-col gap-1">
+									<span className="font-medium">{apiKey.name}</span>
+									<div className="flex flex-wrap gap-2 items-center text-sm text-kumo-subtle">
+										<span className="flex items-center gap-1">
+											<Clock className="size-3.5" />
+											Created {formatDistanceToNow(new Date(apiKey.createdAt))}{" "}
+											ago
+										</span>
+										{apiKey.prefix && (
+											<Badge
+												variant="secondary"
+												className="flex items-center gap-1"
 											>
-												<Trash2 className="size-4" />
-											</Button>
-										</DialogAction>
+												<Tag className="size-3.5" />
+												{apiKey.prefix}
+											</Badge>
+										)}
+										{apiKey.expiresAt && (
+											<Badge
+												variant="outline"
+												className="flex items-center gap-1"
+											>
+												<Clock className="size-3.5" />
+												Expires in{" "}
+												{formatDistanceToNow(new Date(apiKey.expiresAt))}{" "}
+											</Badge>
+										)}
 									</div>
 								</div>
-							))
-						) : (
-							<div className="flex flex-col items-center gap-3 py-6">
-								<KeyIcon className="size-8 text-kumo-subtle" />
-								<span className="text-base text-kumo-subtle">
-									No API keys found
-								</span>
+								<DialogAction
+									title="Delete API Key"
+									description="Are you sure you want to delete this API key? This action cannot be undone."
+									type="destructive"
+									onClick={async () => {
+										try {
+											await deleteApiKey({
+												apiKeyId: apiKey.id,
+											});
+											await refetch();
+											toast.success("API key deleted successfully");
+										} catch (error) {
+											toast.error(
+												error instanceof Error
+													? error.message
+													: "Error deleting API key",
+											);
+										}
+									}}
+								>
+									<Button
+										aria-label={`Delete API key ${apiKey.name}`}
+										variant="ghost"
+										shape="square"
+										loading={isLoadingDelete}
+									>
+										<Trash2 className="size-4" />
+									</Button>
+								</DialogAction>
 							</div>
-						)}
+						</div>
+					))
+				) : (
+					<div className="flex flex-col items-center gap-3 py-6">
+						<KeyIcon className="size-8 text-kumo-subtle" />
+						<span className="text-base text-kumo-subtle">
+							No API keys found
+						</span>
 					</div>
-
-					{/* Generate new API key */}
-					<div className="flex justify-end pt-4 border-t">
-						<AddApiKey />
-					</div>
-				</div>
+				)}
 			</div>
-		</div>
+
+			{/* Generate new API key */}
+			<div className="flex justify-end pt-4 border-t">
+				<AddApiKey />
+			</div>
+		</SectionCard>
 	);
 };

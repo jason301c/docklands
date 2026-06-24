@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
@@ -11,6 +10,7 @@ import { z } from "zod";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
+import { SectionCard } from "@/components/shared/section-card";
 
 const logger = createClientLogger("ingress-domain");
 
@@ -103,135 +103,126 @@ export const IngressDomain = () => {
 	};
 
 	return (
-		<div className="w-full">
-			<LayerCard className="h-full w-full">
-				<div className="flex flex-row gap-2 flex-wrap justify-between items-center">
-					<div className="flex flex-col gap-1">
-						<h3 className="text-xl font-semibold flex items-center gap-2">
-							<GlobeIcon className="size-6 text-kumo-subtle self-center" />
-							Ingress Domain
-						</h3>
-						<p>Add a domain to the Docklands ingress.</p>
+		<SectionCard
+			icon={GlobeIcon}
+			title="Ingress Domain"
+			description="Add a domain to the Docklands ingress."
+			contentClassName="space-y-2"
+		>
+			{/* Warning for GitHub webhook URL changes */}
+			{hasChanged && (
+				<AlertBlock type="warning">
+					<div className="space-y-2">
+						<p className="font-medium">⚠️ Important: URL Change Impact</p>
+						<p>
+							If you change the Docklands ingress URL make sure to update your
+							GitHub Apps to keep autobuilds and preview environments working.
+						</p>
 					</div>
-				</div>
-				<div className="space-y-2 py-6 border-t">
-					{/* Warning for GitHub webhook URL changes */}
-					{hasChanged && (
-						<AlertBlock type="warning">
-							<div className="space-y-2">
-								<p className="font-medium">⚠️ Important: URL Change Impact</p>
-								<p>
-									If you change the Docklands ingress URL make sure to update
-									your GitHub Apps to keep autobuilds and preview environments
-									working.
-								</p>
-							</div>
-						</AlertBlock>
-					)}
-					<Form {...form}>
-						<form
-							onSubmit={form.handleSubmit(onSubmit)}
-							className="grid w-full gap-4 grid-cols-2"
-						>
-							<FormField
-								control={form.control}
-								name="domain"
-								render={({ field }) => {
-									return (
-										<FormItem className="col-span-2 md:col-span-1">
-											<FormLabel>Domain</FormLabel>
-											<FormControl>
-												<Input
-													className="w-full"
-													placeholder={"docklands.example"}
-													{...field}
-												/>
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
+				</AlertBlock>
+			)}
+			<Form {...form}>
+				<form
+					onSubmit={form.handleSubmit(onSubmit)}
+					className="grid w-full gap-4 grid-cols-2"
+				>
+					<FormField
+						control={form.control}
+						name="domain"
+						render={({ field }) => {
+							return (
+								<FormItem className="col-span-2 md:col-span-1">
+									<FormLabel>Domain</FormLabel>
+									<FormControl>
+										<Input
+											className="w-full"
+											placeholder={"docklands.example"}
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							);
+						}}
+					/>
 
-							<FormField
-								control={form.control}
-								name="letsEncryptEmail"
-								render={({ field }) => {
-									return (
-										<FormItem className="col-span-2 md:col-span-1">
-											<FormLabel>Let's Encrypt Email</FormLabel>
+					<FormField
+						control={form.control}
+						name="letsEncryptEmail"
+						render={({ field }) => {
+							return (
+								<FormItem className="col-span-2 md:col-span-1">
+									<FormLabel>Let's Encrypt Email</FormLabel>
+									<FormControl>
+										<Input
+											className="w-full"
+											placeholder={"Dp4kz@example.com"}
+											{...field}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							);
+						}}
+					/>
+					<FormField
+						control={form.control}
+						name="https"
+						render={({ field }) => (
+							<FormItem className="flex flex-row items-center justify-between p-3 mt-4 border rounded-lg shadow-sm w-full col-span-2">
+								<div className="space-y-0.5">
+									<FormLabel>HTTPS</FormLabel>
+									<FormDescription>
+										Automatically provision SSL Certificate.
+									</FormDescription>
+									<FormMessage />
+								</div>
+								<FormControl>
+									<Switch
+										checked={field.value}
+										onCheckedChange={field.onChange}
+									/>
+								</FormControl>
+							</FormItem>
+						)}
+					/>
+					{https && (
+						<FormField
+							control={form.control}
+							name="certificateType"
+							render={({ field }) => {
+								return (
+									<FormItem className="col-span-2">
+										<FormLabel>Certificate Provider</FormLabel>
+										<Select
+											aria-label="Ingress certificate provider"
+											onValueChange={field.onChange}
+											value={field.value}
+										>
 											<FormControl>
-												<Input
-													className="w-full"
-													placeholder={"Dp4kz@example.com"}
-													{...field}
-												/>
+												<></>
 											</FormControl>
-											<FormMessage />
-										</FormItem>
-									);
-								}}
-							/>
-							<FormField
-								control={form.control}
-								name="https"
-								render={({ field }) => (
-									<FormItem className="flex flex-row items-center justify-between p-3 mt-4 border rounded-lg shadow-sm w-full col-span-2">
-										<div className="space-y-0.5">
-											<FormLabel>HTTPS</FormLabel>
-											<FormDescription>
-												Automatically provision SSL Certificate.
-											</FormDescription>
-											<FormMessage />
-										</div>
-										<FormControl>
-											<Switch
-												checked={field.value}
-												onCheckedChange={field.onChange}
-											/>
-										</FormControl>
+											<>
+												<Select.Option value={"none"}>None</Select.Option>
+												<Select.Option value={"letsencrypt"}>
+													Let's Encrypt
+												</Select.Option>
+											</>
+										</Select>
+										<FormMessage />
 									</FormItem>
-								)}
-							/>
-							{https && (
-								<FormField
-									control={form.control}
-									name="certificateType"
-									render={({ field }) => {
-										return (
-											<FormItem className="col-span-2">
-												<FormLabel>Certificate Provider</FormLabel>
-												<Select
-													aria-label="Ingress certificate provider"
-													onValueChange={field.onChange}
-													value={field.value}
-												>
-													<FormControl>
-														<></>
-													</FormControl>
-													<>
-														<Select.Option value={"none"}>None</Select.Option>
-														<Select.Option value={"letsencrypt"}>
-															Let's Encrypt
-														</Select.Option>
-													</>
-												</Select>
-												<FormMessage />
-											</FormItem>
-										);
-									}}
-								/>
-							)}
+								);
+							}}
+						/>
+					)}
 
-							<div className="flex w-full justify-end col-span-2">
-								<Button loading={isPending} type="submit">
-									Save
-								</Button>
-							</div>
-						</form>
-					</Form>
-				</div>
-			</LayerCard>
-		</div>
+					<div className="flex w-full justify-end col-span-2">
+						<Button loading={isPending} type="submit">
+							Save
+						</Button>
+					</div>
+				</form>
+			</Form>
+		</SectionCard>
 	);
 };

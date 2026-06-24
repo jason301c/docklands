@@ -1,5 +1,4 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	ClipboardList,
@@ -20,6 +19,7 @@ import {
 } from "@/components/icons/data-tools-icons";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { cn } from "@/shared/utils";
 import type { ServiceType } from "../../application/advanced/show-resources";
@@ -78,20 +78,12 @@ export const ShowBackups = ({
 		api.backup.remove.useMutation();
 
 	return (
-		<LayerCard className="bg-kumo-canvas">
-			<div className="flex flex-row justify-between gap-4  flex-wrap">
-				<div className="flex flex-col gap-0.5">
-					<h3 className="text-xl font-semibold flex items-center gap-2">
-						<Database className="size-6 text-kumo-subtle" />
-						Backups
-					</h3>
-					<p>
-						Add backups to your database to save the data to a different
-						provider.
-					</p>
-				</div>
-
-				{postgres && postgres?.backups?.length > 0 && (
+		<SectionCard
+			icon={Database}
+			title="Backups"
+			description="Add backups to your database to save the data to a different provider."
+			actions={
+				postgres && postgres?.backups?.length > 0 ? (
 					<div className="flex flex-col lg:flex-row gap-4 w-full lg:w-auto">
 						{databaseType !== "web-server" && (
 							<HandleBackup
@@ -112,8 +104,9 @@ export const ShowBackups = ({
 							}
 						/>
 					</div>
-				)}
-			</div>
+				) : null
+			}
+		>
 			<div className="flex flex-col gap-4">
 				{data?.length === 0 ? (
 					<div className="flex flex-col items-center gap-3 min-h-[35vh] justify-center">
@@ -368,6 +361,6 @@ export const ShowBackups = ({
 					</div>
 				)}
 			</div>
-		</LayerCard>
+		</SectionCard>
 	);
 };

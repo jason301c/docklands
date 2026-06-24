@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	ClipboardList,
@@ -14,6 +13,7 @@ import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { HandleSchedules } from "./handle-schedules";
@@ -70,20 +70,17 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 	};
 
 	return (
-		<LayerCard className="border px-6 shadow-none bg-transparent h-full min-h-[50vh]">
-			<div className="px-0">
-				<div className="flex justify-between items-center gap-y-2 flex-wrap">
-					<div className="flex flex-col gap-2">
-						<h3 className="text-xl font-semibold flex items-center gap-2">
-							Automations
-						</h3>
-						<p>Run commands automatically at specified intervals.</p>
-					</div>
-					{schedules && schedules.length > 0 && (
-						<HandleSchedules id={id} scheduleType={scheduleType} />
-					)}
-				</div>
-			</div>
+		<SectionCard
+			icon={ClipboardList}
+			title="Automations"
+			description="Run commands automatically at specified intervals."
+			className="h-full min-h-[50vh]"
+			actions={
+				schedules && schedules.length > 0 ? (
+					<HandleSchedules id={id} scheduleType={scheduleType} />
+				) : null
+			}
+		>
 			<div className="px-0">
 				{isLoadingSchedules ? (
 					<div className="flex gap-4 w-full items-center justify-center text-center mx-auto min-h-[45vh]">
@@ -243,6 +240,6 @@ export const ShowSchedules = ({ id, scheduleType = "application" }: Props) => {
 					</div>
 				)}
 			</div>
-		</LayerCard>
+		</SectionCard>
 	);
 };

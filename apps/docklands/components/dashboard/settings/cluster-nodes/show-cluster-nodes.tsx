@@ -14,6 +14,7 @@ import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { DateTooltip } from "@/components/shared/date-tooltip";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { AddClusterNode } from "./add-cluster-node";
 import { ShowClusterNodeData } from "./show-cluster-node-data";
@@ -34,165 +35,148 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 
 	const haveAtLeastOneRegistry = !!(registry && registry?.length > 0);
 	return (
-		<div className="w-full">
-			<div className="w-full rounded-lg border bg-kumo-canvas p-6">
-				<div className="flex flex-row gap-2 justify-between w-full items-center flex-wrap">
-					<div className="flex flex-col gap-2">
-						<h3 className="text-xl font-semibold flex items-center gap-2">
-							<Boxes className="size-6 text-kumo-subtle self-center" />
-							Cluster
-						</h3>
-						<p>Add nodes to your cluster runtime.</p>
-					</div>
-					{haveAtLeastOneRegistry && (
-						<div className="flex flex-row gap-2">
-							<AddClusterNode runtimeWorkerId={runtimeWorkerId} />
-						</div>
-					)}
+		<SectionCard
+			icon={Boxes}
+			title="Cluster"
+			description="Add nodes to your cluster runtime."
+			actions={
+				haveAtLeastOneRegistry ? (
+					<AddClusterNode runtimeWorkerId={runtimeWorkerId} />
+				) : null
+			}
+			contentClassName="min-h-[35vh]"
+		>
+			{isPending ? (
+				<div className="flex items-center justify-center w-full h-[40vh]">
+					<Loader2 className="size-8 animate-spin text-kumo-subtle" />
 				</div>
-				<div className="space-y-2 py-8 border-t min-h-[35vh]">
-					{isPending ? (
-						<div className="flex items-center justify-center w-full h-[40vh]">
-							<Loader2 className="size-8 animate-spin text-kumo-subtle" />
-						</div>
-					) : haveAtLeastOneRegistry ? (
-						<div className="grid md:grid-cols-1 gap-4">
-							<Table>
-								<caption>A list of your managers / workers.</caption>
-								<Table.Header>
-									<Table.Row>
-										<Table.Head className="text-left">Hostname</Table.Head>
-										<Table.Head className="text-right">Status</Table.Head>
-										<Table.Head className="text-right">Role</Table.Head>
-										<Table.Head className="text-right">Availability</Table.Head>
-										<Table.Head className="text-right">
-											Engine Version
-										</Table.Head>
-										<Table.Head className="text-right">Created</Table.Head>
+			) : haveAtLeastOneRegistry ? (
+				<div className="grid md:grid-cols-1 gap-4">
+					<Table>
+						<caption>A list of your managers / workers.</caption>
+						<Table.Header>
+							<Table.Row>
+								<Table.Head className="text-left">Hostname</Table.Head>
+								<Table.Head className="text-right">Status</Table.Head>
+								<Table.Head className="text-right">Role</Table.Head>
+								<Table.Head className="text-right">Availability</Table.Head>
+								<Table.Head className="text-right">Engine Version</Table.Head>
+								<Table.Head className="text-right">Created</Table.Head>
 
-										<Table.Head className="text-right">Actions</Table.Head>
+								<Table.Head className="text-right">Actions</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{data?.map((node) => {
+								const isManager = node.Spec.Role === "manager";
+								return (
+									<Table.Row key={node.ID}>
+										<Table.Cell className="text-left">
+											{node.Description.Hostname}
+										</Table.Cell>
+										<Table.Cell className="text-right">
+											{node.Status.State}
+										</Table.Cell>
+										<Table.Cell className="text-right">
+											<Badge variant={isManager ? "secondary" : "secondary"}>
+												{node?.Spec?.Role}
+											</Badge>
+										</Table.Cell>
+										<Table.Cell className="text-right">
+											{node.Spec.Availability}
+										</Table.Cell>
+
+										<Table.Cell className="text-right">
+											{node?.Description.Engine.EngineVersion}
+										</Table.Cell>
+
+										<Table.Cell className="text-right">
+											<DateTooltip date={node.CreatedAt} className="text-sm">
+												Created{" "}
+											</DateTooltip>
+										</Table.Cell>
+										<Table.Cell className="text-right flex justify-end">
+											<DropdownMenu>
+												<DropdownMenu.Trigger
+													render={
+														<Button
+															aria-label={`Open actions for ${node.Description.Hostname}`}
+															variant="ghost"
+															className="h-8 w-8 p-0"
+														>
+															<span className="sr-only">
+																Open actions for {node.Description.Hostname}
+															</span>
+															<MoreHorizontal className="h-4 w-4" />
+														</Button>
+													}
+												/>
+												<DropdownMenu.Content align="end">
+													<DropdownMenu.Group>
+														<DropdownMenu.Label>Actions</DropdownMenu.Label>
+													</DropdownMenu.Group>
+													<ShowClusterNodeData data={node} />
+													{!node?.ManagerStatus?.Leader && (
+														<DialogAction
+															title="Delete Node"
+															description="Are you sure you want to delete this node from the cluster?"
+															type="destructive"
+															onClick={async () => {
+																await deleteNode({
+																	nodeId: node.ID,
+																	runtimeWorkerId,
+																})
+																	.then(() => {
+																		refetch();
+																		toast.success("Node deleted successfully");
+																	})
+																	.catch((err) => {
+																		logger.error(err);
+																		toast.error("Error deleting node");
+																	});
+															}}
+														>
+															<DropdownMenu.Item
+																onSelect={(e) => e.preventDefault()}
+															>
+																Delete
+															</DropdownMenu.Item>
+														</DialogAction>
+													)}
+												</DropdownMenu.Content>
+											</DropdownMenu>
+										</Table.Cell>
 									</Table.Row>
-								</Table.Header>
-								<Table.Body>
-									{data?.map((node) => {
-										const isManager = node.Spec.Role === "manager";
-										return (
-											<Table.Row key={node.ID}>
-												<Table.Cell className="text-left">
-													{node.Description.Hostname}
-												</Table.Cell>
-												<Table.Cell className="text-right">
-													{node.Status.State}
-												</Table.Cell>
-												<Table.Cell className="text-right">
-													<Badge
-														variant={isManager ? "secondary" : "secondary"}
-													>
-														{node?.Spec?.Role}
-													</Badge>
-												</Table.Cell>
-												<Table.Cell className="text-right">
-													{node.Spec.Availability}
-												</Table.Cell>
-
-												<Table.Cell className="text-right">
-													{node?.Description.Engine.EngineVersion}
-												</Table.Cell>
-
-												<Table.Cell className="text-right">
-													<DateTooltip
-														date={node.CreatedAt}
-														className="text-sm"
-													>
-														Created{" "}
-													</DateTooltip>
-												</Table.Cell>
-												<Table.Cell className="text-right flex justify-end">
-													<DropdownMenu>
-														<DropdownMenu.Trigger
-															render={
-																<Button
-																	aria-label={`Open actions for ${node.Description.Hostname}`}
-																	variant="ghost"
-																	className="h-8 w-8 p-0"
-																>
-																	<span className="sr-only">
-																		Open actions for {node.Description.Hostname}
-																	</span>
-																	<MoreHorizontal className="h-4 w-4" />
-																</Button>
-															}
-														/>
-														<DropdownMenu.Content align="end">
-															<DropdownMenu.Group>
-																<DropdownMenu.Label>Actions</DropdownMenu.Label>
-															</DropdownMenu.Group>
-															<ShowClusterNodeData data={node} />
-															{!node?.ManagerStatus?.Leader && (
-																<DialogAction
-																	title="Delete Node"
-																	description="Are you sure you want to delete this node from the cluster?"
-																	type="destructive"
-																	onClick={async () => {
-																		await deleteNode({
-																			nodeId: node.ID,
-																			runtimeWorkerId,
-																		})
-																			.then(() => {
-																				refetch();
-																				toast.success(
-																					"Node deleted successfully",
-																				);
-																			})
-																			.catch((err) => {
-																				logger.error(err);
-																				toast.error("Error deleting node");
-																			});
-																	}}
-																>
-																	<DropdownMenu.Item
-																		onSelect={(e) => e.preventDefault()}
-																	>
-																		Delete
-																	</DropdownMenu.Item>
-																</DialogAction>
-															)}
-														</DropdownMenu.Content>
-													</DropdownMenu>
-												</Table.Cell>
-											</Table.Row>
-										);
-									})}
-								</Table.Body>
-							</Table>
-						</div>
-					) : (
-						<div className="flex flex-col items-center gap-3">
-							<LockIcon className="size-8 text-kumo-subtle" />
-							<div className="flex flex-row gap-2">
-								<span className="text-base text-kumo-subtle ">
-									To add nodes to your cluster, you need to configure at least
-									one registry.
-								</span>
-								<TooltipProvider delay={0}>
-									<Tooltip
-										content={<>Nodes need a registry to pull images from.</>}
-									>
-										<HelpCircle className="size-5 text-kumo-subtle " />
-									</Tooltip>
-								</TooltipProvider>
-							</div>
-
-							<ul className="list-disc list-inside text-sm text-kumo-subtle border p-4 rounded-lg flex flex-col gap-1.5 mt-2.5">
-								<li>
-									<strong>Image Registry:</strong> Use custom registries like
-									Docker Hub, DigitalOcean Registry, etc.
-								</li>
-							</ul>
-						</div>
-					)}
+								);
+							})}
+						</Table.Body>
+					</Table>
 				</div>
-			</div>
-		</div>
+			) : (
+				<div className="flex flex-col items-center gap-3">
+					<LockIcon className="size-8 text-kumo-subtle" />
+					<div className="flex flex-row gap-2">
+						<span className="text-base text-kumo-subtle ">
+							To add nodes to your cluster, you need to configure at least one
+							registry.
+						</span>
+						<TooltipProvider delay={0}>
+							<Tooltip
+								content={<>Nodes need a registry to pull images from.</>}
+							>
+								<HelpCircle className="size-5 text-kumo-subtle " />
+							</Tooltip>
+						</TooltipProvider>
+					</div>
+
+					<ul className="list-disc list-inside text-sm text-kumo-subtle border p-4 rounded-lg flex flex-col gap-1.5 mt-2.5">
+						<li>
+							<strong>Image Registry:</strong> Use custom registries like Docker
+							Hub, DigitalOcean Registry, etc.
+						</li>
+					</ul>
+				</div>
+			)}
+		</SectionCard>
 	);
 };

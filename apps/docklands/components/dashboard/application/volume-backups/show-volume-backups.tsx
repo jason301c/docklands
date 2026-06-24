@@ -1,6 +1,5 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import {
 	ClipboardList,
@@ -13,6 +12,7 @@ import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
+import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { ShowDeploymentsModal } from "../deployments/show-deployments-modal";
 import { HandleVolumeBackups } from "./handle-volume-backups";
@@ -70,34 +70,24 @@ export const ShowVolumeBackups = ({
 	};
 
 	return (
-		<LayerCard className="border px-6 shadow-none bg-transparent h-full min-h-[50vh]">
-			<div className="px-0">
-				<div className="flex justify-between items-center flex-wrap gap-2">
-					<div className="flex flex-col gap-2">
-						<h3 className="text-xl font-semibold flex items-center gap-2">
-							Volume Backups
-						</h3>
-						<p>
-							Schedule volume backups to run automatically at specified
-							intervals
-						</p>
-					</div>
-					<div className="flex items-center gap-2 flex-wrap">
-						{volumeBackups && volumeBackups.length > 0 && (
-							<>
-								<HandleVolumeBackups id={id} volumeBackupType={type} />
-								<div className="flex items-center gap-2">
-									<RestoreVolumeBackups
-										id={id}
-										type={type}
-										runtimeWorkerId={runtimeWorkerId}
-									/>
-								</div>
-							</>
-						)}
-					</div>
-				</div>
-			</div>
+		<SectionCard
+			icon={DatabaseBackup}
+			title="Volume Backups"
+			description="Schedule volume backups to run automatically at specified intervals"
+			className="h-full min-h-[50vh]"
+			actions={
+				volumeBackups && volumeBackups.length > 0 ? (
+					<>
+						<HandleVolumeBackups id={id} volumeBackupType={type} />
+						<RestoreVolumeBackups
+							id={id}
+							type={type}
+							runtimeWorkerId={runtimeWorkerId}
+						/>
+					</>
+				) : null
+			}
+		>
 			<div className="px-0">
 				{isLoadingVolumeBackups ? (
 					<div className="flex gap-4 w-full items-center justify-center text-center mx-auto min-h-[45vh]">
@@ -243,6 +233,6 @@ export const ShowVolumeBackups = ({
 					</div>
 				)}
 			</div>
-		</LayerCard>
+		</SectionCard>
 	);
 };

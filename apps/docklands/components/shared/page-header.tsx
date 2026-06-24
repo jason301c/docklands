@@ -32,7 +32,7 @@ export function PageHeader({
 		>
 			<div className="space-y-1">
 				<h3 className="flex items-center gap-2 text-xl font-semibold">
-					{Icon ? <Icon className="size-5" /> : null}
+					{Icon ? <Icon className="size-5 text-kumo-subtle" /> : null}
 					{title}
 				</h3>
 				{description ? (
