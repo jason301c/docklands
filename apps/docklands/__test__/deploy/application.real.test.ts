@@ -7,6 +7,14 @@ import type { ApplicationNested } from "@/server/core/utils/builders";
 import { execAsync } from "@/server/core/utils/process/execAsync";
 
 const REAL_TEST_TIMEOUT = 180000; // 3 minutes
+const REAL_TEST_GIT_URL =
+	process.env.DOCKLANDS_REAL_TEST_GIT_URL ??
+	"https://github.com/jason301c/docklands.git";
+const REAL_TEST_GIT_BRANCH =
+	process.env.DOCKLANDS_REAL_TEST_GIT_BRANCH ?? "canary";
+const REAL_TEST_FIXTURE_BASE =
+	process.env.DOCKLANDS_REAL_TEST_FIXTURE_BASE ??
+	"/apps/docklands/__test__/fixtures/deploy";
 
 // Mock ONLY database and notifications
 vi.mock("@/server/core/db", () => {
@@ -102,15 +110,18 @@ const createMockApplication = (
 		name: "Real Test App",
 		appName: `real-test-${Date.now()}`,
 		sourceType: "git" as const,
-		customGitUrl: "https://github.com/jason301c/docklands.git",
-		customGitBranch: "main",
+		customGitUrl: REAL_TEST_GIT_URL,
+		customGitBranch: REAL_TEST_GIT_BRANCH,
 		customGitSSHKeyId: null,
-		customGitBuildPath: "/astro",
+		customGitBuildPath: `${REAL_TEST_FIXTURE_BASE}/nixpacks`,
 		buildType: "nixpacks" as const,
 		env: "NODE_ENV=production",
 		runtimeWorkerId: null,
+		buildRuntimeWorkerId: null,
 		rollbackActive: false,
 		enableSubmodules: false,
+		cleanCache: false,
+		createEnvFile: true,
 		environmentId: "env-id",
 		environment: {
 			workspaceId: "workspace-id",
@@ -127,7 +138,10 @@ const createMockApplication = (
 		security: [],
 		redirects: [],
 		ports: [],
+		replicas: 1,
 		registry: null,
+		buildRegistry: null,
+		rollbackRegistry: null,
 		...overrides,
 	}) as ApplicationNested;
 
@@ -448,7 +462,7 @@ describe(
 				const dockerfileApp = createMockApplication({
 					appName: dockerfileAppName,
 					buildType: "dockerfile",
-					customGitBuildPath: "/deno",
+					customGitBuildPath: `${REAL_TEST_FIXTURE_BASE}/dockerfile`,
 					dockerfile: "Dockerfile",
 				});
 				currentAppName = dockerfileAppName;
