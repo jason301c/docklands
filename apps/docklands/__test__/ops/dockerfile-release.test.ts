@@ -137,6 +137,14 @@ describe("production Dockerfile release install", () => {
 		expect(dispatchScript).toContain("Push the branch before dispatching");
 		expect(dispatchScript).toContain("DOCKLANDS_RELEASE_SMOKE_DRY_RUN");
 		expect(dispatchScript).toContain("DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY");
+		expect(dispatchScript).toContain("--wait");
+		expect(dispatchScript).toContain("DOCKLANDS_RELEASE_SMOKE_WAIT");
+		expect(dispatchScript).toContain("workflow_run_ids");
+		expect(dispatchScript).toContain("gh run list");
+		expect(dispatchScript).toContain("gh run view");
+		expect(dispatchScript).toContain('"workflow_dispatch"');
+		expect(dispatchScript).toContain('"$target_sha"');
+		expect(dispatchScript).toContain("Both release smoke workflows completed");
 	});
 
 	it("keeps the local release preflight aligned with required non-mutating gates", () => {
