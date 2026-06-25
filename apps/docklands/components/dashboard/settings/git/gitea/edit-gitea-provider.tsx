@@ -30,7 +30,7 @@ const formSchema = z.object({
 		.optional()
 		.transform((v) => (v === "" ? undefined : v)),
 	clientId: z.string().min(1, "Client ID is required"),
-	clientSecret: z.string().min(1, "Client Secret is required"),
+	clientSecret: z.string().optional(),
 });
 
 interface Props {
@@ -105,7 +105,7 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 				giteaUrl: gitea.giteaUrl || "https://gitea.com",
 				giteaInternalUrl: gitea.giteaInternalUrl || "",
 				clientId: gitea.clientId || "",
-				clientSecret: gitea.clientSecret || "",
+				clientSecret: "",
 			});
 		}
 	}, [gitea, form]);
@@ -118,7 +118,7 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 			giteaUrl: values.giteaUrl,
 			giteaInternalUrl: values.giteaInternalUrl ?? null,
 			clientId: values.clientId,
-			clientSecret: values.clientSecret,
+			clientSecret: values.clientSecret || undefined,
 		});
 	};
 
@@ -272,7 +272,7 @@ export const EditGiteaProvider = ({ giteaId }: Props) => {
 									<FormControl>
 										<Input
 											type="password"
-											placeholder="Client Secret"
+											placeholder="Leave blank to keep the existing secret"
 											{...field}
 										/>
 									</FormControl>

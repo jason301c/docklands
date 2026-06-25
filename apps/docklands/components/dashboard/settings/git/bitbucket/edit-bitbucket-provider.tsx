@@ -30,7 +30,7 @@ const Schema = z.object({
 	}),
 	email: z.string().email({ message: "Email is required" }),
 	workspaceName: z.string().optional(),
-	apiToken: z.string().min(1, { message: "API Token is required" }),
+	apiToken: z.string().optional(),
 });
 
 type Schema = z.infer<typeof Schema>;
@@ -91,7 +91,7 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 			email: bitbucket?.bitbucketEmail || "",
 			workspaceName: bitbucket?.bitbucketWorkspaceName || "",
 			name: bitbucket?.gitProvider.name || "",
-			apiToken: bitbucket?.apiToken || "",
+			apiToken: "",
 		});
 	}, [form, isOpen, bitbucket]);
 
@@ -103,7 +103,7 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 			bitbucketEmail: data.email || "",
 			bitbucketWorkspaceName: data.workspaceName || "",
 			name: data.name || "",
-			apiToken: data.apiToken || "",
+			apiToken: data.apiToken || undefined,
 		});
 	};
 
@@ -220,7 +220,7 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 												<FormControl>
 													<Input
 														type="password"
-														placeholder="Enter your Bitbucket API Token"
+														placeholder="Leave blank to keep the existing token"
 														{...field}
 													/>
 												</FormControl>
@@ -241,7 +241,7 @@ export const EditBitbucketProvider = ({ bitbucketId }: Props) => {
 												bitbucketUsername: username,
 												bitbucketEmail: email,
 												workspaceName: workspaceName,
-												apiToken: apiToken,
+												apiToken: apiToken || "",
 											})
 												.then(async (message) => {
 													toast.info(`Message: ${message}`);

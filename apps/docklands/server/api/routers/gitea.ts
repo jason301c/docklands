@@ -29,6 +29,29 @@ import {
 	testGiteaConnection,
 } from "@/server/core/utils/providers/gitea";
 
+/**
+ * Strip the transparently decrypted Gitea OAuth secret + tokens before
+ * returning to the browser. Clone/OAuth flows read them through the service
+ * layer, never this read procedure.
+ */
+const sanitizeGitea = <
+	T extends {
+		clientSecret?: unknown;
+		accessToken?: unknown;
+		refreshToken?: unknown;
+	},
+>(
+	provider: T,
+) => {
+	const {
+		clientSecret: _clientSecret,
+		accessToken: _accessToken,
+		refreshToken: _refreshToken,
+		...rest
+	} = provider;
+	return rest;
+};
+
 export const giteaRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")
 		.input(apiCreateGitea)
@@ -58,7 +81,7 @@ export const giteaRouter = createTRPCRouter({
 		}),
 
 	one: protectedProcedure.input(apiFindOneGitea).query(async ({ input }) => {
-		return await findGiteaById(input.giteaId);
+		return sanitizeGitea(await findGiteaById(input.giteaId));
 	}),
 
 	giteaProviders: protectedProcedure.query(async ({ ctx }) => {
@@ -166,19 +189,20 @@ export const giteaRouter = createTRPCRouter({
 	update: withPermission("gitProviders", "create")
 		.input(apiUpdateGitea)
 		.mutation(async ({ input, ctx }) => {
+			const updateInput = { ...input };
+			if (!updateInput.clientSecret) {
+				delete updateInput.clientSecret;
+			}
+
 			if (input.name) {
 				await updateGitProvider(input.gitProviderId, {
 					name: input.name,
 					organizationId: ctx.session.activeOrganizationId,
 				});
 
-				await updateGitea(input.giteaId, {
-					...input,
-				});
+				await updateGitea(input.giteaId, updateInput);
 			} else {
-				await updateGitea(input.giteaId, {
-					...input,
-				});
+				await updateGitea(input.giteaId, updateInput);
 			}
 
 			await audit(ctx, {

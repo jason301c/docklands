@@ -76,14 +76,19 @@ export const updateBitbucket = async (
 			});
 		}
 
+		const updatePayload: Partial<typeof bitbucket.$inferInsert> = {
+			bitbucketUsername: input.bitbucketUsername,
+			bitbucketEmail: input.bitbucketEmail,
+			bitbucketWorkspaceName: input.bitbucketWorkspaceName,
+		};
+
+		if (input.apiToken) {
+			updatePayload.apiToken = input.apiToken;
+		}
+
 		const result = await tx
 			.update(bitbucket)
-			.set({
-				bitbucketUsername: input.bitbucketUsername,
-				bitbucketEmail: input.bitbucketEmail,
-				apiToken: input.apiToken,
-				bitbucketWorkspaceName: input.bitbucketWorkspaceName,
-			})
+			.set(updatePayload)
 			.where(eq(bitbucket.bitbucketId, bitbucketId))
 			.returning();
 

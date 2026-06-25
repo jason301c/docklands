@@ -25,6 +25,16 @@ import {
 	testBitbucketConnection,
 } from "@/server/core/utils/providers/bitbucket";
 
+/**
+ * Strip the transparently decrypted Bitbucket API token before returning a
+ * provider record to the browser. Clone/API flows read it through the service
+ * layer, never from tRPC read/update responses.
+ */
+const sanitizeBitbucket = <T extends { apiToken?: unknown }>(provider: T) => {
+	const { apiToken: _apiToken, ...rest } = provider;
+	return rest;
+};
+
 export const bitbucketRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")
 		.input(apiCreateBitbucket)
@@ -54,7 +64,7 @@ export const bitbucketRouter = createTRPCRouter({
 	one: protectedProcedure
 		.input(apiFindOneBitbucket)
 		.query(async ({ input }) => {
-			return await findBitbucketById(input.bitbucketId);
+			return sanitizeBitbucket(await findBitbucketById(input.bitbucketId));
 		}),
 	bitbucketProviders: protectedProcedure.query(async ({ ctx }) => {
 		const accessibleIds = await getAccessibleGitProviderIds(ctx.session);
@@ -117,6 +127,6 @@ export const bitbucketRouter = createTRPCRouter({
 				resourceName: input.name,
 			});
 
-			return result;
+			return result ? sanitizeBitbucket(result) : result;
 		}),
 });
