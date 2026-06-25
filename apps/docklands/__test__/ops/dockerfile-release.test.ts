@@ -55,4 +55,22 @@ describe("production Dockerfile release install", () => {
 
 		expect(dockerfile).not.toContain("BETTER_AUTH_SECRET");
 	});
+
+	it("runs the loaded production image through the first-run smoke gate", () => {
+		const rootPackage = JSON.parse(repoFile("package.json"));
+		const workflow = repoFile(".github/workflows/docker-build.yml");
+		const smokeScript = repoFile("tools/docker/smoke-image.sh");
+
+		expect(rootPackage.scripts["docker:smoke"]).toBe(
+			"./tools/docker/smoke-image.sh",
+		);
+		expect(workflow).toContain("load: true");
+		expect(workflow).toContain("tags: docklands:ci-smoke");
+		expect(workflow).toContain(
+			"./tools/docker/smoke-image.sh docklands:ci-smoke",
+		);
+		expect(smokeScript).toContain("/api/ready");
+		expect(smokeScript).toContain("DOCKLANDS_DOCKER_HOST");
+		expect(smokeScript).toContain("docklands-network");
+	});
 });

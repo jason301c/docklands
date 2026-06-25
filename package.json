@@ -44,6 +44,7 @@
 		"site:lint": "bun --filter site lint",
 		"site:format": "bun --filter site format",
 		"docker:build": "./tools/docker/build.sh",
+		"docker:smoke": "./tools/docker/smoke-image.sh",
 		"docker:push": "./tools/docker/push.sh",
 		"docker:build:canary": "./tools/docker/build.sh canary",
 		"docker:push:canary": "./tools/docker/push.sh canary"

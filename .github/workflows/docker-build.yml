@@ -1,4 +1,4 @@
-# Docker image build smoke test.
+# Docker image build and first-run smoke test.
 #
 # Building the production image exercises a path the main CI gates don't: the
 # multi-stage Dockerfile, the workspace-root build context, native-addon
@@ -6,9 +6,10 @@
 # and network-heavy (the image installs Docker CLI, rclone, nixpacks, etc.), so
 # it runs ONLY when build-affecting files change — not on every PR.
 #
-# It builds without pushing (no registry credentials, no `--load`): a failed
-# `docker build` fails the job, which is the whole point — catch Dockerfile /
-# lockfile / build breakage before it reaches a release.
+# It builds without pushing (no registry credentials), loads the image into the
+# runner, and starts it against disposable Postgres plus Docker-in-Docker. That
+# catches Dockerfile / lockfile / first-run bootstrap breakage before it reaches
+# a release.
 name: Docker build
 
 on:
@@ -40,7 +41,7 @@ permissions:
 
 jobs:
   build-image:
-    name: Build production image
+    name: Build and smoke production image
     runs-on: ubuntu-latest
     # The image build (native addons + Next/esbuild build inside the image) is
     # the long pole; cap generously so a hang fails fast.
@@ -55,13 +56,18 @@ jobs:
 
       # Build with the workspace root as context against the app Dockerfile (the
       # Dockerfile expects the Bun workspace root so the lockfile installs
-      # consistently). No push / no load — building is the smoke test. GitHub
-      # Actions cache keeps repeat builds reasonable.
-      - name: Build image (no push)
+      # consistently). No push; the loaded image is used by the first-run smoke
+      # below. GitHub Actions cache keeps repeat builds reasonable.
+      - name: Build image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: apps/docklands/Dockerfile
           push: false
+          load: true
+          tags: docklands:ci-smoke
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Run first-run image smoke
+        run: ./tools/docker/smoke-image.sh docklands:ci-smoke
