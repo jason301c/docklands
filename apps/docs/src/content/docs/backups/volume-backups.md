@@ -15,7 +15,7 @@ volume backups for:
 - **Anything else on a volume** that a logical dump would not capture.
 
 Volume backups are configured per service, on the **Volume Backups** tab of an
-application or compose service.
+application, compose, Redis, or libSQL service.
 
 ## Create a volume backup
 

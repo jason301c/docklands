@@ -119,7 +119,8 @@ export const runVolumeBackup = async (volumeBackupId: string) => {
 	const volumeBackup = await findVolumeBackupById(volumeBackupId);
 	const runtimeWorkerId =
 		volumeBackup.application?.runtimeWorkerId ||
-		volumeBackup.compose?.runtimeWorkerId;
+		volumeBackup.compose?.runtimeWorkerId ||
+		volumeBackup.database?.runtimeWorkerId;
 	const deployment = await createDeploymentVolumeBackup({
 		volumeBackupId: volumeBackup.volumeBackupId,
 		title: "Volume Backup",

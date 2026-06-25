@@ -15,11 +15,17 @@ export const deploymentServiceTypes = new Set<WorkspaceServiceType>([
 ]);
 
 export const databaseBackupServiceTypes = new Set<WorkspaceServiceType>([
-	"libsql",
 	"mariadb",
 	"mongo",
 	"mysql",
 	"postgres",
+]);
+
+export const volumeBackupServiceTypes = new Set<WorkspaceServiceType>([
+	"application",
+	"compose",
+	"libsql",
+	"redis",
 ]);
 
 export const databaseCredentialServiceTypes = new Set<WorkspaceServiceType>([
@@ -104,7 +110,12 @@ export const getServiceSettingsHref = (
 
 export const getDatabaseBackupType = (service: WorkspaceService) =>
 	databaseBackupServiceTypes.has(service.type)
-		? (service.type as "libsql" | "mariadb" | "mongo" | "mysql" | "postgres")
+		? (service.type as "mariadb" | "mongo" | "mysql" | "postgres")
+		: undefined;
+
+export const getVolumeBackupType = (service: WorkspaceService) =>
+	volumeBackupServiceTypes.has(service.type)
+		? (service.type as "application" | "compose" | "libsql" | "redis")
 		: undefined;
 
 export const hasDatabaseCredentials = (service: WorkspaceService) =>

@@ -29,14 +29,6 @@ Docklands ships one:
 backup. **libSQL** has no logical *dump* either — to protect Redis or libSQL
 data, use a [volume backup](/backups/volume-backups/) instead.
 
-:::caution
-The libSQL case is uneven today. The backup form will let you create a libSQL
-*database* backup, but the dump step has no command for that engine and the run
-fails. libSQL **restore** is implemented (it untars a gzip archive into
-`/var/lib/sqld`), but there is no matching scheduled-dump path that produces such
-an archive. Treat libSQL as **volume-backup only** until this is reconciled.
-:::
-
 ## Before you start
 
 - You need at least one [storage destination](/backups/destinations/). Until one
@@ -127,8 +119,6 @@ streams the chosen file back down and replays it into the running database:
   runs against the **live** database and overwrites matching objects.
 - **MongoDB** — the archive is downloaded to a temp dir, decompressed, and
   replayed with `mongorestore --drop`.
-- **libSQL** — the archive is untarred into `/var/lib/sqld` (see the caution
-  above about the missing dump path).
 
 Restore streams its log to the UI as it runs.
 

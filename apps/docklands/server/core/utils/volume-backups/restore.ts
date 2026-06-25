@@ -4,6 +4,7 @@ import { paths } from "@/server/core/constants/paths";
 import { createLogger } from "@/server/core/lib/logger";
 import { findApplicationById } from "@/server/core/services/application";
 import { findComposeById } from "@/server/core/services/compose";
+import { findDatabaseById } from "@/server/core/services/database";
 import { findDestinationById } from "@/server/core/services/destination";
 import {
 	getS3CredentialEnv,
@@ -11,6 +12,16 @@ import {
 } from "@/server/core/utils/backups/utils";
 
 const logger = createLogger("volume-backup");
+
+type VolumeRestoreServiceType =
+	| "application"
+	| "compose"
+	| "postgres"
+	| "mysql"
+	| "mariadb"
+	| "mongo"
+	| "redis"
+	| "libsql";
 
 type BuildVolumeRestoreScriptInput = {
 	volumeName: string;
@@ -124,7 +135,7 @@ export const restoreVolume = async (
 	volumeName: string,
 	backupFileName: string,
 	runtimeWorkerId: string,
-	serviceType: "application" | "compose",
+	serviceType: VolumeRestoreServiceType,
 ) => {
 	logger.info(
 		{ id, volumeName, serviceType },
@@ -175,13 +186,17 @@ export const restoreVolume = async (
 		});
 	}
 
-	// Fallback for unknown service types
+	const database = await findDatabaseById(id);
 	return buildVolumeRestoreScript({
 		volumeName,
 		backupFileName,
 		localBackupFileName,
 		volumeBackupPath,
 		downloadCommand,
-		headerLines: [],
+		headerLines: [
+			"=== VOLUME RESTORE FOR DATABASE ===",
+			`Database: ${database.appName}`,
+			`Engine: ${database.engine}`,
+		],
 	});
 };

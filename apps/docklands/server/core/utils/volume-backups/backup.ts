@@ -33,7 +33,8 @@ export const backupVolume = async (
 	const destination = await findDestinationById(volumeBackup.destinationId);
 	const runtimeWorkerId =
 		volumeBackup.application?.runtimeWorkerId ||
-		volumeBackup.compose?.runtimeWorkerId;
+		volumeBackup.compose?.runtimeWorkerId ||
+		volumeBackup.database?.runtimeWorkerId;
 	const { VOLUME_BACKUPS_PATH, VOLUME_BACKUP_LOCK_PATH } = paths(
 		!!runtimeWorkerId,
 	);
@@ -81,7 +82,9 @@ export const backupVolume = async (
 	const serviceLockId =
 		serviceType === "application"
 			? volumeBackup.application?.appName
-			: `${volumeBackup.compose?.appName}_${volumeBackup.serviceName}`;
+			: serviceType === "compose"
+				? `${volumeBackup.compose?.appName}_${volumeBackup.serviceName}`
+				: volumeBackup.database?.appName;
 
 	const lockPath = `${VOLUME_BACKUP_LOCK_PATH}-${serviceLockId}`;
 
@@ -112,23 +115,35 @@ export const backupVolume = async (
 	`;
 
 	logger.info(
-		{ appName: volumeBackup.application?.appName, turnOff: true },
+		{
+			appName:
+				volumeBackup.application?.appName || volumeBackup.database?.appName,
+			turnOff: true,
+		},
 		"Stopping service replicas for volume backup",
 	);
 
-	if (serviceType === "application") {
+	if (serviceType === "application" || volumeBackup.database) {
+		const serviceAppName =
+			serviceType === "application"
+				? volumeBackup.application?.appName
+				: volumeBackup.database?.appName;
+		if (!serviceAppName) {
+			throw new Error("Volume backup service app name not found");
+		}
+
 		return lockWrapper(`
-		echo "Stopping application to 0 replicas"
-		ACTUAL_REPLICAS=$(docker service inspect ${volumeBackup.application?.appName} --format "{{.Spec.Mode.Replicated.Replicas}}")
+		echo "Stopping service to 0 replicas"
+		ACTUAL_REPLICAS=$(docker service inspect ${serviceAppName} --format "{{.Spec.Mode.Replicated.Replicas}}")
 		echo "Actual replicas: $ACTUAL_REPLICAS"
 		# Always restore replicas on exit so a failed backup never leaves the
 		# service scaled to zero. The explicit restore below brings it back sooner
 		# on success; this trap is the safety net for the failure path.
-		trap 'docker service update --replicas=$ACTUAL_REPLICAS --with-registry-auth ${volumeBackup.application?.appName} || true' EXIT
-		docker service update --replicas=0 ${volumeBackup.application?.appName}
+		trap 'docker service update --replicas=$ACTUAL_REPLICAS --with-registry-auth ${serviceAppName} || true' EXIT
+		docker service update --replicas=0 ${serviceAppName}
         ${backupCommand}
-		echo "Starting application to $ACTUAL_REPLICAS replicas"
-        docker service update --replicas=$ACTUAL_REPLICAS --with-registry-auth ${volumeBackup.application?.appName}
+		echo "Starting service to $ACTUAL_REPLICAS replicas"
+        docker service update --replicas=$ACTUAL_REPLICAS --with-registry-auth ${serviceAppName}
 		${uploadCommand}
   `);
 	}
@@ -173,4 +188,6 @@ export const backupVolume = async (
 		${uploadCommand}
   `);
 	}
+
+	throw new Error(`Unsupported volume backup service type: ${serviceType}`);
 };

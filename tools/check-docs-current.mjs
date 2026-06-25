@@ -67,6 +67,14 @@ const forbidden = [
 		pattern: /auditLog · schedule/,
 		reason: "the standalone schedule router/schema is not shipped",
 	},
+	{
+		pattern: /libSQL case is uneven/i,
+		reason: "libSQL logical backups are not exposed; use volume backups",
+	},
+	{
+		pattern: /backup form will let you create a libSQL/i,
+		reason: "libSQL logical backups are not exposed; use volume backups",
+	},
 ];
 
 const textExtensions = new Set([".md", ".mdx", ".ts", ".tsx"]);

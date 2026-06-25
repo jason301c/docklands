@@ -21,9 +21,19 @@ import { RestoreVolumeBackups } from "./restore-volume-backups";
 
 const logger = createClientLogger("volume-backup");
 
+type VolumeBackupServiceType =
+	| "application"
+	| "compose"
+	| "libsql"
+	| "mariadb"
+	| "mongo"
+	| "mysql"
+	| "postgres"
+	| "redis";
+
 interface Props {
 	id: string;
-	type?: "application" | "compose";
+	type?: VolumeBackupServiceType;
 	runtimeWorkerId?: string;
 }
 

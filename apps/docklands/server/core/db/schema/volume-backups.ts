@@ -124,6 +124,15 @@ export const restoreVolumeBackupSchema = z.object({
 	destinationId: z.string().min(1),
 	volumeName: dockerNameField,
 	id: z.string().min(1),
-	serviceType: z.enum(["application", "compose"]),
+	serviceType: z.enum([
+		"application",
+		"compose",
+		"postgres",
+		"mysql",
+		"mariadb",
+		"mongo",
+		"redis",
+		"libsql",
+	]),
 	runtimeWorkerId: z.string().optional(),
 });

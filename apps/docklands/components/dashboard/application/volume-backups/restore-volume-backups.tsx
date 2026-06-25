@@ -44,7 +44,15 @@ import { cn } from "@/shared/utils";
 
 interface Props {
 	id: string;
-	type: "application" | "compose";
+	type:
+		| "application"
+		| "compose"
+		| "libsql"
+		| "mariadb"
+		| "mongo"
+		| "mysql"
+		| "postgres"
+		| "redis";
 	runtimeWorkerId?: string;
 }
 

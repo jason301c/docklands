@@ -91,6 +91,7 @@ interface Props {
 		| "mariadb"
 		| "mongo"
 		| "mysql"
+		| "libsql"
 		| "redis";
 }
 

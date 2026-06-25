@@ -104,6 +104,7 @@ import {
 	getDatabaseBackupType,
 	getDeleteInput,
 	getServiceSettingsHref,
+	getVolumeBackupType,
 	hasDatabaseCredentials,
 	serviceKindFilterOptions,
 	serviceSortOptions,
@@ -493,7 +494,7 @@ export const EnvironmentCanvas = ({
 			? [{ value: "credentials", label: "Credentials" }]
 			: []),
 		...(selectedServiceModel &&
-		deploymentServiceTypes.has(selectedServiceModel.type) &&
+		getVolumeBackupType(selectedServiceModel) &&
 		permissions?.volumeBackup.read
 			? [{ value: "volume-backups", label: "Volume Backups" }]
 			: []),
@@ -1950,8 +1951,7 @@ export const EnvironmentCanvas = ({
 							},
 						]
 					: []),
-				...(deploymentServiceTypes.has(service.type) &&
-				permissions?.volumeBackup.read
+				...(getVolumeBackupType(service) && permissions?.volumeBackup.read
 					? [
 							{
 								id: `volume-backups:${service.type}:${service.id}`,
@@ -3331,11 +3331,10 @@ export const EnvironmentCanvas = ({
 							)}
 
 							{activeDrawerTab === "volume-backups" &&
-								(selectedServiceModel.type === "application" ||
-									selectedServiceModel.type === "compose") && (
+								getVolumeBackupType(selectedServiceModel) && (
 									<ShowVolumeBackups
 										id={selectedServiceModel.id}
-										type={selectedServiceModel.type}
+										type={getVolumeBackupType(selectedServiceModel)}
 										runtimeWorkerId={selectedServiceModel.runtimeWorkerId || ""}
 									/>
 								)}

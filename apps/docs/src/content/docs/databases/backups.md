@@ -39,8 +39,7 @@ executes inside the live container.
 Open the database, go to its **Backups** card, and add a backup. You configure:
 
 - **Destination** — the S3-compatible storage to upload to.
-- **Database** — the name of the database/collection to dump. (For libSQL the
-  field is fixed; for the web-server backup it is fixed to `docklands`.)
+- **Database** — the name of the database/collection to dump.
 - **Schedule** — a cron expression for when the backup runs.
 - **Prefix** — an optional path prefix inside the destination bucket.
 - **Keep the latest** — optional retention; keep only the latest *N* backups and
