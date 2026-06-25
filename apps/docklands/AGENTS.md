@@ -150,6 +150,49 @@ like `@/server/...`, `@/components/...`, `@/shared/...`, `@/client/...`.
 - Layout structure: `components/layouts/` (`side.tsx` Kumo sidebar shell,
   `user-nav.tsx`, `dashboard-layout.tsx`, `onboarding-layout.tsx`,
   impersonation bar). Feature trees live under `components/dashboard/*`.
+- The normal UI shape is a thin server `page.tsx` boundary (auth gate, params,
+  server composition) feeding a `"use client"` feature component. Cross-runtime
+  helpers with no React live in `shared/`; React helpers shared by feature trees
+  live in `components/shared/`.
+- **Failure-mode engineering is mandatory.** Global tRPC error handling is
+  already wired in `client/providers/trpc-provider.tsx` and
+  `client/lib/trpc-error.ts`, so new async UI should not fail silently. New
+  top-level route areas should add an `error.tsx` using
+  `components/shared/route-error` and a `loading.tsx` skeleton when the route does
+  real async work. Independently throwable drawer/dialog/tab bodies should use
+  `ErrorBoundary` from `components/shared/error-boundary`, keyed by active tab or
+  route so navigation recovers. Lists and sections backed by queries should use
+  `QueryState` / `LoadingState` / `EmptyState` / `ErrorState` from
+  `components/shared/states.tsx`; never branch only on `isPending`/`data` and
+  swallow `isError`.
+- **Mutations are declarative.** Use `crudMutationOptions` from
+  `client/lib/crud-mutation` for create/update/delete flows so toast, logging,
+  and cache invalidation stay standard. Prefer `mutate(payload)` plus the
+  mutation's `isPending` state over `mutateAsync().then().catch()`. Invalidate
+  affected query scopes (`utils.<router>.invalidate()`) rather than refetching
+  only the current caller. If a dialog already renders an inline `AlertBlock`,
+  pass `toastError: false` to avoid double-surfacing the same failure.
+- **Registry over per-variant duplication.** When variants share the same shape
+  (database engines, notification providers), drive forms/rendering from a
+  registry/config record instead of copying CRUD and dispatch blocks. Keep truly
+  different flows distinct; a lossy generic config is worse than honest
+  separation.
+- **Module boundaries.** A dashboard feature subtree should not import helpers
+  from a sibling feature subtree. Move genuinely shared React helpers to
+  `components/shared/`, pure helpers to `shared/`, or dashboard-only shared
+  widgets to `components/dashboard/shared/`. Avoid same-named exports in one
+  folder; name exports for the call site rather than aliasing around collisions.
+- **Navigation and permissions.** `shared/dashboard-nav.ts` (`DASHBOARD_MENU`) is
+  the source of truth for sidebar routes, labels, and permission gates. Derive
+  secondary nav from it instead of maintaining a parallel copy; the account
+  dropdown's direct Profile link is the exception because profile is deliberately
+  not in the sidebar. Read permissions through `usePermissions()` and its typed
+  `can(resource, action)` helper.
+- **Styling details.** Use Kumo tokens such as `bg-kumo-*`, `text-kumo-*`, and
+  `border-kumo-line`; legacy shadcn tokens like `bg-input`, `bg-background`,
+  `text-foreground`, and `border-input` are not defined here. Dark mode is
+  `[data-mode="dark"]`. Read form values from React state, refs, or RHF — never
+  via `document.querySelector` by placeholder text.
 
 The **workspace canvas** is the centerpiece: `components/dashboard/workspace/`
 (`environment-canvas.tsx`, `workspace-overview.tsx`, plus `actions/` and
@@ -394,8 +437,8 @@ organization scoping in every change.
    (`server/core/lib/auth.ts`). There is one organization per instance (see the
    single-tenant note above), so every member, role, invitation, and
    `organizationId`-scoped resource belongs to that one org. The `organization`
-   router (`api.organization`) only reads the active org, edits its name/logo,
-   and manages members/invitations — it cannot create, switch, or delete orgs.
+   router (`api.organization`) reads the active org and manages invitations and
+   member roles — it cannot create, switch, update org identity, or delete orgs.
 2. **Roles** — static roles (`owner`, `admin`, `member`) plus **custom roles**
    stored in the `organization_role` table as JSON permissions, validated against
    the canonical `statements` (resource × action) in
