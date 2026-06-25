@@ -85,8 +85,11 @@ describe("production Dockerfile release install", () => {
 		expect(smokeScript).toContain("settings.getWebServerSettings");
 		expect(smokeScript).toContain("workspaces.create");
 		expect(smokeScript).toContain("application.saveDockerProvider");
+		expect(smokeScript).toContain("domain.create");
 		expect(smokeScript).toContain("application.deploy");
 		expect(smokeScript).toContain("127.0.0.1:5000/docklands-smoke-app");
+		expect(smokeScript).toContain("docklands.localhost");
+		expect(smokeScript).toContain("/etc/docklands/traefik/dynamic");
 		expect(smokeScript).toContain("docker service ps");
 		expect(smokeScript).toContain("DOCKLANDS_DOCKER_HOST");
 		expect(smokeScript).toContain("DOCKER_HOST");

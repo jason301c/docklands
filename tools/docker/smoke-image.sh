@@ -21,6 +21,7 @@ if [ -z "$SMOKE_DEPLOY_APP_BASE" ]; then
 fi
 SMOKE_DEPLOY_APP_NAME=""
 SMOKE_DEPLOY_IMAGE="127.0.0.1:5000/docklands-smoke-app:${SMOKE_DEPLOY_APP_BASE}"
+SMOKE_DEPLOY_HOST=""
 READY_BODY=$(mktemp)
 REGISTER_BODY=$(mktemp)
 SIGNUP_BODY=$(mktemp)
@@ -33,8 +34,9 @@ INGRESS_SETTINGS_BODY=$(mktemp)
 WORKSPACE_BODY=$(mktemp)
 APPLICATION_BODY=$(mktemp)
 DOCKER_PROVIDER_BODY=$(mktemp)
-APPLICATION_UPDATE_BODY=$(mktemp)
+DOMAIN_BODY=$(mktemp)
 DEPLOY_BODY=$(mktemp)
+DOMAIN_CONFIG_BODY=$(mktemp)
 COOKIE_JAR=$(mktemp)
 APP_PORT=""
 APP_PLATFORM=""
@@ -88,9 +90,9 @@ print_diagnostics() {
 		cat "$DOCKER_PROVIDER_BODY" >&2
 		echo >&2
 	fi
-	if [ -s "$APPLICATION_UPDATE_BODY" ]; then
-		echo "----- last application.update response -----" >&2
-		cat "$APPLICATION_UPDATE_BODY" >&2
+	if [ -s "$DOMAIN_BODY" ]; then
+		echo "----- last domain.create response -----" >&2
+		cat "$DOMAIN_BODY" >&2
 		echo >&2
 	fi
 	if [ -s "$DEPLOY_BODY" ]; then
@@ -98,10 +100,18 @@ print_diagnostics() {
 		cat "$DEPLOY_BODY" >&2
 		echo >&2
 	fi
+	if [ -s "$DOMAIN_CONFIG_BODY" ]; then
+		echo "----- last smoke domain config -----" >&2
+		cat "$DOMAIN_CONFIG_BODY" >&2
+		echo >&2
+	fi
 	if [ -n "$SMOKE_DEPLOY_APP_NAME" ] && docker ps -a --format '{{.Names}}' | grep -Fxq "$DIND_NAME"; then
 		echo "----- smoke deploy service state -----" >&2
 		docker exec "$DIND_NAME" docker service ps "$SMOKE_DEPLOY_APP_NAME" \
 			--no-trunc >&2 || true
+		echo "----- smoke deploy service logs -----" >&2
+		docker exec "$DIND_NAME" docker service logs --tail 100 \
+			"$SMOKE_DEPLOY_APP_NAME" >&2 || true
 	fi
 }
 
@@ -123,8 +133,9 @@ cleanup() {
 		"$WORKSPACE_BODY" \
 		"$APPLICATION_BODY" \
 		"$DOCKER_PROVIDER_BODY" \
-		"$APPLICATION_UPDATE_BODY" \
+		"$DOMAIN_BODY" \
 		"$DEPLOY_BODY" \
+		"$DOMAIN_CONFIG_BODY" \
 		"$COOKIE_JAR"
 	if [ "${DOCKLANDS_SMOKE_KEEP:-}" = "1" ]; then
 		echo "Keeping smoke resources because DOCKLANDS_SMOKE_KEEP=1:" >&2
@@ -414,8 +425,7 @@ prepare_smoke_deploy_image() {
 		"$REGISTRY_IMAGE" >/dev/null
 	wait_for "Docker-in-Docker registry" dind_registry_ready
 
-	docker save "$DIND_IMAGE" | docker exec -i "$DIND_NAME" docker load >/dev/null
-	docker exec "$DIND_NAME" docker tag "$DIND_IMAGE" "$SMOKE_DEPLOY_IMAGE"
+	docker exec "$DIND_NAME" docker tag "$REGISTRY_IMAGE" "$SMOKE_DEPLOY_IMAGE"
 	docker exec "$DIND_NAME" docker push "$SMOKE_DEPLOY_IMAGE" >/dev/null
 }
 
@@ -439,6 +449,19 @@ deploy_record_done() {
 		-d docklands_smoke \
 		-tAc "select a.\"applicationStatus\"::text || '|' || coalesce((select d.status::text from deployment d where d.\"applicationId\" = a.\"applicationId\" order by d.\"createdAt\" desc limit 1), '') from application a where a.\"appName\" = '${SMOKE_DEPLOY_APP_NAME}'")
 	[ "$SMOKE_DEPLOY_RECORD" = "done|done" ]
+}
+
+domain_config_ready() {
+	if [ -z "$SMOKE_DEPLOY_HOST" ]; then
+		return 1
+	fi
+	docker exec "$APP_NAME" cat \
+		"/etc/docklands/traefik/dynamic/${SMOKE_DEPLOY_APP_NAME}.yml" \
+		>"$DOMAIN_CONFIG_BODY" 2>/dev/null || return 1
+	grep -Fq "Host(\`${SMOKE_DEPLOY_HOST}\`)" "$DOMAIN_CONFIG_BODY" &&
+		grep -Fq "PathPrefix(\`/v2/\`)" "$DOMAIN_CONFIG_BODY" &&
+		grep -Fq "url: http://${SMOKE_DEPLOY_APP_NAME}:5000" \
+			"$DOMAIN_CONFIG_BODY"
 }
 
 check_deploy_smoke() {
@@ -495,15 +518,16 @@ console.log(`${applicationId}|${appName}`);
 		echo "Could not parse smoke application ID/name" >&2
 		exit 1
 	fi
+	SMOKE_DEPLOY_HOST="${SMOKE_DEPLOY_APP_NAME}.docklands.localhost"
 
 	trpc_post "application.saveDockerProvider" \
 		"{\"json\":{\"applicationId\":\"${application_id}\",\"dockerImage\":\"${SMOKE_DEPLOY_IMAGE}\",\"username\":null,\"password\":null,\"registryUrl\":null}}" \
 		"$DOCKER_PROVIDER_BODY" \
 		"save smoke Docker provider"
-	trpc_post "application.update" \
-		"{\"json\":{\"applicationId\":\"${application_id}\",\"command\":\"sleep\",\"args\":[\"3600\"]}}" \
-		"$APPLICATION_UPDATE_BODY" \
-		"update smoke application command"
+	trpc_post "domain.create" \
+		"{\"json\":{\"host\":\"${SMOKE_DEPLOY_HOST}\",\"path\":\"/v2/\",\"port\":5000,\"https\":false,\"applicationId\":\"${application_id}\",\"certificateType\":\"none\",\"domainType\":\"application\",\"internalPath\":\"/v2/\",\"stripPath\":false,\"middlewares\":[],\"ingressMode\":\"public\"}}" \
+		"$DOMAIN_BODY" \
+		"create smoke public domain"
 	trpc_post "application.deploy" \
 		"{\"json\":{\"applicationId\":\"${application_id}\",\"title\":\"Smoke deploy\",\"description\":\"Production image deploy smoke\"}}" \
 		"$DEPLOY_BODY" \
@@ -511,6 +535,7 @@ console.log(`${applicationId}|${appName}`);
 
 	wait_for "smoke application service" deployed_service_ready
 	wait_for "smoke deployment DB completion" deploy_record_done
+	wait_for "smoke domain config" domain_config_ready
 }
 
 dind_ready() {
@@ -606,6 +631,7 @@ if [ "$RUN_OPERATOR_SMOKE" = "1" ]; then
 	if [ "$RUN_DEPLOY_SMOKE" = "1" ]; then
 		echo "  smoke deploy service: $SMOKE_DEPLOY_APP_NAME"
 		echo "  smoke deploy image: $SMOKE_DEPLOY_IMAGE"
+		echo "  smoke domain host: $SMOKE_DEPLOY_HOST"
 		echo "  smoke deploy record: $SMOKE_DEPLOY_RECORD"
 	fi
 else
