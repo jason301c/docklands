@@ -215,6 +215,7 @@ bun run setup                     # full local bootstrap (Swarm/Traefik/Postgres
 bun run restore-instance -- --destination-id <id> --backup-file <key.zip> --confirm RESTORE_DOCKLANDS_INSTANCE
 bun run docker:build              # build the app Docker image
 bun run docker:smoke <image>      # first-run smoke against disposable Postgres + Docker-in-Docker
+bun run docker:smoke:operator <image> # image smoke plus first-owner bootstrap checks
 bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in
 bun run check:openapi             # generate OpenAPI to a temp artifact and validate release invariants
 bun run docs:dev                  # Astro docs site (apps/docs)

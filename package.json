@@ -45,6 +45,7 @@
 		"site:format": "bun --filter site format",
 		"docker:build": "./tools/docker/build.sh",
 		"docker:smoke": "./tools/docker/smoke-image.sh",
+		"docker:smoke:operator": "./tools/docker/smoke-operator.sh",
 		"docker:push": "./tools/docker/push.sh",
 		"docker:build:canary": "./tools/docker/build.sh canary",
 		"docker:push:canary": "./tools/docker/push.sh canary"

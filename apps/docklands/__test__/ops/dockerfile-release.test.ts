@@ -64,12 +64,20 @@ describe("production Dockerfile release install", () => {
 		expect(rootPackage.scripts["docker:smoke"]).toBe(
 			"./tools/docker/smoke-image.sh",
 		);
+		expect(rootPackage.scripts["docker:smoke:operator"]).toBe(
+			"./tools/docker/smoke-operator.sh",
+		);
 		expect(workflow).toContain("load: true");
 		expect(workflow).toContain("tags: docklands:ci-smoke");
 		expect(workflow).toContain(
 			"./tools/docker/smoke-image.sh docklands:ci-smoke",
 		);
+		expect(workflow).toContain(
+			"./tools/docker/smoke-operator.sh docklands:ci-smoke",
+		);
 		expect(smokeScript).toContain("/api/ready");
+		expect(smokeScript).toContain("/api/auth/sign-up/email");
+		expect(smokeScript).toContain("Admin is already created");
 		expect(smokeScript).toContain("DOCKLANDS_DOCKER_HOST");
 		expect(smokeScript).toContain("docklands-network");
 	});

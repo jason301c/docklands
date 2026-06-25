@@ -6,12 +6,20 @@ DIND_IMAGE=${DIND_IMAGE:-docker:28.5.2-dind}
 POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:16}
 WAIT_SECONDS=${DOCKLANDS_SMOKE_TIMEOUT_SECONDS:-240}
 SMOKE_ID=${DOCKLANDS_SMOKE_ID:-$(date +%s)-$$}
+RUN_OPERATOR_SMOKE=${DOCKLANDS_SMOKE_OPERATOR:-}
 
 NETWORK_NAME="docklands-smoke-${SMOKE_ID}"
 DIND_NAME="docklands-smoke-dind-${SMOKE_ID}"
 DB_NAME="docklands-smoke-postgres-${SMOKE_ID}"
 APP_NAME="docklands-smoke-app-${SMOKE_ID}"
 READY_BODY=$(mktemp)
+REGISTER_BODY=$(mktemp)
+SIGNUP_BODY=$(mktemp)
+SESSION_BODY=$(mktemp)
+SECOND_SIGNUP_BODY=$(mktemp)
+HOME_HEADERS=$(mktemp)
+REGISTER_AFTER_HEADERS=$(mktemp)
+COOKIE_JAR=$(mktemp)
 APP_PORT=""
 APP_PLATFORM=""
 
@@ -28,6 +36,16 @@ print_diagnostics() {
 		cat "$READY_BODY" >&2
 		echo >&2
 	fi
+	if [ -s "$SIGNUP_BODY" ]; then
+		echo "----- last first-owner signup response -----" >&2
+		cat "$SIGNUP_BODY" >&2
+		echo >&2
+	fi
+	if [ -s "$SECOND_SIGNUP_BODY" ]; then
+		echo "----- last second-signup response -----" >&2
+		cat "$SECOND_SIGNUP_BODY" >&2
+		echo >&2
+	fi
 }
 
 cleanup() {
@@ -35,7 +53,15 @@ cleanup() {
 	if [ "$status" -ne 0 ]; then
 		print_diagnostics
 	fi
-	rm -f "$READY_BODY"
+	rm -f \
+		"$READY_BODY" \
+		"$REGISTER_BODY" \
+		"$SIGNUP_BODY" \
+		"$SESSION_BODY" \
+		"$SECOND_SIGNUP_BODY" \
+		"$HOME_HEADERS" \
+		"$REGISTER_AFTER_HEADERS" \
+		"$COOKIE_JAR"
 	if [ "${DOCKLANDS_SMOKE_KEEP:-}" = "1" ]; then
 		echo "Keeping smoke resources because DOCKLANDS_SMOKE_KEEP=1:" >&2
 		echo "  $APP_NAME" >&2
@@ -86,6 +112,144 @@ if (
 	process.exit(1);
 }
 ' "$READY_BODY"
+}
+
+expect_status() {
+	local label=$1
+	local expected=$2
+	local actual=$3
+	local response_file=$4
+
+	if [ "$actual" = "$expected" ]; then
+		return 0
+	fi
+
+	echo "Expected $label HTTP $expected, got $actual" >&2
+	if [ -s "$response_file" ]; then
+		echo "----- $label response -----" >&2
+		head -c 1200 "$response_file" >&2
+		echo >&2
+	fi
+	return 1
+}
+
+check_operator_smoke() {
+	local status
+	local bootstrap_record
+
+	status=$(curl -sS -o "$REGISTER_BODY" -w "%{http_code}" \
+		"http://127.0.0.1:${APP_PORT}/register")
+	expect_status "register page" "200" "$status" "$REGISTER_BODY"
+	node -e '
+const fs = require("node:fs");
+const html = fs.readFileSync(process.argv[1], "utf8");
+if (!html.includes("Set up Docklands") || !html.includes("Create account")) {
+	console.error("Register page did not render the first-owner setup form");
+	process.exit(1);
+}
+' "$REGISTER_BODY"
+
+	status=$(curl -sS -o "$SIGNUP_BODY" -w "%{http_code}" \
+		-c "$COOKIE_JAR" \
+		-H "content-type: application/json" \
+		-X POST \
+		"http://127.0.0.1:${APP_PORT}/api/auth/sign-up/email" \
+		--data '{"email":"owner@docklands.local","password":"docklands-owner-000000","name":"Owner","lastName":"User"}')
+	expect_status "first-owner signup" "200" "$status" "$SIGNUP_BODY"
+	node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (
+	typeof body.token !== "string" ||
+	body.user?.email !== "owner@docklands.local" ||
+	body.user?.name !== "Owner" ||
+	body.user?.lastName !== "User"
+) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+' "$SIGNUP_BODY"
+	node -e '
+const fs = require("node:fs");
+const jar = fs.readFileSync(process.argv[1], "utf8");
+if (
+	!jar
+		.split(/\r?\n/)
+		.some(
+			(line) =>
+				line && (!line.startsWith("#") || line.startsWith("#HttpOnly_")),
+		)
+) {
+	console.error("Signup did not create an auth cookie");
+	process.exit(1);
+}
+' "$COOKIE_JAR"
+
+	status=$(curl -sS -o "$SESSION_BODY" -w "%{http_code}" \
+		-b "$COOKIE_JAR" \
+		"http://127.0.0.1:${APP_PORT}/api/auth/get-session")
+	expect_status "auth session" "200" "$status" "$SESSION_BODY"
+	node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (body.user?.email !== "owner@docklands.local" || !body.session) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+' "$SESSION_BODY"
+
+	status=$(curl -sS -D "$HOME_HEADERS" -o /dev/null -w "%{http_code}" \
+		-b "$COOKIE_JAR" \
+		"http://127.0.0.1:${APP_PORT}/")
+	expect_status "authenticated home redirect" "307" "$status" "$HOME_HEADERS"
+	node -e '
+const fs = require("node:fs");
+const headers = fs.readFileSync(process.argv[1], "utf8");
+if (!/^location:\s*\/dashboard\/workspace\s*$/im.test(headers)) {
+	console.error(headers);
+	process.exit(1);
+}
+' "$HOME_HEADERS"
+
+	status=$(curl -sS -D "$REGISTER_AFTER_HEADERS" -o /dev/null \
+		-w "%{http_code}" \
+		-b "$COOKIE_JAR" \
+		"http://127.0.0.1:${APP_PORT}/register")
+	expect_status "post-bootstrap register redirect" "307" "$status" \
+		"$REGISTER_AFTER_HEADERS"
+	node -e '
+const fs = require("node:fs");
+const headers = fs.readFileSync(process.argv[1], "utf8");
+if (!/^location:\s*\/\s*$/im.test(headers)) {
+	console.error(headers);
+	process.exit(1);
+}
+' "$REGISTER_AFTER_HEADERS"
+
+	status=$(curl -sS -o "$SECOND_SIGNUP_BODY" -w "%{http_code}" \
+		-H "content-type: application/json" \
+		-X POST \
+		"http://127.0.0.1:${APP_PORT}/api/auth/sign-up/email" \
+		--data '{"email":"second@docklands.local","password":"docklands-owner-000000","name":"Second","lastName":"User"}')
+	expect_status "second signup rejection" "400" "$status" \
+		"$SECOND_SIGNUP_BODY"
+	node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (body.message !== "Admin is already created") {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+' "$SECOND_SIGNUP_BODY"
+
+	bootstrap_record=$(docker exec "$DB_NAME" psql \
+		-U docklands_smoke \
+		-d docklands_smoke \
+		-tAc 'select (select count(*) from organization) || '"'"'|'"'"' || (select count(*) from member where role = '"'"'owner'"'"') || '"'"'|'"'"' || coalesce((select o.name || '"'"'|'"'"' || m.role || '"'"'|'"'"' || u.email from organization o join member m on m.organization_id = o.id join "user" u on u.id = m.user_id limit 1), '"'"''"'"')')
+	if [ "$bootstrap_record" != "1|1|Docklands|owner|owner@docklands.local" ]; then
+		echo "Expected first-owner bootstrap DB row, got: $bootstrap_record" >&2
+		exit 1
+	fi
 }
 
 dind_ready() {
@@ -147,6 +311,10 @@ fi
 
 wait_for "Docklands readiness" check_ready
 
+if [ "$RUN_OPERATOR_SMOKE" = "1" ]; then
+	check_operator_smoke
+fi
+
 SWARM_STATE=$(docker exec "$DIND_NAME" docker info \
 	--format '{{.Swarm.LocalNodeState}}/{{.Swarm.ControlAvailable}}')
 if [ "$SWARM_STATE" != "active/true" ]; then
@@ -161,7 +329,12 @@ if [ "$NETWORK_STATE" != "overlay/swarm" ]; then
 	exit 1
 fi
 
-echo "Docklands image smoke passed for $IMAGE_REF"
+if [ "$RUN_OPERATOR_SMOKE" = "1" ]; then
+	echo "Docklands operator smoke passed for $IMAGE_REF"
+	echo "  first owner: owner@docklands.local"
+else
+	echo "Docklands image smoke passed for $IMAGE_REF"
+fi
 echo "  readiness: http://127.0.0.1:${APP_PORT}/api/ready"
 echo "  dind swarm: $SWARM_STATE"
 echo "  docklands-network: $NETWORK_STATE"
