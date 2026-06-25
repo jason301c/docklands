@@ -13,14 +13,12 @@ import {
 import { createLogger } from "@/server/core/lib/logger";
 import {
 	createFile,
-	encodeBase64,
 	getCreateFileCommand,
+	getDeleteFileCommand,
+	resolveFileMountPath,
 } from "@/server/core/utils/docker/utils";
 import { removeFileOrDirectory } from "@/server/core/utils/filesystem/directory";
-import {
-	execAsync,
-	execAsyncRemote,
-} from "@/server/core/utils/process/execAsync";
+import { execAsyncRemote } from "@/server/core/utils/process/execAsync";
 
 export type Mount = typeof mounts.$inferSelect;
 
@@ -247,16 +245,18 @@ export const updateFileMount = async (mountId: string) => {
 	const mount = await findMountById(mountId);
 	if (!mount?.filePath) return;
 	const basePath = await getBaseFilesPath(mountId);
-	const fullPath = path.join(basePath, mount.filePath);
 
 	try {
 		const runtimeWorkerId = await getServerId(mount);
-		const encodedContent = encodeBase64(mount.content || "");
-		const command = `echo "${encodedContent}" | base64 -d > ${fullPath}`;
 		if (runtimeWorkerId) {
+			const command = getCreateFileCommand(
+				basePath,
+				mount.filePath,
+				mount.content || "",
+			);
 			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
-			await execAsync(command);
+			await createFile(basePath, mount.filePath, mount.content || "");
 		}
 	} catch (e) {
 		logger.error({ err: e, mountId }, "updateFileMount failed");
@@ -268,11 +268,11 @@ export const deleteFileMount = async (mountId: string) => {
 	if (!mount.filePath) return;
 	const basePath = await getBaseFilesPath(mountId);
 
-	const fullPath = path.join(basePath, mount.filePath);
+	const fullPath = resolveFileMountPath(basePath, mount.filePath);
 	try {
 		const runtimeWorkerId = await getServerId(mount);
 		if (runtimeWorkerId) {
-			const command = `rm -rf ${fullPath}`;
+			const command = getDeleteFileCommand(basePath, mount.filePath);
 			await execAsyncRemote(runtimeWorkerId, command);
 		} else {
 			await removeFileOrDirectory(fullPath);

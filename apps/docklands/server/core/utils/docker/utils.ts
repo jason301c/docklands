@@ -8,6 +8,10 @@ import { docker } from "@/server/core/constants/docker";
 import { paths } from "@/server/core/constants/paths";
 import { createLogger } from "@/server/core/lib/logger";
 import type { Compose } from "@/server/core/services/compose";
+import {
+	FILE_MOUNT_PATH_ERROR,
+	isSafeRelativeFileMountPath,
+} from "@/shared/validation/mount-file-path";
 import type { ApplicationNested } from "../builders";
 import type { DatabaseNested } from "../databases/build";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
@@ -724,7 +728,7 @@ export const generateFileMounts = (
 			const fileName = mount.filePath;
 			const absoluteBasePath = path.resolve(APPLICATIONS_PATH);
 			const directory = path.join(absoluteBasePath, appName, "files");
-			const sourcePath = path.join(directory, fileName || "");
+			const sourcePath = resolveFileMountPath(directory, fileName || "");
 			return {
 				Type: "bind" as const,
 				Source: sourcePath,
@@ -733,13 +737,35 @@ export const generateFileMounts = (
 		});
 };
 
+const assertFileMountPathInsideBase = (basePath: string, fullPath: string) => {
+	const relative = path.relative(basePath, fullPath);
+	if (
+		relative === "" ||
+		relative.startsWith("..") ||
+		path.isAbsolute(relative)
+	) {
+		throw new Error(FILE_MOUNT_PATH_ERROR);
+	}
+};
+
+export const resolveFileMountPath = (outputPath: string, filePath: string) => {
+	if (!isSafeRelativeFileMountPath(filePath)) {
+		throw new Error(FILE_MOUNT_PATH_ERROR);
+	}
+
+	const basePath = path.resolve(outputPath);
+	const fullPath = path.resolve(basePath, filePath);
+	assertFileMountPathInsideBase(basePath, fullPath);
+	return fullPath;
+};
+
 export const createFile = async (
 	outputPath: string,
 	filePath: string,
 	content: string,
 ) => {
-	const fullPath = path.join(outputPath, filePath);
-	if (fullPath.endsWith(path.sep) || filePath.endsWith("/")) {
+	const fullPath = resolveFileMountPath(outputPath, filePath);
+	if (filePath.endsWith("/")) {
 		fs.mkdirSync(fullPath, { recursive: true });
 		return;
 	}
@@ -756,17 +782,22 @@ export const getCreateFileCommand = (
 	filePath: string,
 	content: string,
 ) => {
-	const fullPath = path.join(outputPath, filePath);
-	if (fullPath.endsWith(path.sep) || filePath.endsWith("/")) {
-		return `mkdir -p ${fullPath};`;
+	const fullPath = resolveFileMountPath(outputPath, filePath);
+	if (filePath.endsWith("/")) {
+		return `mkdir -p -- ${quote([fullPath])};`;
 	}
 
 	const directory = path.dirname(fullPath);
 	const encodedContent = encodeBase64(content);
 	return `
-		mkdir -p ${directory};
-		echo "${encodedContent}" | base64 -d > "${fullPath}";
+		mkdir -p -- ${quote([directory])};
+		printf %s ${quote([encodedContent])} | base64 -d > ${quote([fullPath])};
 	`;
+};
+
+export const getDeleteFileCommand = (outputPath: string, filePath: string) => {
+	const fullPath = resolveFileMountPath(outputPath, filePath);
+	return `rm -rf -- ${quote([fullPath])};`;
 };
 
 export const getServiceContainer = async (

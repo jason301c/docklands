@@ -9,6 +9,10 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
+import {
+	FILE_MOUNT_PATH_ERROR,
+	fileMountPathField,
+} from "@/shared/validation/mount-file-path";
 import { applications } from "./application";
 import { compose } from "./compose";
 import { database } from "./database";
@@ -84,7 +88,7 @@ const createSchema = createInsertSchema(mounts, {
 	content: z.string().nullish(),
 	mountPath: z.string().min(1),
 	mountId: z.string().optional(),
-	filePath: z.string().nullish(),
+	filePath: fileMountPathField.nullish(),
 	serviceType: z.enum([
 		"application",
 		"postgres",
@@ -109,6 +113,15 @@ export const apiCreateMount = createSchema
 	})
 	.extend({
 		serviceId: z.string().min(1),
+	})
+	.superRefine((input, ctx) => {
+		if (input.type === "file" && !input.filePath) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["filePath"],
+				message: FILE_MOUNT_PATH_ERROR,
+			});
+		}
 	});
 
 export const apiFindOneMount = z.object({
@@ -124,6 +137,17 @@ export const apiRemoveMount = createSchema
 	// })
 	.required();
 
-export const apiUpdateMount = createSchema.partial().extend({
-	mountId: z.string().min(1),
-});
+export const apiUpdateMount = createSchema
+	.partial()
+	.extend({
+		mountId: z.string().min(1),
+	})
+	.superRefine((input, ctx) => {
+		if (input.type === "file" && !input.filePath) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["filePath"],
+				message: FILE_MOUNT_PATH_ERROR,
+			});
+		}
+	});
