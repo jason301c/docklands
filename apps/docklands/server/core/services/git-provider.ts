@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/server/core/db";
 import { orThrowNotFound } from "@/server/core/db/find-or-throw";
@@ -106,4 +107,28 @@ export const getAccessibleGitProviderIds = async (session: {
 		}
 	}
 	return result;
+};
+
+export const assertGitProviderAccess = async (
+	session: { userId: string; activeOrganizationId?: string | null },
+	gitProviderId: string,
+) => {
+	if (!session.activeOrganizationId) {
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "You don't have access to this Git provider.",
+		});
+	}
+
+	const accessibleIds = await getAccessibleGitProviderIds({
+		userId: session.userId,
+		activeOrganizationId: session.activeOrganizationId,
+	});
+
+	if (!accessibleIds.has(gitProviderId)) {
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "You don't have access to this Git provider.",
+		});
+	}
 };

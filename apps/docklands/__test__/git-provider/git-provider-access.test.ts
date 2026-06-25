@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+	assertGitProviderAccess,
 	canEditDeployGitSource,
 	getAccessibleGitProviderIds,
 } from "@/server/core/services/git-provider";
@@ -245,6 +246,88 @@ describe("getAccessibleGitProviderIds", () => {
 		it("returns empty set when org has no providers", async () => {
 			const ids = await getAccessibleGitProviderIds(session(USER_ADMIN));
 			expect(ids.size).toBe(0);
+		});
+	});
+});
+
+describe("assertGitProviderAccess", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+		mockDb.query.gitProvider.findMany.mockResolvedValue(allProviders);
+		mockDb.query.memberResourceAccess.findMany.mockResolvedValue([]);
+	});
+
+	it("allows a member's own provider", async () => {
+		mockDb.query.member.findFirst.mockResolvedValue({
+			id: "m-member",
+			role: "member",
+		});
+
+		await expect(
+			assertGitProviderAccess(
+				session(USER_MEMBER),
+				providerOwned.gitProviderId,
+			),
+		).resolves.toBeUndefined();
+	});
+
+	it("allows a shared organization provider", async () => {
+		mockDb.query.member.findFirst.mockResolvedValue({
+			id: "m-member",
+			role: "member",
+		});
+
+		await expect(
+			assertGitProviderAccess(
+				session(USER_MEMBER),
+				providerShared.gitProviderId,
+			),
+		).resolves.toBeUndefined();
+	});
+
+	it("allows an explicitly assigned private provider", async () => {
+		mockDb.query.member.findFirst.mockResolvedValue({
+			id: "m-member",
+			role: "member",
+		});
+		grantGitProviders([providerPrivate.gitProviderId]);
+
+		await expect(
+			assertGitProviderAccess(
+				session(USER_MEMBER),
+				providerPrivate.gitProviderId,
+			),
+		).resolves.toBeUndefined();
+	});
+
+	it("denies an unassigned private provider", async () => {
+		mockDb.query.member.findFirst.mockResolvedValue({
+			id: "m-member",
+			role: "member",
+		});
+
+		await expect(
+			assertGitProviderAccess(
+				session(USER_MEMBER),
+				providerPrivate.gitProviderId,
+			),
+		).rejects.toMatchObject({
+			code: "UNAUTHORIZED",
+			message: "You don't have access to this Git provider.",
+		});
+	});
+
+	it("denies a provider outside the active org result set", async () => {
+		mockDb.query.member.findFirst.mockResolvedValue({
+			id: "m-member",
+			role: "member",
+		});
+
+		await expect(
+			assertGitProviderAccess(session(USER_MEMBER), "gp-other-org"),
+		).rejects.toMatchObject({
+			code: "UNAUTHORIZED",
+			message: "You don't have access to this Git provider.",
 		});
 	});
 });

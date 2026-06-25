@@ -13,6 +13,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const findBitbucketById = vi.hoisted(() => vi.fn());
 const findGiteaById = vi.hoisted(() => vi.fn());
+const assertGitProviderAccess = vi.hoisted(() => vi.fn());
 
 vi.mock("@/server/core/services/bitbucket", () => ({
 	findBitbucketById,
@@ -24,6 +25,10 @@ vi.mock("@/server/core/services/gitea", () => ({
 	findGiteaById,
 	createGitea: vi.fn(),
 	updateGitea: vi.fn(),
+}));
+
+vi.mock("@/server/core/services/git-provider", () => ({
+	assertGitProviderAccess,
 }));
 
 import { bitbucketRouter } from "@/server/api/routers/bitbucket";
@@ -45,6 +50,7 @@ const giteaCaller = giteaRouter.createCaller(ctx);
 describe("provider token leak (S5)", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		assertGitProviderAccess.mockResolvedValue(undefined);
 	});
 
 	it("bitbucket.one omits the decrypted apiToken but keeps safe fields", async () => {
@@ -64,6 +70,7 @@ describe("provider token leak (S5)", () => {
 
 		const result = await bitbucketCaller.one({ bitbucketId: "bb-1" });
 
+		expect(assertGitProviderAccess).toHaveBeenCalledWith(ctx.session, "gp-1");
 		expect(result).not.toHaveProperty("apiToken");
 		expect(result).toMatchObject({
 			bitbucketId: "bb-1",
@@ -90,6 +97,7 @@ describe("provider token leak (S5)", () => {
 
 		const result = await giteaCaller.one({ giteaId: "gt-1" });
 
+		expect(assertGitProviderAccess).toHaveBeenCalledWith(ctx.session, "gp-2");
 		expect(result).not.toHaveProperty("clientSecret");
 		expect(result).not.toHaveProperty("accessToken");
 		expect(result).not.toHaveProperty("refreshToken");

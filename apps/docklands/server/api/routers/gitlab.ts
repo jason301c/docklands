@@ -14,6 +14,7 @@ import {
 	apiUpdateGitlab,
 } from "@/server/core/db/schema";
 import {
+	assertGitProviderAccess,
 	getAccessibleGitProviderIds,
 	updateGitProvider,
 } from "@/server/core/services/git-provider";
@@ -48,6 +49,15 @@ const sanitizeGitlab = <
 	return rest;
 };
 
+const assertGitlabAccess = async (
+	ctx: { session: { userId: string; activeOrganizationId?: string | null } },
+	gitlabId: string,
+) => {
+	const provider = await findGitlabById(gitlabId);
+	await assertGitProviderAccess(ctx.session, provider.gitProviderId);
+	return provider;
+};
+
 export const gitlabRouter = createTRPCRouter({
 	create: withPermission("gitProviders", "create")
 		.input(apiCreateGitlab)
@@ -74,9 +84,11 @@ export const gitlabRouter = createTRPCRouter({
 				});
 			}
 		}),
-	one: protectedProcedure.input(apiFindOneGitlab).query(async ({ input }) => {
-		return sanitizeGitlab(await findGitlabById(input.gitlabId));
-	}),
+	one: protectedProcedure
+		.input(apiFindOneGitlab)
+		.query(async ({ input, ctx }) => {
+			return sanitizeGitlab(await assertGitlabAccess(ctx, input.gitlabId));
+		}),
 	gitlabProviders: protectedProcedure.query(async ({ ctx }) => {
 		const accessibleIds = await getAccessibleGitProviderIds(ctx.session);
 
@@ -109,18 +121,27 @@ export const gitlabRouter = createTRPCRouter({
 	}),
 	getGitlabRepositories: protectedProcedure
 		.input(apiFindOneGitlab)
-		.query(async ({ input }) => {
+		.query(async ({ input, ctx }) => {
+			await assertGitlabAccess(ctx, input.gitlabId);
 			return await getGitlabRepositories(input.gitlabId);
 		}),
 
 	getGitlabBranches: protectedProcedure
 		.input(apiFindGitlabBranches)
-		.query(async ({ input }) => {
+		.query(async ({ input, ctx }) => {
+			if (!input.gitlabId) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "GitLab provider ID is required.",
+				});
+			}
+			await assertGitlabAccess(ctx, input.gitlabId);
 			return await getGitlabBranches(input);
 		}),
 	testConnection: protectedProcedure
 		.input(apiGitlabTestConnection)
-		.mutation(async ({ input }) => {
+		.mutation(async ({ input, ctx }) => {
+			await assertGitlabAccess(ctx, input.gitlabId);
 			try {
 				const result = await testGitlabConnection(input);
 
@@ -135,6 +156,14 @@ export const gitlabRouter = createTRPCRouter({
 	update: withPermission("gitProviders", "create")
 		.input(apiUpdateGitlab)
 		.mutation(async ({ input, ctx }) => {
+			const provider = await assertGitlabAccess(ctx, input.gitlabId);
+			if (provider.gitProviderId !== input.gitProviderId) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "GitLab provider does not match the Git provider.",
+				});
+			}
+
 			if (input.name) {
 				await updateGitProvider(input.gitProviderId, {
 					name: input.name,
