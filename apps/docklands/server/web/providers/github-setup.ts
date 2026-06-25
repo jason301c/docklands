@@ -1,20 +1,83 @@
+import { createAppAuth } from "@octokit/auth-app";
+import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
 import { Octokit } from "octokit";
 import { db } from "@/server/core/db";
 import { github } from "@/server/core/db/schema";
-import { validateRequestHeaders } from "@/server/core/lib/auth";
+import { assertGitProviderAccess } from "@/server/core/services/git-provider";
 import { createGithub, findGithubById } from "@/server/core/services/github";
+import { checkPermission } from "@/server/core/services/permission";
+import { getQueryParam, jsonResponse } from "@/server/web/request";
 import {
-	getQueryParam,
-	jsonResponse,
-	redirectResponse,
-} from "@/server/web/request";
+	clearGithubSetupStateCookie,
+	verifyGithubSetupState,
+} from "./github-setup-state";
+import { getProviderOAuthSession } from "./oauth-session";
+import { redirectWithCookies } from "./oauth-state";
 
 type Query = {
 	code: string;
 	state: string;
 	installation_id: string;
 	setup_action: string;
+};
+
+const jsonWithClearedState = (body: unknown, status: number) => {
+	const headers = new Headers({ "Content-Type": "application/json" });
+	headers.append("Set-Cookie", clearGithubSetupStateCookie());
+	return new Response(JSON.stringify(body), { status, headers });
+};
+
+const isUnauthorizedTRPCError = (error: unknown) =>
+	error instanceof TRPCError && error.code === "UNAUTHORIZED";
+
+const assertCanManageGithubSetup = async (session: {
+	userId: string;
+	activeOrganizationId: string;
+}) => {
+	await checkPermission(
+		{
+			user: { id: session.userId },
+			session: { activeOrganizationId: session.activeOrganizationId },
+		},
+		{ gitProviders: ["create"] },
+	);
+};
+
+const verifyGithubInstallation = async (
+	provider: Awaited<ReturnType<typeof findGithubById>>,
+	installationId: string,
+) => {
+	if (!/^\d+$/.test(installationId)) {
+		throw new Error("Invalid GitHub installation id.");
+	}
+	if (!provider.githubAppId || !provider.githubPrivateKey) {
+		throw new Error("GitHub provider is missing app credentials.");
+	}
+
+	const octokit = new Octokit({
+		authStrategy: createAppAuth,
+		auth: {
+			appId: provider.githubAppId,
+			privateKey: provider.githubPrivateKey,
+		},
+	});
+	const { data } = await octokit.request(
+		"GET /app/installations/{installation_id}",
+		{
+			installation_id: Number(installationId),
+		},
+	);
+	const installation = data as { id?: number; app_id?: number };
+	if (installation.id !== Number(installationId)) {
+		throw new Error("GitHub installation verification failed.");
+	}
+	if (
+		typeof installation.app_id === "number" &&
+		installation.app_id !== Number(provider.githubAppId)
+	) {
+		throw new Error("GitHub installation does not belong to this app.");
+	}
 };
 
 export async function handleGithubProviderSetup(request: Request) {
@@ -31,17 +94,43 @@ export async function handleGithubProviderSetup(request: Request) {
 		return jsonResponse({ error: "Missing code parameter" }, 400);
 	}
 
-	// This callback creates/binds a Git provider (which holds app credentials), so
-	// it must be authenticated and scoped to the caller's own org — never trust the
-	// organization/user ids carried in `state`. GitHub redirects the user's browser
-	// here, so the session cookie is present.
-	const { user, session } = await validateRequestHeaders(request.headers);
-	if (!user || !session?.activeOrganizationId) {
-		return jsonResponse({ error: "Authentication required" }, 401);
+	const verifiedState = verifyGithubSetupState(request, state);
+	if (!verifiedState) {
+		return jsonResponse(
+			{ error: "Invalid or expired GitHub setup state" },
+			400,
+		);
 	}
 
-	const [action, ...rest] = state?.split(":");
-	// gh_init creates a new provider; gh_setup binds an installation to rest[0].
+	// This callback creates/binds a Git provider (which holds app credentials), so
+	// it must be authenticated and scoped to the caller's own org. The state was
+	// minted by the same-origin setup-state route and carries a nonce that must
+	// match the httpOnly cookie.
+	const session = await getProviderOAuthSession(request);
+	if (!session) {
+		return jsonWithClearedState({ error: "Authentication required" }, 401);
+	}
+	if (
+		verifiedState.userId !== session.userId ||
+		verifiedState.organizationId !== session.activeOrganizationId
+	) {
+		return jsonWithClearedState(
+			{ error: "Invalid or expired GitHub setup state" },
+			400,
+		);
+	}
+
+	try {
+		await assertCanManageGithubSetup(session);
+	} catch (error) {
+		if (isUnauthorizedTRPCError(error)) {
+			return jsonWithClearedState({ error: "Forbidden" }, 403);
+		}
+		throw error;
+	}
+
+	const action = verifiedState.action;
+	// gh_init creates a new provider; gh_setup binds an installation to githubId.
 
 	if (action === "gh_init") {
 		const octokit = new Octokit({});
@@ -64,17 +153,44 @@ export async function handleGithubProviderSetup(request: Request) {
 			},
 			// Derived from the authenticated session, not from `state`.
 			session.activeOrganizationId,
-			user.id,
+			session.userId,
 		);
 	} else if (action === "gh_setup") {
-		const githubId = rest[0];
+		const githubId = verifiedState.githubId;
 		if (!githubId) {
-			return jsonResponse({ error: "Missing provider id" }, 400);
+			return jsonWithClearedState({ error: "Missing provider id" }, 400);
+		}
+		if (!installation_id) {
+			return jsonWithClearedState({ error: "Missing installation id" }, 400);
 		}
 		// Only let the caller bind an installation to a provider in their own org.
-		const provider = await findGithubById(githubId);
+		const provider = await findGithubById(githubId).catch(() => null);
+		if (!provider) {
+			return jsonWithClearedState({ error: "GitHub provider not found" }, 404);
+		}
 		if (provider.gitProvider.organizationId !== session.activeOrganizationId) {
-			return jsonResponse({ error: "Forbidden" }, 403);
+			return jsonWithClearedState({ error: "Forbidden" }, 403);
+		}
+		try {
+			await assertGitProviderAccess(session, provider.gitProviderId);
+		} catch (error) {
+			if (isUnauthorizedTRPCError(error)) {
+				return jsonWithClearedState({ error: "Forbidden" }, 403);
+			}
+			throw error;
+		}
+		try {
+			await verifyGithubInstallation(provider, installation_id);
+		} catch (error) {
+			return jsonWithClearedState(
+				{
+					error:
+						error instanceof Error
+							? error.message
+							: "GitHub installation verification failed.",
+				},
+				400,
+			);
 		}
 		await db
 			.update(github)
@@ -85,5 +201,7 @@ export async function handleGithubProviderSetup(request: Request) {
 			.returning();
 	}
 
-	return redirectResponse(request, "/dashboard/settings/git-providers");
+	return redirectWithCookies(request, "/dashboard/settings/git-providers", [
+		clearGithubSetupStateCookie(),
+	]);
 }

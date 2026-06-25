@@ -14,6 +14,7 @@ import {
 	Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { api } from "@/client/api/trpc";
 import { useCurrentUser } from "@/client/hooks/use-current-user";
 import { usePermissions } from "@/client/hooks/use-permissions";
@@ -34,6 +35,7 @@ import { AddGiteaProvider } from "./gitea/add-gitea-provider";
 import { EditGiteaProvider } from "./gitea/edit-gitea-provider";
 import { AddGithubProvider } from "./github/add-github-provider";
 import { EditGithubProvider } from "./github/edit-github-provider";
+import { fetchGithubSetupState } from "./github/setup-state";
 import { AddGitlabProvider } from "./gitlab/add-gitlab-provider";
 import { EditGitlabProvider } from "./gitlab/edit-gitlab-provider";
 
@@ -48,12 +50,37 @@ export const ShowGitProviders = () => {
 	const { isOwnerOrAdmin: isOrgAdmin } = useCurrentUser();
 	const { permissions } = usePermissions();
 	const url = useUrl();
+	const [preparingGithubSetupId, setPreparingGithubSetupId] = useState<
+		string | null
+	>(null);
 
 	const getGitlabUrl = (gitlabId: string) => {
 		// Route through the server authorize endpoint so it attaches a CSRF state
 		// nonce + httpOnly cookie that the callback verifies (the URL to GitLab is
 		// built server-side in gitlab-authorize.ts).
 		return `${url}/api/providers/gitlab/authorize?gitlabId=${gitlabId}`;
+	};
+
+	const openGithubInstallation = async (
+		githubId: string | undefined,
+		githubAppName: string | undefined | null,
+	) => {
+		if (!githubId || !githubAppName) return;
+		setPreparingGithubSetupId(githubId);
+		try {
+			const state = await fetchGithubSetupState(
+				new URLSearchParams({ action: "gh_setup", githubId }),
+			);
+			window.location.assign(
+				`${githubAppName}/installations/new?state=${encodeURIComponent(state)}`,
+			);
+		} catch (error) {
+			toast.error("Could not prepare GitHub setup", {
+				description:
+					error instanceof Error ? error.message : "Please try again.",
+			});
+			setPreparingGithubSetupId(null);
+		}
 	};
 
 	return (
@@ -192,15 +219,29 @@ export const ShowGitProviders = () => {
 															<Badge variant="outline" className="text-xs">
 																Action Required
 															</Badge>
-															<Link
-																href={`${gitProvider?.github?.githubAppName}/installations/new?state=gh_setup:${gitProvider?.github?.githubId}`}
-																className={buttonVariants({
-																	shape: "square",
-																	variant: "ghost",
-																})}
+															<Button
+																type="button"
+																shape="square"
+																variant="ghost"
+																aria-label="Install GitHub App"
+																disabled={
+																	preparingGithubSetupId ===
+																	gitProvider?.github?.githubId
+																}
+																onClick={() =>
+																	openGithubInstallation(
+																		gitProvider?.github?.githubId,
+																		gitProvider?.github?.githubAppName,
+																	)
+																}
 															>
-																<ImportIcon className="size-4 text-kumo-brand" />
-															</Link>
+																{preparingGithubSetupId ===
+																gitProvider?.github?.githubId ? (
+																	<Loader2 className="size-4 text-kumo-brand animate-spin" />
+																) : (
+																	<ImportIcon className="size-4 text-kumo-brand" />
+																)}
+															</Button>
 														</div>
 													)}
 													{haveGithubRequirements && isGithub && (

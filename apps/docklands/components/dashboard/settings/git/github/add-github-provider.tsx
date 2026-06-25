@@ -2,23 +2,23 @@ import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { format } from "date-fns";
-import { useEffect, useState } from "react";
-import { api } from "@/client/api/trpc";
+import { Loader2 } from "lucide-react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useUrl } from "@/client/hooks/use-url";
 import { GithubIcon } from "@/components/icons/data-tools-icons";
 import { Dialog } from "@/components/shared/dialog";
+import { toast } from "@/components/shared/toast";
+import { fetchGithubSetupState } from "./setup-state";
 
 export const AddGithubProvider = () => {
 	const [isOpen, setIsOpen] = useState(false);
-	const { data: activeOrganization } = api.organization.active.useQuery();
-
-	const { data: session } = api.user.session.useQuery();
 	// Prefer the configured app URL over the browsing origin so the manifest's
 	// callback/webhook URLs are reachable even when set up from localhost.
 	const url = useUrl();
 	const [manifest, setManifest] = useState("");
 	const [isOrganization, setIsOrganization] = useState(false);
 	const [organizationName, setOrganization] = useState("");
+	const [isPreparing, setIsPreparing] = useState(false);
 
 	const randomString = () => Math.random().toString(36).slice(2, 8);
 
@@ -26,7 +26,7 @@ export const AddGithubProvider = () => {
 		if (!url) return;
 		const manifest = JSON.stringify(
 			{
-				redirect_url: `${url}/api/providers/github/setup?organizationId=${activeOrganization?.id ?? ""}&userId=${session?.user?.id ?? ""}`,
+				redirect_url: `${url}/api/providers/github/setup`,
 				name: `Docklands-${format(new Date(), "yyyy-MM-dd")}-${randomString()}`,
 				url,
 				hook_attributes: {
@@ -48,7 +48,37 @@ export const AddGithubProvider = () => {
 		);
 
 		setManifest(manifest);
-	}, [activeOrganization?.id, session?.user?.id, url]);
+	}, [url]);
+
+	const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		if (!url || !manifest) return;
+		setIsPreparing(true);
+		try {
+			const state = await fetchGithubSetupState(
+				new URLSearchParams({ action: "gh_init" }),
+			);
+			const target = isOrganization
+				? `https://github.com/organizations/${organizationName}/settings/apps/new?state=${encodeURIComponent(state)}`
+				: `https://github.com/settings/apps/new?state=${encodeURIComponent(state)}`;
+			const form = document.createElement("form");
+			form.method = "post";
+			form.action = target;
+			const input = document.createElement("input");
+			input.type = "hidden";
+			input.name = "manifest";
+			input.value = manifest;
+			form.append(input);
+			document.body.append(form);
+			form.submit();
+		} catch (error) {
+			toast.error("Could not prepare GitHub setup", {
+				description:
+					error instanceof Error ? error.message : "Please try again.",
+			});
+			setIsPreparing(false);
+		}
+	};
 
 	return (
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
@@ -94,14 +124,7 @@ export const AddGithubProvider = () => {
 									/>
 								)}
 							</div>
-							<form
-								action={
-									isOrganization
-										? `https://github.com/organizations/${organizationName}/settings/apps/new?state=gh_init:${activeOrganization?.id}:${session?.user?.id ?? ""}`
-										: `https://github.com/settings/apps/new?state=gh_init:${activeOrganization?.id}:${session?.user?.id ?? ""}`
-								}
-								method="post"
-							>
+							<form onSubmit={handleSubmit} method="post">
 								<input
 									type="text"
 									name="manifest"
@@ -130,10 +153,14 @@ export const AddGithubProvider = () => {
 										Unsure if you already have an app?
 									</a>
 									<Button
-										disabled={isOrganization && organizationName.length < 1}
+										disabled={
+											isPreparing ||
+											(isOrganization && organizationName.length < 1)
+										}
 										type="submit"
 										className="self-end"
 									>
+										{isPreparing && <Loader2 className="size-4 animate-spin" />}
 										Create GitHub App
 									</Button>
 								</div>
