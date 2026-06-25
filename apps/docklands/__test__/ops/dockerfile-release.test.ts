@@ -67,20 +67,29 @@ describe("production Dockerfile release install", () => {
 		expect(rootPackage.scripts["docker:smoke:operator"]).toBe(
 			"./tools/docker/smoke-operator.sh",
 		);
+		expect(rootPackage.scripts["docker:smoke:deploy"]).toBe(
+			"./tools/docker/smoke-deploy.sh",
+		);
 		expect(workflow).toContain("load: true");
 		expect(workflow).toContain("tags: docklands:ci-smoke");
 		expect(workflow).toContain(
 			"./tools/docker/smoke-image.sh docklands:ci-smoke",
 		);
 		expect(workflow).toContain(
-			"./tools/docker/smoke-operator.sh docklands:ci-smoke",
+			"./tools/docker/smoke-deploy.sh docklands:ci-smoke",
 		);
 		expect(smokeScript).toContain("/api/ready");
 		expect(smokeScript).toContain("/api/auth/sign-up/email");
 		expect(smokeScript).toContain("Admin is already created");
 		expect(smokeScript).toContain("settings.updateDefaultIngressMode");
 		expect(smokeScript).toContain("settings.getWebServerSettings");
+		expect(smokeScript).toContain("workspaces.create");
+		expect(smokeScript).toContain("application.saveDockerProvider");
+		expect(smokeScript).toContain("application.deploy");
+		expect(smokeScript).toContain("127.0.0.1:5000/docklands-smoke-app");
+		expect(smokeScript).toContain("docker service ps");
 		expect(smokeScript).toContain("DOCKLANDS_DOCKER_HOST");
+		expect(smokeScript).toContain("DOCKER_HOST");
 		expect(smokeScript).toContain("docklands-network");
 	});
 

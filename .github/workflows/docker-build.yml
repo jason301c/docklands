@@ -72,5 +72,5 @@ jobs:
       - name: Run first-run image smoke
         run: ./tools/docker/smoke-image.sh docklands:ci-smoke
 
-      - name: Run first-owner operator smoke
-        run: ./tools/docker/smoke-operator.sh docklands:ci-smoke
+      - name: Run first-deploy operator smoke
+        run: ./tools/docker/smoke-deploy.sh docklands:ci-smoke

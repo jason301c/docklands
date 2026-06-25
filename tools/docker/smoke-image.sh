@@ -7,11 +7,20 @@ POSTGRES_IMAGE=${POSTGRES_IMAGE:-postgres:16}
 WAIT_SECONDS=${DOCKLANDS_SMOKE_TIMEOUT_SECONDS:-240}
 SMOKE_ID=${DOCKLANDS_SMOKE_ID:-$(date +%s)-$$}
 RUN_OPERATOR_SMOKE=${DOCKLANDS_SMOKE_OPERATOR:-}
+RUN_DEPLOY_SMOKE=${DOCKLANDS_SMOKE_DEPLOY:-}
+REGISTRY_IMAGE=${DOCKLANDS_SMOKE_REGISTRY_IMAGE:-registry:2}
 
 NETWORK_NAME="docklands-smoke-${SMOKE_ID}"
 DIND_NAME="docklands-smoke-dind-${SMOKE_ID}"
 DB_NAME="docklands-smoke-postgres-${SMOKE_ID}"
 APP_NAME="docklands-smoke-app-${SMOKE_ID}"
+REGISTRY_NAME="docklands-smoke-registry"
+SMOKE_DEPLOY_APP_BASE=$(printf "smoke-%s" "$SMOKE_ID" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9-]+/-/g; s/^-+//; s/-+$//' | cut -c1-42)
+if [ -z "$SMOKE_DEPLOY_APP_BASE" ]; then
+	SMOKE_DEPLOY_APP_BASE="smoke-deploy"
+fi
+SMOKE_DEPLOY_APP_NAME=""
+SMOKE_DEPLOY_IMAGE="127.0.0.1:5000/docklands-smoke-app:${SMOKE_DEPLOY_APP_BASE}"
 READY_BODY=$(mktemp)
 REGISTER_BODY=$(mktemp)
 SIGNUP_BODY=$(mktemp)
@@ -21,9 +30,15 @@ HOME_HEADERS=$(mktemp)
 REGISTER_AFTER_HEADERS=$(mktemp)
 INGRESS_UPDATE_BODY=$(mktemp)
 INGRESS_SETTINGS_BODY=$(mktemp)
+WORKSPACE_BODY=$(mktemp)
+APPLICATION_BODY=$(mktemp)
+DOCKER_PROVIDER_BODY=$(mktemp)
+APPLICATION_UPDATE_BODY=$(mktemp)
+DEPLOY_BODY=$(mktemp)
 COOKIE_JAR=$(mktemp)
 APP_PORT=""
 APP_PLATFORM=""
+SMOKE_DEPLOY_RECORD=""
 
 print_diagnostics() {
 	echo "Docklands image smoke failed. Recent container logs:" >&2
@@ -58,6 +73,36 @@ print_diagnostics() {
 		cat "$INGRESS_SETTINGS_BODY" >&2
 		echo >&2
 	fi
+	if [ -s "$WORKSPACE_BODY" ]; then
+		echo "----- last workspaces.create response -----" >&2
+		cat "$WORKSPACE_BODY" >&2
+		echo >&2
+	fi
+	if [ -s "$APPLICATION_BODY" ]; then
+		echo "----- last application.create response -----" >&2
+		cat "$APPLICATION_BODY" >&2
+		echo >&2
+	fi
+	if [ -s "$DOCKER_PROVIDER_BODY" ]; then
+		echo "----- last application.saveDockerProvider response -----" >&2
+		cat "$DOCKER_PROVIDER_BODY" >&2
+		echo >&2
+	fi
+	if [ -s "$APPLICATION_UPDATE_BODY" ]; then
+		echo "----- last application.update response -----" >&2
+		cat "$APPLICATION_UPDATE_BODY" >&2
+		echo >&2
+	fi
+	if [ -s "$DEPLOY_BODY" ]; then
+		echo "----- last application.deploy response -----" >&2
+		cat "$DEPLOY_BODY" >&2
+		echo >&2
+	fi
+	if [ -n "$SMOKE_DEPLOY_APP_NAME" ] && docker ps -a --format '{{.Names}}' | grep -Fxq "$DIND_NAME"; then
+		echo "----- smoke deploy service state -----" >&2
+		docker exec "$DIND_NAME" docker service ps "$SMOKE_DEPLOY_APP_NAME" \
+			--no-trunc >&2 || true
+	fi
 }
 
 cleanup() {
@@ -75,6 +120,11 @@ cleanup() {
 		"$REGISTER_AFTER_HEADERS" \
 		"$INGRESS_UPDATE_BODY" \
 		"$INGRESS_SETTINGS_BODY" \
+		"$WORKSPACE_BODY" \
+		"$APPLICATION_BODY" \
+		"$DOCKER_PROVIDER_BODY" \
+		"$APPLICATION_UPDATE_BODY" \
+		"$DEPLOY_BODY" \
 		"$COOKIE_JAR"
 	if [ "${DOCKLANDS_SMOKE_KEEP:-}" = "1" ]; then
 		echo "Keeping smoke resources because DOCKLANDS_SMOKE_KEEP=1:" >&2
@@ -145,6 +195,30 @@ expect_status() {
 		echo >&2
 	fi
 	return 1
+}
+
+trpc_post() {
+	local procedure=$1
+	local body=$2
+	local output_file=$3
+	local label=$4
+	local status
+
+	status=$(curl -sS -o "$output_file" -w "%{http_code}" \
+		-b "$COOKIE_JAR" \
+		-H "content-type: application/json" \
+		-X POST \
+		"http://127.0.0.1:${APP_PORT}/api/trpc/${procedure}" \
+		--data "$body")
+	expect_status "$label" "200" "$status" "$output_file"
+	node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (body.error) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+' "$output_file"
 }
 
 assert_ingress_mode() {
@@ -325,6 +399,120 @@ if (body.message !== "Admin is already created") {
 	update_ingress_mode "public"
 }
 
+dind_registry_ready() {
+	docker exec "$DIND_NAME" sh -c \
+		'wget -q -O /dev/null http://127.0.0.1:5000/v2/' >/dev/null 2>&1
+}
+
+prepare_smoke_deploy_image() {
+	docker image inspect "$REGISTRY_IMAGE" >/dev/null 2>&1 || docker pull "$REGISTRY_IMAGE"
+
+	docker save "$REGISTRY_IMAGE" | docker exec -i "$DIND_NAME" docker load >/dev/null
+	docker exec "$DIND_NAME" docker run -d \
+		--name "$REGISTRY_NAME" \
+		-p 5000:5000 \
+		"$REGISTRY_IMAGE" >/dev/null
+	wait_for "Docker-in-Docker registry" dind_registry_ready
+
+	docker save "$DIND_IMAGE" | docker exec -i "$DIND_NAME" docker load >/dev/null
+	docker exec "$DIND_NAME" docker tag "$DIND_IMAGE" "$SMOKE_DEPLOY_IMAGE"
+	docker exec "$DIND_NAME" docker push "$SMOKE_DEPLOY_IMAGE" >/dev/null
+}
+
+deployed_service_ready() {
+	if [ -z "$SMOKE_DEPLOY_APP_NAME" ]; then
+		return 1
+	fi
+	docker exec "$DIND_NAME" docker service inspect "$SMOKE_DEPLOY_APP_NAME" \
+		>/dev/null 2>&1 || return 1
+	docker exec "$DIND_NAME" docker service ps "$SMOKE_DEPLOY_APP_NAME" \
+		--filter desired-state=running \
+		--format '{{.CurrentState}} {{.Error}}' 2>/dev/null | grep -q '^Running'
+}
+
+deploy_record_done() {
+	if [ -z "$SMOKE_DEPLOY_APP_NAME" ]; then
+		return 1
+	fi
+	SMOKE_DEPLOY_RECORD=$(docker exec "$DB_NAME" psql \
+		-U docklands_smoke \
+		-d docklands_smoke \
+		-tAc "select a.\"applicationStatus\"::text || '|' || coalesce((select d.status::text from deployment d where d.\"applicationId\" = a.\"applicationId\" order by d.\"createdAt\" desc limit 1), '') from application a where a.\"appName\" = '${SMOKE_DEPLOY_APP_NAME}'")
+	[ "$SMOKE_DEPLOY_RECORD" = "done|done" ]
+}
+
+check_deploy_smoke() {
+	local ids
+	local workspace_id
+	local environment_id
+	local application_id
+	local application_data
+
+	prepare_smoke_deploy_image
+
+	trpc_post "workspaces.create" \
+		'{"json":{"name":"Smoke Workspace","description":"Production image deploy smoke","env":""}}' \
+		"$WORKSPACE_BODY" \
+		"create smoke workspace"
+	ids=$(node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+const data = body.result?.data?.json;
+const workspaceId = data?.workspace?.workspaceId;
+const environmentId = data?.environment?.environmentId;
+if (!workspaceId || !environmentId) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+console.log(`${workspaceId}|${environmentId}`);
+' "$WORKSPACE_BODY")
+	workspace_id=${ids%%|*}
+	environment_id=${ids#*|}
+	if [ -z "$workspace_id" ] || [ -z "$environment_id" ]; then
+		echo "Could not parse smoke workspace/environment IDs" >&2
+		exit 1
+	fi
+
+	trpc_post "application.create" \
+		"{\"json\":{\"name\":\"Smoke Deploy\",\"appName\":\"${SMOKE_DEPLOY_APP_BASE}\",\"description\":\"Production image deploy smoke\",\"environmentId\":\"${environment_id}\"}}" \
+		"$APPLICATION_BODY" \
+		"create smoke application"
+	application_data=$(node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+const data = body.result?.data?.json;
+const applicationId = data?.applicationId;
+const appName = data?.appName;
+if (!applicationId || !appName) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+console.log(`${applicationId}|${appName}`);
+' "$APPLICATION_BODY")
+	application_id=${application_data%%|*}
+	SMOKE_DEPLOY_APP_NAME=${application_data#*|}
+	if [ -z "$application_id" ] || [ -z "$SMOKE_DEPLOY_APP_NAME" ]; then
+		echo "Could not parse smoke application ID/name" >&2
+		exit 1
+	fi
+
+	trpc_post "application.saveDockerProvider" \
+		"{\"json\":{\"applicationId\":\"${application_id}\",\"dockerImage\":\"${SMOKE_DEPLOY_IMAGE}\",\"username\":null,\"password\":null,\"registryUrl\":null}}" \
+		"$DOCKER_PROVIDER_BODY" \
+		"save smoke Docker provider"
+	trpc_post "application.update" \
+		"{\"json\":{\"applicationId\":\"${application_id}\",\"command\":\"sleep\",\"args\":[\"3600\"]}}" \
+		"$APPLICATION_UPDATE_BODY" \
+		"update smoke application command"
+	trpc_post "application.deploy" \
+		"{\"json\":{\"applicationId\":\"${application_id}\",\"title\":\"Smoke deploy\",\"description\":\"Production image deploy smoke\"}}" \
+		"$DEPLOY_BODY" \
+		"deploy smoke application"
+
+	wait_for "smoke application service" deployed_service_ready
+	wait_for "smoke deployment DB completion" deploy_record_done
+}
+
 dind_ready() {
 	docker exec "$DIND_NAME" docker info >/dev/null 2>&1
 }
@@ -373,6 +561,7 @@ docker run -d \
 	-e SKIP_PRE_MIGRATION_BACKUP=true \
 	-e DOCKLANDS_DOCKER_HOST="$DIND_NAME" \
 	-e DOCKLANDS_DOCKER_PORT=2375 \
+	-e DOCKER_HOST="tcp://${DIND_NAME}:2375" \
 	-e SWARM_ADVERTISE_ADDR=127.0.0.1 \
 	"$IMAGE_REF" >/dev/null
 
@@ -386,6 +575,14 @@ wait_for "Docklands readiness" check_ready
 
 if [ "$RUN_OPERATOR_SMOKE" = "1" ]; then
 	check_operator_smoke
+fi
+
+if [ "$RUN_DEPLOY_SMOKE" = "1" ]; then
+	if [ "$RUN_OPERATOR_SMOKE" != "1" ]; then
+		echo "DOCKLANDS_SMOKE_DEPLOY=1 requires DOCKLANDS_SMOKE_OPERATOR=1" >&2
+		exit 1
+	fi
+	check_deploy_smoke
 fi
 
 SWARM_STATE=$(docker exec "$DIND_NAME" docker info \
@@ -406,6 +603,11 @@ if [ "$RUN_OPERATOR_SMOKE" = "1" ]; then
 	echo "Docklands operator smoke passed for $IMAGE_REF"
 	echo "  first owner: owner@docklands.local"
 	echo "  default ingress mode: public -> tunnel -> public"
+	if [ "$RUN_DEPLOY_SMOKE" = "1" ]; then
+		echo "  smoke deploy service: $SMOKE_DEPLOY_APP_NAME"
+		echo "  smoke deploy image: $SMOKE_DEPLOY_IMAGE"
+		echo "  smoke deploy record: $SMOKE_DEPLOY_RECORD"
+	fi
 else
 	echo "Docklands image smoke passed for $IMAGE_REF"
 fi
