@@ -89,6 +89,7 @@ run bash -n \
 	tools/release/preflight.sh \
 	tools/release/dispatch-smoke-workflows.sh \
 	tools/release/host-operator-smoke.sh \
+	tools/release/tag-release.sh \
 	tools/docker/build.sh \
 	tools/docker/push.sh \
 	tools/docker/smoke-image.sh \
@@ -96,6 +97,12 @@ run bash -n \
 	tools/docker/smoke-deploy.sh
 
 run bun run release:check-metadata
+
+tag_dry_run_args=(--dry-run --skip-fetch)
+if [ -n "$allow_dirty" ]; then
+	tag_dry_run_args=(--allow-dirty "${tag_dry_run_args[@]}")
+fi
+run tools/release/tag-release.sh "${tag_dry_run_args[@]}" "$git_ref"
 
 docker_push_dry_run_args=(--dry-run production)
 if [ -n "$allow_dirty" ]; then

@@ -52,6 +52,7 @@
 		"docker:push:canary": "./tools/docker/push.sh canary",
 		"release:smoke:host": "./tools/release/host-operator-smoke.sh",
 		"release:check-metadata": "node tools/release/check-metadata.mjs",
+		"release:tag": "./tools/release/tag-release.sh",
 		"release:preflight": "./tools/release/preflight.sh",
 		"release:smoke:dispatch": "./tools/release/dispatch-smoke-workflows.sh"
 	},

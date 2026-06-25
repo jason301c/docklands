@@ -70,6 +70,7 @@ must pass:
 bun run release:preflight canary
 git push origin canary
 bun run release:smoke:dispatch --wait canary
+bun run release:tag --push canary
 bun run docker:push
 ```
 
@@ -80,6 +81,11 @@ OpenAPI generation, app/docs/site builds, and a smoke-dispatch dry-run.
 `release:smoke:dispatch --wait` dispatches the real-deploy smoke and
 host-operator smoke workflows for the pushed ref, then waits for both newly
 created workflow runs to finish successfully.
+
+`release:tag --push` creates and pushes the annotated `0.1.0` release tag for
+the selected pushed ref. The tag name comes from package metadata; the command
+refuses dirty tracked files, existing tags, and branch refs that differ from the
+selected remote.
 
 `docker:push` publishes `jason301c/docklands:0.1.0` and
 `jason301c/docklands:latest`; it refuses dirty tracked files by default.

@@ -221,6 +221,7 @@ bun run docker:smoke:operator <image> # image smoke plus first-owner bootstrap c
 bun run docker:smoke:deploy <image> # image smoke plus first-owner, settings, and first deploy checks
 bun run release:smoke:host        # manual disposable-host Docker install + backup + upgrade/restart + Traefik ingress smoke
 bun run release:check-metadata    # verify app/docs/site release versions and bun.lock metadata agree
+bun run release:tag [--push] [ref] # guarded annotated release tag from package version
 bun run release:preflight [ref]   # local non-mutating release preflight before push/dispatch
 bun run release:smoke:dispatch [--wait] [ref] # dispatch manual release + host-operator smoke workflows for a pushed ref
 bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in

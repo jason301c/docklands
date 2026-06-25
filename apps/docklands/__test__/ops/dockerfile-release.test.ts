@@ -153,6 +153,35 @@ describe("production Dockerfile release install", () => {
 		expect(preflightScript).toContain("bun run release:check-metadata");
 	});
 
+	it("keeps release tagging guarded and package-version derived", () => {
+		const rootPackage = JSON.parse(repoFile("package.json"));
+		const tagScript = repoFile("tools/release/tag-release.sh");
+		const preflightScript = repoFile("tools/release/preflight.sh");
+
+		expect(rootPackage.scripts["release:tag"]).toBe(
+			"./tools/release/tag-release.sh",
+		);
+		expect(tagScript).toContain("apps/docklands/package.json");
+		expect(tagScript).toContain("node tools/release/check-metadata.mjs");
+		expect(tagScript).toContain("Release tag version must be plain semver");
+		expect(tagScript).toContain("Tracked files are dirty");
+		expect(tagScript).toContain("Push the branch before tagging the release");
+		expect(tagScript).toContain("git tag -a");
+		expect(tagScript).toContain("refs/tags/$tag_name");
+		expect(tagScript).toContain("git push");
+		expect(tagScript).toContain("--dry-run");
+		expect(tagScript).toContain("--skip-fetch");
+		expect(preflightScript).toContain(
+			"tag_dry_run_args=(--dry-run --skip-fetch)",
+		);
+		expect(preflightScript).toContain(
+			'tag_dry_run_args=(--allow-dirty "${tag_dry_run_args[@]}")',
+		);
+		expect(preflightScript).toContain(
+			'tools/release/tag-release.sh "${tag_dry_run_args[@]}" "$git_ref"',
+		);
+	});
+
 	it("keeps v0.1.0 release notes honest about gates and boundaries", () => {
 		const releaseNotes = repoFile("docs/RELEASE_NOTES.md");
 		const docsCurrentCheck = repoFile("tools/check-docs-current.mjs");
@@ -163,6 +192,7 @@ describe("production Dockerfile release install", () => {
 		expect(releaseNotes).toContain(
 			"bun run release:smoke:dispatch --wait canary",
 		);
+		expect(releaseNotes).toContain("bun run release:tag --push canary");
 		expect(releaseNotes).toContain("bun run docker:push");
 		expect(releaseNotes).toContain("jason301c/docklands:0.1.0");
 		expect(releaseNotes).toContain("There is exactly one organization");
