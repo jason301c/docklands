@@ -219,6 +219,7 @@ bun run docker:smoke <image>      # first-run smoke against disposable Postgres 
 bun run docker:smoke:operator <image> # image smoke plus first-owner bootstrap checks
 bun run docker:smoke:deploy <image> # image smoke plus first-owner, settings, and first deploy checks
 bun run release:smoke:host        # manual disposable-host Docker install + backup + upgrade/restart + Traefik ingress smoke
+bun run release:smoke:dispatch [ref] # dispatch manual release + host-operator smoke workflows for a pushed ref
 bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in
 bun run check:openapi             # generate OpenAPI to a temp artifact and validate release invariants
 bun run docs:dev                  # Astro docs site (apps/docs)

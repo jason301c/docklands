@@ -119,6 +119,25 @@ describe("production Dockerfile release install", () => {
 		expect(workflow).toContain("grep '^real-'");
 	});
 
+	it("dispatches both manual release smoke workflows for the same pushed ref", () => {
+		const rootPackage = JSON.parse(repoFile("package.json"));
+		const dispatchScript = repoFile(
+			"tools/release/dispatch-smoke-workflows.sh",
+		);
+
+		expect(rootPackage.scripts["release:smoke:dispatch"]).toBe(
+			"./tools/release/dispatch-smoke-workflows.sh",
+		);
+		expect(dispatchScript).toContain("gh workflow run release-smoke.yml");
+		expect(dispatchScript).toContain("gh workflow run host-operator-smoke.yml");
+		expect(dispatchScript).toContain('--ref "$git_ref"');
+		expect(dispatchScript).toContain('-f "git_ref=$git_ref"');
+		expect(dispatchScript).toContain('-f "git_url=$git_url"');
+		expect(dispatchScript).toContain("git fetch --quiet");
+		expect(dispatchScript).toContain("Push the branch before dispatching");
+		expect(dispatchScript).toContain("DOCKLANDS_RELEASE_SMOKE_DRY_RUN");
+	});
+
 	it("keeps the manual host-operator smoke wired to the image setup path", () => {
 		const rootPackage = JSON.parse(repoFile("package.json"));
 		const workflow = repoFile(".github/workflows/host-operator-smoke.yml");
