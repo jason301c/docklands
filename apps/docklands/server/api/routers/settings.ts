@@ -61,7 +61,6 @@ import {
 import { recreateDirectory } from "@/server/core/utils/filesystem/directory";
 import { checkGPUStatus, setupGPUSupport } from "@/server/core/utils/gpu-setup";
 import { sendDockerCleanupNotifications } from "@/server/core/utils/notifications/docker-cleanup";
-import { spawnAsync } from "@/server/core/utils/process/spawnAsync";
 import {
 	readConfigInPath,
 	readMonitoringConfig,
@@ -75,7 +74,6 @@ import {
 } from "@/server/core/utils/traefik/web-server";
 import { assertBuildsConcurrencyAllowed } from "@/server/queues/concurrency";
 import { cleanAllDeploymentQueue } from "@/server/queues/queueSetup";
-import { siteConfig } from "@/shared/site";
 import packageInfo from "../../../package.json";
 import {
 	adminProcedure,
@@ -85,8 +83,6 @@ import {
 } from "../trpc";
 
 const logger = createLogger("settings");
-
-const DOCKLANDS_IMAGE = process.env.DOCKLANDS_IMAGE || siteConfig.dockerImage;
 
 export const settingsRouter = createTRPCRouter({
 	getWebServerSettings: protectedProcedure.query(async () => {
@@ -414,15 +410,8 @@ export const settingsRouter = createTRPCRouter({
 	}),
 	updateServer: adminProcedure.mutation(async ({ ctx }) => {
 		const data = await getUpdateData(packageInfo.version);
-		if (data.updateAvailable) {
-			void spawnAsync("docker", [
-				"service",
-				"update",
-				"--force",
-				"--image",
-				`${DOCKLANDS_IMAGE}:${data.latestVersion}`,
-				"docklands",
-			]);
+		if (data.updateAvailable && data.latestVersion) {
+			await reloadDockerResource("docklands", undefined, data.latestVersion);
 			await audit(ctx, {
 				action: "update",
 				resourceType: "settings",

@@ -17,9 +17,8 @@ explains that model and the surfaces that control it.
 
 On startup (in server mode) Docklands bootstraps Traefik for you:
 
-- It pulls and starts the `docklands-traefik` container (a Swarm service in
-  production, a standalone container in local development) on the
-  `docklands-network` overlay.
+- It pulls and starts the `docklands-traefik` standalone container on the Docker
+  host and joins it to the `docklands-network` overlay.
 - It publishes the public entrypoints to the host: **`web`** on port `80` and
   **`websecure`** on port `443` (TCP and UDP/HTTP3). These bind directly to the
   host machine.

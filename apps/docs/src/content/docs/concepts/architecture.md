@@ -50,8 +50,10 @@ while builds are running.
 ## Docker, Swarm, and runtime workers
 
 Docklands drives Docker through the Engine API (`dockerode`). On setup it
-initializes **Docker Swarm**, an overlay network (`docklands-network`), and runs
-core services as Swarm services.
+initializes **Docker Swarm**, an overlay network (`docklands-network`), and the
+host-level `docklands-traefik` container. User workloads and the bundled
+`docklands-postgres` database run as Swarm services; the documented control
+plane itself runs as a standalone container joined to `docklands-network`.
 
 Services are deployed on **runtime workers**:
 
@@ -66,10 +68,11 @@ standard `DOCKER_HOST`.
 ## Ingress
 
 Inbound HTTP/HTTPS traffic is handled by **Traefik**, which Docklands runs as the
-`docklands-traefik` service. When you attach a [domain](/networking/domains/) to
-a service, Docklands writes a Traefik dynamic-config file for it; Traefik handles
-TLS (including Let's Encrypt) and routing. The static configuration and the
-Let's Encrypt resolver are generated during setup. See [Ingress](/networking/ingress/).
+standalone `docklands-traefik` container on the host. When you attach a
+[domain](/networking/domains/) to a service, Docklands writes a Traefik
+dynamic-config file for it; Traefik handles TLS (including Let's Encrypt) and
+routing. The static configuration and the Let's Encrypt resolver are generated
+during setup. See [Ingress](/networking/ingress/).
 
 ## On-disk layout
 
@@ -97,7 +100,7 @@ point — see [Operations](/install/operations/).
 ┌────────────────────────────────────────────────────────────┐
 │ Your Linux VM                                               │
 │                                                            │
-│  Node 24 process ── Next.js (UI + tRPC + WebSocket)        │
+│  docklands container ── Node 24 / Next.js / tRPC / WS      │
 │        │                                                   │
 │        ├── PostgreSQL  (docklands-postgres)               │
 │        ├── Docker Engine + Swarm                          │

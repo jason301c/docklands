@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import type { CreateServiceOptions } from "dockerode";
 import { createLogger } from "@/server/core/lib/logger";
 import { docker } from "../constants";
@@ -11,12 +12,33 @@ const logger = createLogger("setup:postgres");
 // baked into the repo. (postgres only honors POSTGRES_PASSWORD on first-init of an
 // empty data volume, so this changes nothing for an existing volume; for a fresh
 // one it adopts whatever the operator set in DATABASE_URL.)
-const resolveBundledPostgresCredentials = () => {
-	const databaseUrl = process.env.DATABASE_URL;
+type EnvLike = Record<string, string | undefined>;
+
+type SecretReader = (path: string) => string;
+
+const readSecretFile: SecretReader = (path) => fs.readFileSync(path, "utf8");
+
+export const resolveBundledPostgresCredentials = (
+	env: EnvLike = process.env,
+	readSecret: SecretReader = readSecretFile,
+) => {
+	const databaseUrl = env.DATABASE_URL;
 	if (!databaseUrl) {
-		throw new Error(
-			"DATABASE_URL must be set to provision the bundled Postgres container.",
-		);
+		const passwordFile = env.POSTGRES_PASSWORD_FILE;
+		if (!passwordFile) {
+			throw new Error(
+				"DATABASE_URL or POSTGRES_PASSWORD_FILE must be set to provision the bundled Postgres container.",
+			);
+		}
+		const password = readSecret(passwordFile).trim();
+		if (!password) {
+			throw new Error("POSTGRES_PASSWORD_FILE is readable but empty.");
+		}
+		return {
+			user: env.POSTGRES_USER || "docklands",
+			password,
+			database: env.POSTGRES_DB || "docklands",
+		};
 	}
 	let url: URL;
 	try {

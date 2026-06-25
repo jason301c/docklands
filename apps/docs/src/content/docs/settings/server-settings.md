@@ -20,20 +20,24 @@ and docs.
 
 ## Updates
 
-Docklands can check whether a newer image is published and update itself in
-place:
+Docklands can check whether a newer image is published and help you start the
+update:
 
 - **Check for updates** compares your running version against the latest
   available image tag.
-- **Update** triggers a Docker Swarm service update of the `docklands` service to
-  the latest image. The control plane restarts as part of the update.
+- **Update** behaves according to how the control plane is installed. If
+  Docklands is running as a Swarm service named `docklands`, it triggers a
+  service update to the latest image and the control plane restarts as part of
+  the update. If Docklands is running as the documented standalone
+  `docker run` container, it pulls the latest image and tells the operator to
+  recreate the container with the same mounts, network, and environment.
 
 You can see the current version and release tag from the settings UI at any time.
 
 :::caution
-Updating restarts the control plane. Deployments already running continue under
-Docker Swarm, but the dashboard is briefly unavailable while the new image rolls
-out.
+Updating or recreating the control-plane container interrupts the dashboard.
+Deployments already running continue under Docker Swarm, but the in-memory
+deployment queue is not preserved across the control-plane restart.
 :::
 
 ## Build concurrency

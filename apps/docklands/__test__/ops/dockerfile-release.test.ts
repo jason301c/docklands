@@ -223,6 +223,52 @@ describe("production Dockerfile release install", () => {
 		expect(releaseNotes).toContain("does not ship a one-line installer");
 	});
 
+	it("keeps production operator docs aligned with the standalone install path", () => {
+		const productionDocs = repoFile(
+			"apps/docs/src/content/docs/install/production.md",
+		);
+		const configurationDocs = repoFile(
+			"apps/docs/src/content/docs/install/configuration.md",
+		);
+		const operationsDocs = repoFile(
+			"apps/docs/src/content/docs/install/operations.md",
+		);
+		const ingressDocs = repoFile(
+			"apps/docs/src/content/docs/networking/ingress.md",
+		);
+		const architectureDocs = repoFile(
+			"apps/docs/src/content/docs/concepts/architecture.md",
+		);
+		const serverSettingsDocs = repoFile(
+			"apps/docs/src/content/docs/settings/server-settings.md",
+		);
+		const settingsRouter = appFile("server/api/routers/settings.ts");
+
+		expect(productionDocs).toContain('docker pull "$DOCKLANDS_IMAGE"');
+		expect(productionDocs).toContain("docker build --pull -t docklands:local");
+		expect(productionDocs).toContain('"$DOCKLANDS_IMAGE"');
+		expect(productionDocs).toContain(
+			"bun run wait-for-postgres && exec bun run start",
+		);
+		expect(configurationDocs).toContain("POSTGRES_HOST");
+		expect(configurationDocs).toContain("POSTGRES_PORT");
+		expect(configurationDocs).not.toContain("SMTP_SERVER");
+		expect(configurationDocs).toContain("Settings → Notifications");
+		expect(operationsDocs).toContain("RESTORE_DOCKLANDS_INSTANCE");
+		expect(operationsDocs).toContain("rotate-encryption-key");
+		expect(ingressDocs).toContain("docklands-traefik` standalone container");
+		expect(architectureDocs).toContain(
+			"standalone container joined to `docklands-network`",
+		);
+		expect(serverSettingsDocs).toContain(
+			"recreate the container with the same mounts, network, and environment",
+		);
+		expect(settingsRouter).toContain(
+			'reloadDockerResource("docklands", undefined, data.latestVersion)',
+		);
+		expect(settingsRouter).not.toContain("docker service update");
+	});
+
 	it("keeps the manual real-deploy smoke self-cleaning", () => {
 		const workflow = repoFile(".github/workflows/release-smoke.yml");
 		const realDeployTest = appFile("__test__/deploy/application.real.test.ts");

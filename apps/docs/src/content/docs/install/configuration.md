@@ -12,7 +12,11 @@ to the container. This page lists the variables the control plane actually reads
 | Variable | Default | Purpose |
 |---|---|---|
 | `DATABASE_URL` | — | PostgreSQL connection string. Use either this or `POSTGRES_PASSWORD_FILE`, not both. |
-| `POSTGRES_PASSWORD_FILE` | — | Alternative to embedding the password in `DATABASE_URL`; reads the password from a secret file. Use either this or `DATABASE_URL`, not both. |
+| `POSTGRES_PASSWORD_FILE` | — | Alternative to embedding the password in `DATABASE_URL`; reads the password from a secret file and combines it with `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_HOST`, and `POSTGRES_PORT`. Use either this or `DATABASE_URL`, not both. |
+| `POSTGRES_USER` | `docklands` | Database user used when `POSTGRES_PASSWORD_FILE` is set. Also used when setup provisions bundled Postgres from a password file. |
+| `POSTGRES_DB` | `docklands` | Database name used when `POSTGRES_PASSWORD_FILE` is set. Also used when setup provisions bundled Postgres from a password file. |
+| `POSTGRES_HOST` | `docklands-postgres` | Database host used when `POSTGRES_PASSWORD_FILE` is set. |
+| `POSTGRES_PORT` | `5432` | Database port used when `POSTGRES_PASSWORD_FILE` is set. |
 | `BETTER_AUTH_SECRET` | — | Signing secret for auth/sessions. **Set in production.** `bun run setup` generates one for local installs. Use either this or `BETTER_AUTH_SECRET_FILE`, not both. |
 | `BETTER_AUTH_SECRET_FILE` | — | Read `BETTER_AUTH_SECRET` from a file (secret mounts). Use either this or `BETTER_AUTH_SECRET`, not both. |
 | `DOCKLANDS_ENCRYPTION_KEY` | — | Key for [secrets at rest](#secrets-at-rest). Base64-encoded 32 bytes, **separate** from `BETTER_AUTH_SECRET`. **Set in production.** `bun run setup` generates one for local installs. Use either this or `DOCKLANDS_ENCRYPTION_KEY_FILE`, not both. |
@@ -53,17 +57,11 @@ service.
 
 ## Email (auth verification)
 
-Used to send account verification / auth emails. (Deployment **notifications**
-are configured separately per provider — see
-[Notifications](/settings/notifications/).)
-
-| Variable | Purpose |
-|---|---|
-| `SMTP_SERVER` | SMTP host. |
-| `SMTP_PORT` | SMTP port. |
-| `SMTP_USERNAME` | SMTP username. |
-| `SMTP_PASSWORD` | SMTP password. |
-| `SMTP_FROM_ADDRESS` | From address for outbound mail. |
+Docklands does not read SMTP environment variables for system email. Password
+reset, verification, and invitation email use the Email or Resend notification
+providers configured in **Settings → Notifications**. Until a provider is
+configured, email-dependent auth flows show an operator-facing unavailable state
+instead of silently dropping mail. See [Notifications](/settings/notifications/).
 
 ## Advanced
 

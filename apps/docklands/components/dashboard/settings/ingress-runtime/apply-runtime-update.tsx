@@ -110,9 +110,12 @@ export const ApplyRuntimeUpdate = () => {
 		} catch (error) {
 			setModalState("results");
 			logger.error("Error updating runtime:", error);
-			toast.error(
-				"An error occurred while updating the runtime, please try again.",
-			);
+			toast.error("Runtime update needs operator action", {
+				description:
+					error instanceof Error
+						? error.message
+						: "An error occurred while updating the runtime, please try again.",
+			});
 		}
 	};
 

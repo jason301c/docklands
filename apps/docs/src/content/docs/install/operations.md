@@ -69,6 +69,31 @@ that database with your provider/operator tooling, then restore `/etc/docklands`
 and the same `DOCKLANDS_ENCRYPTION_KEY`.
 :::
 
+### Restore a bundled-Postgres instance
+
+Whole-instance Docklands restore is an **offline** operation. Stop the Docklands
+web container first; the command replaces `/etc/docklands` data and drops and
+recreates the Docklands database from the selected backup archive.
+
+```bash
+# from source
+bun run restore-instance -- \
+  --destination-id <destination-id> \
+  --backup-file <object-key.zip> \
+  --confirm RESTORE_DOCKLANDS_INSTANCE
+
+# built container
+node -r dotenv/config dist/restore-instance.mjs \
+  --destination-id <destination-id> \
+  --backup-file <object-key.zip> \
+  --confirm RESTORE_DOCKLANDS_INSTANCE
+```
+
+Use the backup destination id and object key shown in Docklands' backup records
+or in your destination storage. Do not run this command against an external
+Postgres install; restore that database with your database provider/operator
+tooling, then restore `/etc/docklands` and reuse the same encryption key.
+
 :::caution[Secrets at rest]
 Provider tokens, SSH private keys, database credentials, TLS private keys, and
 service environment variables are **encrypted at rest with AES-256-GCM** before
@@ -87,3 +112,23 @@ steps are: pull/rebuild the image, then restart the container — migrations run
 start. Because the [deployment queue is in-memory](/concepts/architecture/),
 **in-flight and queued deployments are lost on restart**, so upgrade when nothing
 critical is mid-deploy, and re-trigger anything that was running.
+
+## Rotate the encryption key
+
+`DOCKLANDS_ENCRYPTION_KEY` can be rotated with the bundled offline helper. It
+decrypts existing `v1:` secret-box values with the current key and rewrites them
+under `DOCKLANDS_NEW_ENCRYPTION_KEY` in one database transaction.
+
+```bash
+export DOCKLANDS_NEW_ENCRYPTION_KEY="$(openssl rand -base64 32)"
+
+# from source
+bun run rotate-encryption-key
+
+# built container
+node -r dotenv/config dist/rotate-encryption-key.mjs
+```
+
+After the command succeeds, update `DOCKLANDS_ENCRYPTION_KEY` to the new value
+and restart Docklands. Keep the old key until you have confirmed stored provider
+tokens, backup destinations, registries, and service secrets still decrypt.

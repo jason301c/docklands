@@ -14,18 +14,30 @@ For a from-source workflow (the common path while Docklands is pre-release), see
 [Local development](/getting-started/). This page covers running the built
 container on a server.
 
-## 1. Build the image
+## 1. Choose or build the image
 
-From a checkout of the repository on a machine with Docker and Bun:
+After v0.1.0 is published, use the release image:
 
 ```bash
-bun run docker:build
+export DOCKLANDS_IMAGE=jason301c/docklands:0.1.0
+docker pull "$DOCKLANDS_IMAGE"
 ```
 
-This builds `apps/docklands/Dockerfile` with the workspace as the build context
-and tags the image from `apps/docklands/package.json` (image name `docklands`).
-The image is a `node:24.4.0-slim` base with Bun available for installs; the app
-runs on Node.
+From an unreleased source checkout, build a single-architecture image into the
+local Docker daemon and use that tag in the commands below:
+
+```bash
+docker build --pull -t docklands:local -f apps/docklands/Dockerfile .
+export DOCKLANDS_IMAGE=docklands:local
+```
+
+`bun run docker:build` is the multi-platform release-build helper. It verifies
+the production Dockerfile and tags `jason301c/docklands:<package-version>`, but
+it does not load a runnable image into the local Docker daemon. Use the
+`docker build` command above when you need a local image for `docker run`.
+
+The image is a `node:24.4.0-slim` base with Bun available for package-manager
+subcommands; the app itself runs on Node.
 
 ## 2. Provide a database and secrets
 
@@ -38,6 +50,12 @@ Docklands needs:
   PostgreSQL provider, use that provider's backup/restore tooling for the
   database and back up `/etc/docklands` plus `DOCKLANDS_ENCRYPTION_KEY`
   separately. Use either `DATABASE_URL` or `POSTGRES_PASSWORD_FILE`, not both.
+- **`POSTGRES_PASSWORD_FILE`** — an alternative to embedding the database
+  password in `DATABASE_URL`. With this mode Docklands builds the connection
+  string from `POSTGRES_USER` (`docklands`), `POSTGRES_DB` (`docklands`),
+  `POSTGRES_HOST` (`docklands-postgres`), `POSTGRES_PORT` (`5432`), and the
+  secret-file contents. Setup can provision bundled Postgres from these values.
+  For an external database, set the host/user/database/port values explicitly.
 - **`BETTER_AUTH_SECRET`** (or `BETTER_AUTH_SECRET_FILE`) — the auth signing
   secret. **Set this explicitly in production.** For local installs `bun run
   setup` generates one; production should manage it as a secret. Use either the
@@ -71,7 +89,7 @@ docker run --rm --name docklands-setup \
   -e BETTER_AUTH_SECRET="<a long random secret>" \
   -e DOCKLANDS_ENCRYPTION_KEY="<openssl rand -base64 32>" \
   -e SKIP_BUNDLED_POSTGRES=true \
-  docklands \
+  "$DOCKLANDS_IMAGE" \
   node -r dotenv/config dist/setup-instance.mjs
 ```
 
@@ -105,18 +123,19 @@ docker run -d --name docklands \
   -e DATABASE_URL="postgres://user:pass@host:5432/docklands" \
   -e BETTER_AUTH_SECRET="<a long random secret>" \
   -e DOCKLANDS_ENCRYPTION_KEY="<openssl rand -base64 32>" \
-  docklands
+  "$DOCKLANDS_IMAGE"
 ```
 
-The container's start command runs database migrations and then boots the
-server:
+The image entrypoint waits for Postgres, validates secrets, runs database
+migrations, and then boots the server:
 
 ```text
-node dist/migrate-db.mjs && node dist/server.mjs
+bun run wait-for-postgres && exec bun run start
 ```
 
-So migrations are applied automatically on every start — no separate migration
-step is required for a normal boot.
+`bun run start` runs `dist/check-secrets.mjs`, `dist/migrate-db.mjs`, and
+`dist/server.mjs` in order, so migrations are applied automatically on every
+start — no separate migration step is required for a normal boot.
 
 :::note[Mounting the Docker socket]
 Giving a container access to `/var/run/docker.sock` grants control over the host
