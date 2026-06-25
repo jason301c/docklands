@@ -30,6 +30,7 @@ const addServerDomain = z
 		letsEncryptEmail: z.string(),
 		https: z.boolean().optional(),
 		certificateType: z.enum(["letsencrypt", "none", "custom"]),
+		defaultIngressMode: z.enum(["public", "tunnel"]),
 	})
 	.superRefine((data, ctx) => {
 		if (data.https && !data.certificateType) {
@@ -59,6 +60,10 @@ export const IngressDomain = () => {
 	const { data, refetch } = api.settings.getWebServerSettings.useQuery();
 	const { mutateAsync, isPending } =
 		api.settings.assignDomainServer.useMutation();
+	const {
+		mutateAsync: updateDefaultIngressMode,
+		isPending: isUpdatingDefaultIngressMode,
+	} = api.settings.updateDefaultIngressMode.useMutation();
 
 	const form = useForm<AddServerDomain>({
 		defaultValues: {
@@ -66,6 +71,7 @@ export const IngressDomain = () => {
 			certificateType: "none",
 			letsEncryptEmail: "",
 			https: false,
+			defaultIngressMode: "public",
 		},
 		resolver: zodResolver(addServerDomain),
 	});
@@ -80,24 +86,30 @@ export const IngressDomain = () => {
 				certificateType: data?.certificateType || "none",
 				letsEncryptEmail: data?.letsEncryptEmail || "",
 				https: data?.https || false,
+				defaultIngressMode: data?.defaultIngressMode || "public",
 			});
 		}
 	}, [form, form.reset, data]);
 
 	const onSubmit = async (data: AddServerDomain) => {
-		await mutateAsync({
-			host: data.domain,
-			letsEncryptEmail: data.letsEncryptEmail,
-			certificateType: data.certificateType,
-			https: data.https,
-		})
+		await Promise.all([
+			mutateAsync({
+				host: data.domain,
+				letsEncryptEmail: data.letsEncryptEmail,
+				certificateType: data.certificateType,
+				https: data.https,
+			}),
+			updateDefaultIngressMode({
+				defaultIngressMode: data.defaultIngressMode,
+			}),
+		])
 			.then(async () => {
 				await refetch();
-				toast.success("Domain Assigned");
+				toast.success("Ingress settings saved");
 			})
 			.catch((err) => {
 				logger.error(err);
-				toast.error("Error assigning the domain");
+				toast.error("Error saving ingress settings");
 			});
 	};
 
@@ -207,8 +219,38 @@ export const IngressDomain = () => {
 						/>
 					)}
 
+					<FormField
+						control={form.control}
+						name="defaultIngressMode"
+						render={({ field }) => (
+							<FormItem className="col-span-2">
+								<FormLabel>Default Domain Ingress</FormLabel>
+								<FormControl>
+									<Select
+										aria-label="Default domain ingress mode"
+										onValueChange={field.onChange}
+										value={field.value}
+									>
+										<Select.Option value="public">Public</Select.Option>
+										<Select.Option value="tunnel">
+											Cloudflare Tunnel
+										</Select.Option>
+									</Select>
+								</FormControl>
+								<FormDescription>
+									New domains use this mode unless a service chooses another
+									ingress mode.
+								</FormDescription>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
 					<div className="flex w-full justify-end col-span-2">
-						<Button loading={isPending} type="submit">
+						<Button
+							loading={isPending || isUpdatingDefaultIngressMode}
+							type="submit"
+						>
 							Save
 						</Button>
 					</div>

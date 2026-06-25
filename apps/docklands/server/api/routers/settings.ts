@@ -374,6 +374,21 @@ export const settingsRouter = createTRPCRouter({
 			return true;
 		}),
 
+	updateDefaultIngressMode: adminProcedure
+		.input(z.object({ defaultIngressMode: z.enum(["public", "tunnel"]) }))
+		.mutation(async ({ input, ctx }) => {
+			await updateWebServerSettings({
+				defaultIngressMode: input.defaultIngressMode,
+			});
+
+			await audit(ctx, {
+				action: "update",
+				resourceType: "settings",
+				resourceName: "default-ingress-mode",
+			});
+			return true;
+		}),
+
 	updateBuildsConcurrency: adminProcedure
 		.input(apiUpdateWebServerBuildsConcurrency)
 		.mutation(async ({ input, ctx }) => {
