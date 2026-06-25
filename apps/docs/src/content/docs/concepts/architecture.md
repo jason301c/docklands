@@ -30,7 +30,7 @@ the server. See [Operations](/install/operations/) for running migrations
 manually.
 
 Authentication is handled by [Better Auth](https://better-auth.com) with the
-organization, admin, two-factor, and API-key plugins. See
+organization, admin, passkey, and API-key plugins. See
 [Access control](/access/organizations/).
 
 ## Deployments and the queue
@@ -85,7 +85,6 @@ Runtime state lives under a base path: **`/etc/docklands` in production**, and
 | `logs/` | Deployment and runtime logs |
 | `monitoring/` | Metrics state |
 | `registry/` | Local image-registry data |
-| `schedules/` | Scheduled-task state |
 | `volume-backups/`, `volume-backup-lock/` | Volume backup working state |
 | `patch-repos/` | Patch/repository working state |
 

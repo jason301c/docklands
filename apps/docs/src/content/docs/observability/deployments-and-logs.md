@@ -11,12 +11,11 @@ live, how the worker queue runs them, and how to read the logs they produce.
 ## Where deployments come from
 
 A deployment is created whenever a service is deployed, redeployed, restarted,
-or rebuilt — from the workspace canvas, a Git webhook, a schedule, a backup, or
-a preview environment. Each record is tied to exactly one source: an
-application, a compose stack, a preview deployment, a schedule, a backup, or a
-volume backup. The build log is written to a file on the machine that runs the
-build, and the deployment row stores that `logPath` plus the process id (`pid`)
-while it is running.
+or rebuilt — from the workspace canvas, a Git webhook, a backup run, or a preview
+environment. Each record is tied to exactly one source: an application, a compose
+stack, a preview deployment, a backup, or a volume backup. The build log is
+written to a file on the machine that runs the build, and the deployment row
+stores that `logPath` plus the process id (`pid`) while it is running.
 
 A deployment moves through four states:
 
@@ -50,9 +49,8 @@ worker's page.
 
 :::note
 The central history shows only **application and compose** deployments. Records
-tied to schedules, backups, volume backups, or standalone runtime-worker jobs
-exist in the database and appear in their own contexts, but they are not listed
-in the `/dashboard/deployments` History table.
+tied to backups or volume backups exist in the database and appear in their own
+contexts, but they are not listed in the `/dashboard/deployments` History table.
 :::
 
 ## The worker queue

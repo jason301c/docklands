@@ -8,9 +8,10 @@ application, so reviewers can click a link and try the change before it merges.
 When a PR is opened against a connected Git provider, Docklands builds the PR's
 branch as a separate, short-lived application instance with its own URL.
 
-Previews require a **connected Git provider** source (GitHub, GitLab, Bitbucket,
-or Gitea), because they are driven by pull-request webhooks. They are not available
-for the public Git, Container Image, or Drop sources.
+Previews currently require a **GitHub App** source. They are driven by GitHub pull
+request webhooks and status/comment APIs. GitLab, Gitea, and Bitbucket sources do
+not support preview deployments in v0.1.0; they can still deploy through their
+normal branch source and per-service refresh-token webhook URL.
 
 ## Enabling and configuring
 

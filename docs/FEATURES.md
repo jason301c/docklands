@@ -3,7 +3,7 @@
 Docklands is a self-hosted deployment control plane (a Dokploy fork) that you run
 on your own VM. It deploys applications from Git, Docker images, and Docker
 Compose; provisions and manages six database engines; routes traffic through
-Traefik with automatic HTTPS; runs scheduled backups and automations; manages
+Traefik with automatic HTTPS; runs scheduled backups; manages
 local and remote runtime workers; and exposes deployments, logs, metrics, and
 terminals in real time.
 
@@ -36,17 +36,16 @@ current code, not a roadmap. Paths are relative to `apps/docklands/` unless note
 - [14. Runtime workers & the Swarm cluster](#14-runtime-workers--the-swarm-cluster)
 - [15. Container runtime & Docker control](#15-container-runtime--docker-control)
 - [16. Live logs, terminals & metrics](#16-live-logs-terminals--metrics)
-- [17. Scheduled tasks / automations](#17-scheduled-tasks--automations)
-- [18. Notifications](#18-notifications)
-- [19. Mounts & volumes](#19-mounts--volumes)
-- [20. Image registries](#20-image-registries)
-- [21. SSH keys](#21-ssh-keys)
-- [22. Tags](#22-tags)
-- [23. Audit log](#23-audit-log)
-- [24. Patches (file overrides)](#24-patches-file-overrides)
-- [25. Settings surfaces](#25-settings-surfaces)
-- [26. OpenAPI / REST API](#26-openapi--rest-api)
-- [27. Ops & admin CLI entrypoints](#27-ops--admin-cli-entrypoints)
+- [17. Notifications](#17-notifications)
+- [18. Mounts & volumes](#18-mounts--volumes)
+- [19. Image registries](#19-image-registries)
+- [20. SSH keys](#20-ssh-keys)
+- [21. Tags](#21-tags)
+- [22. Audit log](#22-audit-log)
+- [23. Patches (file overrides)](#23-patches-file-overrides)
+- [24. Settings surfaces](#24-settings-surfaces)
+- [25. OpenAPI / REST API](#25-openapi--rest-api)
+- [26. Ops & admin CLI entrypoints](#26-ops--admin-cli-entrypoints)
 - [Appendix A — tRPC router map](#appendix-a--trpc-router-map)
 - [Appendix B — Security boundaries & encryption](#appendix-b--security-boundaries--encryption)
 
@@ -59,13 +58,13 @@ Docklands is a **single Node 24 process** that serves both the UI and the backen
 
 | Concern | Implementation |
 | --- | --- |
-| **HTTP + UI** | Custom Next.js 16 server (App Router, Turbopack) in `server/server.ts`, which also attaches the WebSocket servers and, in production, runs the startup sequence (directories, Traefik config, Swarm overlay network, cron/schedules, deployment worker). |
-| **API contract** | tRPC 11 (`server/api/`), 39 routers aggregated in `server/api/root.ts`, superjson + React Query on the client. A machine-readable OpenAPI surface is generated from the same routers. |
+| **HTTP + UI** | Custom Next.js 16 server (App Router, Turbopack) in `server/server.ts`, which also attaches the WebSocket servers and, in production, runs the startup sequence (directories, Traefik config, Swarm overlay network, backup schedules, deployment worker). |
+| **API contract** | tRPC 11 (`server/api/`), 40 routers aggregated in `server/api/root.ts`, superjson + React Query on the client. A machine-readable OpenAPI surface is generated from the same routers. |
 | **Persistence** | Drizzle ORM over `postgres.js`. Schema in `server/core/db/schema/`, migrations in `drizzle/`. Sensitive columns are encrypted at rest. |
 | **Orchestration** | Docker Swarm services on a `docklands-network` overlay. Local Docker is reached via `dockerode`; remote runtime workers over SSH (`ssh2`). |
 | **Ingress** | Traefik, configured by **generating YAML files on disk** (no Traefik API calls). |
 | **Deploy queue** | In-memory, per-runtime-worker FIFO with per-service serialization, kept as a process-global singleton. **No Redis / BullMQ.** |
-| **Identity & RBAC** | Better Auth (organization, admin, two-factor, api-key plugins) plus a custom three-layer authorization model. |
+| **Identity & RBAC** | Better Auth (organization, admin, passkey, api-key plugins) plus a custom three-layer authorization model. |
 | **Managed databases** | One unified `database` table discriminated by an `engine` column, driven by a single **engine registry** (`server/core/databases/registry.ts`). |
 
 The product is **workspace-first**: `/dashboard/workspace` is the primary surface —
@@ -135,20 +134,20 @@ and a `withPermission(resource, action)` factory).
   `checkEnvironmentAccess`, `syncMemberResourceAccess`, …) combine the role check
   with membership in the granted set. Edited via `user.assignPermissions`.
 
-### Two-factor auth, API keys, password reset
-- **What.** TOTP 2FA with backup codes; personal API keys (optionally
-  rate-limited) for programmatic/REST access; email-based password reset; email
-  verification.
-- **How.** Better Auth `twoFactor()` and `apiKey()` plugins
+### Passkeys, API keys, password reset
+- **What.** WebAuthn passkeys for passwordless sign-in; personal API keys
+  (optionally rate-limited) for programmatic/REST access; email-based password
+  reset; email verification.
+- **How.** Better Auth `passkey()` and `apiKey()` plugins
   (`server/core/lib/auth.ts`); reset/verification emails rendered via React Email
   (`server/core/verification/`, `server/core/emails/`). API-key requests are
   authenticated by `validateRequestHeaders` (reads `x-api-key`, reconstructs the
-  member/session). Recovery is also possible from the CLI (see
-  [§27](#27-ops--admin-cli-entrypoints)).
+  member/session). Password recovery is also possible from the CLI (see
+  [§26](#26-ops--admin-cli-entrypoints)).
 
 ### Audit trail
 - Logins, logouts, and meaningful mutations are recorded to the `audit_log` table
-  (see [§23](#23-audit-log)). Audit writes are best-effort and never block the
+  (see [§22](#22-audit-log)). Audit writes are best-effort and never block the
   underlying operation.
 
 ---
@@ -257,7 +256,7 @@ Schema: `server/core/db/schema/application.ts`.
   `cpuReservation`/`cpuLimit`, `command`/`args` overrides.
 - **Swarm tuning** (JSON): health check, restart policy, placement, update/rollback
   config, mode, labels, network, ulimits, stop grace period.
-- **Ports & mounts**: managed as related records (see [§13](#13-ingress-domains-tls-redirects-ports--basic-auth) and [§19](#19-mounts--volumes)).
+- **Ports & mounts**: managed as related records (see [§13](#13-ingress-domains-tls-redirects-ports--basic-auth) and [§18](#18-mounts--volumes)).
 - **Registries**: separate `registryId`, `buildRegistryId`, `rollbackRegistryId`.
 - **Auto-deploy**: `autoDeploy`, `triggerType` (`push`/`tag`), `refreshToken`
   (per-app webhook secret), `watchPaths` (glob filter).
@@ -582,21 +581,7 @@ base64-passed to avoid shell expansion.
 
 ---
 
-## 17. Scheduled tasks / automations
-
-- **What.** Cron-scheduled tasks of four kinds (`scheduleType`):
-  **`application`** / **`compose`** (run a command inside the service's container),
-  **`runtimeWorker`** (run a script on a worker over SSH), and
-  **`docklands-server`** (run a script on the control-plane host). Each has a
-  timezone, an `enabled` flag, a shell choice (`bash`/`sh`), and can be triggered
-  manually. Surfaced at `/dashboard/automations`.
-- **How.** Router `schedule.ts`, runner `server/core/utils/schedules/`, schema
-  `schedule.ts`. Jobs register with `node-schedule` at startup and on enable/disable;
-  runs are logged as deployments for visibility.
-
----
-
-## 18. Notifications
+## 17. Notifications
 
 - **What.** Send event notifications to **12 provider types**:
   `slack · telegram · discord · email (SMTP) · resend · gotify · ntfy · mattermost ·
@@ -612,7 +597,7 @@ base64-passed to avoid shell expansion.
 
 ---
 
-## 19. Mounts & volumes
+## 18. Mounts & volumes
 
 - **What.** Three mount kinds (`mountType`): **volume** (Docker named volume),
   **bind** (host path), and **file** (inline content written to a file and mounted).
@@ -623,7 +608,7 @@ base64-passed to avoid shell expansion.
 
 ---
 
-## 20. Image registries
+## 19. Image registries
 
 - **What.** Store private registry credentials (Docker Hub or any registry URL) for
   pulling base/app images and pushing build output, with a **test-login** check.
@@ -634,7 +619,7 @@ base64-passed to avoid shell expansion.
 
 ---
 
-## 21. SSH keys
+## 20. SSH keys
 
 - **What.** Generate or import SSH keypairs used for generic-Git clone auth and for
   remote worker connections. Tracks `lastUsedAt`.
@@ -645,7 +630,7 @@ base64-passed to avoid shell expansion.
 
 ---
 
-## 22. Tags
+## 21. Tags
 
 - **What.** Org-scoped labels (name + color) assigned to workspaces for
   organization/filtering, including bulk assignment.
@@ -654,21 +639,22 @@ base64-passed to avoid shell expansion.
 
 ---
 
-## 23. Audit log
+## 22. Audit log
 
-- **What.** An immutable trail of who did what: actions
+- **What.** Intended per-organization trail of who did what: actions
   (`create/update/delete/deploy/cancel/redeploy/login/logout/restore/run/start/stop/
-  reload/rebuild/move`) across ~30 resource types, with actor email/role, resource
-  id/name, JSON metadata, and timestamp. Filterable by user, email, resource name,
-  action, type, and date range.
+  reload/rebuild/move`) across resource types, with actor and resource metadata.
+  In the current build this is **not reliable as a shipped audit trail**: schema,
+  helper calls, and router shape exist, but persistence and UI readback are not
+  complete.
 - **How.** Router `audit-log.ts`, service `server/core/services/audit-log.ts`,
-  schema `audit-log.ts`. Routers call an `audit(...)` helper inline after meaningful
-  mutations; audit writes never break the operation. A filterable, paginated
-  **viewer** (owner/admin) reads `auditLog.all` at `/dashboard/settings/audit-log`.
+  schema `audit-log.ts`. Routers call an `audit(...)` helper inline after
+  meaningful mutations; audit writes are best-effort and never break the
+  operation.
 
 ---
 
-## 24. Patches (file overrides)
+## 23. Patches (file overrides)
 
 - **What.** Override files in an application/compose checkout at deploy time
   (create/update/delete a file), toggled per patch — useful for injecting config or
@@ -679,7 +665,7 @@ base64-passed to avoid shell expansion.
 
 ---
 
-## 25. Settings surfaces
+## 24. Settings surfaces
 
 Under `/dashboard/settings/`, product-named modules configure the instance:
 
@@ -693,10 +679,10 @@ cleanup, log rotation, build concurrency, monitoring `metricsConfig`) is a
 
 ---
 
-## 26. OpenAPI / REST API
+## 25. OpenAPI / REST API
 
 - **What.** A REST surface mirroring the tRPC routers, authenticated by **API key**
-  (`Authorization: Bearer <key>`). A machine-readable `openapi.json` is generated
+  (`x-api-key: <key>`). A machine-readable `openapi.json` is generated
   from the routers (no Swagger UI is shipped).
 - **Surface parity.** **Every** tRPC procedure is auto-exposed as a REST endpoint
   unless it explicitly opts out (`meta.openapi.enabled: false`), so the API and the
@@ -707,12 +693,12 @@ cleanup, log rotation, build concurrency, monitoring `metricsConfig`) is a
   same reach as the UI.
 - **How.** Generation in `server/core/openapi/` and `tools/generate-openapi.ts`
   (`bun run generate:openapi`); the request handler is `app/api/[...openapi]/` which
-  validates auth headers first. A tRPC call like `schedule.create` maps to
-  `POST /api/schedule/create`.
+  validates auth headers first. A tRPC call maps to a matching `/api/<router>/<procedure>`
+  endpoint unless that procedure opts out of OpenAPI generation.
 
 ---
 
-## 27. Ops & admin CLI entrypoints
+## 26. Ops & admin CLI entrypoints
 
 Bundled to `dist/*.mjs` (esbuild, Node target) from `server/ops/`:
 
@@ -721,9 +707,8 @@ Bundled to `dist/*.mjs` (esbuild, Node target) from `server/ops/`:
 - `setup` + `wait-for-postgres` — first-boot bootstrap (`bun run setup`): waits for
   Postgres, ensures the auth secret and encryption key, initializes the instance.
 - `reset-password` — generate a new owner password (printed once, for recovery).
-- `reset-2fa` — disable 2FA for the owner (lock-out recovery).
-- `ensure/migrate auth-secret` — provision or rotate the Better Auth secret
-  (re-encrypting 2FA material as needed).
+- `restore-instance` — offline whole-instance restore from a Docklands backup.
+- `ensure/migrate auth-secret` — provision or rotate the Better Auth secret.
 
 These never log secrets except where the command exists specifically to reveal one
 (e.g. `reset-password`).
@@ -732,13 +717,13 @@ These never log secrets except where the command exists specifically to reveal o
 
 ## Appendix A — tRPC router map
 
-`server/api/root.ts` aggregates 39 routers:
+`server/api/root.ts` aggregates 40 routers:
 
 `application · backup · bitbucket · certificates · cluster · compose · database ·
-deployment · destination · docker · domain · gitea · gitProvider · github · gitlab ·
+cloudflare · deployment · destination · docker · domain · gitea · gitProvider · github · gitlab ·
 mounts · notification · port · previewDeployment · redirects · registry · security ·
 settings · sshKey · swarm · user · organization · customRole · serviceDatabase ·
-auditLog · schedule · rollback · volumeBackups · environment · tag · patch ·
+auditLog · rollback · volumeBackups · environment · tag · tunnel · patch ·
 workspaceGraph · workspaces · runtimeWorker`.
 
 Routers stay thin: validate input (Zod), check permissions, audit, then call a

@@ -20,10 +20,10 @@ export function GetStarted() {
 				>
 					<div className="mx-auto max-w-2xl">
 						<h2 className="font-display font-semibold text-4xl text-white tracking-tight sm:text-5xl">
-							Ship in one command.
+							Build it on your server.
 						</h2>
 						<p className="mt-5 text-pretty text-lg text-white/85 leading-relaxed">
-							Go from a bare server to live apps in minutes.
+							Follow the source install guide while Docklands is pre-release.
 						</p>
 
 						<div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">

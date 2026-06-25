@@ -88,4 +88,4 @@ organization **owner**. From there, set up an
 and your services can be served over HTTPS on real domains.
 
 If you lock yourself out, see [Operations](/install/operations/) for resetting
-the owner password and two-factor.
+the owner password and re-registering passkeys.

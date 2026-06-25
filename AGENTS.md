@@ -216,6 +216,8 @@ bun run restore-instance -- --destination-id <id> --backup-file <key.zip> --conf
 bun run docker:build              # build the app Docker image
 bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in
 bun run docs:dev                  # Astro docs site (apps/docs)
+bun run docs:check-current        # scan public docs/site for known stale claims
+bun run docs:build                # stale-claim scan + Astro docs build
 bun run site:dev                  # Next marketing site (apps/site)
 ```
 

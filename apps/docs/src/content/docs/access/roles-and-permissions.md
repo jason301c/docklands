@@ -23,14 +23,13 @@ in the organization.
 | --- | --- | --- |
 | **owner** | Everything, including deleting the organization. | All resources. |
 | **admin** | Everything except deleting the organization. | All resources. |
-| **member** | Read-only at the org level; full control *within* services they're granted (deployments, env vars, volumes, backups, schedules, domains, logs, monitoring). Cannot manage org-level resources (runtime workers, registries, certificates, destinations, notifications, SSH keys, git providers, members). | Only explicitly granted workspaces / environments / services. |
+| **member** | Read-only at the org level; full control *within* services they're granted (deployments, env vars, volumes, backups, domains, logs, monitoring). Cannot manage org-level resources (runtime workers, registries, certificates, destinations, notifications, SSH keys, git providers, members). | Only explicitly granted workspaces / environments / services. |
 
 The built-in roles cannot be edited or deleted. Their exact matrices live in the
 canonical access-control statements; the **member** baseline grants
 `service:read`, `environment:read`, and a service-level set
-(`deployment`, `envVars`, `volume`, `backup`, `volumeBackup`, `schedule`,
-`domain`, `logs`, `monitoring`, `tag:read`) while leaving org-administration
-actions empty.
+(`deployment`, `envVars`, `volume`, `backup`, `volumeBackup`, `domain`, `logs`,
+`monitoring`, `tag:read`) while leaving org-administration actions empty.
 
 ## The capability matrix
 
@@ -44,8 +43,7 @@ roles are validated against:
   `docker` (read), `logs` (read), `monitoring` (read)
 - **Service config:** `envVars`, `workspaceEnvVars`, `environmentEnvVars`
   (read, write), `volume`, `domain` (read, create, delete),
-  `backup` / `volumeBackup` (read, create, update, delete, restore),
-  `schedule` (read, create, update, delete)
+  `backup` / `volumeBackup` (read, create, update, delete, restore)
 - **Org infrastructure:** `runtimeWorker`, `registry`, `destination`,
   `sshKeys`, `gitProviders` (read, create, delete), `certificate`,
   `notification` (read, create, update, delete), `tag`, `traefikFiles`

@@ -1,6 +1,6 @@
 ---
 title: Backups & Storage
-description: How backup destinations, database backups, volume backups, and scheduled automations fit together in Docklands.
+description: How backup destinations, database backups, volume backups, and schedules fit together in Docklands.
 ---
 
 Docklands backs your data up to **S3-compatible object storage** that you own.
@@ -20,8 +20,8 @@ There are three moving parts:
      volume, for application data and for engines without a logical dump (Redis,
      libSQL).
 3. A **schedule** — when it runs. Every backup carries a cron expression and can
-   also be run on demand. Standalone cron jobs that run arbitrary commands live
-   under [Automations](/backups/schedules/).
+   also be run on demand. General-purpose standalone automations are not shipped
+   in v0.1.0.
 
 ## The backup model at a glance
 
@@ -76,5 +76,5 @@ prefer object-lock / versioning on the bucket if you want a safety net.
   restore, and which engines are supported.
 - [Volume backups](/backups/volume-backups/) — archive Docker volumes, with an
   optional stop-during-backup mode.
-- [Automations](/backups/schedules/) — cron jobs for backups and custom commands,
-  and how they execute.
+- [Backup schedules](/backups/schedules/) — cron scheduling behavior and current
+  standalone-automation limitations.

@@ -19,9 +19,9 @@ across:
   all your workspaces and environments, shown with a live status dot. Selecting
   one opens that service.
 - **Application** — top-level destinations: the workspace overview, the
-  workspaces list, deployments, automations, host metrics, ingress files,
-  container runtime, cluster runtime, and the settings surfaces (ingress,
-  runtime workers, image registry, storage, build workers).
+  workspaces list, deployments, host metrics, ingress files, container runtime,
+  cluster runtime, and the settings surfaces (ingress, runtime workers, image
+  registry, storage, build workers).
 
 The palette only lists workspaces and services you have access to.
 
@@ -36,9 +36,8 @@ groups commands roughly as:
 - **Create** — new application, new database (and each specific engine), new
   Compose stack, create from template, import Compose.
 - **Services** — for each service: open it, deploy, start, stop, edit variables,
-  and jump to its deployment history, domains, previews, automations, or backups.
-  You can also start a **connection** from a service or open its connections
-  here.
+  and jump to its deployment history, domains, previews, or backups. You can also
+  start a **connection** from a service or open its connections here.
 - **Actions** — arrange the workspace (reset card layout), show/hide the topology
   panel, and select a topology stack.
 - **System** — jump to ingress, runtime workers, git providers, image registry,

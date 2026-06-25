@@ -35,9 +35,9 @@ bun run reset-password
 node -r dotenv/config dist/reset-password.mjs
 ```
 
-Docklands does not use TOTP/2FA — second-factor authentication is handled with
-[passkeys](/access/profile-and-security/), not authenticator apps — so there is
-no 2FA-reset entrypoint to recover from a lost device. If you lose your only
+Docklands does not use authenticator-app one-time codes. Passwordless
+authentication is handled with [passkeys](/access/profile-and-security/), so
+there is no separate authenticator reset entrypoint. If you lose your only
 passkey, recover the account with `reset-password` above and re-register a
 passkey after signing in.
 
@@ -50,7 +50,7 @@ recovery, back up three things together:
 1. **The PostgreSQL database** behind `DATABASE_URL` (projects, services,
    settings, credentials).
 2. **The base directory** `/etc/docklands` (Traefik config, TLS certificates,
-   SSH keys, registry data, schedules). See [Architecture](/concepts/architecture/)
+   SSH keys, registry data). See [Architecture](/concepts/architecture/)
    for the layout.
 3. **The encryption key** `DOCKLANDS_ENCRYPTION_KEY` (or whatever
    `DOCKLANDS_ENCRYPTION_KEY_FILE` points at). Secret material in the database is

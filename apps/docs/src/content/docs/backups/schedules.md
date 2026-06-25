@@ -1,87 +1,60 @@
 ---
-title: Automations & scheduled tasks
-description: Cron-style jobs that run commands inside services or scripts on the host and runtime workers.
+title: Backup schedules
+description: How Docklands runs backup cron schedules, and what standalone automations do not ship yet.
 ---
 
-An **automation** (internally, a *schedule*) is a cron job Docklands runs for
-you. The same scheduling engine powers [backups](/backups/overview/), but
-automations are general-purpose: run a command inside a service's container, or
-run a shell script on the Docklands host or a remote runtime worker.
+Docklands v0.1.0 supports **scheduled backups** for database backups and volume
+backups. A backup schedule is a cron expression stored on the backup itself; when
+enabled, Docklands registers the job when the control plane starts and when the
+backup is changed.
 
-Host- and worker-level automations live at **Automations**
-(`/dashboard/automations`). Service-level automations live on the **Schedules**
-section of an individual application or compose service.
+General-purpose standalone automations are **not shipped in v0.1.0**. There is
+no host-level automation dashboard and no service command scheduler in the
+current product. If you need arbitrary recurring commands, run them outside
+Docklands with your host scheduler or CI system.
 
-## Schedule types
+## Where schedules are configured
 
-| Type | Runs | Where it's managed | What it executes |
-| --- | --- | --- | --- |
-| `application` | A command inside a running application container | The application's Schedules section | `docker exec` of your command with `bash`/`sh` |
-| `compose` | A command inside a chosen compose service's container | The compose service's Schedules section | `docker exec` of your command |
-| `runtimeWorker` | A script on a remote runtime worker | Automations (with a worker selected) | A `script.sh` written to the worker |
-| `docklands-server` | A script on the Docklands host | Automations | A `script.sh` written to the host |
+Backup schedules live with the backup they run:
 
-`runtimeWorker` and `docklands-server` automations run **shell scripts on the
-machine itself**, outside any container. Because that is host-level access, only
-**owners and admins** can create, edit, run, or even list them. Application and
-compose automations are gated by the normal per-service `schedule` permission.
+- database backup schedules are configured on the database or compose service
+  backup form;
+- volume backup schedules are configured on the service's **Volume Backups** tab;
+- every backup can also be run manually with **Run now**.
 
-## Create an automation
+Each backup has:
 
-Each automation has:
+- **Cron expression** — when it runs;
+- **Enabled** — whether the schedule is active;
+- **Keep latest** — optional retention after successful runs;
+- **Destination** — the S3-compatible storage target.
 
-- **Name** and optional **description**.
-- **Cron expression** — when it runs. The form offers common presets (every 15
-  minutes, daily, weekly, etc.) plus a custom field.
-- **Timezone** — the cron expression is evaluated in this timezone, defaulting to
-  **UTC**.
-- For `application` / `compose`: a **command** and a **shell** (`bash` or `sh`).
-  Compose schedules also require the **service name** to target.
-- For `runtimeWorker` / `docklands-server`: a **script** (its body is run as
-  `script.sh`).
-- **Enabled** — toggle the schedule on or off without deleting it.
+## How scheduled backups run
 
-## How automations run
+When a schedule fires, Docklands runs the same backup path used by a manual run:
 
-- **Application / compose:** Docklands finds the service's running container and
-  runs `docker exec <container> <shell> -c "<your command>"`, streaming output to
-  a deployment log you can open from the schedule's history.
-- **Host / runtime worker:** Docklands writes your script to a `script.sh` in its
-  schedules directory (on the host, or pushed to the worker over SSH) and executes
-  it. A `PID: …` line is prepended automatically so the run can be tracked.
+1. find the service/database to back up;
+2. run the dump or archive command where the service runs;
+3. stream or upload the result to the configured destination;
+4. apply retention if configured;
+5. record a deployment/log entry for the run.
 
-Every run records a deployment entry with status (done/error) and a captured log.
-Use **run now** to execute an automation immediately, independent of its cron
-schedule.
-
-:::caution
-Automation commands and scripts run **with the privileges of the Docklands
-runtime** — for host and worker automations, that is direct shell access to the
-machine, and application/compose commands run inside your containers. Anyone who
-can create an automation can run arbitrary code there. This is why host- and
-worker-level automations are restricted to owners and admins; keep that
-restriction in mind when granting the `schedule` permission, and treat automation
-bodies as trusted code.
-:::
+Database backups stream logical dumps through `rclone`. Volume backups create a
+temporary tar archive, upload it, and then remove the temporary file.
 
 ## Reliability and restarts
 
-The scheduler runs **in-process** inside Docklands (using `node-schedule`), not as
-a separate daemon. A few consequences worth knowing:
+The scheduler runs **in-process** inside Docklands, not as a separate daemon.
+This has a few operational consequences:
 
-- **Schedules survive restarts.** On startup Docklands reloads every enabled
-  backup and rebuilds its jobs from the database, so a restart does not silently
-  drop them. (Standalone automations are similarly re-registered.)
-- **Missed runs are not made up.** If Docklands is down at the moment a cron fires,
-  that occurrence is skipped — there is no catch-up queue. A backup scheduled for
-  03:00 while the host was offline simply does not run that night.
-- **Jobs run on the single control-plane process.** There is no distributed
-  scheduler or external queue; the job runs wherever Docklands runs (then shells
-  out to the relevant host or worker). For services on runtime workers, the
-  command is dispatched over SSH from the control plane.
+- enabled backup schedules are reloaded on startup;
+- if Docklands is down when a cron expression fires, that run is skipped;
+- there is no catch-up queue for missed runs;
+- scheduled runs happen wherever the Docklands control plane runs, then dispatch
+  to a remote runtime worker over SSH if the service is assigned to one.
 
 :::note
-Because runs are skipped (not deferred) when the host is down, treat the cron
-**frequency** as your real recovery-point granularity, and check a backup's run
-history periodically rather than assuming every scheduled run happened.
+Treat the cron frequency as your real recovery-point granularity, and check a
+backup's run history periodically rather than assuming every scheduled run
+happened.
 :::

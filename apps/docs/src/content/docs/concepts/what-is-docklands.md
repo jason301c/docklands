@@ -37,7 +37,8 @@ underlying server.
   [Backups](/backups/overview/).
 - **Scale across machines** by adding remote runtime workers and Docker Swarm
   nodes. See [Runtime & cluster](/runtime/overview/).
-- **Observe** deployments, logs, metrics, and an audit trail. See
+- **Observe** deployments, logs, requests, and metrics. Audit logging is wired
+  through parts of the app but not yet a reliable persisted trail. See
   [Observability](/observability/deployments-and-logs/).
 
 ## The object model

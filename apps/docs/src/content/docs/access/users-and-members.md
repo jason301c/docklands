@@ -4,9 +4,9 @@ description: Invite people into your organization, assign their role, and remove
 ---
 
 After the first owner bootstraps the install, every other person joins by
-**invitation**. A user is a global account (email + password, optional 2FA); a
-**member** is that user's membership in one organization, carrying their **role**
-in that organization. Manage members from **Settings → Users**
+**invitation**. A user is a global account (email + password, optional
+passkeys); a **member** is that user's membership in one organization, carrying
+their **role** in that organization. Manage members from **Settings → Users**
 (`/dashboard/settings/users`).
 
 To open the Users page you need the `member:read` capability; owner, admin, and
@@ -95,8 +95,8 @@ Choose **Delete User** from the member's actions menu. Removal requires you to b
 :::caution
 On this self-hosted build, "Delete User" deletes the **entire user account**, not
 just their membership in the current organization. Because the user row cascades,
-this also removes their sessions, API keys, 2FA, account credentials, and any
-memberships they held in *other* organizations on this install. There is no
+this also removes their sessions, API keys, passkeys, account credentials, and
+any memberships they held in *other* organizations on this install. There is no
 "remove from this organization only" option. Use it deliberately.
 :::
 

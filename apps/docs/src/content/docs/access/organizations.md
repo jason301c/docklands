@@ -1,90 +1,78 @@
 ---
-title: Organizations
-description: How organizations work in Docklands, who owns them, and how to create and switch between them.
+title: Instance organization
+description: How Docklands' single organization works, who owns it, and how members are scoped.
 ---
 
-An **organization** is the top-level tenant in Docklands. Every member, role,
-workspace, runtime worker, registry, certificate, SSH key, notification, and
-audit-log entry belongs to exactly one organization. When you sign in you have an
-**active organization**, and everything you see and do in the dashboard is scoped
-to it.
+Docklands is single-tenant software you install on your own VM. Each install has
+exactly one **instance organization**. Every member, role, workspace, runtime
+worker, registry, certificate, SSH key, notification, and audit-log entry belongs
+to that organization.
 
-Docklands is single-tenant software you install on your own VM, so in practice
-most installs use a single organization. The organization model still exists
-(it is built on the Better Auth organization plugin) and you can create more than
-one, but Docklands does not isolate organizations from each other the way a hosted
-multi-tenant platform would: the person who operates the server is also the owner
-of the organization, and host-level actions (Docker cleanup, ingress config,
-server IP) are gated by the same owner/admin role rather than a separate
-"instance operator" identity.
+The organization model exists because Docklands uses Better Auth's organization
+plugin internally, but this is **not** hosted multi-tenancy:
+
+- users cannot create additional organizations;
+- users cannot switch between organizations;
+- organization create/update/delete API paths are disabled;
+- host-level actions still affect the one VM or cluster that Docklands controls.
+
+Think of the organization as the access-control boundary for the instance, not as
+a separate customer tenant.
 
 ## The owner
 
 Docklands signup is a **single-owner bootstrap**. The very first person to
 register on a fresh install becomes the **owner**:
 
-- Their account is created, the server records its public IP, and a default
-  organization named "My Organization" is created with them as `ownerId`.
-- They are inserted as a `member` with the `owner` role, and that membership is
-  marked as their default.
+- their account is created;
+- the server records its public IP;
+- the instance organization is created;
+- they are inserted as a `member` with the `owner` role.
 
 After the first owner exists, open registration is closed. Every subsequent user
-must be invited (see [Users & members](/access/users-and-members/)); attempting to
-self-register a second account is rejected with "Admin is already created".
+must be invited. See [Users & members](/access/users-and-members/).
 
 The owner role is special:
 
-- It has **full access** to everything, including deleting the organization.
-- It is **non-delegable and non-transferable**. You cannot invite someone as
-  owner, you cannot change another member to or from owner, and you cannot change
-  your own role.
-- The owner cannot be deleted through the normal user-removal flow.
+- it has full access to everything on the instance;
+- it is non-delegable and non-transferable;
+- you cannot invite someone as owner;
+- you cannot change another member to or from owner;
+- the owner cannot be deleted through the normal user-removal flow.
 
 :::note
-"Owner" here means owner of an organization. Because Docklands is single-tenant,
-the organization owner is effectively the instance super-admin. Admins have the
-same powers as the owner *except* deleting the organization.
+Because Docklands is single-tenant, the organization owner is effectively the
+instance super-admin. Admins have nearly the same operational powers, but the
+owner role remains sealed.
 :::
 
-## Creating an organization
+## Members and roles
 
-Only an **owner or admin** can create a new organization. From the dashboard,
-creating one:
+Every non-owner user is a member of the instance organization. Members receive
+one role:
 
-- inserts a new `organization` row with you as `ownerId`,
-- adds you as a member of that organization with the `owner` role.
+- **admin** — can manage users, roles, and host/infrastructure settings.
+- **member** — read-only by default and sees only explicitly granted resources.
+- **custom role** — a named role with selected capabilities.
 
-So you are always the owner of any organization you create, regardless of your
-role in your current active organization.
+Resource access is separate from role capability. A member may have a role that
+allows a service action, but they still need access to the relevant workspace,
+environment, service, git provider, or runtime worker before it appears in the
+dashboard.
 
-:::caution
-Creating extra organizations does not give you tenant isolation. Shared host
-resources (the Docker daemon, ingress runtime, server IP) are global to the
-machine and governed by whichever organization's owner/admin is acting. Treat
-multiple organizations as a way to group projects and members, not as a security
-boundary between untrusted parties.
-:::
+## Naming the organization
 
-## Switching the active organization
+The instance organization supplies the name/logo shown around the dashboard and
+used by membership checks. Treat that metadata as instance identity. It is not a
+way to create isolated tenants or split the Docker host into security domains.
 
-Your **active organization** determines which members, workspaces, and resources
-you see. Each membership can be marked as your **default**: when you create a
-session (sign in), Docklands selects your default membership, falling back to your
-most recently created membership if none is marked default.
+## What this means operationally
 
-You can mark a different organization as your default from the dashboard. This
-unsets the default flag on all your other memberships and sets it on the chosen
-one, so your next session lands there.
-
-## Renaming and deleting
-
-- **Rename** (update name/logo): only the owner of that organization can do it.
-- **Delete**: only the owner can delete it, and Docklands refuses to delete your
-  **last** organization where you are the owner — you must always own at least
-  one. Deleting an organization cascades: members, invitations, roles, runtime
-  workers, workspaces, and per-member resource grants tied to it are removed.
-
-:::caution
-Deletion is permanent and cascades to everything scoped to the organization.
-There is no soft-delete or undo.
-:::
+- Run one Docklands instance per trust boundary.
+- Do not put mutually untrusted teams in the same install and expect
+  organization separation to isolate them.
+- Owners and admins can affect host-level resources such as Docker cleanup,
+  ingress files, runtime workers, storage destinations, registries, and
+  certificates.
+- To separate teams with different infrastructure trust boundaries, use separate
+  VMs and separate Docklands installs.
