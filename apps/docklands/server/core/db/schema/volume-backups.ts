@@ -18,6 +18,24 @@ import { destinations } from "./destination";
 import { serviceType } from "./mount";
 import { generateAppName } from "./utils";
 
+const s3TarObjectKeyField = z
+	.string()
+	.min(1)
+	.refine(
+		(value) =>
+			value
+				.split("/")
+				.every(
+					(segment) =>
+						segment.length > 0 &&
+						segment !== "." &&
+						segment !== ".." &&
+						/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(segment),
+				),
+		"Only safe S3 object key segments are allowed",
+	)
+	.refine((value) => value.endsWith(".tar"), "Backup file must be a .tar");
+
 export const volumeBackups = pgTable("volume_backup", {
 	volumeBackupId: text("volumeBackupId")
 		.notNull()
@@ -99,4 +117,13 @@ export const updateVolumeBackupSchema = createVolumeBackupSchema.extend({
 
 export const apiFindOneVolumeBackup = z.object({
 	volumeBackupId: z.string().min(1),
+});
+
+export const restoreVolumeBackupSchema = z.object({
+	backupFileName: s3TarObjectKeyField,
+	destinationId: z.string().min(1),
+	volumeName: dockerNameField,
+	id: z.string().min(1),
+	serviceType: z.enum(["application", "compose"]),
+	runtimeWorkerId: z.string().optional(),
 });

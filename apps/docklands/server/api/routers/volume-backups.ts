@@ -6,6 +6,7 @@ import { audit } from "@/server/api/utils/audit";
 import { db } from "@/server/core/db";
 import {
 	createVolumeBackupSchema,
+	restoreVolumeBackupSchema,
 	updateVolumeBackupSchema,
 	volumeBackups,
 } from "@/server/core/db/schema";
@@ -211,17 +212,11 @@ export const volumeBackupsRouter = createTRPCRouter({
 				override: true,
 			},
 		})
-		.input(
-			z.object({
-				backupFileName: z.string().min(1),
-				destinationId: z.string().min(1),
-				volumeName: z.string().min(1),
-				id: z.string().min(1),
-				serviceType: z.enum(["application", "compose"]),
-				runtimeWorkerId: z.string().optional(),
-			}),
-		)
+		.input(restoreVolumeBackupSchema)
 		.subscription(async ({ input, ctx }) => {
+			await checkServicePermissionAndAccess(ctx, input.id, {
+				volumeBackup: ["restore"],
+			});
 			const destination = await findDestinationById(input.destinationId);
 			if (destination.organizationId !== ctx.session.activeOrganizationId) {
 				throw new TRPCError({
