@@ -215,6 +215,7 @@ bun run migration:run             # apply migrations
 bun run setup                     # full local bootstrap (Swarm/Traefik/Postgres/migrations)
 bun run restore-instance -- --destination-id <id> --backup-file <key.zip> --confirm RESTORE_DOCKLANDS_INSTANCE
 bun run docker:build              # build the app Docker image
+bun run docker:push               # guarded multi-arch production image push
 bun run docker:smoke <image>      # first-run smoke against disposable Postgres + Docker-in-Docker
 bun run docker:smoke:operator <image> # image smoke plus first-owner bootstrap checks
 bun run docker:smoke:deploy <image> # image smoke plus first-owner, settings, and first deploy checks

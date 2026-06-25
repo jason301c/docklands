@@ -6,8 +6,8 @@ usage() {
 Usage: tools/release/preflight.sh [options] [git-ref]
 
 Runs the local v0.1.0 release preflight before pushing and dispatching remote
-smoke workflows. By default this covers the non-mutating local gates and a dry
-run of the smoke dispatcher.
+smoke workflows. By default this covers the non-mutating local gates,
+production image build/push dry-runs, and a dry run of the smoke dispatcher.
 
 Options:
   --allow-dirty          Permit tracked local changes while running preflight.
@@ -89,9 +89,19 @@ run bash -n \
 	tools/release/preflight.sh \
 	tools/release/dispatch-smoke-workflows.sh \
 	tools/release/host-operator-smoke.sh \
+	tools/docker/build.sh \
+	tools/docker/push.sh \
 	tools/docker/smoke-image.sh \
 	tools/docker/smoke-operator.sh \
 	tools/docker/smoke-deploy.sh
+
+docker_push_dry_run_args=(--dry-run production)
+if [ -n "$allow_dirty" ]; then
+	docker_push_dry_run_args=(--allow-dirty "${docker_push_dry_run_args[@]}")
+fi
+
+run tools/docker/build.sh --dry-run production
+run tools/docker/push.sh "${docker_push_dry_run_args[@]}"
 
 run bun install --frozen-lockfile --offline
 run bun run format-and-lint

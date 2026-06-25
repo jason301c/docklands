@@ -109,6 +109,30 @@ describe("production Dockerfile release install", () => {
 		expect(smokeScript).toContain("docklands-network");
 	});
 
+	it("keeps Docker build and publish scripts release-tag safe", () => {
+		const buildScript = repoFile("tools/docker/build.sh");
+		const pushScript = repoFile("tools/docker/push.sh");
+
+		expect(buildScript).toContain("validate_release_version");
+		expect(pushScript).toContain("validate_release_version");
+		expect(buildScript).toContain("^[0-9]+\\.[0-9]+\\.[0-9]+$");
+		expect(pushScript).toContain("^[0-9]+\\.[0-9]+\\.[0-9]+$");
+		expect(buildScript).not.toContain('TAG="${VERSION#v}"');
+		expect(pushScript).not.toContain('TAG="${VERSION#v}"');
+		expect(pushScript).toContain("DOCKLANDS_DOCKER_ALLOW_DIRTY");
+		expect(pushScript).toContain("Tracked files are dirty");
+		expect(pushScript).toContain("git diff --quiet");
+		expect(buildScript).toContain("DOCKLANDS_DOCKER_DRY_RUN");
+		expect(pushScript).toContain("DOCKLANDS_DOCKER_DRY_RUN");
+		expect(buildScript).toContain("trap cleanup EXIT");
+		expect(pushScript).toContain("trap cleanup EXIT");
+		expect(buildScript).toContain('docker buildx rm "$BUILDER"');
+		expect(pushScript).toContain('docker buildx rm "$BUILDER"');
+		expect(pushScript).toContain('-t "${IMAGE_NAME}:latest"');
+		expect(pushScript).toContain('-t "${IMAGE_NAME}:${TAG}"');
+		expect(pushScript).toContain("--push");
+	});
+
 	it("keeps the manual real-deploy smoke self-cleaning", () => {
 		const workflow = repoFile(".github/workflows/release-smoke.yml");
 		const realDeployTest = appFile("__test__/deploy/application.real.test.ts");
@@ -168,6 +192,11 @@ describe("production Dockerfile release install", () => {
 		expect(preflightScript).toContain("bun run site:lint");
 		expect(preflightScript).toContain("bun run site:typecheck");
 		expect(preflightScript).toContain("bun run site:build");
+		expect(preflightScript).toContain(
+			"tools/docker/build.sh --dry-run production",
+		);
+		expect(preflightScript).toContain("tools/docker/push.sh");
+		expect(preflightScript).toContain("--dry-run production");
 		expect(preflightScript).toContain("DOCKLANDS_RELEASE_SMOKE_DRY_RUN=1");
 		expect(preflightScript).toContain("DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY");
 		expect(preflightScript).toContain("dispatch-smoke-workflows.sh");
