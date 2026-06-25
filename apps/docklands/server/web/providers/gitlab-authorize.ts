@@ -1,6 +1,9 @@
+import { TRPCError } from "@trpc/server";
 import { createLogger } from "@/server/core/lib/logger";
+import { assertGitProviderAccess } from "@/server/core/services/git-provider";
 import { findGitlabById } from "@/server/core/services/gitlab";
 import { getQueryParam, jsonResponse } from "@/server/web/request";
+import { getProviderOAuthSession } from "./oauth-session";
 import { buildOAuthState, redirectWithCookies } from "./oauth-state";
 
 const logger = createLogger("gitlab-authorize");
@@ -20,12 +23,30 @@ export async function handleGitlabAuthorize(request: Request) {
 			return jsonResponse({ error: "Invalid GitLab provider ID" }, 400);
 		}
 
+		const session = await getProviderOAuthSession(request);
+		if (!session) {
+			return jsonResponse({ error: "Authentication required" }, 401);
+		}
+
 		const gitlab = await findGitlabById(gitlabId);
+		try {
+			await assertGitProviderAccess(session, gitlab.gitProviderId);
+		} catch (error) {
+			if (error instanceof TRPCError && error.code === "UNAUTHORIZED") {
+				return jsonResponse({ error: "Forbidden" }, 403);
+			}
+			throw error;
+		}
+
 		if (!gitlab?.applicationId || !gitlab.redirectUri || !gitlab.gitlabUrl) {
 			return jsonResponse({ error: "Incomplete OAuth configuration" }, 400);
 		}
 
-		const { state, cookie } = buildOAuthState("gitlab", gitlabId);
+		const { state, cookie } = buildOAuthState("gitlab", {
+			providerId: gitlabId,
+			userId: session.userId,
+			organizationId: session.activeOrganizationId,
+		});
 		// Must match the redirect_uri used in the callback's token exchange.
 		const redirectUri = `${gitlab.redirectUri}?gitlabId=${gitlabId}`;
 

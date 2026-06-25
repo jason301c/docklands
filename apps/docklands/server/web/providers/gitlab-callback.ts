@@ -1,10 +1,16 @@
+import { TRPCError } from "@trpc/server";
 import { createLogger } from "@/server/core/lib/logger";
+import { assertGitProviderAccess } from "@/server/core/services/git-provider";
 import { findGitlabById, updateGitlab } from "@/server/core/services/gitlab";
 import {
 	getQueryParam,
 	jsonResponse,
 	redirectResponse,
 } from "@/server/web/request";
+import {
+	getProviderOAuthSession,
+	oauthStateMatchesSession,
+} from "./oauth-session";
 import { verifyOAuthState } from "./oauth-state";
 
 const logger = createLogger("gitlab-callback");
@@ -24,9 +30,10 @@ export async function handleGitlabCallback(request: Request) {
 	}
 
 	// CSRF: the `state` nonce must match the cookie set at authorize time and
-	// encode this same provider id. Rejects login-CSRF / account-stitching.
-	const verifiedId = verifyOAuthState(request, "gitlab", state);
-	if (!verifiedId || verifiedId !== gitlabId) {
+	// encode this same provider/user/org context. Rejects login-CSRF and
+	// account-stitching across users or organizations.
+	const verifiedState = verifyOAuthState(request, "gitlab", state);
+	if (!verifiedState || verifiedState.providerId !== gitlabId) {
 		logger.warn(
 			{ provider: "gitlab", gitlabId },
 			"GitLab OAuth callback failed state verification",
@@ -34,7 +41,29 @@ export async function handleGitlabCallback(request: Request) {
 		return jsonResponse({ error: "Invalid or expired OAuth state" }, 400);
 	}
 
+	const session = await getProviderOAuthSession(request);
+	if (!session) {
+		return jsonResponse({ error: "Authentication required" }, 401);
+	}
+
+	if (!oauthStateMatchesSession(verifiedState, session)) {
+		logger.warn(
+			{ provider: "gitlab", gitlabId },
+			"GitLab OAuth callback state did not match authenticated session",
+		);
+		return jsonResponse({ error: "Invalid or expired OAuth state" }, 400);
+	}
+
 	const gitlab = await findGitlabById(gitlabId);
+	try {
+		await assertGitProviderAccess(session, gitlab.gitProviderId);
+	} catch (error) {
+		if (error instanceof TRPCError && error.code === "UNAUTHORIZED") {
+			return jsonResponse({ error: "Forbidden" }, 403);
+		}
+		throw error;
+	}
+
 	// Use internal URL for token exchange when GitLab is on same instance as Docklands
 	const baseUrl = gitlab.gitlabInternalUrl || gitlab.gitlabUrl;
 	const gitlabUrl = new URL(baseUrl);

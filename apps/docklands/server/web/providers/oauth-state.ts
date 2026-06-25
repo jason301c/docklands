@@ -1,19 +1,62 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
 
 // Per-flow CSRF protection for the provider OAuth handshakes (gitlab/gitea).
-// At authorize time we mint a random nonce, embed it in the OAuth `state`, and
-// store it in an httpOnly cookie. The callback only proceeds if the `state`
-// nonce matches the cookie — proving the same browser that started the flow is
-// completing it, which defeats login-CSRF / account-stitching attacks.
+// At authorize time we mint a random nonce, embed the expected provider/user/org
+// context in the OAuth `state`, and store the nonce in an httpOnly cookie. The
+// callback only proceeds if the state nonce matches the cookie and the encoded
+// user/org match the authenticated session finishing the flow.
 
 const COOKIE_PREFIX = "docklands_oauth_state_";
 const MAX_AGE_SECONDS = 600;
 
 const cookieName = (kind: string) => `${COOKIE_PREFIX}${kind}`;
 
-export const buildOAuthState = (kind: string, providerId: string) => {
+export type OAuthStateContext = {
+	providerId: string;
+	userId: string;
+	organizationId: string;
+};
+
+type OAuthStatePayload = OAuthStateContext & {
+	kind: string;
+	nonce: string;
+};
+
+const isNonEmptyString = (value: unknown): value is string =>
+	typeof value === "string" && value.length > 0;
+
+const encodeStatePayload = (payload: OAuthStatePayload) =>
+	Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+
+const decodeStatePayload = (state: string): OAuthStatePayload | null => {
+	try {
+		const payload = JSON.parse(
+			Buffer.from(state, "base64url").toString("utf8"),
+		) as Partial<OAuthStatePayload>;
+		if (
+			!isNonEmptyString(payload.kind) ||
+			!isNonEmptyString(payload.providerId) ||
+			!isNonEmptyString(payload.userId) ||
+			!isNonEmptyString(payload.organizationId) ||
+			!isNonEmptyString(payload.nonce)
+		) {
+			return null;
+		}
+		return {
+			kind: payload.kind,
+			providerId: payload.providerId,
+			userId: payload.userId,
+			organizationId: payload.organizationId,
+			nonce: payload.nonce,
+		};
+	} catch {
+		return null;
+	}
+};
+
+export const buildOAuthState = (kind: string, context: OAuthStateContext) => {
 	const nonce = randomBytes(16).toString("hex");
-	const state = `${providerId}.${nonce}`;
+	const state = encodeStatePayload({ ...context, kind, nonce });
 	const cookie = `${cookieName(kind)}=${nonce}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${MAX_AGE_SECONDS}`;
 	return { state, cookie };
 };
@@ -39,27 +82,28 @@ const safeEqual = (a: string, b: string): boolean => {
 };
 
 /**
- * Verify the OAuth `state` against the nonce cookie. Returns the providerId
- * encoded in the state on success, or null if the state is malformed or the
- * nonce does not match the cookie.
+ * Verify the OAuth `state` against the nonce cookie. Returns the provider/user
+ * context encoded in the state on success, or null if the state is malformed or
+ * the nonce does not match the cookie.
  */
 export const verifyOAuthState = (
 	request: Request,
 	kind: string,
 	state: string | undefined,
-): string | null => {
+): OAuthStateContext | null => {
 	if (!state) return null;
-	const idx = state.lastIndexOf(".");
-	if (idx <= 0) return null;
-	const providerId = state.slice(0, idx);
-	const nonce = state.slice(idx + 1);
-	if (!providerId || !nonce) return null;
+	const payload = decodeStatePayload(state);
+	if (!payload || payload.kind !== kind) return null;
 	const cookieNonce = readCookie(
 		request.headers.get("cookie"),
 		cookieName(kind),
 	);
-	if (!cookieNonce || !safeEqual(cookieNonce, nonce)) return null;
-	return providerId;
+	if (!cookieNonce || !safeEqual(cookieNonce, payload.nonce)) return null;
+	return {
+		providerId: payload.providerId,
+		userId: payload.userId,
+		organizationId: payload.organizationId,
+	};
 };
 
 /**

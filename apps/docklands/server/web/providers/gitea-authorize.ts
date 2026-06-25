@@ -1,6 +1,9 @@
+import { TRPCError } from "@trpc/server";
 import { createLogger } from "@/server/core/lib/logger";
+import { assertGitProviderAccess } from "@/server/core/services/git-provider";
 import { getQueryParam, jsonResponse } from "@/server/web/request";
 import { findGitea, redirectWithError } from "./gitea-helper";
+import { getProviderOAuthSession } from "./oauth-session";
 import { buildOAuthState, redirectWithCookies } from "./oauth-state";
 
 const logger = createLogger("gitea-authorize");
@@ -18,13 +21,35 @@ export async function handleGiteaAuthorize(request: Request) {
 			return jsonResponse({ error: "Invalid Gitea provider ID" }, 400);
 		}
 
+		const session = await getProviderOAuthSession(request);
+		if (!session) {
+			return jsonResponse({ error: "Authentication required" }, 401);
+		}
+
 		const gitea = await findGitea(giteaId);
+		if (!gitea) {
+			return redirectWithError(request, "Failed to find Gitea provider");
+		}
+
+		try {
+			await assertGitProviderAccess(session, gitea.gitProviderId);
+		} catch (error) {
+			if (error instanceof TRPCError && error.code === "UNAUTHORIZED") {
+				return redirectWithError(request, "Forbidden");
+			}
+			throw error;
+		}
+
 		if (!gitea?.clientId || !gitea.redirectUri) {
 			return redirectWithError(request, "Incomplete OAuth configuration");
 		}
 
-		// CSRF: bind this flow to the browser via a nonce in `state` + cookie.
-		const { state, cookie } = buildOAuthState("gitea", giteaId);
+		// Bind this flow to both the browser and the authenticated Docklands user.
+		const { state, cookie } = buildOAuthState("gitea", {
+			providerId: giteaId,
+			userId: session.userId,
+			organizationId: session.activeOrganizationId,
+		});
 
 		// Generate the Gitea authorization URL
 		const authorizationUrl = new URL(`${gitea.giteaUrl}/login/oauth/authorize`);

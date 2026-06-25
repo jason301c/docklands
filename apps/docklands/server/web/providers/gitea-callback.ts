@@ -1,7 +1,13 @@
+import { TRPCError } from "@trpc/server";
 import { createLogger } from "@/server/core/lib/logger";
+import { assertGitProviderAccess } from "@/server/core/services/git-provider";
 import { updateGitea } from "@/server/core/services/gitea";
 import { getQueryParam, redirectResponse } from "@/server/web/request";
 import { findGitea, type Gitea, redirectWithError } from "./gitea-helper";
+import {
+	getProviderOAuthSession,
+	oauthStateMatchesSession,
+} from "./oauth-session";
 import { verifyOAuthState } from "./oauth-state";
 
 const logger = createLogger("gitea-callback");
@@ -43,16 +49,39 @@ export async function handleGiteaCallback(request: Request) {
 		);
 	}
 
-	// Verify the CSRF nonce embedded in `state` against the cookie set at
-	// authorize time; this returns the giteaId only for a flow this browser began.
-	const giteaId = verifyOAuthState(request, "gitea", state);
-	if (!giteaId) {
+	// Verify the state context against the cookie set at authorize time; this
+	// returns the provider/user/org only for a flow this browser began.
+	const verifiedState = verifyOAuthState(request, "gitea", state);
+	if (!verifiedState) {
+		return redirectWithError(request, "Invalid or expired OAuth state");
+	}
+	const giteaId = verifiedState.providerId;
+
+	const session = await getProviderOAuthSession(request);
+	if (!session) {
+		return redirectWithError(request, "Authentication required");
+	}
+
+	if (!oauthStateMatchesSession(verifiedState, session)) {
+		logger.warn(
+			{ provider: "gitea", giteaId },
+			"Gitea OAuth callback state did not match authenticated session",
+		);
 		return redirectWithError(request, "Invalid or expired OAuth state");
 	}
 
 	const gitea = await findGitea(giteaId);
 	if (!gitea) {
 		return redirectWithError(request, "Failed to find Gitea provider");
+	}
+
+	try {
+		await assertGitProviderAccess(session, gitea.gitProviderId);
+	} catch (error) {
+		if (error instanceof TRPCError && error.code === "UNAUTHORIZED") {
+			return redirectWithError(request, "Forbidden");
+		}
+		throw error;
 	}
 
 	// Fetch the access token from Gitea
