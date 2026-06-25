@@ -135,6 +135,9 @@ describe("production Dockerfile release install", () => {
 		expect(workflow).toContain("docklands-smoke-minio");
 		expect(workflow).toContain("minio/minio:");
 		expect(workflow).toContain("minio/mc:");
+		expect(workflow).toContain("Replace Docklands container");
+		expect(workflow).toContain("Run post-replacement upgrade smoke");
+		expect(workflow).toContain("DOCKLANDS_HOST_SMOKE_EXISTING_OWNER");
 		expect(workflow).toContain("dist/setup-instance.mjs");
 		expect(workflow).toContain("--network docklands-network");
 		expect(workflow).toContain("-p 127.0.0.1:3000:3000");
@@ -143,6 +146,7 @@ describe("production Dockerfile release install", () => {
 		expect(workflow).toContain("docker service rm docklands-postgres");
 		expect(smokeScript).toContain("/api/ready");
 		expect(smokeScript).toContain("/api/auth/sign-up/email");
+		expect(smokeScript).toContain("/api/auth/sign-in/email");
 		expect(smokeScript).toContain("settings.updateDefaultIngressMode");
 		expect(smokeScript).toContain("application.saveDockerProvider");
 		expect(smokeScript).toContain("domain.create");

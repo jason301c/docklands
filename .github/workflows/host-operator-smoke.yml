@@ -133,6 +133,29 @@ jobs:
       - name: Run host operator smoke
         run: ./tools/release/host-operator-smoke.sh
 
+      - name: Replace Docklands container
+        run: |
+          docker rm -f docklands
+          docker run -d \
+            --name docklands \
+            --add-host=host.docker.internal:host-gateway \
+            --network docklands-network \
+            -p 127.0.0.1:3000:3000 \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v /etc/docklands:/etc/docklands \
+            -e NODE_ENV="$NODE_ENV" \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e BETTER_AUTH_SECRET="$BETTER_AUTH_SECRET" \
+            -e DOCKLANDS_ENCRYPTION_KEY="$DOCKLANDS_ENCRYPTION_KEY" \
+            -e SKIP_PRE_MIGRATION_BACKUP="$SKIP_PRE_MIGRATION_BACKUP" \
+            docklands:host-smoke
+
+      - name: Run post-replacement upgrade smoke
+        env:
+          DOCKLANDS_HOST_SMOKE_EXISTING_OWNER: "1"
+          DOCKLANDS_HOST_SMOKE_ID: upgrade-${{ github.run_id }}-${{ github.run_attempt }}
+        run: ./tools/release/host-operator-smoke.sh
+
       - name: Cleanup Docker smoke resources
         if: always()
         run: |

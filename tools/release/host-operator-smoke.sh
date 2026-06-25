@@ -13,6 +13,7 @@ SMOKE_ID=${DOCKLANDS_HOST_SMOKE_ID:-$(date +%s)-$$}
 SMOKE_IMAGE=${DOCKLANDS_HOST_SMOKE_IMAGE:-registry:2}
 OWNER_EMAIL=${DOCKLANDS_HOST_SMOKE_OWNER_EMAIL:-owner@docklands.local}
 OWNER_PASSWORD=${DOCKLANDS_HOST_SMOKE_OWNER_PASSWORD:-docklands-owner-000000}
+EXISTING_OWNER=${DOCKLANDS_HOST_SMOKE_EXISTING_OWNER:-}
 RUN_BACKUP_SMOKE=${DOCKLANDS_HOST_SMOKE_BACKUP:-}
 S3_ENDPOINT=${DOCKLANDS_HOST_SMOKE_S3_ENDPOINT:-http://docklands-smoke-minio:9000}
 S3_ACCESS_KEY=${DOCKLANDS_HOST_SMOKE_S3_ACCESS_KEY:-docklandsminio}
@@ -381,6 +382,82 @@ if (body.message !== "Admin is already created") {
 	update_ingress_mode "public"
 }
 
+check_existing_owner() {
+	local status
+	local signin_payload
+
+	signin_payload=$(node -e '
+const [email, password] = process.argv.slice(1);
+process.stdout.write(JSON.stringify({ email, password }));
+' "$OWNER_EMAIL" "$OWNER_PASSWORD")
+	status=$(curl -sS -o "$SIGNUP_BODY" -w "%{http_code}" \
+		-c "$COOKIE_JAR" \
+		-H "content-type: application/json" \
+		-X POST \
+		"${BASE_URL}/api/auth/sign-in/email" \
+		--data "$signin_payload")
+	expect_status "existing-owner sign-in" "200" "$status" "$SIGNUP_BODY"
+	node -e '
+const fs = require("node:fs");
+const expectedEmail = process.argv[2];
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (
+	typeof body.token !== "string" ||
+	body.user?.email !== expectedEmail
+) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+' "$SIGNUP_BODY" "$OWNER_EMAIL"
+
+	status=$(curl -sS -o "$SESSION_BODY" -w "%{http_code}" \
+		-b "$COOKIE_JAR" \
+		"${BASE_URL}/api/auth/get-session")
+	expect_status "auth session after restart" "200" "$status" "$SESSION_BODY"
+	node -e '
+const fs = require("node:fs");
+const expectedEmail = process.argv[2];
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (body.user?.email !== expectedEmail || !body.session) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+' "$SESSION_BODY" "$OWNER_EMAIL"
+
+	status=$(curl -sS -D "$HOME_HEADERS" -o /dev/null -w "%{http_code}" \
+		-b "$COOKIE_JAR" \
+		"${BASE_URL}/")
+	expect_status "authenticated home redirect after restart" "307" "$status" \
+		"$HOME_HEADERS"
+	node -e '
+const fs = require("node:fs");
+const headers = fs.readFileSync(process.argv[1], "utf8");
+if (!/^location:\s*\/dashboard\/workspace\s*$/im.test(headers)) {
+	console.error(headers);
+	process.exit(1);
+}
+' "$HOME_HEADERS"
+
+	status=$(curl -sS -D "$REGISTER_AFTER_HEADERS" -o /dev/null \
+		-w "%{http_code}" \
+		-b "$COOKIE_JAR" \
+		"${BASE_URL}/register")
+	expect_status "post-restart register redirect" "307" "$status" \
+		"$REGISTER_AFTER_HEADERS"
+	node -e '
+const fs = require("node:fs");
+const headers = fs.readFileSync(process.argv[1], "utf8");
+if (!/^location:\s*\/\s*$/im.test(headers)) {
+	console.error(headers);
+	process.exit(1);
+}
+' "$REGISTER_AFTER_HEADERS"
+
+	assert_ingress_mode "public"
+	update_ingress_mode "tunnel"
+	update_ingress_mode "public"
+}
+
 deployed_service_ready() {
 	if [ -z "$SMOKE_DEPLOY_APP_NAME" ]; then
 		return 1
@@ -583,7 +660,11 @@ if (body.result?.data?.json !== true) {
 }
 
 wait_for "Docklands readiness" check_ready
-check_first_owner
+if [ "$EXISTING_OWNER" = "1" ]; then
+	check_existing_owner
+else
+	check_first_owner
+fi
 check_deploy_and_ingress
 check_instance_backup
 
@@ -591,6 +672,11 @@ echo "Docklands host operator smoke passed"
 echo "  base URL: $BASE_URL"
 echo "  Traefik URL: $TRAEFIK_URL"
 echo "  first owner: $OWNER_EMAIL"
+if [ "$EXISTING_OWNER" = "1" ]; then
+	echo "  owner mode: existing owner sign-in"
+else
+	echo "  owner mode: first-owner bootstrap"
+fi
 echo "  default ingress mode: public -> tunnel -> public"
 echo "  smoke deploy service: $SMOKE_DEPLOY_APP_NAME"
 echo "  smoke image: $SMOKE_IMAGE"
