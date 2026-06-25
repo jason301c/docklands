@@ -6,10 +6,9 @@ export const runtime = "nodejs";
 
 const logger = createLogger("health");
 
-// DB-aware liveness/readiness: a static 200 reported "healthy" even when the
-// database was unreachable, so external uptime checks were falsely green. Probe
-// the DB (matching the Dockerfile's settings.health check) and return 503 when
-// it's down so monitors and orchestrators see the real state.
+// DB-aware liveness: a static 200 reported "healthy" even when the database was
+// unreachable, so external uptime checks were falsely green. Use /api/ready for
+// deployment/runtime bootstrap readiness.
 export const GET = async () => {
 	try {
 		await db.execute(sql`SELECT 1`);

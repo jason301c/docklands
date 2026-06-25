@@ -2,6 +2,13 @@ import http from "node:http";
 import { config } from "dotenv";
 import next from "next";
 import { createLogger } from "@/server/core/lib/logger";
+import {
+	markReadinessComplete,
+	markReadinessStarting,
+	markReadinessStepFailed,
+	markReadinessStepOk,
+	markReadinessStepRunning,
+} from "@/server/core/readiness";
 import { ensureTunnelRunning } from "@/server/core/services/tunnel";
 import { setupDirectories } from "@/server/core/setup/config-paths";
 import { initializeNetwork } from "@/server/core/setup/setup";
@@ -89,34 +96,65 @@ void app.prepare().then(async () => {
 		runtimeWorker.listen(PORT, HOST);
 		logger.info({ host: HOST, port: PORT }, "server listening");
 		if (process.env.NODE_ENV === "production") {
+			markReadinessStarting();
 			// Each bootstrap step is independently guarded: a failure in one
 			// (tunnels, cron, network, …) must not abort the rest — most importantly
-			// it must not prevent the deployment worker (below) from starting, or the
-			// instance would report healthy yet be unable to deploy.
-			const bootStep = async (step: string, fn: () => unknown) => {
+			// it must not prevent the deployment worker (below) from starting.
+			// Readiness records critical failures so liveness can stay green while
+			// orchestrators and operators see deploy-critical bootstrap failures.
+			const bootStep = async (
+				step: string,
+				fn: () => unknown,
+				options: { critical?: boolean } = {},
+			) => {
+				markReadinessStepRunning(step, options);
 				try {
 					await fn();
+					markReadinessStepOk(step);
 				} catch (err) {
+					markReadinessStepFailed(step, err, options);
 					logger.error({ err, step }, "bootstrap step failed (continuing)");
 				}
 			};
-			await bootStep("middlewares", () => createDefaultMiddlewares());
-			await bootStep("network", () => initializeNetwork());
+			await bootStep("middlewares", () => createDefaultMiddlewares(), {
+				critical: true,
+			});
+			await bootStep("network", () => initializeNetwork(), { critical: true });
 			// Restore any Cloudflare Tunnels (managed cloudflared) after the
 			// overlay network exists. Best-effort per tunnel.
-			await bootStep("tunnels", () => ensureTunnelRunning());
-			await bootStep("tunnel-health", () => initTunnelHealthCron());
-			await bootStep("cron", () => initCronJobs());
-			await bootStep("cancel-deployments", () => initCancelDeployments());
-			await bootStep("volume-backups", () => initVolumeBackupsCronJobs());
-			await bootStep("preview-cleanup", () => initPreviewCleanupCron());
-			await bootStep("restart-notifications", () =>
-				sendDocklandsRestartNotifications(),
+			await bootStep("tunnels", () => ensureTunnelRunning(), {
+				critical: false,
+			});
+			await bootStep("tunnel-health", () => initTunnelHealthCron(), {
+				critical: false,
+			});
+			await bootStep("cron", () => initCronJobs(), { critical: false });
+			await bootStep("cancel-deployments", () => initCancelDeployments(), {
+				critical: false,
+			});
+			await bootStep("volume-backups", () => initVolumeBackupsCronJobs(), {
+				critical: false,
+			});
+			await bootStep("preview-cleanup", () => initPreviewCleanupCron(), {
+				critical: false,
+			});
+			await bootStep(
+				"restart-notifications",
+				() => sendDocklandsRestartNotifications(),
+				{ critical: false },
 			);
 		}
 		logger.info("starting deployment worker");
 		const { startDeploymentWorker } = await import("./queues/queueSetup");
-		await startDeploymentWorker();
+		markReadinessStepRunning("deployment-worker", { critical: true });
+		try {
+			await startDeploymentWorker();
+			markReadinessStepOk("deployment-worker");
+		} catch (err) {
+			markReadinessStepFailed("deployment-worker", err, { critical: true });
+			throw err;
+		}
+		markReadinessComplete();
 		logger.info("deployment worker started");
 	} catch (e) {
 		logger.error({ err: e }, "server bootstrap failed");

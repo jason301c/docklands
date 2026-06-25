@@ -676,6 +676,8 @@ Under `/dashboard/settings/`, product-named modules configure the instance:
 Instance-wide configuration (server IP/host, HTTPS + Let's Encrypt email, Docker
 cleanup, log rotation, build concurrency, monitoring `metricsConfig`) is a
 **singleton** row in `web_server_settings`, edited through the `settings` router.
+External monitors can use `/api/health` for database-backed liveness and
+`/api/ready` for database plus critical runtime-bootstrap readiness.
 
 ---
 

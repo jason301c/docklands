@@ -110,7 +110,9 @@ The settings surface can check that core infrastructure is reachable:
 - **Postgres health** confirms the database accepts a connection.
 - **Traefik health** confirms the ingress runtime is responding.
 
-A separate health endpoint is also exposed for external monitoring.
+External monitoring can probe `/api/health` for database-backed liveness and
+`/api/ready` for readiness, which also reflects critical production bootstrap
+state such as network setup and the deployment worker.
 
 ## Other maintenance actions
 
