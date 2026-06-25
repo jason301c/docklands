@@ -52,12 +52,16 @@ const { handleComposeDeployWebhook } = await import(
 	"../../server/web/deploy/compose-webhook"
 );
 
-const makeGithubPushRequest = (branch = "main") =>
+const makeGithubPushRequest = (
+	branch = "main",
+	extraHeaders: Record<string, string> = {},
+) =>
 	new Request("http://docklands.test/api/deploy/tok", {
 		method: "POST",
 		headers: {
 			"content-type": "application/json",
 			"x-github-event": "push",
+			...extraHeaders,
 		},
 		body: JSON.stringify({
 			ref: `refs/heads/${branch}`,
@@ -169,6 +173,34 @@ describe("handleApplicationDeployWebhook refresh-token auth", () => {
 			expect.any(Object),
 		);
 	});
+
+	it("rate limits by refresh token even when forwarded IP rotates", async () => {
+		const token = `rotating-application-token-${Date.now()}`;
+		applicationRow = undefined;
+
+		for (let index = 0; index < 30; index += 1) {
+			const res = await handleApplicationDeployWebhook(
+				makeGithubPushRequest("main", {
+					"x-forwarded-for": `203.0.113.${index}`,
+				}),
+				token,
+			);
+			expect(res.status).toBe(404);
+		}
+
+		const blocked = await handleApplicationDeployWebhook(
+			makeGithubPushRequest("main", {
+				"x-forwarded-for": "198.51.100.200",
+			}),
+			token,
+		);
+
+		expect(blocked.status).toBe(429);
+		await expect(blocked.json()).resolves.toEqual({
+			error: "Too many requests",
+		});
+		expect(applicationsFindFirst).toHaveBeenCalledTimes(30);
+	});
 });
 
 describe("handleComposeDeployWebhook refresh-token auth", () => {
@@ -232,5 +264,33 @@ describe("handleComposeDeployWebhook refresh-token auth", () => {
 			}),
 			expect.any(Object),
 		);
+	});
+
+	it("rate limits by refresh token even when forwarded IP rotates", async () => {
+		const token = `rotating-compose-token-${Date.now()}`;
+		composeRow = undefined;
+
+		for (let index = 0; index < 30; index += 1) {
+			const res = await handleComposeDeployWebhook(
+				makeGithubPushRequest("main", {
+					"x-forwarded-for": `203.0.114.${index}`,
+				}),
+				token,
+			);
+			expect(res.status).toBe(404);
+		}
+
+		const blocked = await handleComposeDeployWebhook(
+			makeGithubPushRequest("main", {
+				"x-forwarded-for": "198.51.100.201",
+			}),
+			token,
+		);
+
+		expect(blocked.status).toBe(429);
+		await expect(blocked.json()).resolves.toEqual({
+			error: "Too many requests",
+		});
+		expect(composeFindFirst).toHaveBeenCalledTimes(30);
 	});
 });

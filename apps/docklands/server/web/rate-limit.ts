@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 // In-memory fixed-window rate limiter for the unauthenticated HTTP surfaces
 // (the deploy webhooks). Process-global and resets on restart, which is fine for
 // the single-process control plane — Better Auth handles /api/auth/* separately.
@@ -6,6 +8,8 @@ type Bucket = { count: number; resetAt: number };
 
 const buckets = new Map<string, Bucket>();
 const MAX_BUCKETS = 5000;
+const DEPLOY_WEBHOOK_LIMIT = 30;
+const DEPLOY_WEBHOOK_WINDOW_MS = 60_000;
 
 const prune = (now: number) => {
 	for (const [key, bucket] of buckets) {
@@ -40,4 +44,27 @@ export const clientIpFromHeaders = (headers: Headers): string => {
 	const forwarded = headers.get("x-forwarded-for");
 	if (forwarded) return forwarded.split(",")[0]?.trim() || "unknown";
 	return headers.get("x-real-ip")?.trim() || "unknown";
+};
+
+export const refreshTokenRateLimitKey = (refreshToken: string): string => {
+	const digest = createHash("sha256").update(refreshToken).digest("hex");
+	return `deploy-token:${digest.slice(0, 32)}`;
+};
+
+export const checkDeployWebhookRateLimit = (
+	headers: Headers,
+	refreshToken: string,
+): boolean => {
+	const tokenAllowed = checkRateLimit(
+		refreshTokenRateLimitKey(refreshToken),
+		DEPLOY_WEBHOOK_LIMIT,
+		DEPLOY_WEBHOOK_WINDOW_MS,
+	);
+	if (!tokenAllowed) return false;
+
+	return checkRateLimit(
+		`deploy-ip:${clientIpFromHeaders(headers)}`,
+		DEPLOY_WEBHOOK_LIMIT,
+		DEPLOY_WEBHOOK_WINDOW_MS,
+	);
 };

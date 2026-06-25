@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+	checkDeployWebhookRateLimit,
 	checkRateLimit,
 	clientIpFromHeaders,
+	refreshTokenRateLimitKey,
 } from "../../server/web/rate-limit";
 
 /**
@@ -74,6 +76,37 @@ describe("checkRateLimit", () => {
 			expect(checkRateLimit(key, limit, windowMs)).toBe(true);
 			expect(checkRateLimit(key, limit, windowMs)).toBe(false);
 		});
+	});
+});
+
+describe("checkDeployWebhookRateLimit", () => {
+	it("does not include the raw refresh token in the rate-limit key", () => {
+		const token = "super-secret-refresh-token";
+
+		const key = refreshTokenRateLimitKey(token);
+
+		expect(key).toMatch(/^deploy-token:[a-f0-9]{32}$/);
+		expect(key).not.toContain(token);
+	});
+
+	it("blocks a refresh token even when x-forwarded-for rotates", () => {
+		const token = `token-${uniqueKey()}`;
+
+		for (let index = 0; index < 30; index += 1) {
+			expect(
+				checkDeployWebhookRateLimit(
+					new Headers({ "x-forwarded-for": `203.0.113.${index}` }),
+					token,
+				),
+			).toBe(true);
+		}
+
+		expect(
+			checkDeployWebhookRateLimit(
+				new Headers({ "x-forwarded-for": "198.51.100.99" }),
+				token,
+			),
+		).toBe(false);
 	});
 });
 
