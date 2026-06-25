@@ -89,7 +89,7 @@ export function ShowCloudflare() {
 				integrationQuery.data?.connected ? (
 					<DialogAction
 						title="Disconnect Cloudflare"
-						description="Existing tunnels and DNS records are left in place at Cloudflare, but Docklands will stop managing them. You can reconnect later."
+						description="Remove the managed tunnel first. Disconnecting Cloudflare is only allowed once no tunnel state remains for Docklands to restart."
 						type="destructive"
 						onClick={async () => {
 							await disconnect.mutateAsync();

@@ -85,6 +85,15 @@ export const refreshCloudflareZones = async (): Promise<CloudflareZone[]> => {
 };
 
 export const disconnectCloudflare = async (): Promise<void> => {
+	const tunnel = await db.query.tunnels.findFirst();
+	if (tunnel) {
+		throw new TRPCError({
+			code: "PRECONDITION_FAILED",
+			message:
+				"Remove the managed Cloudflare Tunnel before disconnecting Cloudflare.",
+		});
+	}
+
 	await db.delete(cloudflareIntegration);
 };
 
