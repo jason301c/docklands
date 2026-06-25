@@ -112,9 +112,13 @@ describe("production Dockerfile release install", () => {
 	it("keeps Docker build and publish scripts release-tag safe", () => {
 		const buildScript = repoFile("tools/docker/build.sh");
 		const pushScript = repoFile("tools/docker/push.sh");
+		const dockerIgnore = repoFile(".dockerignore");
+		const gitIgnore = repoFile(".gitignore");
 
 		expect(buildScript).toContain("validate_release_version");
 		expect(pushScript).toContain("validate_release_version");
+		expect(dockerIgnore).toContain(".claude");
+		expect(gitIgnore).toContain(".claude/");
 		expect(buildScript).toContain("^[0-9]+\\.[0-9]+\\.[0-9]+$");
 		expect(pushScript).toContain("^[0-9]+\\.[0-9]+\\.[0-9]+$");
 		expect(buildScript).not.toContain('TAG="${VERSION#v}"');
@@ -124,6 +128,8 @@ describe("production Dockerfile release install", () => {
 		expect(pushScript).toContain("DOCKLANDS_DOCKER_SKIP_RELEASE_TAG_CHECK");
 		expect(pushScript).toContain("Tracked files are dirty");
 		expect(pushScript).toContain("git diff --quiet");
+		expect(pushScript).toContain("git ls-files --others --exclude-standard");
+		expect(pushScript).toContain("Untracked files are present");
 		expect(buildScript).toContain("DOCKLANDS_DOCKER_DRY_RUN");
 		expect(pushScript).toContain("DOCKLANDS_DOCKER_DRY_RUN");
 		expect(pushScript).toContain(

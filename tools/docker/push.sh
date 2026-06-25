@@ -146,6 +146,16 @@ if [ -z "$allow_dirty" ] && { ! git diff --quiet || ! git diff --cached --quiet;
 	exit 1
 fi
 
+if [ -z "$allow_dirty" ]; then
+	untracked_files=$(git ls-files --others --exclude-standard)
+	if [ -n "$untracked_files" ]; then
+		echo "Untracked files are present. Commit, remove, or ignore them before pushing Docker images." >&2
+		echo "$untracked_files" >&2
+		echo "Use --allow-dirty only for development pushes that are not release evidence." >&2
+		exit 1
+	fi
+fi
+
 # Image tag format: production pushes "<version>" and "latest", where <version>
 # is apps/docklands/package.json#version verbatim (e.g. "0.1.0"). That version
 # MUST be plain semver with no "v" prefix. Canary pushes the fixed "canary" tag.
