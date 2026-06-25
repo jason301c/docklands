@@ -120,10 +120,25 @@ describe("production Dockerfile release install", () => {
 		expect(buildScript).not.toContain('TAG="${VERSION#v}"');
 		expect(pushScript).not.toContain('TAG="${VERSION#v}"');
 		expect(pushScript).toContain("DOCKLANDS_DOCKER_ALLOW_DIRTY");
+		expect(pushScript).toContain("DOCKLANDS_DOCKER_REMOTE");
+		expect(pushScript).toContain("DOCKLANDS_DOCKER_SKIP_RELEASE_TAG_CHECK");
 		expect(pushScript).toContain("Tracked files are dirty");
 		expect(pushScript).toContain("git diff --quiet");
 		expect(buildScript).toContain("DOCKLANDS_DOCKER_DRY_RUN");
 		expect(pushScript).toContain("DOCKLANDS_DOCKER_DRY_RUN");
+		expect(pushScript).toContain(
+			"--skip-release-tag-check is only allowed with --dry-run",
+		);
+		expect(pushScript).toContain("verify_release_tag");
+		expect(pushScript).toContain("refs/tags/$release_tag");
+		expect(pushScript).toContain("refs/tags/$release_tag^{}");
+		expect(pushScript).toContain("git ls-remote");
+		expect(pushScript).toContain(
+			"Run 'bun run release:tag --push <ref>' before publishing Docker images.",
+		);
+		expect(pushScript).toContain(
+			"Release tag '$release_tag' does not point at the current commit.",
+		);
 		expect(buildScript).toContain("trap cleanup EXIT");
 		expect(pushScript).toContain("trap cleanup EXIT");
 		expect(buildScript).toContain('docker buildx rm "$BUILDER"');
@@ -266,7 +281,9 @@ describe("production Dockerfile release install", () => {
 			"tools/docker/build.sh --dry-run production",
 		);
 		expect(preflightScript).toContain("tools/docker/push.sh");
-		expect(preflightScript).toContain("--dry-run production");
+		expect(preflightScript).toContain(
+			"--dry-run --skip-release-tag-check production",
+		);
 		expect(preflightScript).toContain("DOCKLANDS_RELEASE_SMOKE_DRY_RUN=1");
 		expect(preflightScript).toContain("DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY");
 		expect(preflightScript).toContain("dispatch-smoke-workflows.sh");

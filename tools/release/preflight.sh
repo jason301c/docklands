@@ -104,7 +104,7 @@ if [ -n "$allow_dirty" ]; then
 fi
 run tools/release/tag-release.sh "${tag_dry_run_args[@]}" "$git_ref"
 
-docker_push_dry_run_args=(--dry-run production)
+docker_push_dry_run_args=(--dry-run --skip-release-tag-check production)
 if [ -n "$allow_dirty" ]; then
 	docker_push_dry_run_args=(--allow-dirty "${docker_push_dry_run_args[@]}")
 fi

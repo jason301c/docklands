@@ -88,7 +88,8 @@ refuses dirty tracked files, existing tags, and branch refs that differ from the
 selected remote.
 
 `docker:push` publishes `jason301c/docklands:0.1.0` and
-`jason301c/docklands:latest`; it refuses dirty tracked files by default.
+`jason301c/docklands:latest`; it refuses dirty tracked files by default and
+requires the local and remote `0.1.0` git tag to point at the current commit.
 
 ## Operator Notes
 
