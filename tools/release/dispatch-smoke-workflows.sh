@@ -16,6 +16,9 @@ Environment:
                                   Default: origin
   DOCKLANDS_RELEASE_REPO          GitHub repo slug for gh, e.g. owner/repo.
                                   Default: parsed from the selected remote URL
+  DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY
+                                  Permit tracked local changes. Use only for
+                                  development dry-runs, not release dispatch.
   DOCKLANDS_RELEASE_SMOKE_DRY_RUN Print the gh commands without dispatching.
   DOCKLANDS_RELEASE_SMOKE_SKIP_FETCH
                                   Skip the remote branch freshness check.
@@ -40,6 +43,7 @@ git_url=${DOCKLANDS_RELEASE_GIT_URL:-https://github.com/jason301c/docklands.git}
 remote=${DOCKLANDS_RELEASE_REMOTE:-origin}
 dry_run=${DOCKLANDS_RELEASE_SMOKE_DRY_RUN:-}
 skip_fetch=${DOCKLANDS_RELEASE_SMOKE_SKIP_FETCH:-}
+allow_dirty=${DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY:-}
 
 if [ -z "$git_ref" ] || [ "$git_ref" = "HEAD" ]; then
 	echo "Pass an explicit branch or tag ref; refusing to dispatch a detached HEAD." >&2
@@ -51,7 +55,7 @@ if ! command -v gh >/dev/null 2>&1; then
 	exit 1
 fi
 
-if ! git diff --quiet || ! git diff --cached --quiet; then
+if [ -z "$allow_dirty" ] && { ! git diff --quiet || ! git diff --cached --quiet; }; then
 	echo "Tracked files are dirty. Commit or discard tracked changes before dispatching release smoke workflows." >&2
 	exit 1
 fi

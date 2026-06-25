@@ -136,6 +136,34 @@ describe("production Dockerfile release install", () => {
 		expect(dispatchScript).toContain("git fetch --quiet");
 		expect(dispatchScript).toContain("Push the branch before dispatching");
 		expect(dispatchScript).toContain("DOCKLANDS_RELEASE_SMOKE_DRY_RUN");
+		expect(dispatchScript).toContain("DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY");
+	});
+
+	it("keeps the local release preflight aligned with required non-mutating gates", () => {
+		const rootPackage = JSON.parse(repoFile("package.json"));
+		const preflightScript = repoFile("tools/release/preflight.sh");
+
+		expect(rootPackage.scripts["release:preflight"]).toBe(
+			"./tools/release/preflight.sh",
+		);
+		expect(preflightScript).toContain(
+			"bun install --frozen-lockfile --offline",
+		);
+		expect(preflightScript).toContain("bun run format-and-lint");
+		expect(preflightScript).toContain("bun run typecheck");
+		expect(preflightScript).toContain("bun run test:ci");
+		expect(preflightScript).toContain("bun run check:baseui");
+		expect(preflightScript).toContain("bun run check:openapi");
+		expect(preflightScript).toContain("bun run build");
+		expect(preflightScript).toContain("bun run docs:typecheck");
+		expect(preflightScript).toContain("bun run docs:build");
+		expect(preflightScript).toContain("bun run site:lint");
+		expect(preflightScript).toContain("bun run site:typecheck");
+		expect(preflightScript).toContain("bun run site:build");
+		expect(preflightScript).toContain("DOCKLANDS_RELEASE_SMOKE_DRY_RUN=1");
+		expect(preflightScript).toContain("DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY");
+		expect(preflightScript).toContain("dispatch-smoke-workflows.sh");
+		expect(preflightScript).toContain("docker:smoke:deploy");
 	});
 
 	it("keeps the manual host-operator smoke wired to the image setup path", () => {
