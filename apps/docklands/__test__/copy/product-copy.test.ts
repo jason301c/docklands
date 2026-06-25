@@ -18,7 +18,6 @@ describe("Docklands product copy", () => {
 			"components/dashboard/settings/notifications/handle-notifications.tsx",
 			"app/(onboarding)/register/_client.tsx",
 			"server/core/setup/runtime-worker-setup.ts",
-			"server/core/utils/notifications/server-threshold.ts",
 		].map(sourceFile);
 
 		for (const source of files) {

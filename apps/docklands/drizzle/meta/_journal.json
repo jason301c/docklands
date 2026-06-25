@@ -57,6 +57,13 @@
       "when": 1782329770181,
       "tag": "0007_normal_firebrand",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1782377908043,
+      "tag": "0008_tiresome_smasher",
+      "breakpoints": true
     }
   ]
 }

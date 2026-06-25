@@ -1,10 +1,8 @@
 import { TRPCError } from "@trpc/server";
-import { desc, eq, sql } from "drizzle-orm";
-import { z } from "zod";
+import { desc, eq } from "drizzle-orm";
 import {
 	createTRPCRouter,
 	protectedProcedure,
-	publicProcedure,
 	withPermission,
 } from "@/server/api/trpc";
 import { audit } from "@/server/api/utils/audit";
@@ -48,7 +46,6 @@ import {
 	apiUpdateTeams,
 	apiUpdateTelegram,
 	notifications,
-	runtimeWorkers,
 } from "@/server/core/db/schema";
 import {
 	createNotification,
@@ -57,8 +54,6 @@ import {
 	updateNotification,
 } from "@/server/core/services/notification";
 import { isSystemEmailConfigured } from "@/server/core/services/system-email";
-import { getWebServerSettings } from "@/server/core/services/web-server-settings";
-import { sendServerThresholdNotifications } from "@/server/core/utils/notifications/server-threshold";
 import {
 	sendCustomNotification,
 	sendDiscordNotification,
@@ -488,67 +483,6 @@ export const notificationRouter = createTRPCRouter({
 			where: eq(notifications.organizationId, ctx.session.activeOrganizationId),
 		});
 	}),
-	receiveNotification: publicProcedure
-		.input(
-			z.object({
-				ServerType: z.enum(["Docklands", "Remote"]).default("Docklands"),
-				Type: z.enum(["Memory", "CPU"]),
-				Value: z.number(),
-				Threshold: z.number(),
-				Message: z.string(),
-				Timestamp: z.string(),
-				Token: z.string(),
-			}),
-		)
-		.mutation(async ({ input }) => {
-			try {
-				let organizationId = "";
-				let ServerName = "";
-				if (input.ServerType === "Docklands") {
-					const settings = await getWebServerSettings();
-					if (
-						!settings?.metricsConfig?.runtimeWorker?.token ||
-						settings.metricsConfig.runtimeWorker.token !== input.Token
-					) {
-						throw new TRPCError({
-							code: "BAD_REQUEST",
-							message: "Token not found",
-						});
-					}
-
-					organizationId = "";
-					ServerName = "Docklands";
-				} else {
-					const result = await db
-						.select()
-						.from(runtimeWorkers)
-						.where(
-							sql`${runtimeWorkers.metricsConfig}::jsonb -> 'runtimeWorker' ->> 'token' = ${input.Token}`,
-						);
-
-					if (!result?.[0]?.organizationId) {
-						throw new TRPCError({
-							code: "BAD_REQUEST",
-							message: "Token not found",
-						});
-					}
-
-					organizationId = result?.[0]?.organizationId;
-					ServerName = "Remote";
-				}
-
-				await sendServerThresholdNotifications(organizationId, {
-					...input,
-					ServerName,
-				});
-			} catch (error) {
-				throw new TRPCError({
-					code: "BAD_REQUEST",
-					message: "Error sending the notification",
-					cause: error,
-				});
-			}
-		}),
 	createGotify: withPermission("notification", "create")
 		.input(apiCreateGotify)
 		.mutation(async ({ input, ctx }) => {

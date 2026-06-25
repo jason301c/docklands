@@ -3,9 +3,7 @@ import { z } from "zod";
 /**
  * Shared base fields carried by every notification provider's form. These map
  * onto the parent `notifications` row (the per-provider credentials live in the
- * discriminated members below). `serverThreshold` is part of the base schema for
- * the UI toggle, but note that two providers (gotify, ntfy) never persist it —
- * see `notificationsMap[type].serverThreshold` and the backend registry.
+ * discriminated members below).
  */
 export const notificationBaseSchema = z.object({
 	name: z.string().min(1, {
@@ -18,7 +16,6 @@ export const notificationBaseSchema = z.object({
 	volumeBackup: z.boolean().default(false),
 	docklandsRestart: z.boolean().default(false),
 	dockerCleanup: z.boolean().default(false),
-	serverThreshold: z.boolean().default(false),
 });
 
 /**

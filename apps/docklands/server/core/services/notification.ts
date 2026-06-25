@@ -16,9 +16,8 @@ export type Notification = typeof notifications.$inferSelect;
  * Step 1 inserts the provider sub-table row (registry `subValues`), step 2
  * inserts the parent `notifications` row pointing at it. This reproduces the
  * original per-provider `create<Provider>Notification` exactly: same columns,
- * same defaults, same `serverThreshold` inclusion rule, same transaction
- * ordering, same `BAD_REQUEST` errors, and the same (discarded) transaction
- * return value.
+ * same defaults, same transaction ordering, same `BAD_REQUEST` errors, and the
+ * same (discarded) transaction return value.
  */
 export const createNotification = async (
 	type: NotificationType,
@@ -57,10 +56,6 @@ export const createNotification = async (
 			organizationId: organizationId,
 		};
 
-		if (descriptor.includeServerThreshold) {
-			notificationValues.serverThreshold = input.serverThreshold;
-		}
-
 		const newDestination = await tx
 			.insert(notifications)
 			.values(notificationValues as typeof notifications.$inferInsert)
@@ -83,8 +78,8 @@ export const createNotification = async (
  *
  * Step 1 updates the parent `notifications` row, step 2 updates the provider
  * sub-table row. Mirrors the original per-provider
- * `update<Provider>Notification`: same parent fields, same `serverThreshold`
- * rule, same transaction ordering, same error, same return value.
+ * `update<Provider>Notification`: same parent fields, same transaction ordering,
+ * same error, same return value.
  */
 export const updateNotification = async (
 	type: NotificationType,
@@ -104,10 +99,6 @@ export const updateNotification = async (
 			dockerCleanup: input.dockerCleanup,
 			organizationId: input.organizationId,
 		};
-
-		if (descriptor.includeServerThreshold) {
-			notificationValues.serverThreshold = input.serverThreshold;
-		}
 
 		const newDestination = await tx
 			.update(notifications)

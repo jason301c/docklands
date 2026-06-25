@@ -36,10 +36,10 @@ interface UseNotificationMutationsArgs {
  * - `activeMutation[type]` is the live create/update mutation for inline error
  *   display; `isTesting` is the combined test-loading flag for the test button.
  *
- * The deliberate per-provider quirks are preserved: gotify/ntfy never send
- * `serverThreshold`; mattermost coerces empty channel/username to `undefined`;
- * telegram/ntfy coerce optional tokens to `""`; custom flattens headers to a
- * record; pushover only sends retry/expire for emergency priority (2).
+ * The deliberate per-provider quirks are preserved: mattermost coerces empty
+ * channel/username to `undefined`; telegram/ntfy coerce optional tokens to `""`;
+ * custom flattens headers to a record; pushover only sends retry/expire for
+ * emergency priority (2).
  */
 export const useNotificationMutations = ({
 	notificationId,
@@ -158,7 +158,6 @@ export const useNotificationMutations = ({
 				dockerCleanup: d.dockerCleanup,
 				slackId: subId("slackId"),
 				notificationId: id,
-				serverThreshold: d.serverThreshold,
 			});
 		},
 		telegram: (data) => {
@@ -177,7 +176,6 @@ export const useNotificationMutations = ({
 				dockerCleanup: d.dockerCleanup,
 				notificationId: id,
 				telegramId: subId("telegramId"),
-				serverThreshold: d.serverThreshold,
 			});
 		},
 		discord: (data) => {
@@ -195,7 +193,6 @@ export const useNotificationMutations = ({
 				dockerCleanup: d.dockerCleanup,
 				notificationId: id,
 				discordId: subId("discordId"),
-				serverThreshold: d.serverThreshold,
 			});
 		},
 		email: (data) => {
@@ -217,7 +214,6 @@ export const useNotificationMutations = ({
 				dockerCleanup: d.dockerCleanup,
 				notificationId: id,
 				emailId: subId("emailId"),
-				serverThreshold: d.serverThreshold,
 			});
 		},
 		resend: (data) => {
@@ -236,12 +232,10 @@ export const useNotificationMutations = ({
 				dockerCleanup: d.dockerCleanup,
 				notificationId: id,
 				resendId: subId("resendId"),
-				serverThreshold: d.serverThreshold,
 			});
 		},
 		gotify: (data) => {
 			const d = data as ForType<"gotify">;
-			// Gotify never persists serverThreshold (backend registry omits it).
 			return gotifyMutation.mutateAsync({
 				appBuildError: d.appBuildError,
 				appDeploy: d.appDeploy,
@@ -261,7 +255,6 @@ export const useNotificationMutations = ({
 		},
 		ntfy: (data) => {
 			const d = data as ForType<"ntfy">;
-			// Ntfy never persists serverThreshold (backend registry omits it).
 			return ntfyMutation.mutateAsync({
 				appBuildError: d.appBuildError,
 				appDeploy: d.appDeploy,
@@ -295,7 +288,6 @@ export const useNotificationMutations = ({
 				dockerCleanup: d.dockerCleanup,
 				notificationId: id,
 				mattermostId: subId("mattermostId"),
-				serverThreshold: d.serverThreshold,
 			});
 		},
 		lark: (data) => {
@@ -312,7 +304,6 @@ export const useNotificationMutations = ({
 				dockerCleanup: d.dockerCleanup,
 				notificationId: id,
 				larkId: subId("larkId"),
-				serverThreshold: d.serverThreshold,
 			});
 		},
 		teams: (data) => {
@@ -329,7 +320,6 @@ export const useNotificationMutations = ({
 				dockerCleanup: d.dockerCleanup,
 				notificationId: id,
 				teamsId: subId("teamsId"),
-				serverThreshold: d.serverThreshold,
 			});
 		},
 		custom: (data) => {
@@ -345,7 +335,6 @@ export const useNotificationMutations = ({
 				headers: headersArrayToRecord(d.headers),
 				name: d.name,
 				dockerCleanup: d.dockerCleanup,
-				serverThreshold: d.serverThreshold,
 				notificationId: id,
 				customId: subId("customId"),
 			});
@@ -366,7 +355,6 @@ export const useNotificationMutations = ({
 				expire: d.priority === 2 ? d.expire : undefined,
 				name: d.name,
 				dockerCleanup: d.dockerCleanup,
-				serverThreshold: d.serverThreshold,
 				notificationId: id,
 				pushoverId: subId("pushoverId"),
 			});

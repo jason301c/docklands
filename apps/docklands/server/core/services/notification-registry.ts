@@ -29,11 +29,6 @@ import {
  * - `subValues`      maps the create/update input to the exact sub-table
  *                    insert/update values (same columns, same defaults, same
  *                    conditional/coalescing quirks as the original service).
- * - `includeServerThreshold` whether the parent `notifications` row carries the
- *                    `serverThreshold` field. Gotify and Ntfy historically
- *                    omitted it on both create and update, so the column keeps
- *                    its DB default on create and is left untouched on update —
- *                    this flag preserves that exactly.
  *
  * The discriminant is the `notificationType` enum value, which is also written
  * into the `notifications` row on create.
@@ -51,8 +46,6 @@ interface NotificationDescriptor<TInput = any> {
 	notificationFk: keyof typeof notifications.$inferInsert;
 	/** Map create/update input -> sub-table insert/update values. */
 	subValues: (input: TInput) => Record<string, unknown>;
-	/** Whether the parent notification row carries `serverThreshold`. */
-	includeServerThreshold: boolean;
 }
 
 export const notificationRegistry: Record<
@@ -63,7 +56,6 @@ export const notificationRegistry: Record<
 		table: slack,
 		idColumn: "slackId",
 		notificationFk: "slackId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			channel: input.channel,
 			webhookUrl: input.webhookUrl,
@@ -73,7 +65,6 @@ export const notificationRegistry: Record<
 		table: telegram,
 		idColumn: "telegramId",
 		notificationFk: "telegramId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			botToken: input.botToken,
 			chatId: input.chatId,
@@ -84,7 +75,6 @@ export const notificationRegistry: Record<
 		table: discord,
 		idColumn: "discordId",
 		notificationFk: "discordId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			webhookUrl: input.webhookUrl,
 			decoration: input.decoration,
@@ -94,7 +84,6 @@ export const notificationRegistry: Record<
 		table: email,
 		idColumn: "emailId",
 		notificationFk: "emailId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			smtpServer: input.smtpServer,
 			smtpPort: input.smtpPort,
@@ -108,7 +97,6 @@ export const notificationRegistry: Record<
 		table: resend,
 		idColumn: "resendId",
 		notificationFk: "resendId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			apiKey: input.apiKey,
 			fromAddress: input.fromAddress,
@@ -119,8 +107,6 @@ export const notificationRegistry: Record<
 		table: gotify,
 		idColumn: "gotifyId",
 		notificationFk: "gotifyId",
-		// Gotify never wrote serverThreshold onto the notification row.
-		includeServerThreshold: false,
 		subValues: (input) => ({
 			serverUrl: input.serverUrl,
 			appToken: input.appToken,
@@ -132,8 +118,6 @@ export const notificationRegistry: Record<
 		table: ntfy,
 		idColumn: "ntfyId",
 		notificationFk: "ntfyId",
-		// Ntfy never wrote serverThreshold onto the notification row.
-		includeServerThreshold: false,
 		subValues: (input) => ({
 			serverUrl: input.serverUrl,
 			topic: input.topic,
@@ -146,7 +130,6 @@ export const notificationRegistry: Record<
 		table: mattermost,
 		idColumn: "mattermostId",
 		notificationFk: "mattermostId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			webhookUrl: input.webhookUrl,
 			channel: input.channel,
@@ -157,7 +140,6 @@ export const notificationRegistry: Record<
 		table: pushover,
 		idColumn: "pushoverId",
 		notificationFk: "pushoverId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			userKey: input.userKey,
 			apiToken: input.apiToken,
@@ -170,7 +152,6 @@ export const notificationRegistry: Record<
 		table: custom,
 		idColumn: "customId",
 		notificationFk: "customId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			endpoint: input.endpoint,
 			headers: input.headers,
@@ -180,7 +161,6 @@ export const notificationRegistry: Record<
 		table: lark,
 		idColumn: "larkId",
 		notificationFk: "larkId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			webhookUrl: input.webhookUrl,
 		}),
@@ -189,7 +169,6 @@ export const notificationRegistry: Record<
 		table: teams,
 		idColumn: "teamsId",
 		notificationFk: "teamsId",
-		includeServerThreshold: true,
 		subValues: (input) => ({
 			webhookUrl: input.webhookUrl,
 		}),

@@ -41,7 +41,6 @@ export const notifications = pgTable("notification", {
 	docklandsRestart: boolean("docklandsRestart").notNull().default(false),
 	docklandsBackup: boolean("docklandsBackup").notNull().default(false),
 	dockerCleanup: boolean("dockerCleanup").notNull().default(false),
-	serverThreshold: boolean("serverThreshold").notNull().default(false),
 	notificationType: notificationType("notificationType").notNull(),
 	createdAt: text("createdAt")
 		.notNull()
@@ -275,7 +274,6 @@ export const apiCreateSlack = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		webhookUrl: z.string().min(1),
@@ -304,7 +302,6 @@ export const apiCreateTelegram = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		botToken: z.string().min(1),
@@ -335,7 +332,6 @@ export const apiCreateDiscord = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		webhookUrl: z.string().min(1),
@@ -367,7 +363,6 @@ export const apiCreateEmail = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		smtpServer: z.string().min(1),
@@ -404,7 +399,6 @@ export const apiCreateResend = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		apiKey: z.string().min(1),
@@ -502,7 +496,6 @@ export const apiCreateMattermost = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		webhookUrl: z.string().url(),
@@ -519,7 +512,6 @@ export const apiCreateMattermost = notificationsSchema
 		docklandsRestart: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	});
 
 export const apiUpdateMattermost = apiCreateMattermost.partial().extend({
@@ -553,7 +545,6 @@ export const apiCreateCustom = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		endpoint: z.string().min(1),
@@ -581,7 +572,6 @@ export const apiCreateLark = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		webhookUrl: z.string().min(1),
@@ -608,7 +598,6 @@ export const apiCreateTeams = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		webhookUrl: z.string().min(1),
@@ -635,7 +624,6 @@ export const apiCreatePushover = notificationsSchema
 		name: true,
 		appDeploy: true,
 		dockerCleanup: true,
-		serverThreshold: true,
 	})
 	.extend({
 		userKey: z.string().min(1),
@@ -670,7 +658,6 @@ export const apiUpdatePushover = z.object({
 	name: z.string().optional(),
 	appDeploy: z.boolean().optional(),
 	dockerCleanup: z.boolean().optional(),
-	serverThreshold: z.boolean().optional(),
 });
 
 export const apiTestPushoverConnection = z

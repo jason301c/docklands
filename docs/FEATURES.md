@@ -576,8 +576,9 @@ base64-passed to avoid shell expansion.
 - **Metrics.** `server/core/monitoring/` aggregates CPU/memory/disk/network/block
   stats (host stats via `node-os-utils`; container stats by polling `docker stats`),
   records them to disk for history, and surfaces them at `/dashboard/host-metrics`.
-  Refresh rates, container include/exclude filters, retention, and CPU/memory alert
-  thresholds are configured per instance and per worker (`metricsConfig`).
+  Refresh rates, container include/exclude filters, and retention are configured
+  per instance and per worker (`metricsConfig`). Host CPU/memory notification
+  thresholds are not a v0.1.0 shipped alert path.
 
 ---
 
@@ -591,9 +592,8 @@ base64-passed to avoid shell expansion.
   server CPU/memory threshold alerts.
 - **How.** Router `notification.ts` (per-provider create/update/**test**/remove),
   senders + per-event handlers in `server/core/utils/notifications/`, schema
-  `notification.ts` (`notificationType` enum; credentials encrypted). Threshold
-  alerts arrive via a public `receiveNotification` endpoint that validates a token
-  before dispatch.
+  `notification.ts` (`notificationType` enum; credentials encrypted). There is no
+  public monitoring-alert ingestion endpoint in v0.1.0.
 
 ---
 

@@ -1,6 +1,5 @@
 import type { RouterOutputs } from "@/client/api/trpc";
 import type { NotificationFormInput } from "./notification-schema";
-import { notificationsMap } from "./notifications-map";
 
 /** The saved notification (with provider relations) returned by `notification.one`. */
 type Notification = NonNullable<RouterOutputs["notification"]["one"]>;
@@ -23,8 +22,7 @@ export const headersArrayToRecord = (
 
 /**
  * The shared base fields every provider's `form.reset` writes back from the
- * saved notification's parent row. `serverThreshold` is added by
- * `buildResetValues` only for providers that persist it (see `notificationsMap`).
+ * saved notification's parent row.
  */
 const baseResetFields = (notification: Notification) => ({
 	name: notification.name,
@@ -116,21 +114,16 @@ const providerResetFields: Record<
 
 /**
  * Build the `form.reset` values for a saved notification: the discriminant,
- * the shared base fields, `serverThreshold` (only for providers that persist
- * it), and the provider-specific fields. Replaces the original 12-arm
- * `form.reset` if/else with one derived value object.
+ * the shared base fields, and the provider-specific fields. Replaces the
+ * original 12-arm `form.reset` if/else with one derived value object.
  */
 export const buildResetValues = (
 	notification: Notification,
 ): NotificationFormInput => {
 	const type = notification.notificationType;
-	const values: Record<string, unknown> = {
+	return {
 		type,
 		...baseResetFields(notification),
 		...providerResetFields[type](notification),
-	};
-	if (notificationsMap[type].serverThreshold) {
-		values.serverThreshold = notification.serverThreshold;
-	}
-	return values as NotificationFormInput;
+	} as NotificationFormInput;
 };

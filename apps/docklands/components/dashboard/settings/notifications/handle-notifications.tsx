@@ -81,12 +81,6 @@ const ACTION_FIELDS = [
 		label: "Docklands Restart",
 		description: "Trigger the action when Docklands is restarted.",
 	},
-	{
-		name: "serverThreshold",
-		label: "Server Threshold",
-		description:
-			"Trigger the action when host CPU or memory usage crosses the configured threshold.",
-	},
 ] as const;
 
 export const HandleNotifications = ({ notificationId }: Props) => {
