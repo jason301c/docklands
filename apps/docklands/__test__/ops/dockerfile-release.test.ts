@@ -78,6 +78,8 @@ describe("production Dockerfile release install", () => {
 		expect(smokeScript).toContain("/api/ready");
 		expect(smokeScript).toContain("/api/auth/sign-up/email");
 		expect(smokeScript).toContain("Admin is already created");
+		expect(smokeScript).toContain("settings.updateDefaultIngressMode");
+		expect(smokeScript).toContain("settings.getWebServerSettings");
 		expect(smokeScript).toContain("DOCKLANDS_DOCKER_HOST");
 		expect(smokeScript).toContain("docklands-network");
 	});

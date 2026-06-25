@@ -19,6 +19,8 @@ SESSION_BODY=$(mktemp)
 SECOND_SIGNUP_BODY=$(mktemp)
 HOME_HEADERS=$(mktemp)
 REGISTER_AFTER_HEADERS=$(mktemp)
+INGRESS_UPDATE_BODY=$(mktemp)
+INGRESS_SETTINGS_BODY=$(mktemp)
 COOKIE_JAR=$(mktemp)
 APP_PORT=""
 APP_PLATFORM=""
@@ -46,6 +48,16 @@ print_diagnostics() {
 		cat "$SECOND_SIGNUP_BODY" >&2
 		echo >&2
 	fi
+	if [ -s "$INGRESS_UPDATE_BODY" ]; then
+		echo "----- last ingress update response -----" >&2
+		cat "$INGRESS_UPDATE_BODY" >&2
+		echo >&2
+	fi
+	if [ -s "$INGRESS_SETTINGS_BODY" ]; then
+		echo "----- last ingress settings response -----" >&2
+		cat "$INGRESS_SETTINGS_BODY" >&2
+		echo >&2
+	fi
 }
 
 cleanup() {
@@ -61,6 +73,8 @@ cleanup() {
 		"$SECOND_SIGNUP_BODY" \
 		"$HOME_HEADERS" \
 		"$REGISTER_AFTER_HEADERS" \
+		"$INGRESS_UPDATE_BODY" \
+		"$INGRESS_SETTINGS_BODY" \
 		"$COOKIE_JAR"
 	if [ "${DOCKLANDS_SMOKE_KEEP:-}" = "1" ]; then
 		echo "Keeping smoke resources because DOCKLANDS_SMOKE_KEEP=1:" >&2
@@ -131,6 +145,61 @@ expect_status() {
 		echo >&2
 	fi
 	return 1
+}
+
+assert_ingress_mode() {
+	local expected=$1
+	local status
+	local persisted_mode
+
+	status=$(curl -sS -o "$INGRESS_SETTINGS_BODY" -w "%{http_code}" \
+		-b "$COOKIE_JAR" \
+		"http://127.0.0.1:${APP_PORT}/api/trpc/settings.getWebServerSettings")
+	expect_status "read ingress settings" "200" "$status" \
+		"$INGRESS_SETTINGS_BODY"
+	node -e '
+const fs = require("node:fs");
+const expected = process.argv[2];
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+const mode = body.result?.data?.json?.defaultIngressMode;
+if (mode !== expected) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+' "$INGRESS_SETTINGS_BODY" "$expected"
+
+	persisted_mode=$(docker exec "$DB_NAME" psql \
+		-U docklands_smoke \
+		-d docklands_smoke \
+		-tAc 'select "defaultIngressMode" from "webServerSettings" order by created_at asc limit 1')
+	if [ "$persisted_mode" != "$expected" ]; then
+		echo "Expected persisted default ingress mode $expected, got: $persisted_mode" >&2
+		exit 1
+	fi
+}
+
+update_ingress_mode() {
+	local mode=$1
+	local status
+
+	status=$(curl -sS -o "$INGRESS_UPDATE_BODY" -w "%{http_code}" \
+		-b "$COOKIE_JAR" \
+		-H "content-type: application/json" \
+		-X POST \
+		"http://127.0.0.1:${APP_PORT}/api/trpc/settings.updateDefaultIngressMode" \
+		--data "{\"json\":{\"defaultIngressMode\":\"${mode}\"}}")
+	expect_status "update default ingress mode" "200" "$status" \
+		"$INGRESS_UPDATE_BODY"
+	node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (body.result?.data?.json !== true) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+' "$INGRESS_UPDATE_BODY"
+
+	assert_ingress_mode "$mode"
 }
 
 check_operator_smoke() {
@@ -250,6 +319,10 @@ if (body.message !== "Admin is already created") {
 		echo "Expected first-owner bootstrap DB row, got: $bootstrap_record" >&2
 		exit 1
 	fi
+
+	assert_ingress_mode "public"
+	update_ingress_mode "tunnel"
+	update_ingress_mode "public"
 }
 
 dind_ready() {
@@ -332,6 +405,7 @@ fi
 if [ "$RUN_OPERATOR_SMOKE" = "1" ]; then
 	echo "Docklands operator smoke passed for $IMAGE_REF"
 	echo "  first owner: owner@docklands.local"
+	echo "  default ingress mode: public -> tunnel -> public"
 else
 	echo "Docklands image smoke passed for $IMAGE_REF"
 fi
