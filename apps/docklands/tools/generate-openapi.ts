@@ -10,6 +10,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { generateOpenApiDocument } from "@/server/core/openapi/generator/index.mjs";
 import { siteConfig } from "@/shared/site";
+import packageInfo from "../package.json";
 import { appRouter } from "../server/api/root";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +22,7 @@ async function generateOpenAPI() {
 
 		const openApiDocument = generateOpenApiDocument(appRouter, {
 			title: "Docklands API",
-			version: "1.0.0",
+			version: packageInfo.version,
 			baseUrl: "https://your-docklands-instance.example/api",
 			docsUrl: siteConfig.links.github,
 			tags: [
@@ -68,7 +69,7 @@ async function generateOpenAPI() {
 			title: "Docklands API",
 			description:
 				"Complete API documentation for Docklands - Deploy applications, manage databases, and orchestrate your infrastructure. This API allows you to programmatically manage all aspects of your Docklands instance.",
-			version: "1.0.0",
+			version: packageInfo.version,
 			contact: {
 				name: "Docklands Team",
 				url: siteConfig.links.github,

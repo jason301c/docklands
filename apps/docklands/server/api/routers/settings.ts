@@ -456,6 +456,7 @@ export const settingsRouter = createTRPCRouter({
 		}),
 
 	updateTraefikFile: protectedProcedure
+		.meta({ openapi: { enabled: false } })
 		.input(apiModifyTraefikConfig)
 		.mutation(async ({ input, ctx }) => {
 			await checkPermission(ctx, { traefikFiles: ["write"] });
@@ -488,6 +489,7 @@ export const settingsRouter = createTRPCRouter({
 		}),
 
 	readTraefikFile: protectedProcedure
+		.meta({ openapi: { enabled: false } })
 		.input(apiReadTraefikConfig)
 		.query(async ({ input, ctx }) => {
 			await checkPermission(ctx, { traefikFiles: ["read"] });

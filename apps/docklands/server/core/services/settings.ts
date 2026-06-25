@@ -28,6 +28,54 @@ export const DEFAULT_UPDATE_DATA: IUpdateData = {
 	updateAvailable: false,
 };
 
+interface DockerHubTag {
+	digest: string;
+	name: string;
+}
+
+interface StableImageTag {
+	name: string;
+	version: string;
+}
+
+const getPlainSemverImageVersion = (tagName: string) => {
+	const version = semver.valid(tagName);
+	if (!version || version !== tagName) {
+		return null;
+	}
+
+	return version;
+};
+
+export const resolveLatestStableImageTag = (
+	tags: DockerHubTag[],
+): StableImageTag | null => {
+	const latestTag = tags.find((tag) => tag.name === "latest");
+
+	if (!latestTag) {
+		return null;
+	}
+
+	const candidates = tags
+		.filter((tag) => tag.digest === latestTag.digest)
+		.map((tag) => ({
+			name: tag.name,
+			version: getPlainSemverImageVersion(tag.name),
+		}))
+		.filter(
+			(
+				tag,
+			): tag is {
+				name: string;
+				version: string;
+			} => tag.version !== null,
+		);
+
+	return (
+		candidates.sort((a, b) => semver.rcompare(a.version, b.version))[0] ?? null
+	);
+};
+
 /** Returns current Docklands docker image tag or `latest` by default. */
 export const getDocklandsImageTag = () => {
 	return process.env.RELEASE_TAG || "latest";
@@ -54,7 +102,7 @@ export const getUpdateData = async (
 ): Promise<IUpdateData> => {
 	try {
 		let url: string | null = `${DOCKLANDS_DOCKER_HUB_TAGS_URL}?page_size=100`;
-		let allResults: { digest: string; name: string }[] = [];
+		let allResults: DockerHubTag[] = [];
 
 		// Fetch all tags from Docker Hub
 		while (url) {
@@ -65,7 +113,7 @@ export const getUpdateData = async (
 
 			const data = (await response.json()) as {
 				next: string | null;
-				results: { digest: string; name: string }[];
+				results: DockerHubTag[];
 			};
 
 			allResults = allResults.concat(data.results);
@@ -98,18 +146,9 @@ export const getUpdateData = async (
 			};
 		}
 
-		// For stable versions, use semver comparison
-		// Find the "latest" tag and get its digest
-		const latestTag = allResults.find((t) => t.name === "latest");
-
-		if (!latestTag) {
-			return DEFAULT_UPDATE_DATA;
-		}
-
-		// Find the versioned tag (v0.x.x) that has the same digest as "latest"
-		const latestVersionTag = allResults.find(
-			(t) => t.digest === latestTag.digest && t.name.startsWith("v"),
-		);
+		// For stable versions, use plain semver image tags. Production Docker
+		// scripts publish "<version>" and "latest" for the same image digest.
+		const latestVersionTag = resolveLatestStableImageTag(allResults);
 
 		if (!latestVersionTag) {
 			return DEFAULT_UPDATE_DATA;
@@ -119,14 +158,13 @@ export const getUpdateData = async (
 
 		// Use semver to compare versions for stable releases
 		const cleanedCurrent = semver.clean(currentVersion);
-		const cleanedLatest = semver.clean(latestVersion);
 
-		if (!cleanedCurrent || !cleanedLatest) {
+		if (!cleanedCurrent) {
 			return DEFAULT_UPDATE_DATA;
 		}
 
 		// Check if the latest version is greater than the current version
-		const updateAvailable = semver.gt(cleanedLatest, cleanedCurrent);
+		const updateAvailable = semver.gt(latestVersionTag.version, cleanedCurrent);
 
 		return {
 			latestVersion,

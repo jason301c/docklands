@@ -10,9 +10,9 @@ BUILD_TYPE=${1:-production}
 IMAGE_NAME=${IMAGE_NAME:-jason301c/docklands}
 
 # Image tag format: production builds tag the image with the package version
-# verbatim (e.g. "0.29.8"), so apps/docklands/package.json#version MUST be a
-# plain semver string with NO "v" prefix — otherwise the tag becomes "vv..."
-# downstream. Canary builds use the fixed "canary" tag.
+# verbatim (e.g. "0.1.0"), so apps/docklands/package.json#version MUST be a
+# plain semver string with no "v" prefix. Canary builds use the fixed "canary"
+# tag.
 if [ "$BUILD_TYPE" == "canary" ]; then
     TAG="canary"
 else

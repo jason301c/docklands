@@ -12,9 +12,10 @@ IMAGE_NAME=${IMAGE_NAME:-jason301c/docklands}
 BUILDER=$(docker buildx create --use)
 
 # Image tag format: production pushes "<version>" and "latest", where <version>
-# is apps/docklands/package.json#version verbatim (e.g. "0.29.8"). That version
-# MUST be plain semver with NO "v" prefix; we strip an accidental leading "v"
-# below so the tag never becomes "vv...". Canary pushes the fixed "canary" tag.
+# is apps/docklands/package.json#version verbatim (e.g. "0.1.0"). That version
+# MUST be plain semver with no "v" prefix; we strip an accidental leading "v"
+# below so production image tags stay plain semver. Canary pushes the fixed
+# "canary" tag.
 if [ "$BUILD_TYPE" == "canary" ]; then
     TAG="canary"
     echo PUSHING CANARY
