@@ -1,0 +1,128 @@
+# Manual release smoke for the documented Docker install path.
+#
+# This is intentionally not part of routine CI. It builds the production image,
+# mutates the runner's Docker daemon, initializes Swarm/Traefik through the
+# image's setup entrypoint, starts the image against disposable Postgres, deploys
+# a known service, and verifies host-level Traefik ingress over port 80.
+name: Host operator smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: Git branch or tag to checkout for the host install smoke.
+        required: true
+        default: canary
+
+concurrency:
+  group: host-operator-smoke-${{ github.workflow }}-${{ inputs.git_ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  docker-install:
+    name: Docker install and ingress smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: docklands_ci
+          POSTGRES_PASSWORD: docklands_ci
+          POSTGRES_DB: docklands_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U docklands_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: production
+      DATABASE_URL: postgres://docklands_ci:docklands_ci@host.docker.internal:5432/docklands_ci
+      BETTER_AUTH_SECRET: docklands-host-smoke-secret-000000000000
+      DOCKLANDS_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      SKIP_BUNDLED_POSTGRES: "true"
+      SKIP_PRE_MIGRATION_BACKUP: "true"
+
+    steps:
+      - name: Checkout selected ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.git_ref }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cleanup stale host resources
+        run: |
+          docker rm -f docklands docklands-host-smoke-setup docklands-traefik || true
+          if docker info --format '{{.Swarm.LocalNodeState}}' | grep -q '^active$'; then
+            docker service ls --format '{{.Name}}' | grep '^smoke-' | xargs -r docker service rm
+            docker service rm docklands-postgres || true
+          fi
+          docker volume rm docklands-postgres || true
+          sudo rm -rf /etc/docklands
+          sudo mkdir -p /etc/docklands
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/docklands/Dockerfile
+          push: false
+          load: true
+          tags: docklands:host-smoke
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run one-shot host setup from image
+        run: |
+          docker run --rm \
+            --name docklands-host-smoke-setup \
+            --add-host=host.docker.internal:host-gateway \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v /etc/docklands:/etc/docklands \
+            -e NODE_ENV="$NODE_ENV" \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e BETTER_AUTH_SECRET="$BETTER_AUTH_SECRET" \
+            -e DOCKLANDS_ENCRYPTION_KEY="$DOCKLANDS_ENCRYPTION_KEY" \
+            -e SKIP_BUNDLED_POSTGRES="$SKIP_BUNDLED_POSTGRES" \
+            -e SKIP_PRE_MIGRATION_BACKUP="$SKIP_PRE_MIGRATION_BACKUP" \
+            docklands:host-smoke \
+            node -r dotenv/config dist/setup-instance.mjs
+
+      - name: Start Docklands container
+        run: |
+          docker run -d \
+            --name docklands \
+            --add-host=host.docker.internal:host-gateway \
+            --network docklands-network \
+            -p 127.0.0.1:3000:3000 \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v /etc/docklands:/etc/docklands \
+            -e NODE_ENV="$NODE_ENV" \
+            -e DATABASE_URL="$DATABASE_URL" \
+            -e BETTER_AUTH_SECRET="$BETTER_AUTH_SECRET" \
+            -e DOCKLANDS_ENCRYPTION_KEY="$DOCKLANDS_ENCRYPTION_KEY" \
+            -e SKIP_BUNDLED_POSTGRES="$SKIP_BUNDLED_POSTGRES" \
+            -e SKIP_PRE_MIGRATION_BACKUP="$SKIP_PRE_MIGRATION_BACKUP" \
+            docklands:host-smoke
+
+      - name: Run host operator smoke
+        run: ./tools/release/host-operator-smoke.sh
+
+      - name: Cleanup Docker smoke resources
+        if: always()
+        run: |
+          docker rm -f docklands docklands-host-smoke-setup docklands-traefik || true
+          if docker info --format '{{.Swarm.LocalNodeState}}' | grep -q '^active$'; then
+            docker service ls --format '{{.Name}}' | grep '^smoke-' | xargs -r docker service rm
+            docker service rm docklands-postgres || true
+          fi
+          sudo rm -rf /etc/docklands

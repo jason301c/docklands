@@ -103,11 +103,12 @@ and reconcile it before wrapping up.
     `next/font`). It is still fully decoupled — no cross-app import — and can be
     statically exported for CDN hosting. Like the app it runs on Node 24.
 - `tools/` — repository-level development and release scripts (e.g.
-  `tools/docker/` image build/push helpers, `tools/check-bundler.mjs`). Tools may
-  coordinate app packages or release artifacts but must not be required at
-  production runtime. App-coupled scripts that import app internals belong in
-  `apps/docklands/tools/`; production startup/migration/recovery entrypoints
-  belong in `apps/docklands/server/ops/`.
+  `tools/docker/` image build/push helpers, `tools/release/` release-smoke
+  helpers, `tools/check-bundler.mjs`). Tools may coordinate app packages or
+  release artifacts but must not be required at production runtime. App-coupled
+  scripts that import app internals belong in `apps/docklands/tools/`;
+  production startup/migration/recovery entrypoints belong in
+  `apps/docklands/server/ops/`.
 - `biome.json` — workspace-level so root and app share one formatter/linter config.
 - `bun.lock`, `bunfig.toml`, `package.json` — the Bun workspace root.
 - `docs/` — repo-level documentation/output.
@@ -217,6 +218,7 @@ bun run docker:build              # build the app Docker image
 bun run docker:smoke <image>      # first-run smoke against disposable Postgres + Docker-in-Docker
 bun run docker:smoke:operator <image> # image smoke plus first-owner bootstrap checks
 bun run docker:smoke:deploy <image> # image smoke plus first-owner, settings, and first deploy checks
+bun run release:smoke:host        # manual disposable-host Docker install + Traefik ingress smoke
 bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in
 bun run check:openapi             # generate OpenAPI to a temp artifact and validate release invariants
 bun run docs:dev                  # Astro docs site (apps/docs)

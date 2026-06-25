@@ -56,15 +56,50 @@ and ambiguous env/file pairs stop startup with an operator-facing error.
 
 See [Configuration](/install/configuration/) for the full variable reference.
 
-## 3. Run the container
+## 3. Initialize host runtime
+
+Run setup once from the built image before starting the dashboard. This
+initializes Docker Swarm, creates the shared `docklands-network`, writes the
+Traefik config under `/etc/docklands`, and starts the host-level
+`docklands-traefik` container that owns ports `80` and `443`.
+
+```bash
+docker run --rm --name docklands-setup \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /etc/docklands:/etc/docklands \
+  -e DATABASE_URL="postgres://user:pass@host:5432/docklands" \
+  -e BETTER_AUTH_SECRET="<a long random secret>" \
+  -e DOCKLANDS_ENCRYPTION_KEY="<openssl rand -base64 32>" \
+  -e SKIP_BUNDLED_POSTGRES=true \
+  docklands \
+  node -r dotenv/config dist/setup-instance.mjs
+```
+
+Use `SKIP_BUNDLED_POSTGRES=true` when `DATABASE_URL` points at an external
+database. If you intentionally want setup to provision the bundled
+`docklands-postgres` Swarm service, set `DATABASE_URL` to the bundled database
+credentials instead and omit the skip flag. In either case, `DATABASE_URL` must
+use an address that the Docklands container can reach; if Postgres is bound only
+to the Docker host, use a host address or Docker host alias that is reachable
+from containers rather than `localhost`.
+
+:::note[Ingress ports]
+Do not publish `80` or `443` on the Docklands dashboard container itself.
+Traefik runs as a separate host container and binds those ports directly. If
+another service already owns them, setup will fail until you free the ports or
+configure alternate Traefik ports.
+:::
+
+## 4. Run the container
 
 The control plane manages Docker on the host, so it needs access to the Docker
-socket (or a daemon via `DOCKLANDS_DOCKER_HOST` / `DOCKER_HOST`), the ingress
-ports, and a persistent `/etc/docklands`:
+socket (or a daemon via `DOCKLANDS_DOCKER_HOST` / `DOCKER_HOST`) and the same
+persistent `/etc/docklands` that setup initialized:
 
 ```bash
 docker run -d --name docklands \
-  -p 3000:3000 -p 80:80 -p 443:443 \
+  --network docklands-network \
+  -p 3000:3000 \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /etc/docklands:/etc/docklands \
   -e DATABASE_URL="postgres://user:pass@host:5432/docklands" \
@@ -89,7 +124,7 @@ Docker daemon. That is inherent to what a deployment control plane does — only
 run Docklands on hosts where that trust is acceptable.
 :::
 
-## 4. First run
+## 5. First run
 
 Open `http://<host>:3000`. The first account you create becomes the
 organization **owner**. From there, set up an

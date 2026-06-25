@@ -56,6 +56,19 @@ describe("production Dockerfile release install", () => {
 		expect(dockerfile).not.toContain("BETTER_AUTH_SECRET");
 	});
 
+	it("ships the production setup entrypoint used by Docker installs", () => {
+		const esbuildConfig = appFile("esbuild.config.ts");
+		const productionDocs = repoFile(
+			"apps/docs/src/content/docs/install/production.md",
+		);
+
+		expect(esbuildConfig).toContain(
+			'"setup-instance": "server/ops/setup-instance.ts"',
+		);
+		expect(productionDocs).toContain("dist/setup-instance.mjs");
+		expect(productionDocs).not.toContain("-p 80:80 -p 443:443");
+	});
+
 	it("runs the loaded production image through the first-run smoke gate", () => {
 		const rootPackage = JSON.parse(repoFile("package.json"));
 		const workflow = repoFile(".github/workflows/docker-build.yml");
@@ -104,5 +117,32 @@ describe("production Dockerfile release install", () => {
 		expect(realDeployTest).toContain("for (const appName of allTestAppNames)");
 		expect(workflow).toContain("docker service ls");
 		expect(workflow).toContain("grep '^real-'");
+	});
+
+	it("keeps the manual host-operator smoke wired to the image setup path", () => {
+		const rootPackage = JSON.parse(repoFile("package.json"));
+		const workflow = repoFile(".github/workflows/host-operator-smoke.yml");
+		const smokeScript = repoFile("tools/release/host-operator-smoke.sh");
+
+		expect(rootPackage.scripts["release:smoke:host"]).toBe(
+			"./tools/release/host-operator-smoke.sh",
+		);
+		expect(workflow).toContain("docklands:host-smoke");
+		expect(workflow).toContain("dist/setup-instance.mjs");
+		expect(workflow).toContain("--network docklands-network");
+		expect(workflow).toContain("-p 127.0.0.1:3000:3000");
+		expect(workflow).toContain("./tools/release/host-operator-smoke.sh");
+		expect(workflow).toContain("docker rm -f docklands");
+		expect(workflow).toContain("docker service rm docklands-postgres");
+		expect(smokeScript).toContain("/api/ready");
+		expect(smokeScript).toContain("/api/auth/sign-up/email");
+		expect(smokeScript).toContain("settings.updateDefaultIngressMode");
+		expect(smokeScript).toContain("application.saveDockerProvider");
+		expect(smokeScript).toContain("domain.create");
+		expect(smokeScript).toContain("application.deploy");
+		expect(smokeScript).toContain("Host: ${SMOKE_DEPLOY_HOST}");
+		expect(smokeScript).toContain("TRAEFIK_URL");
+		expect(smokeScript).toContain("/etc/docklands/traefik/dynamic");
+		expect(smokeScript).toContain("docker service ps");
 	});
 });
