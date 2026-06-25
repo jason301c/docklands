@@ -1,15 +1,16 @@
-import type { WorkspaceVariableSourceType } from "@/shared/workspace-graph";
+import { DATABASE_ENGINE_METADATA } from "@/shared/database-engines";
+import {
+	WORKSPACE_VARIABLE_SOURCE_TYPES,
+	type WorkspaceVariableSourceType,
+} from "@/shared/workspace-graph";
 
 /**
- * Browser-side display labels for each managed database engine. Mirrors the
- * `label` field of the server-side engine registry, kept local so client
- * components do not import from `server/`.
+ * Browser-side display labels for each managed database engine, derived from
+ * shared engine metadata so client components do not import from `server/`.
  */
-export const ENGINE_LABELS: Record<WorkspaceVariableSourceType, string> = {
-	postgres: "PostgreSQL",
-	mysql: "MySQL",
-	mariadb: "MariaDB",
-	mongo: "MongoDB",
-	redis: "Redis",
-	libsql: "libSQL",
-};
+export const ENGINE_LABELS = Object.fromEntries(
+	WORKSPACE_VARIABLE_SOURCE_TYPES.map((engine) => [
+		engine,
+		DATABASE_ENGINE_METADATA[engine].label,
+	]),
+) as Record<WorkspaceVariableSourceType, string>;

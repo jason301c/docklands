@@ -68,6 +68,10 @@ Docklands is a single Node process that serves both the UI and the backend:
   (`api.database`), service (`services/database.ts`), builder
   (`utils/databases/build.ts`), and UI tree (`components/dashboard/database-service/`)
   serve them all; **do not reintroduce per-engine tables/routers/components.**
+  Browser-safe engine metadata shared with forms and labels lives in
+  `shared/database-engines.ts`; the registry consumes it, and UI should import it
+  rather than duplicating labels, logo keys, default images, default users, or
+  default database names.
   Coolify-style **detection** (`databases/detection.ts`) promotes databases found
   inside a compose stack to `service_database` rows (the template bridge). This
   replaced six near-identical per-engine stacks; the upstream Dokploy per-engine

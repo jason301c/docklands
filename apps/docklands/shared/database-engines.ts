@@ -1,12 +1,11 @@
 /**
  * Pure, cross-runtime facts about Docklands' managed database engines.
  *
- * The full engine registry (`server/core/databases/registry.ts`) is a heavy
- * backend module. The handful of facts the browser needs — the engine key list,
- * the key union type, and whether an engine supports a logical (dump-based)
- * backup — are extracted here so client forms can import them without reaching
- * into `server/core`. The registry re-exports these so there is still a single
- * source of truth.
+ * The full engine registry (`server/core/databases/registry.ts`) is a backend
+ * module. Browser-safe facts the UI also needs — keys, labels, logo keys,
+ * default images/users/names, and logical-backup support — are extracted here so
+ * client forms can import them without reaching into `server/core`. The registry
+ * consumes and re-exports these so there is still a single source of truth.
  *
  * Keep this file free of DB/Docker/filesystem/zod imports.
  */
@@ -21,6 +20,62 @@ export const DATABASE_ENGINE_KEYS = [
 ] as const;
 
 export type DatabaseEngineKey = (typeof DATABASE_ENGINE_KEYS)[number];
+
+export interface DatabaseEngineMetadata {
+	label: string;
+	/** Icon/logo key consumed by the registry and browser icon maps. */
+	logo: DatabaseEngineKey;
+	/** Default image suggested by create/edit UI and used by backend defaults. */
+	defaultImage: string;
+	/** Default logical database name, when the engine has that concept. */
+	defaultDatabaseName?: string;
+	/** Default database user, when the engine has user credentials. */
+	defaultDatabaseUser?: string;
+}
+
+export const DATABASE_ENGINE_METADATA = {
+	postgres: {
+		label: "PostgreSQL",
+		logo: "postgres",
+		defaultImage: "postgres:18",
+		defaultDatabaseName: "postgres",
+		defaultDatabaseUser: "postgres",
+	},
+	mysql: {
+		label: "MySQL",
+		logo: "mysql",
+		defaultImage: "mysql:8",
+		defaultDatabaseName: "mysql",
+		defaultDatabaseUser: "mysql",
+	},
+	mariadb: {
+		label: "MariaDB",
+		logo: "mariadb",
+		defaultImage: "mariadb:11",
+		defaultDatabaseName: "mariadb",
+		defaultDatabaseUser: "mariadb",
+	},
+	mongo: {
+		label: "MongoDB",
+		logo: "mongo",
+		defaultImage: "mongo:8",
+		defaultDatabaseUser: "mongo",
+	},
+	redis: {
+		label: "Redis",
+		logo: "redis",
+		defaultImage: "redis:7",
+	},
+	libsql: {
+		label: "libSQL",
+		logo: "libsql",
+		defaultImage: "ghcr.io/tursodatabase/libsql-server:v0.24.32",
+		defaultDatabaseUser: "libsql",
+	},
+} satisfies Record<DatabaseEngineKey, DatabaseEngineMetadata>;
+
+export const databaseEngineLabel = (key: DatabaseEngineKey): string =>
+	DATABASE_ENGINE_METADATA[key].label;
 
 /**
  * Engines that support a logical (dump-based) backup. Redis and libSQL do not

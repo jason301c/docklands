@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	DATABASE_ENGINE_KEYS,
+	DATABASE_ENGINE_METADATA,
 	DatabaseCredentialExtractionError,
 	databaseBackupCommand,
 	databaseChangePasswordCommand,
@@ -15,6 +16,15 @@ describe("database engine registry", () => {
 	it("exposes a descriptor for every engine key", () => {
 		for (const key of DATABASE_ENGINE_KEYS) {
 			expect(databaseEngines[key].key).toBe(key);
+			expect(databaseEngines[key].label).toBe(
+				DATABASE_ENGINE_METADATA[key].label,
+			);
+			expect(databaseEngines[key].logo).toBe(
+				DATABASE_ENGINE_METADATA[key].logo,
+			);
+			expect(databaseEngines[key].defaultImage).toBe(
+				DATABASE_ENGINE_METADATA[key].defaultImage,
+			);
 		}
 	});
 

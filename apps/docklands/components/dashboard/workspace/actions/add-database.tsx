@@ -5,7 +5,7 @@ import { Switch } from "@cloudflare/kumo/components/switch";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { AlertTriangle, Database, HelpCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "@/client/api/trpc";
@@ -30,32 +30,31 @@ import {
 } from "@/components/shared/form";
 import { Select } from "@/components/shared/select";
 import { toast } from "@/components/shared/toast";
+import {
+	DATABASE_ENGINE_KEYS,
+	DATABASE_ENGINE_METADATA,
+	type DatabaseEngineKey,
+} from "@/shared/database-engines";
 import { slugify } from "@/shared/slug";
 import { APP_NAME_MESSAGE, APP_NAME_REGEX } from "@/shared/validation/schema";
 import { PlacementFormField } from "./placement-select";
 
 const logger = createClientLogger("workspace");
 
-type DbType = z.infer<typeof AddDatabaseSchema>["type"];
+type DbType = DatabaseEngineKey;
+type UserDatabaseType = Exclude<DbType, "redis">;
+type NamedDatabaseType = Extract<DbType, "mariadb" | "mysql" | "postgres">;
 
-const dockerImageDefaultPlaceholder: Record<DbType, string> = {
-	mongo: "mongo:8",
-	libsql: "ghcr.io/tursodatabase/libsql-server:v0.24.32",
-	mariadb: "mariadb:11",
-	mysql: "mysql:8",
-	postgres: "postgres:18",
-	redis: "redis:7",
+const getDefaultDatabaseUser = (type: UserDatabaseType) => {
+	const user = DATABASE_ENGINE_METADATA[type].defaultDatabaseUser;
+	if (!user) throw new Error(`Missing default database user for ${type}`);
+	return user;
 };
 
-const databasesUserDefaultPlaceholder: Record<
-	Exclude<DbType, "redis">,
-	string
-> = {
-	libsql: "libsql",
-	mariadb: "mariadb",
-	mongo: "mongo",
-	mysql: "mysql",
-	postgres: "postgres",
+const getDefaultDatabaseName = (type: NamedDatabaseType) => {
+	const name = DATABASE_ENGINE_METADATA[type].defaultDatabaseName;
+	if (!name) throw new Error(`Missing default database name for ${type}`);
+	return name;
 };
 
 const baseDatabaseSchema = z.object({
@@ -86,8 +85,8 @@ const AddDatabaseSchema = z
 				type: z.literal("libsql"),
 				dockerImage: z
 					.string()
-					.default("ghcr.io/tursodatabase/libsql-server:v0.24.32"),
-				databaseUser: z.string().default("libsql"),
+					.default(DATABASE_ENGINE_METADATA.libsql.defaultImage),
+				databaseUser: z.string().default(getDefaultDatabaseUser("libsql")),
 				sqldNode: z.enum(["primary", "replica"]).default("primary"),
 				sqldPrimaryUrl: z.string().optional(),
 				enableNamespaces: z.boolean().default(false),
@@ -96,7 +95,9 @@ const AddDatabaseSchema = z
 		z
 			.object({
 				type: z.literal("mariadb"),
-				dockerImage: z.string().default("mariadb:11"),
+				dockerImage: z
+					.string()
+					.default(DATABASE_ENGINE_METADATA.mariadb.defaultImage),
 				databaseRootPassword: z
 					.string()
 					.regex(/^[a-zA-Z0-9@#%^&*()_+\-=[\]{}|;:,.<>?~`]*$/, {
@@ -104,14 +105,14 @@ const AddDatabaseSchema = z
 							"Password contains invalid characters. Please avoid: $ ! ' \" \\ / and space characters for database compatibility",
 					})
 					.optional(),
-				databaseUser: z.string().default("mariadb"),
-				databaseName: z.string().default("mariadb"),
+				databaseUser: z.string().default(getDefaultDatabaseUser("mariadb")),
+				databaseName: z.string().default(getDefaultDatabaseName("mariadb")),
 			})
 			.merge(baseDatabaseSchema),
 		z
 			.object({
 				type: z.literal("mongo"),
-				databaseUser: z.string().default("mongo"),
+				databaseUser: z.string().default(getDefaultDatabaseUser("mongo")),
 				replicaSets: z.boolean().default(false),
 			})
 			.merge(baseDatabaseSchema),
@@ -125,15 +126,15 @@ const AddDatabaseSchema = z
 							"Password contains invalid characters. Please avoid: $ ! ' \" \\ / and space characters for database compatibility",
 					})
 					.optional(),
-				databaseUser: z.string().default("mysql"),
-				databaseName: z.string().default("mysql"),
+				databaseUser: z.string().default(getDefaultDatabaseUser("mysql")),
+				databaseName: z.string().default(getDefaultDatabaseName("mysql")),
 			})
 			.merge(baseDatabaseSchema),
 		z
 			.object({
 				type: z.literal("postgres"),
-				databaseName: z.string().default("postgres"),
-				databaseUser: z.string().default("postgres"),
+				databaseName: z.string().default(getDefaultDatabaseName("postgres")),
+				databaseUser: z.string().default(getDefaultDatabaseUser("postgres")),
 			})
 			.merge(baseDatabaseSchema),
 		z
@@ -162,31 +163,13 @@ const AddDatabaseSchema = z
 		}
 	});
 
-const databasesMap = {
-	postgres: {
-		icon: <PostgresqlIcon />,
-		label: "PostgreSQL",
-	},
-	mongo: {
-		icon: <MongodbIcon />,
-		label: "MongoDB",
-	},
-	mariadb: {
-		icon: <MariadbIcon />,
-		label: "MariaDB",
-	},
-	mysql: {
-		icon: <MysqlIcon />,
-		label: "MySQL",
-	},
-	redis: {
-		icon: <RedisIcon />,
-		label: "Redis",
-	},
-	libsql: {
-		icon: <LibsqlIcon className="size-10" />,
-		label: "libSQL",
-	},
+const databaseIcons: Record<DbType, ReactNode> = {
+	postgres: <PostgresqlIcon />,
+	mysql: <MysqlIcon />,
+	mariadb: <MariadbIcon />,
+	mongo: <MongodbIcon />,
+	redis: <RedisIcon />,
+	libsql: <LibsqlIcon className="size-10" />,
 };
 
 type AddDatabase = z.infer<typeof AddDatabaseSchema>;
@@ -313,7 +296,7 @@ export const AddDatabase = ({
 
 	const onSubmit = async (data: AddDatabase) => {
 		const defaultDockerImage =
-			data.dockerImage || dockerImageDefaultPlaceholder[data.type];
+			data.dockerImage || DATABASE_ENGINE_METADATA[data.type].defaultImage;
 
 		const runtimeWorkerId =
 			data.runtimeWorkerId === "docklands" ? null : data.runtimeWorkerId;
@@ -323,8 +306,7 @@ export const AddDatabase = ({
 		let config: Record<string, unknown>;
 		if (data.type === "libsql") {
 			config = {
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder.libsql,
+				databaseUser: data.databaseUser || getDefaultDatabaseUser("libsql"),
 				databasePassword: data.databasePassword,
 				sqldNode: data.sqldNode,
 				sqldPrimaryUrl: data.sqldPrimaryUrl,
@@ -332,32 +314,28 @@ export const AddDatabase = ({
 			};
 		} else if (data.type === "mariadb") {
 			config = {
-				databaseName: data.databaseName || "mariadb",
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder.mariadb,
+				databaseName: data.databaseName || getDefaultDatabaseName("mariadb"),
+				databaseUser: data.databaseUser || getDefaultDatabaseUser("mariadb"),
 				databasePassword: data.databasePassword,
 				databaseRootPassword: data.databaseRootPassword || "",
 			};
 		} else if (data.type === "mongo") {
 			config = {
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder.mongo,
+				databaseUser: data.databaseUser || getDefaultDatabaseUser("mongo"),
 				databasePassword: data.databasePassword,
 				replicaSets: data.replicaSets,
 			};
 		} else if (data.type === "mysql") {
 			config = {
-				databaseName: data.databaseName || "mysql",
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder.mysql,
+				databaseName: data.databaseName || getDefaultDatabaseName("mysql"),
+				databaseUser: data.databaseUser || getDefaultDatabaseUser("mysql"),
 				databasePassword: data.databasePassword,
 				databaseRootPassword: data.databaseRootPassword || "",
 			};
 		} else if (data.type === "postgres") {
 			config = {
-				databaseName: data.databaseName || "postgres",
-				databaseUser:
-					data.databaseUser || databasesUserDefaultPlaceholder.postgres,
+				databaseName: data.databaseName || getDefaultDatabaseName("postgres"),
+				databaseUser: data.databaseUser || getDefaultDatabaseUser("postgres"),
 				databasePassword: data.databasePassword,
 			};
 		} else {
@@ -439,15 +417,15 @@ export const AddDatabase = ({
 											<Radio.Legend className="sr-only">
 												Select a database
 											</Radio.Legend>
-											{Object.entries(databasesMap).map(([key, value]) => (
+											{DATABASE_ENGINE_KEYS.map((key) => (
 												<Radio.Item
 													key={key}
 													value={key}
 													className="min-h-24"
 													label={
 														<span className="flex flex-col items-center gap-2 text-center">
-															{value.icon}
-															<span>{value.label}</span>
+															{databaseIcons[key]}
+															<span>{DATABASE_ENGINE_METADATA[key].label}</span>
 														</span>
 													}
 												/>
@@ -671,7 +649,7 @@ export const AddDatabase = ({
 												<FormLabel>Database User</FormLabel>
 												<FormControl>
 													<Input
-														placeholder={`Default ${databasesUserDefaultPlaceholder[type]}`}
+														placeholder={`Default ${getDefaultDatabaseUser(type)}`}
 														autoComplete="off"
 														{...field}
 													/>
@@ -733,7 +711,7 @@ export const AddDatabase = ({
 												<FormLabel>Container image</FormLabel>
 												<FormControl>
 													<Input
-														placeholder={`Default ${dockerImageDefaultPlaceholder[type]}`}
+														placeholder={`Default ${DATABASE_ENGINE_METADATA[type].defaultImage}`}
 														{...field}
 													/>
 												</FormControl>

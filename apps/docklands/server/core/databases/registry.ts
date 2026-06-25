@@ -17,6 +17,7 @@ import { z } from "zod";
 import { createLogger } from "@/server/core/lib/logger";
 import {
 	DATABASE_ENGINE_KEYS,
+	DATABASE_ENGINE_METADATA,
 	type DatabaseEngineKey,
 	databaseEngineSupportsBackup,
 } from "@/shared/database-engines";
@@ -25,6 +26,7 @@ const logger = createLogger("db");
 
 export {
 	DATABASE_ENGINE_KEYS,
+	DATABASE_ENGINE_METADATA,
 	type DatabaseEngineKey,
 	databaseEngineSupportsBackup,
 };
@@ -282,10 +284,10 @@ ${command ?? "wait $MONGOD_PID"}`;
 
 const postgresEngine: DatabaseEngine<"postgres"> = {
 	key: "postgres",
-	label: "PostgreSQL",
-	logo: "postgres",
+	label: DATABASE_ENGINE_METADATA.postgres.label,
+	logo: DATABASE_ENGINE_METADATA.postgres.logo,
 	tags: ["postgres", "postgresql", "sql", "relational"],
-	defaultImage: "postgres:18",
+	defaultImage: DATABASE_ENGINE_METADATA.postgres.defaultImage,
 	containerPort: 5432,
 	imagePatterns: [
 		"postgres",
@@ -342,10 +344,10 @@ const postgresEngine: DatabaseEngine<"postgres"> = {
 
 const mysqlEngine: DatabaseEngine<"mysql"> = {
 	key: "mysql",
-	label: "MySQL",
-	logo: "mysql",
+	label: DATABASE_ENGINE_METADATA.mysql.label,
+	logo: DATABASE_ENGINE_METADATA.mysql.logo,
 	tags: ["mysql", "sql", "relational"],
-	defaultImage: "mysql:8",
+	defaultImage: DATABASE_ENGINE_METADATA.mysql.defaultImage,
 	containerPort: 3306,
 	imagePatterns: ["mysql", "mysql/mysql-server", "bitnami/mysql"],
 	detectEnvKeys: ["MYSQL_ROOT_PASSWORD", "MYSQL_PASSWORD", "MYSQL_DATABASE"],
@@ -400,10 +402,10 @@ const mysqlEngine: DatabaseEngine<"mysql"> = {
 
 const mariadbEngine: DatabaseEngine<"mariadb"> = {
 	key: "mariadb",
-	label: "MariaDB",
-	logo: "mariadb",
+	label: DATABASE_ENGINE_METADATA.mariadb.label,
+	logo: DATABASE_ENGINE_METADATA.mariadb.logo,
 	tags: ["mariadb", "mysql", "sql", "relational"],
-	defaultImage: "mariadb:11",
+	defaultImage: DATABASE_ENGINE_METADATA.mariadb.defaultImage,
 	containerPort: 3306,
 	imagePatterns: ["mariadb", "bitnami/mariadb"],
 	detectEnvKeys: [
@@ -458,10 +460,10 @@ const mariadbEngine: DatabaseEngine<"mariadb"> = {
 
 const mongoEngine: DatabaseEngine<"mongo"> = {
 	key: "mongo",
-	label: "MongoDB",
-	logo: "mongo",
+	label: DATABASE_ENGINE_METADATA.mongo.label,
+	logo: DATABASE_ENGINE_METADATA.mongo.logo,
 	tags: ["mongo", "mongodb", "document", "nosql"],
-	defaultImage: "mongo:8",
+	defaultImage: DATABASE_ENGINE_METADATA.mongo.defaultImage,
 	containerPort: 27017,
 	imagePatterns: ["mongo", "bitnami/mongodb"],
 	detectEnvKeys: ["MONGO_INITDB_ROOT_PASSWORD", "MONGO_INITDB_ROOT_USERNAME"],
@@ -526,10 +528,10 @@ const mongoEngine: DatabaseEngine<"mongo"> = {
 
 const redisEngine: DatabaseEngine<"redis"> = {
 	key: "redis",
-	label: "Redis",
-	logo: "redis",
+	label: DATABASE_ENGINE_METADATA.redis.label,
+	logo: DATABASE_ENGINE_METADATA.redis.logo,
 	tags: ["redis", "cache", "queue", "key-value", "datastore"],
-	defaultImage: "redis:7",
+	defaultImage: DATABASE_ENGINE_METADATA.redis.defaultImage,
 	containerPort: 6379,
 	imagePatterns: ["redis", "bitnami/redis", "valkey/valkey"],
 	detectEnvKeys: ["REDIS_PASSWORD"],
@@ -569,10 +571,10 @@ const redisEngine: DatabaseEngine<"redis"> = {
 
 const libsqlEngine: DatabaseEngine<"libsql"> = {
 	key: "libsql",
-	label: "libSQL",
-	logo: "libsql",
+	label: DATABASE_ENGINE_METADATA.libsql.label,
+	logo: DATABASE_ENGINE_METADATA.libsql.logo,
 	tags: ["libsql", "sqlite", "turso"],
-	defaultImage: "ghcr.io/tursodatabase/libsql-server:v0.24.32",
+	defaultImage: DATABASE_ENGINE_METADATA.libsql.defaultImage,
 	containerPort: 8080,
 	imagePatterns: ["tursodatabase/libsql-server", "libsql-server"],
 	// All SQLD_* env keys are sqld-specific (no other engine uses this prefix),
