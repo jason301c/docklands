@@ -11,16 +11,21 @@ to the container. This page lists the variables the control plane actually reads
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `DATABASE_URL` | — | PostgreSQL connection string. **Required.** |
-| `POSTGRES_PASSWORD_FILE` | — | Alternative to embedding the password in `DATABASE_URL`; reads the password from a secret file. |
-| `BETTER_AUTH_SECRET` | — | Signing secret for auth/sessions. **Set in production.** `bun run setup` generates one for local installs. |
-| `BETTER_AUTH_SECRET_FILE` | — | Read `BETTER_AUTH_SECRET` from a file (secret mounts). |
-| `DOCKLANDS_ENCRYPTION_KEY` | — | Key for [secrets at rest](#secrets-at-rest). Base64-encoded 32 bytes, **separate** from `BETTER_AUTH_SECRET`. **Set in production.** `bun run setup` generates one for local installs. |
-| `DOCKLANDS_ENCRYPTION_KEY_FILE` | — | Read `DOCKLANDS_ENCRYPTION_KEY` from a file (secret mounts). |
+| `DATABASE_URL` | — | PostgreSQL connection string. Use either this or `POSTGRES_PASSWORD_FILE`, not both. |
+| `POSTGRES_PASSWORD_FILE` | — | Alternative to embedding the password in `DATABASE_URL`; reads the password from a secret file. Use either this or `DATABASE_URL`, not both. |
+| `BETTER_AUTH_SECRET` | — | Signing secret for auth/sessions. **Set in production.** `bun run setup` generates one for local installs. Use either this or `BETTER_AUTH_SECRET_FILE`, not both. |
+| `BETTER_AUTH_SECRET_FILE` | — | Read `BETTER_AUTH_SECRET` from a file (secret mounts). Use either this or `BETTER_AUTH_SECRET`, not both. |
+| `DOCKLANDS_ENCRYPTION_KEY` | — | Key for [secrets at rest](#secrets-at-rest). Base64-encoded 32 bytes, **separate** from `BETTER_AUTH_SECRET`. **Set in production.** `bun run setup` generates one for local installs. Use either this or `DOCKLANDS_ENCRYPTION_KEY_FILE`, not both. |
+| `DOCKLANDS_ENCRYPTION_KEY_FILE` | — | Read `DOCKLANDS_ENCRYPTION_KEY` from a file (secret mounts). Use either this or `DOCKLANDS_ENCRYPTION_KEY`, not both. |
 | `BETTER_AUTH_URL` | derived | Stable external URL of this instance (e.g. `https://docklands.example.com`), used for absolute auth callback/verification links. Leave unset to derive the origin from each request. Defaults to `http://localhost:${PORT}` in dev. |
 | `PORT` | `3000` | Port the dashboard/API listens on. |
 | `HOST` | — | Bind host for the server. |
 | `NODE_ENV` | — | `development` or `production`. Affects on-disk paths (`/etc/docklands` vs `.docker/`) and whether the Let's Encrypt resolver is configured. |
+
+Production startup validates this core configuration before migrations run. Any
+`*_FILE` path must be readable and non-empty, `DOCKLANDS_ENCRYPTION_KEY` must
+decode to 32 bytes, `DATABASE_URL` must be a valid Postgres URL, and the env/file
+pairs above must not be set at the same time.
 
 ## Docker connection
 

@@ -37,17 +37,22 @@ Docklands needs:
   only the bundled `docklands-postgres` service; if you use an external
   PostgreSQL provider, use that provider's backup/restore tooling for the
   database and back up `/etc/docklands` plus `DOCKLANDS_ENCRYPTION_KEY`
-  separately.
+  separately. Use either `DATABASE_URL` or `POSTGRES_PASSWORD_FILE`, not both.
 - **`BETTER_AUTH_SECRET`** (or `BETTER_AUTH_SECRET_FILE`) — the auth signing
   secret. **Set this explicitly in production.** For local installs `bun run
-  setup` generates one; production should manage it as a secret.
+  setup` generates one; production should manage it as a secret. Use either the
+  env var or the file variant, not both.
 - **`DOCKLANDS_ENCRYPTION_KEY`** (or `DOCKLANDS_ENCRYPTION_KEY_FILE`) — the key
   that encrypts [secrets at rest](/install/configuration/#secrets-at-rest)
   (provider tokens, registry/SMTP passwords, S3 credentials, database config,
   env values). A base64-encoded 32-byte key, **separate** from
   `BETTER_AUTH_SECRET`. **Set this explicitly in production** and back it up —
   losing it makes encrypted values unrecoverable. Generate with `openssl rand
-  -base64 32`.
+  -base64 32`. Use either the env var or the file variant, not both.
+
+On production start, Docklands validates these before migrations run. Secret
+files must be readable and non-empty, the encryption key must decode to 32 bytes,
+and ambiguous env/file pairs stop startup with an operator-facing error.
 
 See [Configuration](/install/configuration/) for the full variable reference.
 
