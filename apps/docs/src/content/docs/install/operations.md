@@ -61,6 +61,14 @@ recovery, back up three things together:
 A restore needs all three: the database without the encryption key cannot be
 read, and the database without the keys/certs in `/etc/docklands` is incomplete.
 
+:::note[External Postgres]
+The built-in whole-instance Docklands backup and `restore-instance` entrypoint
+currently support only the bundled `docklands-postgres` service. If
+`DATABASE_URL` points at an external PostgreSQL instance, back up and restore
+that database with your provider/operator tooling, then restore `/etc/docklands`
+and the same `DOCKLANDS_ENCRYPTION_KEY`.
+:::
+
 :::caution[Secrets at rest]
 Provider tokens, SSH private keys, database credentials, TLS private keys, and
 service environment variables are **encrypted at rest with AES-256-GCM** before

@@ -33,7 +33,11 @@ Docklands needs:
 
 - **`DATABASE_URL`** — a reachable PostgreSQL instance. `bun run setup` can
   provision a `docklands-postgres` Swarm service for you; otherwise point this at
-  your own Postgres.
+  your own Postgres. Whole-instance Docklands backup/restore currently supports
+  only the bundled `docklands-postgres` service; if you use an external
+  PostgreSQL provider, use that provider's backup/restore tooling for the
+  database and back up `/etc/docklands` plus `DOCKLANDS_ENCRYPTION_KEY`
+  separately.
 - **`BETTER_AUTH_SECRET`** (or `BETTER_AUTH_SECRET_FILE`) — the auth signing
   secret. **Set this explicitly in production.** For local installs `bun run
   setup` generates one; production should manage it as a secret.

@@ -7,6 +7,7 @@ import { resolveEncryptionKey } from "@/server/core/crypto/secret-box";
 import { webServerRestoreBackupSchema } from "@/server/core/db/schema";
 import { createLogger } from "@/server/core/lib/logger";
 import type { Destination } from "@/server/core/services/destination";
+import { assertBundledPostgresForInstanceBackup } from "../backups/instance-backup-support";
 import { getS3CredentialEnv, getS3Credentials } from "../backups/utils";
 import { execAsync } from "../process/execAsync";
 
@@ -28,6 +29,7 @@ export const restoreWebServerBackupOffline = async (
 		const { BASE_PATH } = paths();
 
 		logger.info({ backupFile }, "Web server restore started");
+		assertBundledPostgresForInstanceBackup();
 
 		// Create a temporary directory outside of BASE_PATH
 		const tempDir = await mkdtemp(join(tmpdir(), "docklands-restore-"));

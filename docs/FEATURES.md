@@ -707,7 +707,10 @@ Bundled to `dist/*.mjs` (esbuild, Node target) from `server/ops/`:
 - `setup` + `wait-for-postgres` — first-boot bootstrap (`bun run setup`): waits for
   Postgres, ensures the auth secret and encryption key, initializes the instance.
 - `reset-password` — generate a new owner password (printed once, for recovery).
-- `restore-instance` — offline whole-instance restore from a Docklands backup.
+- `restore-instance` — offline whole-instance restore from a Docklands backup
+  when the instance uses the bundled `docklands-postgres` service. External
+  PostgreSQL installs must use provider/operator database restore tooling plus a
+  `/etc/docklands` and `DOCKLANDS_ENCRYPTION_KEY` restore.
 - `ensure/migrate auth-secret` — provision or rotate the Better Auth secret.
 
 These never log secrets except where the command exists specifically to reveal one

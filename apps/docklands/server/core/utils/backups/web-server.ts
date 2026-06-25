@@ -14,6 +14,7 @@ import {
 import { findDestinationById } from "@/server/core/services/destination";
 import { sendDocklandsBackupNotifications } from "../notifications/docklands-backup";
 import { execAsync } from "../process/execAsync";
+import { assertBundledPostgresForInstanceBackup } from "./instance-backup-support";
 import {
 	getBackupTimestamp,
 	getS3CredentialEnv,
@@ -51,6 +52,7 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 		const s3Path = `:s3:${destination.bucket}/${backup.appName}/${normalizeS3Path(backup.prefix)}${backupFileName}`;
 
 		try {
+			assertBundledPostgresForInstanceBackup();
 			await execAsync(`mkdir -p ${tempDir}/filesystem`);
 
 			// First get the container ID
