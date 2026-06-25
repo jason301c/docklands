@@ -1,5 +1,8 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { Mock } from "vitest";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { GET as readinessGet } from "@/app/api/ready/route";
 import { db } from "@/server/core/db";
 import {
@@ -12,10 +15,21 @@ import {
 const dbExecute = db.execute as unknown as Mock;
 
 describe("readiness route", () => {
+	let readinessDir: string | undefined;
+
 	beforeEach(() => {
+		delete process.env.DOCKLANDS_READINESS_FILE;
 		resetReadinessForTests("ready");
 		dbExecute.mockReset();
 		dbExecute.mockResolvedValue([]);
+	});
+
+	afterEach(() => {
+		delete process.env.DOCKLANDS_READINESS_FILE;
+		if (readinessDir) {
+			rmSync(readinessDir, { force: true, recursive: true });
+			readinessDir = undefined;
+		}
 	});
 
 	it("returns ready when the database and runtime bootstrap are ready", async () => {
@@ -66,6 +80,44 @@ describe("readiness route", () => {
 		expect(body.ok).toBe(false);
 		expect(body.checks.runtime.phase).toBe("degraded");
 		expect(body.checks.runtime.failedCriticalSteps).toEqual(["network"]);
+	});
+
+	it("uses persisted runtime readiness from the server process", async () => {
+		readinessDir = mkdtempSync(join(tmpdir(), "docklands-readiness-"));
+		process.env.DOCKLANDS_READINESS_FILE = join(readinessDir, "ready.json");
+		writeFileSync(
+			process.env.DOCKLANDS_READINESS_FILE,
+			JSON.stringify({
+				failedCriticalSteps: ["network"],
+				ok: false,
+				phase: "degraded",
+				steps: [
+					{
+						critical: true,
+						error: "This node is not a swarm manager.",
+						name: "network",
+						status: "failed",
+						updatedAt: "2026-06-25T00:00:00.000Z",
+					},
+				],
+				updatedAt: "2026-06-25T00:00:00.000Z",
+			}),
+		);
+
+		const response = await readinessGet();
+		const body = await response.json();
+
+		expect(response.status).toBe(503);
+		expect(body.ok).toBe(false);
+		expect(body.checks.runtime.phase).toBe("degraded");
+		expect(body.checks.runtime.failedCriticalSteps).toEqual(["network"]);
+		expect(body.checks.runtime.steps).toEqual([
+			expect.objectContaining({
+				critical: true,
+				name: "network",
+				status: "failed",
+			}),
+		]);
 	});
 
 	it("allows readiness after noncritical bootstrap failures are recorded", async () => {

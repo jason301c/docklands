@@ -11,7 +11,7 @@ import {
 } from "@/server/core/readiness";
 import { ensureTunnelRunning } from "@/server/core/services/tunnel";
 import { setupDirectories } from "@/server/core/setup/config-paths";
-import { initializeNetwork } from "@/server/core/setup/setup";
+import { initializeNetwork, initializeSwarm } from "@/server/core/setup/setup";
 import {
 	createDefaultMiddlewares,
 	createDefaultServerTraefikConfig,
@@ -55,6 +55,7 @@ const dev = process.env.NODE_ENV !== "production";
 // Initialize critical directories and Traefik config BEFORE Next.js starts
 // This prevents race conditions with the install script
 if (process.env.NODE_ENV === "production") {
+	markReadinessStarting();
 	setupDirectories();
 	createDefaultTraefikConfig();
 	createDefaultServerTraefikConfig();
@@ -119,6 +120,7 @@ void app.prepare().then(async () => {
 			await bootStep("middlewares", () => createDefaultMiddlewares(), {
 				critical: true,
 			});
+			await bootStep("swarm", () => initializeSwarm(), { critical: true });
 			await bootStep("network", () => initializeNetwork(), { critical: true });
 			// Restore any Cloudflare Tunnels (managed cloudflared) after the
 			// overlay network exists. Best-effort per tunnel.

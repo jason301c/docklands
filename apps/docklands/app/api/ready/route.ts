@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 const logger = createLogger("readiness");
 
 export const GET = async () => {
-	const runtimeReadiness = getReadinessSnapshot();
+	const runtimeReadiness = getReadinessSnapshot({ preferPersisted: true });
 
 	try {
 		await db.execute(sql`SELECT 1`);
