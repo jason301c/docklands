@@ -5,6 +5,7 @@ const root = resolve(import.meta.dirname, "..");
 
 const targets = [
 	"docs/FEATURES.md",
+	"docs/RELEASE_NOTES.md",
 	"apps/docs/src/content/docs",
 	"apps/site/components",
 	"apps/site/lib",

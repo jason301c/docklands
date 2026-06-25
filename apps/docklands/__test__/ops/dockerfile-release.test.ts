@@ -153,6 +153,25 @@ describe("production Dockerfile release install", () => {
 		expect(preflightScript).toContain("bun run release:check-metadata");
 	});
 
+	it("keeps v0.1.0 release notes honest about gates and boundaries", () => {
+		const releaseNotes = repoFile("docs/RELEASE_NOTES.md");
+		const docsCurrentCheck = repoFile("tools/check-docs-current.mjs");
+
+		expect(docsCurrentCheck).toContain("docs/RELEASE_NOTES.md");
+		expect(releaseNotes).toContain("# Docklands v0.1.0 Release Notes");
+		expect(releaseNotes).toContain("bun run release:preflight canary");
+		expect(releaseNotes).toContain(
+			"bun run release:smoke:dispatch --wait canary",
+		);
+		expect(releaseNotes).toContain("bun run docker:push");
+		expect(releaseNotes).toContain("jason301c/docklands:0.1.0");
+		expect(releaseNotes).toContain("There is exactly one organization");
+		expect(releaseNotes).toContain("GitHub is the only provider");
+		expect(releaseNotes).toContain("External Postgres disaster recovery");
+		expect(releaseNotes).toContain("same-image container replacement");
+		expect(releaseNotes).toContain("does not ship a one-line installer");
+	});
+
 	it("keeps the manual real-deploy smoke self-cleaning", () => {
 		const workflow = repoFile(".github/workflows/release-smoke.yml");
 		const realDeployTest = appFile("__test__/deploy/application.real.test.ts");
