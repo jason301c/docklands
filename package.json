@@ -20,6 +20,7 @@
 		"format-and-lint:fix": "bun --filter docklands format-and-lint:fix",
 		"check:bundler": "bun tools/check-bundler.mjs",
 		"check:baseui": "bun --filter docklands check:baseui",
+		"check:openapi": "bun --filter docklands check:openapi",
 		"generate:openapi": "bun --filter docklands generate:openapi",
 		"reset-password": "bun --filter docklands reset-password",
 		"rotate-encryption-key": "bun --filter docklands rotate-encryption-key",

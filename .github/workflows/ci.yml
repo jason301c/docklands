@@ -80,6 +80,9 @@ jobs:
       - name: Base UI composition scan
         run: bun run check:baseui
 
+      - name: OpenAPI generation check
+        run: bun run check:openapi
+
       # check:bundler + esbuild server bundle + next build (Turbopack).
       - name: Build
         run: bun run build

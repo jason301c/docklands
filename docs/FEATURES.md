@@ -682,8 +682,9 @@ cleanup, log rotation, build concurrency, monitoring `metricsConfig`) is a
 ## 25. OpenAPI / REST API
 
 - **What.** A REST surface mirroring the tRPC routers, authenticated by **API key**
-  (`x-api-key: <key>`). A machine-readable `openapi.json` is generated
-  from the routers (no Swagger UI is shipped).
+  (`x-api-key: <key>`). A machine-readable `openapi.json` is generated from the
+  routers as an ignored local/release artifact; it is not tracked as source, and
+  no Swagger UI is shipped.
 - **Surface parity.** **Every** tRPC procedure is auto-exposed as a REST endpoint
   unless it explicitly opts out (`meta.openapi.enabled: false`), so the API and the
   Web UI stay at feature parity. The surface is curated to a 1:1 mapping: redundant
@@ -692,9 +693,11 @@ cleanup, log rotation, build concurrency, monitoring `metricsConfig`) is a
   non-streaming `backup.restoreBackup` are exposed so API/CLI operators have the
   same reach as the UI.
 - **How.** Generation in `server/core/openapi/` and `tools/generate-openapi.ts`
-  (`bun run generate:openapi`); the request handler is `app/api/[...openapi]/` which
-  validates auth headers first. A tRPC call maps to a matching `/api/<router>/<procedure>`
-  endpoint unless that procedure opts out of OpenAPI generation.
+  (`bun run generate:openapi`); `bun run check:openapi` writes a temp artifact and
+  validates release invariants in CI. The request handler is
+  `app/api/[...openapi]/`, which validates auth headers first. A tRPC call maps
+  to a matching `/api/<router>/<procedure>` endpoint unless that procedure opts
+  out of OpenAPI generation.
 
 ---
 

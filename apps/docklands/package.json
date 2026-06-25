@@ -32,6 +32,7 @@
 		"test": "vitest --config __test__/vitest.config.ts",
 		"test:ci": "vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts",
 		"test:coverage": "vitest --config __test__/vitest.config.ts --run --exclude __test__/deploy/application.real.test.ts --coverage",
+		"check:openapi": "DATABASE_URL=${DATABASE_URL:-postgres://docklands_openapi:docklands_openapi@127.0.0.1:5432/docklands_openapi} BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:-docklands-openapi-check-secret-000000000000} tsx -r dotenv/config tools/check-openapi.ts",
 		"generate:openapi": "tsx -r dotenv/config tools/generate-openapi.ts",
 		"format-and-lint": "biome check .",
 		"format-and-lint:fix": "biome check . --write"
