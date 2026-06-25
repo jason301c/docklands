@@ -75,9 +75,52 @@ jobs:
       - name: Test
         run: bun run test:ci
 
+      # Kumo wraps Base UI compound components; incorrect composition often
+      # fails only at render/click time, so keep the static scanner in CI.
+      - name: Base UI composition scan
+        run: bun run check:baseui
+
       # check:bundler + esbuild server bundle + next build (Turbopack).
       - name: Build
         run: bun run build
+
+  docs-site:
+    name: Docs and site
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Docs typecheck
+        run: bun run docs:typecheck
+
+      # `docs:build` also runs the stale public-claim scanner.
+      - name: Docs build
+        run: bun run docs:build
+
+      - name: Site lint
+        run: bun run site:lint
+
+      - name: Site typecheck
+        run: bun run site:typecheck
+
+      - name: Site build
+        run: bun run site:build
 
   # Apply every migration against a real Postgres to catch broken/ordering-
   # dependent migrations and snapshot drift — the unit suite mocks the DB, so it
