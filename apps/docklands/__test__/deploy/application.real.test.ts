@@ -163,6 +163,7 @@ const createMockDeployment = async (appName: string) => {
 
 async function cleanupDocker(appName: string) {
 	try {
+		await execAsync(`docker service rm ${appName} 2>/dev/null || true`);
 		await execAsync(`docker stop ${appName} 2>/dev/null || true`);
 		await execAsync(`docker rm ${appName} 2>/dev/null || true`);
 		await execAsync(`docker rmi ${appName} 2>/dev/null || true`);
@@ -241,6 +242,10 @@ describe(
 
 			// Clean ALL test folders just in case
 			try {
+				for (const appName of allTestAppNames) {
+					await cleanupDocker(appName);
+				}
+
 				const { LOGS_PATH, APPLICATIONS_PATH } = paths(false);
 				await execAsync(`rm -rf ${LOGS_PATH}/real-* 2>/dev/null || true`);
 				await execAsync(

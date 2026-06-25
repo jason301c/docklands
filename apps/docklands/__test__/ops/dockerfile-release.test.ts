@@ -81,4 +81,14 @@ describe("production Dockerfile release install", () => {
 		expect(smokeScript).toContain("DOCKLANDS_DOCKER_HOST");
 		expect(smokeScript).toContain("docklands-network");
 	});
+
+	it("keeps the manual real-deploy smoke self-cleaning", () => {
+		const workflow = repoFile(".github/workflows/release-smoke.yml");
+		const realDeployTest = appFile("__test__/deploy/application.real.test.ts");
+
+		expect(realDeployTest).toContain("docker service rm ${appName}");
+		expect(realDeployTest).toContain("for (const appName of allTestAppNames)");
+		expect(workflow).toContain("docker service ls");
+		expect(workflow).toContain("grep '^real-'");
+	});
 });
