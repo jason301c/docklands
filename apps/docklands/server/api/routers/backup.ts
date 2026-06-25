@@ -27,7 +27,10 @@ import {
 } from "@/server/core/services/compose";
 import { findDatabaseById } from "@/server/core/services/database";
 import { findDestinationById } from "@/server/core/services/destination";
-import { checkServicePermissionAndAccess } from "@/server/core/services/permission";
+import {
+	checkServicePermissionAndAccess,
+	isOwnerOrAdmin,
+} from "@/server/core/services/permission";
 import { findRuntimeWorkerById } from "@/server/core/services/runtime-worker";
 import { runComposeBackup } from "@/server/core/utils/backups/compose";
 import { runDatabaseBackup } from "@/server/core/utils/backups/database";
@@ -88,11 +91,60 @@ const assertDestinationAccess = (
 	}
 };
 
+const isWebServerBackup = (backup: {
+	backupType?: string | null;
+	databaseType?: string | null;
+}) => backup.backupType === "database" && backup.databaseType === "web-server";
+
+const assertInstanceBackupAccess = (ctx: {
+	user: { role?: string | null };
+}) => {
+	if (!isOwnerOrAdmin(ctx.user.role)) {
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "Whole-instance backups require an owner or admin.",
+		});
+	}
+};
+
+const assertWebServerBackupShape = (input: {
+	databaseType?: string | null;
+	databaseId?: string | null;
+	serviceDatabaseId?: string | null;
+	composeId?: string | null;
+}) => {
+	if (
+		input.databaseType === "web-server" &&
+		(input.databaseId || input.serviceDatabaseId || input.composeId)
+	) {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message:
+				"Whole-instance backups must not be scoped to a service or database.",
+		});
+	}
+};
+
+const assertBackupDestinationAccess = async (
+	ctx: { session: { activeOrganizationId?: string | null } },
+	destinationId: string,
+) => {
+	const destination = await findDestinationById(destinationId);
+	assertDestinationAccess(ctx, destination);
+	return destination;
+};
+
 export const backupRouter = createTRPCRouter({
 	create: protectedProcedure
 		.input(apiCreateBackup)
 		.mutation(async ({ input, ctx }) => {
 			try {
+				assertWebServerBackupShape(input);
+				if (isWebServerBackup(input)) {
+					assertInstanceBackupAccess(ctx);
+				}
+				await assertBackupDestinationAccess(ctx, input.destinationId);
+
 				const serviceId = input.databaseId || input.composeId;
 				if (serviceId) {
 					await checkServicePermissionAndAccess(ctx, serviceId, {
@@ -139,6 +191,9 @@ export const backupRouter = createTRPCRouter({
 				});
 				return backup;
 			} catch (error) {
+				if (error instanceof TRPCError) {
+					throw error;
+				}
 				throw new TRPCError({
 					code: "BAD_REQUEST",
 					message:
@@ -154,6 +209,10 @@ export const backupRouter = createTRPCRouter({
 		.query(async ({ input, ctx }) => {
 			const backup = await findBackupById(input.backupId);
 
+			if (isWebServerBackup(backup)) {
+				assertInstanceBackupAccess(ctx);
+			}
+
 			const serviceId = backup.databaseId || backup.composeId;
 			if (serviceId) {
 				await checkServicePermissionAndAccess(ctx, serviceId, {
@@ -168,6 +227,31 @@ export const backupRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const existing = await findBackupById(input.backupId);
+				if (isWebServerBackup(existing)) {
+					assertInstanceBackupAccess(ctx);
+					if (input.databaseType !== "web-server") {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message:
+								"Whole-instance backups cannot be changed to a service backup.",
+						});
+					}
+					assertWebServerBackupShape({
+						...input,
+						databaseId: existing.databaseId,
+						serviceDatabaseId: existing.serviceDatabaseId,
+						composeId: existing.composeId,
+					});
+					await assertBackupDestinationAccess(ctx, input.destinationId);
+				} else if (input.databaseType === "web-server") {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message:
+							"Service backups cannot be changed to whole-instance backups.",
+					});
+				} else {
+					await assertBackupDestinationAccess(ctx, input.destinationId);
+				}
 				const serviceId = existing.databaseId || existing.composeId;
 				if (serviceId) {
 					await checkServicePermissionAndAccess(ctx, serviceId, {
@@ -190,6 +274,9 @@ export const backupRouter = createTRPCRouter({
 					resourceId: backup.backupId,
 				});
 			} catch (error) {
+				if (error instanceof TRPCError) {
+					throw error;
+				}
 				const message =
 					error instanceof Error ? error.message : "Error updating this Backup";
 				throw new TRPCError({
@@ -203,6 +290,9 @@ export const backupRouter = createTRPCRouter({
 		.mutation(async ({ input, ctx }) => {
 			try {
 				const backup = await findBackupById(input.backupId);
+				if (isWebServerBackup(backup)) {
+					assertInstanceBackupAccess(ctx);
+				}
 				const serviceId = backup.databaseId || backup.composeId;
 				if (serviceId) {
 					await checkServicePermissionAndAccess(ctx, serviceId, {
@@ -219,6 +309,9 @@ export const backupRouter = createTRPCRouter({
 				});
 				return value;
 			} catch (error) {
+				if (error instanceof TRPCError) {
+					throw error;
+				}
 				const message =
 					error instanceof Error ? error.message : "Error deleting this Backup";
 				throw new TRPCError({
@@ -289,10 +382,18 @@ export const backupRouter = createTRPCRouter({
 				});
 			}
 		}),
-	manualBackupWebServer: withPermission("backup", "create")
+	manualBackupWebServer: protectedProcedure
 		.input(apiFindOneBackup)
 		.mutation(async ({ input, ctx }) => {
 			const backup = await findBackupById(input.backupId);
+			if (!isWebServerBackup(backup)) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: "Backup is not a whole-instance backup.",
+				});
+			}
+			assertInstanceBackupAccess(ctx);
+			await assertBackupDestinationAccess(ctx, backup.destinationId);
 			await runWebServerBackup(backup);
 			await keepLatestNBackups(backup);
 			await audit(ctx, {
