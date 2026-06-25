@@ -95,6 +95,8 @@ run bash -n \
 	tools/docker/smoke-operator.sh \
 	tools/docker/smoke-deploy.sh
 
+run bun run release:check-metadata
+
 docker_push_dry_run_args=(--dry-run production)
 if [ -n "$allow_dirty" ]; then
 	docker_push_dry_run_args=(--allow-dirty "${docker_push_dry_run_args[@]}")

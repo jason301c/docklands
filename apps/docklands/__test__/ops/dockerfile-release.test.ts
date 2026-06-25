@@ -133,6 +133,26 @@ describe("production Dockerfile release install", () => {
 		expect(pushScript).toContain("--push");
 	});
 
+	it("keeps release metadata aligned across deployable packages", () => {
+		const rootPackage = JSON.parse(repoFile("package.json"));
+		const docklandsPackage = JSON.parse(appFile("package.json"));
+		const docsPackage = JSON.parse(repoFile("apps/docs/package.json"));
+		const sitePackage = JSON.parse(repoFile("apps/site/package.json"));
+		const metadataCheck = repoFile("tools/release/check-metadata.mjs");
+		const preflightScript = repoFile("tools/release/preflight.sh");
+
+		expect(rootPackage.scripts["release:check-metadata"]).toBe(
+			"node tools/release/check-metadata.mjs",
+		);
+		expect(docsPackage.version).toBe(docklandsPackage.version);
+		expect(sitePackage.version).toBe(docklandsPackage.version);
+		expect(metadataCheck).toContain("apps/docklands/package.json");
+		expect(metadataCheck).toContain("apps/docs/package.json");
+		expect(metadataCheck).toContain("apps/site/package.json");
+		expect(metadataCheck).toContain("bun.lock");
+		expect(preflightScript).toContain("bun run release:check-metadata");
+	});
+
 	it("keeps the manual real-deploy smoke self-cleaning", () => {
 		const workflow = repoFile(".github/workflows/release-smoke.yml");
 		const realDeployTest = appFile("__test__/deploy/application.real.test.ts");
@@ -181,6 +201,7 @@ describe("production Dockerfile release install", () => {
 		expect(preflightScript).toContain(
 			"bun install --frozen-lockfile --offline",
 		);
+		expect(preflightScript).toContain("bun run release:check-metadata");
 		expect(preflightScript).toContain("bun run format-and-lint");
 		expect(preflightScript).toContain("bun run typecheck");
 		expect(preflightScript).toContain("bun run test:ci");
