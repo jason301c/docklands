@@ -13,18 +13,19 @@ describe("runtime toolchain pins", () => {
 		const dockerfile = sourceFile("Dockerfile");
 
 		expect(dockerfile).toContain("ARG DOCKER_VERSION=28.5.2");
-		expect(dockerfile).toContain("ARG RCLONE_VERSION=1.74.3");
+		expect(dockerfile).toContain("ARG FILE_SYNC_RELEASE=1.74.3");
 		expect(dockerfile).toContain("ARG NIXPACKS_VERSION=1.41.0");
 		expect(dockerfile).toContain("ARG RAILPACK_VERSION=0.15.4");
 		expect(dockerfile).toContain("ARG BUILDPACKS_VERSION=0.39.1");
+		expect(dockerfile).not.toMatch(/^(ARG|ENV) RCLONE_/m);
 		expect(dockerfile).toContain(
 			'docker --version | grep -F "$DOCKER_VERSION"',
 		);
 		expect(dockerfile).toContain(
-			"https://downloads.rclone.org/v${RCLONE_VERSION}",
+			"https://downloads.rclone.org/v${FILE_SYNC_RELEASE}",
 		);
 		expect(dockerfile).toContain("sha256sum -c -");
-		expect(dockerfile).toContain("rclone v${RCLONE_VERSION}");
+		expect(dockerfile).toContain("rclone v${FILE_SYNC_RELEASE}");
 		expect(dockerfile).toContain(
 			'NIXPACKS_VERSION="$NIXPACKS_VERSION" ./install.sh --yes',
 		);

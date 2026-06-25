@@ -18,14 +18,14 @@ RUN apt-get update && apt-get install -y python3 make g++ git python3-pip pkg-co
 
 COPY package.json bun.lock bunfig.toml ./
 COPY apps/docklands/package.json ./apps/docklands/package.json
+COPY apps/docs/package.json ./apps/docs/package.json
+COPY apps/site/package.json ./apps/site/package.json
 
-RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache bun install --frozen-lockfile
+RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache bun install --filter docklands --frozen-lockfile
 
 COPY . .
 
-ENV NODE_ENV=production \
-    DATABASE_URL=postgres://docklands_build:docklands_build@127.0.0.1:5432/docklands_build \
-    BETTER_AUTH_SECRET=docklands-build-secret-000000000000000000
+ENV NODE_ENV=production
 RUN bun --filter docklands build
 
 FROM deps-base AS prod-deps
@@ -35,9 +35,11 @@ RUN apt-get update && apt-get install -y python3 make g++ git pkg-config libsecr
 
 COPY package.json bun.lock bunfig.toml ./
 COPY apps/docklands/package.json ./apps/docklands/package.json
+COPY apps/docs/package.json ./apps/docs/package.json
+COPY apps/site/package.json ./apps/site/package.json
 
 ENV NODE_ENV=production
-RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache bun install --frozen-lockfile --production
+RUN --mount=type=cache,id=bun,target=/root/.bun/install/cache bun install --filter docklands --frozen-lockfile --production
 
 FROM base AS docklands
 WORKDIR /app
@@ -73,7 +75,7 @@ COPY --from=build /usr/src/app/apps/docklands/drizzle ./apps/docklands/drizzle
 
 
 ARG DOCKER_VERSION=28.5.2
-ARG RCLONE_VERSION=1.74.3
+ARG FILE_SYNC_RELEASE=1.74.3
 RUN set -eux; \
     curl -fsSL https://get.docker.com -o get-docker.sh; \
     sh get-docker.sh --version "$DOCKER_VERSION"; \
@@ -85,15 +87,15 @@ RUN set -eux; \
         armhf) rclone_arch="arm-v7" ;; \
         *) echo "Unsupported rclone architecture: $(dpkg --print-architecture)" >&2; exit 1 ;; \
     esac; \
-    rclone_zip="rclone-v${RCLONE_VERSION}-linux-${rclone_arch}.zip"; \
-    curl -fsSLO "https://downloads.rclone.org/v${RCLONE_VERSION}/${rclone_zip}"; \
-    curl -fsSLO "https://downloads.rclone.org/v${RCLONE_VERSION}/SHA256SUMS"; \
+    rclone_zip="rclone-v${FILE_SYNC_RELEASE}-linux-${rclone_arch}.zip"; \
+    curl -fsSLO "https://downloads.rclone.org/v${FILE_SYNC_RELEASE}/${rclone_zip}"; \
+    curl -fsSLO "https://downloads.rclone.org/v${FILE_SYNC_RELEASE}/SHA256SUMS"; \
     grep "  ${rclone_zip}$" SHA256SUMS | sha256sum -c -; \
     unzip -q "$rclone_zip"; \
-    cp "rclone-v${RCLONE_VERSION}-linux-${rclone_arch}/rclone" /usr/local/bin/rclone; \
+    cp "rclone-v${FILE_SYNC_RELEASE}-linux-${rclone_arch}/rclone" /usr/local/bin/rclone; \
     chmod 755 /usr/local/bin/rclone; \
-    rclone --version | head -n 1 | grep -F "rclone v${RCLONE_VERSION}"; \
-    rm -rf "$rclone_zip" SHA256SUMS "rclone-v${RCLONE_VERSION}-linux-${rclone_arch}"
+    rclone --version | head -n 1 | grep -F "rclone v${FILE_SYNC_RELEASE}"; \
+    rm -rf "$rclone_zip" SHA256SUMS "rclone-v${FILE_SYNC_RELEASE}-linux-${rclone_arch}"
 
 # Install Nixpacks and tsx
 # | VERBOSE=1 VERSION=1.21.0 bash
