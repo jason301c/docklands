@@ -9,7 +9,10 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { paths } from "@/server/core/constants/paths";
+import {
+	normalizeTraefikConfigPath,
+	TRAEFIK_CONFIG_PATH_ERROR,
+} from "@/server/core/utils/traefik/path";
 import { account, apikey, organization, passkey } from "./account";
 import { backups } from "./backups";
 import { workspaces } from "./workspace";
@@ -126,42 +129,43 @@ export const apiTraefikConfig = z.object({
 	traefikConfig: z.string().min(1),
 });
 
-export const apiModifyTraefikConfig = z.object({
-	path: z.string().min(1),
-	traefikConfig: z.string().min(1),
-	runtimeWorkerId: z.string().optional(),
-	// YAML validation runs by default; a bad Traefik file can take down all
-	// ingress. Power users can opt out with `skipValidation: true`.
-	skipValidation: z.boolean().optional(),
-});
-export const apiReadTraefikConfig = z.object({
-	path: z
-		.string()
-		.min(1)
-		.refine(
-			(path) => {
-				// Prevent directory traversal attacks
-				if (path.includes("../") || path.includes("..\\")) {
-					return false;
-				}
+const normalizeTraefikPathInput = <
+	T extends { path: string; runtimeWorkerId?: string | null },
+>(
+	input: T,
+	ctx: z.RefinementCtx,
+) => {
+	try {
+		return {
+			...input,
+			path: normalizeTraefikConfigPath(input.path, input.runtimeWorkerId),
+		};
+	} catch {
+		ctx.addIssue({
+			code: "custom",
+			path: ["path"],
+			message: TRAEFIK_CONFIG_PATH_ERROR,
+		});
+		return z.NEVER;
+	}
+};
 
-				const { MAIN_TRAEFIK_PATH } = paths();
-				if (path.startsWith("/") && !path.startsWith(MAIN_TRAEFIK_PATH)) {
-					return false;
-				}
-				// Prevent null bytes and other dangerous characters
-				if (path.includes("\0") || path.includes("\x00")) {
-					return false;
-				}
-				return true;
-			},
-			{
-				message:
-					"Invalid path: path traversal or unauthorized directory access detected",
-			},
-		),
-	runtimeWorkerId: z.string().optional(),
-});
+export const apiModifyTraefikConfig = z
+	.object({
+		path: z.string().min(1),
+		traefikConfig: z.string().min(1),
+		runtimeWorkerId: z.string().optional(),
+		// YAML validation runs by default; a bad Traefik file can take down all
+		// ingress. Power users can opt out with `skipValidation: true`.
+		skipValidation: z.boolean().optional(),
+	})
+	.transform(normalizeTraefikPathInput);
+export const apiReadTraefikConfig = z
+	.object({
+		path: z.string().min(1),
+		runtimeWorkerId: z.string().optional(),
+	})
+	.transform(normalizeTraefikPathInput);
 
 export const apiEnableDashboard = z.object({
 	enableDashboard: z.boolean().optional(),

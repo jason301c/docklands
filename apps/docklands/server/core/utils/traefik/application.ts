@@ -1,6 +1,7 @@
 import fs, { createReadStream, writeFileSync } from "node:fs";
 import path from "node:path";
 import { createInterface } from "node:readline";
+import { quote } from "shell-quote";
 import { parse, stringify } from "yaml";
 import { paths } from "@/server/core/constants/paths";
 import { createLogger } from "@/server/core/lib/logger";
@@ -8,6 +9,7 @@ import type { Domain } from "@/server/core/services/domain";
 import { encodeBase64 } from "../docker/utils";
 import { execAsync, execAsyncRemote } from "../process/execAsync";
 import type { FileConfig, HttpLoadBalancerService } from "./file-types";
+import { normalizeTraefikConfigPath } from "./path";
 
 const logger = createLogger("traefik-config");
 
@@ -113,7 +115,7 @@ export const loadOrCreateConfigRemote = async (
 	try {
 		const { stdout } = await execAsyncRemote(
 			runtimeWorkerId,
-			`cat ${configPath}`,
+			`cat ${quote([configPath])}`,
 		);
 
 		if (!stdout) return fileConfig;
@@ -146,7 +148,7 @@ export const readRemoteConfig = async (
 	try {
 		const { stdout } = await execAsyncRemote(
 			runtimeWorkerId,
-			`cat ${configPath}`,
+			`cat ${quote([configPath])}`,
 		);
 		if (!stdout) return null;
 		return stdout;
@@ -203,12 +205,12 @@ export const readConfigInPath = async (
 	pathFile: string,
 	runtimeWorkerId?: string,
 ) => {
-	const configPath = path.join(pathFile);
+	const configPath = normalizeTraefikConfigPath(pathFile, runtimeWorkerId);
 
 	if (runtimeWorkerId) {
 		const { stdout } = await execAsyncRemote(
 			runtimeWorkerId,
-			`cat ${configPath}`,
+			`cat ${quote([configPath])}`,
 		);
 		if (!stdout) return null;
 		return stdout;
@@ -242,7 +244,7 @@ export const writeConfigRemote = async (
 		const encoded = encodeBase64(traefikConfig);
 		await execAsyncRemote(
 			runtimeWorkerId,
-			`echo "${encoded}" | base64 -d > "${configPath}"`,
+			`printf '%s' ${quote([encoded])} | base64 -d > ${quote([configPath])}`,
 		);
 	} catch (e) {
 		logger.error(
@@ -259,12 +261,12 @@ export const writeTraefikConfigInPath = async (
 	runtimeWorkerId?: string,
 ) => {
 	try {
-		const configPath = path.join(pathFile);
+		const configPath = normalizeTraefikConfigPath(pathFile, runtimeWorkerId);
 		if (runtimeWorkerId) {
 			const encoded = encodeBase64(traefikConfig);
 			await execAsyncRemote(
 				runtimeWorkerId,
-				`echo "${encoded}" | base64 -d > "${configPath}"`,
+				`printf '%s' ${quote([encoded])} | base64 -d > ${quote([configPath])}`,
 			);
 		} else {
 			fs.writeFileSync(configPath, traefikConfig, "utf8");
@@ -307,7 +309,7 @@ export const writeTraefikConfigRemote = async (
 		const encoded = encodeBase64(stringify(traefikConfig));
 		await execAsyncRemote(
 			runtimeWorkerId,
-			`echo "${encoded}" | base64 -d > "${configPath}"`,
+			`printf '%s' ${quote([encoded])} | base64 -d > ${quote([configPath])}`,
 		);
 	} catch (e) {
 		logger.error(
