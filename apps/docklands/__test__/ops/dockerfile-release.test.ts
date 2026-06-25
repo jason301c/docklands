@@ -128,6 +128,13 @@ describe("production Dockerfile release install", () => {
 			"./tools/release/host-operator-smoke.sh",
 		);
 		expect(workflow).toContain("docklands:host-smoke");
+		expect(workflow).toContain(
+			"postgres://docklands:docklands_smoke@docklands-postgres:5432/docklands",
+		);
+		expect(workflow).toContain("DOCKLANDS_HOST_SMOKE_BACKUP");
+		expect(workflow).toContain("docklands-smoke-minio");
+		expect(workflow).toContain("minio/minio:");
+		expect(workflow).toContain("minio/mc:");
 		expect(workflow).toContain("dist/setup-instance.mjs");
 		expect(workflow).toContain("--network docklands-network");
 		expect(workflow).toContain("-p 127.0.0.1:3000:3000");
@@ -140,6 +147,10 @@ describe("production Dockerfile release install", () => {
 		expect(smokeScript).toContain("application.saveDockerProvider");
 		expect(smokeScript).toContain("domain.create");
 		expect(smokeScript).toContain("application.deploy");
+		expect(smokeScript).toContain("destination.create");
+		expect(smokeScript).toContain("backup.create");
+		expect(smokeScript).toContain("backup.manualBackupWebServer");
+		expect(smokeScript).toContain("mc find");
 		expect(smokeScript).toContain("Host: ${SMOKE_DEPLOY_HOST}");
 		expect(smokeScript).toContain("TRAEFIK_URL");
 		expect(smokeScript).toContain("/etc/docklands/traefik/dynamic");

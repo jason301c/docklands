@@ -23,6 +23,28 @@ const getDatabaseHost = (env: EnvLike) => {
 	return (env.POSTGRES_HOST ?? "docklands-postgres").toLowerCase();
 };
 
+export const resolveBundledPostgresConnection = (
+	env: EnvLike = process.env,
+) => {
+	if (env.DATABASE_URL) {
+		try {
+			const url = new URL(env.DATABASE_URL);
+			return {
+				user: decodeURIComponent(url.username) || "docklands",
+				database: url.pathname.replace(/^\//, "") || "docklands",
+			};
+		} catch {
+			// Fall through to the POSTGRES_* defaults below. The startup secret
+			// preflight handles malformed DATABASE_URL values before production use.
+		}
+	}
+
+	return {
+		user: env.POSTGRES_USER || "docklands",
+		database: env.POSTGRES_DB || "docklands",
+	};
+};
+
 export const usesBundledPostgresForInstanceBackup = (
 	env: EnvLike = process.env,
 ) => {

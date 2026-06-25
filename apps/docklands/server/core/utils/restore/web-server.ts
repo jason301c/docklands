@@ -7,11 +7,20 @@ import { resolveEncryptionKey } from "@/server/core/crypto/secret-box";
 import { webServerRestoreBackupSchema } from "@/server/core/db/schema";
 import { createLogger } from "@/server/core/lib/logger";
 import type { Destination } from "@/server/core/services/destination";
-import { assertBundledPostgresForInstanceBackup } from "../backups/instance-backup-support";
+import {
+	assertBundledPostgresForInstanceBackup,
+	resolveBundledPostgresConnection,
+} from "../backups/instance-backup-support";
 import { getS3CredentialEnv, getS3Credentials } from "../backups/utils";
 import { execAsync } from "../process/execAsync";
 
 const logger = createLogger("restore");
+
+const quotePostgresIdentifier = (value: string) =>
+	`"${value.replace(/"/g, '""')}"`;
+
+const quotePostgresLiteral = (value: string) =>
+	`'${value.replace(/'/g, "''")}'`;
 
 export const restoreWebServerBackupOffline = async (
 	destination: Destination,
@@ -30,6 +39,7 @@ export const restoreWebServerBackupOffline = async (
 
 		logger.info({ backupFile }, "Web server restore started");
 		assertBundledPostgresForInstanceBackup();
+		const postgres = resolveBundledPostgresConnection();
 
 		// Create a temporary directory outside of BASE_PATH
 		const tempDir = await mkdtemp(join(tmpdir(), "docklands-restore-"));
@@ -150,21 +160,27 @@ export const restoreWebServerBackupOffline = async (
 
 			const postgresContainerId = postgresContainer.trim();
 			const postgresContainerIdArg = quote([postgresContainerId]);
+			const postgresUserArg = quote([postgres.user]);
+			const postgresDatabaseArg = quote([postgres.database]);
+			const postgresDatabaseIdentifier = quotePostgresIdentifier(
+				postgres.database,
+			);
+			const postgresDatabaseLiteral = quotePostgresLiteral(postgres.database);
 
 			// Drop and recreate database
 			emit("Disconnecting all users from database...");
 			await execAsync(
-				`docker exec ${postgresContainerIdArg} psql -U docklands postgres -c ${quote(["SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'docklands' AND pid <> pg_backend_pid();"])}`,
+				`docker exec ${postgresContainerIdArg} psql -U ${postgresUserArg} postgres -c ${quote([`SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = ${postgresDatabaseLiteral} AND pid <> pg_backend_pid();`])}`,
 			);
 
 			emit("Dropping existing database...");
 			await execAsync(
-				`docker exec ${postgresContainerIdArg} psql -U docklands postgres -c ${quote(["DROP DATABASE IF EXISTS docklands;"])}`,
+				`docker exec ${postgresContainerIdArg} psql -U ${postgresUserArg} postgres -c ${quote([`DROP DATABASE IF EXISTS ${postgresDatabaseIdentifier};`])}`,
 			);
 
 			emit("Creating fresh database...");
 			await execAsync(
-				`docker exec ${postgresContainerIdArg} psql -U docklands postgres -c ${quote(["CREATE DATABASE docklands;"])}`,
+				`docker exec ${postgresContainerIdArg} psql -U ${postgresUserArg} postgres -c ${quote([`CREATE DATABASE ${postgresDatabaseIdentifier};`])}`,
 			);
 
 			// Copy the backup file into the container
@@ -182,7 +198,7 @@ export const restoreWebServerBackupOffline = async (
 			// Restore from the copied file
 			emit("Running database restore...");
 			await execAsync(
-				`docker exec ${postgresContainerIdArg} pg_restore -v -U docklands -d docklands /tmp/database.sql`,
+				`docker exec ${postgresContainerIdArg} pg_restore -v -U ${postgresUserArg} -d ${postgresDatabaseArg} /tmp/database.sql`,
 			);
 
 			// Cleanup the temporary file in the container

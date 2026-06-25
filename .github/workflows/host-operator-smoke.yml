@@ -2,8 +2,9 @@
 #
 # This is intentionally not part of routine CI. It builds the production image,
 # mutates the runner's Docker daemon, initializes Swarm/Traefik through the
-# image's setup entrypoint, starts the image against disposable Postgres, deploys
-# a known service, and verifies host-level Traefik ingress over port 80.
+# image's setup entrypoint, starts the image against bundled Postgres, deploys a
+# known service, verifies host-level Traefik ingress over port 80, and runs a
+# whole-instance backup against disposable MinIO.
 name: Host operator smoke
 
 on:
@@ -27,28 +28,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: docklands_ci
-          POSTGRES_PASSWORD: docklands_ci
-          POSTGRES_DB: docklands_ci
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U docklands_ci"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     env:
       NODE_ENV: production
-      DATABASE_URL: postgres://docklands_ci:docklands_ci@host.docker.internal:5432/docklands_ci
+      DATABASE_URL: postgres://docklands:docklands_smoke@docklands-postgres:5432/docklands
       BETTER_AUTH_SECRET: docklands-host-smoke-secret-000000000000
       DOCKLANDS_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
-      SKIP_BUNDLED_POSTGRES: "true"
       SKIP_PRE_MIGRATION_BACKUP: "true"
+      DOCKLANDS_HOST_SMOKE_BACKUP: "1"
+      DOCKLANDS_HOST_SMOKE_S3_ENDPOINT: http://docklands-smoke-minio:9000
+      DOCKLANDS_HOST_SMOKE_S3_ACCESS_KEY: docklandsminio
+      DOCKLANDS_HOST_SMOKE_S3_SECRET_KEY: docklandsminiosecret
+      DOCKLANDS_HOST_SMOKE_S3_BUCKET: docklands-smoke
 
     steps:
       - name: Checkout selected ref
@@ -67,6 +57,7 @@ jobs:
             docker service rm docklands-postgres || true
           fi
           docker volume rm docklands-postgres || true
+          docker volume rm docklands-smoke-minio || true
           sudo rm -rf /etc/docklands
           sudo mkdir -p /etc/docklands
 
@@ -92,10 +83,36 @@ jobs:
             -e DATABASE_URL="$DATABASE_URL" \
             -e BETTER_AUTH_SECRET="$BETTER_AUTH_SECRET" \
             -e DOCKLANDS_ENCRYPTION_KEY="$DOCKLANDS_ENCRYPTION_KEY" \
-            -e SKIP_BUNDLED_POSTGRES="$SKIP_BUNDLED_POSTGRES" \
             -e SKIP_PRE_MIGRATION_BACKUP="$SKIP_PRE_MIGRATION_BACKUP" \
             docklands:host-smoke \
             node -r dotenv/config dist/setup-instance.mjs
+
+      - name: Start MinIO backup destination
+        run: |
+          docker run -d \
+            --name docklands-smoke-minio \
+            --network docklands-network \
+            -e MINIO_ROOT_USER="$DOCKLANDS_HOST_SMOKE_S3_ACCESS_KEY" \
+            -e MINIO_ROOT_PASSWORD="$DOCKLANDS_HOST_SMOKE_S3_SECRET_KEY" \
+            -v docklands-smoke-minio:/data \
+            minio/minio:RELEASE.2026-06-13T11-33-47Z \
+            server /data
+
+          docker run --rm \
+            --network docklands-network \
+            --entrypoint sh \
+            minio/mc:RELEASE.2026-05-21T01-59-54Z \
+            -c 'for i in $(seq 1 60); do
+                  mc alias set smoke "$0" "$1" "$2" >/dev/null 2>&1 &&
+                    mc mb --ignore-existing "smoke/$3" >/dev/null 2>&1 &&
+                    exit 0
+                  sleep 2
+                done
+                exit 1' \
+            "$DOCKLANDS_HOST_SMOKE_S3_ENDPOINT" \
+            "$DOCKLANDS_HOST_SMOKE_S3_ACCESS_KEY" \
+            "$DOCKLANDS_HOST_SMOKE_S3_SECRET_KEY" \
+            "$DOCKLANDS_HOST_SMOKE_S3_BUCKET"
 
       - name: Start Docklands container
         run: |
@@ -110,7 +127,6 @@ jobs:
             -e DATABASE_URL="$DATABASE_URL" \
             -e BETTER_AUTH_SECRET="$BETTER_AUTH_SECRET" \
             -e DOCKLANDS_ENCRYPTION_KEY="$DOCKLANDS_ENCRYPTION_KEY" \
-            -e SKIP_BUNDLED_POSTGRES="$SKIP_BUNDLED_POSTGRES" \
             -e SKIP_PRE_MIGRATION_BACKUP="$SKIP_PRE_MIGRATION_BACKUP" \
             docklands:host-smoke
 
@@ -120,9 +136,10 @@ jobs:
       - name: Cleanup Docker smoke resources
         if: always()
         run: |
-          docker rm -f docklands docklands-host-smoke-setup docklands-traefik || true
+          docker rm -f docklands docklands-host-smoke-setup docklands-traefik docklands-smoke-minio || true
           if docker info --format '{{.Swarm.LocalNodeState}}' | grep -q '^active$'; then
             docker service ls --format '{{.Name}}' | grep '^smoke-' | xargs -r docker service rm
             docker service rm docklands-postgres || true
           fi
+          docker volume rm docklands-postgres docklands-smoke-minio || true
           sudo rm -rf /etc/docklands

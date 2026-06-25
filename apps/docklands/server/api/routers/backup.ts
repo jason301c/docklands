@@ -137,6 +137,7 @@ export const backupRouter = createTRPCRouter({
 					resourceType: "backup",
 					resourceId: backup.backupId,
 				});
+				return backup;
 			} catch (error) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",

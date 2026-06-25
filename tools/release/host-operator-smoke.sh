@@ -13,6 +13,14 @@ SMOKE_ID=${DOCKLANDS_HOST_SMOKE_ID:-$(date +%s)-$$}
 SMOKE_IMAGE=${DOCKLANDS_HOST_SMOKE_IMAGE:-registry:2}
 OWNER_EMAIL=${DOCKLANDS_HOST_SMOKE_OWNER_EMAIL:-owner@docklands.local}
 OWNER_PASSWORD=${DOCKLANDS_HOST_SMOKE_OWNER_PASSWORD:-docklands-owner-000000}
+RUN_BACKUP_SMOKE=${DOCKLANDS_HOST_SMOKE_BACKUP:-}
+S3_ENDPOINT=${DOCKLANDS_HOST_SMOKE_S3_ENDPOINT:-http://docklands-smoke-minio:9000}
+S3_ACCESS_KEY=${DOCKLANDS_HOST_SMOKE_S3_ACCESS_KEY:-docklandsminio}
+S3_SECRET_KEY=${DOCKLANDS_HOST_SMOKE_S3_SECRET_KEY:-docklandsminiosecret}
+S3_BUCKET=${DOCKLANDS_HOST_SMOKE_S3_BUCKET:-docklands-smoke}
+S3_PROVIDER=${DOCKLANDS_HOST_SMOKE_S3_PROVIDER:-Minio}
+S3_REGION=${DOCKLANDS_HOST_SMOKE_S3_REGION:-us-east-1}
+MC_IMAGE=${DOCKLANDS_HOST_SMOKE_MC_IMAGE:-minio/mc:RELEASE.2026-05-21T01-59-54Z}
 
 BASE_URL=${BASE_URL%/}
 TRAEFIK_URL=${TRAEFIK_URL%/}
@@ -39,6 +47,10 @@ DOMAIN_BODY=$(mktemp)
 DEPLOY_BODY=$(mktemp)
 DOMAIN_CONFIG_BODY=$(mktemp)
 TRAEFIK_BODY=$(mktemp)
+DESTINATION_BODY=$(mktemp)
+BACKUP_BODY=$(mktemp)
+BACKUP_RUN_BODY=$(mktemp)
+BACKUP_LIST_BODY=$(mktemp)
 COOKIE_JAR=$(mktemp)
 
 print_diagnostics() {
@@ -55,7 +67,11 @@ print_diagnostics() {
 		"$DOMAIN_BODY" \
 		"$DEPLOY_BODY" \
 		"$DOMAIN_CONFIG_BODY" \
-		"$TRAEFIK_BODY"; do
+		"$TRAEFIK_BODY" \
+		"$DESTINATION_BODY" \
+		"$BACKUP_BODY" \
+		"$BACKUP_RUN_BODY" \
+		"$BACKUP_LIST_BODY"; do
 		if [ -s "$file" ]; then
 			echo "----- $(basename "$file") -----" >&2
 			head -c 2000 "$file" >&2
@@ -96,6 +112,10 @@ cleanup() {
 		"$DEPLOY_BODY" \
 		"$DOMAIN_CONFIG_BODY" \
 		"$TRAEFIK_BODY" \
+		"$DESTINATION_BODY" \
+		"$BACKUP_BODY" \
+		"$BACKUP_RUN_BODY" \
+		"$BACKUP_LIST_BODY" \
 		"$COOKIE_JAR"
 	if [ "${DOCKLANDS_HOST_SMOKE_KEEP:-}" = "1" ]; then
 		echo "Keeping smoke service because DOCKLANDS_HOST_SMOKE_KEEP=1:" >&2
@@ -466,9 +486,106 @@ console.log(`${applicationId}|${appName}`);
 	wait_for "Traefik public route" traefik_route_ready
 }
 
+minio_find_backups() {
+	local object_prefix=$1
+
+	docker run --rm \
+		--network docklands-network \
+		--entrypoint sh \
+		"$MC_IMAGE" \
+		-c 'mc alias set smoke "$0" "$1" "$2" >/dev/null &&
+			mc find "smoke/$3/$4" --name "*.zip"' \
+		"$S3_ENDPOINT" \
+		"$S3_ACCESS_KEY" \
+		"$S3_SECRET_KEY" \
+		"$S3_BUCKET" \
+		"$object_prefix"
+}
+
+check_instance_backup() {
+	local destination_id
+	local backup_data
+	local backup_id
+	local backup_app_name
+	local backup_prefix
+	local backup_objects
+
+	if [ "$RUN_BACKUP_SMOKE" != "1" ]; then
+		return 0
+	fi
+
+	trpc_post "destination.create" \
+		"{\"json\":{\"name\":\"Smoke MinIO\",\"provider\":\"${S3_PROVIDER}\",\"accessKey\":\"${S3_ACCESS_KEY}\",\"secretAccessKey\":\"${S3_SECRET_KEY}\",\"bucket\":\"${S3_BUCKET}\",\"region\":\"${S3_REGION}\",\"endpoint\":\"${S3_ENDPOINT}\",\"additionalFlags\":[]}}" \
+		"$DESTINATION_BODY" \
+		"create smoke backup destination"
+	destination_id=$(node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+const destinationId = body.result?.data?.json?.destinationId;
+if (!destinationId) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+console.log(destinationId);
+' "$DESTINATION_BODY")
+	if [ -z "$destination_id" ]; then
+		echo "Could not parse smoke destination ID" >&2
+		exit 1
+	fi
+
+	backup_prefix=$(printf "host-smoke-%s" "$SMOKE_ID" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9_.-]+/-/g; s/^-+//; s/-+$//' | cut -c1-60)
+	if [ -z "$backup_prefix" ]; then
+		backup_prefix="host-smoke"
+	fi
+
+	trpc_post "backup.create" \
+		"{\"json\":{\"schedule\":\"0 0 * * *\",\"enabled\":false,\"prefix\":\"${backup_prefix}\",\"destinationId\":\"${destination_id}\",\"keepLatestCount\":1,\"database\":\"docklands\",\"databaseId\":null,\"serviceDatabaseId\":null,\"databaseType\":\"web-server\",\"userId\":null,\"backupType\":\"database\",\"composeId\":null,\"serviceName\":null,\"metadata\":null}}" \
+		"$BACKUP_BODY" \
+		"create smoke whole-instance backup"
+	backup_data=$(node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+const data = body.result?.data?.json;
+const backupId = data?.backupId;
+const appName = data?.appName;
+if (!backupId || !appName) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+console.log(`${backupId}|${appName}`);
+' "$BACKUP_BODY")
+	backup_id=${backup_data%%|*}
+	backup_app_name=${backup_data#*|}
+	if [ -z "$backup_id" ] || [ -z "$backup_app_name" ]; then
+		echo "Could not parse smoke backup ID/appName" >&2
+		exit 1
+	fi
+
+	trpc_post "backup.manualBackupWebServer" \
+		"{\"json\":{\"backupId\":\"${backup_id}\"}}" \
+		"$BACKUP_RUN_BODY" \
+		"run smoke whole-instance backup"
+	node -e '
+const fs = require("node:fs");
+const body = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+if (body.result?.data?.json !== true) {
+	console.error(JSON.stringify(body, null, 2));
+	process.exit(1);
+}
+' "$BACKUP_RUN_BODY"
+
+	backup_objects=$(minio_find_backups "${backup_app_name}/${backup_prefix}" |
+		tee "$BACKUP_LIST_BODY")
+	if ! printf "%s\n" "$backup_objects" | grep -Eq '\.zip$'; then
+		echo "Expected MinIO to contain a whole-instance backup zip" >&2
+		exit 1
+	fi
+}
+
 wait_for "Docklands readiness" check_ready
 check_first_owner
 check_deploy_and_ingress
+check_instance_backup
 
 echo "Docklands host operator smoke passed"
 echo "  base URL: $BASE_URL"
@@ -478,3 +595,6 @@ echo "  default ingress mode: public -> tunnel -> public"
 echo "  smoke deploy service: $SMOKE_DEPLOY_APP_NAME"
 echo "  smoke image: $SMOKE_IMAGE"
 echo "  smoke domain host: $SMOKE_DEPLOY_HOST"
+if [ "$RUN_BACKUP_SMOKE" = "1" ]; then
+	echo "  smoke backup bucket: $S3_BUCKET"
+fi

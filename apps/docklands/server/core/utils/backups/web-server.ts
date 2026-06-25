@@ -2,6 +2,7 @@ import { createWriteStream } from "node:fs";
 import { mkdtemp, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { quote } from "shell-quote";
 import { paths } from "@/server/core/constants/paths";
 import { resolveEncryptionKey } from "@/server/core/crypto/secret-box";
 import { resolveBetterAuthSecret } from "@/server/core/lib/auth-secret";
@@ -14,7 +15,10 @@ import {
 import { findDestinationById } from "@/server/core/services/destination";
 import { sendDocklandsBackupNotifications } from "../notifications/docklands-backup";
 import { execAsync } from "../process/execAsync";
-import { assertBundledPostgresForInstanceBackup } from "./instance-backup-support";
+import {
+	assertBundledPostgresForInstanceBackup,
+	resolveBundledPostgresConnection,
+} from "./instance-backup-support";
 import {
 	getBackupTimestamp,
 	getS3CredentialEnv,
@@ -53,7 +57,8 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 
 		try {
 			assertBundledPostgresForInstanceBackup();
-			await execAsync(`mkdir -p ${tempDir}/filesystem`);
+			const postgres = resolveBundledPostgresConnection();
+			await execAsync(`mkdir -p ${quote([`${tempDir}/filesystem`])}`);
 
 			// First get the container ID
 			const { stdout: containerId } = await execAsync(
@@ -69,19 +74,22 @@ export const runWebServerBackup = async (backup: BackupSchedule) => {
 			writeStream.write(`Docklands postgres container ID: ${containerId}\n`);
 
 			const postgresContainerId = containerId.trim();
+			const postgresContainerIdArg = quote([postgresContainerId]);
+			const postgresUserArg = quote([postgres.user]);
+			const postgresDatabaseArg = quote([postgres.database]);
 
 			// First dump the database inside the container
-			const dumpCommand = `docker exec ${postgresContainerId} pg_dump -v -Fc -U docklands -d docklands -f /tmp/database.sql`;
+			const dumpCommand = `docker exec ${postgresContainerIdArg} pg_dump -v -Fc -U ${postgresUserArg} -d ${postgresDatabaseArg} -f /tmp/database.sql`;
 			writeStream.write(`Running dump command: ${dumpCommand}\n`);
 			await execAsync(dumpCommand);
 
 			// Then copy the file from the container to host
-			const copyCommand = `docker cp ${postgresContainerId}:/tmp/database.sql ${tempDir}/database.sql`;
+			const copyCommand = `docker cp ${quote([`${postgresContainerId}:/tmp/database.sql`])} ${quote([join(tempDir, "database.sql")])}`;
 			writeStream.write(`Copying database dump: ${copyCommand}\n`);
 			await execAsync(copyCommand);
 
 			// Clean up the temp file in the container
-			const cleanupCommand = `docker exec ${postgresContainerId} rm -f /tmp/database.sql`;
+			const cleanupCommand = `docker exec ${postgresContainerIdArg} rm -f /tmp/database.sql`;
 			writeStream.write(`Cleaning up temp file: ${cleanupCommand}\n`);
 			await execAsync(cleanupCommand);
 
