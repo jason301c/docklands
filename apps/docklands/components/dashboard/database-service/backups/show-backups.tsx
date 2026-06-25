@@ -85,16 +85,18 @@ export const ShowBackups = ({
 								refetch={refetch}
 							/>
 						)}
-						<RestoreBackup
-							id={id}
-							databaseType={databaseType}
-							backupType={backupType}
-							runtimeWorkerId={
-								"runtimeWorkerId" in postgres
-									? postgres.runtimeWorkerId
-									: undefined
-							}
-						/>
+						{!isWebServer && (
+							<RestoreBackup
+								id={id}
+								databaseType={databaseType}
+								backupType={backupType}
+								runtimeWorkerId={
+									"runtimeWorkerId" in postgres
+										? postgres.runtimeWorkerId
+										: undefined
+								}
+							/>
+						)}
 					</div>
 				) : null
 			}
@@ -130,16 +132,18 @@ export const ShowBackups = ({
 										backupType={backupType}
 										refetch={refetch}
 									/>
-									<RestoreBackup
-										id={id}
-										databaseType={databaseType}
-										backupType={backupType}
-										runtimeWorkerId={
-											"runtimeWorkerId" in postgres
-												? postgres.runtimeWorkerId
-												: undefined
-										}
-									/>
+									{!isWebServer && (
+										<RestoreBackup
+											id={id}
+											databaseType={databaseType}
+											backupType={backupType}
+											runtimeWorkerId={
+												"runtimeWorkerId" in postgres
+													? postgres.runtimeWorkerId
+													: undefined
+											}
+										/>
+									)}
 								</div>
 							</div>
 						) : (

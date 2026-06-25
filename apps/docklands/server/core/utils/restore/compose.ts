@@ -1,3 +1,4 @@
+import { quote } from "shell-quote";
 import type { z } from "zod";
 import type { apiRestoreBackup } from "@/server/core/db/schema";
 import { createLogger } from "@/server/core/lib/logger";
@@ -34,10 +35,10 @@ export const restoreComposeBackup = async (
 		const s3Env = getS3CredentialEnv(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
 		const backupPath = `${bucketPath}/${backupInput.backupFile}`;
-		let rcloneCommand = `${s3Env} rclone cat ${rcloneFlags.join(" ")} "${backupPath}" | gunzip`;
+		let rcloneCommand = `${s3Env} rclone cat ${rcloneFlags.join(" ")} ${quote([backupPath])} | gunzip`;
 
 		if (backupInput.metadata?.mongo) {
-			rcloneCommand = `${s3Env} rclone copy ${rcloneFlags.join(" ")} "${backupPath}"`;
+			rcloneCommand = `${s3Env} rclone copy ${rcloneFlags.join(" ")} ${quote([backupPath])}`;
 		}
 
 		let credentials: DatabaseCredentials = {};

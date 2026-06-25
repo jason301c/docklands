@@ -212,6 +212,7 @@ bun run build                     # check:bundler + esbuild server bundle + next
 bun run migration:generate        # Drizzle: generate SQL from schema changes
 bun run migration:run             # apply migrations
 bun run setup                     # full local bootstrap (Swarm/Traefik/Postgres/migrations)
+bun run restore-instance -- --destination-id <id> --backup-file <key.zip> --confirm RESTORE_DOCKLANDS_INSTANCE
 bun run docker:build              # build the app Docker image
 bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in
 bun run docs:dev                  # Astro docs site (apps/docs)

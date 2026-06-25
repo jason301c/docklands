@@ -233,9 +233,10 @@ the custom-role manager) all hang off `components/dashboard/`.
   tail/since values, search strings, and shells against the existing allowlists.
 - `server/ops/` — runtime/admin entrypoints bundled into `dist` (DB migration,
   setup, wait-for-postgres, reset-password, ensure auth-secret/encryption-key,
-  a production secret preflight `check-secrets` that runs first in `start`, and
-  `rotate-encryption-key` which re-encrypts every secret-box value from the
-  current key to `DOCKLANDS_NEW_ENCRYPTION_KEY`).
+  a production secret preflight `check-secrets` that runs first in `start`,
+  offline full-instance restore, and `rotate-encryption-key` which re-encrypts
+  every secret-box value from the current key to
+  `DOCKLANDS_NEW_ENCRYPTION_KEY`).
   Keep imports server-only and startup-safe; never log secrets,
   tokens, keys, database URLs, or generated passwords unless the command exists
   to reveal them. When adding an entrypoint, update `package.json`,
@@ -513,6 +514,7 @@ bun run test                # Vitest (watch)
 bun run test:ci             # Vitest run, excludes the real deploy test
 bun run migration:generate  # Drizzle: generate SQL from schema changes
 bun run migration:run       # apply migrations (tsx server/ops/migrate-db.ts)
+bun run restore-instance -- --destination-id <id> --backup-file <key.zip> --confirm RESTORE_DOCKLANDS_INSTANCE
 bun run generate:openapi    # regenerate openapi.json from the tRPC routers
 bun run format-and-lint:fix # Biome format + lint (autofix)
 ```

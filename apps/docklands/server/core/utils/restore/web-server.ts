@@ -1,8 +1,10 @@
-import { mkdtemp, readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, posix } from "node:path";
+import { quote } from "shell-quote";
 import { paths } from "@/server/core/constants/paths";
 import { resolveEncryptionKey } from "@/server/core/crypto/secret-box";
+import { webServerRestoreBackupSchema } from "@/server/core/db/schema";
 import { createLogger } from "@/server/core/lib/logger";
 import type { Destination } from "@/server/core/services/destination";
 import { getS3CredentialEnv, getS3Credentials } from "../backups/utils";
@@ -10,16 +12,19 @@ import { execAsync } from "../process/execAsync";
 
 const logger = createLogger("restore");
 
-export const restoreWebServerBackup = async (
+export const restoreWebServerBackupOffline = async (
 	destination: Destination,
-	backupFile: string,
+	backupFileInput: string,
 	emit: (log: string) => void,
 ) => {
+	const backupFile =
+		webServerRestoreBackupSchema.shape.backupFile.parse(backupFileInput);
 	try {
 		const rcloneFlags = getS3Credentials(destination);
 		const s3Env = getS3CredentialEnv(destination);
 		const bucketPath = `:s3:${destination.bucket}`;
 		const backupPath = `${bucketPath}/${backupFile}`;
+		const localBackupFileName = posix.basename(backupFile);
 		const { BASE_PATH } = paths();
 
 		logger.info({ backupFile }, "Web server restore started");
@@ -34,30 +39,35 @@ export const restoreWebServerBackup = async (
 
 			// Create temp directory
 			emit("Creating temporary directory...");
-			await execAsync(`mkdir -p ${tempDir}`);
+			await execAsync(`mkdir -p ${quote([tempDir])}`);
 
 			// Download backup from S3
 			emit("Downloading backup from S3...");
+			const localBackupPath = join(tempDir, localBackupFileName);
 			await execAsync(
-				`${s3Env} rclone copyto ${rcloneFlags.join(" ")} "${backupPath}" "${tempDir}/${backupFile}"`,
+				`${s3Env} rclone copyto ${rcloneFlags.join(" ")} ${quote([backupPath])} ${quote([localBackupPath])}`,
 			);
 
 			// List files before extraction
 			emit("Listing files before extraction...");
-			const { stdout: beforeFiles } = await execAsync(`ls -la ${tempDir}`);
+			const { stdout: beforeFiles } = await execAsync(
+				`ls -la ${quote([tempDir])}`,
+			);
 			emit(`Files before extraction: ${beforeFiles}`);
 
 			// Extract backup
 			emit("Extracting backup...");
-			await execAsync(`cd ${tempDir} && unzip ${backupFile} > /dev/null 2>&1`);
+			await execAsync(
+				`cd ${quote([tempDir])} && unzip ${quote([localBackupFileName])} > /dev/null 2>&1`,
+			);
 
 			// The archive bundles the encryption key the dump's secrets were sealed
 			// with. If this instance's key differs, the restored secrets won't
 			// decrypt — warn loudly (without ever revealing the key) so the operator
 			// reconciles DOCKLANDS_ENCRYPTION_KEY before relying on the data.
-			const secretsPath = `${tempDir}/docklands-secrets.env`;
+			const secretsPath = join(tempDir, "docklands-secrets.env");
 			const { stdout: hasSecrets } = await execAsync(
-				`ls ${secretsPath} || true`,
+				`ls ${quote([secretsPath])} || true`,
 			);
 			if (hasSecrets.includes("docklands-secrets.env")) {
 				try {
@@ -94,31 +104,35 @@ export const restoreWebServerBackup = async (
 
 			// First clean the target directory
 			emit("Cleaning target directory...");
-			await execAsync(`rm -rf "${BASE_PATH}/"*`);
+			await execAsync(`rm -rf ${quote([`${BASE_PATH}/`])}*`);
 
 			// Ensure the target directory exists
 			emit("Setting up target directory...");
-			await execAsync(`mkdir -p "${BASE_PATH}"`);
+			await execAsync(`mkdir -p ${quote([BASE_PATH])}`);
 
 			// Copy files preserving permissions
 			emit("Copying files...");
-			await execAsync(`cp -rp "${tempDir}/filesystem/"* "${BASE_PATH}/"`);
+			await execAsync(
+				`cp -rp ${quote([`${tempDir}/filesystem/`])}* ${quote([`${BASE_PATH}/`])}`,
+			);
 
 			// Now handle database restore
 			emit("Starting database restore...");
 
 			// Check if database.sql.gz exists and decompress it
 			const { stdout: hasGzFile } = await execAsync(
-				`ls ${tempDir}/database.sql.gz || true`,
+				`ls ${quote([join(tempDir, "database.sql.gz")])} || true`,
 			);
 			if (hasGzFile.includes("database.sql.gz")) {
 				emit("Found compressed database file, decompressing...");
-				await execAsync(`cd ${tempDir} && gunzip database.sql.gz`);
+				await execAsync(
+					`cd ${quote([tempDir])} && gunzip ${quote(["database.sql.gz"])}`,
+				);
 			}
 
 			// Verify database file exists
 			const { stdout: hasSqlFile } = await execAsync(
-				`ls ${tempDir}/database.sql || true`,
+				`ls ${quote([join(tempDir, "database.sql")])} || true`,
 			);
 			if (!hasSqlFile.includes("database.sql")) {
 				throw new Error("Database file not found after extraction");
@@ -133,45 +147,46 @@ export const restoreWebServerBackup = async (
 			}
 
 			const postgresContainerId = postgresContainer.trim();
+			const postgresContainerIdArg = quote([postgresContainerId]);
 
 			// Drop and recreate database
 			emit("Disconnecting all users from database...");
 			await execAsync(
-				`docker exec ${postgresContainerId} psql -U docklands postgres -c "SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'docklands' AND pid <> pg_backend_pid();"`,
+				`docker exec ${postgresContainerIdArg} psql -U docklands postgres -c ${quote(["SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'docklands' AND pid <> pg_backend_pid();"])}`,
 			);
 
 			emit("Dropping existing database...");
 			await execAsync(
-				`docker exec ${postgresContainerId} psql -U docklands postgres -c "DROP DATABASE IF EXISTS docklands;"`,
+				`docker exec ${postgresContainerIdArg} psql -U docklands postgres -c ${quote(["DROP DATABASE IF EXISTS docklands;"])}`,
 			);
 
 			emit("Creating fresh database...");
 			await execAsync(
-				`docker exec ${postgresContainerId} psql -U docklands postgres -c "CREATE DATABASE docklands;"`,
+				`docker exec ${postgresContainerIdArg} psql -U docklands postgres -c ${quote(["CREATE DATABASE docklands;"])}`,
 			);
 
 			// Copy the backup file into the container
 			emit("Copying backup file into container...");
 			await execAsync(
-				`docker cp ${tempDir}/database.sql ${postgresContainerId}:/tmp/database.sql`,
+				`docker cp ${quote([join(tempDir, "database.sql")])} ${quote([`${postgresContainerId}:/tmp/database.sql`])}`,
 			);
 
 			// Verify file in container
 			emit("Verifying file in container...");
 			await execAsync(
-				`docker exec ${postgresContainerId} ls -l /tmp/database.sql`,
+				`docker exec ${postgresContainerIdArg} ls -l /tmp/database.sql`,
 			);
 
 			// Restore from the copied file
 			emit("Running database restore...");
 			await execAsync(
-				`docker exec ${postgresContainerId} pg_restore -v -U docklands -d docklands /tmp/database.sql`,
+				`docker exec ${postgresContainerIdArg} pg_restore -v -U docklands -d docklands /tmp/database.sql`,
 			);
 
 			// Cleanup the temporary file in the container
 			emit("Cleaning up container temp file...");
 			await execAsync(
-				`docker exec ${postgresContainerId} rm /tmp/database.sql`,
+				`docker exec ${postgresContainerIdArg} rm /tmp/database.sql`,
 			);
 
 			logger.info({ backupFile }, "Web server restore completed");
@@ -179,7 +194,7 @@ export const restoreWebServerBackup = async (
 		} finally {
 			// Cleanup
 			emit("Cleaning up temporary files...");
-			await execAsync(`rm -rf ${tempDir}`);
+			await rm(tempDir, { recursive: true, force: true });
 		}
 	} catch (error) {
 		logger.error(

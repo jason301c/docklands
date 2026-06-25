@@ -46,7 +46,6 @@ import {
 import {
 	restoreComposeBackup,
 	restoreDatabaseBackup,
-	restoreWebServerBackup,
 } from "@/server/core/utils/restore";
 
 const logger = createLogger("trpc");
@@ -62,6 +61,32 @@ interface RcloneFile {
 		SHA1?: string;
 	};
 }
+
+const LIVE_WEB_SERVER_RESTORE_MESSAGE =
+	"Whole-instance restore must be run offline with `bun run restore-instance`; it cannot run through the live app.";
+
+const rejectLiveWebServerRestore = (
+	input: z.infer<typeof apiRestoreBackup>,
+) => {
+	if (input.backupType === "database" && input.databaseType === "web-server") {
+		throw new TRPCError({
+			code: "BAD_REQUEST",
+			message: LIVE_WEB_SERVER_RESTORE_MESSAGE,
+		});
+	}
+};
+
+const assertDestinationAccess = (
+	ctx: { session: { activeOrganizationId?: string | null } },
+	destination: { organizationId: string },
+) => {
+	if (destination.organizationId !== ctx.session.activeOrganizationId) {
+		throw new TRPCError({
+			code: "UNAUTHORIZED",
+			message: "You don't have access to this destination.",
+		});
+	}
+};
 
 export const backupRouter = createTRPCRouter({
 	create: protectedProcedure
@@ -384,24 +409,22 @@ export const backupRouter = createTRPCRouter({
 	restoreBackup: protectedProcedure
 		.input(apiRestoreBackup)
 		.mutation(async ({ input, ctx }) => {
+			rejectLiveWebServerRestore(input);
 			if (input.databaseId) {
 				await checkServicePermissionAndAccess(ctx, input.databaseId, {
 					backup: ["restore"],
 				});
 			}
 			const destination = await findDestinationById(input.destinationId);
+			assertDestinationAccess(ctx, destination);
 			const logs: string[] = [];
 			const onLog = (log: string) => {
 				logs.push(log);
 			};
 			try {
 				if (input.backupType === "database") {
-					if (input.databaseType === "web-server") {
-						await restoreWebServerBackup(destination, input.backupFile, onLog);
-					} else {
-						const database = await findDatabaseById(input.databaseId);
-						await restoreDatabaseBackup(database, destination, input, onLog);
-					}
+					const database = await findDatabaseById(input.databaseId);
+					await restoreDatabaseBackup(database, destination, input, onLog);
 				} else if (input.backupType === "compose") {
 					// input.databaseId carries the compose id for compose restores
 					// (apiRestoreBackup reuses the single databaseId field).
@@ -439,23 +462,21 @@ export const backupRouter = createTRPCRouter({
 		})
 		.input(apiRestoreBackup)
 		.subscription(async function* ({ input, ctx, signal }) {
+			rejectLiveWebServerRestore(input);
 			if (input.databaseId) {
 				await checkServicePermissionAndAccess(ctx, input.databaseId, {
 					backup: ["restore"],
 				});
 			}
 			const destination = await findDestinationById(input.destinationId);
+			assertDestinationAccess(ctx, destination);
 			const queue: string[] = [];
 			let done = false;
 			const onLog = (log: string) => queue.push(log);
 			const runRestore = async () => {
 				if (input.backupType === "database") {
-					if (input.databaseType === "web-server") {
-						await restoreWebServerBackup(destination, input.backupFile, onLog);
-					} else {
-						const database = await findDatabaseById(input.databaseId);
-						await restoreDatabaseBackup(database, destination, input, onLog);
-					}
+					const database = await findDatabaseById(input.databaseId);
+					await restoreDatabaseBackup(database, destination, input, onLog);
 				} else if (input.backupType === "compose") {
 					// NOTE: for a compose restore, `input.databaseId` actually carries
 					// the *compose* id — the restore input reuses the single

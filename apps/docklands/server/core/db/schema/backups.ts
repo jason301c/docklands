@@ -138,6 +138,44 @@ const createSchema = createInsertSchema(backups, {
 	metadata: z.any().nullish(),
 });
 
+const s3BackupObjectKeyField = z
+	.string()
+	.min(1)
+	.refine(
+		(value) =>
+			value
+				.split("/")
+				.every(
+					(segment) =>
+						segment.length > 0 &&
+						segment !== "." &&
+						segment !== ".." &&
+						/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/.test(segment),
+				),
+		"Only safe S3 object key segments are allowed",
+	)
+	.refine(
+		(value) =>
+			value.endsWith(".sql.gz") ||
+			value.endsWith(".bson.gz") ||
+			value.endsWith(".tar.gz") ||
+			value.endsWith(".zip"),
+		"Backup file must end with .sql.gz, .bson.gz, .tar.gz, or .zip",
+	);
+
+const s3WebServerBackupObjectKeyField = s3BackupObjectKeyField.refine(
+	(value) => value.endsWith(".zip"),
+	"Web-server backup file must be a .zip archive",
+);
+
+export const webServerRestoreConfirmation = "RESTORE_DOCKLANDS_INSTANCE";
+
+export const webServerRestoreBackupSchema = z.object({
+	destinationId: z.string().min(1),
+	backupFile: s3WebServerBackupObjectKeyField,
+	confirmation: z.literal(webServerRestoreConfirmation),
+});
+
 export const apiCreateBackup = createSchema.pick({
 	schedule: true,
 	enabled: true,
@@ -181,7 +219,7 @@ export const apiUpdateBackup = createSchema
 	.required();
 
 export const apiRestoreBackup = z.object({
-	databaseId: z.string(),
+	databaseId: z.string().min(1),
 	databaseType: z.enum([
 		"postgres",
 		"mysql",
@@ -192,7 +230,7 @@ export const apiRestoreBackup = z.object({
 	]),
 	backupType: z.enum(["database", "compose"]),
 	databaseName: z.string().min(1),
-	backupFile: z.string().min(1),
+	backupFile: s3BackupObjectKeyField,
 	destinationId: z.string().min(1),
 	metadata: z
 		.object({

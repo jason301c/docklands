@@ -23,6 +23,7 @@
 		"generate:openapi": "bun --filter docklands generate:openapi",
 		"reset-password": "bun --filter docklands reset-password",
 		"rotate-encryption-key": "bun --filter docklands rotate-encryption-key",
+		"restore-instance": "bun --filter docklands restore-instance",
 		"migration:generate": "cd apps/docklands && bun run migration:generate",
 		"migration:run": "bun --filter docklands migration:run",
 		"migration:up": "cd apps/docklands && bun run migration:up",

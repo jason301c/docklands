@@ -33,6 +33,7 @@ try {
 				"wait-for-postgres": "server/ops/wait-for-postgres.ts",
 				"reset-password": "server/ops/reset-password.ts",
 				"rotate-encryption-key": "server/ops/rotate-encryption-key.ts",
+				"restore-instance": "server/ops/restore-instance.ts",
 			},
 			bundle: true,
 			platform: "node",

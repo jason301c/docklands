@@ -14,6 +14,7 @@
 		"wait-for-postgres-dev": "tsx -r dotenv/config server/ops/wait-for-postgres.ts",
 		"reset-password": "node -r dotenv/config dist/reset-password.mjs",
 		"rotate-encryption-key": "node -r dotenv/config dist/rotate-encryption-key.mjs",
+		"restore-instance": "node -r dotenv/config dist/restore-instance.mjs",
 		"dev": "tsx -r dotenv/config ./server/server.ts  --project tsconfig.server.json ",
 		"migration:generate": "drizzle-kit generate --config ./server/core/db/drizzle.config.ts",
 		"migration:run": "tsx -r dotenv/config server/ops/migrate-db.ts",
