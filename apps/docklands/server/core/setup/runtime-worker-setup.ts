@@ -7,6 +7,15 @@ import { createHostVerifier } from "@/server/core/utils/process/ssh-host-key";
 
 const logger = createLogger("setup:worker-setup");
 
+export const RUNTIME_TOOLCHAIN_VERSIONS = {
+	buildpacks: "0.39.1",
+	docker: "28.5.0",
+	nixpacks: "1.41.0",
+	railpack: "0.15.4",
+	rclone: "1.74.3",
+	ubuntu2604Docker: "29.4.2",
+} as const;
+
 import {
 	createServerDeployment,
 	updateDeploymentStatus,
@@ -75,7 +84,7 @@ export const runtimeWorkerSetup = async (
 export const defaultCommand = (isBuildRuntimeWorker = false) => {
 	const bashCommand = `
 set -e;
-DOCKER_VERSION=28.5.0
+DOCKER_VERSION=${RUNTIME_TOOLCHAIN_VERSIONS.docker}
 OS_TYPE=$(grep -w "ID" /etc/os-release | cut -d "=" -f 2 | tr -d '"')
 SYS_ARCH=$(uname -m)
 CURRENT_USER=$USER
@@ -136,7 +145,7 @@ fi
 # must run after OS_VERSION is resolved and before the banner so the reported
 # Docker version stays accurate.
 if [ "$OS_TYPE" = "ubuntu" ] && [ "$OS_VERSION" = "26.04" ]; then
-	DOCKER_VERSION=29.4.2
+	DOCKER_VERSION=${RUNTIME_TOOLCHAIN_VERSIONS.ubuntu2604Docker}
 fi
 
 if [ "$OS_TYPE" = 'amzn' ]; then
@@ -495,6 +504,7 @@ if [ -x "$(command -v snap)" ]; then
 fi
 
 echo -e "3. Check Docker Installation. "
+DOCKER_PIN_ENFORCED=false
 if ! [ -x "$(command -v docker)" ]; then
     echo " - Docker is not installed. Installing Docker. It may take a while."
     case "$OS_TYPE" in
@@ -588,6 +598,7 @@ if ! [ -x "$(command -v docker)" ]; then
 
             if ! [ -x "$(command -v docker)" ]; then
                 curl -s https://get.docker.com | $SUDO_CMD sh -s -- --version $DOCKER_VERSION 2>&1
+                DOCKER_PIN_ENFORCED=true
                 if ! [ -x "$(command -v docker)" ]; then
                     echo " - Docker installation failed."
                     echo "   Maybe your OS is not supported?"
@@ -607,6 +618,12 @@ if ! [ -x "$(command -v docker)" ]; then
 
 
     esac
+    DOCKER_INSTALLED_VERSION=$(docker --version | awk '{print $3}' | tr -d ',')
+    if [ "$DOCKER_PIN_ENFORCED" = "true" ] && [ "$DOCKER_INSTALLED_VERSION" != "$DOCKER_VERSION" ]; then
+        echo " - Docker version mismatch: expected $DOCKER_VERSION but found $DOCKER_INSTALLED_VERSION."
+        exit 1
+    fi
+    echo " - Docker version $DOCKER_INSTALLED_VERSION available."
     echo " - Docker installed successfully."
 else
     echo " - Docker is installed."
@@ -643,13 +660,63 @@ const createDefaultMiddlewares = () => {
 };
 
 export const installRClone = () => `
+	RCLONE_VERSION=${RUNTIME_TOOLCHAIN_VERSIONS.rclone}
+
+	install_pinned_rclone() {
+		case "$SYS_ARCH" in
+			x86_64 | amd64)
+				RCLONE_ARCH="amd64"
+				;;
+			aarch64 | arm64)
+				RCLONE_ARCH="arm64"
+				;;
+			armv7*)
+				RCLONE_ARCH="arm-v7"
+				;;
+			armv6*)
+				RCLONE_ARCH="arm-v6"
+				;;
+			arm*)
+				RCLONE_ARCH="arm"
+				;;
+			i?86 | x86)
+				RCLONE_ARCH="386"
+				;;
+			*)
+				echo "Unsupported rclone architecture: $SYS_ARCH"
+				exit 1
+				;;
+		esac
+
+		RCLONE_ZIP="rclone-v$RCLONE_VERSION-linux-$RCLONE_ARCH.zip"
+		RCLONE_TMP=$(mktemp -d)
+		curl -fsSLo "$RCLONE_TMP/$RCLONE_ZIP" "https://downloads.rclone.org/v$RCLONE_VERSION/$RCLONE_ZIP"
+		curl -fsSLo "$RCLONE_TMP/SHA256SUMS" "https://downloads.rclone.org/v$RCLONE_VERSION/SHA256SUMS"
+		(cd "$RCLONE_TMP" && grep "  $RCLONE_ZIP$" SHA256SUMS | sha256sum -c -)
+		unzip -q "$RCLONE_TMP/$RCLONE_ZIP" -d "$RCLONE_TMP"
+		$SUDO_CMD cp "$RCLONE_TMP/rclone-v$RCLONE_VERSION-linux-$RCLONE_ARCH/rclone" /usr/local/bin/rclone
+		$SUDO_CMD chmod 755 /usr/local/bin/rclone
+		rm -rf "$RCLONE_TMP"
+	}
+
     if command_exists rclone; then
-		echo "RClone already installed ✅"
+		RCLONE_INSTALLED_VERSION=$(rclone --version | head -n 1 | awk '{print $2}' | sed 's/^v//')
+		if [ "$RCLONE_INSTALLED_VERSION" = "$RCLONE_VERSION" ]; then
+			echo "RClone version $RCLONE_VERSION already installed ✅"
+		else
+			echo "RClone version $RCLONE_INSTALLED_VERSION is installed; replacing it with $RCLONE_VERSION."
+			install_pinned_rclone
+		fi
 	else
-		curl https://rclone.org/install.sh | $SUDO_CMD bash
-		RCLONE_VERSION=$(rclone --version | head -n 1 | awk '{print $2}' | sed 's/^v//')
-		echo "RClone version $RCLONE_VERSION installed ✅"
+		install_pinned_rclone
 	fi
+
+	RCLONE_INSTALLED_VERSION=$(rclone --version | head -n 1 | awk '{print $2}' | sed 's/^v//')
+	if [ "$RCLONE_INSTALLED_VERSION" != "$RCLONE_VERSION" ]; then
+		echo "RClone version mismatch: expected $RCLONE_VERSION but found $RCLONE_INSTALLED_VERSION."
+		exit 1
+	fi
+	echo "RClone version $RCLONE_VERSION installed ✅"
 `;
 
 export const createTraefikInstance = () => {
@@ -687,23 +754,47 @@ export const createTraefikInstance = () => {
 };
 
 const installNixpacks = () => `
-	if command_exists nixpacks; then
-		echo "Nixpacks already installed ✅"
+	NIXPACKS_VERSION=${RUNTIME_TOOLCHAIN_VERSIONS.nixpacks}
+	if command_exists nixpacks && nixpacks --version | grep -F "$NIXPACKS_VERSION" >/dev/null; then
+		echo "Nixpacks version $NIXPACKS_VERSION already installed ✅"
 	else
-	    export NIXPACKS_VERSION=1.41.0
-        $SUDO_CMD bash -c "$(curl -fsSL https://nixpacks.com/install.sh)"
-		echo "Nixpacks version $NIXPACKS_VERSION installed ✅"
+		if command_exists nixpacks; then
+			NIXPACKS_INSTALLED_VERSION=$(nixpacks --version || true)
+			echo "Nixpacks version $NIXPACKS_INSTALLED_VERSION is installed; replacing it with $NIXPACKS_VERSION."
+		fi
+		NIXPACKS_INSTALLER=$(mktemp)
+		curl -fsSL https://nixpacks.com/install.sh -o "$NIXPACKS_INSTALLER"
+		$SUDO_CMD env NIXPACKS_VERSION="$NIXPACKS_VERSION" bash "$NIXPACKS_INSTALLER" --yes
+		rm -f "$NIXPACKS_INSTALLER"
 	fi
+
+	if ! nixpacks --version | grep -F "$NIXPACKS_VERSION" >/dev/null; then
+		echo "Nixpacks version mismatch: expected $NIXPACKS_VERSION but found $(nixpacks --version || true)."
+		exit 1
+	fi
+	echo "Nixpacks version $NIXPACKS_VERSION installed ✅"
 `;
 
 const installRailpack = () => `
-	if command_exists railpack; then
-		echo "Railpack already installed ✅"
+	RAILPACK_VERSION=${RUNTIME_TOOLCHAIN_VERSIONS.railpack}
+	if command_exists railpack && railpack --version | grep -F "$RAILPACK_VERSION" >/dev/null; then
+		echo "Railpack version $RAILPACK_VERSION already installed ✅"
 	else
-	    export RAILPACK_VERSION=0.15.4
-		$SUDO_CMD bash -c "$(curl -fsSL https://railpack.com/install.sh)"
-		echo "Railpack version $RAILPACK_VERSION installed ✅"
+		if command_exists railpack; then
+			RAILPACK_INSTALLED_VERSION=$(railpack --version || true)
+			echo "Railpack version $RAILPACK_INSTALLED_VERSION is installed; replacing it with $RAILPACK_VERSION."
+		fi
+		RAILPACK_INSTALLER=$(mktemp)
+		curl -fsSL https://railpack.com/install.sh -o "$RAILPACK_INSTALLER"
+		$SUDO_CMD env RAILPACK_VERSION="$RAILPACK_VERSION" bash "$RAILPACK_INSTALLER" --yes
+		rm -f "$RAILPACK_INSTALLER"
 	fi
+
+	if ! railpack --version | grep -F "$RAILPACK_VERSION" >/dev/null; then
+		echo "Railpack version mismatch: expected $RAILPACK_VERSION but found $(railpack --version || true)."
+		exit 1
+	fi
+	echo "Railpack version $RAILPACK_VERSION installed ✅"
 `;
 
 const setupPermissions = () => `
@@ -724,15 +815,24 @@ const setupPermissions = () => `
 `;
 
 const installBuildpacks = () => `
+	BUILDPACKS_VERSION=${RUNTIME_TOOLCHAIN_VERSIONS.buildpacks}
 	SUFFIX=""
 	if [ "$SYS_ARCH" = "aarch64" ] || [ "$SYS_ARCH" = "arm64" ]; then
 		SUFFIX="-arm64"
 	fi
-	if command_exists pack; then
-		echo "Buildpacks already installed ✅"
+	if command_exists pack && pack --version | grep -F "$BUILDPACKS_VERSION" >/dev/null; then
+		echo "Buildpacks version $BUILDPACKS_VERSION already installed ✅"
 	else
-		BUILDPACKS_VERSION=0.39.1
-		curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.39.1/pack-v$BUILDPACKS_VERSION-linux$SUFFIX.tgz" | $SUDO_CMD tar -C /usr/local/bin/ --no-same-owner -xzv pack
-		echo "Buildpacks version $BUILDPACKS_VERSION installed ✅"
+		if command_exists pack; then
+			BUILDPACKS_INSTALLED_VERSION=$(pack --version || true)
+			echo "Buildpacks version $BUILDPACKS_INSTALLED_VERSION is installed; replacing it with $BUILDPACKS_VERSION."
+		fi
+		curl -fsSL "https://github.com/buildpacks/pack/releases/download/v$BUILDPACKS_VERSION/pack-v$BUILDPACKS_VERSION-linux$SUFFIX.tgz" | $SUDO_CMD tar -C /usr/local/bin/ --no-same-owner -xzv pack
 	fi
+
+	if ! pack --version | grep -F "$BUILDPACKS_VERSION" >/dev/null; then
+		echo "Buildpacks version mismatch: expected $BUILDPACKS_VERSION but found $(pack --version || true)."
+		exit 1
+	fi
+	echo "Buildpacks version $BUILDPACKS_VERSION installed ✅"
 `;
