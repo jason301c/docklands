@@ -1,10 +1,9 @@
 import { Button } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
-import { Switch } from "@cloudflare/kumo/components/switch";
+import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { AlertTriangle, PenBoxIcon, PlusIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { api } from "@/client/api/trpc";
 import { Dialog } from "@/components/shared/dialog";
 import {
@@ -24,20 +23,8 @@ import {
 	notificationSchema,
 } from "./notification-schema";
 import { notificationsMap } from "./notifications-map";
-import {
-	CustomFields,
-	DiscordFields,
-	EmailFields,
-	GotifyFields,
-	LarkFields,
-	MattermostFields,
-	NtfyFields,
-	PushoverFields,
-	ResendFields,
-	SlackFields,
-	TeamsFields,
-	TelegramFields,
-} from "./provider-fields";
+import { ProviderFields } from "./provider-fields";
+import { SwitchField, TextField } from "./provider-fields/fields";
 import { useNotificationMutations } from "./use-notification-mutations";
 
 interface Props {
@@ -111,26 +98,6 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 				setVisible(false);
 			},
 		});
-
-	const { fields, append, remove } = useFieldArray({
-		control: form.control,
-		name: "toAddresses" as never,
-	});
-
-	const {
-		fields: headerFields,
-		append: appendHeader,
-		remove: removeHeader,
-	} = useFieldArray({
-		control: form.control,
-		name: "headers" as never,
-	});
-
-	useEffect(() => {
-		if ((type === "email" || type === "resend") && fields.length === 0) {
-			append("");
-		}
-	}, [type, append, fields.length]);
 
 	useEffect(() => {
 		if (notification) {
@@ -284,68 +251,20 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 							<FormLabel className="text-lg font-semibold leading-none tracking-tight">
 								Configure the connection
 							</FormLabel>
-							<div className="flex flex-col gap-2">
-								<FormField
+							<LayerCard className="flex flex-col gap-2 p-4">
+								<TextField
 									control={form.control}
 									name="name"
-									render={({ field }) => (
-										<FormItem>
-											<FormLabel>Name</FormLabel>
-											<FormControl>
-												<Input placeholder="Name" {...field} />
-											</FormControl>
-											<FormMessage />
-										</FormItem>
-									)}
+									label="Name"
+									placeholder="Name"
 								/>
 
-								{type === "slack" && <SlackFields control={form.control} />}
-								{type === "telegram" && (
-									<TelegramFields control={form.control} />
-								)}
-								{type === "discord" && <DiscordFields control={form.control} />}
-								{type === "email" && (
-									<EmailFields
-										control={form.control}
-										form={form}
-										type={type}
-										fields={fields}
-										append={append}
-										remove={remove}
-									/>
-								)}
-								{type === "resend" && (
-									<ResendFields
-										control={form.control}
-										form={form}
-										type={type}
-										fields={fields}
-										append={append}
-										remove={remove}
-									/>
-								)}
-								{type === "gotify" && <GotifyFields control={form.control} />}
-								{type === "ntfy" && <NtfyFields control={form.control} />}
-								{type === "mattermost" && (
-									<MattermostFields control={form.control} />
-								)}
-								{type === "custom" && (
-									<CustomFields
-										control={form.control}
-										headerFields={headerFields}
-										appendHeader={appendHeader}
-										removeHeader={removeHeader}
-									/>
-								)}
-								{type === "lark" && <LarkFields control={form.control} />}
-								{type === "teams" && <TeamsFields control={form.control} />}
-								{type === "pushover" && (
-									<PushoverFields
-										control={form.control}
-										priority={form.watch("priority")}
-									/>
-								)}
-							</div>
+								<ProviderFields
+									type={type}
+									control={form.control}
+									form={form}
+								/>
+							</LayerCard>
 						</div>
 						<div className="flex flex-col gap-4">
 							<div className="flex flex-col gap-1">
@@ -359,26 +278,12 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 
 							<div className="grid md:grid-cols-2 gap-4">
 								{ACTION_FIELDS.map((action) => (
-									<FormField
+									<SwitchField
 										key={action.name}
 										control={form.control}
 										name={action.name}
-										render={({ field }) => (
-											<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
-												<div className="space-y-0.5">
-													<FormLabel>{action.label}</FormLabel>
-													<FormDescription>
-														{action.description}
-													</FormDescription>
-												</div>
-												<FormControl>
-													<Switch
-														checked={!!field.value}
-														onCheckedChange={field.onChange}
-													/>
-												</FormControl>
-											</FormItem>
-										)}
+										label={action.label}
+										description={action.description}
 									/>
 								))}
 							</div>
