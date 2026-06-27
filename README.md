@@ -98,6 +98,29 @@ See `tools/replica/README.md` for the replica blueprint and
 `tools/verify/README.md` for the `verify:*` harness that exercises the install,
 deploy, upgrade, backup, and remote-worker paths.
 
+**Verifying the install paths** — `bun run verify` runs the same proven
+assertions (Swarm init, the `docklands-network` overlay, first-owner bootstrap,
+deploy + generated Traefik ingress, whole-instance backup, same-image container
+replacement) against either of two substrates:
+
+```bash
+# Sandbox (default): an isolated Docker-in-Docker daemon. It sets up Swarm +
+# docklands-network *inside* the sandbox and tears it all down, so it never
+# touches your host's Docker. Portable — runs on any laptop with Docker, no VM.
+docker build -t docklands:local-verify -f apps/docklands/Dockerfile .
+bun run verify -- --image docklands:local-verify
+
+# Host: against an already-installed instance (real setup-instance: host Swarm,
+# /etc/docklands, Traefik on :80). Run this inside a replica after installing the
+# image there, to also prove the live port-80 ingress route.
+bun run verify -- --target host
+```
+
+The sandbox is what CI runs and what gates pull requests; the host target inside
+a replica is the highest-fidelity check before a release. Release verification
+always runs on amd64 in CI, since most servers are amd64 (see the architecture
+note in `tools/replica/README.md`).
+
 Useful checks:
 
 ```bash
