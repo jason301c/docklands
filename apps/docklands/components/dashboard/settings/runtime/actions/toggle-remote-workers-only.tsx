@@ -45,7 +45,7 @@ export const ToggleRemoteWorkersOnly = () => {
 					className="max-w-sm"
 					asChild
 				>
-					<Label className="text-kumo-brand flex items-center gap-1.5 cursor-pointer">
+					<Label className="text-kumo flex items-center gap-1.5 cursor-pointer leading-none">
 						Remote Workers Only
 						<HelpCircle className="size-4 text-kumo-subtle" />
 					</Label>

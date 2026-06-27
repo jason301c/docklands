@@ -1,6 +1,5 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Input } from "@cloudflare/kumo/components/input";
-import { Radio } from "@cloudflare/kumo/components/radio";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { standardSchemaResolver as zodResolver } from "@hookform/resolvers/standard-schema";
 import { AlertTriangle, PenBoxIcon, PlusIcon } from "lucide-react";
@@ -18,6 +17,7 @@ import {
 	FormMessage,
 } from "@/components/shared/form";
 import { toast } from "@/components/shared/toast";
+import { cn } from "@/shared/utils";
 import { buildResetValues } from "./notification-reset";
 import {
 	type NotificationSchema,
@@ -189,7 +189,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 						</Button>
 					) : (
 						((
-							<Button className="cursor-pointer space-x-3">
+							<Button variant="primary" className="cursor-pointer space-x-3">
 								<PlusIcon className="h-4 w-4" />
 								Add Notification
 							</Button>
@@ -220,36 +220,52 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 							name="type"
 							render={({ field }) => (
 								<FormItem className="space-y-3">
-									<FormLabel className="text-kumo-subtle">
-										Select a provider
+									<FormLabel className="text-lg font-semibold leading-none tracking-tight">
+										Choose a platform
 									</FormLabel>
 									<FormControl>
-										<Radio.Group
-											onValueChange={field.onChange}
-											defaultValue={field.value}
-											orientation="horizontal"
-											appearance="card"
-											className="w-full"
+										<div
+											role="radiogroup"
+											aria-label="Choose a platform"
+											className="grid grid-cols-3 gap-2 sm:grid-cols-4"
 										>
-											<Radio.Legend className="sr-only">
-												Select a provider
-											</Radio.Legend>
 											{Object.entries(notificationsMap).map(
-												([key, { Icon, label, selectorIconClassName }]) => (
-													<Radio.Item
-														key={key}
-														value={key}
-														className="min-h-24"
-														label={
-															<span className="flex flex-col items-center gap-2 text-center">
-																<Icon className={selectorIconClassName} />
-																<span>{label}</span>
+												([key, { Icon, label, selectorIconClassName }]) => {
+													const selected = field.value === key;
+													return (
+														<label
+															key={key}
+															className={cn(
+																"flex min-h-[5.5rem] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border p-3 text-center text-sm transition-colors focus-within:ring-2 focus-within:ring-kumo-brand",
+																selected
+																	? "border-kumo-brand bg-kumo-brand/5 ring-1 ring-kumo-brand"
+																	: "border-kumo-hairline bg-kumo-base hover:border-kumo-line hover:bg-kumo-tint",
+															)}
+														>
+															<input
+																type="radio"
+																name="notification-platform"
+																value={key}
+																checked={selected}
+																onChange={() => field.onChange(key)}
+																className="sr-only"
+															/>
+															<Icon className={selectorIconClassName} />
+															<span
+																className={cn(
+																	"line-clamp-1",
+																	selected
+																		? "font-medium text-kumo-strong"
+																		: "text-kumo-default",
+																)}
+															>
+																{label}
 															</span>
-														}
-													/>
-												),
+														</label>
+													);
+												},
 											)}
-										</Radio.Group>
+										</div>
 									</FormControl>
 									<FormMessage />
 									{activeMutation[field.value].isError && (
@@ -266,7 +282,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 
 						<div className="flex flex-col gap-4">
 							<FormLabel className="text-lg font-semibold leading-none tracking-tight">
-								Fill the next fields.
+								Configure the connection
 							</FormLabel>
 							<div className="flex flex-col gap-2">
 								<FormField
@@ -332,9 +348,14 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 							</div>
 						</div>
 						<div className="flex flex-col gap-4">
-							<FormLabel className="text-lg font-semibold leading-none tracking-tight">
-								Select the actions.
-							</FormLabel>
+							<div className="flex flex-col gap-1">
+								<FormLabel className="text-lg font-semibold leading-none tracking-tight">
+									Choose the events
+								</FormLabel>
+								<FormDescription>
+									Select which events trigger a notification on this provider.
+								</FormDescription>
+							</div>
 
 							<div className="grid md:grid-cols-2 gap-4">
 								{ACTION_FIELDS.map((action) => (
@@ -352,7 +373,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 												</div>
 												<FormControl>
 													<Switch
-														checked={field.value}
+														checked={!!field.value}
 														onCheckedChange={field.onChange}
 													/>
 												</FormControl>
@@ -364,7 +385,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 						</div>
 					</form>
 
-					<Dialog.Footer className="!justify-between w-full">
+					<Dialog.Footer className="w-full !justify-end gap-3">
 						<Button
 							loading={isTesting}
 							variant="secondary"
@@ -375,6 +396,7 @@ export const HandleNotifications = ({ notificationId }: Props) => {
 						</Button>
 						<Button
 							loading={form.formState.isSubmitting}
+							variant="primary"
 							form="hook-form"
 							type="submit"
 						>

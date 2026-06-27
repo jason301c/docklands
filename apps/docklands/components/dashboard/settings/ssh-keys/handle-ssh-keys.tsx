@@ -149,7 +149,7 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 						</Button>
 					) : (
 						((
-							<Button className="cursor-pointer space-x-3">
+							<Button variant="primary" className="cursor-pointer space-x-3">
 								<PlusIcon className="h-4 w-4" />
 								Add SSH Key
 							</Button>
@@ -160,41 +160,8 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 			<Dialog className="sm:max-w-2xl">
 				<Dialog.Header>
 					<Dialog.Title>SSH Key</Dialog.Title>
-					<Dialog.Description className="space-y-4">
-						<div>
-							In this section you can add one of your keys or generate a new
-							one.
-						</div>
-						{!sshKeyId && (
-							<div className="flex gap-4">
-								<Button
-									variant={"secondary"}
-									disabled={generateMutation.isPending}
-									className="max-sm:w-full"
-									onClick={() =>
-										onGenerateSSHKey({
-											type: "rsa",
-										})
-									}
-									type="button"
-								>
-									Generate RSA SSH Key
-								</Button>
-								<Button
-									variant={"secondary"}
-									disabled={generateMutation.isPending}
-									className="max-sm:w-full"
-									onClick={() =>
-										onGenerateSSHKey({
-											type: "ed25519",
-										})
-									}
-									type="button"
-								>
-									Generate ED25519 SSH Key
-								</Button>
-							</div>
-						)}
+					<Dialog.Description>
+						In this section you can add one of your keys or generate a new one.
 					</Dialog.Description>
 				</Dialog.Header>
 				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
@@ -272,40 +239,74 @@ export const HandleSSHKeys = ({ sshKeyId }: Props) => {
 								</FormItem>
 							)}
 						/>
-						<Dialog.Footer className="justify-between">
-							<div className="flex items-center gap-4">
-								{form.watch("privateKey") && (
-									<Button
-										type="button"
-										variant="outline"
-										size="base"
-										onClick={() =>
-											downloadKey(form.watch("privateKey"), "private")
-										}
-										className="flex items-center gap-2"
-									>
-										<DownloadIcon className="h-4 w-4" />
-										Private Key
-									</Button>
+						<Dialog.Footer className="flex-col items-stretch gap-4">
+							<div className="flex flex-col gap-3">
+								{!sshKeyId && (
+									<div className="flex flex-wrap items-center gap-3">
+										<Button
+											variant="secondary"
+											disabled={generateMutation.isPending}
+											onClick={() =>
+												onGenerateSSHKey({
+													type: "rsa",
+												})
+											}
+											type="button"
+										>
+											Generate RSA SSH Key
+										</Button>
+										<Button
+											variant="secondary"
+											disabled={generateMutation.isPending}
+											onClick={() =>
+												onGenerateSSHKey({
+													type: "ed25519",
+												})
+											}
+											type="button"
+										>
+											Generate ED25519 SSH Key
+										</Button>
+									</div>
 								)}
-								{form.watch("publicKey") && (
-									<Button
-										type="button"
-										variant="outline"
-										size="base"
-										onClick={() =>
-											downloadKey(form.watch("publicKey"), "public")
-										}
-										className="flex items-center gap-2"
-									>
-										<DownloadIcon className="h-4 w-4" />
-										Public Key
-									</Button>
+								{(form.watch("privateKey") || form.watch("publicKey")) && (
+									<div className="flex flex-wrap items-center gap-4">
+										{form.watch("privateKey") && (
+											<Button
+												type="button"
+												variant="ghost"
+												size="base"
+												onClick={() =>
+													downloadKey(form.watch("privateKey"), "private")
+												}
+												className="flex items-center gap-2 px-0 !text-kumo-brand hover:!bg-transparent hover:underline"
+											>
+												<DownloadIcon className="h-4 w-4" />
+												Private Key
+											</Button>
+										)}
+										{form.watch("publicKey") && (
+											<Button
+												type="button"
+												variant="ghost"
+												size="base"
+												onClick={() =>
+													downloadKey(form.watch("publicKey"), "public")
+												}
+												className="flex items-center gap-2 px-0 !text-kumo-brand hover:!bg-transparent hover:underline"
+											>
+												<DownloadIcon className="h-4 w-4" />
+												Public Key
+											</Button>
+										)}
+									</div>
 								)}
 							</div>
-							<Button loading={isPending} type="submit">
-								{sshKeyId ? "Update" : "Create"}
-							</Button>
+							<div className="flex justify-end border-t border-kumo-hairline pt-4">
+								<Button variant="primary" loading={isPending} type="submit">
+									{sshKeyId ? "Update" : "Create"}
+								</Button>
+							</div>
 						</Dialog.Footer>
 					</form>
 				</Form>

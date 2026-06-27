@@ -458,7 +458,7 @@ export const HandleRole = ({ role }: Props) => {
 						</Button>
 					) : (
 						((
-							<Button>
+							<Button variant="primary">
 								<PlusIcon className="h-4 w-4" />
 								Create role
 							</Button>

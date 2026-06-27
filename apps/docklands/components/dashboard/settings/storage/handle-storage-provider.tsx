@@ -221,7 +221,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 						</Button>
 					) : (
 						((
-							<Button className="cursor-pointer space-x-3">
+							<Button variant="primary" className="cursor-pointer space-x-3">
 								<PlusIcon className="h-4 w-4" />
 								Add Storage Provider
 							</Button>
@@ -416,7 +416,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 						</div>
 					</form>
 
-					<Dialog.Footer className="w-full justify-between">
+					<Dialog.Footer className="w-full justify-end gap-3">
 						<Button
 							loading={isPendingConnection}
 							type="button"
@@ -430,6 +430,7 @@ export const HandleStorageProvider = ({ destinationId }: Props) => {
 
 						<Button
 							loading={isPending}
+							variant="primary"
 							form="hook-form-storage-provider"
 							type="submit"
 						>

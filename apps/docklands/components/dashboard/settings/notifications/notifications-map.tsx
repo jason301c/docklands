@@ -36,10 +36,21 @@ interface NotificationProviderMeta {
 	listIconClassName: string;
 }
 
+/**
+ * Ordered roughly by expected popularity for self-hosted operators so the most
+ * common picks (Discord, Slack, Telegram) lead the selector grid. Object key
+ * order is preserved by `Object.entries`, which is what drives both the
+ * selector and the saved-notifications list rendering order.
+ */
 export const notificationsMap: Record<
 	NotificationType,
 	NotificationProviderMeta
 > = {
+	discord: {
+		Icon: DiscordIcon,
+		label: "Discord",
+		listIconClassName: "size-7",
+	},
 	slack: {
 		Icon: SlackIcon,
 		label: "Slack",
@@ -50,34 +61,21 @@ export const notificationsMap: Record<
 		label: "Telegram",
 		listIconClassName: "size-7",
 	},
-	discord: {
-		Icon: DiscordIcon,
-		label: "Discord",
-		listIconClassName: "size-7",
-	},
-	lark: {
-		Icon: LarkIcon,
-		label: "Lark",
-		selectorIconClassName: "text-kumo-subtle",
-		listIconClassName: "size-7 text-kumo-subtle",
-	},
-	teams: {
-		Icon: TeamsIcon,
-		label: "Microsoft Teams",
-		selectorIconClassName: "text-kumo-subtle",
-		listIconClassName: "size-7 text-kumo-subtle",
-	},
 	email: {
 		Icon: Mail,
 		label: "Email",
 		selectorIconClassName: "size-7 text-kumo-subtle",
 		listIconClassName: "size-6 text-kumo-subtle",
 	},
-	resend: {
-		Icon: ResendIcon,
-		label: "Resend",
-		selectorIconClassName: "text-kumo-subtle",
-		listIconClassName: "size-6 text-kumo-subtle",
+	teams: {
+		Icon: TeamsIcon,
+		label: "Microsoft Teams",
+		listIconClassName: "size-7",
+	},
+	mattermost: {
+		Icon: MattermostIcon,
+		label: "Mattermost",
+		listIconClassName: "size-7",
 	},
 	gotify: {
 		Icon: GotifyIcon,
@@ -89,14 +87,20 @@ export const notificationsMap: Record<
 		label: "ntfy",
 		listIconClassName: "size-6",
 	},
-	mattermost: {
-		Icon: MattermostIcon,
-		label: "Mattermost",
-		listIconClassName: "size-7",
-	},
 	pushover: {
 		Icon: PushoverIcon,
 		label: "Pushover",
+		listIconClassName: "size-6",
+	},
+	lark: {
+		Icon: LarkIcon,
+		label: "Lark",
+		selectorIconClassName: "text-kumo-subtle",
+		listIconClassName: "size-7 text-kumo-subtle",
+	},
+	resend: {
+		Icon: ResendIcon,
+		label: "Resend",
 		listIconClassName: "size-6",
 	},
 	custom: {
