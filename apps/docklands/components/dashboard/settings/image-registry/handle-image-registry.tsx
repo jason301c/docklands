@@ -210,7 +210,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 						</Button>
 					) : (
 						((
-							<Button className="cursor-pointer space-x-3">
+							<Button variant="primary" className="cursor-pointer space-x-3">
 								<PlusIcon className="h-4 w-4" />
 								Add Image Registry
 							</Button>
@@ -379,7 +379,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 											<Select
 												aria-label="Registry authentication worker"
 												onValueChange={field.onChange}
-												defaultValue={field.value}
+												value={field.value || "none"}
 											>
 												<></>
 												<>
@@ -427,7 +427,7 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 						</div>
 
 						<div className="flex flex-col w-full sm:justify-between gap-4 flex-wrap sm:flex-col col-span-2">
-							<Dialog.Footer className="justify-between">
+							<Dialog.Footer className="justify-end">
 								<Button
 									type="button"
 									variant={"secondary"}
@@ -507,7 +507,11 @@ export const HandleImageRegistry = ({ registryId }: Props) => {
 								>
 									Test Registry
 								</Button>
-								<Button loading={form.formState.isSubmitting} type="submit">
+								<Button
+									variant={"primary"}
+									loading={form.formState.isSubmitting}
+									type="submit"
+								>
 									{registryId ? "Update" : "Create"}
 								</Button>
 							</Dialog.Footer>
