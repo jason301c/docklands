@@ -1,23 +1,22 @@
+import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
-import { Input } from "@cloudflare/kumo/components/input";
 import { Table } from "@cloudflare/kumo/components/table";
-import {
-	type ColumnFiltersState,
-	flexRender,
-	getCoreRowModel,
-	getFilteredRowModel,
-	getPaginationRowModel,
-	getSortedRowModel,
-	type SortingState,
-	useReactTable,
-	type VisibilityState,
-} from "@tanstack/react-table";
-import { ChevronDown } from "lucide-react";
-import * as React from "react";
+import { Boxes, MoreHorizontal } from "lucide-react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
+import { ShowContainerConfig } from "@/components/dashboard/shared/container/show-container-config";
+import { ShowContainerMounts } from "@/components/dashboard/shared/container/show-container-mounts";
+import { ShowContainerNetworks } from "@/components/dashboard/shared/container/show-container-networks";
+import { DockerTerminalModal } from "@/components/dashboard/shared/terminal/docker-terminal-modal";
 import { DropdownMenu } from "@/components/shared/dropdown";
 import { SectionCard } from "@/components/shared/section-card";
-import { columns } from "./columns";
+import {
+	EmptyState,
+	ErrorState,
+	LoadingState,
+} from "@/components/shared/states";
+import { ShowDockerModalLogs } from "../logs/show-docker-modal-logs";
+import { RemoveContainerDialog } from "../remove/remove-container";
+import { UploadFileModal } from "../upload/upload-file-modal";
 
 export type Container = NonNullable<
 	RouterOutputs["docker"]["getContainers"]
@@ -28,181 +27,143 @@ interface Props {
 }
 
 export const ShowContainers = ({ runtimeWorkerId }: Props) => {
-	const { data, isPending } = api.docker.getContainers.useQuery({
+	const containersQuery = api.docker.getContainers.useQuery({
 		runtimeWorkerId,
 	});
 
-	const [sorting, setSorting] = React.useState<SortingState>([]);
-	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-		[],
-	);
-	const [columnVisibility, setColumnVisibility] =
-		React.useState<VisibilityState>({});
-	const [rowSelection, setRowSelection] = React.useState({});
+	const containers = containersQuery.data ?? [];
 
-	const table = useReactTable({
-		data: data ?? [],
-		columns,
-		onSortingChange: setSorting,
-		onColumnFiltersChange: setColumnFilters,
-		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
-		onColumnVisibilityChange: setColumnVisibility,
-		onRowSelectionChange: setRowSelection,
-		state: {
-			sorting,
-			columnFilters,
-			columnVisibility,
-			rowSelection,
-		},
-	});
+	if (containersQuery.isError) {
+		return (
+			<SectionCard title="Runtime Containers">
+				<ErrorState
+					error={containersQuery.error}
+					title="Could not load containers"
+					onRetry={() => containersQuery.refetch()}
+				/>
+			</SectionCard>
+		);
+	}
+
+	if (containersQuery.isPending) {
+		return (
+			<SectionCard title="Runtime Containers">
+				<LoadingState label="Loading containers..." />
+			</SectionCard>
+		);
+	}
 
 	return (
-		<SectionCard title="Runtime Containers" contentClassName="space-y-2">
-			<div className="gap-4 pb-20 w-full">
-				<div className="flex flex-col gap-4  w-full overflow-auto">
-					<div className="flex items-center gap-2 max-sm:flex-wrap">
-						<Input
-							aria-label="Filter containers by name"
-							placeholder="Filter by name..."
-							value={
-								(table.getColumn("name")?.getFilterValue() as string) ?? ""
-							}
-							onChange={(event) =>
-								table.getColumn("name")?.setFilterValue(event.target.value)
-							}
-							className="md:max-w-sm"
-						/>
-						<DropdownMenu>
-							<DropdownMenu.Trigger
-								render={
-									<Button
-										variant="outline"
-										className="sm:ml-auto max-sm:w-full"
-									>
-										Columns <ChevronDown className="ml-2 h-4 w-4" />
-									</Button>
-								}
-							/>
-							<DropdownMenu.Content align="end">
-								{table
-									.getAllColumns()
-									.filter((column) => column.getCanHide())
-									.map((column) => {
-										return (
-											<DropdownMenu.CheckboxItem
-												key={column.id}
-												className="capitalize"
-												checked={column.getIsVisible()}
-												onCheckedChange={(value) =>
-													column.toggleVisibility(!!value)
-												}
-											>
-												{column.id}
-											</DropdownMenu.CheckboxItem>
-										);
-									})}
-							</DropdownMenu.Content>
-						</DropdownMenu>
-					</div>
-					<div className="rounded-md border">
-						{isPending ? (
-							<div className="w-full flex-col gap-2 flex items-center justify-center h-[55vh]">
-								<span className="text-kumo-subtle text-lg font-medium">
-									Loading...
-								</span>
-							</div>
-						) : data?.length === 0 ? (
-							<div className="flex-col gap-2 flex items-center justify-center h-[55vh]">
-								<span className="text-kumo-subtle text-lg font-medium">
-									No results.
-								</span>
-							</div>
-						) : (
-							<Table>
-								<Table.Header>
-									{table.getHeaderGroups().map((headerGroup) => (
-										<Table.Row key={headerGroup.id}>
-											{headerGroup.headers.map((header) => {
-												return (
-													<Table.Head key={header.id}>
-														{header.isPlaceholder
-															? null
-															: flexRender(
-																	header.column.columnDef.header,
-																	header.getContext(),
-																)}
-													</Table.Head>
-												);
-											})}
-										</Table.Row>
-									))}
-								</Table.Header>
-								<Table.Body>
-									{table?.getRowModel()?.rows?.length ? (
-										table.getRowModel().rows.map((row) => (
-											<Table.Row
-												key={row.id}
-												data-state={row.getIsSelected() && "selected"}
-											>
-												{row.getVisibleCells().map((cell) => (
-													<Table.Cell key={cell.id}>
-														{flexRender(
-															cell.column.columnDef.cell,
-															cell.getContext(),
-														)}
-													</Table.Cell>
-												))}
-											</Table.Row>
-										))
-									) : (
-										<Table.Row>
-											<Table.Cell
-												colSpan={columns.length}
-												className="h-24 text-center"
-											>
-												{isPending ? (
-													<div className="w-full flex-col gap-2 flex items-center justify-center h-[55vh]">
-														<span className="text-kumo-subtle text-lg font-medium">
-															Loading...
-														</span>
-													</div>
-												) : (
-													<>No results.</>
-												)}
-											</Table.Cell>
-										</Table.Row>
-									)}
-								</Table.Body>
-							</Table>
-						)}
-					</div>
-					{data && data?.length > 0 && (
-						<div className="flex items-center justify-end space-x-2 py-4">
-							<div className="space-x-2 flex flex-wrap">
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => table.previousPage()}
-									disabled={!table.getCanPreviousPage()}
-								>
-									Previous
-								</Button>
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={() => table.nextPage()}
-									disabled={!table.getCanNextPage()}
-								>
-									Next
-								</Button>
-							</div>
-						</div>
-					)}
+		<SectionCard title="Runtime Containers">
+			{containers.length === 0 ? (
+				<EmptyState
+					icon={Boxes}
+					title="No runtime containers"
+					description="Containers will appear here once services are deployed."
+				/>
+			) : (
+				<div className="flex min-h-[25vh] flex-col gap-4">
+					<Table>
+						<Table.Header>
+							<Table.Row>
+								<Table.Head className="min-w-[16rem]">Name</Table.Head>
+								<Table.Head>State</Table.Head>
+								<Table.Head>Status</Table.Head>
+								<Table.Head>Image</Table.Head>
+								<Table.Head>Actions</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{containers.map((container) => (
+								<Table.Row key={container.containerId}>
+									<Table.Cell className="min-w-[16rem] break-all">
+										{container.name}
+									</Table.Cell>
+									<Table.Cell>
+										<Badge
+											variant={
+												container.state === "failed"
+													? "destructive"
+													: "secondary"
+											}
+											className="capitalize"
+										>
+											{container.state}
+										</Badge>
+									</Table.Cell>
+									<Table.Cell className="capitalize">
+										{container.status}
+									</Table.Cell>
+									<Table.Cell className="lowercase break-all">
+										{container.image}
+									</Table.Cell>
+									<Table.Cell>
+										<ContainerActions container={container} />
+									</Table.Cell>
+								</Table.Row>
+							))}
+						</Table.Body>
+					</Table>
 				</div>
-			</div>
+			)}
 		</SectionCard>
+	);
+};
+
+const ContainerActions = ({ container }: { container: Container }) => {
+	return (
+		<DropdownMenu>
+			<DropdownMenu.Trigger
+				render={
+					<Button
+						aria-label={`Open actions for ${container.name}`}
+						variant="ghost"
+						className="inline-flex h-8 w-8 items-center justify-center p-0"
+					>
+						<span className="sr-only">Open actions for {container.name}</span>
+						<MoreHorizontal className="h-4 w-4" />
+					</Button>
+				}
+			/>
+			<DropdownMenu.Content align="end">
+				<DropdownMenu.Group>
+					<DropdownMenu.Label>Actions</DropdownMenu.Label>
+				</DropdownMenu.Group>
+				<ShowDockerModalLogs
+					containerId={container.containerId}
+					runtimeWorkerId={container.runtimeWorkerId}
+				>
+					View Logs
+				</ShowDockerModalLogs>
+				<ShowContainerConfig
+					containerId={container.containerId}
+					runtimeWorkerId={container.runtimeWorkerId || ""}
+				/>
+				<ShowContainerMounts
+					containerId={container.containerId}
+					runtimeWorkerId={container.runtimeWorkerId || ""}
+				/>
+				<ShowContainerNetworks
+					containerId={container.containerId}
+					runtimeWorkerId={container.runtimeWorkerId || ""}
+				/>
+				<DockerTerminalModal
+					containerId={container.containerId}
+					runtimeWorkerId={container.runtimeWorkerId || ""}
+				>
+					Terminal
+				</DockerTerminalModal>
+				<UploadFileModal
+					containerId={container.containerId}
+					runtimeWorkerId={container.runtimeWorkerId || undefined}
+				>
+					Upload File
+				</UploadFileModal>
+				<RemoveContainerDialog
+					containerId={container.containerId}
+					runtimeWorkerId={container.runtimeWorkerId ?? undefined}
+				/>
+			</DropdownMenu.Content>
+		</DropdownMenu>
 	);
 };
