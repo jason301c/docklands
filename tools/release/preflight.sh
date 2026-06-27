@@ -5,19 +5,20 @@ usage() {
 	cat <<'USAGE'
 Usage: tools/release/preflight.sh [options] [git-ref]
 
-Runs the local v0.1.0 release preflight before pushing and dispatching remote
-smoke workflows. By default this covers the non-mutating local gates,
-production image build/push dry-runs, and a dry run of the smoke dispatcher.
+Runs the local release preflight before tagging and publishing. Covers the
+non-mutating local gates plus production image build/push dry-runs. Heavy
+install/deploy verification lives in `bun run verify` (the verify harness) and
+runs in CI on amd64; pass --image to also run a sandbox verify here.
 
 Options:
-  --allow-dirty          Permit tracked local changes while running preflight.
-  --docker-image IMAGE   Also run the production image deploy smoke for IMAGE.
-  -h, --help             Show this help text.
+  --allow-dirty   Permit tracked local changes while running preflight.
+  --image IMAGE   Also run `bun run verify:deploy` against IMAGE (sandbox).
+  -h, --help      Show this help text.
 
 Environment:
-  DOCKLANDS_RELEASE_REF                     Ref passed to dispatcher dry-run.
+  DOCKLANDS_RELEASE_REF                     Ref label for output.
   DOCKLANDS_RELEASE_PREFLIGHT_ALLOW_DIRTY   Same as --allow-dirty.
-  DOCKLANDS_RELEASE_PREFLIGHT_DOCKER_IMAGE  Same as --docker-image IMAGE.
+  DOCKLANDS_RELEASE_PREFLIGHT_IMAGE         Same as --image IMAGE.
 USAGE
 }
 
@@ -26,7 +27,7 @@ ROOT_DIR=$(cd "$SCRIPT_DIR/../.." && pwd)
 cd "$ROOT_DIR"
 
 allow_dirty=${DOCKLANDS_RELEASE_PREFLIGHT_ALLOW_DIRTY:-}
-docker_image=${DOCKLANDS_RELEASE_PREFLIGHT_DOCKER_IMAGE:-}
+verify_image=${DOCKLANDS_RELEASE_PREFLIGHT_IMAGE:-}
 git_ref=${DOCKLANDS_RELEASE_REF:-$(git rev-parse --abbrev-ref HEAD)}
 
 while [ "$#" -gt 0 ]; do
@@ -35,12 +36,12 @@ while [ "$#" -gt 0 ]; do
 			allow_dirty=1
 			shift
 			;;
-		--docker-image)
+		--image)
 			if [ -z "${2:-}" ]; then
-				echo "--docker-image requires an image reference" >&2
+				echo "--image requires an image reference" >&2
 				exit 1
 			fi
-			docker_image=$2
+			verify_image=$2
 			shift 2
 			;;
 		-h | --help)
@@ -79,24 +80,22 @@ run() {
 
 echo "Docklands release preflight"
 echo "  ref:          $git_ref"
-if [ -n "$docker_image" ]; then
-	echo "  docker image: $docker_image"
+if [ -n "$verify_image" ]; then
+	echo "  verify image: $verify_image"
 else
-	echo "  docker image: (skipped; pass --docker-image IMAGE to include image deploy smoke)"
+	echo "  verify image: (skipped; pass --image IMAGE to include a sandbox verify)"
 fi
 
 run bash -n \
 	tools/release/preflight.sh \
-	tools/release/dispatch-smoke-workflows.sh \
-	tools/release/host-operator-smoke.sh \
 	tools/release/tag-release.sh \
 	tools/docker/build.sh \
 	tools/docker/push.sh \
-	tools/docker/smoke-image.sh \
-	tools/docker/smoke-operator.sh \
-	tools/docker/smoke-deploy.sh
+	tools/verify/verify.sh \
+	tools/verify/lib.sh \
+	tools/replica/replica.sh
 
-run bun run release:check-metadata
+run node tools/release/check-metadata.mjs
 
 tag_dry_run_args=(--dry-run --skip-fetch)
 if [ -n "$allow_dirty" ]; then
@@ -125,15 +124,10 @@ run bun run site:lint
 run bun run site:typecheck
 run bun run site:build
 
-if [ -n "$docker_image" ]; then
-	run bun run docker:smoke:deploy "$docker_image"
+if [ -n "$verify_image" ]; then
+	run bun run verify:deploy -- --image "$verify_image"
 fi
-
-run env \
-	DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY="$allow_dirty" \
-	DOCKLANDS_RELEASE_SMOKE_DRY_RUN=1 \
-	DOCKLANDS_RELEASE_SMOKE_SKIP_FETCH=1 \
-	tools/release/dispatch-smoke-workflows.sh "$git_ref"
 
 echo
 echo "Docklands release preflight passed."
+echo "Next: 'bun run verify' on amd64 (CI), then 'bun run release:tag --push $git_ref' and 'bun run release:publish'."

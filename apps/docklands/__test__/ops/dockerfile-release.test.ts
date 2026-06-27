@@ -69,52 +69,126 @@ describe("production Dockerfile release install", () => {
 		expect(productionDocs).not.toContain("-p 80:80 -p 443:443");
 	});
 
-	it("runs the loaded production image through the first-run smoke gate", () => {
+	it("exposes exactly two dev modes and drops the laptop install footguns", () => {
 		const rootPackage = JSON.parse(repoFile("package.json"));
-		const workflow = repoFile(".github/workflows/docker-build.yml");
-		const smokeScript = repoFile("tools/docker/smoke-image.sh");
+		const appPackage = JSON.parse(appFile("package.json"));
 
-		expect(rootPackage.scripts["docker:smoke"]).toBe(
-			"./tools/docker/smoke-image.sh",
+		// Local mode: one self-healing command (ensure Postgres -> migrate -> run).
+		expect(appPackage.scripts.dev).toContain(
+			"server/ops/ensure-postgres-dev.ts",
 		);
-		expect(rootPackage.scripts["docker:smoke:operator"]).toBe(
-			"./tools/docker/smoke-operator.sh",
+		expect(appPackage.scripts.dev).toContain("bun run migration:run");
+		expect(appFile("server/ops/ensure-postgres-dev.ts")).toContain(
+			"docklands-dev-postgres",
 		);
-		expect(rootPackage.scripts["docker:smoke:deploy"]).toBe(
-			"./tools/docker/smoke-deploy.sh",
+
+		// The laptop install footguns are gone — `setup` survives only as the
+		// image entrypoint (dist/setup-instance.mjs), never as a human command.
+		expect(rootPackage.scripts.setup).toBeUndefined();
+		expect(appPackage.scripts.setup).toBeUndefined();
+		expect(rootPackage.scripts["db:push"]).toBeUndefined();
+		expect(appPackage.scripts["db:push"]).toBeUndefined();
+		expect(rootPackage.scripts["migration:up"]).toBeUndefined();
+		expect(rootPackage.scripts["migration:drop"]).toBeUndefined();
+	});
+
+	it("ships the replica blueprint behind the replica:* commands", () => {
+		const rootPackage = JSON.parse(repoFile("package.json"));
+		const limaTemplate = repoFile("tools/replica/lima.yaml");
+		const replicaScript = repoFile("tools/replica/replica.sh");
+
+		expect(rootPackage.scripts["replica:up"]).toBe(
+			"./tools/replica/replica.sh up",
 		);
+		expect(rootPackage.scripts["replica:reset"]).toBe(
+			"./tools/replica/replica.sh reset",
+		);
+		expect(rootPackage.scripts["replica:down"]).toBe(
+			"./tools/replica/replica.sh down",
+		);
+		expect(limaTemplate).toContain("__REPO_ROOT__");
+		expect(limaTemplate).toContain("docker");
+		expect(replicaScript).toContain("limactl");
+	});
+
+	it("verifies the production image through one verify harness", () => {
+		const rootPackage = JSON.parse(repoFile("package.json"));
+		const workflow = repoFile(".github/workflows/verify.yml");
+		const verifyScript = repoFile("tools/verify/verify.sh");
+		const verifyLib = repoFile("tools/verify/lib.sh");
+
+		expect(rootPackage.scripts.verify).toBe("./tools/verify/verify.sh all");
+		expect(rootPackage.scripts["verify:install"]).toBe(
+			"./tools/verify/verify.sh install",
+		);
+		expect(rootPackage.scripts["verify:deploy"]).toBe(
+			"./tools/verify/verify.sh deploy",
+		);
+		expect(rootPackage.scripts["verify:upgrade"]).toBe(
+			"./tools/verify/verify.sh upgrade",
+		);
+		expect(rootPackage.scripts["verify:backup"]).toBe(
+			"./tools/verify/verify.sh backup",
+		);
+		expect(rootPackage.scripts["verify:worker"]).toBe(
+			"./tools/verify/verify.sh worker",
+		);
+
+		// The old smoke zoo is gone.
+		expect(rootPackage.scripts["docker:smoke"]).toBeUndefined();
+		expect(rootPackage.scripts["docker:smoke:operator"]).toBeUndefined();
+		expect(rootPackage.scripts["docker:smoke:deploy"]).toBeUndefined();
+		expect(rootPackage.scripts["release:smoke:host"]).toBeUndefined();
+		expect(rootPackage.scripts["release:smoke:dispatch"]).toBeUndefined();
+
+		// CI builds the image and runs the same verify verbs a developer runs.
 		expect(workflow).toContain("load: true");
-		expect(workflow).toContain("tags: docklands:ci-smoke");
+		expect(workflow).toContain("tags: docklands:ci-verify");
 		expect(workflow).toContain(
-			"./tools/docker/smoke-image.sh docklands:ci-smoke",
+			"./tools/verify/verify.sh deploy --image docklands:ci-verify",
 		);
 		expect(workflow).toContain(
-			"./tools/docker/smoke-deploy.sh docklands:ci-smoke",
+			"./tools/verify/verify.sh all --image docklands:ci-verify",
 		);
-		expect(smokeScript).toContain("/api/ready");
-		expect(smokeScript).toContain("/api/auth/sign-up/email");
-		expect(smokeScript).toContain("Admin is already created");
-		expect(smokeScript).toContain("settings.updateDefaultIngressMode");
-		expect(smokeScript).toContain("settings.getWebServerSettings");
-		expect(smokeScript).toContain("workspaces.create");
-		expect(smokeScript).toContain("application.saveDockerProvider");
-		expect(smokeScript).toContain("domain.create");
-		expect(smokeScript).toContain("application.deploy");
-		expect(smokeScript).toContain("127.0.0.1:5000/docklands-smoke-app");
-		expect(smokeScript).toContain("docklands.localhost");
-		expect(smokeScript).toContain("/etc/docklands/traefik/dynamic");
-		expect(smokeScript).toContain("docker service ps");
-		expect(smokeScript).toContain("DOCKLANDS_DOCKER_HOST");
-		expect(smokeScript).toContain("DOCKER_HOST");
-		expect(smokeScript).toContain("docklands-network");
+		// The Git + Nixpacks real deploy stays covered.
+		expect(workflow).toContain("application.real.test.ts");
+		expect(workflow).toContain("docker service ls");
+		expect(workflow).toContain("grep '^real-'");
+
+		// The proven assertions live in the verify library + orchestrator.
+		expect(verifyLib).toContain("/api/ready");
+		expect(verifyLib).toContain("/api/auth/sign-up/email");
+		expect(verifyLib).toContain("/api/auth/sign-in/email");
+		expect(verifyLib).toContain("Admin is already created");
+		expect(verifyLib).toContain("settings.updateDefaultIngressMode");
+		expect(verifyLib).toContain("settings.getWebServerSettings");
+		expect(verifyLib).toContain("workspaces.create");
+		expect(verifyLib).toContain("application.saveDockerProvider");
+		expect(verifyLib).toContain("domain.create");
+		expect(verifyLib).toContain("application.deploy");
+		expect(verifyLib).toContain("destination.create");
+		expect(verifyLib).toContain("backup.create");
+		expect(verifyLib).toContain("backup.manualBackupWebServer");
+		expect(verifyLib).toContain("docklands-network");
+		expect(verifyLib).toContain("docklands.localhost");
+		expect(verifyScript).toContain("DOCKLANDS_DOCKER_HOST");
+		expect(verifyScript).toContain("mc find");
+		expect(verifyScript).toContain("/etc/docklands/traefik/dynamic");
 	});
 
 	it("keeps Docker build and publish scripts release-tag safe", () => {
+		const rootPackage = JSON.parse(repoFile("package.json"));
 		const buildScript = repoFile("tools/docker/build.sh");
 		const pushScript = repoFile("tools/docker/push.sh");
 		const dockerIgnore = repoFile(".dockerignore");
 		const gitIgnore = repoFile(".gitignore");
 
+		expect(rootPackage.scripts["release:image"]).toBe(
+			"./tools/docker/build.sh",
+		);
+		expect(rootPackage.scripts["release:publish"]).toBe(
+			"./tools/docker/push.sh",
+		);
 		expect(buildScript).toContain("validate_release_version");
 		expect(pushScript).toContain("validate_release_version");
 		expect(dockerIgnore).toContain(".claude");
@@ -149,29 +223,28 @@ describe("production Dockerfile release install", () => {
 		expect(pushScript).toContain("trap cleanup EXIT");
 		expect(buildScript).toContain('docker buildx rm "$BUILDER"');
 		expect(pushScript).toContain('docker buildx rm "$BUILDER"');
+		expect(buildScript).toContain("linux/amd64,linux/arm64");
+		expect(pushScript).toContain("linux/amd64,linux/arm64");
 		expect(pushScript).toContain('-t "${IMAGE_NAME}:latest"');
 		expect(pushScript).toContain('-t "${IMAGE_NAME}:${TAG}"');
 		expect(pushScript).toContain("--push");
 	});
 
 	it("keeps release metadata aligned across deployable packages", () => {
-		const rootPackage = JSON.parse(repoFile("package.json"));
 		const docklandsPackage = JSON.parse(appFile("package.json"));
 		const docsPackage = JSON.parse(repoFile("apps/docs/package.json"));
 		const sitePackage = JSON.parse(repoFile("apps/site/package.json"));
 		const metadataCheck = repoFile("tools/release/check-metadata.mjs");
 		const preflightScript = repoFile("tools/release/preflight.sh");
 
-		expect(rootPackage.scripts["release:check-metadata"]).toBe(
-			"node tools/release/check-metadata.mjs",
-		);
 		expect(docsPackage.version).toBe(docklandsPackage.version);
 		expect(sitePackage.version).toBe(docklandsPackage.version);
 		expect(metadataCheck).toContain("apps/docklands/package.json");
 		expect(metadataCheck).toContain("apps/docs/package.json");
 		expect(metadataCheck).toContain("apps/site/package.json");
 		expect(metadataCheck).toContain("bun.lock");
-		expect(preflightScript).toContain("bun run release:check-metadata");
+		// check-metadata is folded into preflight (and tag-release) directly.
+		expect(preflightScript).toContain("node tools/release/check-metadata.mjs");
 	});
 
 	it("keeps release tagging guarded and package-version derived", () => {
@@ -210,11 +283,9 @@ describe("production Dockerfile release install", () => {
 		expect(docsCurrentCheck).toContain("docs/RELEASE_NOTES.md");
 		expect(releaseNotes).toContain("# Docklands v0.1.0 Release Notes");
 		expect(releaseNotes).toContain("bun run release:preflight canary");
-		expect(releaseNotes).toContain(
-			"bun run release:smoke:dispatch --wait canary",
-		);
+		expect(releaseNotes).toContain("bun run verify");
 		expect(releaseNotes).toContain("bun run release:tag --push canary");
-		expect(releaseNotes).toContain("bun run docker:push");
+		expect(releaseNotes).toContain("bun run release:publish");
 		expect(releaseNotes).toContain("jason301c/docklands:0.1.0");
 		expect(releaseNotes).toContain("There is exactly one organization");
 		expect(releaseNotes).toContain("GitHub is the only provider");
@@ -269,42 +340,14 @@ describe("production Dockerfile release install", () => {
 		expect(settingsRouter).not.toContain("docker service update");
 	});
 
-	it("keeps the manual real-deploy smoke self-cleaning", () => {
-		const workflow = repoFile(".github/workflows/release-smoke.yml");
+	it("keeps the real-deploy verify self-cleaning", () => {
+		const workflow = repoFile(".github/workflows/verify.yml");
 		const realDeployTest = appFile("__test__/deploy/application.real.test.ts");
 
 		expect(realDeployTest).toContain("docker service rm ${appName}");
 		expect(realDeployTest).toContain("for (const appName of allTestAppNames)");
 		expect(workflow).toContain("docker service ls");
 		expect(workflow).toContain("grep '^real-'");
-	});
-
-	it("dispatches both manual release smoke workflows for the same pushed ref", () => {
-		const rootPackage = JSON.parse(repoFile("package.json"));
-		const dispatchScript = repoFile(
-			"tools/release/dispatch-smoke-workflows.sh",
-		);
-
-		expect(rootPackage.scripts["release:smoke:dispatch"]).toBe(
-			"./tools/release/dispatch-smoke-workflows.sh",
-		);
-		expect(dispatchScript).toContain("gh workflow run release-smoke.yml");
-		expect(dispatchScript).toContain("gh workflow run host-operator-smoke.yml");
-		expect(dispatchScript).toContain('--ref "$git_ref"');
-		expect(dispatchScript).toContain('-f "git_ref=$git_ref"');
-		expect(dispatchScript).toContain('-f "git_url=$git_url"');
-		expect(dispatchScript).toContain("git fetch --quiet");
-		expect(dispatchScript).toContain("Push the branch before dispatching");
-		expect(dispatchScript).toContain("DOCKLANDS_RELEASE_SMOKE_DRY_RUN");
-		expect(dispatchScript).toContain("DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY");
-		expect(dispatchScript).toContain("--wait");
-		expect(dispatchScript).toContain("DOCKLANDS_RELEASE_SMOKE_WAIT");
-		expect(dispatchScript).toContain("workflow_run_ids");
-		expect(dispatchScript).toContain("gh run list");
-		expect(dispatchScript).toContain("gh run view");
-		expect(dispatchScript).toContain('"workflow_dispatch"');
-		expect(dispatchScript).toContain('"$target_sha"');
-		expect(dispatchScript).toContain("Both release smoke workflows completed");
 	});
 
 	it("keeps the local release preflight aligned with required non-mutating gates", () => {
@@ -317,7 +360,7 @@ describe("production Dockerfile release install", () => {
 		expect(preflightScript).toContain(
 			"bun install --frozen-lockfile --offline",
 		);
-		expect(preflightScript).toContain("bun run release:check-metadata");
+		expect(preflightScript).toContain("node tools/release/check-metadata.mjs");
 		expect(preflightScript).toContain("bun run format-and-lint");
 		expect(preflightScript).toContain("bun run typecheck");
 		expect(preflightScript).toContain("bun run test:ci");
@@ -336,51 +379,6 @@ describe("production Dockerfile release install", () => {
 		expect(preflightScript).toContain(
 			"--dry-run --skip-release-tag-check production",
 		);
-		expect(preflightScript).toContain("DOCKLANDS_RELEASE_SMOKE_DRY_RUN=1");
-		expect(preflightScript).toContain("DOCKLANDS_RELEASE_SMOKE_ALLOW_DIRTY");
-		expect(preflightScript).toContain("dispatch-smoke-workflows.sh");
-		expect(preflightScript).toContain("docker:smoke:deploy");
-	});
-
-	it("keeps the manual host-operator smoke wired to the image setup path", () => {
-		const rootPackage = JSON.parse(repoFile("package.json"));
-		const workflow = repoFile(".github/workflows/host-operator-smoke.yml");
-		const smokeScript = repoFile("tools/release/host-operator-smoke.sh");
-
-		expect(rootPackage.scripts["release:smoke:host"]).toBe(
-			"./tools/release/host-operator-smoke.sh",
-		);
-		expect(workflow).toContain("docklands:host-smoke");
-		expect(workflow).toContain(
-			"postgres://docklands:docklands_smoke@docklands-postgres:5432/docklands",
-		);
-		expect(workflow).toContain("DOCKLANDS_HOST_SMOKE_BACKUP");
-		expect(workflow).toContain("docklands-smoke-minio");
-		expect(workflow).toContain("minio/minio:");
-		expect(workflow).toContain("minio/mc:");
-		expect(workflow).toContain("Replace Docklands container");
-		expect(workflow).toContain("Run post-replacement upgrade smoke");
-		expect(workflow).toContain("DOCKLANDS_HOST_SMOKE_EXISTING_OWNER");
-		expect(workflow).toContain("dist/setup-instance.mjs");
-		expect(workflow).toContain("--network docklands-network");
-		expect(workflow).toContain("-p 127.0.0.1:3000:3000");
-		expect(workflow).toContain("./tools/release/host-operator-smoke.sh");
-		expect(workflow).toContain("docker rm -f docklands");
-		expect(workflow).toContain("docker service rm docklands-postgres");
-		expect(smokeScript).toContain("/api/ready");
-		expect(smokeScript).toContain("/api/auth/sign-up/email");
-		expect(smokeScript).toContain("/api/auth/sign-in/email");
-		expect(smokeScript).toContain("settings.updateDefaultIngressMode");
-		expect(smokeScript).toContain("application.saveDockerProvider");
-		expect(smokeScript).toContain("domain.create");
-		expect(smokeScript).toContain("application.deploy");
-		expect(smokeScript).toContain("destination.create");
-		expect(smokeScript).toContain("backup.create");
-		expect(smokeScript).toContain("backup.manualBackupWebServer");
-		expect(smokeScript).toContain("mc find");
-		expect(smokeScript).toContain("Host: ${SMOKE_DEPLOY_HOST}");
-		expect(smokeScript).toContain("TRAEFIK_URL");
-		expect(smokeScript).toContain("/etc/docklands/traefik/dynamic");
-		expect(smokeScript).toContain("docker service ps");
+		expect(preflightScript).toContain("bun run verify:deploy");
 	});
 });

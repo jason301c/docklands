@@ -17,9 +17,9 @@ to the container. This page lists the variables the control plane actually reads
 | `POSTGRES_DB` | `docklands` | Database name used when `POSTGRES_PASSWORD_FILE` is set. Also used when setup provisions bundled Postgres from a password file. |
 | `POSTGRES_HOST` | `docklands-postgres` | Database host used when `POSTGRES_PASSWORD_FILE` is set. |
 | `POSTGRES_PORT` | `5432` | Database port used when `POSTGRES_PASSWORD_FILE` is set. |
-| `BETTER_AUTH_SECRET` | — | Signing secret for auth/sessions. **Set in production.** `bun run setup` generates one for local installs. Use either this or `BETTER_AUTH_SECRET_FILE`, not both. |
+| `BETTER_AUTH_SECRET` | — | Signing secret for auth/sessions. **Set in production.** `bun run dev` generates one for local installs. Use either this or `BETTER_AUTH_SECRET_FILE`, not both. |
 | `BETTER_AUTH_SECRET_FILE` | — | Read `BETTER_AUTH_SECRET` from a file (secret mounts). Use either this or `BETTER_AUTH_SECRET`, not both. |
-| `DOCKLANDS_ENCRYPTION_KEY` | — | Key for [secrets at rest](#secrets-at-rest). Base64-encoded 32 bytes, **separate** from `BETTER_AUTH_SECRET`. **Set in production.** `bun run setup` generates one for local installs. Use either this or `DOCKLANDS_ENCRYPTION_KEY_FILE`, not both. |
+| `DOCKLANDS_ENCRYPTION_KEY` | — | Key for [secrets at rest](#secrets-at-rest). Base64-encoded 32 bytes, **separate** from `BETTER_AUTH_SECRET`. **Set in production.** `bun run dev` generates one for local installs. Use either this or `DOCKLANDS_ENCRYPTION_KEY_FILE`, not both. |
 | `DOCKLANDS_ENCRYPTION_KEY_FILE` | — | Read `DOCKLANDS_ENCRYPTION_KEY` from a file (secret mounts). Use either this or `DOCKLANDS_ENCRYPTION_KEY`, not both. |
 | `BETTER_AUTH_URL` | derived | Stable external URL of this instance (e.g. `https://docklands.example.com`), used for absolute auth callback/verification links. Leave unset to derive the origin from each request. Defaults to `http://localhost:${PORT}` in dev. |
 | `PORT` | `3000` | Port the dashboard/API listens on. |
@@ -85,7 +85,7 @@ The key comes from `DOCKLANDS_ENCRYPTION_KEY` (or `DOCKLANDS_ENCRYPTION_KEY_FILE
 and is **deliberately separate** from `BETTER_AUTH_SECRET`, so rotating the
 auth-signing secret does not force a re-encrypt of your data.
 
-- **Local installs:** `bun run setup` generates the key into `.env`.
+- **Local installs:** `bun run dev` generates the key into `.env`.
 - **Production:** set `DOCKLANDS_ENCRYPTION_KEY` (or point
   `DOCKLANDS_ENCRYPTION_KEY_FILE` at a mounted secret). Generate one with:
 
@@ -101,7 +101,7 @@ secret.
 :::
 
 :::tip
-`bun run setup` generates `BETTER_AUTH_SECRET` and `DOCKLANDS_ENCRYPTION_KEY` for
+`bun run dev` generates `BETTER_AUTH_SECRET` and `DOCKLANDS_ENCRYPTION_KEY` for
 you on local installs and waits for `DATABASE_URL` to accept a real connection
 before running migrations. If it reports that the `docklands` role/database
 doesn't exist, another Postgres is probably already on port `5432` — stop it or

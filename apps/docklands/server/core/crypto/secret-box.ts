@@ -69,7 +69,7 @@ export const resolveEncryptionKey = (
 	}
 	throw new Error(
 		"DOCKLANDS_ENCRYPTION_KEY or DOCKLANDS_ENCRYPTION_KEY_FILE must be set " +
-			"(a base64-encoded 32-byte key). `bun run setup` generates one for " +
+			"(a base64-encoded 32-byte key). `bun run dev` generates one for " +
 			"local installs.",
 	);
 };

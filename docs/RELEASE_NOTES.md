@@ -28,8 +28,8 @@ Do not tag or publish v0.1.0 until the release checklist in
   filesystem-backed data, and whole-instance backup for bundled-Postgres
   installs.
 - Cloudflare tunnel ingress as an optional managed ingress mode.
-- Docs, public site, generated OpenAPI metadata, Docker image build/push tooling,
-  and release smoke tooling aligned to version `0.1.0`.
+- Docs, public site, generated OpenAPI metadata, Docker image build/publish
+  tooling, and the verify harness aligned to version `0.1.0`.
 
 ## Install And Upgrade Scope
 
@@ -39,11 +39,11 @@ Operators build or pull the image, run the bundled setup entrypoint once, then
 run the dashboard container on `docklands-network` behind the host-level Traefik
 container.
 
-There is no previous Docklands release image to upgrade from yet. The release
-smoke gates prove fresh install, first owner, deploy, public Traefik ingress,
+There is no previous Docklands release image to upgrade from yet. The verify
+suite proves fresh install, first owner, deploy, public Traefik ingress,
 whole-instance backup, and same-image container replacement/restart behavior.
-A previous-version upgrade smoke should be added after v0.1.0 exists as the
-baseline image.
+A previous-version upgrade check should be added after v0.1.0 exists as the
+baseline image (`bun run verify:upgrade --from-image <prev> --to-image <new>`).
 
 ## Known v0.1.0 Boundaries
 
@@ -69,25 +69,26 @@ must pass:
 ```sh
 bun run release:preflight canary
 git push origin canary
-bun run release:smoke:dispatch --wait canary
+bun run verify
 bun run release:tag --push canary
-bun run docker:push
+bun run release:publish
 ```
 
 `release:preflight` verifies release metadata, Docker build/push dry-runs,
 frozen install metadata, format/lint, typecheck, Vitest, Base UI scanning,
-OpenAPI generation, app/docs/site builds, and a smoke-dispatch dry-run.
+OpenAPI generation, and app/docs/site builds.
 
-`release:smoke:dispatch --wait` dispatches the real-deploy smoke and
-host-operator smoke workflows for the pushed ref, then waits for both newly
-created workflow runs to finish successfully.
+`bun run verify` runs the full setup-script suite on amd64 (fresh install, first
+owner, deploy, public Traefik ingress, whole-instance backup, and same-image
+container replacement/restart). In CI this is the Verify workflow; run it on an
+amd64 host so the dominant deploy architecture is the one gated.
 
 `release:tag --push` creates and pushes the annotated `0.1.0` release tag for
 the selected pushed ref. The tag name comes from package metadata; the command
 refuses dirty tracked files, existing tags, and branch refs that differ from the
 selected remote.
 
-`docker:push` publishes `jason301c/docklands:0.1.0` and
+`release:publish` publishes `jason301c/docklands:0.1.0` and
 `jason301c/docklands:latest`; it refuses dirty tracked files by default and
 requires the local and remote `0.1.0` git tag to point at the current commit.
 

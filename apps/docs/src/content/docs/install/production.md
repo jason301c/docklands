@@ -31,7 +31,7 @@ docker build --pull -t docklands:local -f apps/docklands/Dockerfile .
 export DOCKLANDS_IMAGE=docklands:local
 ```
 
-`bun run docker:build` is the multi-platform release-build helper. It verifies
+`bun run release:image` is the multi-platform release-build helper. It verifies
 the production Dockerfile and tags `jason301c/docklands:<package-version>`, but
 it does not load a runnable image into the local Docker daemon. Use the
 `docker build` command above when you need a local image for `docker run`.
@@ -43,9 +43,9 @@ subcommands; the app itself runs on Node.
 
 Docklands needs:
 
-- **`DATABASE_URL`** — a reachable PostgreSQL instance. `bun run setup` can
-  provision a `docklands-postgres` Swarm service for you; otherwise point this at
-  your own Postgres. Whole-instance Docklands backup/restore currently supports
+- **`DATABASE_URL`** — a reachable PostgreSQL instance. The setup entrypoint
+  (`dist/setup-instance.mjs`, run once) can provision a `docklands-postgres`
+  service for you; otherwise point this at your own Postgres. Whole-instance Docklands backup/restore currently supports
   only the bundled `docklands-postgres` service; if you use an external
   PostgreSQL provider, use that provider's backup/restore tooling for the
   database and back up `/etc/docklands` plus `DOCKLANDS_ENCRYPTION_KEY`

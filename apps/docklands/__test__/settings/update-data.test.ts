@@ -18,6 +18,8 @@ function mockDockerHubPages(...pages: DockerHubPage[]) {
 		}
 
 		return {
+			ok: true,
+			status: 200,
 			json: async () => page,
 		};
 	});

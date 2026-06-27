@@ -1,0 +1,169 @@
+# Setup/install verification — the single home for the verify harness.
+#
+# This consolidates what used to be three workflows (docker image first-run
+# smoke, host-operator smoke, and the real-deploy smoke) into one model. It runs
+# the exact `bun run verify:*` commands a developer runs against a replica, so a
+# green run here means the same thing as a green run locally. It always runs on
+# amd64 (the dominant deploy target) regardless of who built the image.
+name: Verify
+
+on:
+  # Image-affecting changes get the fast install+deploy gate.
+  push:
+    branches: [canary, main]
+    paths:
+      - "apps/docklands/Dockerfile"
+      - "apps/docklands/package.json"
+      - "apps/docklands/esbuild.config.ts"
+      - "bun.lock"
+      - "tools/docker/**"
+      - "tools/verify/**"
+      - ".github/workflows/verify.yml"
+  pull_request:
+    branches: [canary, main]
+    paths:
+      - "apps/docklands/Dockerfile"
+      - "apps/docklands/package.json"
+      - "apps/docklands/esbuild.config.ts"
+      - "bun.lock"
+      - "tools/docker/**"
+      - "tools/verify/**"
+      - ".github/workflows/verify.yml"
+  # Full suite + the nixpacks real deploy: nightly and on demand.
+  schedule:
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: Git branch or tag to verify.
+        required: true
+        default: canary
+      git_url:
+        description: Git URL used by the real deployment test.
+        required: true
+        default: https://github.com/jason301c/docklands.git
+
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Fast gate on image-affecting changes: build the production image and run the
+  # portable sandbox verify (install + deploy) against it.
+  image-verify:
+    name: Image install + deploy verify (amd64)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/docklands/Dockerfile
+          push: false
+          load: true
+          tags: docklands:ci-verify
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify install + deploy
+        run: ./tools/verify/verify.sh deploy --image docklands:ci-verify
+
+  # Nightly / on-demand: the whole suite (install + deploy + upgrade + backup).
+  full-verify:
+    name: Full verify suite (amd64)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout selected ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.git_ref || github.ref }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/docklands/Dockerfile
+          push: false
+          load: true
+          tags: docklands:ci-verify
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Verify all (install + deploy + upgrade + backup)
+        run: ./tools/verify/verify.sh all --image docklands:ci-verify
+
+  # Nightly / on-demand: the real Git + Nixpacks deploy path, which the image
+  # sandbox does not exercise (it deploys a prebuilt image, not a built repo).
+  real-deploy:
+    name: Real deploy (Git + Nixpacks)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 45
+
+    env:
+      NODE_ENV: test
+      DOCKLANDS_REAL_TEST_GIT_URL: ${{ github.event.inputs.git_url || 'https://github.com/jason301c/docklands.git' }}
+      DOCKLANDS_REAL_TEST_GIT_BRANCH: ${{ github.event.inputs.git_ref || 'canary' }}
+      NIXPACKS_VERSION: 1.41.0
+
+    steps:
+      - name: Checkout selected ref
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.git_ref || github.ref }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Nixpacks
+        run: |
+          curl -fsSL https://nixpacks.com/install.sh -o /tmp/install-nixpacks.sh
+          NIXPACKS_VERSION="$NIXPACKS_VERSION" bash /tmp/install-nixpacks.sh --yes
+          nixpacks --version | grep -F "$NIXPACKS_VERSION"
+
+      - name: Prepare Docker Swarm
+        run: |
+          docker info
+          if [ "$(docker info --format '{{.Swarm.LocalNodeState}}')" != "active" ]; then
+            docker swarm init --advertise-addr 127.0.0.1
+          fi
+          docker network inspect docklands-network >/dev/null 2>&1 || \
+            docker network create --driver overlay --attachable docklands-network
+
+      - name: Run real deployment test
+        run: bun --filter docklands test -- --run __test__/deploy/application.real.test.ts
+
+      - name: Cleanup Docker resources
+        if: always()
+        run: |
+          docker service ls --format '{{.Name}}' | grep '^real-' | xargs -r docker service rm
+          docker image ls --format '{{.Repository}}:{{.Tag}}' | grep '^real-' | xargs -r docker rmi -f
+          rm -rf apps/docklands/.docker

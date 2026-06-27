@@ -1,0 +1,105 @@
+# Docklands replica VM — the provisioning blueprint.
+#
+# A single declarative definition of "a fresh Docklands host": Ubuntu 24.04 LTS
+# with real Linux Docker Engine (not Docker Desktop), Node 24, and Bun. This is
+# what `replica:up` boots and what `verify:* --on-host` runs against — the same
+# server shape a user gets when they install Docklands on their own VM.
+#
+# `tools/replica/replica.sh` consumes this template: it substitutes the
+# `__REPO_ROOT__` mount placeholder with the absolute repo path and applies the
+# requested `--arch`. Do not run `limactl` against this file directly; go through
+# replica.sh so the substitution happens.
+#
+# Lima docs: https://lima-vm.io/docs/
+
+# Apple Silicon and modern Intel/AMD both get a native, fast VM via the host's
+# virtualization framework (vz on macOS, kvm on Linux). Architecture is selected
+# by replica.sh (`arch:` is overwritten per --arch), defaulting to the host arch.
+vmType: "vz"
+os: "Linux"
+arch: "default"
+
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img"
+    arch: "x86_64"
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+
+cpus: 4
+memory: "8GiB"
+disk: "60GiB"
+
+# The working tree is mounted writable so you can edit from your laptop (Remote-
+# SSH) and run `bun run dev` / `bun run build` inside the VM with hot reload.
+# replica.sh fills __REPO_ROOT__ with the absolute repo path on the host.
+mounts:
+  - location: "__REPO_ROOT__"
+    mountPoint: "/workspace"
+    writable: true
+
+# Browse the replica from your laptop's own Chrome. Ports <1024 are remapped to
+# avoid needing host privilege; the in-VM Traefik still listens on 80/443.
+#   - app dev server : http://localhost:3000
+#   - Traefik HTTP   : http://localhost:8080
+#   - Traefik HTTPS  : https://localhost:8443
+portForwards:
+  - guestPort: 3000
+    hostPort: 3000
+  - guestPort: 80
+    hostPort: 8080
+  - guestPort: 443
+    hostPort: 8443
+
+provision:
+  # 1. Docker Engine — the real Linux daemon Docklands manages (Swarm, overlay
+  #    networks, the socket). This is the fidelity that Docker Desktop can't give.
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux
+      export DEBIAN_FRONTEND=noninteractive
+      if ! command -v docker >/dev/null 2>&1; then
+        curl -fsSL https://get.docker.com | sh
+      fi
+      systemctl enable --now docker
+      # Let the Lima user drive Docker without sudo.
+      groupadd -f docker
+      usermod -aG docker "${LIMA_CIDATA_USER}"
+      apt-get update -y
+      apt-get install -y --no-install-recommends ca-certificates curl git unzip
+
+  # 2. Node 24 (the app runtime) via fnm, matching the repo .nvmrc, plus Bun (the
+  #    package manager / task runner). Installed for the Lima user, wired into the
+  #    shell so interactive Remote-SSH sessions and `bun run` work out of the box.
+  - mode: user
+    script: |
+      #!/bin/bash
+      set -eux
+      NODE_VERSION="$(cat /workspace/.nvmrc 2>/dev/null || echo 24.4.0)"
+      if ! command -v fnm >/dev/null 2>&1; then
+        curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$HOME/.fnm" --skip-shell
+      fi
+      export PATH="$HOME/.fnm:$PATH"
+      eval "$(fnm env --shell bash)"
+      fnm install "$NODE_VERSION"
+      fnm default "$NODE_VERSION"
+      if ! command -v bun >/dev/null 2>&1; then
+        curl -fsSL https://bun.sh/install | bash
+      fi
+      # Persist the toolchain into login shells for Remote-SSH.
+      {
+        echo 'export PATH="$HOME/.fnm:$HOME/.bun/bin:$PATH"'
+        echo 'eval "$(fnm env --use-on-cd --shell bash)"'
+      } >> "$HOME/.bashrc"
+
+probes:
+  - description: "Docker, Node, and Bun are installed"
+    script: |
+      #!/bin/bash
+      set -eux
+      timeout 300 bash -c 'until command -v docker >/dev/null 2>&1; do sleep 3; done'
+      export PATH="$HOME/.fnm:$HOME/.bun/bin:$PATH"
+      timeout 300 bash -c 'until command -v bun >/dev/null 2>&1; do sleep 3; done'
+    hint: |
+      The Docker/Node/Bun provisioning did not finish. Check the guest logs with:
+        limactl shell docklands-replica -- sudo journalctl -u cloud-final

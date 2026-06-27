@@ -67,17 +67,36 @@ version manager such as [fnm](https://github.com/Schniz/fnm) so the right Node
 is selected automatically; do not rely on Homebrew's rolling `node`, which will
 drift past the supported range.
 
+There are exactly two ways to run Docklands while developing it:
+
+**Local mode** — the everyday loop for UI and backend work:
+
 ```bash
 bun install --frozen-lockfile
 cp apps/docklands/.env.example apps/docklands/.env
-NODE_ENV=development bun run setup
 bun run dev
 ```
 
-`bun run setup` waits for the configured `DATABASE_URL` to accept a real
-connection before running migrations. If it reports that the `docklands` role or
-database does not exist, another local Postgres is probably already using port
-`5432`; stop it or update `DATABASE_URL` before rerunning setup.
+`bun run dev` is one self-healing command: it generates local dev secrets,
+ensures a local Postgres (a throwaway `docklands-dev-postgres` container unless
+`DATABASE_URL` already points at a running database), applies migrations, and
+starts the control plane on `http://localhost:3000`. It deliberately does **not**
+initialize Swarm/Traefik, so it stays fast — but deploy and ingress flows are not
+exercised in Local mode.
+
+**Replica mode** — a disposable Linux VM that faithfully mirrors a self-hosted
+install (real Docker Engine, Swarm, Traefik, `/etc/docklands`). Use it for
+anything that touches infrastructure: deploys, ingress, backups, remote workers.
+You edit it from your machine over Remote-SSH and browse it via forwarded ports.
+
+```bash
+bun run replica:up     # boot the VM (needs Lima: `brew install lima`)
+bun run replica:ssh    # shell in; then: cd /workspace && bun install && bun run dev
+```
+
+See `tools/replica/README.md` for the replica blueprint and
+`tools/verify/README.md` for the `verify:*` harness that exercises the install,
+deploy, upgrade, backup, and remote-worker paths.
 
 Useful checks:
 

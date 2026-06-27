@@ -709,8 +709,11 @@ Bundled to `dist/*.mjs` (esbuild, Node target) from `server/ops/`:
 
 - `migrate-db` — run Drizzle migrations (also runs on production startup before the
   server).
-- `setup` + `wait-for-postgres` — first-boot bootstrap (`bun run setup`): waits for
-  Postgres, ensures the auth secret and encryption key, initializes the instance.
+- `setup-instance` + `wait-for-postgres` — first-boot server bootstrap (run once
+  as `node dist/setup-instance.mjs`): initializes Docker Swarm, the
+  `docklands-network`, Traefik, and the bundled Postgres; `wait-for-postgres`
+  blocks until the database accepts connections before migrations. (Local dev uses
+  `bun run dev` instead, which skips Swarm/Traefik.)
 - `reset-password` — generate a new owner password (printed once, for recovery).
 - `restore-instance` — offline whole-instance restore from a Docklands backup
   when the instance uses the bundled `docklands-postgres` service. External

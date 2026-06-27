@@ -166,27 +166,37 @@ and will drift past the supported `<26` range and break native module linkage.
 
 ## Development Model
 
-Docklands is a deployment control plane, so full local development is closer to a
-disposable Linux VM/devbox than a normal Next-only app. It can initialize Docker
-Swarm, create Docker networks/services/containers/volumes, bind common ports, and
-mount the Docker socket.
+Docklands is a deployment control plane, so it is welded to its host: it inits
+Docker Swarm, mounts the Docker socket into Traefik, bind-mounts app source into
+containers, and writes `/etc/docklands`. You cannot faithfully fake the seam
+between the app and the Docker host it manages. There are therefore exactly **two
+dev modes** — see `docs/ENGINEERING_WORKFLOW.md` for the full design.
 
-- **Light mode (UI / light backend):** a normal Node environment plus a reachable
-  Postgres. Run `bun install`, copy `apps/docklands/.env.example` to
-  `apps/docklands/.env`, run `bun run migration:run`, and start `bun run dev`.
-  Docker-heavy deployment flows will not be representative in this mode.
-- **Full mode:** a Docker Engine you are comfortable mutating. The setup path
-  initializes Swarm, `docklands-network`, Traefik, Postgres, local runtime
-  directories, and migrations. Use `NODE_ENV=development bun run setup` to publish
-  Postgres on a local port, then `bun run dev`.
-- The best practical full-dev target is a disposable Linux VM/devbox with Docker
-  Engine, Node 24, and Bun. Avoid running full setup against a laptop Docker
-  daemon that holds important containers, networks, or port bindings.
+- **Local mode (the everyday loop):** the app on Node plus an ephemeral Postgres,
+  with no Docker/Swarm mutation. Run `bun install`, copy
+  `apps/docklands/.env.example` to `apps/docklands/.env`, then `bun run dev`. That
+  one command is self-healing: it generates dev secrets, ensures a local
+  `docklands-dev-postgres` container (unless `DATABASE_URL` already points at a
+  running database), applies migrations, and starts the server on
+  `http://localhost:3000`. Use Local mode for UI, tRPC, schema, business logic,
+  and tests. Deploy/ingress flows are not representative here, by design.
+- **Replica mode (a faithful server):** a disposable Linux VM that mirrors a real
+  self-hosted install (Swarm, Traefik, `/etc/docklands`, ports 80/443). Boot it
+  with `bun run replica:up`, edit it from your machine over Remote-SSH, and browse
+  it via forwarded ports (`bun run replica:ssh` prints the details). Use Replica
+  mode for anything that touches infrastructure — deploys, ingress, Swarm,
+  backups, remote workers. The blueprint lives in `tools/replica/`.
+- **Never run a full server install against your workstation's own Docker
+  daemon.** That is what the replica is for. `setup` is no longer a human command;
+  it survives only as the image's internal install entrypoint
+  (`dist/setup-instance.mjs`), exercised by the replica and the verify harness.
+- The `verify:*` harness (`tools/verify/`) exercises the install/deploy/upgrade/
+  backup/remote-worker paths against a portable Docker-in-Docker sandbox
+  (`--target sandbox`, the CI default) or a real host/replica (`--target host`).
+  It is the single model for testing setup scripts; see `tools/verify/README.md`.
 - Development runtime files use `.docker/`; production/server-mode paths use
   `/etc/docklands`. Docker resources use Docklands names such as
   `docklands-network`, `docklands-postgres`, and `docklands-traefik`.
-- Expect possible conflicts on ports `80`, `443`, `5432`, `3000`, and any app
-  ports created by deployment tests or manual experiments.
 - Do not start the dev server for unattended verification unless the user asks.
   Use typecheck, Vitest, build, and static inspection instead.
 
@@ -196,34 +206,29 @@ Every script a human invokes is reachable from the repo root. Control-plane
 scripts proxy into `apps/docklands` via `bun --filter docklands`; the docs and
 site apps are reachable under the `docs:` and `site:` prefixes (`bun --filter
 docs` / `bun --filter site`). The root `package.json` is the full, authoritative
-list — keep it grouped (docklands lifecycle/quality, db, `docs:*`, `site:*`,
-`docker:*`) and add a root proxy whenever an app gains a human-invoked script.
-Pure internal sub-steps stay app-local only (e.g. `build-server`/`build-next`,
-which `build` chains, and `wait-for-postgres*`, which `setup` and the Dockerfile
-call from `apps/docklands`); do not re-add root proxies for them. You can also
-run any script app-local from inside the app directory.
+list — keep it grouped (docklands lifecycle/quality, db, `replica:*`, `verify:*`,
+`docs:*`, `site:*`, `release:*`) and add a root proxy whenever an app gains a
+human-invoked script. Pure internal sub-steps stay app-local only (e.g.
+`build-server`/`build-next`, which `build` chains, and `wait-for-postgres*`, which
+`dev` and the Dockerfile call from `apps/docklands`); do not re-add root proxies
+for them. You can also run any script app-local from inside the app directory.
 
 ```sh
 bun install --frozen-lockfile     # install workspace deps
-bun run dev                       # Node dev server (tsx server/server.ts)
+bun run dev                       # Local mode: ensure Postgres, migrate, run the app (Node)
 bun run format-and-lint:fix       # Biome format + lint (autofix)
 bun run typecheck                 # next typegen + tsc --noEmit
 bun run test:ci                   # check:bundler + Vitest (excludes real deploy test)
 bun run build                     # check:bundler + esbuild server bundle + next build
 bun run migration:generate        # Drizzle: generate SQL from schema changes
 bun run migration:run             # apply migrations
-bun run setup                     # full local bootstrap (Swarm/Traefik/Postgres/migrations)
 bun run restore-instance -- --destination-id <id> --backup-file <key.zip> --confirm RESTORE_DOCKLANDS_INSTANCE
-bun run docker:build              # build the app Docker image
-bun run docker:push               # guarded multi-arch production image push
-bun run docker:smoke <image>      # first-run smoke against disposable Postgres + Docker-in-Docker
-bun run docker:smoke:operator <image> # image smoke plus first-owner bootstrap checks
-bun run docker:smoke:deploy <image> # image smoke plus first-owner, settings, and first deploy checks
-bun run release:smoke:host        # manual disposable-host Docker install + backup + upgrade/restart + Traefik ingress smoke
-bun run release:check-metadata    # verify app/docs/site release versions and bun.lock metadata agree
+bun run replica:up                # boot a replica VM (also: down | reset | ssh; needs Lima)
+bun run verify                    # full setup/install verify (or verify:install|deploy|upgrade|backup|worker)
+bun run release:preflight [ref]   # local non-mutating release preflight
+bun run release:image [production|canary]   # build the multi-arch production image
+bun run release:publish [production|canary] # guarded multi-arch image publish (requires the release tag)
 bun run release:tag [--push] [ref] # guarded annotated release tag from package version
-bun run release:preflight [ref]   # local non-mutating release preflight before push/dispatch
-bun run release:smoke:dispatch [--wait] [ref] # dispatch manual release + host-operator smoke workflows for a pushed ref
 bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in
 bun run check:openapi             # generate OpenAPI to a temp artifact and validate release invariants
 bun run docs:dev                  # Astro docs site (apps/docs)
@@ -331,11 +336,13 @@ bun --filter docklands check:baseui
   deliberately repairing a generated migration.
 - **`migration:generate` needs a real TTY.** When a diff both creates and drops
   tables/columns (common here, since we drop/recreate freely), drizzle-kit shows
-  an interactive "is this created or renamed?" prompt. The root scripts
-  `migration:generate`, `migration:up`, and `migration:drop` therefore run the
-  app-local command **directly** (`cd apps/docklands && bun run …`) instead of via
-  `bun --filter`, because `--filter` prefixes child output and strips the TTY,
-  which makes drizzle-kit abort with "Interactive prompts require a TTY terminal".
+  an interactive "is this created or renamed?" prompt. The root `migration:generate`
+  script therefore runs the app-local command **directly**
+  (`cd apps/docklands && bun run …`) instead of via `bun --filter`, because
+  `--filter` prefixes child output and strips the TTY, which makes drizzle-kit
+  abort with "Interactive prompts require a TTY terminal". (The niche drizzle-kit
+  `up`/`drop`/`push` verbs were removed — undo a pre-release migration by reverting
+  the commit and regenerating, per the no-compat-debt model above.)
   Run these from an interactive shell, not a piped/non-TTY context, and answer the
   create-vs-rename prompt explicitly. Agents in a non-TTY harness cannot answer the
   prompt — split the change into a drop-only diff and a create-only diff (each is

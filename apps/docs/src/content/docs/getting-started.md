@@ -14,35 +14,46 @@ instead, see [Production install](/install/production/).
 
 ## Requirements
 
-- A Linux machine you are comfortable mutating (Docklands can initialize Docker
-  Swarm, create networks, and bind common ports).
-- Docker Engine.
 - Node `>=24.4.0 <26` and Bun `>=1.3.14`.
+- Docker (used to start a throwaway local Postgres), or any reachable PostgreSQL.
 
 See [Requirements](/install/requirements/) for the full list, including the ports
 Docklands expects to use.
 
-## Run it
+## Local mode — the fast loop
+
+This is the everyday path for working on the UI and backend.
 
 ```bash
 bun install --frozen-lockfile
 cp apps/docklands/.env.example apps/docklands/.env
-NODE_ENV=development bun run setup
 bun run dev
 ```
 
-`bun run setup` initializes Swarm, the `docklands-network`, Traefik, and a local
-Postgres, then waits for `DATABASE_URL` to accept a real connection before
-running migrations.
+`bun run dev` is one self-healing command: it generates local dev secrets,
+ensures a local Postgres (a throwaway `docklands-dev-postgres` container, unless
+`DATABASE_URL` already points at a running database), applies migrations, and
+starts the control plane on `http://localhost:3000`.
 
-:::tip[Light mode]
-For UI or light backend work you don't need the full Docker setup — just a
-reachable Postgres. Run `bun install`, copy the env file, then
-`bun run migration:run` and `bun run dev`. Docker-heavy deployment flows won't be
-representative in this mode.
-:::
+Local mode deliberately does **not** initialize Docker Swarm, Traefik, or
+`/etc/docklands` — so it stays fast and safe, but deploy and ingress flows are
+not exercised here. For those, use a replica.
 
-See [Configuration](/install/configuration/) for the environment variables the
+## Replica mode — a faithful server
+
+To work on anything that touches real infrastructure (deploys, ingress, Swarm,
+backups, remote workers), run a **replica**: a disposable Linux VM that mirrors a
+real self-hosted install. You edit it from your machine over SSH and browse it in
+your own browser via forwarded ports.
+
+```bash
+bun run replica:up     # boot the VM (needs Lima: `brew install lima`)
+bun run replica:ssh    # shell in; then: cd /workspace && bun install && bun run dev
+```
+
+To run the built container on a server instead, see
+[Production install](/install/production/). See
+[Configuration](/install/configuration/) for the environment variables the
 control plane reads.
 
 ## Useful checks

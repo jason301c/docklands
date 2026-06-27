@@ -312,11 +312,14 @@ the custom-role manager) all hang off `components/dashboard/`.
   restrict host-terminal access to owner/admin, and validate container ids,
   tail/since values, search strings, and shells against the existing allowlists.
 - `server/ops/` — runtime/admin entrypoints bundled into `dist` (DB migration,
-  setup, wait-for-postgres, reset-password, ensure auth-secret/encryption-key,
+  `setup-instance` (the one-shot server install: Swarm/network/Traefik/bundled
+  Postgres), wait-for-postgres, reset-password, ensure auth-secret/encryption-key,
   a production secret preflight `check-secrets` that runs first in `start`,
   offline full-instance restore, and `rotate-encryption-key` which re-encrypts
   every secret-box value from the current key to
-  `DOCKLANDS_NEW_ENCRYPTION_KEY`).
+  `DOCKLANDS_NEW_ENCRYPTION_KEY`). `ensure-postgres-dev` is the dev-only Local-mode
+  helper that provisions a throwaway `docklands-dev-postgres` for `bun run dev`; it
+  is not bundled into the image.
   Keep imports server-only and startup-safe; never log secrets,
   tokens, keys, database URLs, or generated passwords unless the command exists
   to reveal them. When adding an entrypoint, update `package.json`,
@@ -588,7 +591,7 @@ Run from the repo root (`bun run <script>`) or from this directory with the
 app-local scripts. App-local highlights:
 
 ```sh
-bun run dev                 # tsx server/server.ts on Node (custom Next server)
+bun run dev                 # Local mode: ensure dev Postgres + secrets, migrate, run server (Node)
 bun run build               # check:bundler + build-server (esbuild) + build-next (Turbopack)
 bun run typecheck           # typegen + tsc --noEmit
 bun run test                # Vitest (watch)
