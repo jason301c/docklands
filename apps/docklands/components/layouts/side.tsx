@@ -241,7 +241,16 @@ function NavMenuItems({
 						href={item.url}
 						tooltip={item.title}
 						active={isActive}
-						icon={item.icon}
+						icon={
+							item.icon ? (
+								<item.icon
+									className={cn(
+										"size-4 shrink-0 opacity-40",
+										isActive && "text-kumo-brand opacity-100",
+									)}
+								/>
+							) : undefined
+						}
 						className={cn(isActive && "bg-kumo-fill")}
 					>
 						<span>{item.title}</span>
@@ -266,7 +275,7 @@ function NavMenuItems({
 							}
 						/>
 						<Collapsible.Panel>
-							<SidebarMenuSub>
+							<SidebarMenuSub className="gap-y-1 pt-1">
 								{item.items?.map((subItem) => {
 									const subActive = isActiveRoute({
 										itemUrl: subItem.url,
