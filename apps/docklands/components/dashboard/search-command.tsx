@@ -196,34 +196,17 @@ export const SearchCommand = () => {
 				onSelect: () => navigate("/dashboard/deployments"),
 			},
 			{
-				id: "app-monitoring",
-				title: "Host metrics",
-				searchText: "host metrics monitoring runtime",
-				onSelect: () => navigate("/dashboard/host-metrics"),
+				id: "app-runtime",
+				title: "Runtime",
+				searchText:
+					"runtime containers docker cluster workers swarm host metrics monitoring",
+				onSelect: () => navigate("/dashboard/runtime"),
 			},
 			{
-				id: "app-traefik",
-				title: "Ingress files",
-				searchText: "ingress files traefik proxy",
-				onSelect: () => navigate("/dashboard/proxy-files"),
-			},
-			{
-				id: "app-docker",
-				title: "Container runtime",
-				searchText: "runtime containers docker",
-				onSelect: () => navigate("/dashboard/container-runtime"),
-			},
-			{
-				id: "app-cluster-runtime",
-				title: "Cluster runtime",
-				searchText: "cluster runtime workers swarm orchestration",
-				onSelect: () => navigate("/dashboard/cluster-runtime"),
-			},
-			{
-				id: "app-requests",
-				title: "Ingress requests",
-				searchText: "ingress requests runtime proxy",
-				onSelect: () => navigate("/dashboard/requests"),
+				id: "app-ingress",
+				title: "Ingress",
+				searchText: "ingress requests files traefik proxy logs",
+				onSelect: () => navigate("/dashboard/ingress"),
 			},
 			{
 				id: "app-settings",

@@ -46,9 +46,11 @@ export const ShowRuntimeWorkers = () => {
 		<SectionCard
 			title="Runtime Workers"
 			actions={isAdmin ? <ToggleRemoteWorkersOnly /> : null}
+			contentClassName="flex flex-1 flex-col"
 		>
 			<QueryState
 				query={runtimeWorkersQuery}
+				className="flex-1"
 				isEmpty={(data) => data.length === 0}
 				empty={
 					sshKeys?.length === 0 ? (
@@ -64,6 +66,17 @@ export const ShowRuntimeWorkers = () => {
 										Add SSH Key
 									</Link>
 								</>
+							}
+							action={
+								<Button
+									variant="primary"
+									disabled
+									aria-disabled
+									className="gap-2 cursor-not-allowed opacity-50"
+								>
+									<ServerIcon className="size-4" />
+									Add Worker
+								</Button>
 							}
 						/>
 					) : (

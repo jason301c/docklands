@@ -2,7 +2,13 @@ import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { Table } from "@cloudflare/kumo/components/table";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
-import { HelpCircle, Loader2, LockIcon, MoreHorizontal } from "lucide-react";
+import {
+	HelpCircle,
+	Loader2,
+	LockIcon,
+	MoreHorizontal,
+	PlusIcon,
+} from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { DateTooltip } from "@/components/shared/date-tooltip";
@@ -36,10 +42,10 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 					<AddClusterNode runtimeWorkerId={runtimeWorkerId} />
 				) : null
 			}
-			contentClassName="min-h-[35vh]"
+			contentClassName="flex flex-1 flex-col min-h-[35vh]"
 		>
 			{isPending ? (
-				<div className="flex items-center justify-center w-full h-[40vh]">
+				<div className="flex flex-1 items-center justify-center w-full">
 					<Loader2 className="size-8 animate-spin text-kumo-subtle" />
 				</div>
 			) : haveAtLeastOneRegistry ? (
@@ -145,9 +151,9 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 					</Table>
 				</div>
 			) : (
-				<div className="flex flex-col items-center gap-3">
+				<div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
 					<LockIcon className="size-8 text-kumo-subtle" />
-					<div className="flex flex-row gap-2">
+					<div className="flex flex-row items-center gap-2">
 						<span className="text-base text-kumo-subtle ">
 							To add nodes to your cluster, you need to configure at least one
 							registry.
@@ -161,12 +167,22 @@ export const ShowClusterNodes = ({ runtimeWorkerId }: Props) => {
 						</TooltipProvider>
 					</div>
 
-					<ul className="list-disc list-inside text-sm text-kumo-subtle border p-4 rounded-lg flex flex-col gap-1.5 mt-2.5">
+					<ul className="list-disc list-inside text-sm text-kumo-subtle border border-kumo-hairline p-4 rounded-lg flex flex-col gap-1.5 mt-2.5">
 						<li>
 							<strong>Image Registry:</strong> Use custom registries like Docker
 							Hub, DigitalOcean Registry, etc.
 						</li>
 					</ul>
+
+					<Button
+						variant="primary"
+						disabled
+						aria-disabled
+						className="mt-2 gap-2 cursor-not-allowed opacity-50"
+					>
+						<PlusIcon className="size-4" />
+						Add Worker
+					</Button>
 				</div>
 			)}
 		</SectionCard>

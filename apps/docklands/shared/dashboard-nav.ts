@@ -9,14 +9,12 @@ import {
 	Compass,
 	Database,
 	Forward,
-	GalleryVerticalEnd,
 	GitBranch,
 	Globe,
 	House,
 	KeyRound,
 	type LucideIcon,
 	Package,
-	PieChart,
 	Rocket,
 	ScrollText,
 	Server,
@@ -127,38 +125,22 @@ export const DASHBOARD_MENU: Menu = {
 			items: [
 				{
 					isSingle: true,
-					title: "Container Runtime",
-					url: "/dashboard/container-runtime",
+					title: "Runtime",
+					url: "/dashboard/runtime",
 					icon: BlocksIcon,
-					isEnabled: ({ permissions }) => !!permissions?.docker.read,
+					// Containers · Cluster · Host Metrics tabs. Visible if the member
+					// can see any of them; the page gates each tab itself.
+					isEnabled: ({ permissions }) =>
+						!!permissions?.docker.read || !!permissions?.monitoring.read,
 				},
 				{
 					isSingle: true,
-					title: "Cluster Runtime",
-					url: "/dashboard/cluster-runtime",
-					icon: PieChart,
-					isEnabled: ({ permissions }) => !!permissions?.docker.read,
-				},
-				{
-					isSingle: true,
-					title: "Host Metrics",
-					url: "/dashboard/host-metrics",
-					icon: BarChartHorizontalBigIcon,
-					isEnabled: ({ permissions }) => !!permissions?.monitoring.read,
-				},
-				{
-					isSingle: true,
-					title: "Ingress Requests",
-					url: "/dashboard/requests",
+					title: "Ingress",
+					url: "/dashboard/ingress",
 					icon: Forward,
-					isEnabled: ({ permissions }) => !!permissions?.docker.read,
-				},
-				{
-					isSingle: true,
-					title: "Ingress Files",
-					url: "/dashboard/proxy-files",
-					icon: GalleryVerticalEnd,
-					isEnabled: ({ permissions }) => !!permissions?.traefikFiles.read,
+					// Requests · Files tabs.
+					isEnabled: ({ permissions }) =>
+						!!permissions?.docker.read || !!permissions?.traefikFiles.read,
 				},
 			],
 		},

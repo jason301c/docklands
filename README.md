@@ -41,10 +41,8 @@ redirects; new navigation and docs should use the workspace-first route model.
 Preferred route names in docs, navigation, and new links:
 
 - `/dashboard/workspace` for the project overview.
-- `/dashboard/container-runtime` for runtime containers.
-- `/dashboard/cluster-runtime` for worker and cluster state.
-- `/dashboard/proxy-files` for ingress runtime files.
-- `/dashboard/host-metrics` for host and runtime metrics.
+- `/dashboard/runtime` for runtime monitoring (Containers · Cluster · Host Metrics tabs).
+- `/dashboard/ingress` for ingress observability (Requests · Files tabs).
 - `/dashboard/deployments` for deployment history and worker queue state.
 - `/dashboard/settings/cloudflare` for the Cloudflare Tunnel connection.
 - `/dashboard/settings/ingress`, `/dashboard/settings/runtime`, and `/dashboard/settings/storage` for the renamed settings surfaces.

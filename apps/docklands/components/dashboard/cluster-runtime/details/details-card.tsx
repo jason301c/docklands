@@ -1,8 +1,9 @@
 import { Badge } from "@cloudflare/kumo/components/badge";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
-import { Box, Cpu, Database, HardDrive, Loader2 } from "lucide-react";
+import { Box, Cpu, HardDrive, Loader2, MemoryStick } from "lucide-react";
 import { api } from "@/client/api/trpc";
 import { Separator } from "@/components/shared/separator";
+import { cn } from "@/shared/utils";
 import { ShowNodeApplications } from "../applications/show-applications";
 import { ShowNodeConfig } from "./show-node-config";
 
@@ -21,104 +22,92 @@ interface Props {
 	runtimeWorkerId?: string;
 }
 
+interface StatProps {
+	label: string;
+	value: string;
+	icon: typeof Cpu;
+}
+
+function Stat({ label, value, icon: Icon }: StatProps) {
+	return (
+		<div className="space-y-1">
+			<div className="flex items-center gap-1.5 text-xs text-kumo-subtle">
+				<Icon className="size-3.5" />
+				{label}
+			</div>
+			<div className="font-medium text-sm">{value}</div>
+		</div>
+	);
+}
+
 export function NodeCard({ node, runtimeWorkerId }: Props) {
 	const { data, isPending } = api.swarm.getNodeInfo.useQuery({
 		nodeId: node.ID,
 		runtimeWorkerId,
 	});
 
-	if (isPending) {
-		return (
-			<LayerCard className="w-full bg-kumo-canvas">
-				<div>
-					<h3 className="flex items-center justify-between text-lg">
-						<span className="flex items-center gap-2">{node.Hostname}</span>
-						<Badge variant="green">{node.ManagerStatus || "Worker"}</Badge>
-					</h3>
-				</div>
-				<div>
-					<div className="flex items-center justify-center">
-						<Loader2 className="h-6 w-6 animate-spin text-kumo-subtle" />
-					</div>
-				</div>
-			</LayerCard>
-		);
-	}
+	const isReady = node.Status === "Ready";
+	const cpuCores = data?.Description?.Resources?.NanoCPUs
+		? `${(data.Description.Resources.NanoCPUs / 1e9).toFixed(2)} Core(s)`
+		: "—";
+	const memory = data?.Description?.Resources?.MemoryBytes
+		? `${(data.Description.Resources.MemoryBytes / 1024 ** 3).toFixed(2)} GB`
+		: "—";
 
 	return (
-		<LayerCard className="w-full bg-kumo-canvas">
-			<div>
-				<h3 className="text-lg">Node Status</h3>
+		<LayerCard className="w-full bg-kumo-base">
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<div className="flex items-center gap-2.5">
+					<span
+						className={cn(
+							"size-2.5 rounded-full",
+							isReady ? "bg-kumo-success" : "bg-kumo-danger",
+						)}
+					/>
+					<span className="font-medium">{node.Hostname}</span>
+					<Badge variant="secondary">{node.ManagerStatus || "Worker"}</Badge>
+				</div>
+				<div className="flex flex-wrap items-center gap-2">
+					<Badge variant={isReady ? "success" : "secondary"}>
+						{node.Status}
+					</Badge>
+					<Badge variant="outline">TLS {node.TLSStatus}</Badge>
+					<Badge variant="outline">{node.Availability}</Badge>
+				</div>
 			</div>
-			<div>
-				<div className="space-y-6">
-					<div className="flex flex-wrap gap-y-2 items-center justify-between">
-						<div className="flex items-center space-x-4 p-2 rounded-xl border">
-							<div
-								className={`h-2.5 w-2.5 rounded-full ${node.Status === "Ready" ? "bg-kumo-success" : "bg-kumo-danger"}`}
-							/>
-							<div className="font-medium">{node.Hostname}</div>
-							<Badge variant="green">{node.ManagerStatus || "Worker"}</Badge>
-						</div>
-						<div className="flex flex-wrap items-center gap-4">
-							<Badge variant="green">TLS Status: {node.TLSStatus}</Badge>
-							<Badge variant="blue">Availability: {node.Availability}</Badge>
-						</div>
+
+			<Separator className="my-4" />
+
+			{isPending ? (
+				<div className="flex items-center justify-center py-4">
+					<Loader2 className="size-5 animate-spin text-kumo-subtle" />
+				</div>
+			) : (
+				<>
+					<div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+						<Stat
+							label="Engine Version"
+							value={node.EngineVersion}
+							icon={HardDrive}
+						/>
+						<Stat label="CPU" value={cpuCores} icon={Cpu} />
+						<Stat label="Memory" value={memory} icon={MemoryStick} />
+						<Stat
+							label="IP Address"
+							value={data?.Status?.Addr ?? "—"}
+							icon={Box}
+						/>
 					</div>
 
-					<Separator />
-
-					<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-						<div className="space-y-2 flex flex-col items-center text-center">
-							<div className="flex items-center text-sm text-kumo-subtle">
-								<HardDrive className="mr-2 h-4 w-4" />
-								Engine Version
-							</div>
-							<div>{node.EngineVersion}</div>
-						</div>
-						<div className="space-y-2 flex flex-col items-center text-center">
-							<div className="flex items-center text-sm text-kumo-subtle">
-								<Cpu className="mr-2 h-4 w-4" />
-								CPU
-							</div>
-							<div>
-								{data &&
-									(data.Description?.Resources?.NanoCPUs / 1e9).toFixed(2)}{" "}
-								Core(s)
-							</div>
-						</div>
-						<div className="space-y-2 flex flex-col items-center text-center">
-							<div className="flex items-center text-sm text-kumo-subtle">
-								<Database className="mr-2 h-4 w-4" />
-								Memory
-							</div>
-							<div>
-								{data &&
-									(
-										data.Description?.Resources?.MemoryBytes /
-										1024 ** 3
-									).toFixed(2)}{" "}
-								GB
-							</div>
-						</div>
-						<div className="space-y-2 flex flex-col items-center text-center">
-							<div className="flex items-center text-sm text-kumo-subtle">
-								<Box className="mr-2 h-4 w-4" />
-								IP Address
-							</div>
-							<div>{data?.Status?.Addr}</div>
-						</div>
-					</div>
-
-					<div className="flex justify-end w-full space-x-4">
+					<div className="mt-4 flex justify-end gap-2">
 						<ShowNodeConfig
 							nodeId={node.ID}
 							runtimeWorkerId={runtimeWorkerId}
 						/>
 						<ShowNodeApplications runtimeWorkerId={runtimeWorkerId} />
 					</div>
-				</div>
-			</div>
+				</>
+			)}
 		</LayerCard>
 	);
 }

@@ -2,176 +2,134 @@ import { Badge } from "@cloudflare/kumo/components/badge";
 import { Button } from "@cloudflare/kumo/components/button";
 import { LayerCard } from "@cloudflare/kumo/components/layer-card";
 import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
-import {
-	Activity,
-	Loader2,
-	Monitor,
-	Server,
-	Settings,
-	WorkflowIcon,
-} from "lucide-react";
+import { Activity, Server, Settings, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
+import { SectionCard } from "@/components/shared/section-card";
+import { QueryState } from "@/components/shared/states";
 import { NodeCard } from "./details/details-card";
 
 interface Props {
 	runtimeWorkerId?: string;
 }
 
-export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
-	const { data: nodes, isPending } = api.swarm.getNodes.useQuery({
-		runtimeWorkerId,
-	});
+interface StatCardProps {
+	label: string;
+	value: string;
+	icon: typeof Server;
+	hint?: string;
+	tooltip?: React.ReactNode;
+}
 
-	if (isPending) {
-		return (
-			<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-kumo-canvas p-6">
-				<div className="flex min-h-[55vh] items-center justify-center text-kumo-subtle">
-					<span className="flex flex-row items-center justify-center gap-2 text-sm">
-						Loading...
-						<Loader2 className="size-4 animate-spin" />
-					</span>
-				</div>
+function StatCard({ label, value, icon: Icon, hint, tooltip }: StatCardProps) {
+	const body = (
+		<LayerCard className="bg-kumo-base">
+			<div className="flex items-center justify-between gap-2">
+				<span className="text-sm font-medium text-kumo-subtle">{label}</span>
+				<Icon className="size-4 text-kumo-subtle" />
 			</div>
-		);
-	}
-
-	if (!nodes) {
-		return (
-			<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-kumo-canvas p-6">
-				<div className="flex min-h-[55vh] items-center justify-center text-kumo-danger">
-					<span>Failed to load data</span>
-				</div>
+			<div className="mt-2 flex items-baseline gap-2">
+				<span className="font-display font-semibold text-2xl tracking-tight">
+					{value}
+				</span>
+				{hint ? <span className="text-xs text-kumo-subtle">{hint}</span> : null}
 			</div>
-		);
-	}
-
-	const totalNodes = nodes.length;
-	const activeNodesCount = nodes.filter(
-		(node) => node.Status === "Ready",
-	).length;
-	const managerNodesCount = nodes.filter(
-		(node) =>
-			node.ManagerStatus === "Leader" || node.ManagerStatus === "Reachable",
-	).length;
-	const activeNodes = nodes.filter((node) => node.Status === "Ready");
-	const managerNodes = nodes.filter(
-		(node) =>
-			node.ManagerStatus === "Leader" || node.ManagerStatus === "Reachable",
+		</LayerCard>
 	);
 
+	if (!tooltip) return body;
+
 	return (
-		<div className="mx-auto flex w-full flex-col gap-4 rounded-lg border bg-kumo-canvas p-6">
-			<header className="flex items-center flex-wrap gap-4 justify-between">
-				<div className="space-y-1">
-					<h3 className="text-xl font-semibold flex items-center gap-2">
-						<WorkflowIcon className="size-6 text-kumo-subtle self-center" />
-						Cluster Runtime Overview
-					</h3>
-					<p className="text-sm text-kumo-subtle">
-						Monitor runtime workers and node health across the cluster.
-					</p>
-				</div>
-				{!runtimeWorkerId && (
+		<TooltipProvider>
+			<Tooltip content={tooltip}>{body}</Tooltip>
+		</TooltipProvider>
+	);
+}
+
+export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
+	const router = useRouter();
+	const nodesQuery = api.swarm.getNodes.useQuery({ runtimeWorkerId });
+
+	return (
+		<SectionCard
+			title="Cluster Runtime"
+			actions={
+				!runtimeWorkerId ? (
 					<Button
-						onClick={() =>
-							window.location.replace("/dashboard/settings/cluster-nodes")
-						}
+						variant="secondary"
+						onClick={() => router.push("/dashboard/settings/cluster-nodes")}
 					>
-						<Settings className="mr-2 h-4 w-4" />
+						<Settings className="mr-2 size-4" />
 						Manage Cluster Nodes
 					</Button>
-				)}
-			</header>
+				) : undefined
+			}
+		>
+			<QueryState
+				query={nodesQuery}
+				loadingLabel="Loading cluster…"
+				errorTitle="Could not load cluster nodes"
+			>
+				{(nodes) => {
+					const totalNodes = nodes.length;
+					const activeNodes = nodes.filter((node) => node.Status === "Ready");
+					const managerNodes = nodes.filter(
+						(node) =>
+							node.ManagerStatus === "Leader" ||
+							node.ManagerStatus === "Reachable",
+					);
+					const hostnameList = (list: typeof nodes) =>
+						list.length ? (
+							<div className="max-h-48 space-y-1 overflow-y-auto text-xs">
+								{list.map((node) => (
+									<div key={node.ID}>{node.Hostname}</div>
+								))}
+							</div>
+						) : undefined;
 
-			<div className="grid gap-6 lg:grid-cols-3">
-				<LayerCard className="bg-kumo-canvas">
-					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<h3 className="text-sm font-medium">Total Workers</h3>
-						<div className="p-2 bg-kumo-success-tint text-kumo-success rounded-md">
-							<Server className="h-4 w-4 text-kumo-success" />
-						</div>
-					</div>
-					<div>
-						<div className="text-2xl font-bold">{totalNodes}</div>
-					</div>
-				</LayerCard>
+					return (
+						<div className="flex flex-col gap-6">
+							<p className="text-sm text-kumo-subtle">
+								Runtime workers and node health across the cluster.
+							</p>
 
-				<LayerCard className="bg-kumo-canvas">
-					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<div className="flex items-center gap-2">
-							<h3 className="text-sm font-medium">Active Workers</h3>
-							<Badge variant="green">Online</Badge>
-						</div>
-						<div className="p-2 bg-kumo-success-tint text-kumo-success rounded-md">
-							<Activity className="h-4 w-4 text-kumo-success" />
-						</div>
-					</div>
-					<div>
-						<TooltipProvider>
-							<Tooltip
-								content={
-									<>
-										<div className="max-h-48 overflow-y-auto">
-											{activeNodes.map((node) => (
-												<div key={node.ID} className="flex items-center gap-2">
-													{node.Hostname}
-												</div>
-											))}
-										</div>
-									</>
-								}
-							>
-								<div className="text-2xl font-bold">
-									{activeNodesCount} / {totalNodes}
-								</div>
-							</Tooltip>
-						</TooltipProvider>
-					</div>
-				</LayerCard>
+							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+								<StatCard
+									label="Total Workers"
+									value={String(totalNodes)}
+									icon={Server}
+								/>
+								<StatCard
+									label="Active Workers"
+									value={`${activeNodes.length} / ${totalNodes}`}
+									icon={Activity}
+									tooltip={hostnameList(activeNodes)}
+								/>
+								<StatCard
+									label="Managers"
+									value={`${managerNodes.length} / ${totalNodes}`}
+									icon={ShieldCheck}
+									tooltip={hostnameList(managerNodes)}
+								/>
+							</div>
 
-				<LayerCard className="bg-kumo-canvas">
-					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
-						<div className="flex items-center gap-2">
-							<h3 className="text-sm font-medium">Managers</h3>
-							<Badge variant="green">Online</Badge>
-						</div>
-						<div className="p-2 bg-kumo-success-tint text-kumo-success rounded-md">
-							<Monitor className="h-4 w-4 text-kumo-success" />
-						</div>
-					</div>
-					<div>
-						<TooltipProvider>
-							<Tooltip
-								content={
-									<>
-										<div className="max-h-48 overflow-y-auto">
-											{managerNodes.map((node) => (
-												<div key={node.ID} className="flex items-center gap-2">
-													{node.Hostname}
-												</div>
-											))}
-										</div>
-									</>
-								}
-							>
-								<div className="text-2xl font-bold">
-									{managerNodesCount} / {totalNodes}
-								</div>
-							</Tooltip>
-						</TooltipProvider>
-					</div>
-				</LayerCard>
-			</div>
+							<div className="grid grid-cols-1 gap-4 2xl:grid-cols-2">
+								{nodes.map((node) => (
+									<NodeCard
+										key={node.ID}
+										node={node}
+										runtimeWorkerId={runtimeWorkerId}
+									/>
+								))}
+							</div>
 
-			<div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-4">
-				{nodes.map((node) => (
-					<NodeCard
-						key={node.ID}
-						node={node}
-						runtimeWorkerId={runtimeWorkerId}
-					/>
-				))}
-			</div>
-		</div>
+							{totalNodes === 0 ? (
+								<Badge variant="secondary">No nodes reporting</Badge>
+							) : null}
+						</div>
+					);
+				}}
+			</QueryState>
+		</SectionCard>
 	);
 }
