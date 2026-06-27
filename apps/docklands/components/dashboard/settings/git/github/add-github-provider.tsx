@@ -84,7 +84,10 @@ export const AddGithubProvider = () => {
 		<Dialog.Root open={isOpen} onOpenChange={setIsOpen}>
 			<Dialog.Trigger
 				render={
-					<Button variant="secondary" className="flex items-center space-x-1">
+					<Button
+						variant="outline"
+						className="flex items-center gap-2 bg-kumo-base hover:bg-kumo-tint"
+					>
 						<GithubIcon className="text-current fill-current" />
 						<span>Github</span>
 					</Button>
@@ -141,7 +144,7 @@ export const AddGithubProvider = () => {
 												? `https://github.com/organizations/${organizationName}/settings/installations`
 												: "https://github.com/settings/installations"
 										}
-										className={`text-kumo-subtle text-sm hover:underline duration-300
+										className={`text-kumo-brand text-sm hover:underline duration-300
 											 ${
 													isOrganization && !organizationName
 														? "pointer-events-none opacity-50"
@@ -153,6 +156,7 @@ export const AddGithubProvider = () => {
 										Unsure if you already have an app?
 									</a>
 									<Button
+										variant="primary"
 										disabled={
 											isPreparing ||
 											(isOrganization && organizationName.length < 1)

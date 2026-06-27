@@ -79,8 +79,8 @@ export const AddBitbucketProvider = () => {
 			<Dialog.Trigger
 				render={
 					<Button
-						variant="secondary"
-						className="flex items-center space-x-1 bg-kumo-info text-kumo-inverse hover:bg-kumo-info"
+						variant="outline"
+						className="flex items-center gap-2 bg-blue-500/10 text-blue-700 ring-blue-500/20 hover:bg-blue-500/20 hover:text-blue-700 dark:text-blue-300 dark:ring-blue-400/25"
 					>
 						<BitbucketIcon />
 						<span>Bitbucket</span>
@@ -113,7 +113,7 @@ export const AddBitbucketProvider = () => {
 									<Link
 										href="https://id.atlassian.com/manage-profile/security/api-tokens"
 										target="_blank"
-										className="inline-flex items-center gap-1 ml-1"
+										className="ml-1 inline-flex items-center gap-1 text-kumo-brand hover:underline"
 									>
 										<span>Bitbucket settings</span>
 										<ExternalLink className="w-fit text-kumo-brand size-4" />
@@ -221,7 +221,11 @@ export const AddBitbucketProvider = () => {
 									)}
 								/>
 
-								<Button loading={isPending}>Configure Bitbucket</Button>
+								<Dialog.Footer>
+									<Button variant="primary" loading={isPending}>
+										Configure Bitbucket
+									</Button>
+								</Dialog.Footer>
 							</div>
 						</div>
 					</form>

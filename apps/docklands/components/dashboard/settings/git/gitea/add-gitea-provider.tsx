@@ -141,8 +141,8 @@ export const AddGiteaProvider = () => {
 			<Dialog.Trigger
 				render={
 					<Button
-						variant="primary"
-						className="flex items-center space-x-1 bg-kumo-success text-kumo-inverse hover:bg-kumo-success"
+						variant="outline"
+						className="flex items-center gap-2 bg-green-600/10 text-green-700 ring-green-600/20 hover:bg-green-600/20 hover:text-green-700 dark:text-green-300 dark:ring-green-400/25"
 					>
 						<GiteaIcon />
 						<span>Gitea</span>
@@ -304,7 +304,11 @@ export const AddGiteaProvider = () => {
 									)}
 								/>
 
-								<Button loading={isPending}>Configure Gitea App</Button>
+								<Dialog.Footer>
+									<Button variant="primary" loading={isPending}>
+										Configure Gitea App
+									</Button>
+								</Dialog.Footer>
 							</div>
 						</div>
 					</form>

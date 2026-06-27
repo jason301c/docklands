@@ -110,8 +110,8 @@ export const AddGitlabProvider = () => {
 			<Dialog.Trigger
 				render={
 					<Button
-						variant="primary"
-						className="flex items-center space-x-1 bg-purple-700 text-white hover:bg-purple-600"
+						variant="outline"
+						className="flex items-center gap-2 bg-orange-500/10 text-orange-700 ring-orange-500/20 hover:bg-orange-500/20 hover:text-orange-700 dark:text-orange-300 dark:ring-orange-400/25"
 					>
 						<GitlabIcon />
 						<span>GitLab</span>
@@ -291,7 +291,9 @@ export const AddGitlabProvider = () => {
 								/>
 
 								<Dialog.Footer>
-									<Button loading={isPending}>Configure GitLab App</Button>
+									<Button variant="primary" loading={isPending}>
+										Configure GitLab App
+									</Button>
 								</Dialog.Footer>
 							</div>
 						</div>

@@ -99,15 +99,11 @@ export const ShowGitProviders = () => {
 								No Git Providers configured
 							</span>
 							{permissions?.gitProviders.create && (
-								<div>
-									<div className="flex items-center bg-kumo-elevated p-1 w-full rounded-lg">
-										<div className="flex flex-wrap items-center gap-4 p-3.5 rounded-lg bg-kumo-canvas border w-full [&>button]:grow">
-											<AddGithubProvider />
-											<AddGitlabProvider />
-											<AddBitbucketProvider />
-											<AddGiteaProvider />
-										</div>
-									</div>
+								<div className="flex flex-wrap items-center justify-center gap-3">
+									<AddGithubProvider />
+									<AddGitlabProvider />
+									<AddBitbucketProvider />
+									<AddGiteaProvider />
 								</div>
 							)}
 						</div>
@@ -118,13 +114,11 @@ export const ShowGitProviders = () => {
 									Available Providers
 								</span>
 								{permissions?.gitProviders.create && (
-									<div className="flex items-center bg-kumo-elevated p-1 w-full rounded-lg">
-										<div className="flex flex-wrap items-center gap-4 p-3.5 rounded-lg bg-kumo-canvas border w-full [&>button]:grow">
-											<AddGithubProvider />
-											<AddGitlabProvider />
-											<AddBitbucketProvider />
-											<AddGiteaProvider />
-										</div>
+									<div className="flex flex-wrap items-center gap-3">
+										<AddGithubProvider />
+										<AddGitlabProvider />
+										<AddBitbucketProvider />
+										<AddGiteaProvider />
 									</div>
 								)}
 							</div>
