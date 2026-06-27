@@ -173,13 +173,13 @@ export const AddInvitation = () => {
 				className=""
 				render={
 					<Button>
-						<PlusIcon className="h-4 w-4" /> Add Invitation
+						<PlusIcon className="h-4 w-4" /> Add User
 					</Button>
 				}
 			/>
 			<Dialog className="sm:max-w-2xl">
 				<Dialog.Header>
-					<Dialog.Title>Add Invitation</Dialog.Title>
+					<Dialog.Title>Add User</Dialog.Title>
 					<Dialog.Description>
 						{mode === "credentials"
 							? "Create a user with initial credentials"
@@ -200,7 +200,7 @@ export const AddInvitation = () => {
 				) : (
 					mode === "invitation" &&
 					emailConfigured === false && (
-						<AlertBlock type="warning">
+						<AlertBlock type="warning" className="mb-4">
 							No email provider is configured, so the invitation can't be
 							emailed — you'll get a link to share manually. Add one under
 							Settings → Notifications to send invites automatically.
@@ -225,7 +225,7 @@ export const AddInvitation = () => {
 											<Select
 												aria-label="Invite method"
 												onValueChange={field.onChange}
-												defaultValue={field.value}
+												value={field.value}
 											>
 												<Select.Option value="invitation">
 													Invitation Link
@@ -275,7 +275,7 @@ export const AddInvitation = () => {
 											<Select
 												aria-label="Invitation role"
 												onValueChange={field.onChange}
-												defaultValue={field.value}
+												value={field.value}
 											>
 												<Select.Option value="member">Member</Select.Option>
 												<Select.Option value="admin">Admin</Select.Option>
@@ -302,7 +302,7 @@ export const AddInvitation = () => {
 									name="password"
 									render={({ field }) => {
 										return (
-											<FormItem>
+											<FormItem className="content-start">
 												<FormLabel>Password</FormLabel>
 												<FormControl>
 													<Input
@@ -325,7 +325,7 @@ export const AddInvitation = () => {
 									name="confirmPassword"
 									render={({ field }) => {
 										return (
-											<FormItem>
+											<FormItem className="content-start">
 												<FormLabel>Confirm Password</FormLabel>
 												<FormControl>
 													<Input
