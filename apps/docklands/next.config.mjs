@@ -32,7 +32,11 @@ const contentSecurityPolicy = [
 	"connect-src 'self' ws: wss:",
 	"frame-ancestors 'none'",
 	"base-uri 'self'",
-	"form-action 'self'",
+	// `github.com` is required for the GitHub App manifest flow, which POSTs a
+	// form to https://github.com/settings/apps/new to create the app. GitLab and
+	// Gitea use anchor/window.open navigation or same-origin server redirects, so
+	// they don't need a form-action allowance here.
+	"form-action 'self' https://github.com",
 	"object-src 'none'",
 ].join("; ");
 
