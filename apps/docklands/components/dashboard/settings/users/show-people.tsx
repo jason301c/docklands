@@ -198,12 +198,10 @@ export const ShowPeople = ({
 						<Table.Header>
 							<Table.Row>
 								<Table.Head className="min-w-[16rem]">Email</Table.Head>
-								<Table.Head className="text-center">Role</Table.Head>
-								<Table.Head className="text-center">Status</Table.Head>
-								<Table.Head className="text-center">
-									Joined / Expires
-								</Table.Head>
-								<Table.Head className="text-right">Actions</Table.Head>
+								<Table.Head>Role</Table.Head>
+								<Table.Head>Status</Table.Head>
+								<Table.Head>Joined / Expires</Table.Head>
+								<Table.Head>Actions</Table.Head>
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
@@ -216,20 +214,25 @@ export const ShowPeople = ({
 												<span className="ml-1 text-kumo-subtle">(You)</span>
 											)}
 									</Table.Cell>
-									<Table.Cell className="text-center">
-										<Badge variant={roleBadgeVariant}>{row.role}</Badge>
+									<Table.Cell>
+										<Badge variant={roleBadgeVariant} className="capitalize">
+											{row.role}
+										</Badge>
 									</Table.Cell>
-									<Table.Cell className="text-center">
-										<Badge variant={getStatusBadgeVariant(row.status)}>
+									<Table.Cell>
+										<Badge
+											variant={getStatusBadgeVariant(row.status)}
+											className="capitalize"
+										>
 											{row.status}
 										</Badge>
 									</Table.Cell>
-									<Table.Cell className="text-center">
+									<Table.Cell>
 										<span className="text-sm text-kumo-subtle">
 											{format(row.date, "PPpp")}
 										</span>
 									</Table.Cell>
-									<Table.Cell className="flex justify-end text-right">
+									<Table.Cell>
 										{row.kind === "member" ? (
 											<MemberActions
 												member={row.member}
@@ -299,7 +302,11 @@ const MemberActions = ({
 
 	if (!hasAnyAction) {
 		return (
-			<Button variant="ghost" className="h-8 w-8 p-0" disabled>
+			<Button
+				variant="ghost"
+				className="inline-flex h-8 w-8 items-center justify-center p-0"
+				disabled
+			>
 				<span className="sr-only">No actions available</span>
 				<MoreHorizontal className="h-4 w-4 text-kumo-subtle" />
 			</Button>
@@ -310,7 +317,10 @@ const MemberActions = ({
 		<DropdownMenu>
 			<DropdownMenu.Trigger
 				render={
-					<Button variant="ghost" className="h-8 w-8 p-0">
+					<Button
+						variant="ghost"
+						className="inline-flex h-8 w-8 items-center justify-center p-0"
+					>
 						<span className="sr-only">
 							Open actions for {member.user.email}
 						</span>
@@ -386,7 +396,7 @@ const InvitationActions = ({
 				render={
 					<Button
 						variant="ghost"
-						className="h-8 w-8 p-0"
+						className="inline-flex h-8 w-8 items-center justify-center p-0"
 						aria-label={`Open actions for invitation to ${invitation.email}`}
 					>
 						<span className="sr-only">
@@ -401,19 +411,15 @@ const InvitationActions = ({
 					<DropdownMenu.Label>Actions</DropdownMenu.Label>
 				</DropdownMenu.Group>
 
-				{canUsePendingActions && (
-					<DropdownMenu.Item
-						className="w-full cursor-pointer"
-						onSelect={() => {
-							copy(
-								`${window.location.origin}/invitation?token=${invitation.id}`,
-							);
-							toast.success("Invitation copied to clipboard");
-						}}
-					>
-						Copy Invitation
-					</DropdownMenu.Item>
-				)}
+				<DropdownMenu.Item
+					className="w-full cursor-pointer"
+					onSelect={() => {
+						copy(`${window.location.origin}/invitation?token=${invitation.id}`);
+						toast.success("Invitation copied to clipboard");
+					}}
+				>
+					Copy Invitation
+				</DropdownMenu.Item>
 
 				{canUsePendingActions && (
 					<DropdownMenu.Item

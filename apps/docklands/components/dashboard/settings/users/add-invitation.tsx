@@ -172,7 +172,7 @@ export const AddInvitation = () => {
 			<Dialog.Trigger
 				className=""
 				render={
-					<Button>
+					<Button variant="primary">
 						<PlusIcon className="h-4 w-4" /> Add User
 					</Button>
 				}
@@ -188,24 +188,12 @@ export const AddInvitation = () => {
 				</Dialog.Header>
 				{error && <AlertBlock type="error">{error}</AlertBlock>}
 
-				{inviteLink ? (
-					<div className="flex flex-col gap-2">
-						<AlertBlock type="success">
-							Invitation created. This instance has no email provider, so share
-							this link with the invitee manually — it expires with the
-							invitation.
-						</AlertBlock>
-						<ClipboardText text={inviteLink} />
-					</div>
-				) : (
-					mode === "invitation" &&
-					emailConfigured === false && (
-						<AlertBlock type="warning" className="mb-4">
-							No email provider is configured, so the invitation can't be
-							emailed — you'll get a link to share manually. Add one under
-							Settings → Notifications to send invites automatically.
-						</AlertBlock>
-					)
+				{!inviteLink && mode === "invitation" && emailConfigured === false && (
+					<AlertBlock type="warning" className="mb-4">
+						No email provider is configured, so the invitation can't be emailed
+						— you'll get a link to share manually. Add one under Settings →
+						Notifications to send invites automatically.
+					</AlertBlock>
 				)}
 
 				<Form {...form}>
@@ -344,6 +332,7 @@ export const AddInvitation = () => {
 
 						<Dialog.Footer className="w-full justify-start">
 							<Button
+								variant="primary"
 								loading={form.formState.isSubmitting}
 								form="hook-form-add-invitation"
 								type="submit"
@@ -353,6 +342,17 @@ export const AddInvitation = () => {
 						</Dialog.Footer>
 					</form>
 				</Form>
+
+				{inviteLink && (
+					<div className="mt-6 flex flex-col gap-2 border-kumo-line border-t pt-6">
+						<AlertBlock type="success">
+							Invitation created. This instance has no email provider, so share
+							this link with the invitee manually — it expires with the
+							invitation.
+						</AlertBlock>
+						<ClipboardText text={inviteLink} className="font-sans" />
+					</div>
+				)}
 			</Dialog>
 		</Dialog.Root>
 	);
