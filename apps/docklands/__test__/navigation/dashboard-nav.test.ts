@@ -84,13 +84,7 @@ describe("dashboard nav", () => {
 				"Notifications",
 			],
 			domains: ["Cloudflare Tunnels", "Ingress", "Certificates"],
-			monitoring: [
-				"Container Runtime",
-				"Cluster Runtime",
-				"Host Metrics",
-				"Ingress Requests",
-				"Ingress Files",
-			],
+			monitoring: ["Runtime", "Ingress"],
 			teamAccess: ["Users", "Roles", "Audit Log"],
 			connections: ["Git Providers", "Image Registry"],
 			infrastructure: [
@@ -116,8 +110,7 @@ describe("dashboard nav", () => {
 
 		// Tags is demoted to the command palette, not the sidebar.
 		expect(titles).not.toContain("Tags");
-		// Old flat-list grouping label is gone.
-		expect(titles).not.toContain("Runtime");
+		// Old flat-list grouping labels are gone.
 		expect(titles).not.toContain("Storage");
 		expect(titles).not.toContain("Networking");
 		expect(titles).not.toContain("Containers");
@@ -160,17 +153,13 @@ describe("dashboard nav", () => {
 		});
 
 		expect(
-			findActiveNavItem(
-				[...menu.home, ...menu.settings],
-				"/dashboard/host-metrics",
-			)?.title,
-		).toBe("Host Metrics");
+			findActiveNavItem([...menu.home, ...menu.settings], "/dashboard/runtime")
+				?.title,
+		).toBe("Runtime");
 		expect(
-			findActiveNavItem(
-				[...menu.home, ...menu.settings],
-				"/dashboard/container-runtime",
-			)?.title,
-		).toBe("Container Runtime");
+			findActiveNavItem([...menu.home, ...menu.settings], "/dashboard/ingress")
+				?.title,
+		).toBe("Ingress");
 		expect(
 			findActiveNavItem(
 				[...menu.home, ...menu.settings],

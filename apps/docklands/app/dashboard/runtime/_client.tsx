@@ -6,8 +6,9 @@ import { usePermissions } from "@/client/hooks/use-permissions";
 import ClusterMonitorCard from "@/components/dashboard/cluster-runtime/monitoring-card";
 import { ShowContainers } from "@/components/dashboard/container-runtime/show/show-containers";
 import { ContainerMonitoring } from "@/components/dashboard/metrics/container/show-container-monitoring";
+import { PageHeader } from "@/components/shared/page-header";
+import { PageSection } from "@/components/shared/page-section";
 import { RuntimeWorkerFilter } from "@/components/shared/runtime-worker-filter";
-import { SectionCard } from "@/components/shared/section-card";
 
 type RuntimeTab = "containers" | "cluster" | "metrics";
 
@@ -28,9 +29,12 @@ const RuntimeClient = () => {
 		: (tabs[0]?.value ?? "containers");
 
 	return (
-		<div className="space-y-4 pb-10">
+		<PageSection>
+			<PageHeader title="Runtime" />
+
 			{tabs.length > 1 && (
 				<Tabs
+					className="w-fit self-start"
 					value={currentTab}
 					onValueChange={(value) =>
 						value !== null && setActiveTab(value as RuntimeTab)
@@ -56,11 +60,9 @@ const RuntimeClient = () => {
 			)}
 
 			{currentTab === "metrics" && (
-				<SectionCard title="Host Metrics">
-					<ContainerMonitoring appName="docklands" />
-				</SectionCard>
+				<ContainerMonitoring appName="docklands" hideHeader />
 			)}
-		</div>
+		</PageSection>
 	);
 };
 

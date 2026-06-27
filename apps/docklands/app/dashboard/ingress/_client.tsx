@@ -5,6 +5,8 @@ import { useState } from "react";
 import { usePermissions } from "@/client/hooks/use-permissions";
 import { ShowIngressFiles } from "@/components/dashboard/proxy-files/show-ingress-files";
 import { ShowRequests } from "@/components/dashboard/requests/show-requests";
+import { PageHeader } from "@/components/shared/page-header";
+import { PageSection } from "@/components/shared/page-section";
 import { RuntimeWorkerFilter } from "@/components/shared/runtime-worker-filter";
 
 type IngressTab = "requests" | "files";
@@ -25,9 +27,12 @@ const IngressClient = () => {
 		: (tabs[0]?.value ?? "requests");
 
 	return (
-		<div className="space-y-4 pb-10">
+		<PageSection>
+			<PageHeader title="Ingress" />
+
 			{tabs.length > 1 && (
 				<Tabs
+					className="w-fit self-start"
 					value={currentTab}
 					onValueChange={(value) =>
 						value !== null && setActiveTab(value as IngressTab)
@@ -45,7 +50,7 @@ const IngressClient = () => {
 					)}
 				</RuntimeWorkerFilter>
 			)}
-		</div>
+		</PageSection>
 	);
 };
 

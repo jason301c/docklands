@@ -67,9 +67,6 @@ describe("workspace visible product copy", () => {
 		const sshKeys = workspaceSource(
 			"components/dashboard/settings/ssh-keys/handle-ssh-keys.tsx",
 		);
-		const clusterEmptyState = workspaceSource(
-			"components/dashboard/cluster-runtime/containers/empty-states.tsx",
-		);
 
 		for (const form of serviceForms) {
 			expect(form).toContain("Description for this service...");
@@ -82,7 +79,6 @@ describe("workspace visible product copy", () => {
 			permissions,
 			runtimeWorker,
 			sshKeys,
-			clusterEmptyState,
 		]) {
 			expect(source).not.toContain("organize your projects");
 			expect(source).not.toContain("from all projects");

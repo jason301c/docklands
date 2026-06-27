@@ -8,7 +8,6 @@ import {
 import React from "react";
 import { api } from "@/client/api/trpc";
 import { AlertBlock } from "@/components/shared/alert-block";
-import { SectionCard } from "@/components/shared/section-card";
 import { Tree } from "./file-tree";
 import { ShowIngressFile } from "./show-ingress-file";
 
@@ -33,7 +32,7 @@ export const ShowIngressFiles = ({ runtimeWorkerId }: Props) => {
 	);
 
 	return (
-		<SectionCard title="Ingress Files" contentClassName="space-y-2">
+		<div className="space-y-4">
 			<AlertBlock type="warning">
 				Invalid ingress configuration can break access to your applications.
 			</AlertBlock>
@@ -107,6 +106,6 @@ export const ShowIngressFiles = ({ runtimeWorkerId }: Props) => {
 					)}
 				</div>
 			</div>
-		</SectionCard>
+		</div>
 	);
 };

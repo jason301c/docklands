@@ -46,6 +46,8 @@ const defaultData = {
 interface Props {
 	appName: string;
 	appType?: "application" | "stack" | "docker-compose";
+	/** Hide the built-in "Metrics" heading when the host page already owns one. */
+	hideHeader?: boolean;
 }
 export interface DockerStats {
 	cpu: {
@@ -120,6 +122,7 @@ export const convertMemoryToBytes = (
 export const ContainerMonitoring = ({
 	appName,
 	appType = "application",
+	hideHeader = false,
 }: Props) => {
 	const { data } = api.application.readAppMonitoring.useQuery(
 		{ appName },
@@ -204,18 +207,20 @@ export const ContainerMonitoring = ({
 	}, [appName]);
 
 	return (
-		<div className="rounded-xl bg-kumo-canvas flex flex-col gap-4">
-			<header className="flex items-center justify-between">
-				<div className="space-y-1">
-					<h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
-					<p className="text-sm text-kumo-subtle">
-						Watch runtime usage for this service
-					</p>
-				</div>
-			</header>
+		<div className="flex flex-col gap-4">
+			{!hideHeader && (
+				<header className="flex items-center justify-between">
+					<div className="space-y-1">
+						<h1 className="text-2xl font-semibold tracking-tight">Metrics</h1>
+						<p className="text-sm text-kumo-subtle">
+							Watch runtime usage for this service
+						</p>
+					</div>
+				</header>
+			)}
 
 			<div className="grid gap-6 lg:grid-cols-2">
-				<LayerCard className="bg-kumo-canvas">
+				<LayerCard className="bg-kumo-canvas p-4">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<h3 className="text-sm font-medium">CPU Usage</h3>
 					</div>
@@ -251,7 +256,7 @@ export const ContainerMonitoring = ({
 						</div>
 					</div>
 				</LayerCard>
-				<LayerCard className="bg-kumo-canvas">
+				<LayerCard className="bg-kumo-canvas p-4">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<h3 className="text-sm font-medium">Memory Usage</h3>
 					</div>
@@ -305,7 +310,7 @@ export const ContainerMonitoring = ({
 					</div>
 				</LayerCard>
 				{appName === "docklands" && (
-					<LayerCard className="bg-kumo-canvas">
+					<LayerCard className="bg-kumo-canvas p-4">
 						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 							<h3 className="text-sm font-medium">Disk Space</h3>
 						</div>
@@ -342,7 +347,7 @@ export const ContainerMonitoring = ({
 					</LayerCard>
 				)}
 				{appName === "docklands" && (
-					<LayerCard className="bg-kumo-canvas">
+					<LayerCard className="bg-kumo-canvas p-4">
 						<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 							<h3 className="text-sm font-medium">Container Disk Usage</h3>
 						</div>
@@ -352,7 +357,7 @@ export const ContainerMonitoring = ({
 					</LayerCard>
 				)}
 
-				<LayerCard className="bg-kumo-canvas">
+				<LayerCard className="bg-kumo-canvas p-4">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<h3 className="text-sm font-medium">Block I/O</h3>
 					</div>
@@ -387,7 +392,7 @@ export const ContainerMonitoring = ({
 						</div>
 					</div>
 				</LayerCard>
-				<LayerCard className="bg-kumo-canvas">
+				<LayerCard className="bg-kumo-canvas p-4">
 					<div className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<h3 className="text-sm font-medium">Network I/O</h3>
 					</div>

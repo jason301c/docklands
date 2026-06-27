@@ -18,7 +18,6 @@ import { api, type RouterOutputs } from "@/client/api/trpc";
 import { createClientLogger } from "@/client/lib/logger";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { DialogAction } from "@/components/shared/dialog-action";
-import { SectionCard } from "@/components/shared/section-card";
 import { toast } from "@/components/shared/toast";
 import { RequestDistributionChart } from "./request-distribution-chart";
 import { RequestsTable } from "./requests-table";
@@ -80,11 +79,7 @@ export const ShowRequests = () => {
 	}, [logCleanupStatus]);
 
 	return (
-		<SectionCard
-			title="Requests"
-			className="mx-auto max-w-8xl"
-			contentClassName="space-y-2"
-		>
+		<div className="space-y-3">
 			{shouldShowWarning && (
 				<AlertBlock type="warning">
 					When you activate request logs, reload the ingress runtime to apply
@@ -238,6 +233,6 @@ export const ShowRequests = () => {
 					</div>
 				</div>
 			)}
-		</SectionCard>
+		</div>
 	);
 };

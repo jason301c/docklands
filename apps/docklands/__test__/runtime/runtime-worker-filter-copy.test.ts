@@ -35,9 +35,8 @@ describe("runtime worker filter copy", () => {
 
 	it("keeps runtime pages on the shared runtime worker filter", () => {
 		const pages = [
-			"app/dashboard/cluster-runtime/_client.tsx",
-			"app/dashboard/container-runtime/_client.tsx",
-			"app/dashboard/proxy-files/_client.tsx",
+			"app/dashboard/runtime/_client.tsx",
+			"app/dashboard/ingress/_client.tsx",
 			"app/dashboard/settings/cluster-nodes/_client.tsx",
 		];
 

@@ -8,7 +8,6 @@ import { ShowContainerMounts } from "@/components/dashboard/shared/container/sho
 import { ShowContainerNetworks } from "@/components/dashboard/shared/container/show-container-networks";
 import { DockerTerminalModal } from "@/components/dashboard/shared/terminal/docker-terminal-modal";
 import { DropdownMenu } from "@/components/shared/dropdown";
-import { SectionCard } from "@/components/shared/section-card";
 import {
 	EmptyState,
 	ErrorState,
@@ -35,26 +34,20 @@ export const ShowContainers = ({ runtimeWorkerId }: Props) => {
 
 	if (containersQuery.isError) {
 		return (
-			<SectionCard title="Runtime Containers">
-				<ErrorState
-					error={containersQuery.error}
-					title="Could not load containers"
-					onRetry={() => containersQuery.refetch()}
-				/>
-			</SectionCard>
+			<ErrorState
+				error={containersQuery.error}
+				title="Could not load containers"
+				onRetry={() => containersQuery.refetch()}
+			/>
 		);
 	}
 
 	if (containersQuery.isPending) {
-		return (
-			<SectionCard title="Runtime Containers">
-				<LoadingState label="Loading containers..." />
-			</SectionCard>
-		);
+		return <LoadingState label="Loading containers..." />;
 	}
 
 	return (
-		<SectionCard title="Runtime Containers">
+		<>
 			{containers.length === 0 ? (
 				<EmptyState
 					icon={Boxes}
@@ -106,7 +99,7 @@ export const ShowContainers = ({ runtimeWorkerId }: Props) => {
 					</Table>
 				</div>
 			)}
-		</SectionCard>
+		</>
 	);
 };
 

@@ -5,7 +5,6 @@ import { Tooltip, TooltipProvider } from "@cloudflare/kumo/components/tooltip";
 import { Activity, Server, Settings, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/client/api/trpc";
-import { SectionCard } from "@/components/shared/section-card";
 import { QueryState } from "@/components/shared/states";
 import { NodeCard } from "./details/details-card";
 
@@ -17,32 +16,32 @@ interface StatCardProps {
 	label: string;
 	value: string;
 	icon: typeof Server;
-	hint?: string;
 	tooltip?: React.ReactNode;
 }
 
-function StatCard({ label, value, icon: Icon, hint, tooltip }: StatCardProps) {
-	const body = (
-		<LayerCard className="bg-kumo-base">
+function StatCard({ label, value, icon: Icon, tooltip }: StatCardProps) {
+	const valueNode = (
+		<span className="font-display font-semibold text-2xl tracking-tight">
+			{value}
+		</span>
+	);
+
+	return (
+		<LayerCard className="bg-kumo-elevated p-4">
 			<div className="flex items-center justify-between gap-2">
 				<span className="text-sm font-medium text-kumo-subtle">{label}</span>
 				<Icon className="size-4 text-kumo-subtle" />
 			</div>
 			<div className="mt-2 flex items-baseline gap-2">
-				<span className="font-display font-semibold text-2xl tracking-tight">
-					{value}
-				</span>
-				{hint ? <span className="text-xs text-kumo-subtle">{hint}</span> : null}
+				{tooltip ? (
+					<TooltipProvider>
+						<Tooltip content={tooltip}>{valueNode}</Tooltip>
+					</TooltipProvider>
+				) : (
+					valueNode
+				)}
 			</div>
 		</LayerCard>
-	);
-
-	if (!tooltip) return body;
-
-	return (
-		<TooltipProvider>
-			<Tooltip content={tooltip}>{body}</Tooltip>
-		</TooltipProvider>
 	);
 }
 
@@ -51,10 +50,9 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 	const nodesQuery = api.swarm.getNodes.useQuery({ runtimeWorkerId });
 
 	return (
-		<SectionCard
-			title="Cluster Runtime"
-			actions={
-				!runtimeWorkerId ? (
+		<div className="flex flex-col gap-6">
+			{!runtimeWorkerId && (
+				<div className="flex justify-end">
 					<Button
 						variant="secondary"
 						onClick={() => router.push("/dashboard/settings/cluster-nodes")}
@@ -62,9 +60,8 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 						<Settings className="mr-2 size-4" />
 						Manage Cluster Nodes
 					</Button>
-				) : undefined
-			}
-		>
+				</div>
+			)}
 			<QueryState
 				query={nodesQuery}
 				loadingLabel="Loading cluster…"
@@ -89,10 +86,6 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 
 					return (
 						<div className="flex flex-col gap-6">
-							<p className="text-sm text-kumo-subtle">
-								Runtime workers and node health across the cluster.
-							</p>
-
 							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 								<StatCard
 									label="Total Workers"
@@ -130,6 +123,6 @@ export default function ClusterMonitorCard({ runtimeWorkerId }: Props) {
 					);
 				}}
 			</QueryState>
-		</SectionCard>
+		</div>
 	);
 }

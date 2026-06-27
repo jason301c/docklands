@@ -55,7 +55,7 @@ export function NodeCard({ node, runtimeWorkerId }: Props) {
 		: "—";
 
 	return (
-		<LayerCard className="w-full bg-kumo-base">
+		<LayerCard className="w-full bg-kumo-elevated p-5">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex items-center gap-2.5">
 					<span

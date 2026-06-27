@@ -211,6 +211,25 @@ like `@/server/...`, `@/components/...`, `@/shared/...`, `@/client/...`.
   `text-foreground`, and `border-input` are not defined here. Dark mode is
   `[data-mode="dark"]`. Read form values from React state, refs, or RHF — never
   via `document.querySelector` by placeholder text.
+- **Kumo `LayerCard` has no built-in padding.** A plain `<LayerCard>` renders
+  only `rounded-lg bg-kumo-base shadow-xs ring ring-kumo-line` — its content sits
+  flush against the edge. Pass padding yourself (`className="p-4"`/`p-5"`, per
+  Kumo's own docs) or use the `LayerCard.Primary`/`LayerCard.Secondary` compound
+  parts (which carry their own `p-4`). For contrast when a card sits on a
+  `bg-kumo-base` panel, give the card `bg-kumo-elevated`. Inner panels in the
+  recently-polished settings forms use the equivalent plain
+  `rounded-lg border border-kumo-line p-4` div — match whichever the surrounding
+  surface already uses.
+- **A tab/page owns the single heading; its bodies are bare.** A consolidated
+  surface (e.g. Monitoring → `Runtime`/`Ingress`) renders **one** `PageHeader`
+  whose title equals the sidebar label, a width-constrained `Tabs`
+  (`className="w-fit self-start"` — `Tabs` stretches full width inside a
+  `flex-col` parent otherwise), and the active body. The per-tab body components
+  must not re-wrap themselves in their own `SectionCard`/title, or the tab bar
+  reads as decorative. When a body lives in both a tab and elsewhere, gate its
+  heading behind a prop (e.g. `ContainerMonitoring`'s `hideHeader`) rather than
+  deleting it. Note: a Kumo `Tooltip` trigger is inline, so wrapping a whole
+  grid cell in one collapses it off its track — wrap only the inner value.
 
 The **workspace canvas** is the centerpiece: `components/dashboard/workspace/`
 (`environment-canvas.tsx`, `workspace-overview.tsx`, plus `actions/` and
@@ -418,8 +437,9 @@ previews, topology, and connection mapping.
 - Do not add legacy dashboard aliases or redirect-only compatibility routes.
   Keep `next.config.mjs` free of legacy redirects.
 - Canonical product routes for navigation and new links:
-  `/dashboard/setup`, `/dashboard/workspace`, `/dashboard/deployments`, `/dashboard/container-runtime`,
-  `/dashboard/cluster-runtime`, `/dashboard/proxy-files`, `/dashboard/host-metrics`,
+  `/dashboard/setup`, `/dashboard/workspace`, `/dashboard/deployments`,
+  `/dashboard/runtime` (Monitoring → Runtime: Containers · Cluster · Host Metrics
+  tabs), `/dashboard/ingress` (Monitoring → Ingress: Requests · Files tabs),
   and the settings routes
   `/dashboard/settings/{ingress,cloudflare,runtime,storage,build-workers,image-registry,cluster-nodes,roles,git-providers,ssh-keys,certificates,tags,users,notifications,profile}`.
   `/dashboard/automations` is the **planned** route for scheduled tasks; the page
