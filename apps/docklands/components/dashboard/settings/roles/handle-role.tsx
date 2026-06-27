@@ -1,18 +1,383 @@
 import { Button } from "@cloudflare/kumo/components/button";
 import { Checkbox } from "@cloudflare/kumo/components/checkbox";
 import { Input } from "@cloudflare/kumo/components/input";
-import { PenBoxIcon, PlusIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Table } from "@cloudflare/kumo/components/table";
+import {
+	Loader2Icon,
+	PenBoxIcon,
+	PlusIcon,
+	RotateCcwIcon,
+	SearchIcon,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "@/client/api/trpc";
-import { createClientLogger } from "@/client/lib/logger";
+import { crudMutationOptions } from "@/client/lib/crud-mutation";
 import { AlertBlock } from "@/components/shared/alert-block";
 import { Dialog } from "@/components/shared/dialog";
-import { toast } from "@/components/shared/toast";
+import { cn } from "@/shared/utils";
 
-const logger = createClientLogger("roles");
+type PermissionMap = Record<string, string[]>;
+type Statements = Record<string, readonly string[]>;
+
+type PermissionGroupConfig = {
+	id: string;
+	label: string;
+	description: string;
+	resources: readonly string[];
+};
+
+type PermissionResource = {
+	groupId: string;
+	groupLabel: string;
+	resource: string;
+	actions: readonly string[];
+};
+
+type PermissionGroup = Omit<PermissionGroupConfig, "resources"> & {
+	resources: PermissionResource[];
+};
+
+type PermissionTemplate = {
+	id: string;
+	label: string;
+	description: string;
+	permissions: PermissionMap;
+};
+
+const ACTION_COLUMNS = [
+	"read",
+	"create",
+	"update",
+	"write",
+	"delete",
+	"cancel",
+	"restore",
+] as const;
+
+const PERMISSION_GROUPS = [
+	{
+		id: "services",
+		label: "Services",
+		description:
+			"Workspaces, environments, deployed services, logs, variables, domains, and backups.",
+		resources: [
+			"workspace",
+			"environment",
+			"service",
+			"deployment",
+			"logs",
+			"monitoring",
+			"envVars",
+			"workspaceEnvVars",
+			"environmentEnvVars",
+			"domain",
+			"volume",
+			"backup",
+			"volumeBackup",
+			"tag",
+		],
+	},
+	{
+		id: "team",
+		label: "Team",
+		description: "Members, invitations, teams, and custom access rules.",
+		resources: ["member", "invitation", "team", "ac"],
+	},
+	{
+		id: "connections",
+		label: "Connections",
+		description:
+			"Git providers, image registries, storage providers, certificates, SSH keys, and notifications.",
+		resources: [
+			"gitProviders",
+			"registry",
+			"destination",
+			"certificate",
+			"sshKeys",
+			"notification",
+			"api",
+		],
+	},
+	{
+		id: "infrastructure",
+		label: "Infrastructure",
+		description:
+			"Container runtime, runtime workers, ingress files, Cloudflare tunnels, and audit logs.",
+		resources: [
+			"docker",
+			"runtimeWorker",
+			"traefikFiles",
+			"tunnel",
+			"auditLog",
+			"organization",
+		],
+	},
+] satisfies readonly PermissionGroupConfig[];
+
+const DEFAULT_PERMISSION_GROUP_ID = "services";
+
+const PERMISSION_TEMPLATES: readonly PermissionTemplate[] = [
+	{
+		id: "viewer",
+		label: "View only",
+		description: "Inspect existing services, deployments, logs, and metrics.",
+		permissions: {
+			environment: ["read"],
+			service: ["read"],
+			deployment: ["read"],
+			logs: ["read"],
+			monitoring: ["read"],
+			envVars: ["read"],
+			domain: ["read"],
+			volume: ["read"],
+			backup: ["read"],
+			volumeBackup: ["read"],
+			tag: ["read"],
+		},
+	},
+	{
+		id: "deployer",
+		label: "Deployer",
+		description: "Deploy existing services and inspect their logs and health.",
+		permissions: {
+			environment: ["read"],
+			service: ["read"],
+			deployment: ["read", "create", "cancel"],
+			logs: ["read"],
+			monitoring: ["read"],
+			envVars: ["read"],
+			domain: ["read"],
+			volume: ["read"],
+			backup: ["read"],
+			volumeBackup: ["read"],
+		},
+	},
+	{
+		id: "service-manager",
+		label: "Service manager",
+		description:
+			"Create services, manage service settings, domains, variables, and backups.",
+		permissions: {
+			workspace: ["create", "delete"],
+			environment: ["read", "create", "delete"],
+			service: ["read", "create", "delete"],
+			deployment: ["read", "create", "cancel"],
+			logs: ["read"],
+			monitoring: ["read"],
+			envVars: ["read", "write"],
+			workspaceEnvVars: ["read", "write"],
+			environmentEnvVars: ["read", "write"],
+			domain: ["read", "create", "delete"],
+			volume: ["read", "create", "delete"],
+			backup: ["read", "create", "update", "delete", "restore"],
+			volumeBackup: ["read", "create", "update", "delete", "restore"],
+			tag: ["read", "create", "update", "delete"],
+		},
+	},
+	{
+		id: "team-manager",
+		label: "Team manager",
+		description: "Invite members and manage roles without runtime access.",
+		permissions: {
+			member: ["read", "create", "update"],
+			invitation: ["create", "cancel"],
+			ac: ["read"],
+		},
+	},
+];
+
+const RESOURCE_LABELS: Record<string, string> = {
+	ac: "Access control",
+	api: "API keys",
+	auditLog: "Audit log",
+	backup: "Database backups",
+	certificate: "Certificates",
+	deployment: "Deployments",
+	destination: "Storage providers",
+	docker: "Container runtime",
+	domain: "Domains",
+	environment: "Environments",
+	environmentEnvVars: "Environment variables",
+	envVars: "Service variables",
+	gitProviders: "Git providers",
+	invitation: "Invitations",
+	logs: "Logs",
+	member: "Members",
+	monitoring: "Monitoring",
+	notification: "Notifications",
+	organization: "Organization",
+	registry: "Image registry",
+	runtimeWorker: "Runtime workers",
+	service: "Services",
+	sshKeys: "SSH keys",
+	tag: "Tags",
+	team: "Teams",
+	traefikFiles: "Ingress files",
+	tunnel: "Cloudflare tunnels",
+	volume: "Volumes",
+	volumeBackup: "Volume backups",
+	workspace: "Workspaces",
+	workspaceEnvVars: "Workspace variables",
+};
+
+const ACTION_LABELS: Record<string, string> = {
+	cancel: "Cancel",
+	create: "Create",
+	delete: "Delete",
+	read: "Read",
+	restore: "Restore",
+	update: "Update",
+	write: "Write",
+};
+
+const formatResourceLabel = (resource: string) =>
+	RESOURCE_LABELS[resource] ??
+	resource
+		.replace(/([a-z])([A-Z])/g, "$1 $2")
+		.replace(/^./, (char) => char.toUpperCase());
+
+const formatActionLabel = (action: string) =>
+	ACTION_LABELS[action] ?? action.replace(/^./, (char) => char.toUpperCase());
+
+const permissionCount = (permissions: PermissionMap) =>
+	Object.values(permissions).reduce(
+		(total, actions) => total + actions.length,
+		0,
+	);
+
+const permissionCountForResources = (
+	resources: readonly PermissionResource[],
+	permissions: PermissionMap,
+) =>
+	resources.reduce(
+		(total, item) => total + (permissions[item.resource]?.length ?? 0),
+		0,
+	);
+
+const statementCount = (statements: Statements | undefined) =>
+	statements
+		? Object.values(statements).reduce(
+				(total, actions) => total + actions.length,
+				0,
+			)
+		: 0;
+
+const resourceMatchesFilter = (item: PermissionResource, filter: string) => {
+	if (!filter) return true;
+	const searchable = [
+		item.groupLabel,
+		item.resource,
+		formatResourceLabel(item.resource),
+		...item.actions,
+		...item.actions.map(formatActionLabel),
+	]
+		.join(" ")
+		.toLowerCase();
+	return searchable.includes(filter);
+};
+
+const groupStatements = (statements: Statements): PermissionGroup[] => {
+	const knownResources = new Set<string>();
+	const groups = PERMISSION_GROUPS.map((group) => {
+		const resources = group.resources.flatMap((resource) => {
+			knownResources.add(resource);
+			const actions = statements[resource];
+			return actions
+				? [
+						{
+							groupId: group.id,
+							groupLabel: group.label,
+							resource,
+							actions,
+						},
+					]
+				: [];
+		});
+		return { ...group, resources };
+	}).filter((group) => group.resources.length > 0);
+
+	const otherResources = Object.entries(statements)
+		.filter(([resource]) => !knownResources.has(resource))
+		.map(([resource, actions]) => ({
+			groupId: "other",
+			groupLabel: "Other",
+			resource,
+			actions,
+		}));
+
+	if (otherResources.length > 0) {
+		groups.push({
+			id: "other",
+			label: "Other",
+			description: "Additional capabilities exposed by access control.",
+			resources: otherResources,
+		});
+	}
+
+	return groups;
+};
+
+const normalizePermissions = (
+	permissions: PermissionMap,
+	statements: Statements | undefined,
+) => {
+	if (!statements) return permissions;
+	const normalized: PermissionMap = {};
+	for (const [resource, actions] of Object.entries(permissions)) {
+		const allowed = statements[resource];
+		if (!allowed) continue;
+		const selected = allowed.filter((action) => actions.includes(action));
+		if (selected.length > 0) {
+			normalized[resource] = selected;
+		}
+	}
+	return normalized;
+};
+
+function PermissionCategoryTabs({
+	groups,
+	activeGroupId,
+	permissions,
+	onSelect,
+}: {
+	groups: readonly PermissionGroup[];
+	activeGroupId: string;
+	permissions: PermissionMap;
+	onSelect: (groupId: string) => void;
+}) {
+	return (
+		<div className="flex gap-1 overflow-x-auto rounded-lg border border-kumo-line bg-kumo-elevated p-1">
+			{groups.map((group) => {
+				const active = group.id === activeGroupId;
+				const selected = permissionCountForResources(
+					group.resources,
+					permissions,
+				);
+				return (
+					<button
+						key={group.id}
+						type="button"
+						aria-pressed={active}
+						onClick={() => onSelect(group.id)}
+						className={cn(
+							"shrink-0 rounded-md px-3 py-2 text-left text-sm text-kumo-subtle transition-colors hover:bg-kumo-canvas hover:text-kumo-default",
+							active &&
+								"bg-kumo-canvas text-kumo-default shadow-sm ring-1 ring-kumo-line",
+						)}
+					>
+						<span className="font-medium">{group.label}</span>
+						<span className="ml-2 text-xs tabular-nums text-kumo-subtle">
+							{selected}
+						</span>
+					</button>
+				);
+			})}
+		</div>
+	);
+}
 
 interface Props {
-	role?: { role: string; permissions: Record<string, string[]> };
+	role?: { role: string; permissions: PermissionMap };
 }
 
 export const HandleRole = ({ role }: Props) => {
@@ -20,25 +385,76 @@ export const HandleRole = ({ role }: Props) => {
 	const utils = api.useUtils();
 	const [isOpen, setIsOpen] = useState(false);
 	const [name, setName] = useState(role?.role ?? "");
-	const [perms, setPerms] = useState<Record<string, string[]>>(
-		role?.permissions ?? {},
+	const [perms, setPerms] = useState<PermissionMap>(role?.permissions ?? {});
+	const [filter, setFilter] = useState("");
+	const [activeGroupId, setActiveGroupId] = useState(
+		DEFAULT_PERMISSION_GROUP_ID,
 	);
 
-	const { data: statements } = api.customRole.getStatements.useQuery(
-		undefined,
-		{
-			enabled: isOpen,
-		},
+	const statementsQuery = api.customRole.getStatements.useQuery(undefined, {
+		enabled: isOpen,
+	});
+	const statements = statementsQuery.data as Statements | undefined;
+
+	const createMutation = api.customRole.create.useMutation(
+		crudMutationOptions({
+			successMessage: "Role created",
+			errorMessage: "Error creating role",
+			loggerScope: "roles",
+			invalidate: () => utils.customRole.all.invalidate(),
+			onSuccess: () => setIsOpen(false),
+			toastError: false,
+		}),
 	);
 
-	const createMutation = api.customRole.create.useMutation();
-	const updateMutation = api.customRole.update.useMutation();
-	const { error, isError } = isEdit ? updateMutation : createMutation;
+	const updateMutation = api.customRole.update.useMutation(
+		crudMutationOptions({
+			successMessage: "Role updated",
+			errorMessage: "Error updating role",
+			loggerScope: "roles",
+			invalidate: () => utils.customRole.all.invalidate(),
+			onSuccess: () => setIsOpen(false),
+			toastError: false,
+		}),
+	);
+
+	const activeError = isEdit ? updateMutation.error : createMutation.error;
+	const activeIsError = isEdit
+		? updateMutation.isError
+		: createMutation.isError;
+	const isSubmitting = createMutation.isPending || updateMutation.isPending;
+	const selectedPermissionCount = permissionCount(perms);
+	const totalPermissionCount = statementCount(statements);
+
+	const permissionGroups = useMemo(
+		() => (statements ? groupStatements(statements) : []),
+		[statements],
+	);
+
+	const activeGroup =
+		permissionGroups.find((group) => group.id === activeGroupId) ??
+		permissionGroups[0];
+
+	const visibleResources = useMemo(() => {
+		const query = filter.trim().toLowerCase();
+		const resources = query
+			? permissionGroups.flatMap((group) => group.resources)
+			: (activeGroup?.resources ?? []);
+		return query
+			? resources.filter((item) => resourceMatchesFilter(item, query))
+			: resources;
+	}, [activeGroup, filter, permissionGroups]);
+
+	const visibleActionColumns = ACTION_COLUMNS.filter((action) =>
+		visibleResources.some((item) => item.actions.includes(action)),
+	);
 
 	useEffect(() => {
 		if (isOpen) {
 			setName(role?.role ?? "");
 			setPerms(role?.permissions ?? {});
+			setFilter("");
+			setActiveGroupId(DEFAULT_PERMISSION_GROUP_ID);
 		}
 	}, [isOpen, role]);
 
@@ -50,9 +466,13 @@ export const HandleRole = ({ role }: Props) => {
 			} else {
 				current.delete(action);
 			}
+
+			const orderedActions = statements?.[resource]?.filter((candidate) =>
+				current.has(candidate),
+			) ?? [...current];
 			const next = { ...prev };
-			if (current.size > 0) {
-				next[resource] = [...current];
+			if (orderedActions.length > 0) {
+				next[resource] = orderedActions;
 			} else {
 				delete next[resource];
 			}
@@ -60,27 +480,49 @@ export const HandleRole = ({ role }: Props) => {
 		});
 	};
 
-	const onSubmit = async () => {
-		try {
-			if (isEdit && role) {
-				await updateMutation.mutateAsync({
-					roleName: role.role,
-					newRoleName: name !== role.role ? name : undefined,
-					permissions: perms,
-				});
-			} else {
-				await createMutation.mutateAsync({
-					roleName: name,
-					permissions: perms,
-				});
+	const selectResources = (resources: readonly PermissionResource[]) => {
+		setPerms((prev) => {
+			const next = { ...prev };
+			for (const item of resources) {
+				next[item.resource] = [...item.actions];
 			}
-			await utils.customRole.all.invalidate();
-			toast.success(isEdit ? "Role updated" : "Role created");
-			setIsOpen(false);
-		} catch (err) {
-			logger.error(err);
-			toast.error(isEdit ? "Error updating role" : "Error creating role");
+			return next;
+		});
+	};
+
+	const clearResources = (resources: readonly PermissionResource[]) => {
+		setPerms((prev) => {
+			const next = { ...prev };
+			for (const item of resources) {
+				delete next[item.resource];
+			}
+			return next;
+		});
+	};
+
+	const applyTemplate = (template: PermissionTemplate) => {
+		setPerms(normalizePermissions(template.permissions, statements));
+		setFilter("");
+		setActiveGroupId(DEFAULT_PERMISSION_GROUP_ID);
+	};
+
+	const onSubmit = () => {
+		const roleName = name.trim();
+		if (!roleName) return;
+
+		if (isEdit && role) {
+			updateMutation.mutate({
+				roleName: role.role,
+				newRoleName: roleName !== role.role ? roleName : undefined,
+				permissions: perms,
+			});
+			return;
 		}
+
+		createMutation.mutate({
+			roleName,
+			permissions: perms,
+		});
 	};
 
 	return (
@@ -106,65 +548,242 @@ export const HandleRole = ({ role }: Props) => {
 					)
 				}
 			/>
-			<Dialog className="sm:max-w-2xl max-h-[85vh]">
-				<Dialog.Header>
-					<Dialog.Title>{isEdit ? "Update" : "Create"} role</Dialog.Title>
-					<Dialog.Description>
-						Choose the capabilities this role grants. Members assigned this role
-						gain exactly these permissions.
-					</Dialog.Description>
-				</Dialog.Header>
-				{isError && <AlertBlock type="error">{error?.message}</AlertBlock>}
-				<div className="grid w-full gap-4">
-					<div className="grid gap-2">
-						<label htmlFor="role-name" className="text-sm font-medium">
-							Role name
-						</label>
-						<Input
-							id="role-name"
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-							placeholder="e.g., deployer"
-						/>
+			<Dialog className="flex max-h-[90vh] flex-col overflow-hidden sm:max-w-5xl">
+				<Dialog.Header className="mb-0 border-b border-kumo-line pb-4">
+					<div className="flex flex-wrap items-start justify-between gap-3">
+						<div>
+							<Dialog.Title>{isEdit ? "Update" : "Create"} role</Dialog.Title>
+							<Dialog.Description>
+								Start from a common role, then adjust the exact capabilities.
+							</Dialog.Description>
+						</div>
+						<div className="text-right text-sm text-kumo-subtle">
+							<span className="font-medium text-kumo-default">
+								{selectedPermissionCount}
+							</span>{" "}
+							of {totalPermissionCount || "all"} selected
+						</div>
 					</div>
-					<div className="flex flex-col gap-1 overflow-y-auto max-h-[50vh] rounded-lg border p-3">
-						{!statements ? (
-							<span className="text-sm text-kumo-subtle">Loading…</span>
-						) : (
-							Object.entries(statements).map(([resource, actions]) => (
-								<div
-									key={resource}
-									className="flex flex-col gap-1.5 border-b py-2 last:border-b-0"
+				</Dialog.Header>
+
+				<div className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+					{activeIsError && (
+						<AlertBlock type="error">{activeError?.message}</AlertBlock>
+					)}
+
+					<Input
+						id="role-name"
+						label="Role name"
+						value={name}
+						onChange={(event) => setName(event.target.value)}
+						placeholder="e.g., deployer"
+					/>
+
+					<div className="space-y-2">
+						<div className="flex flex-wrap items-center justify-between gap-2">
+							<span className="text-sm font-medium text-kumo-default">
+								Start from
+							</span>
+							<span className="text-xs text-kumo-subtle">
+								Templates replace current selections.
+							</span>
+						</div>
+						<div className="flex flex-wrap gap-2">
+							{PERMISSION_TEMPLATES.map((template) => (
+								<Button
+									key={template.id}
+									type="button"
+									variant="secondary"
+									size="sm"
+									title={template.description}
+									onClick={() => applyTemplate(template)}
 								>
-									<span className="text-sm font-medium">{resource}</span>
-									<div className="flex flex-row flex-wrap gap-4">
-										{(actions as readonly string[]).map((action) => {
-											const checked = (perms[resource] ?? []).includes(action);
-											return (
-												<Checkbox
-													key={action}
-													label={action}
-													checked={checked}
-													onCheckedChange={(value) =>
-														toggle(resource, action, !!value)
-													}
-													className="text-sm text-kumo-subtle"
-												/>
-											);
-										})}
+									{template.label}
+								</Button>
+							))}
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								disabled={selectedPermissionCount === 0}
+								onClick={() => setPerms({})}
+							>
+								<RotateCcwIcon className="size-4" />
+								Clear
+							</Button>
+						</div>
+					</div>
+
+					<div className="space-y-3">
+						{permissionGroups.length > 0 && (
+							<PermissionCategoryTabs
+								groups={permissionGroups}
+								activeGroupId={activeGroup?.id ?? activeGroupId}
+								permissions={perms}
+								onSelect={(groupId) => {
+									setActiveGroupId(groupId);
+									setFilter("");
+								}}
+							/>
+						)}
+
+						<div className="overflow-hidden rounded-lg border border-kumo-line">
+							<div className="flex flex-col gap-2 border-b border-kumo-line bg-kumo-elevated p-3 md:flex-row md:items-center md:justify-between">
+								<div className="min-w-0">
+									<div className="text-sm font-medium text-kumo-default">
+										{filter.trim()
+											? "Search results"
+											: (activeGroup?.label ?? "Permissions")}
+									</div>
+									<div className="text-xs text-kumo-subtle">
+										{filter.trim()
+											? `${visibleResources.length} matching resource${visibleResources.length === 1 ? "" : "s"}`
+											: (activeGroup?.description ??
+												"Choose the capabilities for this role.")}
 									</div>
 								</div>
-							))
-						)}
+								<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+									<div className="relative min-w-56">
+										<SearchIcon className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 size-4 text-kumo-subtle" />
+										<Input
+											aria-label="Search permissions"
+											value={filter}
+											onChange={(event) => setFilter(event.target.value)}
+											placeholder="Search permissions"
+											size="sm"
+											className="w-full pl-9"
+										/>
+									</div>
+									<div className="flex gap-1">
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											disabled={visibleResources.length === 0}
+											onClick={() => selectResources(visibleResources)}
+										>
+											Select shown
+										</Button>
+										<Button
+											type="button"
+											variant="ghost"
+											size="sm"
+											disabled={visibleResources.length === 0}
+											onClick={() => clearResources(visibleResources)}
+										>
+											Clear shown
+										</Button>
+									</div>
+								</div>
+							</div>
+
+							<div className="max-h-[42vh] overflow-auto bg-kumo-base">
+								{statementsQuery.isPending ? (
+									<div className="flex min-h-64 items-center justify-center gap-2 text-sm text-kumo-subtle">
+										<span>Loading permissions...</span>
+										<Loader2Icon className="size-4 animate-spin" />
+									</div>
+								) : statementsQuery.isError ? (
+									<div className="flex min-h-64 flex-col items-center justify-center gap-3 p-4">
+										<AlertBlock type="error" className="w-full max-w-md">
+											{statementsQuery.error?.message ??
+												"Permissions could not be loaded."}
+										</AlertBlock>
+										<Button
+											type="button"
+											variant="secondary"
+											onClick={() => statementsQuery.refetch()}
+										>
+											Try again
+										</Button>
+									</div>
+								) : visibleResources.length === 0 ? (
+									<div className="flex min-h-64 items-center justify-center text-sm text-kumo-subtle">
+										No permissions match this search.
+									</div>
+								) : (
+									<Table className="min-w-[760px]">
+										<Table.Header sticky>
+											<Table.Row>
+												<Table.Head className="w-[18rem]">Resource</Table.Head>
+												{visibleActionColumns.map((action) => (
+													<Table.Head key={action} className="w-24 text-center">
+														{formatActionLabel(action)}
+													</Table.Head>
+												))}
+											</Table.Row>
+										</Table.Header>
+										<Table.Body>
+											{visibleResources.map((item) => {
+												const selectedActions = perms[item.resource] ?? [];
+												return (
+													<Table.Row key={item.resource}>
+														<Table.Cell>
+															<div className="flex flex-col">
+																<span className="text-sm font-medium text-kumo-default">
+																	{formatResourceLabel(item.resource)}
+																</span>
+																<span className="text-xs text-kumo-subtle">
+																	{filter.trim() ? `${item.groupLabel} · ` : ""}
+																	{selectedActions.length}/{item.actions.length}{" "}
+																	selected
+																</span>
+															</div>
+														</Table.Cell>
+														{visibleActionColumns.map((action) => {
+															const available = item.actions.includes(action);
+															const checked = selectedActions.includes(action);
+															return (
+																<Table.Cell
+																	key={action}
+																	className="text-center"
+																>
+																	{available ? (
+																		<Checkbox
+																			aria-label={`${formatActionLabel(action)} ${formatResourceLabel(item.resource)}`}
+																			checked={checked}
+																			onCheckedChange={(value) =>
+																				toggle(item.resource, action, !!value)
+																			}
+																		/>
+																	) : (
+																		<span className="text-kumo-subtle/40">
+																			-
+																		</span>
+																	)}
+																</Table.Cell>
+															);
+														})}
+													</Table.Row>
+												);
+											})}
+										</Table.Body>
+									</Table>
+								)}
+							</div>
+						</div>
 					</div>
 				</div>
-				<Dialog.Footer>
+
+				<Dialog.Footer className="mt-4 border-t border-kumo-line pt-4">
+					<div className="mr-auto hidden text-sm text-kumo-subtle sm:block">
+						{selectedPermissionCount} capabilities selected
+					</div>
+					<Dialog.Close
+						render={
+							<Button type="button" variant="secondary">
+								Cancel
+							</Button>
+						}
+					/>
 					<Button
+						type="button"
+						variant="primary"
 						onClick={onSubmit}
 						disabled={!name.trim()}
-						loading={createMutation.isPending || updateMutation.isPending}
+						loading={isSubmitting}
 					>
-						{isEdit ? "Update" : "Create"}
+						{isEdit ? "Save role" : "Create role"}
 					</Button>
 				</Dialog.Footer>
 			</Dialog>
