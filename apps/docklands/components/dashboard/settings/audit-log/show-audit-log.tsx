@@ -11,7 +11,6 @@ import { api } from "@/client/api/trpc";
 import { SectionCard } from "@/components/shared/section-card";
 import { Select } from "@/components/shared/select";
 import { EmptyState, QueryState } from "@/components/shared/states";
-import { cn } from "@/shared/utils";
 
 const PAGE_SIZE = 50;
 
@@ -67,6 +66,49 @@ const RESOURCE_TYPES = [
 ] as const;
 
 const ALL = "__all__";
+
+// Acronyms / special cases the generic humanizer can't title-case correctly.
+const LABEL_OVERRIDES: Record<string, string> = {
+	sshKey: "SSH key",
+	api: "API key",
+	url: "URL",
+	ip: "IP",
+};
+
+const humanize = (value: string) =>
+	LABEL_OVERRIDES[value] ??
+	value
+		.replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+		.replace(/[_-]+/g, " ")
+		.replace(/^./, (char) => char.toUpperCase());
+
+// Humanize a value only when it looks like a bare identifier (e.g. an enum
+// like "sendInvitation"); leave emails, ids, and free text untouched.
+const humanizeValue = (value: unknown): string => {
+	if (typeof value === "string") {
+		return /^[a-zA-Z][a-zA-Z0-9]+$/.test(value) ? humanize(value) : value;
+	}
+	if (value === null || typeof value === "object") return JSON.stringify(value);
+	return String(value);
+};
+
+const parseMetadata = (
+	metadata: string | null,
+): Array<{ key: string; value: string }> | null => {
+	if (!metadata) return null;
+	try {
+		const parsed = JSON.parse(metadata);
+		if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+			return Object.entries(parsed).map(([key, value]) => ({
+				key: humanize(key),
+				value: humanizeValue(value),
+			}));
+		}
+	} catch {
+		// Not JSON — fall back to the raw string.
+	}
+	return null;
+};
 
 const actionVariant = (
 	action: string,
@@ -145,7 +187,7 @@ export const ShowAuditLog = () => {
 					<Select.Option value={ALL}>All actions</Select.Option>
 					{ACTIONS.map((value) => (
 						<Select.Option key={value} value={value}>
-							{value}
+							{humanize(value)}
 						</Select.Option>
 					))}
 				</Select>
@@ -160,7 +202,7 @@ export const ShowAuditLog = () => {
 					<Select.Option value={ALL}>All resource types</Select.Option>
 					{RESOURCE_TYPES.map((value) => (
 						<Select.Option key={value} value={value}>
-							{value}
+							{humanize(value)}
 						</Select.Option>
 					))}
 				</Select>
@@ -204,13 +246,13 @@ export const ShowAuditLog = () => {
 										</Table.Cell>
 										<Table.Cell>
 											<Badge variant={actionVariant(log.action)}>
-												{log.action}
+												{humanize(log.action)}
 											</Badge>
 										</Table.Cell>
 										<Table.Cell>
 											<div className="flex flex-col">
 												<span className="text-xs text-kumo-subtle">
-													{log.resourceType}
+													{humanize(log.resourceType)}
 												</span>
 												{log.resourceName && (
 													<span className="text-sm break-words">
@@ -219,13 +261,37 @@ export const ShowAuditLog = () => {
 												)}
 											</div>
 										</Table.Cell>
-										<Table.Cell
-											className={cn(
-												"max-w-md align-top text-xs text-kumo-subtle",
-												log.metadata && "whitespace-pre-wrap break-words",
-											)}
-										>
-											{log.metadata ?? "—"}
+										<Table.Cell className="max-w-md align-top">
+											{(() => {
+												const pairs = parseMetadata(log.metadata);
+												if (pairs) {
+													return (
+														<div className="flex flex-wrap gap-1">
+															{pairs.map(({ key, value }) => (
+																<span
+																	key={key}
+																	className="inline-flex items-center gap-1 rounded bg-kumo-tint px-1.5 py-0.5 text-xs"
+																>
+																	<span className="text-kumo-subtle">
+																		{key}
+																	</span>
+																	<span className="text-kumo-default">
+																		{value}
+																	</span>
+																</span>
+															))}
+														</div>
+													);
+												}
+												if (log.metadata) {
+													return (
+														<span className="whitespace-pre-wrap break-words text-xs text-kumo-subtle">
+															{log.metadata}
+														</span>
+													);
+												}
+												return <span className="text-kumo-subtle">—</span>;
+											})()}
 										</Table.Cell>
 									</Table.Row>
 								))}
