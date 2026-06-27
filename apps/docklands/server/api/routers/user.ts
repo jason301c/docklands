@@ -19,10 +19,10 @@ import { renderInvitationEmail } from "@/server/core/emails/render";
 import { createLogger } from "@/server/core/lib/logger";
 import {
 	findOrganizationById,
-	getDocklandsUrl,
 	getUserByToken,
 	removeUserById,
 } from "@/server/core/services/admin";
+import { getInstanceUrl } from "@/server/core/services/instance-url";
 import { assertCustomRoleExists } from "@/server/core/services/organization";
 import {
 	findMemberByUserId,
@@ -492,10 +492,7 @@ export const userRouter = createTRPCRouter({
 				where: eq(invitation.id, input.invitationId),
 			});
 
-			const host =
-				process.env.NODE_ENV === "development"
-					? "http://localhost:3000"
-					: await getDocklandsUrl();
+			const host = await getInstanceUrl();
 			const inviteLink = `${host}/invitation?token=${input.invitationId}`;
 
 			const organizationId = ctx.session.activeOrganizationId;

@@ -18,6 +18,10 @@ import {
 	apiUpdateWebServerBuildsConcurrency,
 } from "@/server/core/db/schema";
 import { createLogger } from "@/server/core/lib/logger";
+import {
+	getInstanceUrl,
+	isInstanceUrlConfigured,
+} from "@/server/core/services/instance-url";
 import { checkPermission } from "@/server/core/services/permission";
 import {
 	findRuntimeWorkerById,
@@ -88,6 +92,17 @@ export const settingsRouter = createTRPCRouter({
 	getWebServerSettings: protectedProcedure.query(async () => {
 		const settings = await getWebServerSettings();
 		return settings;
+	}),
+	// The canonical instance URL, resolved server-side through the single
+	// source of truth (instance-url.ts). Clients must read the instance URL from
+	// here rather than reconstructing it from window.location, so links stay
+	// correct even when the admin is browsing over localhost/an internal IP.
+	getInstanceUrl: protectedProcedure.query(async () => {
+		const [url, configured] = await Promise.all([
+			getInstanceUrl(),
+			isInstanceUrlConfigured(),
+		]);
+		return { url, configured };
 	}),
 	reloadServer: adminProcedure.mutation(async ({ ctx }) => {
 		await reloadDockerResource("docklands", undefined, packageInfo.version);

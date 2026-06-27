@@ -65,8 +65,8 @@ vi.mock("@/server/core/services/application", async () => {
 	};
 });
 
-vi.mock("@/server/core/services/admin", () => ({
-	getDocklandsUrl: vi.fn().mockResolvedValue("http://localhost:3000"),
+vi.mock("@/server/core/services/instance-url", () => ({
+	getInstanceUrl: vi.fn().mockResolvedValue("http://localhost:3000"),
 }));
 
 vi.mock("@/server/core/services/deployment", () => ({
@@ -97,10 +97,10 @@ vi.mock("@/server/core/services/rollbacks", () => ({
 // - mechanizeDockerContainer (requires Docker Swarm)
 
 import { db } from "@/server/core/db";
-import * as adminService from "@/server/core/services/admin";
 import * as applicationService from "@/server/core/services/application";
 import { deployApplication } from "@/server/core/services/application";
 import * as deploymentService from "@/server/core/services/deployment";
+import * as instanceUrlService from "@/server/core/services/instance-url";
 
 const createMockApplication = (
 	overrides: Partial<ApplicationNested> = {},
@@ -211,7 +211,7 @@ describe(
 			vi.mocked(applicationService.findApplicationById).mockResolvedValue(
 				mockApp as any,
 			);
-			vi.mocked(adminService.getDocklandsUrl).mockResolvedValue(
+			vi.mocked(instanceUrlService.getInstanceUrl).mockResolvedValue(
 				"http://localhost:3000",
 			);
 			vi.mocked(deploymentService.createDeployment).mockResolvedValue(

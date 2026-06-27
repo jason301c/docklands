@@ -39,13 +39,13 @@ import { cloneGitlabRepository } from "@/server/core/utils/providers/gitlab";
 import { getCreateComposeFileCommand } from "@/server/core/utils/providers/raw";
 import { workspaceServicePath } from "@/shared/routes";
 import { encodeBase64 } from "../utils/docker/utils";
-import { getDocklandsUrl } from "./admin";
 import {
 	createDeploymentCompose,
 	getDeploymentErrorMessage,
 	updateDeployment,
 	updateDeploymentStatus,
 } from "./deployment";
+import { getInstanceUrl } from "./instance-url";
 import { generateApplyPatchesCommand } from "./patch";
 import { validUniqueServerAppName } from "./workspace";
 import { refreshConnectionVariablesForDeploy } from "./workspace-graph";
@@ -252,7 +252,7 @@ export const deployCompose = async ({
 	});
 	if (refreshedEnv !== null) compose.env = refreshedEnv;
 
-	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
+	const buildLink = `${await getInstanceUrl()}${workspaceServicePath({
 		workspaceId: compose.environment.workspaceId,
 		environmentId: compose.environmentId,
 		serviceType: "compose",

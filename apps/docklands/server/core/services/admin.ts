@@ -9,7 +9,6 @@ import {
 	user,
 } from "@/server/core/db/schema";
 import { createLogger } from "@/server/core/lib/logger";
-import { getWebServerSettings } from "./web-server-settings";
 
 const logger = createLogger("auth");
 
@@ -96,16 +95,6 @@ export const removeUserById = async (userId: string) => {
 		.where(eq(user.id, userId))
 		.returning()
 		.then((res) => res[0]);
-};
-
-export const getDocklandsUrl = async () => {
-	const settings = await getWebServerSettings();
-
-	if (settings?.host) {
-		const protocol = settings?.https ? "https" : "http";
-		return `${protocol}://${settings?.host}`;
-	}
-	return `http://${settings?.serverIp}:${process.env.PORT}`;
 };
 
 export const getTrustedOrigins = async () => {

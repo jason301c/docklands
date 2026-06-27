@@ -34,7 +34,6 @@ import { cloneGitlabRepository } from "@/server/core/utils/providers/gitlab";
 import { createTraefikConfig } from "@/server/core/utils/traefik/application";
 import { workspaceServicePath } from "@/shared/routes";
 import { encodeBase64 } from "../utils/docker/utils";
-import { getDocklandsUrl } from "./admin";
 import {
 	createDeployment,
 	createDeploymentPreview,
@@ -49,6 +48,7 @@ import {
 	issueCommentExists,
 	updateIssueComment,
 } from "./github";
+import { getInstanceUrl } from "./instance-url";
 import { generateApplyPatchesCommand } from "./patch";
 import {
 	findPreviewDeploymentById,
@@ -190,7 +190,7 @@ export const deployApplication = async ({
 		runtimeWorkerId: runtimeWorkerId,
 	};
 
-	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
+	const buildLink = `${await getInstanceUrl()}${workspaceServicePath({
 		workspaceId: application.environment.workspaceId,
 		environmentId: application.environmentId,
 		serviceType: "application",
@@ -343,7 +343,7 @@ export const rebuildApplication = async ({
 	if (refreshedEnv !== null) application.env = refreshedEnv;
 	const runtimeWorkerId =
 		application.buildRuntimeWorkerId || application.runtimeWorkerId;
-	const buildLink = `${await getDocklandsUrl()}${workspaceServicePath({
+	const buildLink = `${await getInstanceUrl()}${workspaceServicePath({
 		workspaceId: application.environment.workspaceId,
 		environmentId: application.environmentId,
 		serviceType: "application",

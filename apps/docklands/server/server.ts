@@ -9,6 +9,7 @@ import {
 	markReadinessStepOk,
 	markReadinessStepRunning,
 } from "@/server/core/readiness";
+import { reconcileInstanceUrlEnv } from "@/server/core/services/instance-url";
 import { ensureTunnelRunning } from "@/server/core/services/tunnel";
 import { setupDirectories } from "@/server/core/setup/config-paths";
 import { initializeNetwork, initializeSwarm } from "@/server/core/setup/setup";
@@ -93,6 +94,18 @@ void app.prepare().then(async () => {
 		setupDockerContainerTerminalWebSocketServer(runtimeWorker);
 		setupTerminalWebSocketServer(runtimeWorker);
 		setupDockerStatsMonitoringSocketServer(runtimeWorker);
+
+		// Reconcile the canonical instance URL into the Better Auth env channel
+		// BEFORE the server accepts its first request, so Better Auth's lazily-built
+		// config (Secure cookies, passkey rpId) and every absolute link the app
+		// emits resolve to the same operator-configured origin. Best-effort: a
+		// failure here must not block startup — auth falls back to the env or
+		// request-derived origin.
+		try {
+			await reconcileInstanceUrlEnv();
+		} catch (err) {
+			logger.warn({ err }, "instance URL reconcile failed (continuing)");
+		}
 
 		runtimeWorker.listen(PORT, HOST);
 		logger.info({ host: HOST, port: PORT }, "server listening");

@@ -28,9 +28,11 @@ const isNextProductionBuild = () =>
 	process.env.NEXT_PHASE === "phase-production-build";
 
 // Resolve the Better Auth base URL.
-// - If BETTER_AUTH_URL is set (recommended for prod/VM installs that have a
-//   stable host or domain), use it so callback/verification links are absolute
-//   and correct.
+// - `process.env.BETTER_AUTH_URL` is the single channel: `reconcileInstanceUrlEnv`
+//   (server/core/services/instance-url.ts) runs at startup and mirrors the
+//   canonical instance URL (the operator-configured `webServerSettings.host`)
+//   into it, so auth boots from the same value the rest of the app emits. The
+//   `PUBLIC_URL` alias is honored for headless installs that set it directly.
 // - In development, default to localhost so local auth is deterministic and the
 //   "Base URL is not set" warning goes away.
 // - Otherwise (self-hosted prod without an explicit URL) leave it undefined so
@@ -40,327 +42,351 @@ const resolveBaseURL = (): string | undefined => {
 	if (process.env.BETTER_AUTH_URL) {
 		return process.env.BETTER_AUTH_URL;
 	}
+	if (process.env.PUBLIC_URL) {
+		return process.env.PUBLIC_URL;
+	}
 	if (process.env.NODE_ENV !== "production") {
 		return `http://localhost:${process.env.PORT || "3000"}`;
 	}
 	return undefined;
 };
 
-// When the instance is served over HTTPS (BETTER_AUTH_URL is https://…), mark
-// cookies Secure so the session can't ride a downgraded plain-HTTP request.
-// Plain-HTTP LAN/IP installs (no Secure) keep working because the base URL is
-// http there.
-const isHttpsBaseURL = (resolveBaseURL() ?? "").startsWith("https://");
+// Better Auth's config is built lazily, on first use, NOT at module import.
+// `reconcileInstanceUrlEnv` must populate `process.env.BETTER_AUTH_URL` from the
+// canonical DB host before the config is built; the first use is always a
+// request (handler / validate* / createApiKey), which happens after the server
+// reconciles and starts listening — so baseURL, the Secure-cookie flag, and the
+// passkey relying-party id all reflect the configured instance URL. They are
+// fixed once built, so changing the domain later needs a restart to re-apply.
+const buildAuth = () => {
+	// When the instance is served over HTTPS, mark cookies Secure so the session
+	// can't ride a downgraded plain-HTTP request. Plain-HTTP LAN/IP installs (no
+	// Secure) keep working because the base URL is http there.
+	const isHttpsBaseURL = (resolveBaseURL() ?? "").startsWith("https://");
 
-const { handler, api } = betterAuth({
-	baseURL: resolveBaseURL(),
-	database: drizzleAdapter(db, {
-		provider: "pg",
-		schema: schema,
-	}),
-	disabledPaths: [
-		"/organization/create",
-		"/organization/update",
-		"/organization/delete",
-		"/verify-email",
-	],
-	secret: betterAuthSecret,
-	// Throttle the auth endpoints (login, password reset, etc.) to blunt online
-	// credential guessing. Better Auth's limiter only covers /api/auth/*; the
-	// in-memory limiter in server/web/rate-limit.ts guards the deploy webhooks.
-	rateLimit: {
-		enabled: true,
-		window: 60,
-		max: 60,
-	},
-	// Plain-HTTP LAN/IP installs can't use Secure cookies; HTTPS installs do (see
-	// isHttpsBaseURL). This keeps IP-only setups working while hardening the
-	// common behind-a-domain-over-HTTPS deployment against cookie downgrade.
-	advanced: {
-		useSecureCookies: isHttpsBaseURL,
-		defaultCookieAttributes: {
-			sameSite: "lax",
-			secure: isHttpsBaseURL,
-			httpOnly: true,
-			path: "/",
+	return betterAuth({
+		baseURL: resolveBaseURL(),
+		database: drizzleAdapter(db, {
+			provider: "pg",
+			schema: schema,
+		}),
+		disabledPaths: [
+			"/organization/create",
+			"/organization/update",
+			"/organization/delete",
+			"/verify-email",
+		],
+		secret: betterAuthSecret,
+		// Throttle the auth endpoints (login, password reset, etc.) to blunt online
+		// credential guessing. Better Auth's limiter only covers /api/auth/*; the
+		// in-memory limiter in server/web/rate-limit.ts guards the deploy webhooks.
+		rateLimit: {
+			enabled: true,
+			window: 60,
+			max: 60,
 		},
-	},
-	appName: "Docklands",
-	logger: {
-		disabled: process.env.NODE_ENV === "production",
-	},
-	async trustedOrigins() {
-		if (isNextProductionBuild()) {
-			return [];
-		}
-		try {
-			const devOrigins =
-				process.env.NODE_ENV === "development"
-					? [
-							`http://localhost:${process.env.PORT || "3000"}`,
-							`http://127.0.0.1:${process.env.PORT || "3000"}`,
-							`http://0.0.0.0:${process.env.PORT || "3000"}`,
-							"https://absolutely-handy-falcon.ngrok-free.app",
-						]
-					: [];
-			const [trustedOrigins, settings] = await Promise.all([
-				getTrustedOrigins(),
-				getWebServerSettings(),
-			]);
-			if (!settings) return devOrigins;
-			return [
-				...(settings?.serverIp ? [`http://${settings?.serverIp}:3000`] : []),
-				...(settings?.host ? [`https://${settings?.host}`] : []),
-				...devOrigins,
-				...trustedOrigins,
-			];
-		} catch (error) {
-			logger.warn(
-				{ err: error },
-				"Failed to resolve trusted origins — falling back to empty list",
-			);
-			return [];
-		}
-	},
-	emailAndPassword: {
-		enabled: true,
-		autoSignIn: true,
-		password: {
-			async hash(password) {
-				return bcrypt.hashSync(password, 10);
-			},
-			async verify({ hash, password }) {
-				return bcrypt.compareSync(password, hash);
+		// Plain-HTTP LAN/IP installs can't use Secure cookies; HTTPS installs do (see
+		// isHttpsBaseURL). This keeps IP-only setups working while hardening the
+		// common behind-a-domain-over-HTTPS deployment against cookie downgrade.
+		advanced: {
+			useSecureCookies: isHttpsBaseURL,
+			defaultCookieAttributes: {
+				sameSite: "lax",
+				secure: isHttpsBaseURL,
+				httpOnly: true,
+				path: "/",
 			},
 		},
-		sendResetPassword: async ({ user, url }) => {
-			// Routes through the instance's configured email provider. If none is
-			// configured this throws `SystemEmailNotConfiguredError`, which Better
-			// Auth swallows (the request still returns success to avoid account
-			// enumeration); the send-reset-password page tells the user up front
-			// when email isn't configured.
-			await sendSystemEmail({
-				to: user.email,
-				subject: "Reset your password",
-				html: `<p>Click the link to reset your password: <a href="${url}">Reset Password</a></p>`,
-			});
+		appName: "Docklands",
+		logger: {
+			disabled: process.env.NODE_ENV === "production",
 		},
-	},
-	databaseHooks: {
-		user: {
-			create: {
-				before: async (_user, context) => {
-					const xDocklandsToken =
-						context?.request?.headers?.get("x-docklands-token");
-					if (xDocklandsToken) {
-						let invitation: Awaited<ReturnType<typeof getUserByToken>>;
-						try {
-							invitation = await getUserByToken(xDocklandsToken);
-						} catch {
-							throw new APIError("BAD_REQUEST", {
-								message: "Invalid invitation token",
+		async trustedOrigins() {
+			if (isNextProductionBuild()) {
+				return [];
+			}
+			try {
+				const devOrigins =
+					process.env.NODE_ENV === "development"
+						? [
+								`http://localhost:${process.env.PORT || "3000"}`,
+								`http://127.0.0.1:${process.env.PORT || "3000"}`,
+								`http://0.0.0.0:${process.env.PORT || "3000"}`,
+								"https://absolutely-handy-falcon.ngrok-free.app",
+							]
+						: [];
+				const [trustedOrigins, settings] = await Promise.all([
+					getTrustedOrigins(),
+					getWebServerSettings(),
+				]);
+				if (!settings) return devOrigins;
+				return [
+					...(settings?.serverIp ? [`http://${settings?.serverIp}:3000`] : []),
+					...(settings?.host ? [`https://${settings?.host}`] : []),
+					...devOrigins,
+					...trustedOrigins,
+				];
+			} catch (error) {
+				logger.warn(
+					{ err: error },
+					"Failed to resolve trusted origins — falling back to empty list",
+				);
+				return [];
+			}
+		},
+		emailAndPassword: {
+			enabled: true,
+			autoSignIn: true,
+			password: {
+				async hash(password) {
+					return bcrypt.hashSync(password, 10);
+				},
+				async verify({ hash, password }) {
+					return bcrypt.compareSync(password, hash);
+				},
+			},
+			sendResetPassword: async ({ user, url }) => {
+				// Routes through the instance's configured email provider. If none is
+				// configured this throws `SystemEmailNotConfiguredError`, which Better
+				// Auth swallows (the request still returns success to avoid account
+				// enumeration); the send-reset-password page tells the user up front
+				// when email isn't configured.
+				await sendSystemEmail({
+					to: user.email,
+					subject: "Reset your password",
+					html: `<p>Click the link to reset your password: <a href="${url}">Reset Password</a></p>`,
+				});
+			},
+		},
+		databaseHooks: {
+			user: {
+				create: {
+					before: async (_user, context) => {
+						const xDocklandsToken =
+							context?.request?.headers?.get("x-docklands-token");
+						if (xDocklandsToken) {
+							let invitation: Awaited<ReturnType<typeof getUserByToken>>;
+							try {
+								invitation = await getUserByToken(xDocklandsToken);
+							} catch {
+								throw new APIError("BAD_REQUEST", {
+									message: "Invalid invitation token",
+								});
+							}
+							if (invitation.isExpired) {
+								throw new APIError("BAD_REQUEST", {
+									message: "Invitation has expired",
+								});
+							}
+							if (invitation.status !== "pending") {
+								throw new APIError("BAD_REQUEST", {
+									message: "Invitation has already been used",
+								});
+							}
+							if (
+								_user.email.toLowerCase().trim() !==
+								invitation.email.toLowerCase().trim()
+							) {
+								throw new APIError("BAD_REQUEST", {
+									message: "Email does not match invitation",
+								});
+							}
+						} else {
+							const isAdminPresent = await db.query.member.findFirst({
+								where: eq(schema.member.role, "owner"),
 							});
+							if (isAdminPresent) {
+								throw new APIError("BAD_REQUEST", {
+									message: "Admin is already created",
+								});
+							}
 						}
-						if (invitation.isExpired) {
-							throw new APIError("BAD_REQUEST", {
-								message: "Invitation has expired",
-							});
-						}
-						if (invitation.status !== "pending") {
-							throw new APIError("BAD_REQUEST", {
-								message: "Invitation has already been used",
-							});
-						}
-						if (
-							_user.email.toLowerCase().trim() !==
-							invitation.email.toLowerCase().trim()
-						) {
-							throw new APIError("BAD_REQUEST", {
-								message: "Email does not match invitation",
-							});
-						}
-					} else {
+					},
+					after: async (user) => {
 						const isAdminPresent = await db.query.member.findFirst({
 							where: eq(schema.member.role, "owner"),
 						});
-						if (isAdminPresent) {
-							throw new APIError("BAD_REQUEST", {
-								message: "Admin is already created",
+
+						// The first registrant becomes the single owner: record the
+						// server IP and create the one organization this instance has.
+						// Docklands is single-tenant — there is exactly one organization
+						// per instance and no way to create a second one.
+						if (!isAdminPresent) {
+							await updateWebServerSettings({
+								serverIp: await getPublicIpWithFallback(),
+							});
+
+							await db.transaction(async (tx) => {
+								const organization = await tx
+									.insert(schema.organization)
+									.values({
+										name: "Docklands",
+										ownerId: user.id,
+										createdAt: new Date(),
+									})
+									.returning()
+									.then((res) => res[0]);
+
+								await tx.insert(schema.member).values({
+									userId: user.id,
+									organizationId: organization?.id || "",
+									role: "owner",
+									createdAt: new Date(),
+								});
 							});
 						}
-					}
+					},
 				},
-				after: async (user) => {
-					const isAdminPresent = await db.query.member.findFirst({
-						where: eq(schema.member.role, "owner"),
-					});
-
-					// The first registrant becomes the single owner: record the
-					// server IP and create the one organization this instance has.
-					// Docklands is single-tenant — there is exactly one organization
-					// per instance and no way to create a second one.
-					if (!isAdminPresent) {
-						await updateWebServerSettings({
-							serverIp: await getPublicIpWithFallback(),
+			},
+			session: {
+				create: {
+					before: async (session) => {
+						// Resolve this user's organization. Single-tenant: a user has
+						// exactly one membership, so the most recent one is it.
+						const member = await db.query.member.findFirst({
+							where: eq(schema.member.userId, session.userId),
+							orderBy: [desc(schema.member.createdAt)],
+							with: {
+								organization: true,
+							},
 						});
 
-						await db.transaction(async (tx) => {
-							const organization = await tx
-								.insert(schema.organization)
-								.values({
-									name: "Docklands",
-									ownerId: user.id,
-									createdAt: new Date(),
-								})
-								.returning()
-								.then((res) => res[0]);
-
-							await tx.insert(schema.member).values({
-								userId: user.id,
-								organizationId: organization?.id || "",
-								role: "owner",
-								createdAt: new Date(),
-							});
+						return {
+							data: {
+								...session,
+								activeOrganizationId: member?.organization.id,
+							},
+						};
+					},
+					after: async (session) => {
+						const orgId = (
+							session as typeof session & { activeOrganizationId?: string }
+						).activeOrganizationId;
+						if (!orgId) return;
+						const memberRecord = await db.query.member.findFirst({
+							where: and(
+								eq(schema.member.userId, session.userId),
+								eq(schema.member.organizationId, orgId),
+							),
+							with: { user: true },
 						});
-					}
+						if (!memberRecord) return;
+						await createAuditLog({
+							organizationId: orgId,
+							userId: session.userId,
+							userEmail: memberRecord.user.email,
+							userRole: memberRecord.role,
+							action: "login",
+							resourceType: "session",
+						});
+					},
+				},
+				delete: {
+					after: async (session) => {
+						const orgId = (
+							session as typeof session & { activeOrganizationId?: string }
+						).activeOrganizationId;
+						if (!orgId) return;
+						const memberRecord = await db.query.member.findFirst({
+							where: and(
+								eq(schema.member.userId, session.userId),
+								eq(schema.member.organizationId, orgId),
+							),
+							with: { user: true },
+						});
+						if (!memberRecord) return;
+						await createAuditLog({
+							organizationId: orgId,
+							userId: session.userId,
+							userEmail: memberRecord.user.email,
+							userRole: memberRecord.role,
+							action: "logout",
+							resourceType: "session",
+						});
+					},
 				},
 			},
 		},
 		session: {
-			create: {
-				before: async (session) => {
-					// Resolve this user's organization. Single-tenant: a user has
-					// exactly one membership, so the most recent one is it.
-					const member = await db.query.member.findFirst({
-						where: eq(schema.member.userId, session.userId),
-						orderBy: [desc(schema.member.createdAt)],
-						with: {
-							organization: true,
-						},
-					});
+			expiresIn: 60 * 60 * 24 * 3,
+			updateAge: 60 * 60 * 24,
+		},
+		user: {
+			modelName: "user",
+			fields: {
+				name: "firstName", // Map better-auth's default 'name' field to 'firstName' column
+			},
+			additionalFields: {
+				role: {
+					type: "string",
+					// required: true,
+					input: false,
+				},
+				ownerId: {
+					type: "string",
+					// required: true,
+					input: false,
+				},
+				allowImpersonation: {
+					fieldName: "allowImpersonation",
+					type: "boolean",
+					defaultValue: false,
+				},
+				lastName: {
+					type: "string",
+					required: false,
+					input: true,
+					defaultValue: "",
+				},
+			},
+		},
+		plugins: [
+			apiKey({
+				enableMetadata: true,
+				references: "user",
+			}),
+			// WebAuthn passkeys. The relying-party id (rpID) is bound to the host the
+			// user registers from: it derives from BETTER_AUTH_URL's hostname when set,
+			// otherwise from the dev localhost base URL. The expected origin is read
+			// from the incoming request, so multi-host installs keep working as long as
+			// the rpID matches the registrable domain of that origin. WebAuthn does not
+			// allow bare IP addresses as an rpID, so IP-only installs should set
+			// BETTER_AUTH_URL to a real hostname before relying on passkeys.
+			passkey({
+				rpName: "Docklands",
+			}),
+			organization({
+				ac,
+				roles: {
+					owner: ownerRole,
+					admin: adminRole,
+					member: memberRole,
+				},
+				dynamicAccessControl: {
+					enabled: true,
+					maximumRolesPerOrganization: 10,
+				},
+			}),
+		],
+	});
+};
 
-					return {
-						data: {
-							...session,
-							activeOrganizationId: member?.organization.id,
-						},
-					};
-				},
-				after: async (session) => {
-					const orgId = (
-						session as typeof session & { activeOrganizationId?: string }
-					).activeOrganizationId;
-					if (!orgId) return;
-					const memberRecord = await db.query.member.findFirst({
-						where: and(
-							eq(schema.member.userId, session.userId),
-							eq(schema.member.organizationId, orgId),
-						),
-						with: { user: true },
-					});
-					if (!memberRecord) return;
-					await createAuditLog({
-						organizationId: orgId,
-						userId: session.userId,
-						userEmail: memberRecord.user.email,
-						userRole: memberRecord.role,
-						action: "login",
-						resourceType: "session",
-					});
-				},
-			},
-			delete: {
-				after: async (session) => {
-					const orgId = (
-						session as typeof session & { activeOrganizationId?: string }
-					).activeOrganizationId;
-					if (!orgId) return;
-					const memberRecord = await db.query.member.findFirst({
-						where: and(
-							eq(schema.member.userId, session.userId),
-							eq(schema.member.organizationId, orgId),
-						),
-						with: { user: true },
-					});
-					if (!memberRecord) return;
-					await createAuditLog({
-						organizationId: orgId,
-						userId: session.userId,
-						userEmail: memberRecord.user.email,
-						userRole: memberRecord.role,
-						action: "logout",
-						resourceType: "session",
-					});
-				},
-			},
-		},
-	},
-	session: {
-		expiresIn: 60 * 60 * 24 * 3,
-		updateAge: 60 * 60 * 24,
-	},
-	user: {
-		modelName: "user",
-		fields: {
-			name: "firstName", // Map better-auth's default 'name' field to 'firstName' column
-		},
-		additionalFields: {
-			role: {
-				type: "string",
-				// required: true,
-				input: false,
-			},
-			ownerId: {
-				type: "string",
-				// required: true,
-				input: false,
-			},
-			allowImpersonation: {
-				fieldName: "allowImpersonation",
-				type: "boolean",
-				defaultValue: false,
-			},
-			lastName: {
-				type: "string",
-				required: false,
-				input: true,
-				defaultValue: "",
-			},
-		},
-	},
-	plugins: [
-		apiKey({
-			enableMetadata: true,
-			references: "user",
-		}),
-		// WebAuthn passkeys. The relying-party id (rpID) is bound to the host the
-		// user registers from: it derives from BETTER_AUTH_URL's hostname when set,
-		// otherwise from the dev localhost base URL. The expected origin is read
-		// from the incoming request, so multi-host installs keep working as long as
-		// the rpID matches the registrable domain of that origin. WebAuthn does not
-		// allow bare IP addresses as an rpID, so IP-only installs should set
-		// BETTER_AUTH_URL to a real hostname before relying on passkeys.
-		passkey({
-			rpName: "Docklands",
-		}),
-		organization({
-			ac,
-			roles: {
-				owner: ownerRole,
-				admin: adminRole,
-				member: memberRole,
-			},
-			dynamicAccessControl: {
-				enabled: true,
-				maximumRolesPerOrganization: 10,
-			},
-		}),
-	],
-});
+// Lazily-built singleton. The first access happens on a request, after the
+// startup reconcile has populated process.env.BETTER_AUTH_URL (see buildAuth).
+let _betterAuth: ReturnType<typeof buildAuth> | undefined;
+const ba = (): ReturnType<typeof buildAuth> => {
+	_betterAuth ??= buildAuth();
+	return _betterAuth;
+};
+
+type BetterAuthApi = ReturnType<typeof buildAuth>["api"];
 
 const _auth = {
-	handler,
-	createApiKey: api.createApiKey,
+	handler: (request: Request): Promise<Response> => ba().handler(request),
+	createApiKey: (
+		...args: Parameters<BetterAuthApi["createApiKey"]>
+	): ReturnType<BetterAuthApi["createApiKey"]> =>
+		ba().api.createApiKey(...args),
 };
 
 export type AuthType = typeof _auth;
@@ -370,7 +396,7 @@ export const validateRequestHeaders = async (headers: Headers) => {
 	const apiKey = headers.get("x-api-key") || "";
 	if (apiKey) {
 		try {
-			const { valid, key, error } = await api.verifyApiKey({
+			const { valid, key, error } = await ba().api.verifyApiKey({
 				body: {
 					key: apiKey,
 				},
@@ -458,7 +484,7 @@ export const validateRequestHeaders = async (headers: Headers) => {
 	}
 
 	// If no API key, proceed with normal session validation
-	const session = await api.getSession({
+	const session = await ba().api.getSession({
 		headers,
 	});
 

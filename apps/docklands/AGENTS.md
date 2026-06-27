@@ -81,9 +81,23 @@ Docklands is a single Node process that serves both the UI and the backend:
   roles, and per-resource access on top. There is no TOTP/2FA path — it was
   removed in favor of passkeys (`@better-auth/passkey`), so there is no
   `two_factor` table, no `user.twoFactorEnabled`, and no 2FA reset/secret-migrate
-  ops entrypoints. Passkeys are host-bound: the relying-party id derives from
-  `BETTER_AUTH_URL`'s hostname (or dev localhost), and WebAuthn rejects bare IPs,
-  so IP-only installs must set a real hostname before relying on passkeys.
+  ops entrypoints. Passkeys are host-bound: the relying-party id derives from the
+  instance URL's hostname (see below), and WebAuthn rejects bare IPs, so IP-only
+  installs must set a real hostname before relying on passkeys.
+- **Instance URL — one source of truth.** "What URL is this instance reachable
+  at" resolves through a single producer, `services/instance-url.ts`
+  (`getInstanceUrl`), backed by the operator-configured `webServerSettings.host`
+  (which also drives the control plane's own Traefik cert). Everything that emits
+  an absolute self-URL — invitation/build links, provider OAuth + webhook
+  callbacks, password-reset/verification links, the client `useUrl()` hook (via
+  `settings.getInstanceUrl`), Better Auth's `baseURL`/Secure-cookie/passkey rpId
+  — reads from it; nothing reconstructs the URL from `window.location`, raw
+  headers, `serverIp:PORT`, or the `BETTER_AUTH_URL`/`PUBLIC_URL` env directly
+  (`__test__/security/instance-url-single-source.test.ts` enforces this). The env
+  var is only a first-boot seed copied into the DB by `reconcileInstanceUrlEnv`
+  at startup. Better Auth's config is built lazily after that reconcile, so its
+  boot-time values (Secure cookie, passkey rpId) reflect the configured URL but
+  only re-apply on **restart** when the domain changes later; links update live.
 - **Self-hosted only — single tenant, one organization per instance.** This is
   software you install on your own VM/Mac, not a hosted multi-tenant PaaS. There
   is no "cloud" mode: the upstream `IS_CLOUD` flag and every cloud-only branch

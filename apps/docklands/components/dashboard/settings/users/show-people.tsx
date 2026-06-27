@@ -8,6 +8,7 @@ import { useMemo } from "react";
 import { api, type RouterOutputs } from "@/client/api/trpc";
 import { authClient } from "@/client/auth/client";
 import { usePermissions } from "@/client/hooks/use-permissions";
+import { useUrl } from "@/client/hooks/use-url";
 import { createClientLogger } from "@/client/lib/logger";
 import { DialogAction } from "@/components/shared/dialog-action";
 import { DropdownMenu } from "@/components/shared/dropdown";
@@ -388,6 +389,7 @@ const InvitationActions = ({
 	onChanged: () => Promise<void>;
 	onRemove: () => Promise<void>;
 }) => {
+	const instanceUrl = useUrl();
 	const canUsePendingActions = !isExpired && invitation.status === "pending";
 
 	return (
@@ -414,7 +416,7 @@ const InvitationActions = ({
 				<DropdownMenu.Item
 					className="w-full cursor-pointer"
 					onSelect={() => {
-						copy(`${window.location.origin}/invitation?token=${invitation.id}`);
+						copy(`${instanceUrl}/invitation?token=${invitation.id}`);
 						toast.success("Invitation copied to clipboard");
 					}}
 				>

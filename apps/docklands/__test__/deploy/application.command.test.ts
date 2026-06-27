@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as adminService from "@/server/core/services/admin";
 import * as applicationService from "@/server/core/services/application";
 import { deployApplication } from "@/server/core/services/application";
 import * as deploymentService from "@/server/core/services/deployment";
+import * as instanceUrlService from "@/server/core/services/instance-url";
 import * as builders from "@/server/core/utils/builders";
 import * as notifications from "@/server/core/utils/notifications/build-success";
 import * as execProcess from "@/server/core/utils/process/execAsync";
@@ -56,8 +56,8 @@ vi.mock("@/server/core/services/application", async () => {
 	};
 });
 
-vi.mock("@/server/core/services/admin", () => ({
-	getDocklandsUrl: vi.fn(),
+vi.mock("@/server/core/services/instance-url", () => ({
+	getInstanceUrl: vi.fn(),
 }));
 
 vi.mock("@/server/core/services/deployment", () => ({
@@ -153,7 +153,7 @@ describe("deployApplication - Command Generation Tests", () => {
 		vi.mocked(applicationService.findApplicationById).mockResolvedValue(
 			createMockApplication() as any,
 		);
-		vi.mocked(adminService.getDocklandsUrl).mockResolvedValue(
+		vi.mocked(instanceUrlService.getInstanceUrl).mockResolvedValue(
 			"http://localhost:3000",
 		);
 		vi.mocked(deploymentService.createDeployment).mockResolvedValue(
