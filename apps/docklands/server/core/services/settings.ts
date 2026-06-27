@@ -111,13 +111,25 @@ export const getUpdateData = async (
 				headers: { "Content-Type": "application/json" },
 			});
 
+			// Docker Hub returns an error body without a `results` array on 404
+			// (unpublished repo), rate limiting, etc. Stop rather than
+			// concatenating `undefined` into the tag list, which would later
+			// throw in resolveLatestStableImageTag.
+			if (!response.ok) {
+				break;
+			}
+
 			const data = (await response.json()) as {
 				next: string | null;
 				results: DockerHubTag[];
 			};
 
+			if (!Array.isArray(data?.results)) {
+				break;
+			}
+
 			allResults = allResults.concat(data.results);
-			url = data?.next;
+			url = data.next ?? null;
 		}
 
 		const currentImageTag = getDocklandsImageTag();
