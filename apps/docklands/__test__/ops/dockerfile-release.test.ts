@@ -82,6 +82,22 @@ describe("production Dockerfile release install", () => {
 			"docklands-dev-postgres",
 		);
 
+		// Faithful dev: dev:host runs the real Swarm/Traefik setup before the
+		// hot-reloading dev server, and refuses to run on macOS (the host-Docker
+		// footgun) so it only mutates a replica VM / disposable Linux host.
+		expect(appPackage.scripts["dev:host"]).toContain(
+			"server/ops/setup-instance.ts",
+		);
+		expect(appPackage.scripts["dev:host"]).toContain(
+			"SKIP_BUNDLED_POSTGRES=true",
+		);
+		expect(appPackage.scripts["dev:host"]).toContain(
+			"process.platform==='linux'",
+		);
+		expect(rootPackage.scripts["dev:host"]).toBe(
+			"bun --filter docklands --elide-lines=0 dev:host",
+		);
+
 		// The laptop install footguns are gone — `setup` survives only as the
 		// image entrypoint (dist/setup-instance.mjs), never as a human command.
 		expect(rootPackage.scripts.setup).toBeUndefined();
@@ -109,6 +125,45 @@ describe("production Dockerfile release install", () => {
 		expect(limaTemplate).toContain("__REPO_ROOT__");
 		expect(limaTemplate).toContain("docker");
 		expect(replicaScript).toContain("limactl");
+	});
+
+	it("ships a one-line installer for end users (Linux host + macOS via Lima)", () => {
+		const installer = repoFile("install.sh");
+
+		// One command, two branches: a real Linux host install, and a macOS path
+		// that boots a Lima VM and re-runs the same install inside it.
+		expect(installer).toContain("linux_main");
+		expect(installer).toContain("darwin_main");
+		// Linux branch installs Docker if missing and reuses the tested setup
+		// entrypoint rather than reimplementing Swarm/Traefik in shell.
+		expect(installer).toContain("https://get.docker.com");
+		expect(installer).toContain("dist/setup-instance.mjs");
+		// macOS branch drives Lima and re-invokes itself in the VM.
+		expect(installer).toContain("limactl");
+		expect(installer).toContain("DOCKLANDS_INSTALL_URL");
+		// Install and upgrade share one code path.
+		expect(installer).toContain("install | update");
+		// Secrets are generated on the box (kernel CSPRNG, no openssl dependency,
+		// no password baked into the repo).
+		expect(installer).toContain("/dev/urandom");
+		expect(installer).toContain("DOCKLANDS_ENCRYPTION_KEY=");
+	});
+
+	it("publishes multi-arch images automatically from CI", () => {
+		const release = repoFile(".github/workflows/release.yml");
+
+		// Per-arch native runners (no QEMU emulation) + digest merge — the
+		// Dokploy/Coolify publish pattern, so the laptop never builds release images.
+		expect(release).toContain("ubuntu-24.04-arm");
+		expect(release).toContain("platform: linux/amd64");
+		expect(release).toContain("platform: linux/arm64");
+		expect(release).toContain("push-by-digest=true");
+		expect(release).toContain("docker buildx imagetools create");
+		// Triggered by canary pushes and semver tags; tags resolved by metadata-action.
+		expect(release).toContain("branches: [canary]");
+		expect(release).toContain('tags: ["[0-9]*.[0-9]*.[0-9]*"]');
+		expect(release).toContain("docker/metadata-action");
+		expect(release).toContain("IMAGE_NAME: jason301c/docklands");
 	});
 
 	it("verifies the production image through one verify harness", () => {
@@ -291,7 +346,8 @@ describe("production Dockerfile release install", () => {
 		expect(releaseNotes).toContain("GitHub is the only provider");
 		expect(releaseNotes).toContain("External Postgres disaster recovery");
 		expect(releaseNotes).toContain("same-image container replacement");
-		expect(releaseNotes).toContain("does not ship a one-line installer");
+		expect(releaseNotes).toContain("one-line installer");
+		expect(releaseNotes).toContain("install.sh");
 	});
 
 	it("keeps production operator docs aligned with the standalone install path", () => {

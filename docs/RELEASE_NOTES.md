@@ -33,11 +33,24 @@ Do not tag or publish v0.1.0 until the release checklist in
 
 ## Install And Upgrade Scope
 
-v0.1.0 does not ship a one-line installer. The supported install path is the
-documented source/Docker workflow in `apps/docs/src/content/docs/install/`.
-Operators build or pull the image, run the bundled setup entrypoint once, then
-run the dashboard container on `docklands-network` behind the host-level Traefik
-container.
+v0.1.0 ships a one-line installer (`install.sh`):
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/jason301c/docklands/canary/install.sh | sudo sh
+```
+
+On Linux it installs Docker (if missing), generates secrets, runs the bundled
+`setup-instance` entrypoint (Swarm, `docklands-network`, Traefik, bundled
+Postgres), and starts the dashboard. On macOS it boots a Lima VM and runs the same
+install inside it, so a Mac (e.g. a Mac mini) becomes a Docklands host with one
+command. Upgrades re-run the installer with the `update` argument — install and
+upgrade share one code path. The manual source/Docker workflow in
+`apps/docs/src/content/docs/install/` remains the advanced path.
+
+The production image is published by CI, not from a laptop: every `canary` push
+publishes `jason301c/docklands:canary`, and a pushed semver tag publishes
+`jason301c/docklands:<version>` and `:latest` as a multi-arch (amd64 + arm64)
+manifest.
 
 There is no previous Docklands release image to upgrade from yet. The verify
 suite proves fresh install, first owner, deploy, public Traefik ingress,
@@ -88,9 +101,12 @@ the selected pushed ref. The tag name comes from package metadata; the command
 refuses dirty tracked files, existing tags, and branch refs that differ from the
 selected remote.
 
-`release:publish` publishes `jason301c/docklands:0.1.0` and
-`jason301c/docklands:latest`; it refuses dirty tracked files by default and
-requires the local and remote `0.1.0` git tag to point at the current commit.
+Pushing the `0.1.0` tag triggers the **Release** GitHub Actions workflow, which
+builds amd64 + arm64 on native runners and publishes the multi-arch
+`jason301c/docklands:0.1.0` and `jason301c/docklands:latest`. `bun run
+release:publish` is the manual laptop fallback for the same publish; it refuses
+dirty tracked files by default and requires the local and remote `0.1.0` git tag
+to point at the current commit.
 
 ## Operator Notes
 

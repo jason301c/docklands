@@ -592,6 +592,7 @@ app-local scripts. App-local highlights:
 
 ```sh
 bun run dev                 # Local mode: ensure dev Postgres + secrets, migrate, run server (Node)
+bun run dev:host            # Faithful dev (replica/Linux only): setup-instance (Swarm+Traefik) then dev server
 bun run build               # check:bundler + build-server (esbuild) + build-next (Turbopack)
 bun run typecheck           # typegen + tsc --noEmit
 bun run test                # Vitest (watch)

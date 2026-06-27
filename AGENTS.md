@@ -169,8 +169,9 @@ and will drift past the supported `<26` range and break native module linkage.
 Docklands is a deployment control plane, so it is welded to its host: it inits
 Docker Swarm, mounts the Docker socket into Traefik, bind-mounts app source into
 containers, and writes `/etc/docklands`. You cannot faithfully fake the seam
-between the app and the Docker host it manages. There are therefore exactly **two
-dev modes** — see `docs/ENGINEERING_WORKFLOW.md` for the full design.
+between the app and the Docker host it manages. There are therefore two dev modes
+— a fast local loop and a faithful replica VM — plus a `dev:host` variant that
+runs the real Swarm/Traefik stack inside the replica.
 
 - **Local mode (the everyday loop):** the app on Node plus an ephemeral Postgres,
   with no Docker/Swarm mutation. Run `bun install`, copy
@@ -186,6 +187,11 @@ dev modes** — see `docs/ENGINEERING_WORKFLOW.md` for the full design.
   it via forwarded ports (`bun run replica:ssh` prints the details). Use Replica
   mode for anything that touches infrastructure — deploys, ingress, Swarm,
   backups, remote workers. The blueprint lives in `tools/replica/`.
+- **Faithful dev (`bun run dev:host`, inside the replica):** the closest-to-prod
+  loop. It runs the real `setup-instance` (Swarm + Traefik) before the
+  hot-reloading dev server, so deploy/ingress exercise the production code paths
+  while source still reloads. It refuses to run on macOS (it mutates the host
+  Docker daemon), so it only ever touches the replica VM / a disposable Linux host.
 - **Never run a full server install against your workstation's own Docker
   daemon.** That is what the replica is for. `setup` is no longer a human command;
   it survives only as the image's internal install entrypoint
@@ -216,6 +222,7 @@ for them. You can also run any script app-local from inside the app directory.
 ```sh
 bun install --frozen-lockfile     # install workspace deps
 bun run dev                       # Local mode: ensure Postgres, migrate, run the app (Node)
+bun run dev:host                  # Faithful dev (replica only): real Swarm/Traefik + hot reload
 bun run format-and-lint:fix       # Biome format + lint (autofix)
 bun run typecheck                 # next typegen + tsc --noEmit
 bun run test:ci                   # check:bundler + Vitest (excludes real deploy test)
@@ -226,8 +233,8 @@ bun run restore-instance -- --destination-id <id> --backup-file <key.zip> --conf
 bun run replica:up                # boot a replica VM (also: down | reset | ssh; needs Lima)
 bun run verify                    # full setup/install verify (or verify:install|deploy|upgrade|backup|worker)
 bun run release:preflight [ref]   # local non-mutating release preflight
-bun run release:image [production|canary]   # build the multi-arch production image
-bun run release:publish [production|canary] # guarded multi-arch image publish (requires the release tag)
+bun run release:image [production|canary]   # manual fallback: build the multi-arch image
+bun run release:publish [production|canary] # manual fallback publish (CI publishes on push/tag)
 bun run release:tag [--push] [ref] # guarded annotated release tag from package version
 bun run check:bundler             # assert no Webpack/legacy-turbo opt-out crept in
 bun run check:openapi             # generate OpenAPI to a temp artifact and validate release invariants
@@ -236,6 +243,16 @@ bun run docs:check-current        # scan public docs/site for known stale claims
 bun run docs:build                # stale-claim scan + Astro docs build
 bun run site:dev                  # Next marketing site (apps/site)
 ```
+
+End-user install is `install.sh` at the repo root — a thin, idempotent wrapper
+over the image's `setup-instance` entrypoint (it does not reimplement Swarm/Traefik
+in shell). `curl … | sudo sh` installs on a Linux host; the same command on macOS
+boots a Lima VM and runs the install inside it. `install`/`update` share one path.
+The production image is published by CI (`.github/workflows/release.yml`): every
+`canary` push publishes `:canary`, and a pushed semver tag publishes `:<version>`
++ `:latest` as a multi-arch (amd64 + arm64) manifest built on native per-arch
+runners — so the laptop never builds release images. `release:image`/`release:publish`
+remain the manual fallback.
 
 Environment files live with the app, never at the repo root: copy
 `apps/docklands/.env.example` to `apps/docklands/.env`. Scripts load it via

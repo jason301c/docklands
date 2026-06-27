@@ -95,6 +95,9 @@ run bash -n \
 	tools/verify/lib.sh \
 	tools/replica/replica.sh
 
+# install.sh is POSIX sh (it runs via `curl … | sh`), so check it with sh.
+run sh -n install.sh
+
 run node tools/release/check-metadata.mjs
 
 tag_dry_run_args=(--dry-run --skip-fetch)

@@ -53,6 +53,31 @@ management is likewise not an aggregate page: domains are configured per service
 on the workspace canvas, and the related settings live under the Cloudflare,
 Ingress, and Certificates groups rather than a single Domains screen.
 
+## Install
+
+Install Docklands on a Linux server with one command, run as root:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jason301c/docklands/canary/install.sh | sudo sh
+```
+
+It installs Docker if missing, generates and persists secrets to
+`/etc/docklands`, initializes Swarm + Traefik + bundled Postgres (via the image's
+`setup-instance` entrypoint), starts the dashboard, and prints the URL. Re-run
+with `... | sudo sh -s -- update` to upgrade in place.
+
+**On a Mac (e.g. a Mac mini):** the Docklands server is Linux, so the *same*
+command boots a [Lima](https://lima-vm.io) VM and runs the install inside it
+(installing Lima via Homebrew if needed); the dashboard is forwarded to
+`http://localhost:3000`. For public app domains without opening ports, use the
+Cloudflare Tunnel ingress mode.
+
+Docklands is pre-release: the image is published by CI on every `canary` push
+(`jason301c/docklands:canary`) and will publish `:latest` at the first tagged
+release. Until then, pass `DOCKLANDS_IMAGE=jason301c/docklands:canary`. See
+[the production install guide](apps/docs/src/content/docs/install/production.md)
+for the manual/advanced path.
+
 ## Development
 
 Docklands is now organized as a small Bun workspace: the self-hosted Docklands
@@ -93,6 +118,12 @@ You edit it from your machine over Remote-SSH and browse it via forwarded ports.
 bun run replica:up     # boot the VM (needs Lima: `brew install lima`)
 bun run replica:ssh    # shell in; then: cd /workspace && bun install && bun run dev
 ```
+
+For the **closest-to-production dev loop**, run `bun run dev:host` inside the
+replica instead of `bun run dev`: it runs the real `setup-instance` (Swarm +
+Traefik) first, so deploys and ingress hit the production code paths while your
+source still hot-reloads. It refuses to run on macOS (it mutates the host Docker
+daemon), so it only ever touches the VM.
 
 See `tools/replica/README.md` for the replica blueprint and
 `tools/verify/README.md` for the `verify:*` harness that exercises the install,

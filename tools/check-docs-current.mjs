@@ -45,10 +45,6 @@ const forbidden = [
 		reason: "preview deployments are GitHub-only in v0.1.0",
 	},
 	{
-		pattern: /Ship in one command/,
-		reason: "no one-command installer is published yet",
-	},
-	{
 		pattern: /## Creating an organization/,
 		reason: "Docklands has one instance organization",
 	},

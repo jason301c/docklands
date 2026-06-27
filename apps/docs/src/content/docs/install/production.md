@@ -4,15 +4,57 @@ description: Build and run the Docklands control plane as a container on your se
 ---
 
 :::caution[Pre-release]
-Docklands has not had a tagged release, and there is **no one-line installer or
-published image yet**. The supported path today is to build the image from this
-repository and run it yourself. Treat production installs as advanced, and run
-them somewhere you're comfortable rebuilding. Expect no upgrade guarantees.
+Docklands has not had a tagged release. CI publishes the image on every `canary`
+push (`jason301c/docklands:canary`) and will publish `:latest` plus a version tag
+at the first release. Until then, point the installer at the canary image or build
+from source. Treat production installs as advanced, run them somewhere you're
+comfortable rebuilding, and expect no upgrade guarantees yet.
 :::
 
-For a from-source workflow (the common path while Docklands is pre-release), see
-[Local development](/getting-started/). This page covers running the built
-container on a server.
+## Quick install (one command)
+
+On a fresh Linux server, run as root:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jason301c/docklands/canary/install.sh | sudo sh
+```
+
+This installs Docker if missing, generates and persists secrets to
+`/etc/docklands`, initializes Swarm, the `docklands-network` overlay, Traefik, and
+bundled Postgres (through the image's `setup-instance` entrypoint), starts the
+dashboard, and prints the URL. Upgrade in place later by re-running it with the
+`update` argument:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jason301c/docklands/canary/install.sh | sudo sh -s -- update
+```
+
+Until the first tagged release publishes `:latest`, install the canary image:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jason301c/docklands/canary/install.sh \
+  | sudo DOCKLANDS_IMAGE=jason301c/docklands:canary sh
+```
+
+### On a Mac (e.g. a Mac mini)
+
+The Docklands server is Linux, so on macOS the **same command** boots a
+[Lima](https://lima-vm.io) VM and runs the install inside it (installing Lima via
+Homebrew if it is missing):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jason301c/docklands/canary/install.sh | sh
+```
+
+The dashboard is forwarded to `http://localhost:3000`. For public app domains
+without opening any ports, use the Cloudflare Tunnel ingress mode (the
+beginner-first default). The VM is arm64, so it is not bit-identical to an amd64
+cloud server.
+
+## Manual install (advanced)
+
+The steps below are what the one-command installer wraps. Use them when you want
+explicit control over the image, database, and secrets.
 
 ## 1. Choose or build the image
 

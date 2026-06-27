@@ -24,10 +24,22 @@ trip over, so we use a Lima VM you fully control and can reset.
 bun run replica:up            # boot a replica (host arch; --arch arm64|amd64 to pin)
 bun run replica:ssh           # shell in; prints Remote-SSH + port-forward details
 # inside the VM:
-cd /workspace && bun install && bun run dev   # http://localhost:3000 from your Mac's Chrome
-bun run replica:reset         # wipe back to a clean base install
-bun run replica:down          # stop (keeps disk)
+cd /workspace && bun install && bun run dev       # fast loop: http://localhost:3000
+cd /workspace && bun run dev:host                 # faithful loop: real Swarm/Traefik + hot reload
+bun run replica:reset         # wipe back to a clean base install (from the host)
+bun run replica:down          # stop (keeps disk, from the host)
 ```
+
+`bun run dev` is the fast Local-mode loop (no Swarm/Traefik). `bun run dev:host`
+is the closest-to-production loop: it runs the real `setup-instance` (Swarm +
+Traefik) first, so deploys and ingress hit the production code paths while your
+source still hot-reloads. `dev:host` refuses to run on macOS — it mutates the
+host Docker daemon, so it only ever touches this VM.
+
+To run a *persistent real install* (the published image, not the dev server) on a
+Mac instead, use the one-line installer, which boots its own VM:
+`curl -fsSL https://raw.githubusercontent.com/jason301c/docklands/canary/install.sh | sh`.
+The replica here is for development; the installer is for running Docklands for real.
 
 Edit from your laptop with VS Code / Cursor **Remote-SSH**: run
 `limactl show-ssh --format config docklands-replica`, add it to your editor's SSH
