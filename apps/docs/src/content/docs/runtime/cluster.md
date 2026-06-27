@@ -9,10 +9,67 @@ Docklands uses **Docker Swarm** for this: one host is the manager, and you join
 additional machines as workers (or extra managers). Services then run as Swarm
 services that can scale to multiple replicas spread across the nodes.
 
-This is different from adding a *runtime worker*: a runtime worker is a separate
-Docklands target with its own Swarm. The **cluster** is the set of Swarm nodes
-behind a *single* worker (the local host, or one remote worker), all
-participating in the same Swarm.
+## When do you actually need this?
+
+Most self-hosted setups never touch cluster nodes — **one machine runs ever
+service you have, and that is fine.** Reach for a cluster only when a single host
+is genuinely not enough:
+
+- You want a service to survive one machine dying (run several replicas across
+  hosts, and Swarm reschedules tasks off a failed node).
+- One box can't hold the load and you want Docker to **automatically spread**
+  containers across a pool of machines rather than pinning each one by hand.
+
+If you only need to move *specific* services or builds onto *specific* extra
+machines, you do **not** need a cluster — that is what runtime and build workers
+are for (see the next section). Cluster nodes are the heavier "I'm running a real
+fleet and want one shared scheduler" tier.
+
+## Cluster nodes vs. runtime/build workers
+
+This is the most common point of confusion. They are two different ways to add
+machines, and they do not mix:
+
+| | What it is | Who places the containers | Needs a registry? |
+| --- | --- | --- | --- |
+| **Cluster node** | An extra machine joined into the *same* Swarm | **Swarm decides** — spreads tasks across the pool | **Yes** — see below |
+| **Runtime worker** | A separate SSH-reached host where services *run* | **You** pin a service to a specific worker | No |
+| **Build worker** | A separate SSH-reached host that only *builds* images | n/a — it builds, then pushes to a registry | No |
+
+So a **cluster node** is a machine you fold into one worker's Swarm so the
+scheduler treats the whole pool as one target. A **runtime worker** is a distinct
+Docklands target with its *own* Swarm that you assign services to deliberately,
+and a **build worker** only compiles images. Adding a cluster node is *not* the
+same as adding a runtime worker: the cluster is the set of Swarm nodes behind a
+*single* worker (the local host, or one remote worker), all participating in that
+worker's Swarm. See [Runtime workers](/runtime/runtime-workers/) for the worker
+model.
+
+## Why a cluster needs an image registry
+
+Before the **Add Worker** button appears, you must have at least one
+[image registry](/settings/image-registries/) configured. This is a hard
+requirement of multi-node Swarm, not a Docklands preference.
+
+When a service runs on a single machine, the image is built and run on that same
+Docker Engine, so the image is already there locally. In a **multi-node** Swarm,
+the node that ends up *running* a container is often **not** the node that built
+the image — and a node can only see its own local image store. The image
+therefore has to live somewhere every node can reach: a registry.
+
+The flow is:
+
+1. The image is pushed to the registry (Docker Hub, GHCR, DigitalOcean, a private
+   one, etc.).
+2. The manager deploys the stack with `--with-registry-auth`, which hands the
+   registry credentials to every node.
+3. Each node independently **pulls** the image from the registry and runs its
+   assigned tasks.
+
+Without a registry there is no shared place for nodes to pull from, so any task
+scheduled onto a node other than the builder would have nothing to run. That is
+why single-node setups and SSH runtime/build workers don't need a registry, but
+cluster nodes do.
 
 ## Swarm initialization
 
@@ -48,10 +105,10 @@ Worker dialog warns about this.
 :::
 
 :::note
-You need at least one **image registry** configured before you can add cluster
-nodes — the Add Worker button only appears once a registry exists. Multi-node
-Swarm relies on a registry so every node can pull the images it is scheduled to
-run.
+The Add Worker button only appears once at least one **image registry** is
+configured — multi-node Swarm cannot work without one. See
+[Why a cluster needs an image registry](#why-a-cluster-needs-an-image-registry)
+above.
 :::
 
 The node list shows each node's **hostname, status, role, availability, engine
