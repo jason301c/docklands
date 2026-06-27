@@ -8,7 +8,7 @@
 	],
 	"scripts": {
 		"prepare": "if git rev-parse --git-dir >/dev/null 2>&1; then git config core.hooksPath .githooks; fi",
-		"dev": "bun --filter docklands dev",
+		"dev": "bun --filter docklands --elide-lines=0 dev",
 		"build": "bun --filter docklands build",
 		"start": "bun --filter docklands start",
 		"setup": "bun --filter docklands setup",
